@@ -16,8 +16,18 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -27,12 +37,18 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Stream transfer settings
  */
 public class StreamConsumerSettings implements IDataTransferSettings {
+
+    private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
     public enum LobExtractType {
         SKIP,
@@ -70,6 +86,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean openFolderOnFinish = true;
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
+    private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -191,6 +208,20 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         this.finishProcessCommand = finishProcessCommand;
     }
 
+    @NotNull
+    public Map<DBSDataContainer, StreamMappingContainer> getDataMappings() {
+        return dataMappings;
+    }
+
+    @Nullable
+    public StreamMappingContainer getDataMapping(@NotNull DBSDataContainer container) {
+        return dataMappings.get(container);
+    }
+
+    public void addDataMapping(@NotNull StreamMappingContainer container) {
+        dataMappings.put(container.getSource(), container);
+    }
+
     public DBDDataFormatterProfile getFormatterProfile() {
         return formatterProfile;
     }
@@ -227,6 +258,49 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(formatterProfile)) {
             this.formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(formatterProfile);
         }
+
+        final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+
+        for (Map.Entry<String, Map<String, Object>> mapping : JSONUtils.getNestedObjects(settings, "mappings")) {
+            try {
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        monitor.beginTask("Load object '" + mapping.getKey() + "'", 1);
+
+                        final DBSObject object = DBUtils.findObjectById(monitor, activeProject, mapping.getKey());
+
+                        if (!(object instanceof DBSDataContainer)) {
+                            log.error("Can't find object '" + mapping.getKey() + "' in project '" + activeProject.getName() + "'");
+                            return;
+                        }
+
+                        final StreamMappingContainer container = new StreamMappingContainer((DBSDataContainer) object);
+
+                        for (StreamMappingAttribute attribute : container.getAttributes(monitor)) {
+                            for (Object attributeMapping : ((List<?>) mapping.getValue())) {
+                                final String name = CommonUtils.toString(((Map<?, ?>) attributeMapping).get("name"));
+                                final String type = CommonUtils.toString(((Map<?, ?>) attributeMapping).get("type"));
+
+                                if (attribute.getName().equals(name)) {
+                                    attribute.setMappingType(CommonUtils.valueOf(StreamMappingType.class, type, StreamMappingType.unspecified));
+                                    break;
+                                }
+                            }
+                        }
+
+                        addDataMapping(container);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
+                    }
+                });
+            } catch (InterruptedException e) {
+                log.debug("Canceled by user", e);
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Data Transfer", "Error loading configuration", e.getTargetException());
+            }
+        }
     }
 
     @Override
@@ -254,6 +328,25 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             settings.put("formatterProfile", formatterProfile.getProfileName());
         } else {
             settings.put("formatterProfile", "");
+        }
+
+        if (!dataMappings.isEmpty()) {
+            final Map<String, Object> mappings = new LinkedHashMap<>();
+
+            for (StreamMappingContainer container : dataMappings.values()) {
+                final List<Map<String, Object>> attributes = new ArrayList<>();
+
+                for (StreamMappingAttribute containerAttribute : container.getAttributes(new VoidProgressMonitor())) {
+                    final Map<String, Object> attribute = new LinkedHashMap<>();
+                    attribute.put("name", containerAttribute.getName());
+                    attribute.put("type", containerAttribute.getMappingType().name());
+                    attributes.add(attribute);
+                }
+
+                mappings.put(DBUtils.getObjectFullId(container.getSource()), attributes);
+            }
+
+            settings.put("mappings", mappings);
         }
     }
 

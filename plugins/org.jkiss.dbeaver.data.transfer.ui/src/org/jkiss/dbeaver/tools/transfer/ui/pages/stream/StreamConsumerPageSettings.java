@@ -16,28 +16,51 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingAttribute;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
@@ -75,9 +98,6 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         {
             Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            ((GridLayout)generalSettings.getLayout()).verticalSpacing = 0;
-            ((GridLayout)generalSettings.getLayout()).marginHeight = 0;
-            ((GridLayout)generalSettings.getLayout()).marginWidth = 0;
             {
                 formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
                 GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
@@ -156,6 +176,21 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                         }
                     }
                 });
+
+                {
+                    Composite columnsPanel = UIUtils.createComposite(generalSettings, 5);
+                    columnsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 5, 1));
+
+                    UIUtils.createDialogButton(columnsPanel, "Configure Columns ...", new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            final ConfigureColumnsPopup popup = new ConfigureColumnsPopup(getShell());
+                            if (popup.open() == IDialogConstants.OK_ID) {
+                                super.widgetSelected(e);
+                            }
+                        }
+                    });
+                }
             }
         }
 
@@ -248,4 +283,214 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         return true;
     }
 
+    private final class ConfigureColumnsPopup extends AbstractPopupPanel {
+        final List<StreamMappingContainer> mappings = new ArrayList<>();
+
+        private TreeViewer viewer;
+        private CLabel errorLabel;
+        private Button applyButton;
+
+        public ConfigureColumnsPopup(@NotNull Shell shell) {
+            super(shell, "Manage exported columns");
+            setShellStyle(SWT.SHELL_TRIM);
+            setModeless(true);
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            Composite group = (Composite) super.createDialogArea(parent);
+
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+            gd.widthHint = 400;
+            gd.heightHint = 450;
+
+            Composite composite = UIUtils.createComposite(group, 1);
+            composite.setLayoutData(gd);
+
+            viewer = new TreeViewer(composite, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+            viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
+            viewer.getTree().setLinesVisible(true);
+            viewer.getTree().setHeaderVisible(true);
+            viewer.getTree().setLayoutData(gd);
+
+            viewer.setContentProvider(new TreeContentProvider() {
+                @Override
+                public Object[] getChildren(Object element) {
+                    // We have preloaded the attributes before, so it is 'safe' to use void monitor here
+                    return ((StreamMappingContainer) element).getAttributes(new VoidProgressMonitor()).toArray();
+                }
+
+                @Override
+                public boolean hasChildren(Object element) {
+                    return element instanceof StreamMappingContainer;
+                }
+            });
+
+            {
+                TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
+                column.setLabelProvider(new CellLabelProvider() {
+                    @Override
+                    public void update(ViewerCell cell) {
+                        final Object element = cell.getElement();
+                        final DBPNamedObject object = (DBPNamedObject) element;
+                        cell.setText(object.getName());
+                        cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(object)));
+                    }
+                });
+                column.getColumn().setText("Name");
+            }
+
+            {
+                TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
+                column.setLabelProvider(new CellLabelProvider() {
+                    @Override
+                    public void update(ViewerCell cell) {
+                        final Object element = cell.getElement();
+                        if (element instanceof StreamMappingAttribute) {
+                            final StreamMappingAttribute attribute = (StreamMappingAttribute) element;
+                            cell.setText(attribute.getMappingType().name());
+                            cell.setBackground(attribute.getContainer().isComplete() ? null : UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
+                        }
+                    }
+                });
+                column.setEditingSupport(new EditingSupport(viewer) {
+                    @Override
+                    protected CellEditor getCellEditor(Object element) {
+                        final String[] items = {
+                            StreamMappingType.keep.name(),
+                            StreamMappingType.skip.name()
+                        };
+
+                        return new CustomComboBoxCellEditor(
+                            viewer,
+                            viewer.getTree(),
+                            items,
+                            SWT.DROP_DOWN | SWT.READ_ONLY
+                        );
+                    }
+
+                    @Override
+                    protected boolean canEdit(Object element) {
+                        return element instanceof StreamMappingAttribute;
+                    }
+
+                    @Override
+                    protected Object getValue(Object element) {
+                        return ((StreamMappingAttribute) element).getMappingType().name();
+                    }
+
+                    @Override
+                    protected void setValue(Object element, Object value) {
+                        ((StreamMappingAttribute) element).setMappingType(StreamMappingType.valueOf(value.toString()));
+                        viewer.refresh();
+                        updateCompletion();
+                    }
+                });
+                column.getColumn().setText("Mapping");
+            }
+
+            {
+                Composite buttons = UIUtils.createComposite(composite, 2);
+                buttons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+                errorLabel = new CLabel(buttons, SWT.NONE);
+                errorLabel.setText("No columns selected");
+                errorLabel.setToolTipText("You must select at least one column for each table");
+                errorLabel.setImage(JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_ERROR));
+                errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+
+                Composite button = UIUtils.createPlaceholder(buttons, 1);
+                button.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+
+                applyButton = UIUtils.createDialogButton(button, "&Apply", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        saveAndClose();
+                    }
+                });
+                applyButton.setEnabled(false);
+            }
+
+            loadMappings();
+
+            return group;
+        }
+
+        @Override
+        protected Control createButtonBar(Composite parent) {
+            return UIUtils.createPlaceholder(parent, 1);
+        }
+
+        private void updateCompletion() {
+            for (StreamMappingContainer mapping : mappings) {
+                if (!mapping.isComplete()) {
+                    errorLabel.setVisible(true);
+                    applyButton.setEnabled(false);
+                    return;
+                }
+            }
+
+            errorLabel.setVisible(false);
+            applyButton.setEnabled(true);
+        }
+
+        private void saveAndClose() {
+            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
+
+            settings.getDataMappings().clear();
+
+            for (StreamMappingContainer mapping : mappings) {
+                settings.addDataMapping(mapping);
+            }
+
+            close();
+        }
+
+        private void loadMappings() {
+            new AbstractJob("Load producers") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    mappings.clear();
+
+                    try {
+                        final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
+                        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+
+                        monitor.beginTask("Load producers", pipes.size());
+
+                        for (DataTransferPipe pipe : pipes) {
+                            final DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
+                            StreamMappingContainer mapping = settings.getDataMapping(source);
+
+                            if (mapping == null) {
+                                mapping = new StreamMappingContainer(source);
+
+                                for (StreamMappingAttribute attribute : mapping.getAttributes(monitor)) {
+                                    attribute.setMappingType(StreamMappingType.keep);
+                                }
+                            } else {
+                                // Create a copy to avoid direct modifications
+                                mapping = new StreamMappingContainer(mapping);
+                            }
+
+                            mappings.add(mapping);
+                            monitor.worked(1);
+                        }
+                    } finally {
+                        monitor.done();
+                    }
+
+                    UIUtils.asyncExec(() -> {
+                        viewer.setInput(mappings);
+                        viewer.expandAll(true);
+                        UIUtils.packColumns(viewer.getTree(), true, new float[]{0.85f, 0.15f});
+
+                        updateCompletion();
+                    });
+
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+        }
+    }
 }

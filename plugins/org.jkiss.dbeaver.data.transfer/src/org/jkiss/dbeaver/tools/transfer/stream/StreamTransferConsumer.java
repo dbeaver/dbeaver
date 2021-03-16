@@ -52,6 +52,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -118,6 +119,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             columnBindings = DBUtils.injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, columnMetas, true);
         } else {
             columnBindings = DBUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
+        }
+
+        final StreamMappingContainer mapping = settings.getDataMapping(dataContainer);
+        if (mapping != null) {
+            if (!mapping.isComplete()) {
+                throw new DBCException("Columns mappings are incomplete, consider reconfiguring data transfer");
+            }
+            // That's a dirty way of doing things ...
+            columnBindings = Arrays.stream(columnBindings)
+                .filter(attr -> {
+                    final StreamMappingAttribute attribute = mapping.getAttribute(attr);
+                    return attribute == null || attribute.getMappingType() == StreamMappingType.keep;
+                })
+                .toArray(DBDAttributeBinding[]::new);
         }
 
         if (!initialized) {
