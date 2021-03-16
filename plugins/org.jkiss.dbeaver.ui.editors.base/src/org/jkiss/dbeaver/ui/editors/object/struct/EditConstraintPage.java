@@ -55,8 +55,6 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private String constraintExpression;
     private DBSEntityReferrer constraint;
     private Collection<? extends DBSEntityAttributeRef> attributes;
-    @Nullable //FIXME
-    private Collection<DBSEntityAttribute> preselectedAttributes;
 
     private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
     private Group expressionGroup;
@@ -76,12 +74,15 @@ public class EditConstraintPage extends AttributesSelectorPage {
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }
 
-    public EditConstraintPage(String title, DBSEntity entity, DBSEntityConstraintType[] constraintTypes, boolean showEnable, Collection<DBSEntityAttribute> preselectedAttributes) {
+    public EditConstraintPage(
+            String title,
+            DBSEntity entity,
+            DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
+    {
         super(title, entity);
         this.entity = entity;
         this.constraintTypes = constraintTypes;
         this.showEnable = showEnable;
-        this.preselectedAttributes = preselectedAttributes;
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }
 
