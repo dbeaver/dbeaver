@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -41,6 +42,12 @@ class EndIdleTransactionsJob extends AbstractJob {
     private final DBPDataSource dataSource;
     private final Map<DBCExecutionContext, DBCTransactionManager> txnToEnd;
 
+    public static boolean isInProcess(DBPDataSourceContainer ds) {
+        synchronized (activeDataSources) {
+            return activeDataSources.contains(ds.getId());
+        }
+    }
+
     EndIdleTransactionsJob(DBPDataSource dataSource, Map<DBCExecutionContext, DBCTransactionManager> txnToEnd) {
         super("Connection ping (" + dataSource.getContainer().getName() + ")");
         setUser(false);
@@ -59,9 +66,11 @@ class EndIdleTransactionsJob extends AbstractJob {
             activeDataSources.add(dsId);
         }
         try {
+
             log.debug("End idle " + txnToEnd.size() + " transactions for " + dsId);
             for (Map.Entry<DBCExecutionContext, DBCTransactionManager> tee : txnToEnd.entrySet()) {
                 try (DBCSession session = tee.getKey().openSession(monitor, DBCExecutionPurpose.UTIL, "End idle transaction")) {
+                    session.enableLogging(false);
                     try {
                         tee.getValue().rollback(session, null);
                     } catch (DBCException e) {
@@ -82,5 +91,26 @@ class EndIdleTransactionsJob extends AbstractJob {
         }
         return Status.OK_STATUS;
     }
+
+/*
+    class EndTransactionConfirmationJob extends UIJob {
+
+        public EndTransactionConfirmationJob() {
+            super("Show end transaction confirmation for " + dataSource.getContainer().getName());
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+
+            return Status.OK_STATUS;
+        }
+    }
+
+    class EndTransactionConfirmationDialog extends ConfirmationDialog {
+
+    }
+*/
 
 }
