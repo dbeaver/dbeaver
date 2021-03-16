@@ -116,7 +116,7 @@
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter, supportsIndexCreating"
+            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter, supportsIndexCreating, supportsConstraintCreating"
             type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
 
         <propertyTester
@@ -275,6 +275,7 @@
         </command>
 
         <command id="org.jkiss.dbeaver.navigator.create.column.index" name="%command.org.jkiss.dbeaver.navigator.create.column.index.name" description="%command.org.jkiss.dbeaver.navigator.create.column.index.description" categoryId="org.jkiss.dbeaver.core.database" />
+        <command id="org.jkiss.dbeaver.navigator.create.column.constraint" name="%command.org.jkiss.dbeaver.navigator.create.column.constraint.name" description="%command.org.jkiss.dbeaver.navigator.create.column.constraint.description" categoryId="org.jkiss.dbeaver.core.database" />
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -306,6 +307,7 @@
         <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
 
         <image commandId="org.jkiss.dbeaver.navigator.create.column.index" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
+        <image commandId="org.jkiss.dbeaver.navigator.create.column.constraint" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -325,12 +327,21 @@
         <handler commandId="org.jkiss.dbeaver.core.object.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew"/>
 
         <handler commandId="org.jkiss.dbeaver.navigator.create.column.index" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateColumnIndex">
-<!--            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>-->
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
                         <test property="org.jkiss.dbeaver.core.object.supportsIndexCreating" />
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.navigator.create.column.constraint" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateColumnConstraint">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <test property="org.jkiss.dbeaver.core.object.supportsConstraintCreating" />
                     </iterate>
                 </with>
             </enabledWhen>
@@ -812,6 +823,9 @@
                 <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
             </menu>
             <command commandId="org.jkiss.dbeaver.navigator.create.column.index">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.navigator.create.column.constraint">
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>

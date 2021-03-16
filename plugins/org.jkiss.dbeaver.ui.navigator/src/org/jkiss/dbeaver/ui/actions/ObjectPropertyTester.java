@@ -54,6 +54,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_HAS_FILTER = "hasFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
     public static final String PROP_SUPPORTS_CREATING_INDEX = "supportsIndexCreating";
+    public static final String PROP_SUPPORTS_CREATING_CONSTRAINT = "supportsConstraintCreating";
 
     public ObjectPropertyTester() {
         super();
@@ -230,6 +231,31 @@ public class ObjectPropertyTester extends PropertyTester
                 for (Class<?> childType: structEditor.getChildTypes()) {
                     DBEObjectMaker<?, ?> maker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType, DBEObjectMaker.class);
                     if (maker != null && maker.canCreateObject(entityObject) && DBSTableIndex.class.isAssignableFrom(childType)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            case PROP_SUPPORTS_CREATING_CONSTRAINT: { //FIXME code repeating
+                if (!(node instanceof DBNDatabaseItem)) {
+                    return false;
+                }
+                DBNDatabaseItem databaseItem = (DBNDatabaseItem) node;
+                DBSObject attributeObject = databaseItem.getObject();
+                if (!(attributeObject instanceof DBSEntityAttribute)) {
+                    return false;
+                }
+                DBSObject entityObject = attributeObject.getParentObject();
+                if (!(entityObject instanceof DBSEntity)) {
+                    return false;
+                }
+                DBEStructEditor<?> structEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
+                if (structEditor == null) {
+                    return false;
+                }
+                for (Class<?> childType: structEditor.getChildTypes()) {
+                    DBEObjectMaker<?, ?> maker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType, DBEObjectMaker.class);
+                    if (maker != null && maker.canCreateObject(entityObject) && DBSEntityConstraint.class.isAssignableFrom(childType)) {
                         return true;
                     }
                 }
