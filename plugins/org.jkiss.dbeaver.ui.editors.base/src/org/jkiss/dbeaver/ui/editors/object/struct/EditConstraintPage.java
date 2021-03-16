@@ -25,7 +25,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -75,9 +74,9 @@ public class EditConstraintPage extends AttributesSelectorPage {
     }
 
     public EditConstraintPage(
-            String title,
-            DBSEntity entity,
-            DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
+        String title,
+        DBSEntity entity,
+        DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
     {
         super(title, entity);
         this.entity = entity;
