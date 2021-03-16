@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;;
+import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 public class NavigatorHandlerCreateColumnIndex extends NavigatorHandlerCreateColumnObjectBase {
