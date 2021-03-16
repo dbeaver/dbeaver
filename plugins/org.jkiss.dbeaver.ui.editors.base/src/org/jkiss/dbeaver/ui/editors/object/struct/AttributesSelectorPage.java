@@ -321,10 +321,10 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         }
 
         for (Object obj: selection) { //fixme O(n^2)
-            DBSEntityAttribute entityAttribute = extractDBSEntityAttribute(obj);
-            if (entityAttribute == null) {
+            if (!(obj instanceof DBNDatabaseItem)) {
                 continue;
             }
+            DBSObject dbsObject = ((DBNDatabaseItem) obj).getObject();
             TableItem[] tableColumns = columnsTable.getItems();
             for (TableItem tableItem: tableColumns) {
                 Object data = tableItem.getData();
@@ -332,7 +332,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     continue;
                 }
                 AttributesSelectorPage.AttributeInfo attributeInfo = (AttributesSelectorPage.AttributeInfo) data;
-                if (entityAttribute.equals(attributeInfo.attribute)) {
+                if (Objects.equals(dbsObject, attributeInfo.attribute)) {
                     tableItem.setChecked(true);
                     handleItemSelect(tableItem, true);
                     break;
@@ -356,19 +356,6 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             return null;
         }
         return (IStructuredSelection) selection;
-    }
-
-    @Nullable
-    private static DBSEntityAttribute extractDBSEntityAttribute(@NotNull Object obj) {
-        if (!(obj instanceof DBNDatabaseItem)) {
-            return null;
-        }
-        DBNDatabaseItem item = (DBNDatabaseItem) obj;
-        DBSObject dbsObject = item.getObject();
-        if (dbsObject instanceof DBSEntityAttribute) {
-            return (DBSEntityAttribute) dbsObject;
-        }
-        return null;
     }
 
     protected void onAttributesLoad() {
