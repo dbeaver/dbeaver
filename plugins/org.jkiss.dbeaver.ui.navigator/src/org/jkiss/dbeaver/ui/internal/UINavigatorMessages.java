@@ -167,6 +167,7 @@ public class UINavigatorMessages extends NLS {
 
     public static String confirm_entity_delete_title;
     public static String confirm_entity_delete_message;
+    public static String confirm_deleting_dependent_objects;
 
     public static String confirm_local_folder_delete_title;
     public static String confirm_local_folder_delete_message;
