@@ -37,6 +37,8 @@ public interface UIServiceConnections {
 
     void closeActiveTransaction(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, boolean commitTxn);
 
+    void confirmTransactionsClose(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, boolean commitTxn);
+
     boolean checkAndCloseActiveTransaction(@NotNull DBCExecutionContext[] contexts);
 
 }

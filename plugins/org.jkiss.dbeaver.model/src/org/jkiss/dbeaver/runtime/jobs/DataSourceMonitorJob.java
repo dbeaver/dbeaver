@@ -150,6 +150,9 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     private void endIdleTransactions(DBPDataSourceContainer dsDescriptor) {
+        if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
+            return;
+        }
         int ttlSeconds = dsDescriptor.getPreferenceStore().getInt(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         long lastUserActivityTime = application.getLastUserActivityTime();
