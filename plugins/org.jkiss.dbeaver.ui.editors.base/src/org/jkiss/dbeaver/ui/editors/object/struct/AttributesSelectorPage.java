@@ -325,8 +325,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         return tableGroup;
     }
 
-    private void handleItemSelect(TableItem item, boolean notify)
-    {
+    void handleItemSelect(TableItem item, boolean notify) {
         final AttributeInfo col = (AttributeInfo) item.getData();
         if (item.getChecked() && col.position < 0) {
             // Checked
@@ -448,5 +447,4 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         }
         return false;
     }
-
 }
