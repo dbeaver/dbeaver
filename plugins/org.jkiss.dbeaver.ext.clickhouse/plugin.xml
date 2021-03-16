@@ -7,6 +7,42 @@
         <meta id="clickhouse" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel" driverClass="ru.yandex.clickhouse.ClickHouseDriver" dialect="clickhouse"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"
+                description="Clickhouse"
+                id="clickhouse"
+                parent="generic"
+                label="ClickHouse"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
+                dialect="clickhouse">
+            <drivers managable="true">
+
+                <driver
+                        id="yandex_clickhouse"
+                        label="ClickHouse"
+                        class="ru.yandex.clickhouse.ClickHouseDriver"
+                        sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
+                        defaultPort="8123"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
+                        description="Yandex ClickHouse"
+                        webURL="https://github.com/yandex/clickhouse-jdbc"
+                        categories="sql,analytic,columns">
+                    <replace provider="generic" driver="yandex_clickhouse"/>
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
+                    <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="clickhouse" parent="generic" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSQLDialect" label="Clickhouse" description="Yandex Clickhouse SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png">
         </dialect>

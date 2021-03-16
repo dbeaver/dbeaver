@@ -70,7 +70,7 @@ public class ReferenceValueEditor {
     private IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
-    private Tree editorSelector;
+    private Table editorSelector;
     private volatile boolean sortByValue = true;
     private volatile boolean sortAsc = true;
     private volatile boolean dictLoaded = false;
@@ -149,7 +149,7 @@ public class ReferenceValueEditor {
             }
         }
 
-        editorSelector = new Tree(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+        editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
         editorSelector.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -159,9 +159,9 @@ public class ReferenceValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        TreeColumn valueColumn = UIUtils.createTreeColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
+        TableColumn valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
         valueColumn.setData(Boolean.TRUE);
-        TreeColumn descColumn = UIUtils.createTreeColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_description);
+        TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_description);
         descColumn.setData(Boolean.FALSE);
 
         SortListener sortListener = new SortListener();
@@ -172,7 +172,7 @@ public class ReferenceValueEditor {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                TreeItem[] selection = editorSelector.getSelection();
+                TableItem[] selection = editorSelector.getSelection();
                 if (selection != null && selection.length > 0) {
                     Object value = selection[0].getData();
                     //editorControl.setText(selection[0].getText());
@@ -212,11 +212,11 @@ public class ReferenceValueEditor {
                 DBDDisplayFormat.EDIT);
             boolean valueFound = false;
             if (curTextValue != null) {
-                TreeItem[] items = editorSelector.getItems();
+                TableItem[] items = editorSelector.getItems();
                 for (int i = 0; i < items.length; i++) {
-                    TreeItem item = items[i];
+                    TableItem item = items[i];
                     if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
-                        editorSelector.select(item);
+                        editorSelector.select(i);
                         editorSelector.showItem(item);
                         //editorSelector.setTopIndex(i);
                         valueFound = true;
@@ -284,7 +284,7 @@ public class ReferenceValueEditor {
         try {
             editorSelector.removeAll();
             for (DBDLabelValuePair entry : valuesData.keyValues) {
-                TreeItem discItem = new TreeItem(editorSelector, SWT.NONE);
+                TableItem discItem = new TableItem(editorSelector, SWT.NONE);
                 discItem.setText(0,
                     valuesData.keyHandler.getValueDisplayString(
                         valuesData.keyColumn.getAttribute(),
@@ -296,7 +296,7 @@ public class ReferenceValueEditor {
 
             selectCurrentValue();
 
-            UIUtils.packColumns(editorSelector, false, null);
+            UIUtils.packColumns(editorSelector, false);
         } finally {
             editorSelector.setRedraw(true);
         }
@@ -312,12 +312,14 @@ public class ReferenceValueEditor {
                         curValue,
                         DBDDisplayFormat.EDIT);
 
-                TreeItem curItem = null;
-                TreeItem[] items = editorSelector.getItems();
+                TableItem curItem = null;
+                int curItemIndex = -1;
+                TableItem[] items = editorSelector.getItems();
                 for (int i = 0; i < items.length; i++) {
-                    TreeItem item = items[i];
+                    TableItem item = items[i];
                     if (item.getText(0).equals(curTextValue)) {
                         curItem = item;
+                        curItemIndex = i;
                         break;
                     }
                 }
@@ -325,7 +327,7 @@ public class ReferenceValueEditor {
                     editorSelector.setSelection(curItem);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
-                    editorSelector.setTopItem(curItem);
+                    editorSelector.setTopIndex(curItemIndex);
                 } else {
                     editorSelector.deselectAll();
                 }
@@ -343,7 +345,7 @@ public class ReferenceValueEditor {
         @Override
         public void run() {
             StringBuilder result = new StringBuilder();
-            for (TreeItem item : editorSelector.getSelection()) {
+            for (TableItem item : editorSelector.getSelection()) {
                 if (result.length() > 0) result.append("\n");
                 result.append(item.getText(0));
             }
@@ -352,7 +354,7 @@ public class ReferenceValueEditor {
     }
 
     private class SortListener implements Listener {
-        private TreeColumn prevColumn = null;
+        private TableColumn prevColumn = null;
         private int sortDirection = SWT.DOWN;
 
         public SortListener() {
@@ -360,7 +362,7 @@ public class ReferenceValueEditor {
 
         @Override
         public void handleEvent(Event event) {
-            TreeColumn column = (TreeColumn) event.widget;
+            TableColumn column = (TableColumn) event.widget;
             if (prevColumn == column) {
                 // Set reverse order
                 sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
@@ -379,7 +381,7 @@ public class ReferenceValueEditor {
         DBSEntityAttributeRef keyColumn;
         DBDValueHandler keyHandler;
 
-        public EnumValuesData(Collection<DBDLabelValuePair> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
+        EnumValuesData(Collection<DBDLabelValuePair> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
             this.keyValues = new ArrayList<>(keyValues);
             this.keyColumn = keyColumn;
             this.keyHandler = keyHandler;

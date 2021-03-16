@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.db.ui.feature"
         label="%featureName"
-        version="1.0.43.qualifier"
+        version="1.0.44.qualifier"
         provider-name="%providerName">
 
     <description>
@@ -34,6 +34,7 @@
     <plugin id="org.jkiss.dbeaver.ext.spanner.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.snowflake.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.sqlite.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.datavirtuality.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <plugin id="org.jkiss.dbeaver.ext.wmi" os="win32" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 

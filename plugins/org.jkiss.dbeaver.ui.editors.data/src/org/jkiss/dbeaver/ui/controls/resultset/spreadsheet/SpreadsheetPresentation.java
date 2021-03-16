@@ -334,7 +334,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.getHorizontalScrollBarProxy().setSelection(hScrollPos);
 
             // Update controls
-            controller.updateEditControls();
             controller.updateStatusMessage();
             controller.updatePanelsContent(false);
 

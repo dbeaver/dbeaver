@@ -692,4 +692,19 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public boolean supportsAlterTableConstraint() {
         return true;
     }
+
+    @Override
+    public String generateTableUpdateBegin(String tableName) {
+        return "UPDATE " + tableName;
+    }
+
+    @Override
+    public String generateTableUpdateSet() {
+        return "SET ";
+    }
+
+    @Override
+    public String generateTableDeleteFrom(String tableName) {
+        return "DELETE FROM " + tableName;
+    }
 }
