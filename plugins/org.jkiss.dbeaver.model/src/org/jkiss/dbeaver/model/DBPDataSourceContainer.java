@@ -120,6 +120,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
 
     void setDefaultAutoCommit(boolean autoCommit);
 
+    boolean isAutoCloseTransactions();
+
     @Nullable
     DBPTransactionIsolation getActiveTransactionsIsolation();
 

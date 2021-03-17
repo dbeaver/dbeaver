@@ -19,18 +19,17 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 
@@ -56,6 +55,8 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
+    public static final String PROP_SUPPORTS_CREATING_INDEX = "supportsIndexCreate";
+    public static final String PROP_SUPPORTS_CREATING_CONSTRAINT = "supportsConstraintCreate";
 
     public ObjectPropertyTester() {
         super();
@@ -212,6 +213,10 @@ public class ObjectPropertyTester extends PropertyTester
                 }
                 break;
             }
+            case PROP_SUPPORTS_CREATING_INDEX:
+                return supportsCreatingColumnObject(node, DBSTableIndex.class);
+            case PROP_SUPPORTS_CREATING_CONSTRAINT:
+                return supportsCreatingColumnObject(node, DBSEntityConstraint.class);
         }
         return false;
     }
@@ -292,4 +297,29 @@ public class ObjectPropertyTester extends PropertyTester
         ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
+    private static boolean supportsCreatingColumnObject(@Nullable DBNNode node, @NotNull Class<?> supertype) {
+        if (!(node instanceof DBNDatabaseItem)) {
+            return false;
+        }
+        DBNDatabaseItem databaseItem = (DBNDatabaseItem) node;
+        DBSObject attributeObject = databaseItem.getObject();
+        if (!(attributeObject instanceof DBSEntityAttribute)) {
+            return false;
+        }
+        DBSObject entityObject = attributeObject.getParentObject();
+        if (!(entityObject instanceof DBSEntity)) {
+            return false;
+        }
+        DBEStructEditor<?> structEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
+        if (structEditor == null) {
+            return false;
+        }
+        for (Class<?> childType: structEditor.getChildTypes()) {
+            DBEObjectMaker<?, ?> maker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType, DBEObjectMaker.class);
+            if (maker != null && maker.canCreateObject(entityObject) && supertype.isAssignableFrom(childType)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -911,7 +911,7 @@ public class SQLEditor extends SQLEditorBase implements
             getSite(),
             SQLEditorCommands.CMD_SQL_SHOW_OUTPUT,
             true)
-            .setText("Output");
+            .setText("Out");
         VerticalButton.create(
             sideToolBar,
             SWT.LEFT | SWT.CHECK,

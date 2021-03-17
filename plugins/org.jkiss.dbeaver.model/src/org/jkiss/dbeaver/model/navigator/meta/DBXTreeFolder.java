@@ -111,6 +111,11 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.type = type;
     }
 
+    public String getIdOrType() {
+        String id = getId();
+        return !CommonUtils.isEmpty(id) ? id : type;
+    }
+
     @Override
     public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale) {
         if (locale == null) {
