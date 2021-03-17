@@ -113,7 +113,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     private static boolean confirmDependenciesDelete(final IWorkbenchWindow window, final List<Object> selectedObjects) {
-        List<Object> dependentObjectsListAll = new ArrayList<>();
         List<Object> dependentObjectsListNodes = new ArrayList<>();
         try {
             UIUtils.runInProgressService(monitor -> {
@@ -125,8 +124,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                             DBEObjectManager<?> objectManager = attribute.getDataSource().getContainer().getPlatform().getEditorsRegistry().getObjectManager(attribute.getClass());
                             if (objectManager instanceof DBEObjectWithDependencies) {
                                 try {
-                                    List<Object> dependentObjectsList = ((DBEObjectWithDependencies) objectManager).getDependentObjectsList(monitor, attribute);
-                                    dependentObjectsListAll.addAll(dependentObjectsList);
+                                    List<? extends DBSObject> dependentObjectsList = ((DBEObjectWithDependencies) objectManager).getDependentObjectsList(monitor, attribute);
                                     if (!CommonUtils.isEmpty(dependentObjectsList)) {
                                         for (Object object : dependentObjectsList) {
                                             if (object instanceof DBSObject) {
@@ -144,10 +142,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 }
             });
         } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.search_dependencies_error_title, UINavigatorMessages.search_dependencies_error_message, e.getTargetException());
         } catch (InterruptedException ignored) {
         }
-        if (!CommonUtils.isEmpty(dependentObjectsListAll)) {
+        if (!CommonUtils.isEmpty(dependentObjectsListNodes)) {
             NavigatorObjectsDeleter dependentObjectsDeleter = NavigatorObjectsDeleter.of(dependentObjectsListNodes, window);
             final ConfirmationDialog dialog = ConfirmationDialog.of(
                     window.getShell(),
