@@ -356,8 +356,8 @@ public class DataSourceHandler {
             super(UIUtils.getActiveShell(),
                 "End transaction",
                 DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK),
-                "Transactions in database " + dataSource.getName() + " will be ended because of the long idle period." +
-                    "\nPress cancel to prevent this.",
+                "Transactions in database '" + dataSource.getName() + "' will be ended because of the long idle period." +
+                    "\nPress '" + IDialogConstants.CANCEL_LABEL + "' to prevent this.",
                 MessageDialog.WARNING,
                 null,
                 0);
