@@ -136,6 +136,7 @@ public class DTMessages extends NLS {
 	public static String database_mapping_container_title_attributes_read_failed;
 	public static String database_mapping_container_message_get_attributes_from;
 	public static String database_transfer_consumer_task_error_occurred_during_data_load;
+	public static String database_transfer_consumer_task_error_occurred_during_batch_insert;
 	public static String stream_transfer_consumer_title_run_process;
 	public static String stream_transfer_consumer_message_error_running_process;
 
