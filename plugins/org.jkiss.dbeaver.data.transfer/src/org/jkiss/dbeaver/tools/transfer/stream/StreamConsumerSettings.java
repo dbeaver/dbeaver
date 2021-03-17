@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -40,8 +39,6 @@ import java.util.Map;
  * Stream transfer settings
  */
 public class StreamConsumerSettings implements IDataTransferSettings {
-
-    private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
     public enum LobExtractType {
         SKIP,

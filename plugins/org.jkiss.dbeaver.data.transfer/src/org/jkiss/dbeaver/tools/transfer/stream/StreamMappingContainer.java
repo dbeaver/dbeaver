@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -114,7 +116,11 @@ public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider 
                     }
                 });
             } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Data Transfer", "Error reading attributes from " + getName(), e.getTargetException());
+                DBWorkbench.getPlatformUI().showError(
+                    DTMessages.stream_transfer_consumer_title_attributes_read_failed,
+                    NLS.bind(DTMessages.stream_transfer_consumer_message_cannot_get_attributes_from, getName()),
+                    e.getTargetException()
+                );
             } catch (InterruptedException e) {
                 log.debug("Canceled by user", e);
             }
