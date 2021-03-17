@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,27 +42,27 @@ public abstract class NavigatorHandlerCreateColumnObjectBase extends NavigatorHa
     static Object createColumnObject(@NotNull ExecutionEvent event, @NotNull Class<?> columnObjectSuperType) {
         DBNNode node = NavigatorUtils.getSelectedNode(HandlerUtil.getCurrentSelection(event));
         if (!(node instanceof DBNDatabaseItem)) {
-            log.error("Selected node is not a database item!");
+            log.error("Selected node is not a database item");
             return null;
         }
         DBNNode containerNode = node.getParentNode();
         if (containerNode == null) {
-            log.error("Selected node has no parent!");
+            log.error("Selected node has no parent");
             return null;
         }
         DBSObject attributeObject = ((DBNDatabaseItem) node).getObject();
         if (!(attributeObject instanceof DBSEntityAttribute)) {
-            log.error("Selected node's object is not an attribute!");
+            log.error("Selected node's object is not an attribute");
             return null;
         }
         DBSObject entityObject = attributeObject.getParentObject();
         if (!(entityObject instanceof DBSEntity)) {
-            log.error("Selected node's attribute has no parent!");
+            log.error("Selected node's attribute has no parent");
             return null;
         }
         DBEStructEditor<?> structEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
         if (structEditor == null) {
-            log.error("No struct editor exists for entity!");
+            log.error("No struct editor exists for entity");
             return null;
         }
         DBEObjectMaker<?, ?> maker = null;
@@ -76,7 +75,7 @@ public abstract class NavigatorHandlerCreateColumnObjectBase extends NavigatorHa
             }
         }
         if (columnObjectConcreteType == null) {
-            log.error("Unable to find appropriate child type and it's maker!");
+            log.error("Unable to find appropriate child type and it's maker");
             return null;
         }
 
@@ -97,13 +96,13 @@ public abstract class NavigatorHandlerCreateColumnObjectBase extends NavigatorHa
         try {
             UIUtils.getDefaultRunnableContext().run(false, false, monitor -> {
                 try {
-                    maker.createNewObject(new VoidProgressMonitor(), commandContext, entityObject, null, Collections.emptyMap());
+                    maker.createNewObject(monitor, commandContext, entityObject, null, Collections.emptyMap());
                 } catch (DBException e) {
                     dbExceptions[0] = e;
                 }
             });
         } catch (InvocationTargetException e) {
-            log.debug("Unexpected invocation target exception while creating new object!");
+            log.warn("Unexpected invocation target exception while creating new object", e);
         } catch (InterruptedException e) {
             //ignore
         }
