@@ -44,9 +44,9 @@ public class NestedMultiLineRule extends MultiLineRule {
     }
 
     @Override
-    public TPToken evaluate(TPCharacterScanner scanner) {
+    protected TPToken doEvaluate(TPCharacterScanner scanner, boolean resume) {
         fNestingLevel = 1;
-        return super.evaluate(scanner);
+        return super.doEvaluate(scanner, resume);
     }
 
     @Override
