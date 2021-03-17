@@ -20,6 +20,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,15 +30,19 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -145,7 +152,6 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         createColumnsGroup(panel);
         createContentsAfterColumns(panel);
         fillAttributes(entity);
-
         return panel;
     }
 
@@ -301,10 +307,55 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     UIUtils.packColumns(columnsTable);
                     updateColumnSelection();
                     onAttributesLoad();
+                    preselectAttributes();
                 });
             }
         });
         loadJob.schedule();
+    }
+
+    private void preselectAttributes() {
+        IStructuredSelection selection = getCurrentSelection();
+        if (selection == null) {
+            return;
+        }
+
+        for (Object obj: selection) { //fixme O(n^2)
+            if (!(obj instanceof DBNDatabaseItem)) {
+                continue;
+            }
+            DBSObject dbsObject = ((DBNDatabaseItem) obj).getObject();
+            TableItem[] tableColumns = columnsTable.getItems();
+            for (TableItem tableItem: tableColumns) {
+                Object data = tableItem.getData();
+                if (!(data instanceof AttributesSelectorPage.AttributeInfo)) {
+                    continue;
+                }
+                AttributesSelectorPage.AttributeInfo attributeInfo = (AttributesSelectorPage.AttributeInfo) data;
+                if (Objects.equals(dbsObject, attributeInfo.attribute)) {
+                    tableItem.setChecked(true);
+                    handleItemSelect(tableItem, true);
+                    break;
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private static IStructuredSelection getCurrentSelection() {
+        IWorkbenchPart part = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        if (part == null) { //fixme it's a copy from navigator utils
+            return null;
+        }
+        ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
+        if (selectionProvider == null) {
+            return null;
+        }
+        ISelection selection = selectionProvider.getSelection();
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+            return null;
+        }
+        return (IStructuredSelection) selection;
     }
 
     protected void onAttributesLoad() {
@@ -325,8 +376,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         return tableGroup;
     }
 
-    private void handleItemSelect(TableItem item, boolean notify)
-    {
+    void handleItemSelect(TableItem item, boolean notify) {
         final AttributeInfo col = (AttributeInfo) item.getData();
         if (item.getChecked() && col.position < 0) {
             // Checked
@@ -448,5 +498,4 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         }
         return false;
     }
-
 }
