@@ -53,8 +53,8 @@ import java.util.*;
 /**
  * PrefPageConnectionTypes
  */
-public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.connectionTypes"; //$NON-NLS-1$
 
     private Table typeTable;
@@ -64,20 +64,19 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     private ColorSelector colorPicker;
     private Button autocommitCheck;
     private Button confirmCheck;
-    private Button confirmDataChange;
+    private Button confirmDataChangeCheck;
+    private Button autoCloseTransactionsCheck;
     private ToolItem deleteButton;
     private DBPConnectionType selectedType;
 
-    private Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<>();
+    private final Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<>();
 
     @Override
-    public void init(IWorkbench workbench)
-    {
+    public void init(IWorkbench workbench) {
     }
 
     @Override
-    protected Control createContents(final Composite parent)
-    {
+    protected Control createContents(final Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
@@ -89,8 +88,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             typeTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     showSelectedType(getSelectedType());
                 }
             });
@@ -104,10 +102,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
             newButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     String name;
-                    for (int i = 1;; i++) {
+                    for (int i = 1; ; i++) {
                         name = "Type" + i;
                         boolean hasName = false;
                         for (DBPConnectionType type : changedInfo.keySet()) {
@@ -127,7 +124,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         "New type",
                         true,
                         false,
-                        true);
+                        true,
+                        false);
                     addTypeToTable(newType, newType);
                     typeTable.select(typeTable.getItemCount() - 1);
                     typeTable.showSelection();
@@ -141,8 +139,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     DBPConnectionType connectionType = getSelectedType();
                     if (!UIUtils.confirmAction(
                         getShell(),
-                        CoreMessages.pref_page_connection_types_label_delete_connection_type, NLS.bind(CoreMessages.pref_page_connection_types_label_delete_connection_type_description, 
-                        		connectionType.getName() , DBPConnectionType.DEFAULT_TYPE.getName()))) {
+                        CoreMessages.pref_page_connection_types_label_delete_connection_type, NLS.bind(CoreMessages.pref_page_connection_types_label_delete_connection_type_description,
+                            connectionType.getName(), DBPConnectionType.DEFAULT_TYPE.getName()))) {
                         return;
                     }
                     changedInfo.remove(connectionType);
@@ -223,26 +221,31 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, null, false, 2);
             autocommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     getSelectedType().setAutocommit(autocommitCheck.getSelection());
                 }
             });
-            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages. pref_page_connection_types_label_confirm_sql_execution, null, false, 2);
+            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_sql_execution, null, false, 2);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     getSelectedType().setConfirmExecute(confirmCheck.getSelection());
                 }
             });
 
-            confirmDataChange = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_data_change, CoreMessages.pref_page_connection_types_label_confirm_data_change_tip, false, 2);
-            confirmDataChange.addSelectionListener(new SelectionAdapter() {
+            autoCloseTransactionsCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.action_menu_transaction_auto_close_enabled, CoreMessages.action_menu_transaction_auto_close_enabled_tip, false, 2);
+            autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    getSelectedType().setConfirmDataChange(confirmDataChange.getSelection());
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setAutoCloseTransactions(autoCloseTransactionsCheck.getSelection());
+                }
+            });
+
+            confirmDataChangeCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_data_change, CoreMessages.pref_page_connection_types_label_confirm_data_change_tip, false, 2);
+            confirmDataChangeCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setConfirmDataChange(confirmDataChangeCheck.getSelection());
                 }
             });
 
@@ -265,13 +268,11 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
-    private DBPConnectionType getSelectedType()
-    {
+    private DBPConnectionType getSelectedType() {
         return (DBPConnectionType) typeTable.getItem(typeTable.getSelectionIndex()).getData();
     }
 
-    private void showSelectedType(DBPConnectionType connectionType)
-    {
+    private void showSelectedType(DBPConnectionType connectionType) {
         final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
@@ -285,13 +286,13 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         typeDescription.setText(connectionType.getDescription());
         autocommitCheck.setSelection(connectionType.isAutocommit());
         confirmCheck.setSelection(connectionType.isConfirmExecute());
-        confirmDataChange.setSelection(connectionType.isConfirmDataChange());
+        confirmDataChangeCheck.setSelection(connectionType.isConfirmDataChange());
+        autoCloseTransactionsCheck.setSelection(connectionType.isAutoCloseTransactions());
 
         deleteButton.setEnabled(!connectionType.isPredefined());
     }
 
-    private void updateTableInfo()
-    {
+    private void updateTableInfo() {
         DBPConnectionType connectionType = getSelectedType();
         for (TableItem item : typeTable.getItems()) {
             if (item.getData() == connectionType) {
@@ -306,8 +307,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
         typeTable.removeAll();
         //colorPicker.loadStandardColors();
         for (DBPConnectionType source : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
@@ -326,16 +326,14 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
         typeTable.addControlListener(new ControlAdapter() {
             @Override
-            public void controlResized(ControlEvent e)
-            {
+            public void controlResized(ControlEvent e) {
                 UIUtils.packColumns(typeTable, true);
             }
         });
         super.performDefaults();
     }
 
-    private void addTypeToTable(DBPConnectionType source, DBPConnectionType connectionType)
-    {
+    private void addTypeToTable(DBPConnectionType source, DBPConnectionType connectionType) {
         changedInfo.put(connectionType, source);
         TableItem item = new TableItem(typeTable, SWT.LEFT);
         item.setText(0, connectionType.getName());
@@ -352,8 +350,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
         typeId.setEnabled(false);
 
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
@@ -382,7 +379,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     changed.setId(SecurityUtils.generateUniqueId());
                 }
                 for (DBPConnectionType type : changedInfo.keySet()) {
-                    if (type != changed &&  type.getId().equals(changed.getId())) {
+                    if (type != changed && type.getId().equals(changed.getId())) {
                         changed.setId(SecurityUtils.generateUniqueId());
                         break;
                     }
@@ -424,14 +421,12 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    public IAdaptable getElement()
-    {
+    public IAdaptable getElement() {
         return null;
     }
 
     @Override
-    public void setElement(IAdaptable element)
-    {
+    public void setElement(IAdaptable element) {
         selectedType = element.getAdapter(DBPConnectionType.class);
     }
 

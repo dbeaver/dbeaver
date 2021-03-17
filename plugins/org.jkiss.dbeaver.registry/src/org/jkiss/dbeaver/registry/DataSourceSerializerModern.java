@@ -231,6 +231,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.field(jsonWriter, "auto-commit", ct.isAutocommit());
                             JSONUtils.field(jsonWriter, "confirm-execute", ct.isConfirmExecute());
                             JSONUtils.field(jsonWriter, "confirm-data-change", ct.isConfirmDataChange());
+                            JSONUtils.field(jsonWriter, "auto-close-transactions", ct.isAutoCloseTransactions());
                             serializeModifyPermissions(jsonWriter, ct);
                             jsonWriter.endObject();
                         }
@@ -377,9 +378,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
                 Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
                 Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
+                Boolean autoCloseTransactions = JSONUtils.getObjectProperty(ctConfig, "auto-close-transactions");
                 DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
                 if (ct == null) {
-                    ct = new DBPConnectionType(id, name, color, description, CommonUtils.toBoolean(autoCommit), CommonUtils.toBoolean(confirmExecute), CommonUtils.toBoolean(confirmDataChange));
+                    ct = new DBPConnectionType(
+                        id,
+                        name,
+                        color,
+                        description,
+                        CommonUtils.toBoolean(autoCommit),
+                        CommonUtils.toBoolean(confirmExecute),
+                        CommonUtils.toBoolean(confirmDataChange),
+                        CommonUtils.toBoolean(autoCloseTransactions));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);
