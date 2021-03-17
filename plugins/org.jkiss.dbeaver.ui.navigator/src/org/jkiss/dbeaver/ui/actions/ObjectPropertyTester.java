@@ -55,8 +55,8 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
-    public static final String PROP_SUPPORTS_CREATING_INDEX = "supportsIndexCreating";
-    public static final String PROP_SUPPORTS_CREATING_CONSTRAINT = "supportsConstraintCreating";
+    public static final String PROP_SUPPORTS_CREATING_INDEX = "supportsIndexCreate";
+    public static final String PROP_SUPPORTS_CREATING_CONSTRAINT = "supportsConstraintCreate";
 
     public ObjectPropertyTester() {
         super();
