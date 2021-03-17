@@ -40,6 +40,7 @@ class EndIdleTransactionsJob extends AbstractJob {
     private static final Log log = Log.getLog(EndIdleTransactionsJob.class);
 
     private static final Set<String> activeDataSources = new HashSet<>();
+    private static final Object CONFIRM_SYNC = new Object();
 
     private final DBPDataSource dataSource;
     private final Map<DBCExecutionContext, DBCTransactionManager> txnToEnd;
@@ -70,8 +71,10 @@ class EndIdleTransactionsJob extends AbstractJob {
         try {
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
             if (serviceConnections != null) {
-                if (!serviceConnections.confirmTransactionsClose(txnToEnd.keySet().toArray(new DBCExecutionContext[0]))) {
-                    return Status.CANCEL_STATUS;
+                synchronized (CONFIRM_SYNC) {
+                    if (!serviceConnections.confirmTransactionsClose(txnToEnd.keySet().toArray(new DBCExecutionContext[0]))) {
+                        return Status.CANCEL_STATUS;
+                    }
                 }
             }
             log.debug("End idle " + txnToEnd.size() + " transactions for " + dsId);
