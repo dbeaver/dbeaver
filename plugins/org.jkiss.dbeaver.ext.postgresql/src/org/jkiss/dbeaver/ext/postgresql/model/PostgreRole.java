@@ -304,8 +304,8 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
         StringBuilder ddl = new StringBuilder();
-        ddl.append("-- DROP ROLE ").append(getName()).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        ddl.append("CREATE ROLE ").append(getName()).append(" WITH ");
+        ddl.append("-- DROP ROLE ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        ddl.append("CREATE ROLE ").append(DBUtils.getQuotedIdentifier(this)).append(" WITH ");
         addOptionToDDL(ddl, isSuperUser(), "SUPERUSER");
         addOptionToDDL(ddl, isCreateDatabase(), "CREATEDB");
         addOptionToDDL(ddl, isCreateRole(), "CREATEROLE");

@@ -16,12 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISaveablePart;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -42,6 +50,8 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
@@ -50,25 +60,24 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class DataSourceHandler
-{
+public class DataSourceHandler {
     private static final Log log = Log.getLog(DataSourceHandler.class);
 
     public static final int END_TRANSACTION_WAIT_TIME = 3000;
 
     /**
      * Connects datasource
-     * @param monitor progress monitor or null. If nul then new job will be started
-     * @param dataSourceContainer    container to connect
-     * @param onFinish               finish handler
+     *
+     * @param monitor             progress monitor or null. If nul then new job will be started
+     * @param dataSourceContainer container to connect
+     * @param onFinish            finish handler
      */
     public static void connectToDataSource(
         @Nullable DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSourceContainer,
-        @Nullable final DBRProgressListener onFinish)
-    {
+        @Nullable final DBRProgressListener onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
-            final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
+            final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) dataSourceContainer;
             if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
                 // Already connecting/disconnecting - just return
                 return;
@@ -77,8 +86,7 @@ public class DataSourceHandler
             final ConnectJob connectJob = new ConnectJob(dataSourceDescriptor);
             final JobChangeAdapter jobChangeAdapter = new JobChangeAdapter() {
                 @Override
-                public void done(IJobChangeEvent event)
-                {
+                public void done(IJobChangeEvent event) {
                     IStatus result = connectJob.getConnectStatus();
                     if (result.isOK()) {
                         if (!dataSourceDescriptor.isSavePassword()) {
@@ -153,7 +161,7 @@ public class DataSourceHandler
         }
 
         if (dataSourceContainer instanceof DataSourceDescriptor && dataSourceContainer.isConnected()) {
-            final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
+            final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) dataSourceContainer;
             if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
                 // Already connecting/disconnecting - just return
                 return;
@@ -161,14 +169,13 @@ public class DataSourceHandler
             final DisconnectJob disconnectJob = new DisconnectJob(dataSourceDescriptor);
             disconnectJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
-                public void done(IJobChangeEvent event)
-                {
+                public void done(IJobChangeEvent event) {
                     IStatus result = disconnectJob.getConnectStatus();
                     if (onFinish != null) {
                         onFinish.run();
                     } else if (!result.isOK()) {
                         DBWorkbench.getPlatformUI().showError(
-                                disconnectJob.getName(),
+                            disconnectJob.getName(),
                             null,
                             result);
                     }
@@ -202,8 +209,7 @@ public class DataSourceHandler
         return true;
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts)
-    {
+    public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts) {
         if (contexts == null) {
             return true;
         }
@@ -272,6 +278,15 @@ public class DataSourceHandler
         }
     }
 
+    public static boolean confirmTransactionsClose(DBCExecutionContext[] contexts) {
+        if (contexts.length == 0) {
+            return false;
+        }
+        TransactionEndConfirmer closeConfirmer = new TransactionEndConfirmer(contexts[0].getDataSource());
+        UIUtils.syncExec(closeConfirmer);
+        return closeConfirmer.result;
+    }
+
     private static class EndTransactionTask implements DBRRunnableWithProgress {
         private final DBCSession session;
         private final boolean commit;
@@ -307,8 +322,7 @@ public class DataSourceHandler
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             result = ConfirmationDialog.showConfirmDialog(
                 DBeaverActivator.getCoreResourceBundle(),
                 null,
@@ -317,4 +331,76 @@ public class DataSourceHandler
                 name);
         }
     }
+
+    private static class TransactionEndConfirmer implements Runnable {
+        final DBPDataSource dataSource;
+        boolean result;
+
+        private TransactionEndConfirmer(DBPDataSource dataSource) {
+            this.dataSource = dataSource;
+        }
+
+        @Override
+        public void run() {
+            Display.getCurrent().beep();
+            TransactionEndConfirmDialog dialog = new TransactionEndConfirmDialog(dataSource);
+            result = dialog.open() == IDialogConstants.OK_ID;
+        }
+    }
+
+    static class TransactionEndConfirmDialog extends MessageDialog {
+
+        private int countdown = 10;
+
+        public TransactionEndConfirmDialog(DBPDataSource dataSource) {
+            super(UIUtils.getActiveShell(),
+                "End transaction",
+                DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK),
+                "Transactions in database '" + dataSource.getName() + "' will be ended because of the long idle period." +
+                    "\nPress '" + IDialogConstants.CANCEL_LABEL + "' to prevent this.",
+                MessageDialog.WARNING,
+                null,
+                0);
+        }
+
+        @Override
+        public int open() {
+            UIJob countdownJob = new UIJob("Confirmation countdown") {
+                {
+                    setUser(false);
+                    setSystem(true);
+                }
+                @Override
+                public IStatus runInUIThread(IProgressMonitor monitor) {
+                    Shell shell = getShell();
+                    if (shell == null || shell.isDisposed()) {
+                        return Status.OK_STATUS;
+                    }
+                    Button okButton = getButton(IDialogConstants.OK_ID);
+                    if (okButton != null) {
+                        okButton.setText(IDialogConstants.OK_LABEL + " (" + countdown + ")");
+                    }
+
+                    countdown--;
+                    if (countdown <= 0) {
+                        UIUtils.asyncExec(() -> close());
+                    } else {
+                        schedule(1000);
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            countdownJob.schedule(100);
+
+            return super.open();
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            Button okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
+            Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+            setButtons(okButton, cancelButton);
+        }
+    }
+
 }

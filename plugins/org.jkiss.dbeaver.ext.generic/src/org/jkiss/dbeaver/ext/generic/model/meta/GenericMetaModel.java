@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
@@ -550,9 +551,6 @@ public class GenericMetaModel {
             return null;
         }
 
-        if (CommonUtils.isEmpty(tableName)) {
-            return null;
-        }
         if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
             // Bad table type. Just skip it
             return null;
@@ -673,6 +671,26 @@ public class GenericMetaModel {
                         owner.getDataSource().getAllObjectsPattern() :
                         forParent.getName())
                 .getSourceStatement();
+    }
+
+    public boolean isFKConstraintWordDuplicated() {
+        return false;
+    }
+
+    public String generateOnDeleteFK(DBSForeignKeyModifyRule deleteRule) {
+        String deleteClause = deleteRule.getClause();
+        if (!CommonUtils.isEmpty(deleteClause)) {
+            return "ON DELETE " + deleteClause;
+        }
+        return null;
+    }
+
+    public String generateOnUpdateFK(DBSForeignKeyModifyRule updateRule) {
+        String updateClause = updateRule.getClause();
+        if (!CommonUtils.isEmpty(updateClause)) {
+            return "ON UPDATE " + updateClause;
+        }
+        return null;
     }
 
     //////////////////////////////////////////////////////

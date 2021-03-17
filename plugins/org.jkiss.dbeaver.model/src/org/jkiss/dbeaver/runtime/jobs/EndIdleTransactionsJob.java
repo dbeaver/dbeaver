@@ -20,11 +20,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -37,9 +40,16 @@ class EndIdleTransactionsJob extends AbstractJob {
     private static final Log log = Log.getLog(EndIdleTransactionsJob.class);
 
     private static final Set<String> activeDataSources = new HashSet<>();
+    private static final Object CONFIRM_SYNC = new Object();
 
     private final DBPDataSource dataSource;
     private final Map<DBCExecutionContext, DBCTransactionManager> txnToEnd;
+
+    public static boolean isInProcess(DBPDataSourceContainer ds) {
+        synchronized (activeDataSources) {
+            return activeDataSources.contains(ds.getId());
+        }
+    }
 
     EndIdleTransactionsJob(DBPDataSource dataSource, Map<DBCExecutionContext, DBCTransactionManager> txnToEnd) {
         super("Connection ping (" + dataSource.getContainer().getName() + ")");
@@ -59,6 +69,14 @@ class EndIdleTransactionsJob extends AbstractJob {
             activeDataSources.add(dsId);
         }
         try {
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                synchronized (CONFIRM_SYNC) {
+                    if (!serviceConnections.confirmTransactionsClose(txnToEnd.keySet().toArray(new DBCExecutionContext[0]))) {
+                        return Status.CANCEL_STATUS;
+                    }
+                }
+            }
             log.debug("End idle " + txnToEnd.size() + " transactions for " + dsId);
             for (Map.Entry<DBCExecutionContext, DBCTransactionManager> tee : txnToEnd.entrySet()) {
                 try (DBCSession session = tee.getKey().openSession(monitor, DBCExecutionPurpose.UTIL, "End idle transaction")) {
@@ -82,5 +100,26 @@ class EndIdleTransactionsJob extends AbstractJob {
         }
         return Status.OK_STATUS;
     }
+
+/*
+    class EndTransactionConfirmationJob extends UIJob {
+
+        public EndTransactionConfirmationJob() {
+            super("Show end transaction confirmation for " + dataSource.getContainer().getName());
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+
+            return Status.OK_STATUS;
+        }
+    }
+
+    class EndTransactionConfirmationDialog extends ConfirmationDialog {
+
+    }
+*/
 
 }

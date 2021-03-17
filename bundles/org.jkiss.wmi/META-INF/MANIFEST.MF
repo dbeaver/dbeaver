@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.wmi
-Bundle-Version: 2.0.145.qualifier
-Bundle-Release-Date: 20210301
+Bundle-Version: 2.0.146.qualifier
+Bundle-Release-Date: 20210322
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ActivationPolicy: lazy
