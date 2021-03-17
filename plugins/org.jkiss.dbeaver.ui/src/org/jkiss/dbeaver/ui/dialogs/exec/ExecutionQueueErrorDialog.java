@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 /**
  * ExecutionQueueErrorDialog
@@ -63,7 +64,7 @@ class ExecutionQueueErrorDialog extends StandardErrorDialog {
             createButton(
                 parent,
                 IDialogConstants.IGNORE_ID,
-                IDialogConstants.IGNORE_LABEL,
+                UIMessages.button_skip_all,
                 false);
         }
         createDetailsButton(parent);
