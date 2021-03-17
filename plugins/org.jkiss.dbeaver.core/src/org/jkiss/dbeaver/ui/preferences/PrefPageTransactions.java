@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -81,17 +79,19 @@ public class PrefPageTransactions extends TargetPrefPage
             autoCloseTransactionsTtlText = new Text(txnNameGroup, SWT.BORDER);
             autoCloseTransactionsTtlText.setToolTipText(CoreMessages.action_menu_transaction_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-            autoCloseTransactionsTtlText.setEnabled(false);
+            //autoCloseTransactionsTtlText.setEnabled(false);
             GridData gd = new GridData();
             gd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(gd);
 
+/*
             autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
                 }
             });
+*/
         }
 
         {
@@ -109,7 +109,7 @@ public class PrefPageTransactions extends TargetPrefPage
             smartCommitRecoverCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER));
             autoCloseTransactionsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED));
             autoCloseTransactionsTtlText.setText(store.getString(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL));
-            autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
+            //autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
 
             showTransactionNotificationsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
         } catch (Exception e) {

@@ -102,7 +102,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
 
         // End long transactions
-        if (dataSourceDescriptor.getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+        if (dataSourceDescriptor.isAutoCloseTransactions()) {
             endIdleTransactions(dataSourceDescriptor);
         }
 

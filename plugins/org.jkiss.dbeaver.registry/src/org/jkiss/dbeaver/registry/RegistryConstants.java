@@ -106,6 +106,7 @@ public class RegistryConstants {
     public static final String ATTR_DEFAULT_SCHEMA = "defaultSchema"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_DATA_CHANGE = "confirmDataChange"; //$NON-NLS-1$
+    public static final String ATTR_AUTO_CLOSE_TRANSACTIONS = "autoCloseTransactions"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
