@@ -23,10 +23,6 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -37,10 +33,10 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -219,42 +215,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     private void readAttributes(DBRProgressMonitor monitor) throws DBException {
-        if (source instanceof DBSEntity && !(source instanceof DBSDocumentContainer)) {
-            for (DBSEntityAttribute attr : CommonUtils.safeCollection(((DBSEntity) source).getAttributes(monitor))) {
-                if (DBUtils.isHiddenObject(attr)) {
-                    continue;
-                }
-                addAttributeMapping(monitor, attr);
-            }
-        } else {
-            // Seems to be a dynamic query. Execute it to get metadata
-            DBPDataSource dataSource = source.getDataSource();
-            assert (dataSource != null);
-            DBCExecutionContext context;
-            if (source instanceof DBPContextProvider) {
-                context = ((DBPContextProvider) source).getExecutionContext();
-            } else {
-                context = DBUtils.getDefaultContext(source, false);
-            }
-            if (context == null) {
-                throw new DBCException("No execution context");
-            }
-            DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), monitor1 -> {
-                try (DBCSession session = context.openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
-                    MetadataReceiver receiver = new MetadataReceiver();
-                    try {
-                        source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
-                        for (DBDAttributeBinding attr : receiver.attributes) {
-                            if (DBUtils.isHiddenObject(attr)) {
-                                continue;
-                            }
-                            addAttributeMapping(monitor1, attr);
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
+        for (DBSAttributeBase attr : DTUtils.getAttributes(monitor, source, this)) {
+            addAttributeMapping(monitor, attr);
         }
     }
 
@@ -352,27 +314,5 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
         }
         return targetName;
-    }
-
-    private class MetadataReceiver implements DBDDataReceiver {
-
-        private DBDAttributeBinding[] attributes;
-
-        @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-            attributes = DBUtils.makeLeafAttributeBindings(session, source, resultSet);
-        }
-
-        @Override
-        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
-        }
-
-        @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
-        }
-
-        @Override
-        public void close() {
-        }
     }
 }

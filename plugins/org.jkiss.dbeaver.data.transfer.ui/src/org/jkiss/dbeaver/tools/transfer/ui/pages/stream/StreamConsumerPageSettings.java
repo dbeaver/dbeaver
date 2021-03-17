@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -35,9 +33,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -55,7 +50,6 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
@@ -317,8 +311,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
             viewer.setContentProvider(new TreeContentProvider() {
                 @Override
                 public Object[] getChildren(Object element) {
-                    // We have preloaded the attributes before, so it is 'safe' to use void monitor here
-                    return ((StreamMappingContainer) element).getAttributes(new VoidProgressMonitor()).toArray();
+                    return ((StreamMappingContainer) element).getAttributes(getWizard().getRunnableContext()).toArray();
                 }
 
                 @Override
@@ -448,50 +441,36 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         private void loadMappings() {
-            new AbstractJob("Load producers") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    mappings.clear();
+            mappings.clear();
 
-                    try {
-                        final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
-                        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
+            final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
 
-                        monitor.beginTask("Load producers", pipes.size());
+            for (DataTransferPipe pipe : pipes) {
+                final DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
+                StreamMappingContainer mapping = settings.getDataMapping(source);
 
-                        for (DataTransferPipe pipe : pipes) {
-                            final DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
-                            StreamMappingContainer mapping = settings.getDataMapping(source);
+                if (mapping == null) {
+                    mapping = new StreamMappingContainer(source);
 
-                            if (mapping == null) {
-                                mapping = new StreamMappingContainer(source);
-
-                                for (StreamMappingAttribute attribute : mapping.getAttributes(monitor)) {
-                                    attribute.setMappingType(StreamMappingType.keep);
-                                }
-                            } else {
-                                // Create a copy to avoid direct modifications
-                                mapping = new StreamMappingContainer(mapping);
-                            }
-
-                            mappings.add(mapping);
-                            monitor.worked(1);
-                        }
-                    } finally {
-                        monitor.done();
+                    for (StreamMappingAttribute attribute : mapping.getAttributes(getWizard().getRunnableContext())) {
+                        attribute.setMappingType(StreamMappingType.keep);
                     }
-
-                    UIUtils.asyncExec(() -> {
-                        viewer.setInput(mappings);
-                        viewer.expandAll(true);
-                        UIUtils.packColumns(viewer.getTree(), true, new float[]{0.85f, 0.15f});
-
-                        updateCompletion();
-                    });
-
-                    return Status.OK_STATUS;
+                } else {
+                    // Create a copy to avoid direct modifications
+                    mapping = new StreamMappingContainer(mapping);
                 }
-            }.schedule();
+
+                mappings.add(mapping);
+            }
+
+            UIUtils.asyncExec(() -> {
+                viewer.setInput(mappings);
+                viewer.expandAll(true);
+                UIUtils.packColumns(viewer.getTree(), true, new float[]{0.85f, 0.15f});
+
+                updateCompletion();
+            });
         }
     }
 }

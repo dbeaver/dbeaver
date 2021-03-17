@@ -18,27 +18,20 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,52 +252,23 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             this.formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(formatterProfile);
         }
 
-        for (Map.Entry<String, Map<String, Object>> mapping : JSONUtils.getNestedObjects(settings, "mappings")) {
-            try {
-                runnableContext.run(true, true, monitor -> {
-                    try {
-                        monitor.beginTask("Load object '" + mapping.getKey() + "'", 1);
-
-                        final String projectName = CommonUtils.toString(mapping.getValue().get("project"));
-                        final DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-
-                        if (project == null) {
-                            log.error("Project '" + projectName + "' not found");
-                            return;
+        final List<DataTransferPipe> pipes = dataTransferSettings.getDataPipes();
+        final Map<String, Object> mappings = JSONUtils.getObjectOrNull(settings, "mappings");
+        if (mappings != null && !mappings.isEmpty()) {
+            for (DataTransferPipe pipe : pipes) {
+                final IDataTransferProducer<?> producer = pipe.getProducer();
+                if (producer != null) {
+                    final DBSObject object = producer.getDatabaseObject();
+                    if (object instanceof DBSDataContainer) {
+                        final DBSDataContainer container = (DBSDataContainer) object;
+                        final Map<String, Object> containerSettings = JSONUtils.getObjectOrNull(mappings, DBUtils.getObjectFullId(container));
+                        if (containerSettings != null) {
+                            final StreamMappingContainer mappingContainer = new StreamMappingContainer(container);
+                            mappingContainer.loadSettings(runnableContext, containerSettings);
+                            addDataMapping(mappingContainer);
                         }
-
-                        final DBSObject object = DBUtils.findObjectById(monitor, project, mapping.getKey());
-
-                        if (!(object instanceof DBSDataContainer)) {
-                            log.error("Can't find object '" + mapping.getKey() + "' in project '" + project.getName() + "'");
-                            return;
-                        }
-
-                        final StreamMappingContainer container = new StreamMappingContainer((DBSDataContainer) object);
-
-                        for (StreamMappingAttribute attribute : container.getAttributes(monitor)) {
-                            for (Object attributeMapping : JSONUtils.getObjectList(mapping.getValue(), "attributes")) {
-                                final String name = CommonUtils.toString(((Map<?, ?>) attributeMapping).get("name"));
-                                final String type = CommonUtils.toString(((Map<?, ?>) attributeMapping).get("type"));
-
-                                if (attribute.getName().equals(name)) {
-                                    attribute.setMappingType(CommonUtils.valueOf(StreamMappingType.class, type, StreamMappingType.unspecified));
-                                    break;
-                                }
-                            }
-                        }
-
-                        addDataMapping(container);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
                     }
-                });
-            } catch (InterruptedException e) {
-                log.debug("Canceled by user", e);
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Data Transfer", "Error loading configuration", e.getTargetException());
+                }
             }
         }
     }
@@ -338,23 +302,11 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
         if (!dataMappings.isEmpty()) {
             final Map<String, Object> mappings = new LinkedHashMap<>();
-
             for (StreamMappingContainer container : dataMappings.values()) {
-                final Map<String, Object> containerMappings = new LinkedHashMap<>();
-                final List<Map<String, Object>> attributes = new ArrayList<>();
-
-                for (StreamMappingAttribute containerAttribute : container.getAttributes(new VoidProgressMonitor())) {
-                    final Map<String, Object> attribute = new LinkedHashMap<>();
-                    attribute.put("name", containerAttribute.getName());
-                    attribute.put("type", containerAttribute.getMappingType().name());
-                    attributes.add(attribute);
-                }
-
-                containerMappings.put("project", container.getSource().getDataSource().getContainer().getProject().getName());
-                containerMappings.put("attributes", attributes);
-                mappings.put(DBUtils.getObjectFullId(container.getSource()), containerMappings);
+                final Map<String, Object> containerSettings = new LinkedHashMap<>();
+                container.saveSettings(containerSettings);
+                mappings.put(DBUtils.getObjectFullId(container.getSource()), containerSettings);
             }
-
             settings.put("mappings", mappings);
         }
     }
