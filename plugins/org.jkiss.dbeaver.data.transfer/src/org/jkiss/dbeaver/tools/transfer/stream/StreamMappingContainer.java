@@ -19,19 +19,24 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider {
+    private static final Log log = Log.getLog(StreamMappingContainer.class);
+
     private final DBSDataContainer source;
     private final List<StreamMappingAttribute> attributes;
 
@@ -93,33 +98,48 @@ public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider 
     }
 
     @NotNull
-    public List<StreamMappingAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
+    public List<StreamMappingAttribute> getAttributes(@NotNull DBRRunnableContext runnableContext) {
         if (attributes.isEmpty()) {
             try {
-                monitor.beginTask("Load attributes from '" + getName() + "'", 1);
-                readAttributes(monitor);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Data Transfer", "Error reading attributes from " + getName());
-            } finally {
-                monitor.done();
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        monitor.beginTask("Load attributes from '" + getName() + "'", 1);
+                        for (DBSAttributeBase attribute : DTUtils.getAttributes(monitor, source, this)) {
+                            attributes.add(new StreamMappingAttribute(this, attribute, StreamMappingType.unspecified));
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Data Transfer", "Error reading attributes from " + getName(), e.getTargetException());
+            } catch (InterruptedException e) {
+                log.debug("Canceled by user", e);
             }
         }
         return attributes;
     }
 
-    private void readAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (source instanceof DBSEntity) {
-            final DBSEntity entity = (DBSEntity) source;
-
-            for (DBSEntityAttribute attribute : CommonUtils.safeList(entity.getAttributes(monitor))) {
-                if (!DBUtils.isPseudoAttribute(attribute) && !DBUtils.isHiddenObject(attribute)) {
-                    attributes.add(new StreamMappingAttribute(this, attribute, StreamMappingType.unspecified));
-                }
+    public void loadSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> containerSettings) {
+        final Map<String, Object> attributes = JSONUtils.getObject(containerSettings, "attributes");
+        for (StreamMappingAttribute attribute : getAttributes(runnableContext)) {
+            final Map<String, Object> attributeSettings = JSONUtils.getObjectOrNull(attributes, attribute.getName());
+            if (attributeSettings != null) {
+                attribute.loadSettings(runnableContext, attributeSettings);
             }
-        } else {
-            // TODO: What about dynamic queries?
-            throw new DBException("Unsupported source object: " + getName());
         }
+    }
+
+    public void saveSettings(@NotNull Map<String, Object> containerSettings) {
+        final Map<String, Object> attributesSettings = new LinkedHashMap<>();
+        for (StreamMappingAttribute attribute : attributes) {
+            final Map<String, Object> attributeSettings = new LinkedHashMap<>();
+            attribute.saveSettings(attributeSettings);
+            attributesSettings.put(attribute.getName(), attributeSettings);
+        }
+        containerSettings.put("attributes", attributesSettings);
     }
 }
 

@@ -18,7 +18,12 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 public class StreamMappingAttribute implements DBPNamedObject, DBPImageProvider {
     private final StreamMappingContainer container;
@@ -66,5 +71,16 @@ public class StreamMappingAttribute implements DBPNamedObject, DBPImageProvider 
 
     public void setMappingType(@NotNull StreamMappingType mappingType) {
         this.mappingType = mappingType;
+    }
+
+    public void loadSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> attributeSettings) {
+        final String type = JSONUtils.getString(attributeSettings, "mappingType");
+        if (CommonUtils.isNotEmpty(type)) {
+            this.mappingType = CommonUtils.valueOf(StreamMappingType.class, type, StreamMappingType.unspecified);
+        }
+    }
+
+    public void saveSettings(@NotNull Map<String, Object> attributeSettings) {
+        attributeSettings.put("mappingType", mappingType.name());
     }
 }
