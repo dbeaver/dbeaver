@@ -680,7 +680,7 @@ public class GenericMetaModel {
     public String generateOnDeleteFK(DBSForeignKeyModifyRule deleteRule) {
         String deleteClause = deleteRule.getClause();
         if (!CommonUtils.isEmpty(deleteClause)) {
-            return " ON DELETE " + deleteClause;
+            return "ON DELETE " + deleteClause;
         }
         return null;
     }
@@ -688,7 +688,7 @@ public class GenericMetaModel {
     public String generateOnUpdateFK(DBSForeignKeyModifyRule updateRule) {
         String updateClause = updateRule.getClause();
         if (!CommonUtils.isEmpty(updateClause)) {
-            return " ON UPDATE " + updateClause;
+            return "ON UPDATE " + updateClause;
         }
         return null;
     }

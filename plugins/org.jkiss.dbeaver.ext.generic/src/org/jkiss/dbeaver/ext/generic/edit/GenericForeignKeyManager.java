@@ -90,12 +90,12 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     protected void appendUpdateDeleteRule(GenericTableForeignKey foreignKey, StringBuilder decl) {
         String onDeleteRule = foreignKey.getDataSource().getMetaModel().generateOnDeleteFK(foreignKey.getDeleteRule());
         if (!CommonUtils.isEmpty(onDeleteRule)) {
-            decl.append(onDeleteRule);
+            decl.append(" ").append(onDeleteRule);
         }
 
         String onUpdateFK = foreignKey.getDataSource().getMetaModel().generateOnUpdateFK(foreignKey.getUpdateRule());
         if (!CommonUtils.isEmpty(onUpdateFK)) {
-            decl.append(onUpdateFK);
+            decl.append(" ").append(onUpdateFK);
         }
     }
 

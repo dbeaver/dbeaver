@@ -118,7 +118,7 @@ public class InformixMetaModel extends GenericMetaModel
     @Override
     public String generateOnDeleteFK(DBSForeignKeyModifyRule deleteRule) {
         if (deleteRule != null && deleteRule.getId().equals("CASCADE")) {
-            return " ON DELETE CASCADE";
+            return "ON DELETE CASCADE";
         }
         return null;
     }
