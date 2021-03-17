@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tasks.ui.view;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -27,12 +29,13 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -41,11 +44,11 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -307,9 +310,7 @@ public class DatabaseTasksTree {
         refreshTasks();
         regroupTasks(ExpansionOptions.RETAIN);
         //taskViewer.refresh(true);
-        if (refreshScheduledTasks()) {
-            taskViewer.refresh(true);
-        }
+        refreshScheduledTasks();
     }
 
     void loadTasks() {
@@ -420,20 +421,23 @@ public class DatabaseTasksTree {
     private boolean refreshScheduledTasks() {
         DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
         if (scheduler != null) {
-            try {
-                UIUtils.runInProgressService(monitor -> {
+            new AbstractJob("Refresh scheduled tasks") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+
                     try {
                         scheduler.refreshScheduledTasks(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+                    } catch (Exception e) {
+                        log.debug(e);
+                        return GeneralUtils.makeExceptionStatus("Error reading scheduled tasks", e);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Scheduled tasks", "Error reading scheduled tasks", e);
-                return false;
-            } catch (InterruptedException e) {
-                // ignore
-            }
+
+                    UIUtils.asyncExec(() -> {
+                        taskViewer.refresh(true);
+                    });
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
             return true;
         }
         return false;
