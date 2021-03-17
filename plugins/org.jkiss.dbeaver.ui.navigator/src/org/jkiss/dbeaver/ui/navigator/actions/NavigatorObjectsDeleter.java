@@ -56,7 +56,7 @@ class NavigatorObjectsDeleter {
     /**
      * A list containing objects to delete.
      */
-    private final List<Object> selection;
+    private final List<?> selection;
 
     /**
      * {@code true} if 'Cascade delete' button should be shown
@@ -80,7 +80,7 @@ class NavigatorObjectsDeleter {
     private boolean deleteCascade = false;
     private boolean deleteContents = false;
 
-    private NavigatorObjectsDeleter(final List<Object> selection, final IWorkbenchWindow window,
+    private NavigatorObjectsDeleter(final List<?> selection, final IWorkbenchWindow window,
                                     final boolean hasNodesFromDifferentDataSources, final boolean showCascade,
                                     final boolean showViewScript, boolean showDeleteContents) {
         this.selection = selection;
@@ -91,7 +91,7 @@ class NavigatorObjectsDeleter {
         this.showDeleteContents = showDeleteContents;
     }
 
-    static NavigatorObjectsDeleter of(final List<Object> selection, final IWorkbenchWindow window) {
+    static NavigatorObjectsDeleter of(final List<?> selection, final IWorkbenchWindow window) {
         DBPDataSource dataSource = null;
         boolean hasNodesFromDifferentDataSources = false;
         boolean showCascade = false;

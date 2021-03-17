@@ -74,12 +74,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     public static boolean tryDeleteObjects(IWorkbenchWindow window, IStructuredSelection selection) {
         @SuppressWarnings("unchecked")
-        final List<Object> selectedObjects = selection.toList();
+        final List<DBNNode> selectedObjects = selection.toList();
         final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
         return makeDeletionAttempt(window, selectedObjects, deleter);
     }
 
-    private static boolean makeDeletionAttempt(final IWorkbenchWindow window, final List<Object> selectedObjects, final NavigatorObjectsDeleter deleter) {
+    private static boolean makeDeletionAttempt(final IWorkbenchWindow window, final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
         if (deleter.hasNodesFromDifferentDataSources()) {
             // attempt to delete database nodes from different databases
             DBWorkbench.getPlatformUI().
@@ -108,7 +108,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
     }
 
-    private static boolean deleteObjects(final IWorkbenchWindow window, NavigatorObjectsDeleter deleter, final List<Object> selectedObjects) {
+    private static boolean deleteObjects(final IWorkbenchWindow window, NavigatorObjectsDeleter deleter, final List<?> selectedObjects) {
         if (confirmDependenciesDelete(window, selectedObjects)) {
             deleter.delete();
             return true;
@@ -116,8 +116,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         return false;
     }
 
-    private static boolean confirmDependenciesDelete(final IWorkbenchWindow window, final List<Object> selectedObjects) {
-        List<Object> dependentObjectsListNodes = new ArrayList<>();
+    private static boolean confirmDependenciesDelete(final IWorkbenchWindow window, final List<?> selectedObjects) {
+        List<DBNNode> dependentObjectsListNodes = new ArrayList<>();
         try {
             UIUtils.runInProgressService(monitor -> {
                 for (Object obj : selectedObjects) {
@@ -197,12 +197,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     private static class ConfirmationDialog extends MessageDialog {
-        private final List<Object> selectedObjects;
+        private final List<?> selectedObjects;
 
         private final NavigatorObjectsDeleter deleter;
 
         private ConfirmationDialog(final Shell shell, final String title, final String message,
-                                   final List<Object> selectedObjects, final NavigatorObjectsDeleter deleter) {
+                                   final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
             super(
                     shell,
                     title,
@@ -216,7 +216,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             this.deleter = deleter;
         }
 
-        static ConfirmationDialog of(final Shell shell, final List<Object> selectedObjects,
+        static ConfirmationDialog of(final Shell shell, final List<?> selectedObjects,
                                      final NavigatorObjectsDeleter deleter) {
             if (selectedObjects.size() > 1) {
                 return new ConfirmationDialog(
