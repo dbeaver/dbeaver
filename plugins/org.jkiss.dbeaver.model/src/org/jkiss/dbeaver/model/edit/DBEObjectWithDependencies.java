@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
@@ -27,6 +27,6 @@ import java.util.List;
  */
 public interface DBEObjectWithDependencies {
 
-    List<Object> getDependentObjectsList(DBRProgressMonitor monitor, DBSEntityAttribute object) throws DBException;
+    List<? extends DBSObject> getDependentObjectsList(DBRProgressMonitor monitor, DBSObject object) throws DBException;
 
 }

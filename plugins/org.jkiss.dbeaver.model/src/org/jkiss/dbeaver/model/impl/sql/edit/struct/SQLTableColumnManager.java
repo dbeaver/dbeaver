@@ -267,26 +267,29 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    public List<Object> getDependentObjectsList(DBRProgressMonitor monitor, DBSEntityAttribute object) throws DBException {
-        DBSEntity parentObject = object.getParentObject();
-        Set<Object> dependentObjectsList = new HashSet<>();
+    public List<? extends DBSObject> getDependentObjectsList(DBRProgressMonitor monitor, DBSObject object) throws DBException {
+        DBSObject dbsObject = object.getParentObject();
+        Set<DBSObject> dependentObjectsList = new HashSet<>();
+        if (dbsObject instanceof DBSEntity && object instanceof DBSEntityAttribute) {
+            DBSEntity parentObject = (DBSEntity) dbsObject;
 
-        Collection<? extends DBSEntityConstraint> constraints = parentObject.getConstraints(monitor);
-        if (!CommonUtils.isEmpty(constraints)) {
-            for (DBSEntityConstraint constraint : constraints) {
-                addDependentConstraints(monitor, object, dependentObjectsList, constraint);
+            Collection<? extends DBSEntityConstraint> constraints = parentObject.getConstraints(monitor);
+            if (!CommonUtils.isEmpty(constraints)) {
+                for (DBSEntityConstraint constraint : constraints) {
+                    addDependentConstraints(monitor, (DBSEntityAttribute) object, dependentObjectsList, constraint);
+                }
+            }
+
+            Collection<? extends DBSEntityAssociation> associations = parentObject.getAssociations(monitor);
+            if (!CommonUtils.isEmpty(associations)) {
+                for (DBSEntityAssociation association : associations) {
+                    addDependentConstraints(monitor, (DBSEntityAttribute) object, dependentObjectsList, association);
+                }
             }
         }
 
-        Collection<? extends DBSEntityAssociation> associations = parentObject.getAssociations(monitor);
-        if (!CommonUtils.isEmpty(associations)) {
-            for (DBSEntityAssociation association : associations) {
-                addDependentConstraints(monitor, object, dependentObjectsList, association);
-            }
-        }
-
-        if (parentObject instanceof DBSTable) {
-            Collection<? extends DBSTableIndex> indexes = ((DBSTable) parentObject).getIndexes(monitor);
+        if (dbsObject instanceof DBSTable) {
+            Collection<? extends DBSTableIndex> indexes = ((DBSTable) dbsObject).getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     List<? extends DBSTableIndexColumn> attributeReferences = index.getAttributeReferences(monitor);
@@ -306,7 +309,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         return new ArrayList<>(dependentObjectsList);
     }
 
-    private void addDependentConstraints(DBRProgressMonitor monitor, DBSEntityAttribute object, Set<Object> dependentObjectsList, DBSObject constraint) throws DBException {
+    private void addDependentConstraints(DBRProgressMonitor monitor, DBSEntityAttribute object, Set<DBSObject> dependentObjectsList, DBSObject constraint) throws DBException {
         if (constraint instanceof DBSEntityReferrer) {
             List<? extends DBSEntityAttributeRef> attributeReferences = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
             if (!CommonUtils.isEmpty(attributeReferences)) {
