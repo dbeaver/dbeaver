@@ -116,7 +116,7 @@
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter, supportsIndexCreating, supportsConstraintCreating"
+            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate"
             type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
 
         <propertyTester
@@ -331,7 +331,9 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.supportsIndexCreating" />
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
+                            <test property="org.jkiss.dbeaver.core.object.supportsIndexCreate" />
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -341,7 +343,9 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.supportsConstraintCreating" />
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
+                            <test property="org.jkiss.dbeaver.core.object.supportsConstraintCreate" />
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>
