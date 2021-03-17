@@ -34,13 +34,17 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectWithDependencies;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -52,6 +56,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
@@ -87,8 +92,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         final ConfirmationDialog dialog = ConfirmationDialog.of(
                 window.getShell(),
                 selectedObjects,
-                deleter,
-                null);
+                deleter);
         final int result = dialog.open();
         if (result == IDialogConstants.YES_ID) {
             return deleteObjects(window, deleter, selectedObjects);
@@ -125,6 +129,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                             if (objectManager instanceof DBEObjectWithDependencies) {
                                 try {
                                     List<? extends DBSObject> dependentObjectsList = ((DBEObjectWithDependencies) objectManager).getDependentObjectsList(monitor, attribute);
+                                    changeDependentObjectsList(monitor, dependentObjectsList);
                                     if (!CommonUtils.isEmpty(dependentObjectsList)) {
                                         for (Object object : dependentObjectsList) {
                                             if (object instanceof DBSObject) {
@@ -148,11 +153,19 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
         if (!CommonUtils.isEmpty(dependentObjectsListNodes)) {
             NavigatorObjectsDeleter dependentObjectsDeleter = NavigatorObjectsDeleter.of(dependentObjectsListNodes, window);
-            final ConfirmationDialog dialog = ConfirmationDialog.of(
+            String confirmMessage;
+            if (dependentObjectsListNodes.size() == 1) {
+                DBNDatabaseNode node = (DBNDatabaseNode) dependentObjectsListNodes.get(0);
+                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object, node.getNodeType(), node.getNodeName());
+            } else {
+                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_objects, dependentObjectsListNodes.size());
+            }
+            final ConfirmationDialog dialog = new ConfirmationDialog(
                     window.getShell(),
+                    UINavigatorMessages.confirm_deleting_dependent_objects_title,
+                    confirmMessage,
                     dependentObjectsListNodes,
-                    dependentObjectsDeleter,
-                    UINavigatorMessages.confirm_deleting_dependent_objects);
+                    dependentObjectsDeleter);
             final int result = dialog.open();
             if (result == IDialogConstants.YES_ID) {
                 dependentObjectsDeleter.delete();
@@ -162,6 +175,22 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             }
         } else {
             return true;
+        }
+    }
+
+    private static void changeDependentObjectsList(@NotNull DBRProgressMonitor monitor, List<? extends DBSObject> dependentObjectsList) throws DBException {
+        if (!CommonUtils.isEmpty(dependentObjectsList)) {
+            List<? extends DBSObject> indexList = dependentObjectsList.stream().filter(o -> o instanceof DBSTableIndex).collect(Collectors.toList());
+            List<? extends DBSObject> constrList = dependentObjectsList.stream().filter(o -> o instanceof DBSTableConstraint).collect(Collectors.toList());
+            for (DBSObject constraint : constrList) {
+                for (DBSObject index : indexList) {
+                    if (constraint instanceof DBSEntityReferrer && index instanceof DBSEntityReferrer) {
+                        if (DBUtils.referrerMatches(monitor, (DBSEntityReferrer) constraint, DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) index))) {
+                            dependentObjectsList.remove(index);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -186,28 +215,19 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
 
         static ConfirmationDialog of(final Shell shell, final List<Object> selectedObjects,
-                                     final NavigatorObjectsDeleter deleter, final String messageString) {
+                                     final NavigatorObjectsDeleter deleter) {
             if (selectedObjects.size() > 1) {
-                StringBuilder message = new StringBuilder(128);
-                if (!CommonUtils.isEmpty(messageString)) {
-                    message.append(messageString);
-                }
-                message.append(NLS.bind(UINavigatorMessages.confirm_deleting_multiple_objects_message, selectedObjects.size()));
                 return new ConfirmationDialog(
                         shell,
                         UINavigatorMessages.confirm_deleting_multiple_objects_title,
-                        message.toString(),
+                        NLS.bind(UINavigatorMessages.confirm_deleting_multiple_objects_message, selectedObjects.size()),
                         selectedObjects,
                         deleter);
             }
             final DBNNode node = (DBNNode) selectedObjects.get(0);
             final String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeType(), node.getNodeName());
-            StringBuilder message = new StringBuilder(128);
-            if (!CommonUtils.isEmpty(messageString)) {
-                message.append(messageString);
-            }
-            message.append(NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName()));
-            return new ConfirmationDialog(shell, title, message.toString(), selectedObjects, deleter);
+            final String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName());
+            return new ConfirmationDialog(shell, title, message, selectedObjects, deleter);
         }
 
         @Override
