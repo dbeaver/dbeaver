@@ -1072,6 +1072,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             }
                             return Pattern.compile("\\s+" + s + "[^\\w]+").matcher(queryText).find();
                         });
+                        if (alias.equalsIgnoreCase(object.getName())) {
+                            // Don't use alias, when it's identical to entity name
+                            alias = "";
+                        }
                     }
                 }
             }
