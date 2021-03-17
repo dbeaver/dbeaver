@@ -175,7 +175,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                     Composite columnsPanel = UIUtils.createComposite(generalSettings, 5);
                     columnsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 5, 1));
 
-                    UIUtils.createDialogButton(columnsPanel, "Configure Columns ...", new SelectionAdapter() {
+                    UIUtils.createDialogButton(columnsPanel, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             final ConfigureColumnsPopup popup = new ConfigureColumnsPopup(getShell());
@@ -291,7 +291,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         @Override
         protected Control createDialogArea(Composite parent) {
-            getShell().setText("Manage exported columns");
+            getShell().setText(DTUIMessages.stream_consumer_page_mapping_title);
 
             Composite group = (Composite) super.createDialogArea(parent);
 
@@ -331,7 +331,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                         cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(object)));
                     }
                 });
-                column.getColumn().setText("Name");
+                column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_name_column_name);
             }
 
             {
@@ -380,7 +380,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                         updateCompletion();
                     }
                 });
-                column.getColumn().setText("Mapping");
+                column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_mapping_column_name);
             }
 
             {
@@ -388,15 +388,15 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                 buttons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
                 errorLabel = new CLabel(buttons, SWT.NONE);
-                errorLabel.setText("No columns selected");
-                errorLabel.setToolTipText("You must select at least one column for each table");
+                errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
+                errorLabel.setToolTipText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_description);
                 errorLabel.setImage(JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_ERROR));
                 errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 
                 Composite button = UIUtils.createPlaceholder(buttons, 1);
                 button.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
 
-                applyButton = UIUtils.createDialogButton(button, "&Apply", new SelectionAdapter() {
+                applyButton = UIUtils.createDialogButton(button, DTUIMessages.stream_consumer_page_mapping_button_apply, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         saveAndClose();
