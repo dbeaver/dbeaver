@@ -19,7 +19,6 @@ package org.jkiss.utils.io;
 import org.jkiss.code.NotNull;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
 public enum ByteOrderMark implements Comparable<ByteOrderMark> {
     /**
@@ -61,8 +60,12 @@ public enum ByteOrderMark implements Comparable<ByteOrderMark> {
     }
 
     @NotNull
-    public int[] getBytes() {
-        return Arrays.copyOf(bytes, bytes.length);
+    public byte[] getBytes() {
+        final byte[] buffer = new byte[bytes.length];
+        for (int index = 0; index < bytes.length; index++) {
+            buffer[index] = (byte) (bytes[index] & 0xFF);
+        }
+        return buffer;
     }
 
     public int get(int position) {
@@ -75,11 +78,16 @@ public enum ByteOrderMark implements Comparable<ByteOrderMark> {
 
     @NotNull
     public static ByteOrderMark fromCharset(@NotNull Charset charset) {
+        return fromCharset(charset.name());
+    }
+
+    @NotNull
+    public static ByteOrderMark fromCharset(@NotNull String charsetName) {
         for (ByteOrderMark bom : values()) {
-            if (charset.name().equals(bom.getCharsetName())) {
+            if (bom.charsetName.equalsIgnoreCase(charsetName)) {
                 return bom;
             }
         }
-        throw new IllegalArgumentException("Can't find BOM for charset " + charset.name());
+        throw new IllegalArgumentException("Can't find BOM for charset " + charsetName);
     }
 }
