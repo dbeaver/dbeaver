@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.io.BOMInputStream;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -162,8 +164,14 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     private InputStreamReader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties) throws UnsupportedEncodingException {
-        String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
-        return new InputStreamReader(inputStream, encoding);
+        final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
+        final Charset charset = Charset.forName(encoding);
+        try {
+            inputStream = new BOMInputStream(inputStream, charset);
+        } catch (IllegalArgumentException ignored) {
+            // This charset does not have BOM, suppress and continue
+        }
+        return new InputStreamReader(inputStream, charset);
     }
 
     private String[] getNextLine(CSVReader csvReader) throws IOException {
