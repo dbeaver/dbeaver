@@ -56,17 +56,6 @@ public class ContentUtils {
 
     private static final Log log = Log.getLog(ContentUtils.class);
 
-    static {
-        GeneralUtils.BOM_MAP.put(GeneralUtils.DEFAULT_ENCODING, new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
-        GeneralUtils.BOM_MAP.put("UTF-16", new byte[] {(byte) 0xFE, (byte) 0xFF} );
-        GeneralUtils.BOM_MAP.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF} );
-        GeneralUtils.BOM_MAP.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE} );
-        GeneralUtils.BOM_MAP.put("UTF-32", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
-        GeneralUtils.BOM_MAP.put("UTF-32BE", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
-        GeneralUtils.BOM_MAP.put("UTF-32LE", new byte[] { (byte) 0xFE, (byte) 0xFF, 0x0, 0x0} );
-    }
-
-
     public static File getLobFolder(DBRProgressMonitor monitor, DBPPlatform application)
         throws IOException
     {

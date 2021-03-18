@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.io.ByteOrderMark;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -291,10 +292,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Check for BOM and write it to the stream
         if (!parameters.isBinary && settings.isOutputEncodingBOM()) {
-            byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
-            if (bom != null) {
-                outputStream.write(bom);
+            try {
+                final ByteOrderMark bom = ByteOrderMark.fromCharset(settings.getOutputEncoding());
+                outputStream.write(bom.getBytes());
                 outputStream.flush();
+            } catch (IllegalArgumentException e) {
+                log.debug("Error writing byte order mask", e);
             }
         }
 
