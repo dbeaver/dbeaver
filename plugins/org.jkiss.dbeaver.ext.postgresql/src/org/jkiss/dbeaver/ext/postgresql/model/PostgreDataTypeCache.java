@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -58,7 +58,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema schema) throws DBException {
         super.loadObjects(monitor, schema);
-        mapAliases(schema);
+        PostgreUtils.mapAliases(schema, this, null);
 
     }
 
@@ -88,46 +88,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         }
         setCache(types);
         // Cache aliases
-        mapAliases(schema);
-    }
-
-    void mapAliases(PostgreSchema schema) {
-        // Cache aliases
-        if (schema.isCatalogSchema()) {
-            PostgreServerExtension serverType = schema.getDataSource().getServerType();
-            mapDataTypeAliases(serverType.getDataTypeAliases(), false);
-            if (serverType.supportSerialTypes()) {
-                mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
-            }
-        }
-    }
-
-    private void mapDataTypeAliases(Map<String, String> aliases, boolean isSerialType) {
-        // Add serial data types
-        for (Map.Entry<String,String> aliasMapping : aliases.entrySet()) {
-            String value = aliasMapping.getValue();
-            PostgreDataType realType = getCachedObject(value);
-            if (realType != null) {
-                PostgreDataType serialType = new PostgreDataType(realType, aliasMapping.getKey());
-                int typeId = -1;
-                if (isSerialType) {
-                    switch (value) {
-                        case PostgreConstants.TYPE_INT4:
-                            typeId = PostgreOid.SERIAL;
-                            break;
-                        case PostgreConstants.TYPE_INT2:
-                            typeId = PostgreOid.SMALLSERIAL;
-                            break;
-                        case PostgreConstants.TYPE_INT8:
-                            typeId = PostgreOid.BIGSERIAL;
-                            break;
-                    }
-                    serialType.setTypeId(typeId);
-                    serialType.setExtraDataType(true);
-                }
-                cacheObject(serialType);
-            }
-        }
+        PostgreUtils.mapAliases(schema, this, null);
     }
 
 

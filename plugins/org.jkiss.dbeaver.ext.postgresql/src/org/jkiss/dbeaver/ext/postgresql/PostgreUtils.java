@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.LongKeyMap;
 
 import java.lang.reflect.Array;
 import java.sql.SQLException;
@@ -696,6 +697,57 @@ public class PostgreUtils {
 
     public static String getRealSchemaName(PostgreDatabase database, String name) {
         return name.replace("$user", database.getMetaContext().getActiveUser());
+    }
+
+    public static void mapAliases(PostgreSchema schema, PostgreDataTypeCache dataTypeCache, LongKeyMap<PostgreDataType> dataTypeCacheMap) {
+        // Cache aliases
+        if (schema != null && schema.isCatalogSchema()) {
+            PostgreServerExtension serverType = schema.getDataSource().getServerType();
+            mapDataTypeAliases(serverType.getDataTypeAliases(), false, dataTypeCache, dataTypeCacheMap);
+            if (serverType.supportSerialTypes()) {
+                mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true, dataTypeCache, dataTypeCacheMap);
+            }
+        }
+    }
+
+    private static void mapDataTypeAliases(Map<String, String> aliases, boolean isSerialType, PostgreDataTypeCache dataTypeCache, LongKeyMap<PostgreDataType> dataTypeCacheMap) {
+        // Add serial data types
+        for (Map.Entry<String,String> aliasMapping : aliases.entrySet()) {
+            String value = aliasMapping.getValue();
+            PostgreDataType realType = null;
+            if (dataTypeCacheMap != null) {
+                Optional<PostgreDataType> first = dataTypeCacheMap.values().stream().filter(dataType -> dataType.getName().equals(value)).findFirst();
+                if (first.isPresent()) {
+                    realType = first.get();
+                }
+            } else if (dataTypeCache != null) {
+                realType = dataTypeCache.getCachedObject(value);
+            }
+            if (realType != null) {
+                PostgreDataType serialType = new PostgreDataType(realType, aliasMapping.getKey());
+                int typeId = -1;
+                if (isSerialType) {
+                    switch (value) {
+                        case PostgreConstants.TYPE_INT4:
+                            typeId = PostgreOid.SERIAL;
+                            break;
+                        case PostgreConstants.TYPE_INT2:
+                            typeId = PostgreOid.SMALLSERIAL;
+                            break;
+                        case PostgreConstants.TYPE_INT8:
+                            typeId = PostgreOid.BIGSERIAL;
+                            break;
+                    }
+                    serialType.setTypeId(typeId);
+                    serialType.setExtraDataType(true);
+                }
+                if (dataTypeCacheMap != null) {
+                    dataTypeCacheMap.put(typeId, serialType);
+                } else if (dataTypeCache != null) {
+                    dataTypeCache.cacheObject(serialType);
+                }
+            }
+        }
     }
 
 }

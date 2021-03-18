@@ -627,7 +627,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         }
                         PostgreSchema catalogSchema = getCatalogSchema();
                         if (catalogSchema != null) {
-                            catalogSchema.getDataTypeCache().mapAliases(catalogSchema);
+                            PostgreUtils.mapAliases(catalogSchema, null, dataTypeCache);
                         }
                     }
                 }

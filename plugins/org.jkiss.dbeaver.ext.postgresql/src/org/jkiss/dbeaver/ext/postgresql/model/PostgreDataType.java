@@ -203,7 +203,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         description = JDBCUtils.safeGetString(dbResult, "description"); //$NON-NLS-1$
     }
 
-    PostgreDataType(PostgreDataType realType, String aliasName) {
+    public PostgreDataType(PostgreDataType realType, String aliasName) {
         super(realType.getParentObject(), realType);
         setName(aliasName);
         this.alias = true;
