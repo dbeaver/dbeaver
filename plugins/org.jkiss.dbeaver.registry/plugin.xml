@@ -40,6 +40,7 @@
         <category id="hadoop" name="Hadoop / BigData" description="Hadoop based BigData databases" icon="#folder_database" rank="20" promoted="true"/>
         <category id="fulltext" name="Full-text search" description="Full-text search databases" icon="#folder_database" rank="22" promoted="true"/>
         <category id="graph" name="Graph databases" description="Graph databases" icon="#folder_database" rank="23" promoted="true"/>
+        <category id="apm" name="APM" description="Application performance management" icon="#folder_database" rank="24" promoted="true"/>"
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">
