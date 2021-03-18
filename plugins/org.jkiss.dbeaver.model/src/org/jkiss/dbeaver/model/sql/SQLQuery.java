@@ -233,6 +233,20 @@ public class SQLQuery implements SQLScriptElement {
         return false;
     }
 
+    public boolean isPlainSelectWithoutFrom() {
+       parseQuery();
+        if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
+            return CommonUtils.isEmpty(selectBody.getIntoTables()) &&
+                selectBody.getFromItem() == null &&
+                selectBody.getLimit() == null &&
+                selectBody.getTop() == null &&
+                !selectBody.isForUpdate();
+        }
+        return false;
+    }
+
+
     public SQLSelectItem getSelectItem(String name) {
         if (selectItems == null) {
             return null;

@@ -208,7 +208,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit(false);
+            return new QueryTransformerLimit(false, false, false);
         }
         return null;
     }

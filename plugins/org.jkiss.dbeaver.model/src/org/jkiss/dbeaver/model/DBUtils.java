@@ -1208,6 +1208,9 @@ public final class DBUtils {
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
         boolean selectQuery = sqlQuery.getType() == SQLQueryType.SELECT && sqlQuery.isPlainSelect();
+        // For some DB's like Vertica LIMIT can't be applied to queries without FROM part - i.e calling meta functions.
+        if (sqlQuery.isPlainSelectWithoutFrom() && !session.getDataSource().getSQLDialect().supportsSelectLimitWithoutFrom())
+            selectQuery = false;
         final boolean hasLimits = (offset > 0 || selectQuery) && maxRows > 0;
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;

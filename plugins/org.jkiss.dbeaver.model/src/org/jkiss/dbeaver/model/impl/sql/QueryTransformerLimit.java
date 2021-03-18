@@ -39,6 +39,7 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
 
     private boolean supportsExtendedLimit;
     private boolean supportsOffsetKeyword;
+    private boolean supportedFromLessQueries;
     private Number offset;
     private Number length;
     private boolean limitSet;
@@ -52,8 +53,13 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     }
 
     public QueryTransformerLimit(boolean supportsExtendedLimit, boolean supportsOffsetKeyword) {
+        this(supportsExtendedLimit, supportsOffsetKeyword, true);
+    }
+
+    public QueryTransformerLimit(boolean supportsExtendedLimit, boolean supportsOffsetKeyword, boolean supportedFromLessQueries) {
         this.supportsExtendedLimit = supportsExtendedLimit;
         this.supportsOffsetKeyword = supportsOffsetKeyword;
+        this.supportedFromLessQueries = supportedFromLessQueries;
     }
 
     @Override
@@ -74,6 +80,9 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
         }
         if (plainSelect) {
             plainSelect = !NON_LIMIT_QUERY_PATTERN.matcher(testQuery).find();
+        }
+        if (plainSelect && !this.supportedFromLessQueries) {
+            plainSelect = !query.isPlainSelectWithoutFrom();
         }
         if (!plainSelect) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement

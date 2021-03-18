@@ -397,4 +397,13 @@ public interface SQLDialect {
 
     boolean supportsAlterTableConstraint();
 
+    String generateTableUpdateBegin(String tableName);
+
+    String generateTableUpdateSet();
+
+    String generateTableDeleteFrom(String tableName);
+
+    boolean supportsSelectLimitWithoutFrom();
+
+
 }

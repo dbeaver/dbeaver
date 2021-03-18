@@ -40,4 +40,9 @@ public class VerticaSQLDialect extends GenericSQLDialect {
     public String[][] getIdentifierQuoteStrings() {
         return BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
     }
+
+    @Override
+    public boolean supportsSelectLimitWithoutFrom() {
+        return false;
+    }
 }
