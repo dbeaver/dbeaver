@@ -17,13 +17,12 @@
 package org.jkiss.dbeaver.ext.jennifer;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 
 public class JenniferDataSourceProvider extends GenericDataSourceProvider {
-    private static final Log log = Log.getLog(JenniferDataSourceProvider.class);
-
     @Override
-    public void init(@NotNull DBPPlatform platform) { }
+    public void init(@NotNull DBPPlatform platform) {
+        // nothing to do
+    }
 }
