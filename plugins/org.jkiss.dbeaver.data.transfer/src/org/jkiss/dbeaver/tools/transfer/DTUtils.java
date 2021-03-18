@@ -136,6 +136,9 @@ public class DTUtils {
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
+                if (receiver.attributes == null) {
+                    throw new InvocationTargetException(new DBCException("Query does not contain any attributes"));
+                }
                 for (DBDAttributeBinding attr : receiver.attributes) {
                     if (DBUtils.isHiddenObject(attr)) {
                         continue;

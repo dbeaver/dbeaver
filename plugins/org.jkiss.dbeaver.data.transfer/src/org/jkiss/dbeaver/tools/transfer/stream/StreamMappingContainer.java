@@ -20,25 +20,21 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider {
-    private static final Log log = Log.getLog(StreamMappingContainer.class);
-
     private final DBSDataContainer source;
     private final List<StreamMappingAttribute> attributes;
 
@@ -63,7 +59,7 @@ public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider 
                 return false;
             }
 
-            if (attribute.getMappingType() == StreamMappingType.keep) {
+            if (attribute.getMappingType() == StreamMappingType.export) {
                 valid = true;
             }
         }
@@ -100,40 +96,32 @@ public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider 
     }
 
     @NotNull
-    public List<StreamMappingAttribute> getAttributes(@NotNull DBRRunnableContext runnableContext) {
+    public List<StreamMappingAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
         if (attributes.isEmpty()) {
             try {
-                runnableContext.run(true, true, monitor -> {
-                    try {
-                        monitor.beginTask("Load attributes from '" + getName() + "'", 1);
-                        for (DBSAttributeBase attribute : DTUtils.getAttributes(monitor, source, this)) {
-                            attributes.add(new StreamMappingAttribute(this, attribute, StreamMappingType.unspecified));
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
-                    }
-                });
-            } catch (InvocationTargetException e) {
+                monitor.beginTask("Load attributes from '" + getName() + "'", 1);
+                for (DBSAttributeBase attribute : DTUtils.getAttributes(monitor, source, this)) {
+                    attributes.add(new StreamMappingAttribute(this, attribute, StreamMappingType.unspecified));
+                }
+            } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                     DTMessages.stream_transfer_consumer_title_attributes_read_failed,
                     NLS.bind(DTMessages.stream_transfer_consumer_message_cannot_get_attributes_from, getName()),
-                    e.getTargetException()
+                    e
                 );
-            } catch (InterruptedException e) {
-                log.debug("Canceled by user", e);
+            } finally {
+                monitor.done();
             }
         }
         return attributes;
     }
 
-    public void loadSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> containerSettings) {
+    public void loadSettings(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> containerSettings) {
         final Map<String, Object> attributes = JSONUtils.getObject(containerSettings, "attributes");
-        for (StreamMappingAttribute attribute : getAttributes(runnableContext)) {
+        for (StreamMappingAttribute attribute : getAttributes(monitor)) {
             final Map<String, Object> attributeSettings = JSONUtils.getObjectOrNull(attributes, attribute.getName());
             if (attributeSettings != null) {
-                attribute.loadSettings(runnableContext, attributeSettings);
+                attribute.loadSettings(monitor, attributeSettings);
             }
         }
     }

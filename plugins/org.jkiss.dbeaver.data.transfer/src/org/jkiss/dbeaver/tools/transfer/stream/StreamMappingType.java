@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 public enum StreamMappingType {
-    keep,
+    export,
     skip,
     unspecified
 }
