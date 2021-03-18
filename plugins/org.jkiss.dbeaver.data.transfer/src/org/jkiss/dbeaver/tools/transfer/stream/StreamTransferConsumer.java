@@ -130,7 +130,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             columnBindings = Arrays.stream(columnBindings)
                 .filter(attr -> {
                     final StreamMappingAttribute attribute = mapping.getAttribute(attr);
-                    return attribute == null || attribute.getMappingType() == StreamMappingType.keep;
+                    return attribute == null || attribute.getMappingType() == StreamMappingType.export;
                 })
                 .toArray(DBDAttributeBinding[]::new);
         }

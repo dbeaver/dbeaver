@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -31,6 +33,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,8 @@ import java.util.Map;
  * Stream transfer settings
  */
 public class StreamConsumerSettings implements IDataTransferSettings {
+
+    private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
     public enum LobExtractType {
         SKIP,
@@ -249,23 +254,35 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             this.formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(formatterProfile);
         }
 
-        final List<DataTransferPipe> pipes = dataTransferSettings.getDataPipes();
         final Map<String, Object> mappings = JSONUtils.getObjectOrNull(settings, "mappings");
         if (mappings != null && !mappings.isEmpty()) {
-            for (DataTransferPipe pipe : pipes) {
-                final IDataTransferProducer<?> producer = pipe.getProducer();
-                if (producer != null) {
-                    final DBSObject object = producer.getDatabaseObject();
-                    if (object instanceof DBSDataContainer) {
-                        final DBSDataContainer container = (DBSDataContainer) object;
-                        final Map<String, Object> containerSettings = JSONUtils.getObjectOrNull(mappings, DBUtils.getObjectFullId(container));
-                        if (containerSettings != null) {
-                            final StreamMappingContainer mappingContainer = new StreamMappingContainer(container);
-                            mappingContainer.loadSettings(runnableContext, containerSettings);
-                            addDataMapping(mappingContainer);
+            try {
+                runnableContext.run(true, true, monitor -> {
+                    final List<DataTransferPipe> pipes = dataTransferSettings.getDataPipes();
+                    for (DataTransferPipe pipe : pipes) {
+                        final IDataTransferProducer<?> producer = pipe.getProducer();
+                        if (producer != null) {
+                            final DBSObject object = producer.getDatabaseObject();
+                            if (object instanceof DBSDataContainer) {
+                                final DBSDataContainer container = (DBSDataContainer) object;
+                                final Map<String, Object> containerSettings = JSONUtils.getObjectOrNull(mappings, DBUtils.getObjectFullId(container));
+                                if (containerSettings != null) {
+                                    final StreamMappingContainer mappingContainer = new StreamMappingContainer(container);
+                                    mappingContainer.loadSettings(monitor, containerSettings);
+                                    addDataMapping(mappingContainer);
+                                }
+                            }
                         }
                     }
-                }
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                    DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                    e
+                );
+            } catch (InterruptedException e) {
+                log.debug("Canceled by user", e);
             }
         }
     }
