@@ -122,10 +122,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         final StreamMappingContainer mapping = settings.getDataMapping(dataContainer);
-        if (mapping != null) {
-            if (!mapping.isComplete()) {
-                throw new DBCException("Columns mappings are incomplete, consider reconfiguring data transfer");
-            }
+        if (mapping != null && mapping.isComplete()) {
             // That's a dirty way of doing things ...
             columnBindings = Arrays.stream(columnBindings)
                 .filter(attr -> {
