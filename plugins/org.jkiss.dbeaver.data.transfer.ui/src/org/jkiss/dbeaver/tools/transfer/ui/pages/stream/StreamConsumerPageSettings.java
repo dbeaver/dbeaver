@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -53,7 +54,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.BaseProgressDialog;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -73,6 +74,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     private static final int LOB_ENCODING_BINARY = 2;
     private static final int LOB_ENCODING_NATIVE = 3;
 
+    private final List<StreamMappingContainer> mappings = new ArrayList<>();
     private PropertyTreeViewer propsEditor;
     private Combo lobExtractType;
     private Label lobEncodingLabel;
@@ -183,10 +185,24 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
                     UIUtils.createDialogButton(columnsPanel, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
                         @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            final ConfigureColumnsPopup popup = new ConfigureColumnsPopup(getShell());
-                            if (popup.open() == IDialogConstants.OK_ID) {
-                                super.widgetSelected(e);
+                        public void widgetSelected(SelectionEvent event) {
+                            if (mappings.isEmpty()) {
+                                try {
+                                    getWizard().getRunnableContext().run(true, true, monitor -> {
+                                        refreshMappings(monitor);
+                                        UIUtils.asyncExec(() -> new ConfigureColumnsPopup(getShell()).open());
+                                    });
+                                } catch (InvocationTargetException e) {
+                                    DBWorkbench.getPlatformUI().showError(
+                                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                                        DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                                        e
+                                    );
+                                } catch (InterruptedException e) {
+                                    log.debug("Canceled by user", e);
+                                }
+                            } else {
+                                new ConfigureColumnsPopup(getShell()).open();
                             }
                         }
                     });
@@ -283,15 +299,13 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         return true;
     }
 
-    private final class ConfigureColumnsPopup extends BaseProgressDialog {
-        final List<StreamMappingContainer> mappings = new ArrayList<>();
-
+    private final class ConfigureColumnsPopup extends BaseDialog {
         private TreeViewer viewer;
         private CLabel errorLabel;
 
         public ConfigureColumnsPopup(@NotNull Shell shell) {
             super(shell, DTUIMessages.stream_consumer_page_mapping_title, null);
-            setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
+            this.setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }
 
         @Override
@@ -392,7 +406,12 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
             errorLabel.setImage(JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_ERROR));
             errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 
-            UIUtils.asyncExec(this::loadMappings);
+            UIUtils.asyncExec(() -> {
+                viewer.setInput(mappings);
+                viewer.expandAll(true);
+                UIUtils.packColumns(viewer.getTree(), false, new float[]{0.75f, 0.25f});
+                updateCompletion();
+            });
 
             return group;
         }
@@ -422,56 +441,36 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
             errorLabel.setVisible(!isComplete);
             okButton.setEnabled(isComplete);
         }
+    }
 
-        private void loadMappings() {
-            mappings.clear();
+    private void refreshMappings(@NotNull DBRProgressMonitor monitor) {
+        final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
+        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
 
-            try {
-                run(true, true, monitor -> {
-                    try {
-                        monitor.beginTask("Load mappings", 1);
+        mappings.clear();
 
-                        final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
-                        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+        try {
+            monitor.beginTask("Load mappings", pipes.size());
+            for (DataTransferPipe pipe : pipes) {
+                DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
+                StreamMappingContainer mapping = settings.getDataMapping(source);
 
-                        for (DataTransferPipe pipe : pipes) {
-                            final DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
-                            StreamMappingContainer mapping = settings.getDataMapping(source);
+                if (mapping == null) {
+                    mapping = new StreamMappingContainer(source);
 
-                            if (mapping == null) {
-                                mapping = new StreamMappingContainer(source);
-
-                                for (StreamMappingAttribute attribute : mapping.getAttributes(monitor)) {
-                                    attribute.setMappingType(StreamMappingType.export);
-                                }
-                            } else {
-                                // Create a copy to avoid direct modifications
-                                mapping = new StreamMappingContainer(mapping);
-                            }
-
-                            mappings.add(mapping);
-                        }
-
-                        UIUtils.asyncExec(() -> {
-                            viewer.setInput(mappings);
-                            viewer.expandAll(true);
-                            UIUtils.packColumns(viewer.getTree(), true, new float[]{0.85f, 0.15f});
-
-                            updateCompletion();
-                        });
-                    } finally {
-                        monitor.done();
+                    for (StreamMappingAttribute attribute : mapping.getAttributes(monitor)) {
+                        attribute.setMappingType(StreamMappingType.export);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError(
-                    DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                    DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
-                    e
-                );
-            } catch (InterruptedException e) {
-                log.debug("Canceled by user", e);
+                } else {
+                    // Create a copy to avoid direct modifications
+                    mapping = new StreamMappingContainer(mapping);
+                }
+
+                mappings.add(mapping);
+                monitor.worked(1);
             }
+        } finally {
+            monitor.done();
         }
     }
 }
