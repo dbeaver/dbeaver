@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="denodo" class="org.jkiss.dbeaver.ext.denodo.model.DenodoMetaModel" driverClass="com.denodo.dv.jdbc.Driver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Data Virtuality -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.denodo.DenodoDataSourceProvider"
+                description="%datasource.denodo.description"
+                id="denodo"
+                parent="generic"
+                label="Data Virtuality"
+                icon="icons/denodo_icon.png"
+                dialect="basic">
+            <drivers managable="true">
+
+                <driver
+                        id="denodo_jdbc"
+                        label="Data Virtuality"
+                        class="com.denodo.dv.jdbc.Driver"
+                        icon="icons/denodo_icon.png"
+                        iconBig="icons/denodo_icon_big.png"
+                        sampleURL="jdbc:denodo:{database}@mm://{host}:{port}"
+                        defaultPort="31000"
+                        defaultDatabase="denodo"
+                        defaultUser="admin"
+                        defaultPassword="admin"
+                        description="Data Virtuality JDBC driver"
+                        webURL="https://https://denodo.com/docs/"
+                        categories="sql,analytic">
+                    <file type="jar" path="https://denodo.com/wp-content/uploads/sites/2/2020/03/denodo-jdbc_2.3.8.jar"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="denodo" parent="generic" class="org.jkiss.dbeaver.ext.denodo.model.DenodoSQLDialect" label="Data Virtuality" description="Data Virtuality SQL dialect." icon="icons/denodo_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>
