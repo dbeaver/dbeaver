@@ -65,7 +65,6 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
 
         if (parentNode instanceof DBNDatabaseItem) {
             markObjectAsActive((DBNDatabaseItem) parentNode, activeEditor);
-            return;
         }
 
         DBSObject object = databaseNode.getObject();
