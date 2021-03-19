@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -173,20 +174,20 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         return isRefreshed;
     }
 
-    private void setActiveDatabase(DBRProgressMonitor monitor, String databaseName) throws DBCException {
+    private void setActiveDatabase(DBRProgressMonitor monitor, @NotNull String databaseName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                dbStat.executeUpdate("USE DATABASE " + databaseName);
+                dbStat.executeUpdate("USE DATABASE " + SnowflakeUtils.escapeIdentifier(databaseName));
             }
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
     }
 
-    private void setActiveSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
+    private void setActiveSchema(DBRProgressMonitor monitor, @NotNull String schemaName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                dbStat.executeUpdate("USE SCHEMA " + schemaName);
+                dbStat.executeUpdate("USE SCHEMA " + SnowflakeUtils.escapeIdentifier(schemaName));
             }
         } catch (SQLException e) {
             throw new DBCException(e, this);
