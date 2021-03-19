@@ -44,22 +44,19 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:denodo:");
+        url.append("jdbc:vdb:");
 
         url.append(connectionInfo.getDatabaseName());
-        url.append("@");
-        if (!CommonUtils.isEmpty(connectionInfo.getProviderProperty(DenodoConstants.PROP_SSL))) {
-            url.append(connectionInfo.getProviderProperty(DenodoConstants.PROP_SSL));
-        }
-        else {
-            url.append("mm");
-        }
 
         url.append("://");
         url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }
+
+        url.append("/");
+
+        url.append(connectionInfo.getDatabaseName());
 
         log.debug("getConnectionURL" + url.toString());
 
