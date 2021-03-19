@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ColumnDataTypeListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.Types;
 
 /**
  * DB2 Table Column
@@ -49,6 +51,8 @@ import java.sql.ResultSet;
  */
 public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBSTypedObjectExt4<DB2DataType> {
+
+    private static final Log log = Log.getLog(DB2TableColumn.class);
 
     private DB2DataType dataType;
     private DB2Schema dataTypeSchema;
@@ -159,8 +163,14 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         } else {
             this.dataTypeSchema = dataType.getSchema();
         }
-        setTypeName(dataType.getFullyQualifiedName(DBPEvaluationContext.DML));
-        setValueType(dataType.getTypeID());
+        if (this.dataType == null) {
+            log.debug("Data type '" + typeName + "' wasn't resolved");
+            setTypeName(typeName);
+            setValueType(Types.OTHER);
+        } else {
+            setTypeName(dataType.getFullyQualifiedName(DBPEvaluationContext.DML));
+            setValueType(dataType.getTypeID());
+        }
     }
 
     public DB2TableColumn(DB2TableBase tableBase)
