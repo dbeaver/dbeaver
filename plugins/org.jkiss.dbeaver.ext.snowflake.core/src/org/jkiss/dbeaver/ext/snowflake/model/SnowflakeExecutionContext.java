@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -123,10 +126,10 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     @Override
     public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         boolean isRefreshed = false;
+        String currentDatabase = null;
+        String currentSchema = null;
 
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database and schema")) {
-            String currentDatabase = null;
-            String currentSchema = null;
             try (JDBCStatement dbStat = session.createStatement()) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT CURRENT_DATABASE(), CURRENT_SCHEMA()")) {
                     if (dbResult != null) {
@@ -140,30 +143,31 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
                 throw new DBException("Unable to refresh defaults for Snowflake execution context", e);
             }
 
-//            if (useBootstrapSettings) {
-//                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-//                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
-//                    setActiveDatabase(monitor, bootstrap.getDefaultCatalogName());
-//                    activeDatabaseName = bootstrap.getDefaultCatalogName();
-//                }
-//                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
-//                    setActiveSchema(monitor, bootstrap.getDefaultSchemaName());
-//                    activeSchemaName = bootstrap.getDefaultSchemaName();
-//                }
-//            }
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                DBPConnectionConfiguration connectionConfiguration = getDataSource().getContainer().getConnectionConfiguration();
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) && CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(SnowflakeConstants.PROP_SCHEMA))) {
+                    setActiveDatabase(monitor, bootstrap.getDefaultCatalogName());
+                    currentDatabase = bootstrap.getDefaultCatalogName();
+                }
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && CommonUtils.isEmpty(connectionConfiguration.getDatabaseName())) {
+                    setActiveSchema(monitor, bootstrap.getDefaultSchemaName());
+                    currentSchema = bootstrap.getDefaultSchemaName();
+                }
+            }
+        }
 
-            if (!CommonUtils.isEmpty(currentDatabase) && !CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
-                activeDatabaseName = currentDatabase;
-                isRefreshed = true;
-            }
-            if (!CommonUtils.isEmpty(currentSchema) && !CommonUtils.equalObjects(currentSchema, activeSchemaName)) {
-                activeSchemaName = currentSchema;
-                isRefreshed = true;
-            }
-            if (CommonUtils.isEmpty(currentSchema)) {
-                activeSchemaName = "PUBLIC";
-                isRefreshed = true;
-            }
+        if (!CommonUtils.isEmpty(currentDatabase) && !CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
+            activeDatabaseName = currentDatabase;
+            isRefreshed = true;
+        }
+        if (!CommonUtils.isEmpty(currentSchema) && !CommonUtils.equalObjects(currentSchema, activeSchemaName)) {
+            activeSchemaName = currentSchema;
+            isRefreshed = true;
+        }
+        if (CommonUtils.isEmpty(currentSchema)) {
+            activeSchemaName = "PUBLIC";
+            isRefreshed = true;
         }
 
         return isRefreshed;
