@@ -55,7 +55,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     @Nullable
     @Override
     public GenericCatalog getDefaultCatalog() {
-        if (activeDatabaseName == null) {
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
             return null;
         }
         return getDataSource().getCatalog(activeDatabaseName);

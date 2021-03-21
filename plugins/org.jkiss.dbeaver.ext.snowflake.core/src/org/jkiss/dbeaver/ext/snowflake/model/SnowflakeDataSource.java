@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -35,10 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SnowflakeDataSource extends GenericDataSource {
-
-    public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
-        throws DBException
-    {
+    public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new SnowflakeSQLDialect());
     }
 
@@ -80,5 +79,16 @@ public class SnowflakeDataSource extends GenericDataSource {
         } else if (defaultSchema != null) {
             executionContext.setDefaultSchema(monitor, defaultSchema);
         }
+    }
+
+    @Nullable
+    @Override
+    public GenericCatalog getCatalog(@NotNull String name) {
+        return DBUtils.findObject(getCatalogs(), name, !SnowflakeUtils.isCaseSensitiveIdentifier(name));
+    }
+
+    @Override
+    public GenericSchema getSchema(String name) {
+        return DBUtils.findObject(getSchemas(), name, !SnowflakeUtils.isCaseSensitiveIdentifier(name));
     }
 }
