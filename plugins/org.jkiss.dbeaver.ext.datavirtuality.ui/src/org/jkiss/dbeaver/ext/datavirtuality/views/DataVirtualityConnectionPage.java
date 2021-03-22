@@ -50,7 +50,7 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     private Text hostText;
     private Text portText;
     private Button sslCheckbox;
-    private Combo dbText;
+    private Text dbText;
     private Text usernameText;
 
     private final Image logoImage;
@@ -102,7 +102,7 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
 
             UIUtils.createControlLabel(addrGroup, DataVirtualityMessages.label_database);
 
-            dbText = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
+            dbText = new Text(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
@@ -114,8 +114,6 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
             sslCheckbox = new Button(addrGroup, SWT.CHECK);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             sslCheckbox.setLayoutData(gd);
-//            sslCheckbox.addModifyListener(textListener);
-
         }
 
         {
