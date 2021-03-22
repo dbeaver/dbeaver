@@ -121,24 +121,28 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
             }
         }
 
+        // Decides whether the pattern can be accepted by hitting EOF instead of the end sequence.
+        // We enable it for all "paired" literals like quoted strings and identifiers, as proposed in #11773.
+        final boolean breaksOnEOF = true;
+
         boolean hasDoubleQuoteRule = false;
         String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
         String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
         char stringEscapeCharacter = dialect.getStringEscapeCharacter();
         if (identifierQuoteStrings != null) {
             for (String[] quoteString : identifierQuoteStrings) {
-                rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, stringEscapeCharacter));
+                rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, stringEscapeCharacter, breaksOnEOF));
                 if (quoteString[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteString[0].equals(quoteString[1])) {
                     hasDoubleQuoteRule = true;
                 }
             }
         }
         if (!hasDoubleQuoteRule) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, stringEscapeCharacter));
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, stringEscapeCharacter, breaksOnEOF));
         }
         if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
             for (String[] quotes : stringQuoteStrings) {
-                rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, stringEscapeCharacter));
+                rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, stringEscapeCharacter, breaksOnEOF));
             }
         }
 
