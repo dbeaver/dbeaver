@@ -68,8 +68,7 @@ public class SnowflakeUtils {
     @NotNull
     public static String escapeIdentifier(@NotNull String identifier) {
         if (isCaseSensitiveIdentifier(identifier)) {
-            identifier = identifier.replace("\"", "\"\"");
-            return "\"" + identifier + "\"";
+            return "\"" + identifier.replace("\"", "\"\"") + "\"";
         }
         return identifier;
     }
