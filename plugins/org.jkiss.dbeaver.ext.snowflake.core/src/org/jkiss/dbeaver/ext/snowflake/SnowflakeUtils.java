@@ -32,7 +32,7 @@ public class SnowflakeUtils {
     }
 
     /**
-     * Determines if identifier is case sensitive / must be enclosed in double quotes (in Swnoflake world
+     * Determines if identifier is case sensitive / must be enclosed in double quotes (in Snowflake world
      * that's the same thing).
      *
      * See https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html
