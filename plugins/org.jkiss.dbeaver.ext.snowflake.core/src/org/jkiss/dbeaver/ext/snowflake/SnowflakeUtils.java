@@ -17,6 +17,11 @@
 package org.jkiss.dbeaver.ext.snowflake;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+
+import java.util.Collection;
 
 /**
  * Snowflake utils.
@@ -67,5 +72,18 @@ public class SnowflakeUtils {
             return "\"" + identifier + "\"";
         }
         return identifier;
+    }
+
+    /**
+     * Finds named object according to Snowflake's identifier rules. Returns {@code null} if nothing was found.
+     *
+     * @param collection collection of objects
+     * @param identifier snowflake identifier
+     * @param <T> type of objects to find from
+     * @return object with provided identifier, or {@code null} if not found
+     */
+    @Nullable
+    public static <T extends DBPNamedObject> T findObject(@NotNull Collection<T> collection, @NotNull String identifier) {
+        return DBUtils.findObject(collection, identifier, !isCaseSensitiveIdentifier(identifier));
     }
 }

@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -84,11 +83,11 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Nullable
     @Override
     public GenericCatalog getCatalog(@NotNull String name) {
-        return DBUtils.findObject(getCatalogs(), name, !SnowflakeUtils.isCaseSensitiveIdentifier(name));
+        return SnowflakeUtils.findObject(getCatalogs(), name);
     }
 
     @Override
-    public GenericSchema getSchema(String name) {
-        return DBUtils.findObject(getSchemas(), name, !SnowflakeUtils.isCaseSensitiveIdentifier(name));
+    public GenericSchema getSchema(@NotNull String name) {
+        return SnowflakeUtils.findObject(getSchemas(), name);
     }
 }
