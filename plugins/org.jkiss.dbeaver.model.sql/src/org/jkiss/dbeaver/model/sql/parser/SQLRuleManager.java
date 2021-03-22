@@ -48,7 +48,6 @@ public class SQLRuleManager {
 
     @NotNull
     private TPRule[] allRules = new TPRule[0];
-    private TPRule multiLineCommentRule;
     @NotNull
     private SQLSyntaxManager syntaxManager;
 
@@ -61,9 +60,22 @@ public class SQLRuleManager {
         return allRules;
     }
 
-    @Nullable
-    public TPRule getMultiLineCommentRule() {
-        return multiLineCommentRule;
+    @NotNull
+    public TPRule[] getRulesByType(@NotNull SQLTokenType requiredType) {
+        final List<TPRule> rules = new ArrayList<>();
+        for (TPRule rule : allRules) {
+            if (rule instanceof TPPredicateRule) {
+                final TPPredicateRule predicateRule = (TPPredicateRule) rule;
+                if (predicateRule.getSuccessToken() instanceof TPTokenAbstract) {
+                    final TPTokenAbstract<?> token = (TPTokenAbstract<?>) predicateRule.getSuccessToken();
+                    final Object tokenData = token.getData();
+                    if (tokenData instanceof TPTokenType && ((TPTokenType) tokenData).getTokenType() == requiredType.getTokenType()) {
+                        rules.add(rule);
+                    }
+                }
+            }
+        }
+        return rules.toArray(new TPRule[0]);
     }
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
@@ -77,6 +89,7 @@ public class SQLRuleManager {
         final TPToken quotedToken = new TPTokenDefault(SQLTokenType.T_QUOTED);
         final TPToken numberToken = new TPTokenDefault(SQLTokenType.T_NUMBER);
         final TPToken commentToken = new SQLCommentToken();
+        final TPToken multilineCommentToken = new SQLMultilineCommentToken();
         final SQLDelimiterToken delimiterToken = new SQLDelimiterToken();
         final SQLParameterToken parameterToken = new SQLParameterToken();
         final SQLVariableToken variableToken = new SQLVariableToken();
@@ -121,15 +134,15 @@ public class SQLRuleManager {
             }
         }
 
+        // Decides whether the pattern can be accepted by hitting EOF instead of the end sequence.
+        // We enable it for all "paired" literals like quoted strings, identifiers and comments, as proposed in #11773.
+        final boolean breaksOnEOF = true;
+
         {
             // Add rules for delimited identifiers and string literals.
             char escapeChar = syntaxManager.getEscapeChar();
             String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
             String[][] stringQuoteStrings = syntaxManager.getStringQuoteStrings();
-
-            // Decides whether the pattern can be accepted by hitting EOF instead of the end sequence.
-            // We enable it for all "paired" literals like quoted strings and identifiers, as proposed in #11773.
-            final boolean breaksOnEOF = true;
 
             boolean hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
@@ -156,10 +169,10 @@ public class SQLRuleManager {
         // Add rules for multi-line comments
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         if (multiLineComments != null) {
-            multiLineCommentRule = dialect.supportsNestedComments()
-                ? new NestedMultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken)
-                : new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true);
-            rules.add(multiLineCommentRule);
+            rules.add(dialect.supportsNestedComments()
+                ? new NestedMultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, breaksOnEOF)
+                : new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, breaksOnEOF
+            ));
         }
 
         if (!minimalRules) {
