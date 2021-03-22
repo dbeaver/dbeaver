@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
@@ -733,6 +734,14 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         break;
                     case container:
                         needToMatch = object instanceof DBSSchema || object instanceof DBSCatalog;
+                        if (needToMatch) {
+                            try {
+                                Class<? extends DBSObject> primaryChildType = ((DBSStructContainer) object).getPrimaryChildType(null);
+                                needToMatch = !DBSStructContainer.class.isAssignableFrom(primaryChildType);
+                            } catch (Exception e) {
+                                log.debug(e);
+                            }
+                        }
                         break;
                     default:
                         needToMatch =
