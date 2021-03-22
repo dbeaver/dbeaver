@@ -181,6 +181,10 @@ public class AuthModelSelector extends Composite {
 
         if (authModelConfigurator != null) {
             authModelConfigurator.createControl(modelConfigPlaceholder, () -> changeListener.run());
+            if (activeDataSource != null && selectedAuthModel != null) {
+                // Set selected auth model to datasource config
+                activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
+            }
             authModelConfigurator.loadSettings(activeDataSource);
         } else {
             if (selectedAuthModel != null && !CommonUtils.isEmpty(selectedAuthModel.getDescription())) {
