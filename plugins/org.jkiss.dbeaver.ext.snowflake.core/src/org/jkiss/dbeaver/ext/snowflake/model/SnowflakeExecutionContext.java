@@ -72,7 +72,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
             return null;
         }
         try {
-            return SnowflakeUtils.findObject(defaultCatalog.getSchemas(new VoidProgressMonitor()), activeSchemaName);
+            return defaultCatalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
         } catch (DBException e) {
             log.error("Unable to retrieve active schema by its name", e);
             return null;
