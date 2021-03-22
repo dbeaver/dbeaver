@@ -101,6 +101,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             });
 
             loadUISettingsForDisableReferentialIntegrityCheckbox();
+            settings.setDisableReferentialIntegrity(isDisablingReferentialIntegritySupported && settings.isDisableReferentialIntegrity());
             disableReferentialIntegrity = UIUtils.createCheckbox(
                     loadSettings,
                     DTUIMessages.database_consumer_wizard_disable_referential_integrity_label,
