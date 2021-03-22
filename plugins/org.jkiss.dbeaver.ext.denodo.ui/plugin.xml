@@ -7,7 +7,7 @@
         <view
                 id="org.jkiss.dbeaver.ext.denodo.dataSourceWizardView"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                dataSource="denodo"
+                dataSource="admin"
                 label="%denodo.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.denodo.views.DenodoConnectionPage"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.denodo/icons/denodo_icon.png">
@@ -16,7 +16,7 @@
                 class="org.jkiss.dbeaver.ext.denodo.views.DenodoConnectionPage"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.denodo/denodo_icon.png"
                 id="org.jkiss.dbeaver.ext.denodo.dataSourceEditorView"
-                dataSource="denodo"
+                dataSource="admin"
                 label="%denodo.dialog.connection.header"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
         </view>

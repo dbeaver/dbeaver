@@ -32,14 +32,14 @@ import java.util.List;
 public class DenodoSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     public DenodoSQLDialect() {
-        super("DataVirtuality", "denodo");
+        super("Denodo", "denodo");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         addSQLKeywords(
                 Arrays.asList(
-                        "SIMILAR TO"
+                        "VQL"
                 ));
     }
 

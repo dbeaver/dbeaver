@@ -18,12 +18,16 @@ package org.jkiss.dbeaver.ext.denodo.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.jkiss.dbeaver.Log;
@@ -38,6 +42,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -116,6 +122,22 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
             sslCheckbox.setLayoutData(gd);
 //            sslCheckbox.addModifyListener(textListener);
 
+        }
+
+        {
+            Composite ph = UIUtils.createPlaceholder(control, 2);
+            CLabel infoLabel = UIUtils.createInfoLabel(ph, ""); //$NON-NLS-1$
+            Link testLink = new Link(ph, SWT.NONE);
+            testLink.setText(DenodoMessages.label_click_on_test_connection);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.grabExcessHorizontalSpace = true;
+            testLink.setLayoutData(gd);
+            testLink.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    site.testConnection();
+                }
+            });
         }
 
         {
@@ -216,19 +238,35 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
 
     @Override
     public void testConnection(DBCSession session) {
-
         try {
-            session.getProgressMonitor().subTask("Execute 'SELECT 1'"); //$NON-NLS-1$
-            try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, "SELECT 1", false, false, false)) {
-                dbStat.executeStatement();
-                try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    while (dbResult.nextRow()) {
-                    }
-                }
-            }
+            loadDictList(session, dbText, "LIST DATABASES"); //$NON-NLS-1$
         } catch (Exception e) {
             log.error(e);
         }
+    }
+
+    private static void loadDictList(DBCSession session, Combo combo, String query) throws DBCException {
+        List<String> result = new ArrayList<>();
+        session.getProgressMonitor().subTask("Exec " + query); //$NON-NLS-1$
+        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false)) {
+            dbStat.executeStatement();
+            try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                while (dbResult.nextRow()) {
+                    result.add(CommonUtils.toString(dbResult.getAttributeValue("name"))); //$NON-NLS-1$
+                }
+            }
+        }
+        UIUtils.asyncExec(() -> {
+            String oldText = combo.getText();
+            if (!result.contains(oldText)) {
+                result.add(0, oldText);
+            }
+            if (!result.contains("")) { //$NON-NLS-1$
+                result.add(0, ""); //$NON-NLS-1$
+            }
+            combo.setItems(result.toArray(new String[0]));
+            combo.setText(oldText);
+        });
     }
 
     @Override
