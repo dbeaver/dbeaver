@@ -35,11 +35,14 @@ import java.sql.SQLException;
 import java.util.Map;
 
 /**
- * DataVirtualityMetaModel
+ * DenodoMetaModel
  */
 public class DenodoMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(DenodoMetaModel.class);
+
+    private static final String vqlDescriptionParameter =
+            " ('includeDependencies' = 'no', 'dropElements' = 'no')";
 
     public DenodoMetaModel() {
         super();
@@ -59,9 +62,10 @@ public class DenodoMetaModel extends GenericMetaModel
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DataVirtuality object DDL")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Denodo object DDL")) {
+
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT definition FROM SYSADMIN.ViewDefinitions WHERE name ='" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'"))
+                    "DESC VQL VIEW " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + vqlDescriptionParameter))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
@@ -84,9 +88,9 @@ public class DenodoMetaModel extends GenericMetaModel
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DataVirtuality object DDL")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Denodo object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT definition FROM SYSADMIN.ProcDefinitions WHERE name ='" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'"))
+                    "DESC VQL PROCEDURE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + vqlDescriptionParameter))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();

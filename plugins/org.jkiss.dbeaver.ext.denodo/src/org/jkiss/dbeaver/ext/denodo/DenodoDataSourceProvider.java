@@ -44,11 +44,9 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:vdb:");
 
-        url.append(connectionInfo.getDatabaseName());
+        url.append("jdbc:vdb://");
 
-        url.append("://");
         url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
