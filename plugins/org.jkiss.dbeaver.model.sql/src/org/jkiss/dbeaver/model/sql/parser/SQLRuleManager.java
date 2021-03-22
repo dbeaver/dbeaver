@@ -127,10 +127,14 @@ public class SQLRuleManager {
             String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
             String[][] stringQuoteStrings = syntaxManager.getStringQuoteStrings();
 
+            // Decides whether the pattern can be accepted by hitting EOF instead of the end sequence.
+            // We enable it for all "paired" literals like quoted strings and identifiers, as proposed in #11773.
+            final boolean breaksOnEOF = true;
+
             boolean hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
                 for (String[] quotes : identifierQuoteStrings) {
-                    rules.add(new SingleLineRule(quotes[0], quotes[1], quotedToken, escapeChar));
+                    rules.add(new SingleLineRule(quotes[0], quotes[1], quotedToken, escapeChar, breaksOnEOF));
                     if (quotes[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quotes[0].equals(quotes[1])) {
                         hasDoubleQuoteRule = true;
                     }
@@ -138,11 +142,11 @@ public class SQLRuleManager {
             }
             if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
                 for (String[] quotes : stringQuoteStrings) {
-                    rules.add(new MultiLineRule(quotes[0], quotes[1], stringToken, escapeChar));
+                    rules.add(new MultiLineRule(quotes[0], quotes[1], stringToken, escapeChar, breaksOnEOF));
                 }
             }
             if (!hasDoubleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar, breaksOnEOF));
             }
         }
         if (ruleProvider != null) {
