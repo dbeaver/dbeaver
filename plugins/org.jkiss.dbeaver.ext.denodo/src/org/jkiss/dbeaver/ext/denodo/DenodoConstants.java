@@ -16,14 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.denodo;
 
-import org.jkiss.dbeaver.model.DBConstants;
-
 /**
  * Denodo constants
  */
 public class DenodoConstants
 {
-    public static final String PROP_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
 
     public static final String DEFAULT_HOST_PREFIX = "localhost";
     public static final String DEFAULT_DB_NAME = "denodo";

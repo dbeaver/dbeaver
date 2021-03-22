@@ -55,7 +55,6 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
 
     private Text hostText;
     private Text portText;
-    private Button sslCheckbox;
     private Combo dbText;
     private Text usernameText;
 
@@ -114,14 +113,6 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
             dbText.addModifyListener(textListener);
-
-            UIUtils.createControlLabel(addrGroup, DenodoMessages.label_ssl);
-
-            sslCheckbox = new Button(addrGroup, SWT.CHECK);
-            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-            sslCheckbox.setLayoutData(gd);
-//            sslCheckbox.addModifyListener(textListener);
-
         }
 
         {
@@ -200,9 +191,6 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
             }
             dbText.setText(databaseName);
         }
-        if (sslCheckbox != null) {
-            sslCheckbox.setSelection(CommonUtils.notEmpty(connectionInfo.getProviderProperty(DenodoConstants.PROP_SSL)).equals("mms") ? true : false);
-        }
         if (usernameText != null) {
             usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
@@ -225,10 +213,6 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
         }
         if (usernameText != null) {
             connectionInfo.setUserName(usernameText.getText().trim());
-        }
-
-        if (sslCheckbox != null) {
-            connectionInfo.setProviderProperty(DenodoConstants.PROP_SSL, sslCheckbox.getSelection()  ? "mms" : "mm");
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());

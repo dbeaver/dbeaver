@@ -12,7 +12,6 @@ public class DenodoMessages extends NLS {
 	public static String label_port;
 	public static String label_security;
 	public static String label_user;
-	public static String label_ssl;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DenodoMessages.class);
