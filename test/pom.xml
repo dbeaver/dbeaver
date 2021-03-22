@@ -18,7 +18,7 @@
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.postgresql.test</module>
         <module>org.jkiss.dbeaver.ext.test</module>
-
+        <module>org.jkiss.dbeaver.ext.snowflake.core.test</module>
     </modules>
 
     <build>

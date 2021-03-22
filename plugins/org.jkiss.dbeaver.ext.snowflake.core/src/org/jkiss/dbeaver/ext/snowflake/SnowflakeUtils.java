@@ -41,7 +41,7 @@ public class SnowflakeUtils {
             throw new IllegalArgumentException("Empty string is an illegal Snowflake identifier");
         }
         char firstChar = identifier.charAt(0);
-        if (!Character.isLetter(firstChar) && firstChar != ' ') {
+        if (!Character.isLetter(firstChar) && firstChar != '_') {
             return true;
         }
         for (int i = 1; i < identifier.length(); i++) {
