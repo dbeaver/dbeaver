@@ -129,15 +129,17 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
             throw e;
         } finally {
-            if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != useAutoCommit) {
+            if (txnManager != null && txnManager.isSupportsTransactions()) {
                 try {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
                         session.enableLogging(false);
                         txnManager.commit(session);
                     }
-                    txnManager.setAutoCommit(monitor, oldAutoCommit);
+                    if (oldAutoCommit != useAutoCommit) {
+                        txnManager.setAutoCommit(monitor, oldAutoCommit);
+                    }
                 } catch (DBCException e) {
-                    log.warn("Can't switch back to auto-commit mode", e);
+                    log.warn("Can't commit changes", e);
                 }
             }
         }
