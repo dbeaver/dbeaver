@@ -121,6 +121,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             // Rollback changes
             if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
+                    session.enableLogging(false);
                     txnManager.rollback(session, null);
                 } catch (DBCException e1) {
                     log.warn("Can't rollback transaction after error", e);
@@ -130,6 +131,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         } finally {
             if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != useAutoCommit) {
                 try {
+                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
+                        session.enableLogging(false);
+                        txnManager.commit(session);
+                    }
                     txnManager.setAutoCommit(monitor, oldAutoCommit);
                 } catch (DBCException e) {
                     log.warn("Can't switch back to auto-commit mode", e);
