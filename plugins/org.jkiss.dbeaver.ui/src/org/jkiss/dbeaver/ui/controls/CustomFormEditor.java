@@ -28,10 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -418,7 +415,9 @@ public class CustomFormEditor {
     }
 
     private static String objectValueToString(Object value) {
-        if (value instanceof DBPNamedObject) {
+        if (value instanceof DBPQualifiedObject) {
+            return ((DBPQualifiedObject) value).getFullyQualifiedName(DBPEvaluationContext.UI);
+        } if (value instanceof DBPNamedObject) {
             return ((DBPNamedObject) value).getName();
         } else if (value instanceof Enum) {
             return ((Enum<?>) value).name();

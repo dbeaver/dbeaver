@@ -37,14 +37,17 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
     private static final Log log = Log.getLog(SQLServerSynonym.class);
 
     private long objectId;
+    @NotNull
     private SQLServerSchema schema;
+    @NotNull
     private String name;
+    @NotNull
     private String targetObjectName;
     private String description;
 
     private boolean persisted;
 
-    protected SQLServerSynonym(SQLServerSchema schema, long objectId, String name, String targetObjectName, boolean persisted) {
+    protected SQLServerSynonym(@NotNull SQLServerSchema schema, long objectId, @NotNull String name, @NotNull String targetObjectName, boolean persisted) {
         this.schema = schema;
         this.objectId = objectId;
         this.name = name;
@@ -78,7 +81,7 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
         return description;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public SQLServerSchema getParentObject() {
         return schema;
@@ -93,7 +96,9 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
+        if (context == DBPEvaluationContext.DDL ||
+            !SQLServerUtils.supportsCrossDatabaseQueries(getDataSource()))
+        {
             return DBUtils.getFullQualifiedName(getDataSource(), schema, this);
         }
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -104,7 +109,7 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
 
     @Property(viewable = true, order = 20)
     @Override
-    public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject getTargetObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         String schemaName;
         String objectName;
 
