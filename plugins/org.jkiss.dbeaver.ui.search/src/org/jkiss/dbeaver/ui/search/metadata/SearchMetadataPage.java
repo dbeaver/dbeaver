@@ -27,7 +27,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -87,13 +86,13 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
         initializeDialogUnits(parent);
 
-        Composite searchGroup = new Composite(parent, SWT.NONE);
+        Composite searchGroup = UIUtils.createComposite(parent, 1);
         searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        searchGroup.setLayout(new GridLayout(3, false));
         setControl(searchGroup);
-        UIUtils.createControlLabel(searchGroup, UISearchMessages.dialog_search_objects_label_object_name);
+
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.addEmptyTextHint(searchText, combo -> UISearchMessages.dialog_search_objects_label_object_name);
         if (nameMask != null) {
             searchText.setText(nameMask);
         }
@@ -105,25 +104,16 @@ public class SearchMetadataPage extends AbstractSearchPage {
             updateEnablement();
         });
 
-        Composite optionsGroup = new SashForm(searchGroup, SWT.NONE);
-        GridLayout layout = new GridLayout(2, true);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        optionsGroup.setLayout(layout);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.horizontalSpan = 3;
-        optionsGroup.setLayoutData(gd);
+        Composite optionsGroup = new SashForm(searchGroup, 2);
+        optionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             Group sourceGroup = UIUtils.createControlGroup(optionsGroup, UISearchMessages.dialog_search_objects_group_objects_source, 1, GridData.FILL_BOTH, 0);
-            gd = new GridData(GridData.FILL_BOTH);
-            //gd.heightHint = 300;
-            sourceGroup.setLayoutData(gd);
             DBPPlatform platform = DBWorkbench.getPlatform();
             final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(currentProject);
             DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
-            gd = new GridData(GridData.FILL_BOTH);
+            GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             dataSourceTree.setLayoutData(gd);
 
@@ -185,10 +175,6 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
         {
             Group settingsGroup = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_BOTH, 0);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            settingsGroup.setLayoutData(gd);
-
 
             {
                 //new Label(searchGroup, SWT.NONE);

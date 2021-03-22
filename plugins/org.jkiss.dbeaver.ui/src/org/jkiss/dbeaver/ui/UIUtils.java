@@ -2009,9 +2009,9 @@ public class UIUtils {
     }
 
     private static boolean isEmptyTextControl(Control control) {
-        return control instanceof Text ?
-            ((Text) control).getCharCount() == 0 :
-            control instanceof StyledText && ((StyledText) control).getCharCount() == 0;
+        return (control instanceof Text && ((Text) control).getCharCount() == 0) ||
+            (control instanceof StyledText && ((StyledText) control).getCharCount() == 0) ||
+            (control instanceof Combo && ((Combo) control).getText().isEmpty());
     }
 
     public static void expandAll(AbstractTreeViewer treeViewer) {
