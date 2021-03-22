@@ -44,6 +44,6 @@ public class SnowflakeUtilsTest {
         identifier = "ContainsLetters_Underscores$DollarSigns0123456789andDigits";
         assertEquals(identifier, escapeIdentifier(identifier));
 
-        assertEquals("\"\"two_double\"\"\"\"quotes_inside\"\"", escapeIdentifier("\"two_double\"\"quotes_inside\""));
+        assertEquals("\"quote\"\"andunquote\"\"\"", escapeIdentifier("quote\"andunquote\""));
     }
 }
