@@ -762,32 +762,6 @@
                     <parameter name="supports-references" value="false"/>
                 </driver>
 
-                <!-- AWS -->
-                <driver
-                    id="aws_redshift"
-                    label="Redshift (JDBC 4.1)"
-                    category="AWS"
-                    class="com.amazon.redshift.jdbc41.Driver"
-                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                    defaultPort="5439"
-                    description="%driver.redshift.description"
-                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
-                    categories="sql,analytic,cloud">
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/1.2.15.1025/RedshiftJDBC41-1.2.15.1025.jar"/>
-                </driver>
-                <driver
-                    id="aws_redshift_42"
-                    label="Redshift"
-                    category="AWS"
-                    class="com.amazon.redshift.jdbc42.Driver"
-                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                    defaultPort="5439"
-                    description="%driver.redshift.description"
-                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
-                    categories="sql,analytic,cloud">
-                    <replace provider="generic" driver="aws_redshift"/>
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
-                </driver>
                 <driver
                     id="aws_athena_42"
                     label="Athena"
@@ -1383,8 +1357,30 @@
                         defaultPort=""
                         description="Snowflake JDBC driver"
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
-                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
+
+                <!-- AWS -->
+                <driver
+                        id="aws_redshift"
+                        label="Redshift (JDBC 4.1)"
+                        category="AWS"
+                        class="com.amazon.redshift.jdbc41.Driver"
+                        sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                        defaultPort="5439"
+                        description="%driver.redshift.description"
+                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        categories="sql,analytic,cloud"/>
+                <driver
+                        id="aws_redshift_42"
+                        label="Redshift"
+                        category="AWS"
+                        class="com.amazon.redshift.jdbc42.Driver"
+                        sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                        defaultPort="5439"
+                        description="%driver.redshift.description"
+                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        categories="sql,analytic,cloud"/>
+
             </drivers>
 
         </datasource>
