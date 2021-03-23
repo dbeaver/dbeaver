@@ -166,11 +166,10 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     }
 
     @Override
-    protected SourceViewer createPatternViewer(Composite parent)
-    {
+    protected SourceViewer createPatternViewer(Composite parent) {
         IDocument document = new Document();
         SQLEditorSourceViewer viewer = new SQLEditorSourceViewer(parent, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
-        SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(sqlEditor, EditorsPlugin.getDefault().getPreferenceStore());
+        SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(sqlEditor, EditorsPlugin.getDefault().getPreferenceStore(), null);
         viewer.configure(configuration);
         viewer.setEditable(false);
         viewer.setDocument(document);
