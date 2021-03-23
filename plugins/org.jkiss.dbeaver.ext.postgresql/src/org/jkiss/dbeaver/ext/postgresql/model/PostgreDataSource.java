@@ -125,7 +125,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         final boolean showNDD = CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
-            PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
+            PostgreDatabase defDatabase = createDatabaseImpl(monitor, activeDatabaseName);
             dbList.add(defDatabase);
         } else {
             loadAvailableDatabases(monitor, configuration, dbList);
@@ -168,7 +168,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
                 try (ResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        PostgreDatabase database = new PostgreDatabase(monitor, this, dbResult);
+                        PostgreDatabase database = createDatabaseImpl(monitor, dbResult);
                         dbList.add(database);
                     }
                 }
@@ -189,7 +189,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    @Override
+    @NotNull
+    public PostgreDatabase createDatabaseImpl(@NotNull DBRProgressMonitor monitor, ResultSet dbResult) throws DBException {
+        return new PostgreDatabase(monitor, this, dbResult);
+    }
+
+    @NotNull
+    public PostgreDatabase createDatabaseImpl(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
+        return new PostgreDatabase(monitor, this, name);
+    }
+
+    @NotNull
+    public PostgreDatabase createDatabaseImpl(DBRProgressMonitor monitor, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
+        return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
+    }
+
+        @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
