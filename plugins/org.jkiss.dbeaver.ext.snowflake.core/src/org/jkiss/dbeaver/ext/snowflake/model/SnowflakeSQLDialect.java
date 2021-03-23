@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
-
     public SnowflakeSQLDialect() {
         super("Snowflake", "snowflake");
     }
@@ -52,4 +51,30 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         }
     }
 
+    /**
+     * Determines if identifier is case sensitive / must be enclosed in double quotes (in Snowflake world
+     * that's the same thing).
+     *
+     * See https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html
+     *
+     * @param identifier snowflake identifier
+     * @return {@code true} if identifier is case sensitive and should be used enclosed in double quotes
+     * @throws IllegalArgumentException if identifier string is not a valid Snowflake identifier
+     */
+    static boolean isCaseInsensitiveIdentifier(@NotNull String identifier) {
+        if (identifier.isEmpty()) {
+            throw new IllegalArgumentException("Empty string is an illegal Snowflake identifier");
+        }
+        char firstChar = identifier.charAt(0);
+        if (!Character.isLetter(firstChar) && firstChar != '_') {
+            return false;
+        }
+        for (int i = 1; i < identifier.length(); i++) {
+            char c = identifier.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$') {
+                return false;
+            }
+        }
+        return true;
+    }
 }
