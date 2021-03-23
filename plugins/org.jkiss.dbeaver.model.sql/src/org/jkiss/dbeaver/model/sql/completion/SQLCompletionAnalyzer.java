@@ -113,7 +113,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                         request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
-                    } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
+                    } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord) && isPrevWordEmpty) {
                         request.setQueryType(SQLCompletionRequest.QueryType.JOIN);
                     } else {
                         if (!isPrevWordEmpty && CommonUtils.isEmpty(prevDelimiter)) {
