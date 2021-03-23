@@ -21,16 +21,16 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLMultilineCommentToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,52 +54,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
     private final IToken sqlStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
     private final IToken sqlQuotedToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
 
-    /**
-     * Detector for empty comments.
-     */
-    static class EmptyCommentDetector implements IWordDetector {
-
-        /*
-         * @see IWordDetector#isWordStart
-         */
-        @Override
-        public boolean isWordStart(char c) {
-            return (c == '/');
-        }
-
-        /*
-         * @see IWordDetector#isWordPart
-         */
-        @Override
-        public boolean isWordPart(char c) {
-            return (c == '*' || c == '/');
-        }
-    }
-
-    /**
-     * Word rule for empty comments.
-     */
-    static class EmptyCommentRule extends WordRule implements IPredicateRule {
-
-        private IToken successToken;
-
-        public EmptyCommentRule(IToken successToken) {
-            super(new EmptyCommentDetector());
-            this.successToken = successToken;
-            addWord("/**/", this.successToken); //$NON-NLS-1$
-        }
-
-        @Override
-        public IToken evaluate(ICharacterScanner scanner, boolean resume) {
-            return evaluate(scanner);
-        }
-
-        @Override
-        public IToken getSuccessToken() {
-            return successToken;
-        }
-    }
-
     private void setupRules() {
         IPredicateRule[] result = new IPredicateRule[rules.size()];
         rules.toArray(result);
@@ -121,42 +75,16 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
             }
         }
 
-        boolean hasDoubleQuoteRule = false;
-        String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
-        String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
-        char stringEscapeCharacter = dialect.getStringEscapeCharacter();
-        if (identifierQuoteStrings != null) {
-            for (String[] quoteString : identifierQuoteStrings) {
-                rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, stringEscapeCharacter));
-                if (quoteString[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteString[0].equals(quoteString[1])) {
-                    hasDoubleQuoteRule = true;
-                }
+        adaptRules(ruleManager.getRulesByType(SQLTokenType.T_COMMENT));
+        adaptRules(ruleManager.getRulesByType(SQLTokenType.T_QUOTED));
+        adaptRules(ruleManager.getRulesByType(SQLTokenType.T_STRING));
+    }
+
+    private void adaptRules(@NotNull TPRule... rules) {
+        for (TPRule rule : rules) {
+            if (rule instanceof TPPredicateRule) {
+                this.rules.add(new PredicateRuleAdapter((TPPredicateRule) rule));
             }
-        }
-        if (!hasDoubleQuoteRule) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, stringEscapeCharacter));
-        }
-        if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
-            for (String[] quotes : stringQuoteStrings) {
-                rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, stringEscapeCharacter));
-            }
-        }
-
-        // Add special case word rule.
-        EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
-        rules.add(wordRule);
-
-        // Add rules for multi-line comments
-        TPRule multiLineCommentRule = ruleManager.getMultiLineCommentRule();
-        if (multiLineCommentRule instanceof TPPredicateRule) {
-            rules.add(new PredicateRuleAdapter((TPPredicateRule) multiLineCommentRule));
-        }
-
-        String[] singleLineComments = dialect.getSingleLineComments();
-
-        for (String singleLineComment : singleLineComments) {
-            // Add rule for single line comments.
-            rules.add(new EndOfLineRule(singleLineComment, commentToken));
         }
     }
 
@@ -203,6 +131,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
 
     private class PredicateRuleAdapter implements IPredicateRule {
         private final TPPredicateRule rule;
+
         PredicateRuleAdapter(TPPredicateRule rule) {
             this.rule = rule;
         }
@@ -232,7 +161,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
                     case T_QUOTED:
                         return sqlQuotedToken;
                     case T_COMMENT:
-                        return multilineCommentToken;
+                        return token instanceof SQLMultilineCommentToken ? multilineCommentToken : commentToken;
                 }
             }
         }

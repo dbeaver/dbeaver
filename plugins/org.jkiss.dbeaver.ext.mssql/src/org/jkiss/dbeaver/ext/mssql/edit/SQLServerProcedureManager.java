@@ -19,16 +19,17 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.*;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -40,7 +41,7 @@ import java.util.Map;
 /**
  * SQLServerProcedureManager
  */
-public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedure, SQLServerSchema> {
+public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerProcedure, SQLServerSchema> {
 
     @Nullable
     @Override
@@ -83,27 +84,17 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        SQLServerDatabase procDatabase = command.getObject().getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != procDatabase) {
-            actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
-        }
+        addDatabaseSwitchAction1(executionContext, actions, command.getObject().getContainer().getDatabase());
 
         actions.add(
             new SQLDatabasePersistAction("Drop procedure", "DROP " + command.getObject().getProcedureType() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
 
-        if (defaultDatabase != procDatabase) {
-            actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
-        }
+        addDatabaseSwitchAction2(executionContext, actions, command.getObject().getContainer().getDatabase());
     }
 
     private void createOrReplaceProcedureQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) throws DBException {
-        SQLServerDatabase procDatabase = procedure.getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != procDatabase) {
-            actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
-        }
+        addDatabaseSwitchAction1(executionContext, actions, procedure.getContainer().getDatabase());
 
         if (create) {
             actions.add(new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
@@ -111,9 +102,7 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
             actions.add(new SQLDatabasePersistAction("Alter procedure", SQLServerUtils.changeCreateToAlterDDL(procedure.getDataSource().getSQLDialect(), procedure.getBody())));
         }
 
-        if (defaultDatabase != procDatabase) {
-            actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
-        }
+        addDatabaseSwitchAction2(executionContext, actions, procedure.getContainer().getDatabase());
     }
 
     @Override

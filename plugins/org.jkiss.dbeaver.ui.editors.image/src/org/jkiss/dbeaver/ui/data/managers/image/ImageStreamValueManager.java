@@ -53,7 +53,7 @@ public class ImageStreamValueManager implements IStreamValueManager {
                 return MatchType.NONE;
             }
         }
-        return imageDetector.isImage() ? MatchType.EXCLUSIVE : MatchType.NONE;
+        return imageDetector.isImage() ? MatchType.PRIMARY : MatchType.NONE;
     }
 
     @Override

@@ -39,14 +39,14 @@ public class NestedMultiLineRule extends MultiLineRule {
      */
     private boolean fRollback;
 
-    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token) {
-        super(startSequence, endSequence, token, (char) 0, true);
+    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter, boolean breaksOnEOF) {
+        super(startSequence, endSequence, token, escapeCharacter, breaksOnEOF);
     }
 
     @Override
-    public TPToken evaluate(TPCharacterScanner scanner) {
+    protected TPToken doEvaluate(TPCharacterScanner scanner, boolean resume) {
         fNestingLevel = 1;
-        return super.evaluate(scanner);
+        return super.doEvaluate(scanner, resume);
     }
 
     @Override

@@ -36,6 +36,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -47,6 +48,8 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
+import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -204,6 +207,13 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
         }
         if (valueManager == null || valueEditor == null) {
             forceRefresh = true;
+        }
+        if (!forceRefresh && valueManager instanceof ContentValueManager) {
+            final Object value = previewController.getValue();
+            if (value instanceof DBDContent && !ContentUtils.isTextContent((DBDContent) value)) {
+                // Always perform refresh for non-textual data
+                forceRefresh = true;
+            }
         }
         if (forceRefresh) {
             cleanupPanel();

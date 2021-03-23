@@ -17,20 +17,25 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -104,5 +109,71 @@ public class DTUtils {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public static List<DBSAttributeBase> getAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
+        final List<DBSAttributeBase> attributes = new ArrayList<>();
+        if (container instanceof DBSEntity && !(container instanceof DBSDocumentContainer)) {
+            for (DBSEntityAttribute attr : CommonUtils.safeList(((DBSEntity) container).getAttributes(monitor))) {
+                if (DBUtils.isHiddenObject(attr)) {
+                    continue;
+                }
+                attributes.add(attr);
+            }
+        } else {
+            // Seems to be a dynamic query. Execute it to get metadata
+            final DBCExecutionContext context = container instanceof DBPContextProvider
+                ? ((DBPContextProvider) container).getExecutionContext()
+                : DBUtils.getDefaultContext(container, false);
+            if (context == null) {
+                throw new DBCException("No execution context");
+            }
+            DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), monitor1 -> {
+                final MetadataReceiver receiver = new MetadataReceiver(container);
+                try (DBCSession session = context.openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
+                    container.readData(new AbstractExecutionSource(container, session.getExecutionContext(), controller), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+                if (receiver.attributes == null) {
+                    throw new InvocationTargetException(new DBCException("Query does not contain any attributes"));
+                }
+                for (DBDAttributeBinding attr : receiver.attributes) {
+                    if (DBUtils.isHiddenObject(attr)) {
+                        continue;
+                    }
+                    attributes.add(attr);
+                }
+            });
+        }
+
+        return attributes;
+    }
+
+    private static class MetadataReceiver implements DBDDataReceiver {
+        private final DBSDataContainer container;
+        private DBDAttributeBinding[] attributes;
+
+        public MetadataReceiver(DBSDataContainer container) {
+            this.container = container;
+        }
+
+        @Override
+        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+            attributes = DBUtils.makeLeafAttributeBindings(session, container, resultSet);
+        }
+
+        @Override
+        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+        }
+
+        @Override
+        public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+        }
+
+        @Override
+        public void close() {
+        }
     }
 }

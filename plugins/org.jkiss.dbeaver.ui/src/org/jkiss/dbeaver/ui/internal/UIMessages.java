@@ -59,6 +59,7 @@ public class UIMessages extends NLS {
     public static String button_clear;
     public static String button_reset_to_defaults;
     public static String button_start;
+    public static String button_skip_all;
 
     public static String controls_locale_selector_group_locale;
     public static String controls_locale_selector_label_country;
