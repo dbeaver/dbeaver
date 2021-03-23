@@ -19,11 +19,21 @@ package org.jkiss.dbeaver.ext.db2;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * DB2 SQL dialect
@@ -33,20 +43,24 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
  */
 public class DB2SQLDialect extends JDBCSQLDialect {
 
+    private static final Log log = Log.getLog(DB2SQLDialect.class);
+
     public static final String[] EXEC_KEYWORDS = new String[]{"call"};
 
     private static final String[][] DB2_BEGIN_END_BLOCK = new String[][]{
     };
 
+    private static final boolean LOAD_ROUTINES_FROM_SYSCAT = false;
+
     public DB2SQLDialect() {
         super("DB2 LUW", "db2_luw");
     }
 
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
-        for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
-            this.addSQLKeyword(kw);
-        }
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
+        addSQLKeywords(Arrays.asList(DB2Constants.ADVANCED_KEYWORDS));
+        addFunctions(Arrays.asList(DB2Constants.ROUTINES));
+
         turnFunctionIntoKeyword("TRUNCATE");
     }
 
@@ -67,6 +81,29 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     public String[] getExecuteKeywords()
     {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    protected void loadFunctions(JDBCSession session, JDBCDatabaseMetaData metaData, Set<String> allFunctions) throws DBException, SQLException {
+        if (LOAD_ROUTINES_FROM_SYSCAT) {
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet dbResult = stmt.executeQuery(
+                    "SELECT DISTINCT ROUTINENAME FROM SYSCAT.ROUTINES")) {
+                    while (dbResult.next()) {
+                        String routineName = dbResult.getString(1);
+                        if (CommonUtils.isEmpty(routineName) || !Character.isLetter(routineName.charAt(0))) {
+                            continue;
+                        }
+                        allFunctions.add(routineName);
+                    }
+                }
+            } catch (Throwable e) {
+                log.debug("Error loading DB2 functions", e);
+            }
+        }
+        if (allFunctions.isEmpty()) {
+            super.loadFunctions(session, metaData, allFunctions);
+        }
     }
 
     @Nullable

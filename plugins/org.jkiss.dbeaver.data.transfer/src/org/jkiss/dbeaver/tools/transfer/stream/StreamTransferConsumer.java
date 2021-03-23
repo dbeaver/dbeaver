@@ -48,10 +48,12 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.io.ByteOrderMark;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -118,6 +120,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             columnBindings = DBUtils.injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, columnMetas, true);
         } else {
             columnBindings = DBUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
+        }
+
+        final StreamMappingContainer mapping = settings.getDataMapping(dataContainer);
+        if (mapping != null && mapping.isComplete()) {
+            // That's a dirty way of doing things ...
+            columnBindings = Arrays.stream(columnBindings)
+                .filter(attr -> {
+                    final StreamMappingAttribute attribute = mapping.getAttribute(attr);
+                    return attribute == null || attribute.getMappingType() == StreamMappingType.export;
+                })
+                .toArray(DBDAttributeBinding[]::new);
         }
 
         if (!initialized) {
@@ -291,10 +304,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Check for BOM and write it to the stream
         if (!parameters.isBinary && settings.isOutputEncodingBOM()) {
-            byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
-            if (bom != null) {
-                outputStream.write(bom);
+            try {
+                final ByteOrderMark bom = ByteOrderMark.fromCharset(settings.getOutputEncoding());
+                outputStream.write(bom.getBytes());
                 outputStream.flush();
+            } catch (IllegalArgumentException e) {
+                log.debug("Error writing byte order mask", e);
             }
         }
 

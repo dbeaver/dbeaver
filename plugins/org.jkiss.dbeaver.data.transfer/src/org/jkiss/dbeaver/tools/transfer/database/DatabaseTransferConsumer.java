@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -326,31 +327,29 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     executeBatch.execute(targetSession, options);
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
-                    if (!disableUsingBatches) {
-                        DBWorkbench.getPlatformUI().showError("Error inserting row", "Data transfer failed during batch insert\n" +
-                                "(you can disable batch insert in order to skip particular rows).", e);
-                        throw new DBCException("Can't insert row", e);
+                    if (ignoreErrors) {
+                        break;
+                    }
+                    String message;
+                    if (disableUsingBatches) {
+                        message = DTMessages.database_transfer_consumer_task_error_occurred_during_data_load;
                     } else {
-                        if (!ignoreErrors) {
-                            switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
-                                    DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
-                                case STOP:
-                                    // just stop execution
-                                    throw new DBCException("Can't insert row", e);
-                                case RETRY:
-                                    // do it again
-                                    retryInsert = true;
-                                    break;
-                                case IGNORE:
-                                    // Just do nothing and go to the next row
-                                    retryInsert = false;
-                                    break;
-                                case IGNORE_ALL:
-                                    ignoreErrors = true;
-                                    retryInsert = false;
-                                    break;
-                            }
-                        }
+                        message = DTMessages.database_transfer_consumer_task_error_occurred_during_batch_insert;
+                    }
+                    DBPPlatformUI.UserResponse response = DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(message, e, true);
+                    switch (response) {
+                        case STOP:
+                            throw new DBCException("Can't insert row", e);
+                        case RETRY:
+                            retryInsert = true;
+                            break;
+                        case IGNORE:
+                            retryInsert = false;
+                            break;
+                        case IGNORE_ALL:
+                            ignoreErrors = true;
+                            retryInsert = false;
+                            break;
                     }
                 }
             } while (retryInsert);
