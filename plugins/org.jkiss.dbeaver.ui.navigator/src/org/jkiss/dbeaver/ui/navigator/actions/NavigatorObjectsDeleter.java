@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-class NavigatorObjectsDeleter {
+public class NavigatorObjectsDeleter {
     private static final Log log = Log.getLog(NavigatorObjectsDeleter.class);
 
     /**
@@ -410,7 +410,7 @@ class NavigatorObjectsDeleter {
         sql.append(script);
     }
 
-    void setDeleteCascade(boolean checkCascade) {
+    public void setDeleteCascade(boolean checkCascade) {
         this.deleteCascade = checkCascade;
     }
 
