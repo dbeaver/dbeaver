@@ -147,7 +147,7 @@ public class SQLRuleManager {
             boolean hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
                 for (String[] quotes : identifierQuoteStrings) {
-                    rules.add(new SingleLineRule(quotes[0], quotes[1], quotedToken, escapeChar, breaksOnEOF));
+                    rules.add(new MultiLineRule(quotes[0], quotes[1], quotedToken, escapeChar, breaksOnEOF));
                     if (quotes[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quotes[0].equals(quotes[1])) {
                         hasDoubleQuoteRule = true;
                     }
