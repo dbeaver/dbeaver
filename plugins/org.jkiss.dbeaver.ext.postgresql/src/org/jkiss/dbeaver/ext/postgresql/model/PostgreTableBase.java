@@ -160,7 +160,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
+        PostgreDatabase database = getDatabase();
         return DBUtils.getFullQualifiedName(getDataSource(),
+            database.isSharedDatabase() ? database : null,
             getSchema(),
             this);
     }

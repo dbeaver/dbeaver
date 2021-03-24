@@ -148,6 +148,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         schemaCache.cacheObject(sysSchema);
     }
 
+    /**
+     * Shared database doesn't need separate JDBC connection.
+     * It reuses default database connection and its' object can be accessed with cross-database queries.
+     */
+    public boolean isSharedDatabase() {
+        return false;
+    }
+
     @NotNull
     public PostgreExecutionContext getMetaContext() {
         return (PostgreExecutionContext) super.getDefaultContext(true);
@@ -204,7 +212,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (executionContext == null) {
+        if (!isSharedDatabase() && executionContext == null) {
             checkInstanceConnection(monitor, true);
         }
     }
@@ -212,7 +220,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     // We mustn't cache metadata when checkInstanceConnection called during datasource instantiation
     // Because datasource is not fully initialized yet
     void checkInstanceConnection(@NotNull DBRProgressMonitor monitor, boolean cacheMetadata) throws DBException {
-        if (executionContext == null) {
+        if (!isSharedDatabase() && executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
             if (cacheMetadata)
@@ -222,7 +230,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public boolean isInstanceConnected() {
-        return metaContext != null || executionContext != null;
+        return metaContext != null || executionContext != null || sharedInstance != null;
     }
 
     protected void loadInfo(ResultSet dbResult) {
@@ -708,7 +716,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @NotNull
     @Override
     public DBSObjectState getObjectState() {
-        if (this == dataSource.getDefaultInstance()) {
+        if (this == dataSource.getDefaultInstance() || this.isSharedDatabase()) {
             return DBSObjectState.NORMAL;
         } else {
             return PostgreConstants.STATE_UNAVAILABLE;
@@ -722,7 +730,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (metaContext == null && executionContext == null) {
+        if (sharedInstance == null && metaContext == null && executionContext == null) {
             // Nothing to refresh
             return this;
         }
