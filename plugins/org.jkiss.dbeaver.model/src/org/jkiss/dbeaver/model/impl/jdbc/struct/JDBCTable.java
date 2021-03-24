@@ -429,13 +429,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 // Make query
                 StringBuilder query = new StringBuilder();
                 String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
-                query.append(dialect.generateTableUpdateBegin(tableName));
+                query.append(generateTableUpdateBegin(tableName));
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                String updateSet = dialect.generateTableUpdateSet();
+                String updateSet = generateTableUpdateSet();
                 if (!CommonUtils.isEmpty(updateSet)) {
-                    query.append("\n\t").append(dialect.generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
+                    query.append("\n\t").append(generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
                 }
 
                 boolean hasKey = false;
@@ -510,7 +510,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 // Make query
                 StringBuilder query = new StringBuilder();
                 String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
-                query.append(dialect.generateTableDeleteFrom(tableName));
+                query.append(generateTableDeleteFrom(tableName));
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
@@ -946,6 +946,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         catch (DBException e) {
             throw new DBCException("Can't cache table columns", e);
         }
+    }
+
+    public String generateTableUpdateBegin(String tableName) {
+        return "UPDATE " + tableName;
+    }
+
+    public String generateTableUpdateSet() {
+        return "SET ";
+    }
+
+    public String generateTableDeleteFrom(String tableName) {
+        return "DELETE FROM " + tableName;
     }
 
 }
