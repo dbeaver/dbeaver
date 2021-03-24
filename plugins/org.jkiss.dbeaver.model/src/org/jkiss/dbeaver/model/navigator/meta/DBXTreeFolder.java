@@ -169,6 +169,20 @@ public class DBXTreeFolder extends DBXTreeNode {
     }
 
     @Override
+    protected boolean isVisible(DBNNode context) {
+        if (!super.isVisible(context)) {
+            return false;
+        }
+        // If child nodes are only folders and all non visible then parent folder is also not visible
+        for (DBXTreeNode childNode : getChildren(context)) {
+            if (childNode.isVisible(context)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "Folder " + label;
     }
