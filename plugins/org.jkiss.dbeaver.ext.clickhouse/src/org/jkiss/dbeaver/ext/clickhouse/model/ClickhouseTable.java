@@ -141,5 +141,19 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
         engine = JDBCUtils.safeGetString(dbResult, "engine");
     }
 
+    @Override
+    public String generateTableUpdateBegin(String tableName) {
+        return "ALTER TABLE " + tableName + " UPDATE ";
+    }
+
+    @Override
+    public String generateTableUpdateSet() {
+        return "";
+    }
+
+    @Override
+    public String generateTableDeleteFrom(String tableName) {
+        return "ALTER TABLE " + tableName + " DELETE ";
+    }
 
 }
