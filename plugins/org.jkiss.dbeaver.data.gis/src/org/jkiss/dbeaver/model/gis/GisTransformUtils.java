@@ -29,6 +29,7 @@ import org.cts.registry.EPSGRegistry;
 import org.cts.registry.RegistryException;
 import org.cts.registry.RegistryManager;
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -208,4 +209,21 @@ public class GisTransformUtils {
         }
         return null;
     }
+
+    public static DBGeometry transformToSRID(@NotNull DBGeometry geometry, int targetSRID) {
+        int srid = geometry.getSRID();
+        if (srid == GisConstants.SRID_SIMPLE || srid == GisConstants.SRID_4326 || geometry.getGeometry() == null) {
+            return geometry;
+        } else {
+            try {
+                GisTransformRequest request = new GisTransformRequest(geometry.getGeometry(), srid, targetSRID);
+                GisTransformUtils.transformGisData(request);
+                return new DBGeometry(request.getTargetValue());
+            } catch (Exception e) {
+                log.debug("Error transforming CRS", e);
+                return geometry;
+            }
+        }
+    }
+
 }
