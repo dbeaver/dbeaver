@@ -74,26 +74,14 @@ public final class DBUtils {
         return getQuotedIdentifier(object.getDataSource(), object.getName());
     }
 
-    public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
-    {
-        {
-            final String[][] quoteStrings = dataSource.getSQLDialect().getIdentifierQuoteStrings();
-            if (ArrayUtils.isEmpty(quoteStrings)) {
-                return false;
-            }
-            for (int i = 0; i < quoteStrings.length; i++) {
-                if (str.startsWith(quoteStrings[i][0]) && str.endsWith(quoteStrings[i][1])) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
+        return dataSource.getSQLDialect().isQuotedIdentifier(str);
     }
 
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        return getUnQuotedIdentifier(str, dataSource.getSQLDialect().getIdentifierQuoteStrings());
+        return dataSource.getSQLDialect().getUnquotedIdentifier(str);
     }
 
     @NotNull
@@ -108,8 +96,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote)
-    {
+    public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote) {
         return getUnQuotedIdentifier(str, quote, quote);
     }
 
@@ -131,69 +118,8 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
-    {
-        if (isQuotedIdentifier(dataSource, str)) {
-            // Already quoted
-            return str;
-        }
-        final SQLDialect sqlDialect = dataSource.getSQLDialect();
-        String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
-        if (ArrayUtils.isEmpty(quoteStrings)) {
-            return str;
-        }
-
-        // Check for keyword conflict
-        final DBPKeywordType keywordType = sqlDialect.getKeywordType(str);
-        boolean hasBadChars = quoteAlways ||
-            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
-            sqlDialect.isQuoteReservedWords());
-
-        if (!hasBadChars && !str.isEmpty()) {
-            hasBadChars = !sqlDialect.validIdentifierStart(str.charAt(0));
-        }
-        if (!hasBadChars && caseSensitiveNames) {
-            // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-            // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
-            // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
-            if (!sqlDialect.useCaseInsensitiveNameLookup()) {
-                // See how unquoted identifiers are stored
-                // If passed identifier case differs from unquoted then we need to escape it
-                switch (sqlDialect.storesUnquotedCase()) {
-                    case UPPER:
-                        hasBadChars = !str.equals(str.toUpperCase());
-                        break;
-                    case LOWER:
-                        hasBadChars = !str.equals(str.toLowerCase());
-                        break;
-                }
-            }
-        }
-
-        // Check for bad characters
-        if (!hasBadChars && !str.isEmpty()) {
-            for (int i = 0; i < str.length(); i++) {
-                if (!sqlDialect.validIdentifierPart(str.charAt(i), false)) {
-                    hasBadChars = true;
-                    break;
-                }
-            }
-        }
-        if (!hasBadChars) {
-            return str;
-        }
-
-        // Escape quote chars
-        for (int i = 0; i < quoteStrings.length; i++) {
-            String q1 = quoteStrings[i][0], q2 = quoteStrings[i][1];
-            if (q1.equals(q2) && (q1.equals("\"") || q1.equals("'"))) {
-                if (str.contains(q1)) {
-                    str = str.replace(q1, q1 + q1);
-                }
-            }
-        }
-        // Escape with first (default) quote string
-        return quoteStrings[0][0] + str + quoteStrings[0][1];
+    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways) {
+        return dataSource.getSQLDialect().getQuotedIdentifier(str, caseSensitiveNames, quoteAlways);
     }
 
     @NotNull

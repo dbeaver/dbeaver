@@ -69,7 +69,8 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         return new DBSObjectType[]{
                 HANAObjectType.TABLE,
                 HANAObjectType.VIEW,
-                HANAObjectType.PROCEDURE
+                HANAObjectType.PROCEDURE,
+                HANAObjectType.SYNONYM
         };
     }
 
@@ -95,13 +96,21 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext executionContext, DBSObject parentObject, DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException {
         List<DBSObjectReference> result = new ArrayList<>();
         List<DBSObjectType> objectTypesList = Arrays.asList(objectTypes);
+        StringBuilder objectTypeClause = new StringBuilder(100);
         GenericSchema parentSchema = parentObject instanceof GenericSchema ?
                 (GenericSchema) parentObject : (globalSearch || !(executionContext instanceof GenericExecutionContext) ? null : ((GenericExecutionContext) executionContext).getDefaultSchema());
 
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by mask")) {
             if (objectTypesList.contains(HANAObjectType.TABLE) || objectTypesList.contains(HANAObjectType.VIEW) || objectTypesList.contains(HANAObjectType.PROCEDURE) ||
                     objectTypesList.contains(HANAObjectType.SYNONYM)) {
-                searchNotColumnObjects(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+                for (DBSObjectType objectType : objectTypes) {
+                    if (objectTypeClause.length() > 0) objectTypeClause.append(",");
+                    objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+                }
+                if (objectTypeClause.length() == 0) {
+                    objectTypeClause.append("'TABLE', 'VIEW', 'SYNONYM', 'PROCEDURE'");
+                }
+                searchNotColumnObjects(session, parentSchema, objectNameMask, caseSensitive, maxResults, result, objectTypeClause.toString());
             }
             if (objectTypesList.contains(RelationalObjectType.TYPE_TABLE_COLUMN)) {
                 findTableColumnsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
@@ -117,12 +126,12 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     }
 
     private void searchNotColumnObjects(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-                                   boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
+                                   boolean caseSensitive, int maxResults, List<DBSObjectReference> result, String objectTypeClause) throws SQLException, DBException {
 
         String stmt =                       "SELECT SCHEMA_NAME, OBJECT_NAME, OBJECT_TYPE FROM SYS.OBJECTS WHERE";
         stmt += caseSensitive ?             " OBJECT_NAME LIKE ?" : " UPPER(OBJECT_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=	                            " AND OBJECT_TYPE IN ('TABLE', 'VIEW', 'SYNONYM', 'PROCEDURE')";
+        stmt +=	                            " AND OBJECT_TYPE IN (" + objectTypeClause + ")";
         stmt +=                             " ORDER BY SCHEMA_NAME, OBJECT_NAME LIMIT " + maxResults;
 
 

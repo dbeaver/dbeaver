@@ -56,7 +56,7 @@
         <module>org.jkiss.dbeaver.ext.teradata</module>
         <module>org.jkiss.dbeaver.ext.kognitio</module>
         <module>org.jkiss.dbeaver.ext.datavirtuality</module>
-		
+
         <module>org.jkiss.dbeaver.tasks.native</module>
 
         <module>org.jkiss.dbeaver.data.office</module>
