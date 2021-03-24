@@ -54,7 +54,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     @Nullable
     @Override
     public GenericCatalog getDefaultCatalog() {
-        if (activeDatabaseName == null) {
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
             return null;
         }
         return getDataSource().getCatalog(activeDatabaseName);
@@ -173,22 +173,24 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         return isRefreshed;
     }
 
-    private void setActiveDatabase(DBRProgressMonitor monitor, String databaseName) throws DBCException {
+    private void setActiveDatabase(DBRProgressMonitor monitor, @NotNull String databaseName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                dbStat.executeUpdate("USE DATABASE " + databaseName);
+                dbStat.executeUpdate("USE DATABASE " + DBUtils.getQuotedIdentifier(getDataSource(), databaseName));
             }
         } catch (SQLException e) {
+            log.error("Unable to set active database due to unexpected SQLException. databaseName=" + databaseName);
             throw new DBCException(e, this);
         }
     }
 
-    private void setActiveSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
+    private void setActiveSchema(DBRProgressMonitor monitor, @NotNull String schemaName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                dbStat.executeUpdate("USE SCHEMA " + schemaName);
+                dbStat.executeUpdate("USE SCHEMA " + DBUtils.getQuotedIdentifier(getDataSource(), schemaName));
             }
         } catch (SQLException e) {
+            log.error("Unable to set active schema due to unexpected SQLException. schemaName=" + schemaName);
             throw new DBCException(e, this);
         }
     }
