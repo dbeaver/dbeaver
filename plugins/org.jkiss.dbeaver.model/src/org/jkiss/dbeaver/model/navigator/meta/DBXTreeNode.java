@@ -238,7 +238,7 @@ public abstract class DBXTreeNode
         return children;
     }
 
-    private boolean isVisible(DBNNode context)
+    protected boolean isVisible(DBNNode context)
     {
         try {
             return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
