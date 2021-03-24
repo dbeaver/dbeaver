@@ -331,6 +331,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return defaultValue;
     }
 
+    @Override
+    public void setDefaultValue(@Nullable String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Nullable
     @Property(order = 80)
     public String getGeneratedValue()

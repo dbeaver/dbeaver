@@ -101,29 +101,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
-    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
+    protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
         throws DBException {
         super(monitor, dataSource, false);
         this.initCaches();
         this.loadInfo(dbResult);
     }
 
-    @NotNull
-    public PostgreExecutionContext getMetaContext() {
-        return (PostgreExecutionContext) super.getDefaultContext(true);
-    }
-
-    private void initCaches() {
-        schemaCache = getDataSource().getServerType().createSchemaCache(this);
-/*
-        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
-            // Roles not supported
-            roleCache.setCache(Collections.emptyList());
-        }
-*/
-    }
-
-    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
+    protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
         throws DBException {
         super(monitor, dataSource, false);
         // We need to set name first
@@ -139,7 +124,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
+    protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
         super(monitor, dataSource, false);
         this.name = name;
         this.initialOwner = owner;
@@ -161,6 +146,21 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreSchema sysSchema = new PostgreSchema(this, PostgreConstants.CATALOG_SCHEMA_NAME);
         sysSchema.getDataTypeCache().loadDefaultTypes(sysSchema);
         schemaCache.cacheObject(sysSchema);
+    }
+
+    @NotNull
+    public PostgreExecutionContext getMetaContext() {
+        return (PostgreExecutionContext) super.getDefaultContext(true);
+    }
+
+    private void initCaches() {
+        schemaCache = getDataSource().getServerType().createSchemaCache(this);
+/*
+        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
+            // Roles not supported
+            roleCache.setCache(Collections.emptyList());
+        }
+*/
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -889,7 +889,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     /////////////////////////////////////////////////////////////////////////////////////
     // Caches
 
-    private static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
+    protected static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
         boolean handlePermissionDeniedError(Exception e) {
             if (e instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) e).getDatabaseState())) {
                 log.warn(e);

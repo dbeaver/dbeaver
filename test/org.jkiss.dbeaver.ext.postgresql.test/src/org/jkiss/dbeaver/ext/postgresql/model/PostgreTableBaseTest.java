@@ -75,7 +75,7 @@ public class PostgreTableBaseTest {
         };
 
         testUser = new PostgreRole(null, "tester", "test", true);
-        testDatabase = new PostgreDatabase(new VoidProgressMonitor(), testDataSource, "testdb", testUser, null, null, null);
+        testDatabase = testDataSource.createDatabaseImpl(new VoidProgressMonitor(), "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "test", testUser);
 
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
