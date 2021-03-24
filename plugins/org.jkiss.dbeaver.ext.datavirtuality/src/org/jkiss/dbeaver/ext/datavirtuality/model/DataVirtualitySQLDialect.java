@@ -40,7 +40,12 @@ public class DataVirtualitySQLDialect extends GenericSQLDialect implements TPRul
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(
                 Arrays.asList(
-                        "SIMILAR TO"
+                        "SIMILAR",
+                        "VIRTUAL",
+                        "OPTION",
+                        "TEMPORARY",
+                        "LOCAL",
+                        "WITHOUT"
                 ));
     }
 
