@@ -27,6 +27,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -55,13 +56,6 @@ import java.util.*;
 public class NavigatorObjectsDeleter {
     private static final Log log = Log.getLog(NavigatorObjectsDeleter.class);
 
-    /**
-     * A map with delete options.
-     *
-     * <p>Only contains cascade option
-     */
-    private static final Map<String, Object> OPTIONS_CASCADE = Collections.singletonMap(DBEObjectMaker.OPTION_DELETE_CASCADE, Boolean.TRUE);
-
     private final List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<>();
 
     /**
@@ -69,53 +63,51 @@ public class NavigatorObjectsDeleter {
      */
     private final IWorkbenchWindow window;
 
+    @Nullable
+    private DBECommandContext commandContext;
+
     /**
      * A list containing objects to delete.
      */
     private final List<?> selection;
 
     /**
-     * {@code true} if 'Cascade delete' button should be shown
-     */
-    private final boolean showCascade;
-
-    /**
-     * {@code true} if 'View Script' button should be shown
-     */
-    private final boolean showViewScript;
-    private final boolean showDeleteContents;
-
-    /**
      * {@code true} in case of attempt to delete database nodes which belong to different data sources
      */
     private final boolean hasNodesFromDifferentDataSources;
 
-    @Nullable
-    private DBECommandContext commandContext;
+    private final boolean supportsShowViewScript;
+    private final boolean supportsDeleteContents;
+    private final boolean supportsDeleteCascade;
+    private final boolean supportsCloseExistingConnections;
 
-    private boolean deleteCascade = false;
-    private boolean deleteContents = false;
+    private boolean deleteContent;
+    private boolean deleteCascade;
+    private boolean closeExistingConnections;
 
-    private NavigatorObjectsDeleter(final List<?> selection, final IWorkbenchWindow window,
-                                    final boolean hasNodesFromDifferentDataSources, final boolean showCascade,
-                                    final boolean showViewScript, boolean showDeleteContents) {
-        this.selection = selection;
+    private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean hasNodesFromDifferentDataSources,
+                                    boolean supportsShowViewScript, boolean supportsDeleteContents, boolean supportsDeleteCascade,
+                                    boolean supportsCloseExistingConnections) {
         this.window = window;
+        this.selection = selection;
         this.hasNodesFromDifferentDataSources = hasNodesFromDifferentDataSources;
-        this.showCascade = showCascade;
-        this.showViewScript = showViewScript;
-        this.showDeleteContents = showDeleteContents;
+        this.supportsShowViewScript = supportsShowViewScript;
+        this.supportsDeleteContents = supportsDeleteContents;
+        this.supportsDeleteCascade = supportsDeleteCascade;
+        this.supportsCloseExistingConnections = supportsCloseExistingConnections;
     }
 
-    static NavigatorObjectsDeleter of(final List<?> selection, final IWorkbenchWindow window) {
-        DBPDataSource dataSource = null;
+    static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) {
+        boolean supportsDeleteContents = false;
         boolean hasNodesFromDifferentDataSources = false;
-        boolean showCascade = false;
-        boolean showViewScript = false;
-        boolean showKeepContents = false;
+        boolean supportsShowViewScript = false;
+        boolean supportsDeleteCascade = false;
+        boolean supportsCloseExistingConnections = false;
+
+        DBPDataSource dataSource = null;
         for (Object obj: selection) {
             if (obj instanceof DBNProject) {
-                showKeepContents = true;
+                supportsDeleteContents = true;
                 continue;
             }
             if (!(obj instanceof DBNDatabaseNode)) {
@@ -131,16 +123,18 @@ public class NavigatorObjectsDeleter {
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 continue;
             }
+
             final DBSObject object = node.getObject();
             if (object == null) {
                 continue;
             }
-            final DBEObjectMaker objectMaker =
-                    DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            DBEObjectMaker<?, ?> objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
                 continue;
             }
-            showCascade |= (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
+            supportsDeleteCascade |= supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_DELETE_CASCADE);
+            supportsCloseExistingConnections |= supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS);
+
             final NavigatorHandlerObjectBase.CommandTarget commandTarget;
             try {
                 commandTarget = NavigatorHandlerObjectBase.getCommandTarget(
@@ -153,26 +147,27 @@ public class NavigatorObjectsDeleter {
                 continue;
             }
             if (object.isPersisted() && commandTarget.getEditor() == null && commandTarget.getContext() != null) {
-                showViewScript = true;
+                supportsShowViewScript = true;
             }
         }
-        return new NavigatorObjectsDeleter(selection, window, hasNodesFromDifferentDataSources, showCascade, showViewScript, showKeepContents);
+
+        return new NavigatorObjectsDeleter(
+            window,
+            selection,
+            hasNodesFromDifferentDataSources,
+            supportsShowViewScript,
+            supportsDeleteContents,
+            supportsDeleteCascade,
+            supportsCloseExistingConnections
+        );
+    }
+
+    private static boolean supportsFeature(@NotNull DBEObjectMaker<?, ?> objectMaker, DBPDataSource dataSource, long feature) {
+        return (objectMaker.getMakerOptions(dataSource) & feature) != 0;
     }
 
     boolean hasNodesFromDifferentDataSources() {
         return hasNodesFromDifferentDataSources;
-    }
-
-    public boolean isShowCascade() {
-        return showCascade;
-    }
-
-    public boolean isShowViewScript() {
-        return showViewScript;
-    }
-
-    public boolean isShowDeleteContents() {
-        return showDeleteContents;
     }
 
     public IProject getProjectToDelete() {
@@ -214,7 +209,7 @@ public class NavigatorObjectsDeleter {
                 ((IFolder)resource).delete(true, true, monitor);
             } else if (resource instanceof IProject) {
                 // Delete project
-                ((IProject) resource).delete(deleteContents, true, monitor);
+                ((IProject) resource).delete(deleteContent, true, monitor);
             } else if (resource != null) {
                 resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
             }
@@ -240,7 +235,6 @@ public class NavigatorObjectsDeleter {
             if (objectMaker == null) {
                 throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }
-            final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
             final NavigatorHandlerObjectBase.CommandTarget commandTarget =
                     NavigatorHandlerObjectBase.getCommandTarget(
                     window,
@@ -258,10 +252,7 @@ public class NavigatorObjectsDeleter {
                 // try to find corresponding command context
                 // and execute command within it
             }
-            Map<String, Object> deleteOptions = Collections.emptyMap();
-            if (deleteCascade && supportsCascade) {
-                deleteOptions = OPTIONS_CASCADE;
-            }
+            Map<String, Object> deleteOptions = getOptionsMap(object, objectMaker);
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
@@ -352,7 +343,6 @@ public class NavigatorObjectsDeleter {
         if (objectMaker == null) {
             return;
         }
-        final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
         final NavigatorHandlerObjectBase.CommandTarget commandTarget;
         try {
             commandTarget = NavigatorHandlerObjectBase.getCommandTarget(
@@ -371,12 +361,7 @@ public class NavigatorObjectsDeleter {
         if (!object.isPersisted() || commandTarget.getEditor() != null) {
             return;
         }
-        final Map<String, Object> deleteOptions;
-        if (supportsCascade && deleteCascade) {
-            deleteOptions = OPTIONS_CASCADE;
-        } else {
-            deleteOptions = Collections.emptyMap();
-        }
+        Map<String, Object> deleteOptions = getOptionsMap(object, objectMaker);
         try {
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
         } catch (DBException e) {
@@ -410,11 +395,43 @@ public class NavigatorObjectsDeleter {
         sql.append(script);
     }
 
-    public void setDeleteCascade(boolean checkCascade) {
-        this.deleteCascade = checkCascade;
+    private Map<String, Object> getOptionsMap(@NotNull DBSObject object, @NotNull DBEObjectMaker<?, ?> objectMaker) {
+        Map<String, Object> options = new HashMap<>();
+        DBPDataSource dataSource = object.getDataSource();
+        if (supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_DELETE_CASCADE) && deleteCascade) {
+            options.put(DBEObjectMaker.OPTION_DELETE_CASCADE, Boolean.TRUE);
+        }
+        if (supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS) && closeExistingConnections) {
+            options.put(DBEObjectMaker.OPTION_CLOSE_EXISTING_CONNECTIONS, Boolean.TRUE);
+        }
+        return options;
+    }
+
+    public boolean supportsShowViewScript() {
+        return supportsShowViewScript;
+    }
+
+    public boolean supportsDeleteContents() {
+        return supportsDeleteContents;
     }
 
     public void setDeleteContents(boolean deleteContents) {
-        this.deleteContents = deleteContents;
+        this.deleteContent = deleteContents;
+    }
+
+    public boolean supportsDeleteCascade() {
+        return supportsDeleteCascade;
+    }
+
+    public void setDeleteCascade(boolean deleteCascade) {
+        this.deleteCascade = deleteCascade;
+    }
+
+    public boolean supportsCloseExistingConnections() {
+        return supportsCloseExistingConnections;
+    }
+
+    public void setCloseExistingConnections(boolean closeExistingConnections) {
+        this.closeExistingConnections = closeExistingConnections;
     }
 }

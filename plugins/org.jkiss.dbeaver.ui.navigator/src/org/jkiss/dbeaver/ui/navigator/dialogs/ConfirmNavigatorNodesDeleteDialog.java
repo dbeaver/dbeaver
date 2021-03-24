@@ -75,8 +75,29 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         if (selectedObjects.size() > 1) {
             createObjectsTable(parent);
         }
+
         createDeleteContents(parent);
-        createCascadeButton(parent);
+
+        Composite checkboxesComposite = UIUtils.createComposite(parent, 3);
+        checkboxesComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        if (deleter.supportsDeleteCascade()) {
+            createCheckbox(
+                checkboxesComposite,
+                UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_label,
+                UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_tooltip,
+                deleter::setDeleteCascade
+            );
+        }
+        if (deleter.supportsCloseExistingConnections()) {
+            createCheckbox(
+                checkboxesComposite,
+                UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_label,
+                UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_tooltip,
+                deleter::setCloseExistingConnections
+            );
+        }
+
         return super.createCustomArea(parent);
     }
 
@@ -117,7 +138,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
     }
 
     private void createDeleteContents(Composite parent) {
-        if (!deleter.isShowDeleteContents()) {
+        if (!deleter.supportsDeleteContents()) {
             return;
         }
         IProject project = deleter.getProjectToDelete();
@@ -135,7 +156,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         keepContentsCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                deleter.setDeleteContents(keepContentsCheck.getSelection());
+            deleter.setDeleteContents(keepContentsCheck.getSelection()); //FIXME excuse me WTF
             }
         });
         UIUtils.createLabelText(ph,
@@ -145,22 +166,13 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         );
     }
 
-    private void createCascadeButton(Composite parent) {
-        if (!deleter.isShowCascade()) {
-            return;
-        }
-        Composite ph = UIUtils.createPlaceholder(parent, 1, 5);
-        Button cascadeCheckButton = UIUtils.createCheckbox(
-            ph,
-            UINavigatorMessages.confirm_deleting_multiple_objects_cascade_checkbox,
-            UINavigatorMessages.confirm_deleting_multiple_objects_cascade_checkbox_tooltip,
-            false,
-            0
-        );
-        cascadeCheckButton.addSelectionListener(new SelectionAdapter() {
+    private void createCheckbox(Composite checkboxesComposite, String label, String tooltip, BooleanConsumer consumer) {
+        Composite placeholder = UIUtils.createPlaceholder(checkboxesComposite, 1, 5);
+        Button checkbox = UIUtils.createCheckbox(placeholder, label, tooltip, false, 0);
+        checkbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                deleter.setDeleteCascade(cascadeCheckButton.getSelection());
+                consumer.accept(checkbox.getSelection());
             }
         });
     }
@@ -169,7 +181,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
     protected void createButtonsForButtonBar(final Composite parent) {
         createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, false);
         createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, true);
-        if (deleter.isShowViewScript()) {
+        if (deleter.supportsShowViewScript()) {
             createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
         }
     }
@@ -177,5 +189,10 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
     @Override
     protected boolean isResizable() {
         return true;
+    }
+
+    @FunctionalInterface
+    private interface BooleanConsumer {
+        void accept(boolean b);
     }
 }
