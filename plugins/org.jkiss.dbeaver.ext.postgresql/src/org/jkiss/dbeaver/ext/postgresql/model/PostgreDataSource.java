@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
@@ -122,7 +123,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         databaseCache = new DatabaseCache();
         settingCache = new SettingCache();
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        final boolean showNDD = CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
+        final boolean showNDD = isReadDatabaseList(configuration);
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
             PostgreDatabase defDatabase = createDatabaseImpl(monitor, activeDatabaseName);
@@ -142,30 +143,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
-        // Make initial connection to read database list
-        final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
-        final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
-        StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
-        if (!showUnavailable) {
-            catalogQuery.append(" AND datallowconn");
-        }
-        if (!showTemplates) {
-            catalogQuery.append(" AND NOT datistemplate ");
-        }
-        DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-        if (catalogFilters != null) {
-            JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
-        }
-        catalogQuery.append("\nORDER BY db.datname");
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
             // Read server version info here - it is needed during database metadata fetch (#8061)
             getDataSource().readDatabaseServerVersion(bootstrapConnection.getMetaData());
+
             // Get all databases
-            try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
-                if (catalogFilters != null) {
-                    JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
-                }
+            try (PreparedStatement dbStat = prepareReadDatabaseListStatement(monitor, bootstrapConnection, configuration)) {
                 try (ResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         PostgreDatabase database = createDatabaseImpl(monitor, dbResult);
@@ -187,6 +171,46 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } finally {
             DBExecUtils.finishContextInitiation(getContainer());
         }
+    }
+
+    // True if we need multiple databases
+    protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
+        // It is configurable by default
+        return CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
+    }
+
+    protected PreparedStatement prepareReadDatabaseListStatement(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Connection bootstrapConnection,
+        @NotNull DBPConnectionConfiguration configuration) throws SQLException
+    {
+        // Make initial connection to read database list
+        DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
+        StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
+        {
+            final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+            final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
+
+            if (!showUnavailable) {
+                catalogQuery.append(" AND datallowconn");
+            }
+            if (!showTemplates) {
+                catalogQuery.append(" AND NOT datistemplate ");
+            }
+            if (catalogFilters != null) {
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
+            }
+            catalogQuery.append("\nORDER BY db.datname");
+        }
+
+        // Get all databases
+        PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString());
+
+        if (catalogFilters != null) {
+            JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+        }
+
+        return dbStat;
     }
 
     @NotNull
@@ -608,47 +632,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
-    {
-        @Override
-        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
-            return new PostgreDatabase(session.getProgressMonitor(), owner, resultSet);
-        }
-
-        @NotNull
-        @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, PostgreDataSource owner, PostgreDatabase object, String objectName) throws SQLException {
-            final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
-            final boolean showTemplates = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
-            StringBuilder catalogQuery = new StringBuilder(
-                "SELECT db.oid,db.*" +
-                    "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
-            if (object == null && !showTemplates) {
-                catalogQuery.append(" AND NOT datistemplate ");
-            }
-            if (object != null) {
-                catalogQuery.append("\nAND db.oid=?");
-            } else if (objectName != null || !showNDD) {
-                catalogQuery.append("\nAND db.datname=?");
-            }
-            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (object == null && showNDD) {
-                if (catalogFilters != null) {
-                    JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
-                }
-                catalogQuery.append("\nORDER BY db.datname");
-            }
-            JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            if (object != null) {
-                dbStat.setLong(1, object.getObjectId());
-            } else if (objectName != null || !showNDD) {
-                dbStat.setString(1, (objectName != null ? objectName : activeDatabaseName));
-            } else if (catalogFilters != null) {
-                JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
-            }
-            return dbStat;
-        }
+    static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
     }
 
     static class SettingCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreSetting> {

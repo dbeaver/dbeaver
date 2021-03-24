@@ -225,7 +225,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return metaContext != null || executionContext != null;
     }
 
-    private void loadInfo(ResultSet dbResult) {
+    protected void loadInfo(ResultSet dbResult) {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "datname");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "datdba");
@@ -412,6 +412,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Association
     public Collection<PostgreRole> getAuthIds(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().supportsRoles()) {
+            return Collections.emptyList();
+        }
         checkInstanceConnection(monitor);
         return roleCache.getAllObjects(monitor, this);
     }
