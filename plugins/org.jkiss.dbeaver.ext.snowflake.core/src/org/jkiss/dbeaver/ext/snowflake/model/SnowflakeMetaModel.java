@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -35,7 +38,10 @@ import java.util.Map;
 /**
  * SnowflakeMetaModel
  */
-public class SnowflakeMetaModel extends GenericMetaModel {
+public class SnowflakeMetaModel extends GenericMetaModel
+{
+    private static final Log log = Log.getLog(SnowflakeMetaModel.class);
+
     public SnowflakeMetaModel() {
         super();
     }
@@ -108,10 +114,5 @@ public class SnowflakeMetaModel extends GenericMetaModel {
     @Override
     public boolean isTableColumnCommentEditable() {
         return true;
-    }
-
-    @Override
-    public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
-        return new SnowflakeGenericDatabase(dataSource, catalogName);
     }
 }
