@@ -19,7 +19,7 @@
 
                 <driver
                         id="spanner_jdbc_official"
-                        label="Google Spanner"
+                        label="Google Cloud Spanner"
                         icon="icons/spanner_icon.png"
                         iconBig="icons/spanner_icon_big.png"
                         class="com.google.cloud.spanner.jdbc.JdbcDriver"
@@ -35,13 +35,13 @@
                 
                 <driver
                         id="spanner_jdbc"
-                        label="Google Spanner (Community)"
+                        label="Google Cloud Spanner (Deprecated)"
                         icon="icons/spanner_icon.png"
                         iconBig="icons/spanner_icon_big.png"
                         class="nl.topicus.jdbc.CloudSpannerDriver"
                         sampleURL="jdbc:cloudspanner://localhost"
                         defaultPort=""
-                        description="Google Spanner JDBC community (Topicus) driver"
+                        description="Google Spanner JDBC community (Topicus) driver (Deprecated, use the officially supported driver instead)"
                         webURL="https://github.com/olavloite/spanner-jdbc"
                         categories="sql,bigdata,cloud">
                     <parameter name="omit-catalog" value="true"/>
@@ -55,7 +55,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="spanner" parent="generic" class="org.jkiss.dbeaver.ext.spanner.model.SpannerSQLDialect" label="Spanner" description="Google Spanner SQL dialect." icon="icons/spanner_icon.png">
+        <dialect id="spanner" parent="generic" class="org.jkiss.dbeaver.ext.spanner.model.SpannerSQLDialect" label="Spanner" description="Google Cloud Spanner SQL dialect." icon="icons/spanner_icon.png">
         </dialect>
     </extension>
 
