@@ -283,6 +283,16 @@ public interface SQLDialect {
     String getTypeCastClause(DBSAttributeBase attribute, String expression);
 
     /**
+     * Quoting functions
+     */
+
+    boolean isQuotedIdentifier(String identifier);
+
+    String getQuotedIdentifier(String identifier, boolean forceCaseSensitive, boolean forceQuotes);
+
+    String getUnquotedIdentifier(String identifier);
+
+    /**
      * Escapes string to make usable inside of SQL queries.
      * Basically it has to escape only ' character which delimits strings.
      * @param string string to escape
@@ -340,11 +350,6 @@ public interface SQLDialect {
      * True if dialect requires delimiter for a query which starts with @firstKeyword and ends with @lastKeyword
      */
     boolean needsDelimiterFor(String firstKeyword, String lastKeyword);
-
-    /**
-     * Should we quote column/table/etc names if they conflicts with reserved words?
-     */
-    boolean isQuoteReservedWords();
 
     /**
      * Reports about broken CRLF. Queries mustn't contain CRLF line feeds, only LF.
