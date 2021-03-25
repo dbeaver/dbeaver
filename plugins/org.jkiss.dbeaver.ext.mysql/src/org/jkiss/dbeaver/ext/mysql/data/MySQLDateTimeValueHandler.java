@@ -54,19 +54,24 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
     @Override
     public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
-        if (MySQLConstants.TYPE_YEAR.equalsIgnoreCase(type.getTypeName()) && resultSet instanceof JDBCResultSet) {
+        if (resultSet instanceof JDBCResultSet) {
             JDBCResultSet dbResults = (JDBCResultSet) resultSet;
             try {
-                int year = dbResults.getInt(index + 1);
-                if (dbResults.wasNull()) {
-                    return null;
-                } else {
+                if (MySQLConstants.TYPE_YEAR.equalsIgnoreCase(type.getTypeName())) {
+                    int year = dbResults.getInt(index + 1);
+                    if (dbResults.wasNull()) {
+                        return null;
+                    }
                     return year;
                 }
+                if (type.getTypeID() == Types.TIME) {
+                    return dbResults.getString(index + 1);
+                }
             } catch (SQLException e) {
-                log.debug("Error reading year value", e);
+                log.debug("Exception caught when fetching date/time value", e);
             }
         }
+
         return super.fetchValueObject(session, resultSet, type, index);
     }
 
