@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Button;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.denodo.DenodoConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -63,7 +62,6 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
     public DenodoConnectionPage() {
         logoImage = createImage("icons/denodo_logo.png"); //$NON-NLS-1$
     }
-
 
     @Override
     public void dispose() {

@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.denodo.model.DenodoDataSource;
 import org.jkiss.dbeaver.ext.denodo.model.DenodoMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -59,15 +58,6 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
         log.debug("getConnectionURL" + url.toString());
 
         return url.toString();
-    }
-
-    private static boolean addParameter(StringBuilder url, String name, String value, boolean hasParam) {
-        if (!CommonUtils.isEmpty(value)) {
-            if (hasParam) url.append("&");
-            url.append(name).append("=").append(value);
-            return true;
-        }
-        return hasParam;
     }
 
     @NotNull
