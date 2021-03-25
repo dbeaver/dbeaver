@@ -196,6 +196,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
             }
         }
         query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
+        query.append("\nORDER BY 2 DESC");
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
             if (valuePattern instanceof String) {

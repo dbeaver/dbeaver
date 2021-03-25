@@ -414,7 +414,7 @@ public abstract class JDBCDataSource
 
             if (this.sqlDialect instanceof JDBCSQLDialect) {
                 try {
-                    ((JDBCSQLDialect) this.sqlDialect).initDriverSettings(this, metaData);
+                    ((JDBCSQLDialect) this.sqlDialect).initDriverSettings(session, this, metaData);
                 } catch (Throwable e) {
                     log.error("Error initializing dialect driver settings", e);
                 }

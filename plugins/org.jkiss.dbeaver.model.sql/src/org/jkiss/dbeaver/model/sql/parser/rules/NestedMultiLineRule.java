@@ -39,8 +39,8 @@ public class NestedMultiLineRule extends MultiLineRule {
      */
     private boolean fRollback;
 
-    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token) {
-        super(startSequence, endSequence, token, (char) 0, true);
+    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter, boolean breaksOnEOF) {
+        super(startSequence, endSequence, token, escapeCharacter, breaksOnEOF);
     }
 
     @Override

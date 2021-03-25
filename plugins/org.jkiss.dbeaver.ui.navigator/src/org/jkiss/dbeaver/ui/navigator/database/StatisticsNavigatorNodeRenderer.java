@@ -469,9 +469,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private long getMaxObjectSize(TreeItem item) {
         TreeItem parentItem = item.getParentItem();
-        Object maxSize = parentItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
-        if (maxSize instanceof Number) {
-            return ((Number) maxSize).longValue();
+        if (parentItem != null) {
+            Object maxSize = parentItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
+            if (maxSize instanceof Number) {
+                return ((Number) maxSize).longValue();
+            }
         }
         return -1;
     }
@@ -531,7 +533,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 long finalMaxStatSize = maxStatSize;
                 UIUtils.asyncExec(() -> {
                     try {
-                        if (!treeItem.isDisposed()) {
+                        if (treeItem != null && !treeItem.isDisposed()) {
                             Object prevValue = treeItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
                             /*if (!CommonUtils.equalObjects(finalMaxStatSize, prevValue)) */{
                                 treeItem.setData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE, finalMaxStatSize);

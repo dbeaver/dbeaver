@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -54,14 +58,27 @@ public class SnowflakeDataSource extends GenericDataSource {
         return false;
     }
 
-    @Override
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
-        super.initializeContextState(monitor, context, initFrom);
-        ((SnowflakeExecutionContext) context).useDefaultSchema(monitor);
-    }
-
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
         return new SnowflakeExecutionContext(instance, type);
+    }
+
+    @Override
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
+                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+        SnowflakeExecutionContext executionContext = (SnowflakeExecutionContext) context;
+        if (initFrom == null) {
+            executionContext.refreshDefaults(monitor, true);
+            return;
+        }
+        SnowflakeExecutionContext executionMetaContext = (SnowflakeExecutionContext) initFrom;
+        GenericCatalog defaultCatalog = executionMetaContext.getDefaultCatalog();
+        GenericSchema defaultSchema = executionMetaContext.getDefaultSchema();
+        if (defaultCatalog != null) {
+            executionContext.setDefaultCatalog(monitor, defaultCatalog, defaultSchema);
+        } else if (defaultSchema != null) {
+            executionContext.setDefaultSchema(monitor, defaultSchema);
+        }
     }
 }

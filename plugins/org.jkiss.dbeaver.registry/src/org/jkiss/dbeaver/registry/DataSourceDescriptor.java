@@ -1377,6 +1377,7 @@ public class DataSourceDescriptor
     }
 
     public void copyFrom(DataSourceDescriptor descriptor) {
+        this.origin = descriptor.origin;
         this.filterMap.clear();
         for (FilterMapping mapping : descriptor.getObjectFilters()) {
             this.filterMap.put(mapping.typeName, new FilterMapping(mapping));

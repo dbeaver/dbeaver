@@ -24,6 +24,7 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
@@ -48,7 +49,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
     @Override
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
         this.contextInformer.searchInformation(region);
-        if (!this.contextInformer.hasObjects()) {
+        if (!this.contextInformer.hasObjects() || this.contextInformer.getKeywordType() == DBPKeywordType.KEYWORD) {
             // Long task - just return no links for now
             return null;
         } else {

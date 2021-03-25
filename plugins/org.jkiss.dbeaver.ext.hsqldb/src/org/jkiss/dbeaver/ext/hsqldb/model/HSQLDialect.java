@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.hsqldb.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
 import java.util.Arrays;
@@ -28,8 +29,8 @@ public class HSQLDialect extends GenericSQLDialect {
         super("HSQLDB", "hsqldb");
     }
 
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
         addDataTypes(
             Arrays.asList(
                 "NCHAR",
