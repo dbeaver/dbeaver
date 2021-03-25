@@ -39,7 +39,8 @@ public class DenodoSQLDialect extends GenericSQLDialect implements TPRuleProvide
         super.initDriverSettings(dataSource, metaData);
         addSQLKeywords(
                 Arrays.asList(
-                        "VQL"
+                        "VQL",
+                        "DESC"
                 ));
     }
 
