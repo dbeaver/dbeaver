@@ -77,32 +77,28 @@ public class NavigatorObjectsDeleter {
     private final boolean hasNodesFromDifferentDataSources;
 
     private final boolean supportsShowViewScript;
-    private final boolean supportsDeleteContents;
-    private final boolean supportsDeleteCascade;
-    private final boolean supportsCloseExistingConnections;
 
+    private final boolean supportsDeleteContents;
     private boolean deleteContent;
-    private boolean deleteCascade;
-    private boolean closeExistingConnections;
+
+    private final Set<Option> supportedOptions;
+    private final Set<Option> enabledOptions = new HashSet<>();
 
     private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean hasNodesFromDifferentDataSources,
-                                    boolean supportsShowViewScript, boolean supportsDeleteContents, boolean supportsDeleteCascade,
-                                    boolean supportsCloseExistingConnections) {
+                                    boolean supportsShowViewScript, boolean supportsDeleteContents, Set<Option> supportedOptions) {
         this.window = window;
         this.selection = selection;
         this.hasNodesFromDifferentDataSources = hasNodesFromDifferentDataSources;
         this.supportsShowViewScript = supportsShowViewScript;
         this.supportsDeleteContents = supportsDeleteContents;
-        this.supportsDeleteCascade = supportsDeleteCascade;
-        this.supportsCloseExistingConnections = supportsCloseExistingConnections;
+        this.supportedOptions = supportedOptions;
     }
 
     static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) {
-        boolean supportsDeleteContents = false;
         boolean hasNodesFromDifferentDataSources = false;
         boolean supportsShowViewScript = false;
-        boolean supportsDeleteCascade = false;
-        boolean supportsCloseExistingConnections = false;
+        boolean supportsDeleteContents = false;
+        Set<Option> supportedOptions = new HashSet<>();
 
         DBPDataSource dataSource = null;
         for (Object obj: selection) {
@@ -132,9 +128,11 @@ public class NavigatorObjectsDeleter {
             if (objectMaker == null) {
                 continue;
             }
-            supportsDeleteCascade |= supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_DELETE_CASCADE);
-            supportsCloseExistingConnections |= supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS);
-
+            for (Option option: Option.values()) {
+                if (supportsFeature(objectMaker, dataSource, option.featureValue)) {
+                    supportedOptions.add(option);
+                }
+            }
             final NavigatorHandlerObjectBase.CommandTarget commandTarget;
             try {
                 commandTarget = NavigatorHandlerObjectBase.getCommandTarget(
@@ -157,8 +155,7 @@ public class NavigatorObjectsDeleter {
             hasNodesFromDifferentDataSources,
             supportsShowViewScript,
             supportsDeleteContents,
-            supportsDeleteCascade,
-            supportsCloseExistingConnections
+            supportedOptions
         );
     }
 
@@ -252,7 +249,7 @@ public class NavigatorObjectsDeleter {
                 // try to find corresponding command context
                 // and execute command within it
             }
-            Map<String, Object> deleteOptions = getOptionsMap(object, objectMaker);
+            Map<String, Object> deleteOptions = collectObjectMakerOptionsMap(object, objectMaker);
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
@@ -361,7 +358,7 @@ public class NavigatorObjectsDeleter {
         if (!object.isPersisted() || commandTarget.getEditor() != null) {
             return;
         }
-        Map<String, Object> deleteOptions = getOptionsMap(object, objectMaker);
+        Map<String, Object> deleteOptions = collectObjectMakerOptionsMap(object, objectMaker);
         try {
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
         } catch (DBException e) {
@@ -395,18 +392,6 @@ public class NavigatorObjectsDeleter {
         sql.append(script);
     }
 
-    private Map<String, Object> getOptionsMap(@NotNull DBSObject object, @NotNull DBEObjectMaker<?, ?> objectMaker) {
-        Map<String, Object> options = new HashMap<>();
-        DBPDataSource dataSource = object.getDataSource();
-        if (supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_DELETE_CASCADE) && deleteCascade) {
-            options.put(DBEObjectMaker.OPTION_DELETE_CASCADE, Boolean.TRUE);
-        }
-        if (supportsFeature(objectMaker, dataSource, DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS) && closeExistingConnections) {
-            options.put(DBEObjectMaker.OPTION_CLOSE_EXISTING_CONNECTIONS, Boolean.TRUE);
-        }
-        return options;
-    }
-
     public boolean supportsShowViewScript() {
         return supportsShowViewScript;
     }
@@ -419,19 +404,62 @@ public class NavigatorObjectsDeleter {
         this.deleteContent = deleteContents;
     }
 
-    public boolean supportsDeleteCascade() {
-        return supportsDeleteCascade;
+    public Set<Option> getSupportedOptions() {
+        return Collections.unmodifiableSet(supportedOptions);
     }
 
-    public void setDeleteCascade(boolean deleteCascade) {
-        this.deleteCascade = deleteCascade;
+    public void enableOption(@NotNull Option option) {
+        enabledOptions.add(option);
     }
 
-    public boolean supportsCloseExistingConnections() {
-        return supportsCloseExistingConnections;
+    public void disableOption(@NotNull Option option) {
+        enabledOptions.remove(option);
     }
 
-    public void setCloseExistingConnections(boolean closeExistingConnections) {
-        this.closeExistingConnections = closeExistingConnections;
+    private Map<String, Object> collectObjectMakerOptionsMap(@NotNull DBSObject object, @NotNull DBEObjectMaker<?, ?> objectMaker) {
+        Map<String, Object> objectMakerOptionsMap = new HashMap<>();
+        DBPDataSource dataSource = object.getDataSource();
+        for (Option option: enabledOptions) {
+            if (supportsFeature(objectMaker, dataSource, option.featureValue)) {
+                objectMakerOptionsMap.put(option.optionValue, Boolean.TRUE);
+            }
+        }
+        return objectMakerOptionsMap;
+    }
+
+    public enum Option {
+        DELETE_CASCADE(
+            DBEObjectMaker.FEATURE_DELETE_CASCADE,
+            DBEObjectMaker.OPTION_DELETE_CASCADE,
+            UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_label,
+            UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_tooltip
+        ),
+
+        CLOSE_EXISTING_CONNECTIONS(
+                DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS,
+                DBEObjectMaker.OPTION_CLOSE_EXISTING_CONNECTIONS,
+                UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_label,
+                UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_tooltip
+        );
+
+        private final long featureValue;
+        private final String optionValue;
+        private final String label;
+        private final String tip;
+
+        Option(long featureValue, @NotNull String optionValue, @NotNull String label, @NotNull String tip) {
+            this.featureValue = featureValue;
+            this.optionValue = optionValue;
+            this.label = label;
+            this.tip = tip;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getTip() {
+            return tip;
+        }
     }
 }

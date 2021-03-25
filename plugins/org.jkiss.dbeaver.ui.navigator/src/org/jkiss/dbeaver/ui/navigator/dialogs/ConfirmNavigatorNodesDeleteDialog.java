@@ -80,22 +80,8 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
 
         Composite checkboxesComposite = UIUtils.createComposite(parent, 3);
         checkboxesComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        if (deleter.supportsDeleteCascade()) {
-            createCheckbox(
-                checkboxesComposite,
-                UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_label,
-                UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_tooltip,
-                deleter::setDeleteCascade
-            );
-        }
-        if (deleter.supportsCloseExistingConnections()) {
-            createCheckbox(
-                checkboxesComposite,
-                UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_label,
-                UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_tooltip,
-                deleter::setCloseExistingConnections
-            );
+        for (NavigatorObjectsDeleter.Option option: deleter.getSupportedOptions()) {
+            createCheckbox(checkboxesComposite, option);
         }
 
         return super.createCustomArea(parent);
@@ -156,7 +142,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         keepContentsCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            deleter.setDeleteContents(keepContentsCheck.getSelection()); //FIXME excuse me WTF
+                deleter.setDeleteContents(keepContentsCheck.getSelection()); //FIXME excuse me WTF
             }
         });
         UIUtils.createLabelText(ph,
@@ -166,13 +152,17 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         );
     }
 
-    private void createCheckbox(Composite checkboxesComposite, String label, String tooltip, BooleanConsumer consumer) {
+    private void createCheckbox(Composite checkboxesComposite, NavigatorObjectsDeleter.Option option) {
         Composite placeholder = UIUtils.createPlaceholder(checkboxesComposite, 1, 5);
-        Button checkbox = UIUtils.createCheckbox(placeholder, label, tooltip, false, 0);
+        Button checkbox = UIUtils.createCheckbox(placeholder, option.getLabel(), option.getTip(), false, 0);
         checkbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                consumer.accept(checkbox.getSelection());
+                if (checkbox.getSelection()) {
+                    deleter.enableOption(option);
+                } else {
+                    deleter.disableOption(option);
+                }
             }
         });
     }
@@ -189,10 +179,5 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
     @Override
     protected boolean isResizable() {
         return true;
-    }
-
-    @FunctionalInterface
-    private interface BooleanConsumer {
-        void accept(boolean b);
     }
 }
