@@ -23,7 +23,6 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -75,13 +74,13 @@ public class SearchDataPage extends AbstractSearchPage {
         super.createControl(parent);
         initializeDialogUnits(parent);
 
-        Composite searchGroup = new Composite(parent, SWT.NONE);
+        Composite searchGroup = UIUtils.createComposite(parent, 1);
         searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        searchGroup.setLayout(new GridLayout(3, false));
         setControl(searchGroup);
-        UIUtils.createControlLabel(searchGroup, "String");
+
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.addEmptyTextHint(searchText, combo -> "String to search");
         if (params.searchString != null) {
             searchText.setText(params.searchString);
         }
@@ -93,14 +92,8 @@ public class SearchDataPage extends AbstractSearchPage {
             updateEnablement();
         });
 
-        Composite optionsGroup = new SashForm(searchGroup, SWT.NONE);
-        GridLayout layout = new GridLayout(2, true);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        optionsGroup.setLayout(layout);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.horizontalSpan = 3;
-        optionsGroup.setLayoutData(gd);
+        SashForm optionsGroup = new SashForm(searchGroup, SWT.NONE);
+        optionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             Group databasesGroup = UIUtils.createControlGroup(optionsGroup, "Databases", 1, GridData.FILL_BOTH, 0);

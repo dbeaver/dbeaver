@@ -345,6 +345,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return synonyms;
     }
 
+    public GenericSynonym getSynonym(DBRProgressMonitor monitor, String name) throws DBException {
+        if (synonyms == null) {
+            loadSynonyms(monitor);
+        }
+        return DBUtils.findObject(synonyms, name);
+    }
+
     @Override
     public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         if (triggers == null) {
@@ -373,7 +380,10 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        return getTables(monitor);
+        List<DBSObject> childrenList = new ArrayList<>();
+        childrenList.addAll(getTables(monitor));
+        childrenList.addAll(getSynonyms(monitor));
+        return childrenList;
     }
 
     @Override

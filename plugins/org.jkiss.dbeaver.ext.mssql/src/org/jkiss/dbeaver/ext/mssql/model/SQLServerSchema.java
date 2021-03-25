@@ -105,6 +105,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return procedureCache;
     }
 
+    public SynonymCache getSynonymCache() {
+        return synonymCache;
+    }
+
     public TriggerCache getTriggerCache() {
         return triggerCache;
     }

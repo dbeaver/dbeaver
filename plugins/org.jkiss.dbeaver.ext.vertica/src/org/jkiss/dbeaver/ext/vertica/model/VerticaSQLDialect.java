@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 
@@ -27,8 +28,8 @@ public class VerticaSQLDialect extends GenericSQLDialect {
         super("Vertica", "vertica");
     }
 
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
     }
 
     @Override

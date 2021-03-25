@@ -341,6 +341,98 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return expression;
     }
 
+    @Override
+    public boolean isQuotedIdentifier(String identifier) {
+        {
+            final String[][] quoteStrings = this.getIdentifierQuoteStrings();
+            if (ArrayUtils.isEmpty(quoteStrings)) {
+                return false;
+            }
+            for (String[] quoteString : quoteStrings) {
+                if (identifier.startsWith(quoteString[0]) && identifier.endsWith(quoteString[1])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String getQuotedIdentifier(String str, boolean forceCaseSensitive, boolean forceQuotes) {
+        if (isQuotedIdentifier(str)) {
+            // Already quoted
+            return str;
+        }
+        String[][] quoteStrings = this.getIdentifierQuoteStrings();
+        if (ArrayUtils.isEmpty(quoteStrings)) {
+            return str;
+        }
+
+        // Check for keyword conflict
+        final DBPKeywordType keywordType = this.getKeywordType(str);
+        boolean hasBadChars = forceQuotes ||
+            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
+                this.isQuoteReservedWords());
+
+        if (!hasBadChars && !str.isEmpty()) {
+            hasBadChars = !this.validIdentifierStart(str.charAt(0));
+        }
+        if (!hasBadChars && forceCaseSensitive) {
+            // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
+            // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
+            // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
+            if (!this.useCaseInsensitiveNameLookup()) {
+                // See how unquoted identifiers are stored
+                // If passed identifier case differs from unquoted then we need to escape it
+                switch (this.storesUnquotedCase()) {
+                    case UPPER:
+                        hasBadChars = !str.equals(str.toUpperCase());
+                        break;
+                    case LOWER:
+                        hasBadChars = !str.equals(str.toLowerCase());
+                        break;
+                }
+            }
+        }
+
+        // Check for bad characters
+        if (!hasBadChars && !str.isEmpty()) {
+            for (int i = 0; i < str.length(); i++) {
+                if (!this.validIdentifierPart(str.charAt(i), false)) {
+                    hasBadChars = true;
+                    break;
+                }
+            }
+        }
+        if (!hasBadChars) {
+            return str;
+        }
+
+        // Escape quote chars
+        for (int i = 0; i < quoteStrings.length; i++) {
+            String q1 = quoteStrings[i][0], q2 = quoteStrings[i][1];
+            if (q1.equals(q2) && (q1.equals("\"") || q1.equals("'"))) {
+                if (str.contains(q1)) {
+                    str = str.replace(q1, q1 + q1);
+                }
+            }
+        }
+        // Escape with first (default) quote string
+        return quoteStrings[0][0] + str + quoteStrings[0][1];
+    }
+
+    @Override
+    public String getUnquotedIdentifier(String identifier) {
+        String[][] quoteStrings = this.getIdentifierQuoteStrings();
+        if (ArrayUtils.isEmpty(quoteStrings)) {
+            quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
+        }
+        for (int i = 0; i < quoteStrings.length; i++) {
+            identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteStrings[i][0], quoteStrings[i][1]);
+        }
+        return identifier;
+    }
+
     @NotNull
     @Override
     public String escapeString(String string) {
@@ -518,7 +610,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return CORE_NON_TRANSACTIONAL_KEYWORDS;
     }
 
-    @Override
     public boolean isQuoteReservedWords() {
         return true;
     }
@@ -693,18 +784,4 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return true;
     }
 
-    @Override
-    public String generateTableUpdateBegin(String tableName) {
-        return "UPDATE " + tableName;
-    }
-
-    @Override
-    public String generateTableUpdateSet() {
-        return "SET ";
-    }
-
-    @Override
-    public String generateTableDeleteFrom(String tableName) {
-        return "DELETE FROM " + tableName;
-    }
 }

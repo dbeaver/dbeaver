@@ -83,7 +83,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
             @Override
             public void postShutdown(IWorkbench workbench) {
-
+                DBeaverCore.setClosing(true);
             }
         });
         IWorkbenchWindow activeWindow = workbench.getActiveWorkbenchWindow();

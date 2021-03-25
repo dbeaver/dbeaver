@@ -101,29 +101,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
-    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
+    protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
         throws DBException {
         super(monitor, dataSource, false);
         this.initCaches();
         this.loadInfo(dbResult);
     }
 
-    @NotNull
-    public PostgreExecutionContext getMetaContext() {
-        return (PostgreExecutionContext) super.getDefaultContext(true);
-    }
-
-    private void initCaches() {
-        schemaCache = getDataSource().getServerType().createSchemaCache(this);
-/*
-        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
-            // Roles not supported
-            roleCache.setCache(Collections.emptyList());
-        }
-*/
-    }
-
-    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
+    protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
         throws DBException {
         super(monitor, dataSource, false);
         // We need to set name first
@@ -139,7 +124,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
+    protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
         super(monitor, dataSource, false);
         this.name = name;
         this.initialOwner = owner;
@@ -161,6 +146,29 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreSchema sysSchema = new PostgreSchema(this, PostgreConstants.CATALOG_SCHEMA_NAME);
         sysSchema.getDataTypeCache().loadDefaultTypes(sysSchema);
         schemaCache.cacheObject(sysSchema);
+    }
+
+    /**
+     * Shared database doesn't need separate JDBC connection.
+     * It reuses default database connection and its' object can be accessed with cross-database queries.
+     */
+    public boolean isSharedDatabase() {
+        return false;
+    }
+
+    @NotNull
+    public PostgreExecutionContext getMetaContext() {
+        return (PostgreExecutionContext) super.getDefaultContext(true);
+    }
+
+    private void initCaches() {
+        schemaCache = getDataSource().getServerType().createSchemaCache(this);
+/*
+        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
+            // Roles not supported
+            roleCache.setCache(Collections.emptyList());
+        }
+*/
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -204,7 +212,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (executionContext == null) {
+        if (!isSharedDatabase() && executionContext == null) {
             checkInstanceConnection(monitor, true);
         }
     }
@@ -212,7 +220,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     // We mustn't cache metadata when checkInstanceConnection called during datasource instantiation
     // Because datasource is not fully initialized yet
     void checkInstanceConnection(@NotNull DBRProgressMonitor monitor, boolean cacheMetadata) throws DBException {
-        if (executionContext == null) {
+        if (!isSharedDatabase() && executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
             if (cacheMetadata)
@@ -222,10 +230,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public boolean isInstanceConnected() {
-        return metaContext != null || executionContext != null;
+        return metaContext != null || executionContext != null || sharedInstance != null;
     }
 
-    private void loadInfo(ResultSet dbResult) {
+    protected void loadInfo(ResultSet dbResult) {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "datname");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "datdba");
@@ -412,6 +420,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Association
     public Collection<PostgreRole> getAuthIds(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().supportsRoles()) {
+            return Collections.emptyList();
+        }
         checkInstanceConnection(monitor);
         return roleCache.getAllObjects(monitor, this);
     }
@@ -705,7 +716,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @NotNull
     @Override
     public DBSObjectState getObjectState() {
-        if (this == dataSource.getDefaultInstance()) {
+        if (this == dataSource.getDefaultInstance() || this.isSharedDatabase()) {
             return DBSObjectState.NORMAL;
         } else {
             return PostgreConstants.STATE_UNAVAILABLE;
@@ -719,7 +730,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (metaContext == null && executionContext == null) {
+        if (sharedInstance == null && metaContext == null && executionContext == null) {
             // Nothing to refresh
             return this;
         }
@@ -889,7 +900,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     /////////////////////////////////////////////////////////////////////////////////////
     // Caches
 
-    private static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
+    protected static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
         boolean handlePermissionDeniedError(Exception e) {
             if (e instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) e).getDatabaseState())) {
                 log.warn(e);

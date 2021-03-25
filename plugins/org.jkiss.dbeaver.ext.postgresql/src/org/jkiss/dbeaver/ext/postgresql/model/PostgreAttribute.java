@@ -39,9 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * PostgreAttribute
@@ -333,6 +331,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return defaultValue;
     }
 
+    @Override
+    public void setDefaultValue(@Nullable String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Nullable
     @Property(order = 80)
     public String getGeneratedValue()
@@ -421,7 +424,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         public Object[] getPossibleValues(PostgreAttribute column)
         {
             Set<PostgreDataType> types = new TreeSet<>(Comparator.comparing(JDBCDataType::getTypeName));
-            types.addAll(column.getDatabase().getLocalDataTypes());
+            try {
+                Collection<PostgreSchema> schemas = column.getDatabase().getSchemas(new VoidProgressMonitor());
+                for (PostgreSchema schema : schemas) {
+                    List<PostgreDataType> dataTypes = schema.getDataTypeCache().getCachedObjects();
+                    types.addAll(dataTypes);
+                }
+            } catch (DBException e) {
+                log.debug("Can't get data types from database schemas", e);
+                types.addAll(column.getDatabase().getLocalDataTypes());
+            }
             return types.toArray(new PostgreDataType[0]);
         }
     }

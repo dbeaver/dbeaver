@@ -27,6 +27,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.SaveableHelper;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 import org.jkiss.code.NotNull;
@@ -224,6 +225,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                     IEditorPart editorPart = editor.getEditor(false);
                     if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
                         workbenchPage.closeEditor(editorPart, false);
+                    } else if (editorPart instanceof ISaveablePart2) {
+                        if (!SaveableHelper.savePart(editorPart, editorPart, window, true)) {
+                            return false;
+                        }
                     }
                 }
             }
