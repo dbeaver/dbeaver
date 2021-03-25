@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.model.DBConstants;
  */
 public class SnowflakeConstants
 {
+    public static final String PROP_WAREHOUSE = "warehouse";
     public static final String PROP_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "schema@";
+    public static final String PROP_SCHEMA2 = "schema";
     public static final String PROP_ROLE = DBConstants.INTERNAL_PROP_PREFIX + "role@";
     public static final String PROP_AUTHENTICATOR = DBConstants.INTERNAL_PROP_PREFIX + "authenticator@";
 
