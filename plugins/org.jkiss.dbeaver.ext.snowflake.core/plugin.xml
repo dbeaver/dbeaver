@@ -42,6 +42,13 @@
                     <parameter name="active-entity-type" value="catalog"/>
                 </driver>
 
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="warehouse" label="Warehouse" type="string" description="Snowflake warehouse name"/>
+                        <property id="schema" label="Schema" type="string" description="Default schema name"/>
+                    </propertyGroup>
+                </provider-properties>
+
             </drivers>
 
         </datasource>
