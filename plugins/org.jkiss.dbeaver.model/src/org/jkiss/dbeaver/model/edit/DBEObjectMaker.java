@@ -30,11 +30,12 @@ import java.util.Map;
  * DBEObjectManager
  */
 public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends DBEObjectManager<OBJECT_TYPE> {
-    long FEATURE_SAVE_IMMEDIATELY = 1;
-    long FEATURE_SUPPORTS_COPY = 1 << 1;
-    long FEATURE_EDITOR_ON_CREATE = 1 << 2;
-    long FEATURE_DELETE_CASCADE = 1 << 3;
-    long FEATURE_CLOSE_EXISTING_CONNECTIONS = 1 << 4;
+    long FEATURE_SAVE_IMMEDIATELY           = 1;
+    long FEATURE_CREATE_FROM_PASTE          = 1 << 1;
+    long FEATURE_EDITOR_ON_CREATE           = 1 << 2;
+    long FEATURE_DELETE_CASCADE             = 1 << 3;
+    long FEATURE_SUPPORTS_COPY              = 1 << 4;
+    long FEATURE_CLOSE_EXISTING_CONNECTIONS = 1 << 5;
 
     /**
      * New object container.
