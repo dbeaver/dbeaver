@@ -14,10 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.generic.model;
+package org.jkiss.dbeaver.model.struct.rdb;
 
-public interface GenericCheckConstraint {
-    String getCheckConstraintExpression();
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-    void setCheckConstraintExpression(String expression);
+import java.util.Collection;
+
+/**
+ * DBSCheckConstraintContainer
+ * This interface is to designate table/containers with separate from Unique and Primary check constraints
+ */
+
+public interface DBSCheckConstraintContainer {
+
+    Collection<? extends DBSTableCheckConstraint> getCheckConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
+
 }

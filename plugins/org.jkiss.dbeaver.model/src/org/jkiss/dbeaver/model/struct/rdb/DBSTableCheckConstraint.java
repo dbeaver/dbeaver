@@ -14,10 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.generic.model;
+package org.jkiss.dbeaver.model.struct.rdb;
 
-public interface GenericCheckConstraint {
-    String getCheckConstraintExpression();
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
-    void setCheckConstraintExpression(String expression);
+/**
+ * DBSTableCheckConstraint
+ * This interface is to designate separate from Unique and Primary check constraints
+ */
+
+public interface DBSTableCheckConstraint extends DBSEntityReferrer {
+
+    String getCheckConstraintDefinition();
+
 }
