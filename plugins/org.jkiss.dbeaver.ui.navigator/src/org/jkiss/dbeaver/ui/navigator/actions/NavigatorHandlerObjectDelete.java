@@ -18,18 +18,10 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -37,6 +29,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectWithDependencies;
@@ -46,10 +39,9 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ConfirmNavigatorNodesDeleteDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -67,32 +59,51 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         if (!(selection instanceof IStructuredSelection)) {
             return null;
         }
+        final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
         final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        tryDeleteObjects(window, (IStructuredSelection) selection);
+        tryDeleteObjects(window, structuredSelection.toList());
         return null;
     }
 
-    public static boolean tryDeleteObjects(IWorkbenchWindow window, IStructuredSelection selection) {
-        @SuppressWarnings("unchecked")
-        final List<DBNNode> selectedObjects = selection.toList();
-        final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
-        return makeDeletionAttempt(window, selectedObjects, deleter);
-    }
-
-    private static boolean makeDeletionAttempt(final IWorkbenchWindow window, final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
-        if (deleter.hasNodesFromDifferentDataSources()) {
-            // attempt to delete database nodes from different databases
-            DBWorkbench.getPlatformUI().
-                    showError(
-                            UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
-                            UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
-                    );
+    public static boolean tryDeleteObjects(@NotNull IWorkbenchWindow window, @NotNull List<?> objects) {
+        if (containsNodesFromDifferentDataSources(objects)) {
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
+                UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
+            );
             return false;
         }
-        final ConfirmationDialog dialog = ConfirmationDialog.of(
+        return tryDeleteObjects(window, objects, NavigatorObjectsDeleter.of(objects, window));
+    }
+
+    private static boolean containsNodesFromDifferentDataSources(@NotNull List<?> objects) {
+        DBPDataSource dataSource = null;
+        for (Object o: objects) {
+            if (!(o instanceof DBNDatabaseNode)) {
+                continue;
+            }
+            DBNDatabaseNode databaseNode = (DBNDatabaseNode) o;
+            DBPDataSource currentDatasource;
+            if (databaseNode instanceof  DBNDataSource) {
+                currentDatasource = null;
+            } else {
+                currentDatasource = databaseNode.getDataSource();
+            }
+            if (dataSource == null) {
+                dataSource = currentDatasource;
+            } else if (!dataSource.equals(currentDatasource)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean tryDeleteObjects(final IWorkbenchWindow window, final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
+        final ConfirmNavigatorNodesDeleteDialog dialog = ConfirmNavigatorNodesDeleteDialog.of(
                 window.getShell(),
                 selectedObjects,
-                deleter);
+                deleter
+        );
         final int result = dialog.open();
         if (result == IDialogConstants.YES_ID) {
             return deleteObjects(window, deleter, selectedObjects);
@@ -101,7 +112,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (persistCheck) {
                 return deleteObjects(window, deleter, selectedObjects);
             } else {
-                return makeDeletionAttempt(window, selectedObjects, deleter);
+                return tryDeleteObjects(window, selectedObjects, deleter);
             }
         } else {
             return false;
@@ -160,12 +171,13 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } else {
                 confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_objects, dependentObjectsListNodes.size());
             }
-            final ConfirmationDialog dialog = new ConfirmationDialog(
+            final ConfirmNavigatorNodesDeleteDialog dialog = ConfirmNavigatorNodesDeleteDialog.of(
                     window.getShell(),
                     UINavigatorMessages.confirm_deleting_dependent_objects_title,
                     confirmMessage,
                     dependentObjectsListNodes,
-                    dependentObjectsDeleter);
+                    dependentObjectsDeleter
+            );
             final int result = dialog.open();
             if (result == IDialogConstants.YES_ID) {
                 dependentObjectsDeleter.delete();
@@ -193,152 +205,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     }
                 }
             }
-        }
-    }
-
-    private static class ConfirmationDialog extends MessageDialog {
-        private final List<?> selectedObjects;
-
-        private final NavigatorObjectsDeleter deleter;
-
-        private ConfirmationDialog(final Shell shell, final String title, final String message,
-                                   final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
-            super(
-                    shell,
-                    title,
-                    DBeaverIcons.getImage(UIIcon.REJECT),
-                    message,
-                    MessageDialog.WARNING,
-                    null,
-                    0
-            );
-            this.selectedObjects = selectedObjects;
-            this.deleter = deleter;
-        }
-
-        static ConfirmationDialog of(final Shell shell, final List<?> selectedObjects,
-                                     final NavigatorObjectsDeleter deleter) {
-            if (selectedObjects.size() > 1) {
-                return new ConfirmationDialog(
-                        shell,
-                        UINavigatorMessages.confirm_deleting_multiple_objects_title,
-                        NLS.bind(UINavigatorMessages.confirm_deleting_multiple_objects_message, selectedObjects.size()),
-                        selectedObjects,
-                        deleter);
-            }
-            final DBNNode node = (DBNNode) selectedObjects.get(0);
-            final String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeType(), node.getNodeName());
-            final String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName());
-            return new ConfirmationDialog(shell, title, message, selectedObjects, deleter);
-        }
-
-        @Override
-        protected Control createCustomArea(final Composite parent) {
-            if (selectedObjects.size() > 1) {
-                createObjectsTable(parent);
-            }
-            createDeleteContents(parent);
-            createCascadeButton(parent);
-            return super.createCustomArea(parent);
-        }
-
-        private void createObjectsTable(final Composite parent) {
-            final Composite placeholder = UIUtils.createComposite(parent, 1);
-            placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
-            final Group tableGroup = UIUtils.createControlGroup(placeholder, UINavigatorMessages.confirm_deleting_multiple_objects_table_group_name, 1, GridData.FILL_BOTH, 0);
-            tableGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            final Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
-            objectsTable.setHeaderVisible(false);
-            objectsTable.setLinesVisible(true);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            int fontHeight = UIUtils.getFontHeight(objectsTable);
-            int rowCount = selectedObjects.size();
-            gd.widthHint = fontHeight * 7;
-            gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
-            objectsTable.setLayoutData(gd);
-            UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
-            UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
-            for (Object obj: selectedObjects) {
-                if (!(obj instanceof DBNNode)) {
-                    continue;
-                }
-                final DBNNode node = (DBNNode) obj;
-                final TableItem item = new TableItem(objectsTable, SWT.NONE);
-                item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-                if (node instanceof DBNResource && ((DBNResource) node).getResource() != null) {
-                    item.setText(0, node.getName());
-                    IPath resLocation = ((DBNResource) node).getResource().getLocation();
-                    item.setText(1, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
-                } else {
-                    item.setText(0, node.getNodeFullName());
-                    item.setText(1, CommonUtils.toString(node.getNodeDescription()));
-                }
-            }
-            UIUtils.packColumns(objectsTable, true);
-        }
-
-        private void createDeleteContents(final Composite parent) {
-            if (!deleter.isShowDeleteContents()) {
-                return;
-            }
-            IProject project = deleter.getProjectToDelete();
-            if (project == null) {
-                return;
-            }
-            final Composite ph = UIUtils.createPlaceholder(parent, 2, 5);
-            final Button keepContentsCheck =
-                UIUtils.createCheckbox(
-                    ph,
-                    UINavigatorMessages.confirm_deleting_delete_contents_checkbox,
-                    UINavigatorMessages.confirm_deleting_delete_contents_checkbox_tooltip,
-                    false,
-                    2
-                );
-            keepContentsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    deleter.setDeleteContents(keepContentsCheck.getSelection());
-                }
-            });
-            UIUtils.createLabelText(ph,
-                UINavigatorMessages.confirm_deleting_project_location_label,
-                project.getLocation().toFile().getAbsolutePath(),
-                SWT.READ_ONLY);
-        }
-
-        private void createCascadeButton(final Composite parent) {
-            if (!deleter.isShowCascade()) {
-                return;
-            }
-            final Composite ph = UIUtils.createPlaceholder(parent, 1, 5);
-            final Button cascadeCheckButton =
-                    UIUtils.createCheckbox(
-                            ph,
-                            UINavigatorMessages.confirm_deleting_multiple_objects_cascade_checkbox,
-                            UINavigatorMessages.confirm_deleting_multiple_objects_cascade_checkbox_tooltip,
-                            false,
-                            0
-                    );
-            cascadeCheckButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    deleter.setDeleteCascade(cascadeCheckButton.getSelection());
-                }
-            });
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(final Composite parent) {
-            createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, false);
-            createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, true);
-            if (deleter.isShowViewScript()) {
-                createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
-            }
-        }
-
-        @Override
-        protected boolean isResizable() {
-            return true;
         }
     }
 
