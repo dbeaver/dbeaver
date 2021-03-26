@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
@@ -54,10 +54,10 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
     private static final Log log = Log.getLog(SelectDatabaseDialog.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
-    private String currentInstanceName;
+    private volatile String currentInstanceName;
 
     private DatabaseObjectListControl<DBNDatabaseNode> instanceList;
-    private List<DBNDatabaseNode> selectedInstances = new ArrayList<>();
+    private final List<DBNDatabaseNode> selectedInstances = new ArrayList<>();
 
     public SelectDatabaseDialog(
         Shell parentShell,
@@ -109,13 +109,15 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
                             }
                         }
                     }
-                    Collection<? extends DBSObject> instances = instanceContainer.getChildren(new VoidProgressMonitor());
+                    Collection<? extends DBSObject> instances = instanceContainer.getChildren(monitor);
                     List<DBNDatabaseNode> instanceNodes = new ArrayList<>();
                     if (!CommonUtils.isEmpty(instances)) {
                         for (DBSObject instance : instances) {
-                            DBNDatabaseNode instanceNode = DBNUtils.getNodeByObject(monitor, instance, false);
-                            if (instanceNode != null) {
-                                instanceNodes.add(instanceNode);
+                            if (instance instanceof DBSCatalog || instance instanceof DBSSchema) {
+                                DBNDatabaseNode instanceNode = DBNUtils.getNodeByObject(monitor, instance, false);
+                                if (instanceNode != null) {
+                                    instanceNodes.add(instanceNode);
+                                }
                             }
                         }
                     }
