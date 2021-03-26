@@ -118,8 +118,8 @@ class SQLTokensParser {
         if (isSpace(fChar)) {
             StringBuilder workString = new StringBuilder();
             for (;;) {
-                workString.append(fChar);
                 fChar = fBefore.charAt(fPos);
+                workString.append(fChar);
                 if (!isSpace(fChar)) {
                     return new FormatterToken(TokenType.SPACE, workString.toString(), start_pos);
                 }
