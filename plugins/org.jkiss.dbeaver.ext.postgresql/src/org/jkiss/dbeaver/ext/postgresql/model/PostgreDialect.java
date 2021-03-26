@@ -769,7 +769,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public int getCatalogUsage() {
-        return SQLDialect.USAGE_NONE;
+        return SQLDialect.USAGE_DML;
     }
 
     @Override
