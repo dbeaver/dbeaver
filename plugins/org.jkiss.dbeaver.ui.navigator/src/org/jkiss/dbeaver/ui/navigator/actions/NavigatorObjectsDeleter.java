@@ -71,11 +71,6 @@ public class NavigatorObjectsDeleter {
      */
     private final List<?> selection;
 
-    /**
-     * {@code true} in case of attempt to delete database nodes which belong to different data sources
-     */
-    private final boolean hasNodesFromDifferentDataSources;
-
     private final boolean supportsShowViewScript;
 
     private final boolean supportsDeleteContents;
@@ -84,23 +79,20 @@ public class NavigatorObjectsDeleter {
     private final Set<Option> supportedOptions;
     private final Set<Option> enabledOptions = new HashSet<>();
 
-    private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean hasNodesFromDifferentDataSources,
-                                    boolean supportsShowViewScript, boolean supportsDeleteContents, Set<Option> supportedOptions) {
+    private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean supportsShowViewScript,
+                                    boolean supportsDeleteContents, Set<Option> supportedOptions) {
         this.window = window;
         this.selection = selection;
-        this.hasNodesFromDifferentDataSources = hasNodesFromDifferentDataSources;
         this.supportsShowViewScript = supportsShowViewScript;
         this.supportsDeleteContents = supportsDeleteContents;
         this.supportedOptions = supportedOptions;
     }
 
     static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) {
-        boolean hasNodesFromDifferentDataSources = false;
         boolean supportsShowViewScript = false;
         boolean supportsDeleteContents = false;
         Set<Option> supportedOptions = new HashSet<>();
 
-        DBPDataSource dataSource = null;
         for (Object obj: selection) {
             if (obj instanceof DBNProject) {
                 supportsDeleteContents = true;
@@ -110,12 +102,6 @@ public class NavigatorObjectsDeleter {
                 continue;
             }
             final DBNDatabaseNode node = (DBNDatabaseNode) obj;
-            final DBPDataSource currentDatasource = node instanceof DBNDataSource ? null : node.getDataSource();
-            if (dataSource == null) {
-                dataSource = currentDatasource;
-            } else if (!dataSource.equals(currentDatasource)) {
-                hasNodesFromDifferentDataSources = true;
-            }
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 continue;
             }
@@ -129,7 +115,7 @@ public class NavigatorObjectsDeleter {
                 continue;
             }
             for (Option option: Option.values()) {
-                if (supportsFeature(objectMaker, dataSource, option.featureValue)) {
+                if (supportsFeature(objectMaker, object.getDataSource(), option.featureValue)) {
                     supportedOptions.add(option);
                 }
             }
@@ -152,7 +138,6 @@ public class NavigatorObjectsDeleter {
         return new NavigatorObjectsDeleter(
             window,
             selection,
-            hasNodesFromDifferentDataSources,
             supportsShowViewScript,
             supportsDeleteContents,
             supportedOptions
@@ -161,10 +146,6 @@ public class NavigatorObjectsDeleter {
 
     private static boolean supportsFeature(@NotNull DBEObjectMaker<?, ?> objectMaker, DBPDataSource dataSource, long feature) {
         return (objectMaker.getMakerOptions(dataSource) & feature) != 0;
-    }
-
-    boolean hasNodesFromDifferentDataSources() {
-        return hasNodesFromDifferentDataSources;
     }
 
     public IProject getProjectToDelete() {

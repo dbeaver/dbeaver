@@ -29,6 +29,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectWithDependencies;
@@ -58,32 +59,51 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         if (!(selection instanceof IStructuredSelection)) {
             return null;
         }
+        final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
         final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        tryDeleteObjects(window, (IStructuredSelection) selection);
+        tryDeleteObjects(window, structuredSelection.toList());
         return null;
     }
 
-    public static boolean tryDeleteObjects(IWorkbenchWindow window, IStructuredSelection selection) {
-        @SuppressWarnings("unchecked")
-        final List<DBNNode> selectedObjects = selection.toList();
-        final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
-        return makeDeletionAttempt(window, selectedObjects, deleter);
-    }
-
-    private static boolean makeDeletionAttempt(final IWorkbenchWindow window, final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
-        if (deleter.hasNodesFromDifferentDataSources()) {
-            // attempt to delete database nodes from different databases
-            DBWorkbench.getPlatformUI().
-                    showError(
-                            UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
-                            UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
-                    );
+    public static boolean tryDeleteObjects(@NotNull IWorkbenchWindow window, @NotNull List<?> objects) {
+        if (containsNodesFromDifferentDataSources(objects)) {
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
+                UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
+            );
             return false;
         }
+        return tryDeleteObjects(window, objects, NavigatorObjectsDeleter.of(objects, window));
+    }
+
+    private static boolean containsNodesFromDifferentDataSources(@NotNull List<?> objects) {
+        DBPDataSource dataSource = null;
+        for (Object o: objects) {
+            if (!(o instanceof DBNDatabaseNode)) {
+                continue;
+            }
+            DBNDatabaseNode databaseNode = (DBNDatabaseNode) o;
+            DBPDataSource currentDatasource;
+            if (databaseNode instanceof  DBNDataSource) {
+                currentDatasource = null;
+            } else {
+                currentDatasource = databaseNode.getDataSource();
+            }
+            if (dataSource == null) {
+                dataSource = currentDatasource;
+            } else if (!dataSource.equals(currentDatasource)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean tryDeleteObjects(final IWorkbenchWindow window, final List<?> selectedObjects, final NavigatorObjectsDeleter deleter) {
         final ConfirmNavigatorNodesDeleteDialog dialog = ConfirmNavigatorNodesDeleteDialog.of(
                 window.getShell(),
                 selectedObjects,
-                deleter);
+                deleter
+        );
         final int result = dialog.open();
         if (result == IDialogConstants.YES_ID) {
             return deleteObjects(window, deleter, selectedObjects);
@@ -92,7 +112,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (persistCheck) {
                 return deleteObjects(window, deleter, selectedObjects);
             } else {
-                return makeDeletionAttempt(window, selectedObjects, deleter);
+                return tryDeleteObjects(window, selectedObjects, deleter);
             }
         } else {
             return false;
