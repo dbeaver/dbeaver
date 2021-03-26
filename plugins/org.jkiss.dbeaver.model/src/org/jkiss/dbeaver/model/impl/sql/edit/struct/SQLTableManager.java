@@ -31,9 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -195,6 +193,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         SQLObjectEditor<DBSEntityConstraint, OBJECT_TYPE> pkm = getObjectEditor(editorsRegistry, DBSEntityConstraint.class);
         SQLObjectEditor<DBSTableForeignKey, OBJECT_TYPE> fkm = getObjectEditor(editorsRegistry, DBSTableForeignKey.class);
         SQLObjectEditor<DBSTableIndex, OBJECT_TYPE> im = getObjectEditor(editorsRegistry, DBSTableIndex.class);
+        SQLObjectEditor<DBSTableCheckConstraint, OBJECT_TYPE> ccm = getObjectEditor(editorsRegistry, DBSTableCheckConstraint.class);
 
         DBCExecutionContext executionContext = DBUtils.getDefaultContext(table, true);
 
@@ -204,8 +203,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 try {
                     for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                         if (!(foreignKey instanceof DBSTableForeignKey) ||
-                            DBUtils.isHiddenObject(foreignKey) ||
-                            DBUtils.isInheritedObject(foreignKey)) {
+                            skipObject(foreignKey)) {
                             continue;
                         }
                         DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, executionContext, options);
@@ -240,7 +238,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (DBUtils.isHiddenObject(column) || DBUtils.isInheritedObject(column)) {
+                if (skipObject(column)) {
                     // Do not include hidden (pseudo?) and inherited columns in DDL
                     continue;
                 }
@@ -250,7 +248,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (pkm != null) {
             try {
                 for (DBSEntityConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-                    if (DBUtils.isHiddenObject(constraint) || DBUtils.isInheritedObject(constraint)) {
+                    if (skipObject(constraint)) {
                         continue;
                     }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint, options));
@@ -260,19 +258,33 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 log.debug(e);
             }
         }
+        if (ccm != null) {
+            try {
+                if (table instanceof DBSCheckConstraintContainer) {
+                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(((DBSCheckConstraintContainer)table).getCheckConstraints(monitor))) {
+                        if (skipObject(constraint)) {
+                            continue;
+                        }
+                        command.aggregateCommand(ccm.makeCreateCommand(constraint, options));
+                    }
+                }
+            } catch (DBException e) {
+                // Ignore check constraints
+                log.debug(e);
+            }
+        }
         if (fkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                     if (!(foreignKey instanceof DBSTableForeignKey) ||
-                        DBUtils.isHiddenObject(foreignKey) ||
-                        DBUtils.isInheritedObject(foreignKey))
+                        skipObject(foreignKey))
                     {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options));
                 }
             } catch (DBException e) {
-                // Ignore primary keys
+                // Ignore foreign keys
                 log.debug(e);
             }
         }
@@ -293,6 +305,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         Collections.addAll(actions, command.getPersistActions(monitor, executionContext, options));
 
         return actions.toArray(new DBEPersistAction[0]);
+    }
+
+    private boolean skipObject(Object object) {
+        return DBUtils.isHiddenObject(object) || DBUtils.isInheritedObject(object);
     }
 
     protected void addExtraDDLCommands(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options, StructCreateCommand createCommand) {

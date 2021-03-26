@@ -70,7 +70,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     @Override
     protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         SQLServerTableCheckConstraint object = command.getObject();
-        if (object.getConstraintType() == DBSEntityConstraintType.CHECK && CommonUtils.isEmpty(object.getDefinition())) {
+        if (object.getConstraintType() == DBSEntityConstraintType.CHECK && CommonUtils.isEmpty(object.getCheckConstraintDefinition())) {
             throw new DBException("CHECK constraint definition is empty");
         }
     }
@@ -85,7 +85,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
                 "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " WITH NOCHECK" +
                     " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) +
-                    " CHECK " + constraint.getDefinition()
+                    " CHECK " + constraint.getCheckConstraintDefinition()
             ));
     }
 
