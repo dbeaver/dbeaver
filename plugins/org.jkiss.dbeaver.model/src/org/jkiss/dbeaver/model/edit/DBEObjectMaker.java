@@ -30,12 +30,12 @@ import java.util.Map;
  * DBEObjectManager
  */
 public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends DBEObjectManager<OBJECT_TYPE> {
-
-    long FEATURE_SAVE_IMMEDIATELY       = 1;
-    long FEATURE_CREATE_FROM_PASTE      = 2;
-    long FEATURE_EDITOR_ON_CREATE       = 4;
-    long FEATURE_DELETE_CASCADE         = 8;
-    long FEATURE_SUPPORTS_COPY          = 16;
+    long FEATURE_SAVE_IMMEDIATELY           = 1;
+    long FEATURE_CREATE_FROM_PASTE          = 1 << 1;
+    long FEATURE_EDITOR_ON_CREATE           = 1 << 2;
+    long FEATURE_DELETE_CASCADE             = 1 << 3;
+    long FEATURE_SUPPORTS_COPY              = 1 << 4;
+    long FEATURE_CLOSE_EXISTING_CONNECTIONS = 1 << 5;
 
     /**
      * New object container.
@@ -46,8 +46,8 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * Object type (class)
      */
     String OPTION_OBJECT_TYPE = "objectType";
-
     String OPTION_DELETE_CASCADE = "deleteCascade";
+    String OPTION_CLOSE_EXISTING_CONNECTIONS = "closeExistingConnections";
 
     long getMakerOptions(DBPDataSource dataSource);
 
@@ -94,5 +94,4 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @param options delete options. Options are set by delete wizard.
      */
     void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options) throws DBException;
-
 }
