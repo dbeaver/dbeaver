@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -41,8 +40,9 @@ public class ListCache<OWNER extends DBSObject, OBJECT extends DBSObject>
         this.objectList = (objectList == null ? new ArrayList<>() : objectList);
     }
 
+    @NotNull
     @Override
-    public Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner) throws DBException {
+    public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, OWNER owner) throws DBException {
         return objectList;
     }
 
@@ -54,7 +54,7 @@ public class ListCache<OWNER extends DBSObject, OBJECT extends DBSObject>
     }
 
     @Override
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name) throws DBException {
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name) throws DBException {
         return DBUtils.findObject(objectList, name);
     }
 
