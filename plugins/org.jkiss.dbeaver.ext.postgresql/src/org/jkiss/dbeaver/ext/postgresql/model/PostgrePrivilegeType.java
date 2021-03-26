@@ -32,6 +32,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     TRUNCATE('D', true, PostgreTableReal.class),
     REFERENCES('x', true, PostgreTableReal.class, PostgreTableColumn.class),
     TRIGGER('t', true, PostgreTableReal.class),
+    RULE('R', true, PostgreTableReal.class), // Redshift specific type
 
     CREATE('C', true, PostgreDatabase.class, PostgreSchema.class, PostgreTablespace.class),
     // Misc
