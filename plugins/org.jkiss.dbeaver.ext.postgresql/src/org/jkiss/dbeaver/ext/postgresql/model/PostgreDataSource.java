@@ -322,7 +322,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache;
     }
 
-    public Collection<PostgreDatabase> getDatabases()
+    public List<PostgreDatabase> getDatabases()
     {
         return databaseCache.getCachedObjects();
     }
@@ -378,18 +378,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public Collection<? extends PostgreDatabase> getChildren(@NotNull DBRProgressMonitor monitor) {
+    public List<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) {
         return getDatabases();
     }
 
     @Override
-    public PostgreDatabase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getDatabase(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends PostgreDatabase> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 
