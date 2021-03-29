@@ -1222,7 +1222,7 @@ public final class SQLUtils {
 
     public static String getDefaultScriptDelimiter(SQLDialect sqlDialect) {
         String[] scriptDelimiters = sqlDialect.getScriptDelimiters();
-        if (ArrayUtils.isEmpty(scriptDelimiters)) {
+        if (!ArrayUtils.isEmpty(scriptDelimiters)) {
             return scriptDelimiters[0];
         }
         return SQLConstants.DEFAULT_STATEMENT_DELIMITER;
