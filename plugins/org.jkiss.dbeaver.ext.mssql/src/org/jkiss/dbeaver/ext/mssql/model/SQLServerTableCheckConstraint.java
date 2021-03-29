@@ -17,21 +17,25 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * SQLServerTableCheckConstraint
  */
-public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLServerObject, DBPScriptObject {
+public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLServerObject, DBPScriptObject, DBSTableCheckConstraint {
     private final SQLServerTable table;
     private boolean persisted;
 
@@ -104,14 +108,25 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
         return objectId;
     }
 
+    @Override
     @Property(viewable = true, editable = true, multiline = true, order = 20)
-    public String getDefinition() {
+    public String getCheckConstraintDefinition() {
         return definition;
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        return getDefinition();
+    public void setCheckConstraintDefinition(String expression) {
+        this.definition = expression;
     }
 
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return getCheckConstraintDefinition();
+    }
+
+    @Nullable
+    @Override
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
 }

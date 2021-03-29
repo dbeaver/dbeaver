@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -46,7 +47,7 @@ import java.util.Map;
  * 
  * @author Denis Forveille
  */
-public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> implements DB2SourceObject {
+public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> implements DB2SourceObject, DBSTableCheckConstraint {
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -232,4 +233,13 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         return collationNameOrderBy;
     }
 
+    @Override
+    public String getCheckConstraintDefinition() {
+        return text;
+    }
+
+    @Override
+    public void setCheckConstraintDefinition(String expression) {
+        this.text = expression;
+    }
 }
