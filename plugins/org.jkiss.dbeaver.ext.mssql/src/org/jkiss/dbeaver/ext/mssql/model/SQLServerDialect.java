@@ -107,8 +107,8 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public String getScriptDelimiter() {
-        return "GO";
+    public String[] getSupportedScriptDelimiters() {
+        return new String[]{"GO", ";"};
     }
 
     @Override

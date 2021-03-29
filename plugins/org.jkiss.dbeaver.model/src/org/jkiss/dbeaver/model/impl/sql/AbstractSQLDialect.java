@@ -275,6 +275,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return ";"; //$NON-NLS-1$
     }
 
+    @NotNull
+    @Override
+    public String[] getSupportedScriptDelimiters() {
+        return new String[]{ getScriptDelimiter()};
+        //return SQLConstants.DEFAULT_SCRIPT_DELIMITER;
+    }
+
     @Nullable
     @Override
     public String getScriptDelimiterRedefiner() {

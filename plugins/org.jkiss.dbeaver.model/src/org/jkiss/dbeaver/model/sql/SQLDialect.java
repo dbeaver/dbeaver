@@ -185,11 +185,18 @@ public interface SQLDialect {
     String[] getParametersPrefixes();
 
     /**
-     * Script delimiter character
+     * Default script delimiter character
      * @return script delimiter mark
      */
     @NotNull
     String getScriptDelimiter();
+
+    /**
+     * Script delimiters characters supported by specific databases
+     * @return array of possible script delimiters, necessarily including getScriptDelimiter() String
+     */
+    @NotNull
+    String[] getSupportedScriptDelimiters();
 
     @Nullable
     String getScriptDelimiterRedefiner();

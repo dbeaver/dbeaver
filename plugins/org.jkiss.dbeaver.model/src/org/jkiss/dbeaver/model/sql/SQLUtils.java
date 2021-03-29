@@ -1183,34 +1183,38 @@ public final class SQLUtils {
         //sqlStatement.setOriginalText(query);
     }
 
-    public static boolean needQueryDelimiter(SQLDialect sqlDialect, String query) {
-        String delimiter = sqlDialect.getScriptDelimiter();
-        if (!delimiter.isEmpty()) {
-            if (Character.isLetterOrDigit(delimiter.charAt(0))) {
-                if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
-                    if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
-                        return true;
+    public static boolean needQueryDelimiter(SQLDialect sqlDialect, String query) { //some
+        String[] scriptDelimiters = sqlDialect.getSupportedScriptDelimiters();
+        for (String delimiter : scriptDelimiters) {
+            if (!delimiter.isEmpty()) {
+                if (Character.isLetterOrDigit(delimiter.charAt(0))) {
+                    if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
+                        if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
+                            return true;
+                        }
                     }
+                } else {
+                    return !query.endsWith(delimiter);
                 }
-            } else {
-                return !query.endsWith(delimiter);
             }
         }
-        return true;
+        return false;
     }
 
-    public static String removeQueryDelimiter(SQLDialect sqlDialect, String query) {
-        String delimiter = sqlDialect.getScriptDelimiter();
-        if (!delimiter.isEmpty() && query.contains(delimiter)) {
-            String queryWithoutDelimiter = query.substring(0, query.lastIndexOf(delimiter));
-            if (Character.isLetterOrDigit(delimiter.charAt(0))) {
-                if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
-                    if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
-                        return queryWithoutDelimiter;
+    public static String removeQueryDelimiter(SQLDialect sqlDialect, String query) { //some
+        String[] scriptDelimiters = sqlDialect.getSupportedScriptDelimiters();
+        for (String delimiter : scriptDelimiters) {
+            if (!delimiter.isEmpty() && query.contains(delimiter)) {
+                String queryWithoutDelimiter = query.substring(0, query.lastIndexOf(delimiter));
+                if (Character.isLetterOrDigit(delimiter.charAt(0))) {
+                    if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
+                        if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
+                            return queryWithoutDelimiter;
+                        }
                     }
+                } else if (query.endsWith(delimiter)) {
+                    return queryWithoutDelimiter;
                 }
-            } else if (query.endsWith(delimiter)) {
-                return queryWithoutDelimiter;
             }
         }
         return query;
