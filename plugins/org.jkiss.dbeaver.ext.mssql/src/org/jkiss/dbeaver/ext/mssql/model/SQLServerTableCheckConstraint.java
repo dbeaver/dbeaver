@@ -115,6 +115,11 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
     }
 
     @Override
+    public void setCheckConstraintExpression(String expression) {
+        this.definition = expression;
+    }
+
+    @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return getCheckConstraintDefinition();
     }
