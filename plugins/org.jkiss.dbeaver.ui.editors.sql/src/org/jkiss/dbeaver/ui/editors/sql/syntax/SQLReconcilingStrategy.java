@@ -69,23 +69,23 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Override
     public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
         if (DirtyRegion.INSERT.equals(dirtyRegion.getType())) {
-            reconcile(subRegion.getOffset(), subRegion.getLength());
+            reconcile(subRegion.getOffset(), subRegion.getLength(), false);
         } else {
-            reconcile(subRegion.getOffset(), 0);
+            reconcile(subRegion.getOffset(), 0, false);
         }
     }
 
     @Override
     public void reconcile(IRegion partition) {
-        reconcile(partition.getOffset(), partition.getLength());
+        reconcile(0, document.getLength(), false);
     }
 
     @Override
     public void initialReconcile() {
-        reconcileAllDocument();
+        reconcile(0, document.getLength(), true);
     }
 
-    private Set<SQLScriptElementImpl> getSavedCollapsedPositions() {
+    private Set<SQLScriptElementImpl> getSavedCollapsedElements() {
         IResource resource = getResource();
         if (resource == null) {
             return Collections.emptySet();
@@ -164,44 +164,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (document == null) {
             return;
         }
-        reconcileAllDocument();
+        reconcile(0, document.getLength(), true);
     }
 
-    private void reconcileAllDocument() {
-        if (!editor.isFoldingEnabled()) {
-            return;
-        }
-        ProjectionAnnotationModel model = editor.getAnnotationModel();
-        if (model == null) {
-            return;
-        }
-        cache.clear();
-        model.removeAllAnnotations();
-
-        List<SQLScriptElement> parsedQueries = extractQueries(0, document.getLength());
-        if (parsedQueries == null) {
-            return;
-        }
-
-        Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
-        Set<SQLScriptElementImpl> savedCollapsedPositions = getSavedCollapsedPositions();
-        for (SQLScriptElement scriptElement: parsedQueries) {
-            if (!deservesFolding(scriptElement)) {
-                continue;
-            }
-            SQLScriptElementImpl scriptPosition = getExpandedScriptPosition(scriptElement);
-            ProjectionAnnotation annotation = new ProjectionAnnotation();
-            scriptPosition.setAnnotation(annotation);
-            additions.put(annotation, scriptPosition);
-            if (savedCollapsedPositions.contains(scriptPosition)) {
-                annotation.markCollapsed();
-            }
-        }
-        model.modifyAnnotations(null, additions, null);
-        cache.addAll(additions.values());
-    }
-
-    private void reconcile(int damagedRegionOffset, int damagedRegionLength) {
+    private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
         if (!editor.isFoldingEnabled()) {
             return;
         }
@@ -233,7 +199,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         if (rightBound != null && !parsedQueries.isEmpty()) {
             SQLScriptElement rightmostParsedQuery = parsedQueries.get(parsedQueries.size() - 1);
-            if (!rightBound.equals(getExpandedScriptPosition(rightmostParsedQuery))) {
+            if (!rightBound.equals(getExpandedScriptElement(rightmostParsedQuery))) {
                 parsedQueries = extractQueries(damagedRegionOffset, document.getLength());
                 if (parsedQueries == null) {
                     return;
@@ -253,15 +219,20 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             cachedQueries = Collections.unmodifiableNavigableSet(cache.subSet(leftBound, false, rightBound, true));
         }
 
-        List<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
+        Collection<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
                 .filter(this::deservesFolding)
-                .map(this::getExpandedScriptPosition)
-                .collect(Collectors.toList());
+                .map(this::getExpandedScriptElement)
+                .collect(Collectors.toSet());
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+        Set<SQLScriptElementImpl> savedCollapsedElements = restoreCollapsedAnnotations ? getSavedCollapsedElements() : Collections.emptySet();
         for (SQLScriptElementImpl element: parsedElements) {
             if (!cachedQueries.contains(element)) {
-                element.setAnnotation(new ProjectionAnnotation());
-                additions.put(element.getAnnotation(), element);
+                ProjectionAnnotation annotation = new ProjectionAnnotation();
+                element.setAnnotation(annotation);
+                additions.put(annotation, element);
+                if (savedCollapsedElements.contains(element)) {
+                    annotation.markCollapsed();
+                }
             }
         }
         Collection<SQLScriptElementImpl> deletedPositions = cachedQueries.stream()
@@ -320,7 +291,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
     @NotNull
-    private SQLScriptElementImpl getExpandedScriptPosition(@NotNull SQLScriptElement element) {
+    private SQLScriptElementImpl getExpandedScriptElement(@NotNull SQLScriptElement element) {
         return new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element));
     }
 
