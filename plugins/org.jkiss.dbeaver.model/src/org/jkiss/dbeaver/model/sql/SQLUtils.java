@@ -983,7 +983,7 @@ public final class SQLUtils {
     }
 
     public static String getScriptLineDelimiter(SQLDialect sqlDialect) {
-        String delimiter = sqlDialect.getScriptDelimiters()[0];
+        String delimiter = SQLUtils.getDefaultScriptDelimiter(sqlDialect);
         if (!delimiter.isEmpty() && Character.isLetterOrDigit(delimiter.charAt(0))) {
             delimiter = ' ' + delimiter;
         }
@@ -1218,5 +1218,13 @@ public final class SQLUtils {
             }
         }
         return query;
+    }
+
+    public static String getDefaultScriptDelimiter(SQLDialect sqlDialect) {
+        String[] scriptDelimiters = sqlDialect.getScriptDelimiters();
+        if (ArrayUtils.isEmpty(scriptDelimiters)) {
+            return scriptDelimiters[0];
+        }
+        return SQLConstants.DEFAULT_STATEMENT_DELIMITER;
     }
 }
