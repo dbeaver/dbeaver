@@ -80,7 +80,7 @@ public class SQLGeneratorDDL extends SQLGenerator<DBPScriptObject> {
         sql.append(definitionText);
         String delimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
         if (object instanceof DBSObject) {
-            delimiter = ((DBSObject) object).getDataSource().getSQLDialect().getScriptDelimiter();
+            delimiter = ((DBSObject) object).getDataSource().getSQLDialect().getScriptDelimiters()[0];
         }
         if (!definitionText.endsWith(delimiter)) {
             sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
