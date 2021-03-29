@@ -431,8 +431,8 @@ public class OracleSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public String getScriptDelimiter() {
-        return super.getScriptDelimiter();
+    public String[] getScriptDelimiters() {
+        return super.getScriptDelimiters();
     }
 
     @Override

@@ -154,12 +154,6 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
         return SQLStateType.SQL99;
     }
 
-    @NotNull
-    @Override
-    public String getScriptDelimiter() {
-        return ";"; //$NON-NLS-1$
-    }
-
     @Nullable
     @Override
     public String getScriptDelimiterRedefiner() {
