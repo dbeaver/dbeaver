@@ -154,7 +154,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
         DBPDataSource dataSource = executionContext.getDataSource();
         {
             String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-            String scriptDelimiter = dataSource.getSQLDialect().getScriptDelimiter() + lineSeparator;
+            String scriptDelimiter = dataSource.getSQLDialect().getScriptDelimiters()[0] + lineSeparator;
             String[] scriptLines = generateSQLScript();
             StringBuilder sql = new StringBuilder(scriptLines.length * 64);
             for (String line : scriptLines) {

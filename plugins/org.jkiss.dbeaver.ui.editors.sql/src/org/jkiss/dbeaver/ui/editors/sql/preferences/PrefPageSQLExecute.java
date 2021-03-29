@@ -191,9 +191,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             Composite delimGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             statementDelimiterText = UIUtils.createLabelText(delimGroup, SQLEditorMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             //statementDelimiterText.setTextLimit(1);
-            ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, null, false, 2);
-            blankLineDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, null, false, 2);
-            removeTrailingDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter, null, false, 2);
+            ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter_tip, false, 2);
+            blankLineDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter_tip, false, 2);
+            removeTrailingDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter_tip, false, 2);
         }
 
         return composite;
