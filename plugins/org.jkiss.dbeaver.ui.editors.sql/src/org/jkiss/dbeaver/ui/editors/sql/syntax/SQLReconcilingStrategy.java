@@ -46,6 +46,9 @@ import java.util.stream.Collectors;
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
     private static final Log log = Log.getLog(SQLReconcilingStrategy.class);
 
+    private static final QualifiedName COLLAPSED_ANNOTATIONS =
+            new QualifiedName(SQLEditorActivator.PLUGIN_ID, SQLReconcilingStrategy.class.getName() + ".collapsedFoldingAnnotations");
+
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
     private final SQLEditorBase editor;
@@ -90,10 +93,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (resource == null) {
             return Collections.emptySet();
         }
-        QualifiedName name = getQualifiedName();
         String data;
         try {
-            data = resource.getPersistentProperty(name);
+            data = resource.getPersistentProperty(COLLAPSED_ANNOTATIONS);
         } catch (CoreException e) {
             log.warn("Core Exception caught while reading saved collapsed folding positions", e);
             return Collections.emptySet();
@@ -144,7 +146,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             value = stringJoiner.toString();
         }
         try {
-            resource.setPersistentProperty(getQualifiedName(), value);
+            resource.setPersistentProperty(COLLAPSED_ANNOTATIONS, value);
         } catch (CoreException e) {
             log.warn("Core Exception caught while writing saved collapsed folding positions", e);
         }
@@ -153,11 +155,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Nullable
     private IResource getResource() {
         return EditorUtils.getFileFromInput(editor.getEditorInput());
-    }
-
-    @NotNull
-    private static QualifiedName getQualifiedName() {
-        return new QualifiedName(SQLEditorActivator.PLUGIN_ID, SQLReconcilingStrategy.class.getName() + ".collapsedFoldingAnnotations");
     }
 
     public void onDataSourceChange() {
