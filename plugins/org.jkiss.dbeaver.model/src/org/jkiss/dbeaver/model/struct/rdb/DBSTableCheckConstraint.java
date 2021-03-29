@@ -27,6 +27,6 @@ public interface DBSTableCheckConstraint extends DBSEntityReferrer {
 
     String getCheckConstraintDefinition();
 
-    void setCheckConstraintExpression(String expression);
+    void setCheckConstraintDefinition(String expression);
 
 }

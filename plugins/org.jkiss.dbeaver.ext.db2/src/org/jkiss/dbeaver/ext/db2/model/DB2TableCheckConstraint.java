@@ -239,7 +239,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     }
 
     @Override
-    public void setCheckConstraintExpression(String expression) {
+    public void setCheckConstraintDefinition(String expression) {
         this.text = expression;
     }
 }
