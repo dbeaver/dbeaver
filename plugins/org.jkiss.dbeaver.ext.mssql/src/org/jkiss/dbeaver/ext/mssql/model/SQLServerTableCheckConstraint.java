@@ -115,7 +115,7 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
     }
 
     @Override
-    public void setCheckConstraintExpression(String expression) {
+    public void setCheckConstraintDefinition(String expression) {
         this.definition = expression;
     }
 

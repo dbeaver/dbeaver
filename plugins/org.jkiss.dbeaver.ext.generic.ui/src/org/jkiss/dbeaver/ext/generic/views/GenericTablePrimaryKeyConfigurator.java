@@ -53,7 +53,7 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
                 primaryKey.setConstraintType(editPage.getConstraintType());
                 primaryKey.setName(editPage.getConstraintName());
                 if (primaryKey instanceof DBSTableCheckConstraint) {
-                    ((DBSTableCheckConstraint)primaryKey).setCheckConstraintExpression(editPage.getConstraintExpression());
+                    ((DBSTableCheckConstraint)primaryKey).setCheckConstraintDefinition(editPage.getConstraintExpression());
                 }
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
