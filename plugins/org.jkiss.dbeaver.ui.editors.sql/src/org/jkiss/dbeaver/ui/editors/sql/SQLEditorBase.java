@@ -495,6 +495,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             themeListener = null;
         }
 
+        SQLEditorSourceViewerConfiguration viewerConfiguration = getViewerConfiguration();
+        if (viewerConfiguration != null) {
+            viewerConfiguration.saveFoldingState();
+        }
+
         super.dispose();
     }
 

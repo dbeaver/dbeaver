@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -29,13 +32,20 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
+    private static final Log log = Log.getLog(SQLReconcilingStrategy.class);
+
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
     private final SQLEditorBase editor;
@@ -72,14 +82,123 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @Override
     public void initialReconcile() {
-        reconcile(0, document.getLength());
+        reconcileAllDocument();
+    }
+
+    private Set<SQLScriptElementImpl> getSavedCollapsedPositions() {
+        IResource resource = getResource();
+        if (resource == null) {
+            return Collections.emptySet();
+        }
+        QualifiedName name = getQualifiedName();
+        String data;
+        try {
+            data = resource.getPersistentProperty(name);
+        } catch (CoreException e) {
+            log.warn("Core Exception caught while reading saved collapsed folding positions", e);
+            return Collections.emptySet();
+        }
+        if (data == null) {
+            return Collections.emptySet();
+        }
+
+        Set<SQLScriptElementImpl> collapsedPositions = new HashSet<>();
+        String[] positions = data.split(";");
+        for (String position: positions) {
+            String[] integers = position.split(",");
+            if (integers.length != 2) {
+                log.warn("Position with illegal format read while reading saved collapsed folding positions. position=" + position);
+                continue;
+            }
+            int offset = CommonUtils.toInt(integers[0], -1);
+            int length = CommonUtils.toInt(integers[1], -1);
+            if (offset == -1 || length == -1) {
+                log.warn("Position with offset or/and length read while reading saved collapsed folding positions. position=" + position);
+                continue;
+            }
+            SQLScriptElementImpl scriptPosition = new SQLScriptElementImpl(offset, length, new ProjectionAnnotation());
+            collapsedPositions.add(scriptPosition);
+        }
+
+        return collapsedPositions;
+    }
+
+    //format: "offset_1,length_1;offset_2,length_2;...offset_n,length_n"
+    public void saveState() {
+        IResource resource = getResource();
+        ProjectionAnnotationModel annotationModel = editor.getAnnotationModel();
+        if (resource == null || annotationModel == null) {
+            return;
+        }
+        StringJoiner stringJoiner = new StringJoiner(";");
+        for (SQLScriptElementImpl position: cache) {
+            ProjectionAnnotation annotation = position.getAnnotation();
+            if (annotation != null && annotation.isCollapsed()) {
+                stringJoiner.add(position.getOffset() + "," + position.getLength());
+            }
+        }
+        String value;
+        if (stringJoiner.length() == 0) {
+            value = null;
+        } else {
+            value = stringJoiner.toString();
+        }
+        try {
+            resource.setPersistentProperty(getQualifiedName(), value);
+        } catch (CoreException e) {
+            log.warn("Core Exception caught while writing saved collapsed folding positions", e);
+        }
+    }
+
+    @Nullable
+    private IResource getResource() {
+        return EditorUtils.getFileFromInput(editor.getEditorInput());
+    }
+
+    @NotNull
+    private static QualifiedName getQualifiedName() {
+        return new QualifiedName(SQLEditorActivator.PLUGIN_ID, SQLReconcilingStrategy.class.getName() + ".collapsedFoldingAnnotations");
     }
 
     public void onDataSourceChange() {
         if (document == null) {
             return;
         }
-        initialReconcile();
+        reconcileAllDocument();
+    }
+
+    private void reconcileAllDocument() {
+        if (!editor.isFoldingEnabled()) {
+            return;
+        }
+        ProjectionAnnotationModel model = editor.getAnnotationModel();
+        if (model == null) {
+            return;
+        }
+        cache.clear();
+        model.removeAllAnnotations();
+
+        List<SQLScriptElement> parsedQueries = extractQueries(0, document.getLength());
+        if (parsedQueries == null) {
+            return;
+        }
+
+        Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+        Set<SQLScriptElementImpl> savedCollapsedPositions = getSavedCollapsedPositions();
+        for (SQLScriptElement scriptElement: parsedQueries) {
+            if (!deservesFolding(scriptElement)) {
+                continue;
+            }
+            SQLScriptElementImpl scriptPosition = getExpandedScriptPosition(scriptElement);
+            ProjectionAnnotation annotation = new ProjectionAnnotation();
+            scriptPosition.setAnnotation(annotation);
+            additions.put(annotation, scriptPosition);
+            if (savedCollapsedPositions.contains(scriptPosition)) {
+                annotation.markCollapsed();
+            }
+        }
+        model.modifyAnnotations(null, additions, null);
+        cache.addAll(additions.values());
     }
 
     private void reconcile(int damagedRegionOffset, int damagedRegionLength) {
@@ -114,7 +233,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         if (rightBound != null && !parsedQueries.isEmpty()) {
             SQLScriptElement rightmostParsedQuery = parsedQueries.get(parsedQueries.size() - 1);
-            if (!rightBound.equals(new SQLScriptElementImpl(rightmostParsedQuery.getOffset(), expandQueryLength(rightmostParsedQuery)))) {
+            if (!rightBound.equals(getExpandedScriptPosition(rightmostParsedQuery))) {
                 parsedQueries = extractQueries(damagedRegionOffset, document.getLength());
                 if (parsedQueries == null) {
                     return;
@@ -136,7 +255,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         List<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
                 .filter(this::deservesFolding)
-                .map(element -> new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element)))
+                .map(this::getExpandedScriptPosition)
                 .collect(Collectors.toList());
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
         for (SQLScriptElementImpl element: parsedElements) {
@@ -200,6 +319,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         return position - element.getOffset();
     }
 
+    @NotNull
+    private SQLScriptElementImpl getExpandedScriptPosition(@NotNull SQLScriptElement element) {
+        return new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element));
+    }
+
     private char unsafeGetChar(int index) {
         try {
             return document.getChar(index);
@@ -220,6 +344,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         SQLScriptElementImpl(int offset, int length) {
             super(offset, length);
+        }
+
+        SQLScriptElementImpl(int offset, int length, @NotNull ProjectionAnnotation annotation) {
+            super(offset, length);
+            this.annotation = annotation;
         }
 
         @Nullable
