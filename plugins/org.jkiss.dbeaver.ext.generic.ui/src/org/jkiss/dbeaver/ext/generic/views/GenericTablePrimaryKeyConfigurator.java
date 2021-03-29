@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericCheckConstraint;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -25,6 +24,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
@@ -52,8 +52,8 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
                 primaryKey.setConstraintType(editPage.getConstraintType());
                 primaryKey.setName(editPage.getConstraintName());
-                if (primaryKey instanceof GenericCheckConstraint) {
-                    ((GenericCheckConstraint)primaryKey).setCheckConstraintExpression(editPage.getConstraintExpression());
+                if (primaryKey instanceof DBSTableCheckConstraint) {
+                    ((DBSTableCheckConstraint)primaryKey).setCheckConstraintDefinition(editPage.getConstraintExpression());
                 }
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {

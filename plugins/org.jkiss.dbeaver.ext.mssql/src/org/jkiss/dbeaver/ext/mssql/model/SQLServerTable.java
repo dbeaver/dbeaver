@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -52,7 +53,7 @@ import java.util.stream.Collectors;
 /**
  * SQLServerTable
  */
-public class SQLServerTable extends SQLServerTableBase implements DBPObjectStatistics
+public class SQLServerTable extends SQLServerTableBase implements DBPObjectStatistics, DBSCheckConstraintContainer
 {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
