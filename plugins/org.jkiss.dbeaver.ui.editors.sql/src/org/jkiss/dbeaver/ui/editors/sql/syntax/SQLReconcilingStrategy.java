@@ -118,7 +118,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 log.warn("Position with offset or/and length read while reading saved collapsed folding positions. position=" + position);
                 continue;
             }
-            SQLScriptElementImpl scriptPosition = new SQLScriptElementImpl(offset, length, new ProjectionAnnotation());
+            SQLScriptElementImpl scriptPosition = new SQLScriptElementImpl(offset, length);
+            scriptPosition.setAnnotation(new ProjectionAnnotation());
             collapsedPositions.add(scriptPosition);
         }
 
@@ -312,11 +313,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         SQLScriptElementImpl(int offset, int length) {
             super(offset, length);
-        }
-
-        SQLScriptElementImpl(int offset, int length, @NotNull ProjectionAnnotation annotation) {
-            super(offset, length);
-            this.annotation = annotation;
         }
 
         @Nullable
