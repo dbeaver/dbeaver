@@ -270,12 +270,6 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return sqlStateType;
     }
 
-    @NotNull
-    @Override
-    public String getScriptDelimiter() {
-        return ";"; //$NON-NLS-1$
-    }
-
     @Override
     public boolean validIdentifierPart(char c, boolean quoted) {
         // Some driver return extra characters which must be quoted. We can't know this here.

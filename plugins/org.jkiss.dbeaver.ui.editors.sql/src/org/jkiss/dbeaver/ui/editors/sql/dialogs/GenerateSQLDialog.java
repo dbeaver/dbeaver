@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -154,7 +156,8 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
         DBPDataSource dataSource = executionContext.getDataSource();
         {
             String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-            String scriptDelimiter = dataSource.getSQLDialect().getScriptDelimiter() + lineSeparator;
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            String scriptDelimiter =  SQLUtils.getDefaultScriptDelimiter(sqlDialect) + lineSeparator;
             String[] scriptLines = generateSQLScript();
             StringBuilder sql = new StringBuilder(scriptLines.length * 64);
             for (String line : scriptLines) {

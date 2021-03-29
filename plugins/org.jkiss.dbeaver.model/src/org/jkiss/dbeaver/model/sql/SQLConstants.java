@@ -27,6 +27,7 @@ public class SQLConstants {
     public static final String STR_QUOTE_SINGLE = "'";
     public static final String STR_QUOTE_DOUBLE = "\"";
     public static final String[][] DOUBLE_QUOTE_STRINGS = {{STR_QUOTE_DOUBLE, STR_QUOTE_DOUBLE}};
+    public static final String[] DEFAULT_SCRIPT_DELIMITER = {";"};
 
     public static final String STR_QUOTE_APOS = "`";
     public static final String ML_COMMENT_START = "/*";

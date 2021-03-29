@@ -148,7 +148,11 @@ public class SQLSyntaxManager {
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
         this.escapeChar = dialect.getStringEscapeCharacter();
         if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
-            this.statementDelimiters = new String[] { sqlDialect.getScriptDelimiter().toLowerCase() };
+            String[] scriptDelimiters = sqlDialect.getScriptDelimiters();
+            this.statementDelimiters = new String[scriptDelimiters.length];
+            for (int i = 0; i < scriptDelimiters.length; i++) {
+                this.statementDelimiters[i] = scriptDelimiters[i].toLowerCase();
+            }
         }
 
         String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);

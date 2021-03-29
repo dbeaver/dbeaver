@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -37,7 +38,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
-    private String scriptDelimiter;
+    private String[] scriptDelimiters;
     private char stringEscapeCharacter = '\0';
     private String scriptDelimiterRedefiner;
     private boolean legacySQLDialect;
@@ -61,7 +62,12 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         DBPDriver driver = dataSource.getContainer().getDriver();
-        this.scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        String delimitersString = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        if (delimitersString.contains(",")) {
+            scriptDelimiters = delimitersString.split(",");
+        } else if (!CommonUtils.isEmpty(delimitersString)){
+            scriptDelimiters = new String[]{delimitersString};
+        }
         String escapeStr = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STRING_ESCAPE_CHAR));
         if (!CommonUtils.isEmpty(escapeStr)) {
             this.stringEscapeCharacter = escapeStr.charAt(0);
@@ -88,8 +94,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public String getScriptDelimiter() {
-        return CommonUtils.isEmpty(scriptDelimiter) ? super.getScriptDelimiter() : scriptDelimiter;
+    public String[] getScriptDelimiters() {
+        return ArrayUtils.isEmpty(scriptDelimiters) ? super.getScriptDelimiters() : scriptDelimiters;
     }
 
     @Override
