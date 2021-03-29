@@ -197,6 +197,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         "REQUIRING",
         "RESPECT",
         "RESTORE",
+        "RULE",
 //            "RETURNED_CARDINALITY",
 //            "RETURNED_LENGTH",
 //            "RETURNED_OCTET_LENGTH",
