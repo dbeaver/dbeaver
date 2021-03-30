@@ -98,7 +98,8 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                     int replacementSum = replacementOffset + replacementLength;
                     if (replacementSum < docLen) {
                         char nextChar = document.getChar(replacementSum);
-                        hasClosingParenthesis = nextChar == ')' || nextChar == '}' || nextChar == ']';
+                        hasClosingParenthesis = nextChar == ')' || nextChar == '}' || nextChar == ']'
+                            || nextChar == '\'' || nextChar == '"';
                     }
                     if (getObject() instanceof DBSObjectContainer) {
                         // Do not append trailing space after schemas/catalogs/etc.
