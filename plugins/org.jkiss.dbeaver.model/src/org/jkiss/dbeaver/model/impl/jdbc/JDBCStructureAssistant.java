@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -70,7 +71,7 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
     public List<DBSObjectReference> findObjectsByMask(
         @NotNull DBRProgressMonitor monitor,
         @NotNull CONTEXT executionContext,
-        DBSObject parentObject,
+        @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
@@ -78,10 +79,21 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
         int maxResults)
         throws DBException
     {
+        return findObjectsByMask(monitor, executionContext, parentObject, objectTypes, objectNameMask,
+                caseSensitive, false, globalSearch, maxResults);
+    }
+
+    @NotNull
+    @Override
+    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
+                                                      @Nullable DBSObject parentObject, DBSObjectType[] objectTypes, String mask,
+                                                      boolean caseSensitive, boolean globalSearch, boolean searchInComments, int maxResults)
+            throws DBException {
         List<DBSObjectReference> references = new ArrayList<>();
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : objectTypes) {
-                findObjectsByMask(executionContext, session, type, parentObject, objectNameMask, caseSensitive, globalSearch, maxResults - references.size(), references);
+                findObjectsByMask(executionContext, session, type, parentObject, mask, caseSensitive, globalSearch, searchInComments,
+                        maxResults - references.size(), references);
                 if (references.size() >= maxResults) {
                     break;
                 }
@@ -91,6 +103,13 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
             throw new DBException(ex, getDataSource());
         }
         return references;
+    }
+
+    protected void findObjectsByMask(@NotNull CONTEXT executionContext, @NotNull JDBCSession session, DBSObjectType objectType,
+                                     @Nullable DBSObject parentObject, String mask, boolean caseSensitive, boolean globalSearch,
+                                     boolean searchInComments, int maxResults, @NotNull List<DBSObjectReference> references)
+            throws DBException, SQLException {
+        findObjectsByMask(executionContext, session, objectType, parentObject, mask, caseSensitive, globalSearch, maxResults, references);
     }
 
     protected abstract void findObjectsByMask(
@@ -103,5 +122,4 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
         boolean globalSearch, int maxResults,
         List<DBSObjectReference> references)
         throws DBException, SQLException;
-
 }

@@ -30,6 +30,7 @@ public class SearchMetadataParams {
     private List<DBSObjectType> objectTypes;
     private String objectNameMask;
     private boolean caseSensitive;
+    private boolean searchInComments;
     private int maxResults;
     private int matchType;
 
@@ -95,5 +96,13 @@ public class SearchMetadataParams {
     public void setMatchType(int matchType)
     {
         this.matchType = matchType;
+    }
+
+    boolean getSearchInComments() {
+        return searchInComments;
+    }
+
+    void setSearchInComments(boolean searchInComments) {
+        this.searchInComments = searchInComments;
     }
 }
