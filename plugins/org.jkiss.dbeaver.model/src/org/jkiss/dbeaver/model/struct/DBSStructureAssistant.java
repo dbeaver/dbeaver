@@ -28,9 +28,7 @@ import java.util.List;
 /**
  * DBSStructureAssistant
  */
-public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext>
-{
-
+public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
     DBSObjectType[] getSupportedObjectTypes();
 
     DBSObjectType[] getSearchObjectTypes();
@@ -63,4 +61,25 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext>
         boolean globalSearch,
         int maxResults) throws DBException;
 
+    /**
+     * Search objects matching specified mask.
+     * @param monitor           monitor
+     * @param executionContext  execution context
+     * @param parentObject      parent (schema or catalog)
+     * @param objectTypes       type of objects to search
+     * @param mask              mask
+     * @param caseSensitive     case sensitive search (ignored by some implementations)
+     * @param globalSearch      search in all available schemas/catalogs. If false then search with respect of active schema/catalog
+     * @param searchInComments  search in object comments (may be ignored by some implementations)
+     * @param maxResults        maximum number of results
+     * @return object references
+     * @throws DBException      exception
+     */
+    @NotNull
+    default List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
+                                                       @Nullable DBSObject parentObject, DBSObjectType[] objectTypes, String mask,
+                                                       boolean caseSensitive, boolean globalSearch, boolean searchInComments, int maxResults)
+                                                        throws DBException {
+        return findObjectsByMask(monitor, executionContext, parentObject, objectTypes, mask, caseSensitive, globalSearch, maxResults);
+    }
 }

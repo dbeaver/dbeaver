@@ -60,6 +60,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
+    private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments";
 
     private Table typesTable;
     private Combo searchText;
@@ -67,6 +68,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
     private String nameMask;
     private boolean caseSensitive;
+    private boolean searchInComments;
     private int maxResults;
     private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<>();
@@ -216,6 +218,14 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 });
                 caseCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+                Button searchInCommentsCheckbox = UIUtils.createLabelCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, searchInComments);
+                searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        searchInComments = searchInCommentsCheckbox.getSelection();
+                    }
+                });
+                caseCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
 
             Label otLabel = UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_group_object_types);
@@ -392,6 +402,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         params.setObjectTypes(objectTypes);
         params.setObjectNameMask(objectNameMask);
         params.setCaseSensitive(caseSensitive);
+        params.setSearchInComments(searchInComments);
         params.setMaxResults(maxResults);
         return SearchMetadataQuery.createQuery(dataSource, params);
 
@@ -402,6 +413,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     {
         nameMask = store.getString(PROP_MASK);
         caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
+        searchInComments = store.getBoolean(PROP_SEARCH_IN_COMMENTS);
         maxResults = store.getInt(PROP_MAX_RESULT);
         matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
         for (int i = 0; ;i++) {
@@ -428,6 +440,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     {
         store.setValue(PROP_MASK, nameMask);
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
+        store.setValue(PROP_SEARCH_IN_COMMENTS, searchInComments);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
         saveTreeState(store, PROP_SOURCES, dataSourceTree);

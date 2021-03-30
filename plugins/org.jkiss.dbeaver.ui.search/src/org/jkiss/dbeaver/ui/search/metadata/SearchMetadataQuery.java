@@ -115,7 +115,10 @@ public class SearchMetadataQuery implements ISearchQuery {
                 objectTypes.toArray(new DBSObjectType[0]),
                 objectNameMask,
                 params.isCaseSensitive(),
-                true, params.getMaxResults());
+                true,
+                params.getSearchInComments(),
+                params.getMaxResults()
+            );
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;
