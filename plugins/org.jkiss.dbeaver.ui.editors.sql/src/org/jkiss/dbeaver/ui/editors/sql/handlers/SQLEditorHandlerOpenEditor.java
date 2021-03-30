@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.ScriptSelectorPanel;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
@@ -93,6 +95,18 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         String actionId = event.getCommand().getId();
+        if (SQLEditorCommands.CMD_SQL_EDITOR_DEF_COMMAND.equals(actionId)) {
+            String defCommand = DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.DEFAULT_SQL_EDITOR_OPEN_COMMAND);
+            if (CommonUtils.isEmpty(defCommand)) {
+                return null;
+            }
+            if (defCommand.equals(SQLEditorCommands.CMD_SQL_EDITOR_CONSOLE)) {
+                ActionUtils.runCommand(SQLEditorCommands.CMD_SQL_EDITOR_CONSOLE, HandlerUtil.getActiveWorkbenchWindow(event));
+                return null;
+            } else {
+                actionId = defCommand;
+            }
+        }
         try {
             switch (actionId) {
                 case SQLEditorCommands.CMD_SQL_EDITOR_OPEN:

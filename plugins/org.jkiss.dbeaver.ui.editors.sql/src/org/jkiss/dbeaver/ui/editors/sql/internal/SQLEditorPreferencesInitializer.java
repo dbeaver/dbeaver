@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -110,6 +111,8 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             store,
             SQLPreferenceConstants.RESULT_SET_ORIENTATION, SQLEditor.ResultSetOrientation.HORIZONTAL.name());
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, true);
+
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.DEFAULT_SQL_EDITOR_OPEN_COMMAND, SQLEditorCommands.CMD_SQL_EDITOR_RECENT);
 
         // Text editor default preferences
         PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
