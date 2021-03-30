@@ -50,6 +50,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean hasDelimiterAfterQuery;
     private boolean hasDelimiterAfterBlock;
     private boolean callableQueryInBrackets;
+    private boolean omitCatalogName;
 
     public GenericSQLDialect() {
         super("Generic", "generic");
@@ -90,6 +91,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (this.dualTable.isEmpty()) {
             this.dualTable = null;
         }
+        this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
     }
 
     @NotNull
@@ -171,5 +173,14 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         } else {
             return null;
         }
+    }
+
+    // Some databases do not need specified catalog name in queries (like Informix), although the driver may not think so
+    @Override
+    public int getCatalogUsage() {
+        if (omitCatalogName) {
+            return USAGE_NONE;
+        }
+        return super.getCatalogUsage();
     }
 }
