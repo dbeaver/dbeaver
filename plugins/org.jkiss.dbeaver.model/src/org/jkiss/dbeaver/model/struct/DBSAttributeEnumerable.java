@@ -34,7 +34,8 @@ public interface DBSAttributeEnumerable extends DBSEntityAttribute
      * @param session        session
      * @param valuePattern   pattern for enumeration values. If null or empty then returns full enumration set
      * @param maxResults     maximum enumeration values in result set
-     * @param formatValues
+     * @param formatValues   Use value formatting or return raw values
+     * @param calcCount      Calculate value count and order by it (desc). Otherwise just read distinct values in natural order
      * @return statement with result set which contains valid enumeration values.
      **/
     @NotNull
@@ -42,6 +43,7 @@ public interface DBSAttributeEnumerable extends DBSEntityAttribute
         @NotNull DBCSession session,
         @Nullable Object valuePattern,
         int maxResults,
+        boolean calcCount,
         boolean formatValues)
         throws DBException;
 

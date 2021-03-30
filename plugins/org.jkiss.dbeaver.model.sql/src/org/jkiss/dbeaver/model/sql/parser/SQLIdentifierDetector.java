@@ -30,9 +30,10 @@ import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
  */
 public class SQLIdentifierDetector extends TPWordDetector {
     protected SQLDialect dialect;
-    private char structSeparator;
+    private final char structSeparator;
     @NotNull
     private final String[][] quoteStrings;
+    private final String[][] stringQuoteStrings;
 
     public SQLIdentifierDetector(SQLDialect dialect) {
         this(dialect, dialect.getStructSeparator(), dialect.getIdentifierQuoteStrings());
@@ -42,11 +43,21 @@ public class SQLIdentifierDetector extends TPWordDetector {
         this.dialect = dialect;
         this.structSeparator = structSeparator;
         this.quoteStrings = quoteStrings != null ? quoteStrings : new String[0][];
+        this.stringQuoteStrings = dialect == null ? new String[][] {{ "'", "'"}} : dialect.getStringQuoteStrings();
     }
 
     protected boolean isQuote(char c) {
-        for (int i = 0; i < quoteStrings.length; i++) {
-            if (quoteStrings[i][0].indexOf(c) != -1 || quoteStrings[i][1].indexOf(c) != -1) {
+        for (String[] quoteString : quoteStrings) {
+            if (quoteString[0].indexOf(c) != -1 || quoteString[1].indexOf(c) != -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean isStringQuote(char c) {
+        for (String[] stringQuoteString : stringQuoteStrings) {
+            if (stringQuoteString[0].indexOf(c) != -1 || stringQuoteString[1].indexOf(c) != -1) {
                 return true;
             }
         }
@@ -80,8 +91,8 @@ public class SQLIdentifierDetector extends TPWordDetector {
     }
 
     public boolean isQuoted(String token) {
-        for (int i = 0; i < quoteStrings.length; i++) {
-            if (token.startsWith(quoteStrings[i][0])) {
+        for (String[] quoteString : quoteStrings) {
+            if (token.startsWith(quoteString[0])) {
                 return true;
             }
         }
@@ -90,12 +101,12 @@ public class SQLIdentifierDetector extends TPWordDetector {
 
     public String removeQuotes(String name) {
         // Remove leading (and trailing) quotes if any
-        for (int i = 0; i < quoteStrings.length; i++) {
-            if (name.startsWith(quoteStrings[i][0])) {
-                name = name.substring(quoteStrings[i][0].length());
+        for (String[] quoteString : quoteStrings) {
+            if (name.startsWith(quoteString[0])) {
+                name = name.substring(quoteString[0].length());
             }
-            if (name.endsWith(quoteStrings[i][1])) {
-                name = name.substring(0, name.length() - quoteStrings[i][0].length());
+            if (name.endsWith(quoteString[1])) {
+                name = name.substring(0, name.length() - quoteString[0].length());
             }
         }
 

@@ -39,6 +39,7 @@ public class SQLCompletionRequest {
 
     private String wordPart;
     private QueryType queryType;
+    private String contentType;
 
     public SQLCompletionRequest(SQLCompletionContext context, IDocument document, int documentOffset, SQLScriptElement activeQuery, boolean simpleMode) {
         this.context = context;
@@ -89,6 +90,14 @@ public class SQLCompletionRequest {
 
     public void setQueryType(QueryType queryType) {
         this.queryType = queryType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public String getContentType() {
+        return contentType;
     }
 
 }
