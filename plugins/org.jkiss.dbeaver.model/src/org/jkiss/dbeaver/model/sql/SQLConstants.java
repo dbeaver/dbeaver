@@ -54,6 +54,9 @@ public class SQLConstants {
     public static final String KEYWORD_NULL = "NULL";
     public static final String KEYWORD_IN = "IN";
 
+    public static final String KEYWORD_LIKE = "LIKE";
+    public static final String KEYWORD_ILIKE = "ILIKE";
+
     public static final String KEYWORD_FUNCTION = "FUNCTION";
     public static final String KEYWORD_PROCEDURE = "PROCEDURE";
 

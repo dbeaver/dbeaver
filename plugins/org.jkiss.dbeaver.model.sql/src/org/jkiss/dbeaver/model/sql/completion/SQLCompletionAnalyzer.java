@@ -24,7 +24,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.TextUtils;
@@ -55,7 +58,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private static final String ALL_COLUMNS_PATTERN = "*";
     private static final String MATCH_ANY_PATTERN = "%";
-    public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 20;
+    public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
 
     private final SQLCompletionRequest request;
@@ -141,6 +144,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         String wordPart = request.getWordPart();
         boolean emptyWord = wordPart.length() == 0;
+        boolean isInLiteral = SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(request.getContentType());
+        boolean isInQuotedIdentifier = SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED.equals(request.getContentType());
 
         SQLCompletionRequest.QueryType queryType = request.getQueryType();
         Map<String, Object> parameters = new LinkedHashMap<>();
@@ -158,7 +163,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
-            if (emptyWord) {
+            if (emptyWord || isInLiteral || isInQuotedIdentifier) {
                 // Get root objects
                 DBPObject rootObject = null;
                 if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
@@ -176,12 +181,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             case SQLConstants.KEYWORD_AND:
                             case SQLConstants.KEYWORD_OR:
                                 if (!request.isSimpleMode()) {
-                                    boolean waitsForValue = rootObject instanceof DBSEntity &&
-                                        !CommonUtils.isEmpty(prevWords) &&
-                                        !CommonUtils.isEmpty(prevDelimiter) &&
-                                        !prevDelimiter.endsWith(")");
+                                    boolean isLike = SQLConstants.KEYWORD_LIKE.equals(previousWord) || SQLConstants.KEYWORD_ILIKE.equals(previousWord);
+                                    boolean waitsForValue =
+                                        isInLiteral || (
+                                            !CommonUtils.isEmpty(prevWords) &&
+                                            isLike || (
+                                                !CommonUtils.isEmpty(prevDelimiter) &&
+                                                !prevDelimiter.endsWith(")")));
                                     if (waitsForValue) {
-                                        makeProposalsFromAttributeValues(dataSource, wordDetector, (DBSEntity) rootObject);
+                                        makeProposalsFromAttributeValues(dataSource, wordDetector, isInLiteral, (DBSEntity) rootObject);
                                     }
                                 }
                                 break;
@@ -381,7 +389,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
     }
 
-    private void makeProposalsFromAttributeValues(DBPDataSource dataSource, SQLWordPartDetector wordDetector, DBSEntity entity) throws DBException {
+    private void makeProposalsFromAttributeValues(DBPDataSource dataSource, SQLWordPartDetector wordDetector, boolean isInLiteral, DBSEntity entity) throws DBException {
         List<String> prevWords = wordDetector.getPrevWords();
         if (!prevWords.isEmpty()) {
             // Column name?
@@ -396,14 +404,24 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             DBSEntityAttribute attribute = entity.getAttribute(monitor, columnName);
             if (attribute instanceof DBSAttributeEnumerable) {
                 try (DBCSession session = request.getContext().getExecutionContext().openSession(monitor, DBCExecutionPurpose.META, "Read attribute values")) {
-                    List<DBDLabelValuePair> valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(session, null, MAX_ATTRIBUTE_VALUE_PROPOSALS, false);
+                    List<DBDLabelValuePair> valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(
+                        session,
+                        isInLiteral ? wordDetector.getFullWord() : null,
+                        MAX_ATTRIBUTE_VALUE_PROPOSALS,
+                        false,
+                        false);
                     if (!valueEnumeration.isEmpty()) {
+                        valueEnumeration.sort((o1, o2) -> DBUtils.compareDataValues(o1.getValue(), o2.getValue()));
+                        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attribute);
                         DBPImage attrImage = null;
                         for (DBDLabelValuePair valuePair : valueEnumeration) {
-                            String sqlValue = SQLUtils.convertValueToSQL(dataSource, attribute, valuePair.getValue());
+                            String displayString = SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.UI);
+                            String sqlValue = isInLiteral ?
+                                valueHandler.getValueDisplayString(attribute, valuePair.getValue(), DBDDisplayFormat.NATIVE) :
+                                SQLUtils.convertValueToSQL(dataSource.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.NATIVE);
                             proposals.add(request.getContext().createProposal(
                                 request,
-                                CommonUtils.toString(valuePair.getValue()),
+                                displayString,
                                 sqlValue,
                                 sqlValue.length(),
                                 attrImage,

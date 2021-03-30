@@ -177,10 +177,25 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults, boolean formatValues) throws DBException {
+    public List<DBDLabelValuePair> getValueEnumeration(
+        @NotNull DBCSession session,
+        @Nullable Object valuePattern,
+        int maxResults,
+        boolean calcCount,
+        boolean formatValues) throws DBException
+    {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(this)).append(", count(*)");
+        query.append("SELECT ");
+        if (!calcCount) {
+            query.append("DISTINCT ");
+        }
+        query.append(DBUtils.getQuotedIdentifier(this));
+        if (calcCount) {
+            query.append(", count(*)");
+        } else {
+            query.append(", 1");
+        }
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
 //        if (descColumns != null) {
@@ -195,8 +210,12 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                 query.append(" = ?");
             }
         }
-        query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
-        query.append("\nORDER BY 2 DESC");
+        if (calcCount) {
+            query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
+            query.append("\nORDER BY 2 DESC");
+        } else {
+            query.append("\nORDER BY 1");
+        }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
             if (valuePattern instanceof String) {
@@ -217,7 +236,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
     }
 
-    public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn> {
+    public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn<?>> {
 
         @Override
         public boolean allowCustomValue()
@@ -226,7 +245,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
 
         @Override
-        public Object[] getPossibleValues(JDBCTableColumn column)
+        public Object[] getPossibleValues(JDBCTableColumn<?> column)
         {
             Set<String> typeNames = new TreeSet<>();
             if (column.getDataSource() instanceof DBPDataTypeProvider) {
@@ -236,7 +255,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                     }
                 }
             }
-            return typeNames.toArray(new String[typeNames.size()]);
+            return typeNames.toArray(new String[0]);
         }
     }
 
