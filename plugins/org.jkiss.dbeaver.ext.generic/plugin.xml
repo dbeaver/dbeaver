@@ -239,6 +239,7 @@
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value="DATABASE ?"/>
                     <parameter name="legacy-sql-dialect" value="true"/>
+                    <parameter name="omit-catalog-name" value="true"/>
 
                     <parameter name="ddl-drop-column-short" value="true"/>
 
