@@ -27,6 +27,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
 
     private final String id;
     private final String productFamily;
+    private final String licenseProductId;
     private final String name;
     private final String description;
     private final String parentId;
@@ -39,6 +40,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         super(config);
         this.id = config.getAttribute("id");
         this.productFamily = CommonUtils.toString(config.getAttribute("family"), "DB");
+        this.licenseProductId = CommonUtils.toString(config.getAttribute("licenseProductId"), this.id);
         this.name = config.getAttribute("name");
         this.description = config.getAttribute("description");
         this.parentId = config.getAttribute("parent");
@@ -53,6 +55,10 @@ public class ApplicationDescriptor extends AbstractDescriptor {
 
     public String getId() {
         return id;
+    }
+
+    public String getLicenseProductId() {
+        return licenseProductId;
     }
 
     public String getProductFamily() {
