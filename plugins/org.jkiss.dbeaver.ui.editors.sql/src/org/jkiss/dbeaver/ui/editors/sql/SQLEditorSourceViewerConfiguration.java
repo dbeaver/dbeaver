@@ -391,6 +391,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         }
     }
 
+    void saveFoldingState() {
+        if (reconcilingStrategy != null) {
+            reconcilingStrategy.saveState();
+        }
+    }
+
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
         if (reconcilingStrategy == null) {
             return null;
