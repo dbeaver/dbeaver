@@ -402,20 +402,43 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
             columnName = DBUtils.getUnQuotedIdentifier(dataSource, columnName);
             DBSEntityAttribute attribute = entity.getAttribute(monitor, columnName);
-            if (attribute instanceof DBSAttributeEnumerable) {
+
+            if (attribute != null) {
                 try (DBCSession session = request.getContext().getExecutionContext().openSession(monitor, DBCExecutionPurpose.META, "Read attribute values")) {
-                    List<DBDLabelValuePair> valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(
-                        session,
-                        isInLiteral ? wordDetector.getFullWord() : null,
-                        MAX_ATTRIBUTE_VALUE_PROPOSALS,
-                        false,
-                        false);
-                    if (!valueEnumeration.isEmpty()) {
+
+                    List<DBDLabelValuePair> valueEnumeration = null;
+
+                    // For dictionary reference read dictionary values
+                    // Otherwise try to read plain attribute values
+                    DBSEntityReferrer enumConstraint = DBStructUtils.getEnumerableConstraint(monitor, attribute);
+                    if (enumConstraint instanceof DBSEntityAssociation) {
+                        DBSEntity dictEntity = DBStructUtils.getAssociatedEntity(monitor, enumConstraint);
+                        if (dictEntity != null) {
+                            DBSEntityAttribute refAttribute = DBUtils.getReferenceAttribute(monitor, (DBSEntityAssociation) enumConstraint, attribute, false);
+                            if (refAttribute != null) {
+                                valueEnumeration = ((DBSDictionary) dictEntity).getDictionaryEnumeration(monitor, refAttribute, null, Collections.emptyList(), true, true, MAX_ATTRIBUTE_VALUE_PROPOSALS);
+                            }
+                        }
+                    }
+
+                    if (CommonUtils.isEmpty(valueEnumeration) && attribute instanceof DBSAttributeEnumerable) {
+                        valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(
+                            session,
+                            isInLiteral ? wordDetector.getFullWord() : null,
+                            MAX_ATTRIBUTE_VALUE_PROPOSALS,
+                            false,
+                            false);
+                    }
+
+                    if (!CommonUtils.isEmpty(valueEnumeration)) {
                         valueEnumeration.sort((o1, o2) -> DBUtils.compareDataValues(o1.getValue(), o2.getValue()));
                         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attribute);
                         DBPImage attrImage = null;
                         for (DBDLabelValuePair valuePair : valueEnumeration) {
                             String displayString = SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.UI);
+                            if (!CommonUtils.isEmpty(valuePair.getLabel()) && !CommonUtils.equalObjects(valuePair.getLabel(), valuePair.getValue())) {
+                                displayString += " - " + valuePair.getLabel() + "";
+                            }
                             String sqlValue = isInLiteral ?
                                 valueHandler.getValueDisplayString(attribute, valuePair.getValue(), DBDDisplayFormat.NATIVE) :
                                 SQLUtils.convertValueToSQL(dataSource.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.NATIVE);
