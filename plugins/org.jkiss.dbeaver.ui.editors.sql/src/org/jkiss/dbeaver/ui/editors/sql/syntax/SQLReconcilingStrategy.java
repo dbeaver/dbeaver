@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -29,13 +32,23 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
+    private static final Log log = Log.getLog(SQLReconcilingStrategy.class);
+
+    private static final QualifiedName COLLAPSED_ANNOTATIONS =
+            new QualifiedName(SQLEditorActivator.PLUGIN_ID, SQLReconcilingStrategy.class.getName() + ".collapsedFoldingAnnotations");
+
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
     private final SQLEditorBase editor;
@@ -59,30 +72,92 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Override
     public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
         if (DirtyRegion.INSERT.equals(dirtyRegion.getType())) {
-            reconcile(subRegion.getOffset(), subRegion.getLength());
+            reconcile(subRegion.getOffset(), subRegion.getLength(), false);
         } else {
-            reconcile(subRegion.getOffset(), 0);
+            reconcile(subRegion.getOffset(), 0, false);
         }
     }
 
     @Override
     public void reconcile(IRegion partition) {
-        reconcile(partition.getOffset(), partition.getLength());
+        reconcile(0, document.getLength(), false);
     }
 
     @Override
     public void initialReconcile() {
-        reconcile(0, document.getLength());
+        reconcile(0, document.getLength(), true);
+    }
+
+    private Set<Integer> getSavedCollapsedAnnotationsOffsets() {
+        IResource resource = getResource();
+        if (resource == null) {
+            return Collections.emptySet();
+        }
+        String data;
+        try {
+            data = resource.getPersistentProperty(COLLAPSED_ANNOTATIONS);
+        } catch (CoreException e) {
+            log.warn("Core Exception caught while reading saved collapsed folding positions", e);
+            return Collections.emptySet();
+        }
+        if (data == null) {
+            return Collections.emptySet();
+        }
+
+        Set<Integer> collapsedPositionsOffsets = new HashSet<>();
+        String[] offsets = data.split(";");
+        for (String offset: offsets) {
+            int offsetValue = CommonUtils.toInt(offset, -1);
+            if (offsetValue == -1) {
+                log.warn("Illegal offset parsed while reading saved collapsed annotation offsets. offset=" + offset);
+                continue;
+            }
+            collapsedPositionsOffsets.add(offsetValue);
+        }
+
+        return collapsedPositionsOffsets;
+    }
+
+    //format: "offset_1;offset_2;...offset_n"
+    public void saveState() {
+        IResource resource = getResource();
+        ProjectionAnnotationModel annotationModel = editor.getAnnotationModel();
+        if (resource == null || annotationModel == null) {
+            return;
+        }
+        StringJoiner stringJoiner = new StringJoiner(";");
+        for (SQLScriptElementImpl position: cache) {
+            ProjectionAnnotation annotation = position.getAnnotation();
+            if (annotation != null && annotation.isCollapsed()) {
+                stringJoiner.add(Integer.toString(position.getOffset()));
+            }
+        }
+        String value;
+        if (stringJoiner.length() == 0) {
+            value = null;
+        } else {
+            value = stringJoiner.toString();
+        }
+        try {
+            resource.setPersistentProperty(COLLAPSED_ANNOTATIONS, value);
+        } catch (CoreException e) {
+            log.warn("Core Exception caught while persisting saved collapsed folding positions", e);
+        }
+    }
+
+    @Nullable
+    private IResource getResource() {
+        return EditorUtils.getFileFromInput(editor.getEditorInput());
     }
 
     public void onDataSourceChange() {
         if (document == null) {
             return;
         }
-        initialReconcile();
+        reconcile(0, document.getLength(), true);
     }
 
-    private void reconcile(int damagedRegionOffset, int damagedRegionLength) {
+    private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
         if (!editor.isFoldingEnabled()) {
             return;
         }
@@ -114,7 +189,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         if (rightBound != null && !parsedQueries.isEmpty()) {
             SQLScriptElement rightmostParsedQuery = parsedQueries.get(parsedQueries.size() - 1);
-            if (!rightBound.equals(new SQLScriptElementImpl(rightmostParsedQuery.getOffset(), expandQueryLength(rightmostParsedQuery)))) {
+            if (!rightBound.equals(getExpandedScriptElement(rightmostParsedQuery))) {
                 parsedQueries = extractQueries(damagedRegionOffset, document.getLength());
                 if (parsedQueries == null) {
                     return;
@@ -134,15 +209,20 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             cachedQueries = Collections.unmodifiableNavigableSet(cache.subSet(leftBound, false, rightBound, true));
         }
 
-        List<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
+        Collection<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
                 .filter(this::deservesFolding)
-                .map(element -> new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element)))
-                .collect(Collectors.toList());
+                .map(this::getExpandedScriptElement)
+                .collect(Collectors.toSet());
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+        Set<Integer> savedCollapsedAnnotationsOffsets = restoreCollapsedAnnotations ? getSavedCollapsedAnnotationsOffsets() : Collections.emptySet();
         for (SQLScriptElementImpl element: parsedElements) {
             if (!cachedQueries.contains(element)) {
-                element.setAnnotation(new ProjectionAnnotation());
-                additions.put(element.getAnnotation(), element);
+                ProjectionAnnotation annotation = new ProjectionAnnotation();
+                element.setAnnotation(annotation);
+                additions.put(annotation, element);
+                if (savedCollapsedAnnotationsOffsets.contains(element.getOffset())) {
+                    annotation.markCollapsed();
+                }
             }
         }
         Collection<SQLScriptElementImpl> deletedPositions = cachedQueries.stream()
@@ -198,6 +278,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             }
         }
         return position - element.getOffset();
+    }
+
+    @NotNull
+    private SQLScriptElementImpl getExpandedScriptElement(@NotNull SQLScriptElement element) {
+        return new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element));
     }
 
     private char unsafeGetChar(int index) {
