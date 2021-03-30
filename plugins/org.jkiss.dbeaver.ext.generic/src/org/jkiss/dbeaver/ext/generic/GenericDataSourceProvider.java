@@ -120,10 +120,11 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
                 String[] propList = driverParametersString.split(",");
                 connectionProperties = new DBPPropertyDescriptor[propList.length];
                 for (int i = 0; i < propList.length; i++) {
+                    String propName = propList[i].trim();
                     connectionProperties[i] = new PropertyDescriptor(
                         ModelMessages.model_jdbc_driver_properties,
-                        propList[i],
-                        propList[i],
+                        propName,
+                        propName,
                         null,
                         String.class,
                         false,
