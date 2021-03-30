@@ -68,7 +68,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
     private String nameMask;
     private boolean caseSensitive;
-    private boolean searchInComments;
+    private boolean searchInComments = true;
     private int maxResults;
     private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<>();
