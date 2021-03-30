@@ -88,7 +88,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         reconcile(0, document.getLength(), true);
     }
 
-    private Set<SQLScriptElementImpl> getSavedCollapsedElements() {
+    private Set<Integer> getSavedCollapsedAnnotationsOffsets() {
         IResource resource = getResource();
         if (resource == null) {
             return Collections.emptySet();
@@ -104,29 +104,21 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             return Collections.emptySet();
         }
 
-        Set<SQLScriptElementImpl> collapsedPositions = new HashSet<>();
-        String[] positions = data.split(";");
-        for (String position: positions) {
-            String[] integers = position.split(",");
-            if (integers.length != 2) {
-                log.warn("Position with illegal format read while reading saved collapsed folding positions. position=" + position);
+        Set<Integer> collapsedPositionsOffsets = new HashSet<>();
+        String[] offsets = data.split(";");
+        for (String offset: offsets) {
+            int offsetValue = CommonUtils.toInt(offset, -1);
+            if (offsetValue == -1) {
+                log.warn("Illegal offset parsed while reading saved collapsed annotation offsets. offset=" + offset);
                 continue;
             }
-            int offset = CommonUtils.toInt(integers[0], -1);
-            int length = CommonUtils.toInt(integers[1], -1);
-            if (offset == -1 || length == -1) {
-                log.warn("Position with offset or/and length read while reading saved collapsed folding positions. position=" + position);
-                continue;
-            }
-            SQLScriptElementImpl scriptPosition = new SQLScriptElementImpl(offset, length);
-            scriptPosition.setAnnotation(new ProjectionAnnotation());
-            collapsedPositions.add(scriptPosition);
+            collapsedPositionsOffsets.add(offsetValue);
         }
 
-        return collapsedPositions;
+        return collapsedPositionsOffsets;
     }
 
-    //format: "offset_1,length_1;offset_2,length_2;...offset_n,length_n"
+    //format: "offset_1;offset_2;...offset_n"
     public void saveState() {
         IResource resource = getResource();
         ProjectionAnnotationModel annotationModel = editor.getAnnotationModel();
@@ -137,7 +129,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         for (SQLScriptElementImpl position: cache) {
             ProjectionAnnotation annotation = position.getAnnotation();
             if (annotation != null && annotation.isCollapsed()) {
-                stringJoiner.add(position.getOffset() + "," + position.getLength());
+                stringJoiner.add(Integer.toString(position.getOffset()));
             }
         }
         String value;
@@ -149,7 +141,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         try {
             resource.setPersistentProperty(COLLAPSED_ANNOTATIONS, value);
         } catch (CoreException e) {
-            log.warn("Core Exception caught while writing saved collapsed folding positions", e);
+            log.warn("Core Exception caught while persisting saved collapsed folding positions", e);
         }
     }
 
@@ -222,13 +214,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 .map(this::getExpandedScriptElement)
                 .collect(Collectors.toSet());
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
-        Set<SQLScriptElementImpl> savedCollapsedElements = restoreCollapsedAnnotations ? getSavedCollapsedElements() : Collections.emptySet();
+        Set<Integer> savedCollapsedAnnotationsOffsets = restoreCollapsedAnnotations ? getSavedCollapsedAnnotationsOffsets() : Collections.emptySet();
         for (SQLScriptElementImpl element: parsedElements) {
             if (!cachedQueries.contains(element)) {
                 ProjectionAnnotation annotation = new ProjectionAnnotation();
                 element.setAnnotation(annotation);
                 additions.put(annotation, element);
-                if (savedCollapsedElements.contains(element)) {
+                if (savedCollapsedAnnotationsOffsets.contains(element.getOffset())) {
                     annotation.markCollapsed();
                 }
             }
