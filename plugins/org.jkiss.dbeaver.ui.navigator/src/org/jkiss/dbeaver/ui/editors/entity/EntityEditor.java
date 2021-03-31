@@ -83,7 +83,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
 {
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
 
@@ -310,6 +310,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
             if (monitor.isCanceled()) {
                 return;
             }
+        }
+    }
+
+    @Override
+    public void doRevertToSaved() {
+        DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null) {
+            commandContext.resetChanges(true);
         }
     }
 
