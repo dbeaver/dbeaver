@@ -660,12 +660,9 @@ public final class SQLUtils {
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
-                    strValue = sqlDialect.escapeString(strValue);
+                    return sqlDialect.getTypeCastClause(attribute, sqlDialect.getQuotedString(strValue));
                 }
-                if (dataKind == DBPDataKind.STRING || !(strValue.startsWith("'") && strValue.endsWith("'"))) {
-                    strValue = '\'' + strValue + '\'';
-                }
-                return sqlDialect.getTypeCastClause(attribute, strValue);
+                return strValue;
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
