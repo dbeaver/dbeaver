@@ -59,9 +59,9 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
                 new SQLDatabasePersistAction(
                     "Add table comment",
                     "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', N" + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'schema', N'" + table.getSchema().getName() + "'," +
-                        " '" + (table.isView() ? "view" : "table") + "', N'" + table.getName() + "'"));
+                        " 'MS_Description', " + SQLUtils.quoteString(table, table.getDescription()) + "," +
+                        " 'schema', " + SQLUtils.quoteString(table, table.getSchema().getName()) + "," +
+                        " '" + (table.isView() ? "view" : "table") + "', " + SQLUtils.quoteString(table, table.getName())));
         }
     }
 
@@ -74,7 +74,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
                 "Rename table",
                 "EXEC " + SQLServerUtils.getSystemTableName(object.getDatabase(), "sp_rename") +
                     " N'" + object.getSchema().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(object.getDataSource(), command.getOldName()) +
-                    "' , N'" + DBUtils.getQuotedIdentifier(object.getDataSource(), command.getNewName()) + "', 'OBJECT'")
+                    "', " + SQLUtils.quoteString(object.getDataSource(), command.getNewName()) + ", 'OBJECT'")
         );
     }
 

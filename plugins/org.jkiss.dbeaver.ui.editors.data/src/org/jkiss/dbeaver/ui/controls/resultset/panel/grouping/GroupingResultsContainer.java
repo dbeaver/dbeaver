@@ -240,7 +240,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             }
             sql.append(" FROM (\n");
             sql.append(queryText);
-            sql.append(") src");
+            sql.append("\n) src");
         } else {
             try {
                 Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
