@@ -29,10 +29,5 @@ public class SQLServerPreferencesInitializer extends AbstractPreferenceInitializ
 
     @Override
     public void initializeDefaultPreferences() {
-        // Init default preferences
-        DBPPreferenceStore store = new BundlePreferenceStore(SQLServerActivator.getDefault().getBundle());
-
-        // Common
-        PrefUtils.setDefaultPreferenceValue(store, SQLServerConstants.PROP_CLOSE_EXISTING_CONNECTIONS, true);
     }
 }
