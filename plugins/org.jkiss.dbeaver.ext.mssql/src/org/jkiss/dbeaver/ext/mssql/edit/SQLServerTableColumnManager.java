@@ -170,10 +170,10 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                 new SQLDatabasePersistAction(
                     "Add column comment",
                     "EXEC " + SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', N" + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'schema', N'" + column.getTable().getSchema().getName() + "'," +
-                        " 'table', N'" + column.getTable().getName() + "'," +
-                        " 'column', N'" + column.getName() + "'"));
+                        " 'MS_Description', " + SQLUtils.quoteString(column, column.getDescription()) + "," +
+                        " 'schema', " + SQLUtils.quoteString(column, column.getTable().getSchema().getName()) + "," +
+                        " 'table', " + SQLUtils.quoteString(column, column.getTable().getName()) + "," +
+                        " 'column', " + SQLUtils.quoteString(column, column.getName())));
         }
         if (totalProps > 0) {
             actionList.add(new SQLDatabasePersistAction(

@@ -248,4 +248,27 @@ public class SQLServerDialect extends JDBCSQLDialect {
         sql.append("\nSELECT\t'Return Value' = @return_value\n\n");
         sql.append("GO\n\n");
     }
+
+    @Override
+    public boolean isQuotedString(String string) {
+        if (string.length() >= 3 && string.charAt(0) == 'N') {
+            // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql
+            return super.isQuotedString(string.substring(1));
+        }
+        return super.isQuotedString(string);
+    }
+
+    @Override
+    public String getQuotedString(String string) {
+        return 'N' + super.getQuotedString(string);
+    }
+
+    @Override
+    public String getUnquotedString(String string) {
+        if (string.length() >= 3 && string.charAt(0) == 'N') {
+            // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql
+            return super.getUnquotedString(string.substring(1));
+        }
+        return super.getUnquotedString(string);
+    }
 }
