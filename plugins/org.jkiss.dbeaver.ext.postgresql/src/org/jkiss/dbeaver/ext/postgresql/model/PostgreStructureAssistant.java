@@ -166,19 +166,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder sql = new StringBuilder("SELECT pc.oid,pc.relname,pc.relnamespace,pc.relkind FROM pg_catalog.pg_class pc ");
-        if (searchInComments) {
-            sql.append("LEFT JOIN pg_catalog.pg_description pd on pc.\"oid\" = pd.objoid ");
-        }
         sql.append("WHERE pc.relkind in('r','v','m') AND ");
         if (searchInComments) {
-            sql.append("( ");
+            sql.append("(");
         }
         sql.append("pc.relname ");
         String likeClause = caseSensitive ? "LIKE" : "ILIKE";
         sql.append(likeClause);
         sql.append(" ? ");
         if (searchInComments) {
-            sql.append("OR pd.description ").append(likeClause).append(" ?) AND COALESCE(pd.objsubid, 0) = 0 ");
+            sql.append("OR obj_description(pc.oid, 'pg_class') ").append(likeClause).append(" ?) ");
         }
         if (!CommonUtils.isEmpty(schema)) {
             sql.append("AND pc.relnamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
@@ -233,21 +230,17 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder sql = new StringBuilder("SELECT pp.oid, pp.* FROM pg_catalog.pg_proc pp ");
+        sql.append("WHERE pp.proname NOT LIKE '\\_%' AND ");
         if (searchInComments) {
-            sql.append("LEFT JOIN pg_catalog.pg_description pd on pp.\"oid\" = pd.objoid ");
-        }
-        sql.append("WHERE ");
-        if (searchInComments) {
-            sql.append("( ");
+            sql.append("(");
         }
         sql.append("pp.proname ");
         String likeClause = caseSensitive ? "LIKE" : "ILIKE";
         sql.append(likeClause);
         sql.append(" ? ");
         if (searchInComments) {
-            sql.append("OR pd.description ").append(likeClause).append(" ?) AND COALESCE(pd.objsubid, 0) = 0 ");
+            sql.append("OR obj_description(pp.oid, 'pg_proc') ").append(likeClause).append(" ?) ");
         }
-        sql.append("AND pp.proname NOT LIKE '\\_%'");
         if (!CommonUtils.isEmpty(schema)) {
             sql.append("AND pp.pronamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
         }
@@ -300,19 +293,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder sql = new StringBuilder("SELECT pc.oid, pc.conname, pc.connamespace FROM pg_catalog.pg_constraint pc ");
-        if (searchInComments) {
-            sql.append("LEFT JOIN pg_catalog.pg_description pd on pc.\"oid\" = pd.objoid ");
-        }
         sql.append("WHERE ");
         if (searchInComments) {
-            sql.append("( ");
+            sql.append("(");
         }
         sql.append("pc.conname ");
         String likeClause = caseSensitive ? "LIKE" : "ILIKE";
         sql.append(likeClause);
         sql.append(" ? ");
         if (searchInComments) {
-            sql.append("OR pd.description ").append(likeClause).append(" ?) AND COALESCE(pd.objsubid, 0) = 0 ");
+            sql.append("OR obj_description(pc.oid, 'pg_constraint') ").append(likeClause).append(" ?) ");
         }
         if (!CommonUtils.isEmpty(schema)) {
             sql.append("AND pc.connamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
@@ -365,19 +355,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         StringBuilder sql = new StringBuilder(
             "SELECT DISTINCT x.attname,x.attrelid,x.atttypid,c.relnamespace FROM pg_catalog.pg_attribute x, pg_catalog.pg_class c "
         );
-        if (searchInComments) {
-            sql.append("LEFT join pg_catalog.pg_description pd on c.\"oid\" = pd.objoid ");
-        }
         sql.append("WHERE c.oid=x.attrelid AND ");
         if (searchInComments) {
-            sql.append("( ");
+            sql.append("(");
         }
         sql.append("x.attname ");
         String likeClause = caseSensitive ? "LIKE" : "ILIKE";
         sql.append(likeClause);
         sql.append(" ? ");
         if (searchInComments) {
-            sql.append("OR pd.description ").append(likeClause).append(" ?) ");
+            sql.append("OR col_description(c.oid, x.attnum) ").append(likeClause).append(" ?) ");
         }
         if (!CommonUtils.isEmpty(schema)) {
             sql.append("AND c.relnamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
