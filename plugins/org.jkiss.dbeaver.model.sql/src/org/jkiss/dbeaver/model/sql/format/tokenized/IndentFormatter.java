@@ -120,6 +120,7 @@ class IndentFormatter {
             }
             result += insertReturnAndIndent(argList, index + 1, indent);
         } else {
+            String prevKeyword = getPrevKeyword(argList, index);
             if (blockHeaderStrings != null && ArrayUtils.contains(blockHeaderStrings, tokenString) || (SQLUtils.isBlockStartKeyword(dialect, tokenString) &&
                             !SQLConstants.KEYWORD_SELECT.equalsIgnoreCase(getPrevDMLKeyword(argList, index)))) { // If SELECT is previous keyword, then we are already inside the block
                 if (index > 0) {
@@ -213,11 +214,14 @@ class IndentFormatter {
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
                 case "OR":
-                    if ("CREATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
+                    if ("CREATE".equalsIgnoreCase(prevKeyword)) {
                         break;
+                    } else if ("WHERE".equalsIgnoreCase(prevKeyword) || "AND".equalsIgnoreCase(prevKeyword)) {
+                        indent++;
+                        result += insertReturnAndIndent(argList, index, indent);
                     }
                 case "WHEN":
-                    if ("CASE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
+                    if ("CASE".equalsIgnoreCase(prevKeyword)) {
                         break;
                     }
                 case "ELSE":  //$NON-NLS-1$
@@ -225,7 +229,7 @@ class IndentFormatter {
                     break;
                 case "SET": {
                     if (index > 1) {
-                        if ("UPDATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
+                        if ("UPDATE".equalsIgnoreCase(prevKeyword)) {
                             // Extra line feed
                             result += insertReturnAndIndent(argList, index, indent - 1);
                         }
