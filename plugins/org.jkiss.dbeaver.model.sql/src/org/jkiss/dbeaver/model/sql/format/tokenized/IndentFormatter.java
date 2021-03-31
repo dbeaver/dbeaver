@@ -213,8 +213,12 @@ class IndentFormatter {
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
                 case "OR":
-                    if ("CREATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
+                    String prevKeyword = getPrevKeyword(argList, index);
+                    if ("CREATE".equalsIgnoreCase(prevKeyword)) {
                         break;
+                    } else if ("WHERE".equalsIgnoreCase(prevKeyword) || "AND".equalsIgnoreCase(prevKeyword) || "LIKE".equalsIgnoreCase(prevKeyword)) {
+                        indent++;
+                        result += insertReturnAndIndent(argList, index, indent);
                     }
                 case "WHEN":
                     if ("CASE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
