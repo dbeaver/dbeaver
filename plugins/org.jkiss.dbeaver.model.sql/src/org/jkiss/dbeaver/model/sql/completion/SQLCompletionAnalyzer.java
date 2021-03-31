@@ -367,7 +367,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private void makeProceduresProposals(DBPDataSource dataSource, String wordPart, boolean exec) throws DBException {
         // Add procedures/functions for column proposals
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
+        DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
         DBSObjectContainer sc = (DBSObjectContainer) dataSource;
         DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
         if (selectedObject instanceof DBSObjectContainer) {
@@ -505,20 +505,20 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         // Apply navigator object filters
         if (dataSource != null) {
             DBPDataSourceContainer dsContainer = dataSource.getContainer();
-            Map<DBSObject, Map<Class, List<SQLCompletionProposalBase>>> containerMap = new HashMap<>();
+            Map<DBSObject, Map<Class<?>, List<SQLCompletionProposalBase>>> containerMap = new HashMap<>();
             for (SQLCompletionProposalBase proposal : proposals) {
                 DBSObject container = proposal.getObjectContainer();
                 DBPNamedObject object = proposal.getObject();
                 if (object == null) {
                     continue;
                 }
-                Map<Class, List<SQLCompletionProposalBase>> typeMap = containerMap.computeIfAbsent(container, k -> new HashMap<>());
-                Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectClass() : object.getClass();
+                Map<Class<?>, List<SQLCompletionProposalBase>> typeMap = containerMap.computeIfAbsent(container, k -> new HashMap<>());
+                Class<?> objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectClass() : object.getClass();
                 List<SQLCompletionProposalBase> list = typeMap.computeIfAbsent(objectType, k -> new ArrayList<>());
                 list.add(proposal);
             }
-            for (Map.Entry<DBSObject, Map<Class, List<SQLCompletionProposalBase>>> entry : containerMap.entrySet()) {
-                for (Map.Entry<Class, List<SQLCompletionProposalBase>> typeEntry : entry.getValue().entrySet()) {
+            for (Map.Entry<DBSObject, Map<Class<?>, List<SQLCompletionProposalBase>>> entry : containerMap.entrySet()) {
+                for (Map.Entry<Class<?>, List<SQLCompletionProposalBase>> typeEntry : entry.getValue().entrySet()) {
                     DBSObjectFilter filter = dsContainer.getObjectFilter(typeEntry.getKey(), entry.getKey(), true);
                     if (filter != null && filter.isEnabled()) {
                         for (SQLCompletionProposalBase proposal : typeEntry.getValue()) {
@@ -677,7 +677,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
-        DBSObjectContainer selectedContainers[];
+        DBSObjectContainer[] selectedContainers;
         {
             DBSObject[] selectedObjects = DBUtils.getSelectedObjects(monitor, executionContext);
             selectedContainers = new DBSObjectContainer[selectedObjects.length];
@@ -702,12 +702,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 DBObjectNameCaseTransformer.transformName(dataSource, token);
             childObject = objectName == null ? null : sc.getChild(monitor, objectName);
             if (childObject == null && i == 0 && objectName != null) {
-                for (int k = 0; k < selectedContainers.length; k++) {
-                    if (selectedContainers[k] != null) {
+                for (DBSObjectContainer selectedContainer : selectedContainers) {
+                    if (selectedContainer != null) {
                         // Probably it is from selected object, let's try it
-                        childObject = selectedContainers[k].getChild(monitor, objectName);
+                        childObject = selectedContainer.getChild(monitor, objectName);
                         if (childObject != null) {
-                            sc = selectedContainers[k];
+                            sc = selectedContainer;
                             break;
                         }
                     }
@@ -760,15 +760,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
             if (tokens.length == 1) {
                 // Try in active object
-                for (int k = 0; k < selectedContainers.length; k++) {
-                    if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
-                        makeProposalsFromChildren(selectedContainers[k], lastToken, true, Collections.emptyMap());
+                for (DBSObjectContainer selectedContainer : selectedContainers) {
+                    if (selectedContainer != null && selectedContainer != childObject) {
+                        makeProposalsFromChildren(selectedContainer, lastToken, true, Collections.emptyMap());
                     }
                 }
 
                 if (proposals.isEmpty() && !request.isSimpleMode()) {
                     // At last - try to find child tables by pattern
-                    DBSStructureAssistant structureAssistant = null;
+                    DBSStructureAssistant<?> structureAssistant = null;
                     for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {
                         structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, object);
                         if (structureAssistant != null) {
