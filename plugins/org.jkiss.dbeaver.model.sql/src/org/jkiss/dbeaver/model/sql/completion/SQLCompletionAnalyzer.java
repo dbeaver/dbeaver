@@ -291,12 +291,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         }
 
-        if (!emptyWord) {
+        if (!emptyWord && !isInLiteral && !isInQuotedIdentifier) {
             makeProposalsFromQueryParts();
         }
 
         // Final filtering
-        if (!searchFinished) {
+        if (!searchFinished && !isInLiteral && !isInQuotedIdentifier) {
             List<String> matchedKeywords = Collections.emptyList();
             Set<String> allowedKeywords = null;
 
