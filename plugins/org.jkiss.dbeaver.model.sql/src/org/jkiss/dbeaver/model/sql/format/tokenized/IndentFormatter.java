@@ -482,14 +482,9 @@ class IndentFormatter {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.KEYWORD) {
                 String upperCaseToken = token.getString().toUpperCase(Locale.ENGLISH);
-                if (isCondition) {
-                    if (ArrayUtils.contains(CONDITION_KEYWORDS, upperCaseToken)) {
-                        return token.getString();
-                    }
-                } else {
-                    if (ArrayUtils.contains(DML_KEYWORD, upperCaseToken)) {
-                        return token.getString();
-                    }
+                if ((isCondition && ArrayUtils.contains(CONDITION_KEYWORDS, upperCaseToken)) ||
+                        (!isCondition && ArrayUtils.contains(DML_KEYWORD, upperCaseToken))) {
+                    return token.getString();
                 }
             }
         }
