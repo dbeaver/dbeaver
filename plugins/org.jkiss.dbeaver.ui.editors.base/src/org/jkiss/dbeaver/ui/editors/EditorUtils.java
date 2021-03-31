@@ -33,6 +33,7 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -405,6 +406,14 @@ public class EditorUtils {
                     activation[0] = null;
                 }
             });
+        }
+    }
+
+    public static void revertEditorChanges(IEditorPart editorPart) {
+        if (editorPart instanceof IRevertableEditor) {
+            ((IRevertableEditor) editorPart).doRevertToSaved();
+        } else if (editorPart instanceof ITextEditor) {
+            ((ITextEditor) editorPart).doRevertToSaved();
         }
     }
 

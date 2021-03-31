@@ -41,10 +41,14 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -221,14 +225,32 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 // So we need to close em first
                 IWorkbenchPage workbenchPage = window.getActivePage();
                 IEditorReference[] editors = workbenchPage.getEditorReferences();
+                List<IEditorPart> editorsToRevert = new ArrayList<>();
                 for (IEditorReference editor : editors) {
                     IEditorPart editorPart = editor.getEditor(false);
                     if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
                         workbenchPage.closeEditor(editorPart, false);
-                    } else if (editorPart instanceof ISaveablePart2) {
+                    }
+                }
+                // We also save all saveable parts here. Because we need to do this before transaction finializer hook.
+                // Standard workbench finalizer works in the very end when it is too late
+                // (all connections are closed at that moment)
+                for (IEditorReference editor : editors) {
+                    IEditorPart editorPart = editor.getEditor(false);
+                    if (editorPart instanceof ISaveablePart2) {
                         if (!SaveableHelper.savePart(editorPart, editorPart, window, true)) {
                             return false;
                         }
+                        editorsToRevert.add(editorPart);
+                    }
+                }
+
+                // Revert all open editors to  avoid double confirmation
+                for (IEditorPart editorPart : editorsToRevert) {
+                    try {
+                        EditorUtils.revertEditorChanges(editorPart);
+                    } catch (Exception e) {
+                        log.debug(e);
                     }
                 }
             }
