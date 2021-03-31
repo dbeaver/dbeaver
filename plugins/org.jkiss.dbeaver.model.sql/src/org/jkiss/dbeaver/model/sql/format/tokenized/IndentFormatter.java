@@ -216,7 +216,7 @@ class IndentFormatter {
                     String prevKeyword = getPrevKeyword(argList, index);
                     if ("CREATE".equalsIgnoreCase(prevKeyword)) {
                         break;
-                    } else if ("WHERE".equalsIgnoreCase(prevKeyword) || "AND".equalsIgnoreCase(prevKeyword) || "LIKE".equalsIgnoreCase(prevKeyword)) {
+                    } else if (bracketsDepth > 0 && ("WHERE".equalsIgnoreCase(prevKeyword) || "AND".equalsIgnoreCase(prevKeyword) || "LIKE".equalsIgnoreCase(prevKeyword))) {
                         indent++;
                         result += insertReturnAndIndent(argList, index, indent);
                     }
