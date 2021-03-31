@@ -158,7 +158,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     // Multi-dimensional arrays case
                     itemString = convertArrayToString(column, item, format, true);
                 } else {
-                    itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, format);
+                    itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
                 }
 
                 if (isNativeFormat) {
