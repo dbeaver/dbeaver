@@ -315,6 +315,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     public void doRevertToSaved() {
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor instanceof IRevertableEditor) {
+                ((IRevertableEditor) editor).doRevertToSaved();
+            }
+        }
+
+        // Revert command context
         DBECommandContext commandContext = getCommandContext();
         if (commandContext != null) {
             commandContext.resetChanges(true);
