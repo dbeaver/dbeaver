@@ -180,7 +180,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
             {
                 //new Label(searchGroup, SWT.NONE);
-                UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_label_name_match);
+                UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_label_match_type);
                 final Combo matchCombo = new Combo(settingsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
                 matchCombo.add(UISearchMessages.dialog_search_objects_combo_starts_with, SearchMetadataConstants.MATCH_INDEX_STARTS_WITH);
                 matchCombo.add(UISearchMessages.dialog_search_objects_combo_contains, SearchMetadataConstants.MATCH_INDEX_CONTAINS);
