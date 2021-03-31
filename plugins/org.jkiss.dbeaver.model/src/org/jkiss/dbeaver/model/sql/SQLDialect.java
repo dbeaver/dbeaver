@@ -292,6 +292,12 @@ public interface SQLDialect {
 
     String getUnquotedIdentifier(String identifier);
 
+    boolean isQuotedString(String string);
+
+    String getQuotedString(String string);
+
+    String getUnquotedString(String string);
+
     /**
      * Escapes string to make usable inside of SQL queries.
      * Basically it has to escape only ' character which delimits strings.
