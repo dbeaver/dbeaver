@@ -25,8 +25,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 public class TrimTextSpacesHandler extends AbstractTextHandler {
+
+    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
     @Override
     public Object execute(ExecutionEvent executionEvent) throws ExecutionException {
@@ -42,15 +45,34 @@ public class TrimTextSpacesHandler extends AbstractTextHandler {
                     ITextSelection textSelection = (ITextSelection) selection;
                     int offset = textSelection.getOffset();
                     if (textSelection.getLength() > 0) {
-                        String trimmedSelection = textSelection.getText().trim();
-                        if (!CommonUtils.isEmpty(trimmedSelection)) {
+                        int startLine = textSelection.getStartLine();
+                        int endLine = textSelection.getEndLine();
+                        if (startLine != endLine) { // Highlighted more than one line - make trim for each row separately
                             try {
-                                document.replace(offset, textSelection.getLength(), trimmedSelection);
+                                StringBuilder allStrings = new StringBuilder();
+                                for (int i = startLine; i <= endLine; i++) {
+                                    IRegion lineInformation = document.getLineInformation(i);
+                                    String untrimmedString = document.get(lineInformation.getOffset(), lineInformation.getLength());
+                                    allStrings.append(untrimmedString.trim());
+                                    if (i != endLine) {
+                                        allStrings.append(lineBreak);
+                                    }
+                                }
+                                document.replace(offset, textSelection.getLength(), allStrings.toString());
                             } catch (BadLocationException e) {
-                                DBWorkbench.getPlatformUI().showError("Trim spaces", "Error replacing text", e);
+                                DBWorkbench.getPlatformUI().showError("Trim spaces", "Error getting or replacing text", e);
+                            }
+                        } else { // Make trim only for the highlighted area of the string
+                            String trimmedSelection = textSelection.getText().trim();
+                            if (!CommonUtils.isEmpty(trimmedSelection)) {
+                                try {
+                                    document.replace(offset, textSelection.getLength(), trimmedSelection);
+                                } catch (BadLocationException e) {
+                                    DBWorkbench.getPlatformUI().showError("Trim spaces", "Error replacing text", e);
+                                }
                             }
                         }
-                    } else if (offset > 0) {
+                    } else if (offset > 0) { // Nothing is highlighted - make trim only for the string on which the cursor is
                         try {
                             IRegion information = document.getLineInformationOfOffset(offset);
                             int startLine = information.getOffset();
