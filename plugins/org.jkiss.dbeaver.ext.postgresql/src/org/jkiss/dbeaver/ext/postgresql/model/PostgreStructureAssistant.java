@@ -165,32 +165,23 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                                   @NotNull List<DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        StringBuilder sql = new StringBuilder("SELECT pc.oid,pc.relname,pc.relnamespace,pc.relkind FROM pg_catalog.pg_class pc ");
-        sql.append("WHERE pc.relkind in('r','v','m') AND ");
-        if (searchInComments) {
-            sql.append("(");
-        }
-        sql.append("pc.relname ");
-        String likeClause = caseSensitive ? "LIKE" : "ILIKE";
-        sql.append(likeClause);
-        sql.append(" ? ");
-        if (searchInComments) {
-            sql.append("OR obj_description(pc.oid, 'pg_class') ").append(likeClause).append(" ?) ");
-        }
-        if (!CommonUtils.isEmpty(schema)) {
-            sql.append("AND pc.relnamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
-        }
-        sql.append("ORDER BY pc.relname LIMIT ").append(maxResults);
+        String sql = buildFindQuery(
+            "pc.oid,pc.relname,pc.relnamespace,pc.relkind",
+            "pg_catalog.pg_class pc",
+            "pc.relkind in('r','v','m')",
+            searchInComments,
+            "pc.relname",
+            caseSensitive,
+            "obj_description(pc.oid, 'pg_class')",
+            schema,
+            "pc.relnamespace",
+            "pc.relname",
+            maxResults
+        );
 
         // Load tables
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, tableNameMask);
-            if (searchInComments) {
-                dbStat.setString(2, tableNameMask);
-            }
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2 + (searchInComments ? 1 : 0), schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, tableNameMask, searchInComments, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
@@ -229,32 +220,23 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                                       int maxResults, @NotNull List<DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        StringBuilder sql = new StringBuilder("SELECT pp.oid, pp.* FROM pg_catalog.pg_proc pp ");
-        sql.append("WHERE pp.proname NOT LIKE '\\_%' AND ");
-        if (searchInComments) {
-            sql.append("(");
-        }
-        sql.append("pp.proname ");
-        String likeClause = caseSensitive ? "LIKE" : "ILIKE";
-        sql.append(likeClause);
-        sql.append(" ? ");
-        if (searchInComments) {
-            sql.append("OR obj_description(pp.oid, 'pg_proc') ").append(likeClause).append(" ?) ");
-        }
-        if (!CommonUtils.isEmpty(schema)) {
-            sql.append("AND pp.pronamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
-        }
-        sql.append("ORDER BY pp.proname LIMIT ").append(maxResults);
+        String sql = buildFindQuery(
+            "pp.oid, pp.*",
+            "pg_catalog.pg_proc pp",
+            "pp.proname NOT LIKE '\\_%'",
+            searchInComments,
+            "pp.proname",
+            caseSensitive,
+            "obj_description(pp.oid, 'pg_proc')",
+            schema,
+            "pp.pronamespace",
+            "pp.proname",
+            maxResults
+        );
 
         // Load procedures
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, procNameMask);
-            if (searchInComments) {
-                dbStat.setString(2, procNameMask);
-            }
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2 + (searchInComments ? 1 : 0), schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, procNameMask, searchInComments, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
@@ -292,32 +274,23 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                                        @NotNull List<DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        StringBuilder sql = new StringBuilder("SELECT pc.oid, pc.conname, pc.connamespace FROM pg_catalog.pg_constraint pc ");
-        sql.append("WHERE ");
-        if (searchInComments) {
-            sql.append("(");
-        }
-        sql.append("pc.conname ");
-        String likeClause = caseSensitive ? "LIKE" : "ILIKE";
-        sql.append(likeClause);
-        sql.append(" ? ");
-        if (searchInComments) {
-            sql.append("OR obj_description(pc.oid, 'pg_constraint') ").append(likeClause).append(" ?) ");
-        }
-        if (!CommonUtils.isEmpty(schema)) {
-            sql.append("AND pc.connamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
-        }
-        sql.append("ORDER BY pc.conname LIMIT ").append(maxResults);
+        String sql = buildFindQuery(
+            "pc.oid, pc.conname, pc.connamespace",
+            "pg_catalog.pg_constraint pc",
+            null,
+            searchInComments,
+            "pc.conname",
+            caseSensitive,
+            "obj_description(pc.oid, 'pg_constraint')",
+            schema,
+            "pc.connamespace",
+            "pc.conname",
+            maxResults
+        );
 
         // Load constraints
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, nameMask);
-            if (searchInComments) {
-                dbStat.setString(2, nameMask);
-            }
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2 + (searchInComments ? 1 : 0), schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, nameMask, searchInComments, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
@@ -352,34 +325,23 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                                         @NotNull List<DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        StringBuilder sql = new StringBuilder(
-            "SELECT DISTINCT x.attname,x.attrelid,x.atttypid,c.relnamespace FROM pg_catalog.pg_attribute x, pg_catalog.pg_class c "
+        String sql = buildFindQuery(
+            "x.attname,x.attrelid,x.atttypid,c.relnamespace",
+            "pg_catalog.pg_attribute x, pg_catalog.pg_class c",
+            "c.oid=x.attrelid",
+            searchInComments,
+            "x.attname",
+            caseSensitive,
+            "col_description(c.oid, x.attnum)",
+            schema,
+            "c.relnamespace",
+            "x.attname",
+            maxResults
         );
-        sql.append("WHERE c.oid=x.attrelid AND ");
-        if (searchInComments) {
-            sql.append("(");
-        }
-        sql.append("x.attname ");
-        String likeClause = caseSensitive ? "LIKE" : "ILIKE";
-        sql.append(likeClause);
-        sql.append(" ? ");
-        if (searchInComments) {
-            sql.append("OR col_description(c.oid, x.attnum) ").append(likeClause).append(" ?) ");
-        }
-        if (!CommonUtils.isEmpty(schema)) {
-            sql.append("AND c.relnamespace IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
-        }
-        sql.append("ORDER BY x.attname LIMIT ").append(maxResults);
 
         // Load constraints
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, columnNameMask);
-            if (searchInComments) {
-                dbStat.setString(2, columnNameMask);
-            }
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2 + (searchInComments ? 1 : 0), schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, columnNameMask, searchInComments, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
@@ -406,6 +368,41 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                     });
                 }
             }
+        }
+    }
+
+    private static String buildFindQuery(@NotNull String select, @NotNull String from, @Nullable String where, boolean searchInComments,
+                                         @NotNull String name, boolean caseSensitive, @NotNull String descriptionClause,
+                                         @Nullable List<PostgreSchema> schema, @NotNull String namespace, @NotNull String orderBy, int maxResults) {
+        StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
+        if (where != null) {
+            sql.append(where).append(" AND ");
+        }
+        if (searchInComments) {
+            sql.append("(");
+        }
+        String likeClause = caseSensitive ? " LIKE ?" : " ILIKE ?";
+        sql.append(name).append(likeClause).append(" ");
+        if (searchInComments) {
+            sql.append("OR ").append(descriptionClause).append(likeClause).append(") ");
+        }
+        if (!CommonUtils.isEmpty(schema)) {
+            sql.append("AND ").append(namespace).append(" IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
+        }
+        sql.append("ORDER BY ").append(orderBy).append(" LIMIT ").append(maxResults);
+        return sql.toString();
+    }
+
+    private static void fillParams(@NotNull JDBCPreparedStatement statement, @NotNull String mask, boolean searchInComments,
+                                   @Nullable List<PostgreSchema> schema) throws SQLException {
+        statement.setString(1, mask);
+        int arrayParamIdx = 2;
+        if (searchInComments) {
+            statement.setString(2, mask);
+            arrayParamIdx++;
+        }
+        if (!CommonUtils.isEmpty(schema)) {
+            PostgreUtils.setArrayParameter(statement, arrayParamIdx, schema);
         }
     }
 }
