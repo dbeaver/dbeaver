@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        if (SQLServerActivator.getDefault().getPreferences().getBoolean(SQLServerConstants.PROP_CLOSE_EXISTING_CONNECTIONS)) {
+        if (CommonUtils.getOption(options, DBEObjectMaker.OPTION_CLOSE_EXISTING_CONNECTIONS)) {
             actions.add(new SQLDatabasePersistAction(
                 "Drop database connections",
                 "ALTER DATABASE " + DBUtils.getQuotedIdentifier(command.getObject()) + " SET SINGLE_USER WITH ROLLBACK IMMEDIATE;"
@@ -90,7 +91,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
-        return DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY;
+        return DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY | DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS;
     }
 
     @Override
