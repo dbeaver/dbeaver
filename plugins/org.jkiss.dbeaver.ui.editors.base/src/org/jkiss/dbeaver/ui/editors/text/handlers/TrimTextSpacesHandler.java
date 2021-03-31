@@ -22,14 +22,18 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
+
+/**
+ * Trim trailing and leading spaces of highlighted and non-highlighted text
+ */
 
 public class TrimTextSpacesHandler extends AbstractTextHandler {
 
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+    private static final Log log = Log.getLog(TrimTextSpacesHandler.class);
 
     @Override
     public Object execute(ExecutionEvent executionEvent) throws ExecutionException {
@@ -44,36 +48,32 @@ public class TrimTextSpacesHandler extends AbstractTextHandler {
                 if (selection instanceof ITextSelection) {
                     ITextSelection textSelection = (ITextSelection) selection;
                     int offset = textSelection.getOffset();
-                    if (textSelection.getLength() > 0) {
-                        int startLine = textSelection.getStartLine();
-                        int endLine = textSelection.getEndLine();
-                        if (startLine != endLine) { // Highlighted more than one line - make trim for each row separately
-                            try {
+                    try {
+                        if (textSelection.getLength() > 0) {
+                            int startLine = textSelection.getStartLine();
+                            int endLine = textSelection.getEndLine();
+                            if (startLine != endLine) {
+                                // Highlighted more than one line - make trim for each row separately
                                 StringBuilder allStrings = new StringBuilder();
+                                String lineSeparator = GeneralUtils.getDefaultLineSeparator();
                                 for (int i = startLine; i <= endLine; i++) {
                                     IRegion lineInformation = document.getLineInformation(i);
                                     String untrimmedString = document.get(lineInformation.getOffset(), lineInformation.getLength());
                                     allStrings.append(untrimmedString.trim());
                                     if (i != endLine) {
-                                        allStrings.append(lineBreak);
+                                        allStrings.append(lineSeparator);
                                     }
                                 }
                                 document.replace(offset, textSelection.getLength(), allStrings.toString());
-                            } catch (BadLocationException e) {
-                                DBWorkbench.getPlatformUI().showError("Trim spaces", "Error getting or replacing text", e);
-                            }
-                        } else { // Make trim only for the highlighted area of the string
-                            String trimmedSelection = textSelection.getText().trim();
-                            if (!CommonUtils.isEmpty(trimmedSelection)) {
-                                try {
+                            } else {
+                                // Make trim only for the highlighted area of the string
+                                String trimmedSelection = textSelection.getText().trim();
+                                if (!CommonUtils.isEmpty(trimmedSelection)) {
                                     document.replace(offset, textSelection.getLength(), trimmedSelection);
-                                } catch (BadLocationException e) {
-                                    DBWorkbench.getPlatformUI().showError("Trim spaces", "Error replacing text", e);
                                 }
                             }
-                        }
-                    } else if (offset > 0) { // Nothing is highlighted - make trim only for the string on which the cursor is
-                        try {
+                        } else {
+                            // Nothing is highlighted - make trim only for the string on which the cursor is
                             IRegion information = document.getLineInformationOfOffset(offset);
                             int startLine = information.getOffset();
                             int length = offset - startLine;
@@ -82,9 +82,9 @@ public class TrimTextSpacesHandler extends AbstractTextHandler {
                             if (!CommonUtils.isEmpty(untrimmedString)) {
                                 document.replace(startLine, length, trimmedString);
                             }
-                        } catch (BadLocationException e) {
-                            DBWorkbench.getPlatformUI().showError("Trim spaces", "Error replacing text", e);
                         }
+                    } catch (BadLocationException e) {
+                        log.error("Error reading or replacing text when trimming", e);
                     }
                 }
             }
