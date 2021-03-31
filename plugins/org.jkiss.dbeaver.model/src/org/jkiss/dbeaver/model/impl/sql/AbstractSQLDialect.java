@@ -433,6 +433,21 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return identifier;
     }
 
+    @Override
+    public boolean isQuotedString(String string) {
+        return string.length() >= 2 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'';
+    }
+
+    @Override
+    public String getQuotedString(String string) {
+        return '\'' + escapeString(string) + '\'';
+    }
+
+    @Override
+    public String getUnquotedString(String string) {
+        return isQuotedString(string) ? unEscapeString(string.substring(1, string.length() - 1)) : string;
+    }
+
     @NotNull
     @Override
     public String escapeString(String string) {

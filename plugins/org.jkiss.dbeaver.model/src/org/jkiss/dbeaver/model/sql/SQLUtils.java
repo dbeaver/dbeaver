@@ -210,9 +210,8 @@ public final class SQLUtils {
         }
     }
 
-    public static boolean isStringQuoted(String string)
-    {
-        return string.length() > 1 && string.startsWith("'") && string.endsWith("'");
+    public static boolean isStringQuoted(DBSObject object, String string) {
+        return object.getDataSource().getSQLDialect().isQuotedString(string);
     }
 
     public static String quoteString(DBSObject object, String string)
@@ -222,7 +221,7 @@ public final class SQLUtils {
 
     public static String quoteString(DBPDataSource dataSource, String string)
     {
-        return "'" + escapeString(dataSource, string) + "'";
+        return dataSource.getSQLDialect().getQuotedString(string);
     }
 
     public static String escapeString(DBPDataSource dataSource, String string)
