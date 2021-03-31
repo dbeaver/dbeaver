@@ -46,6 +46,7 @@ class IndentFormatter {
     private List<Boolean> functionBracket = new ArrayList<>();
     private List<Boolean> conditionBracket = new ArrayList<>();
     private final String[] blockHeaderStrings;
+    private boolean isFirstConditionInBrackets;
 
     private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN"};
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
@@ -72,6 +73,7 @@ class IndentFormatter {
             case "(":
                 functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                 conditionBracket.add(isCondition(argList, index) ? Boolean.TRUE : Boolean.FALSE);
+                isFirstConditionInBrackets = true;
                 bracketIndent.add(indent);
                 bracketsDepth++;
                 // Adding indent after ( makes result too verbose and too multiline
@@ -220,7 +222,9 @@ class IndentFormatter {
                     if ("CREATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
                         break;
                     }
-                    result = checkConditionDepth(result, argList, index);
+                    if (isFirstConditionInBrackets) {
+                        result = checkConditionDepth(result, argList, index);
+                    }
                 case "WHEN":
                     if ("CASE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
                         break;
@@ -267,7 +271,9 @@ class IndentFormatter {
                     encounterBetween = true;
                     break;
                 case "AND":  //$NON-NLS-1$
-                    result = checkConditionDepth(result, argList, index);
+                    if (isFirstConditionInBrackets) {
+                        result = checkConditionDepth(result, argList, index);
+                    }
                     if (!encounterBetween) {
                         result += insertReturnAndIndent(argList, index, indent);
                     }
@@ -499,6 +505,7 @@ class IndentFormatter {
         if (conditionBracket.size() != 0 && conditionBracket.get(conditionBracket.size() - 1).equals(Boolean.TRUE)) {
             indent++;
             result += insertReturnAndIndent(argList, index, indent);
+            isFirstConditionInBrackets = false;
             return result;
         }
         return result;
