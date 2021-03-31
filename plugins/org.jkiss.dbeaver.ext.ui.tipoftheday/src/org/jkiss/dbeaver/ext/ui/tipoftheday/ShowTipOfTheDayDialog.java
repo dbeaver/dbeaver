@@ -76,7 +76,11 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     protected Control createContents(Composite parent) {
         //[dbeaver/dbeaver#11526]
         Control contents = super.createContents(parent);
-        UIUtils.asyncExec(() -> tipArea.layout());
+        UIUtils.asyncExec(() -> {
+            if (!tipArea.isDisposed()) {
+                tipArea.layout();
+            }
+        });
         return contents;
     }
 
