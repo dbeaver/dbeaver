@@ -45,7 +45,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
     private final NavigatorObjectsDeleter deleter;
 
     private ConfirmNavigatorNodesDeleteDialog(Shell shell, String title, String message, List<?> selectedObjects, NavigatorObjectsDeleter deleter) {
-        super(shell, title, DBeaverIcons.getImage(UIIcon.REJECT), message, MessageDialog.WARNING, null, 0);
+        super(shell, title, DBeaverIcons.getImage(UIIcon.REJECT), message, MessageDialog.ERROR, null, 0);
         this.selectedObjects = selectedObjects;
         this.deleter = deleter;
     }

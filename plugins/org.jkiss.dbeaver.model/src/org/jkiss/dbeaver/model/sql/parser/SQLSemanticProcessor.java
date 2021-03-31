@@ -175,17 +175,34 @@ public class SQLSemanticProcessor {
                 orderByElements = new ArrayList<>();
                 select.setOrderByElements(orderByElements);
             }
-            for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                String columnName = co.getAttributeName();
-                boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
-                Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, co, forceNumeric);
-                OrderByElement element = new OrderByElement();
-                element.setExpression(orderExpr);
-                if (co.isOrderDescending()) {
-                    element.setAsc(false);
-                    element.setAscDescPresent(true);
+            List<DBDAttributeConstraint> orderConstraints = filter.getOrderConstraints();
+            if (!CommonUtils.isEmpty(orderConstraints)) {
+                for (DBDAttributeConstraint co : orderConstraints) {
+                    String columnName = co.getAttributeName();
+                    boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
+                    Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, co, forceNumeric);
+                    OrderByElement element = new OrderByElement();
+                    element.setExpression(orderExpr);
+                    if (co.isOrderDescending()) {
+                        element.setAsc(false);
+                        element.setAscDescPresent(true);
+                    }
+                    orderByElements.add(element);
                 }
-                orderByElements.add(element);
+            } else {
+                Expression expression;
+                String filterOrder = filter.getOrder();
+                try {
+                    expression = CCJSqlParserUtil.parseExpression(filterOrder);
+                } catch (JSQLParserException e) {
+                    // Can't parse. Let's use custom expression
+                   expression = new CustomExpression(filterOrder);
+                }
+                if (expression != null) {
+                    OrderByElement element = new OrderByElement();
+                    element.setExpression(expression);
+                    orderByElements.add(element);
+                }
             }
 
         }
