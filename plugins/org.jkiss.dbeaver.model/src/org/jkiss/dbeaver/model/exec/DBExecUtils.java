@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLSelectItem;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -647,6 +648,8 @@ public class DBExecUtils {
                 }
             }
 
+            boolean needsTableMetaForColumnResolution = session.getDataSource().getInfo().needsTableMetaForColumnResolution();
+
             final Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
 
             monitor.subTask("Discover attributes");
@@ -685,7 +688,35 @@ public class DBExecUtils {
                     }
                 } else if (binding instanceof DBDAttributeBindingMeta){
                     DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
-                    DBDPseudoAttribute pseudoAttribute = DBUtils.getPseudoAttribute(attrEntity, attrMeta.getName());
+
+                    // Table column can be found from results metadata or from SQL query parser
+                    // If datasource supports table names in result metadata then table name must present in results metadata.
+                    // Otherwise it is an expression.
+
+                    // It is a real table columns if:
+                    //  - We use some explicit entity (e.g. table data editor)
+                    //  - Table metadata was specified for column
+                    //  - Database doesn't support column name collisions (default)
+                    boolean updateColumnMeta = sourceEntity != null ||
+                        bindingMeta.getMetaAttribute().getEntityMetaData() != null ||
+                        !needsTableMetaForColumnResolution;
+
+                    // Fix of #11194. If column name and alias are equals we could try to get real column name
+                    // from parsed query because driver doesn't return it.
+                    String columnName = attrMeta.getName();
+                    if (updateColumnMeta &&
+                        CommonUtils.equalObjects(columnName, attrMeta.getLabel()) &&
+                        sqlQuery != null &&
+                        attrMeta.getOrdinalPosition() < sqlQuery.getSelectItemCount())
+                    {
+                        SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                        if (selectItem.isPlainColumn()) {
+                            columnName = DBUtils.getUnQuotedIdentifier(session.getDataSource(), selectItem.getName());
+                        }
+                    }
+
+                    // Test pseudo attributes
+                    DBDPseudoAttribute pseudoAttribute = DBUtils.getPseudoAttribute(attrEntity, columnName);
                     if (pseudoAttribute != null) {
                         bindingMeta.setPseudoAttribute(pseudoAttribute);
                     }
@@ -694,33 +725,23 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else {
-                        tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
+                        tableColumn = attrEntity.getAttribute(monitor, columnName);
                     }
 
-                    if (tableColumn != null &&
-                        // Table column can be found from results metadata or from SQL query parser
-                        // If datasource supports table names in result metadata then table name must present in results metadata.
-                        // Otherwise it is an expression.
-
-                        // It is a real table columns if:
-                        //  - We use some explicit entity (e.g. table data editor)
-                        //  - Table metadata was specified for column
-                        //  - Database doesn't support column name collisions (default)
-                        (sourceEntity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().needsTableMetaForColumnResolution()) &&
-                        bindingMeta.setEntityAttribute(
-                            tableColumn,
-                            ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
-                    {
-                        // We have new type and new value handler.
-                        // We have to fix already fetched values.
-                        // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
-                        try {
-                            int pos = attrMeta.getOrdinalPosition();
-                            for (Object[] row : rows) {
-                                row[pos] = binding.getValueHandler().getValueFromObject(session, tableColumn, row[pos], false, false);
+                    if (tableColumn != null && updateColumnMeta) {
+                        boolean updateColumnHandler = (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) && rows != null;
+                        if (bindingMeta.setEntityAttribute(tableColumn, updateColumnHandler)) {
+                            // We have new type and new value handler.
+                            // We have to fix already fetched values.
+                            // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
+                            try {
+                                int pos = attrMeta.getOrdinalPosition();
+                                for (Object[] row : rows) {
+                                    row[pos] = binding.getValueHandler().getValueFromObject(session, tableColumn, row[pos], false, false);
+                                }
+                            } catch (DBCException e) {
+                                log.warn("Error resolving attribute '" + binding.getName() + "' values", e);
                             }
-                        } catch (DBCException e) {
-                            log.warn("Error resolving attribute '" + binding.getName() + "' values", e);
                         }
                     }
                 }
