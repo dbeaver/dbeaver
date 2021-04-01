@@ -99,6 +99,7 @@ public class OracleUtils {
             }
 
             String ddl;
+            // Reading main table information (including storage info)
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
                 dbStat.setString(1, objectType);
@@ -129,6 +130,24 @@ public class OracleUtils {
             }
             ddl = ddl.trim();
 
+            // Reading index DDL
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('INDEX',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+                dbStat.setString(1, object.getName());
+                if (schema != null) {
+                    dbStat.setString(2, schema.getName());
+                }
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        ddl += "\n\n" + dbResult.getString(1).trim();
+                    }
+                }
+            } catch (Exception e) {
+                // No dependent index DDL or something went wrong
+                log.debug("Error reading dependent index DDL", e);
+            }
+
+            // Reading comments (return Error Msg = ORA-31608, if no comments for table/columns)
             if (ddlFormat != OracleDDLFormat.COMPACT) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
@@ -143,7 +162,7 @@ public class OracleUtils {
                     }
                 } catch (Exception e) {
                     // No dependent DDL or something went wrong
-                    log.debug("Error reading dependent DDL", e);
+                    log.debug("Error reading dependent comment DDL", e);
                 }
             }
             return ddl;

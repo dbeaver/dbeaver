@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
@@ -288,7 +289,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getDDL(DBRProgressMonitor monitor, OracleDDLFormat ddlFormat, Map<String, Object> options)
         throws DBException
     {
-        return OracleUtils.getDDL(monitor, getTableTypeName(), this, ddlFormat, options);
+        if (isPersisted()) {
+            return OracleUtils.getDDL(monitor, getTableTypeName(), this, ddlFormat, options);
+        } else {
+            return DBStructUtils.generateTableDDL(monitor, this, options, true);
+        }
     }
 
     @NotNull
