@@ -271,11 +271,12 @@ class IndentFormatter {
                     encounterBetween = true;
                     break;
                 case "AND":  //$NON-NLS-1$
-                    if (isFirstConditionInBrackets) {
-                        result = checkConditionDepth(result, argList, index);
-                    }
                     if (!encounterBetween) {
+                        // Don't add indent, if AND after BETWEEN or not first condition in expression in brackets
                         result += insertReturnAndIndent(argList, index, indent);
+                        if (isFirstConditionInBrackets) {
+                            result = checkConditionDepth(result, argList, index);
+                        }
                     }
                     encounterBetween = false;
                     break;
@@ -498,6 +499,7 @@ class IndentFormatter {
 
     private int checkConditionDepth(int result, List<FormatterToken> argList, int index) {
         if (conditionBracket.size() != 0 && conditionBracket.get(conditionBracket.size() - 1).equals(Boolean.TRUE)) {
+            // Add indent for first condition keyword in conditions expression in brackets
             indent++;
             result += insertReturnAndIndent(argList, index, indent);
             isFirstConditionInBrackets = false;
