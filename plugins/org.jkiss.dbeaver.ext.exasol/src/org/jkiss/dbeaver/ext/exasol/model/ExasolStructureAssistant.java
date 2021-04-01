@@ -17,10 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -40,18 +38,10 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import java.sql.SQLException;
 import java.util.List;
 
-
 public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecutionContext> {
-
-
-    private static final Log LOG = Log.getLog(ExasolStructureAssistant.class);
-
-
-    private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
+	private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
     private static final DBSObjectType[] HYPER_LINKS_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.COLUMN, ExasolObjectType.VIEW, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT};
-
-
 
     private String sqlConstraintsAll = "/*snapshot execution*/ SELECT CONSTRAINT_SCHEMA,CONSTRAINT_TABLE, CONSTRAINT_TYPE, CONSTRAINT_NAME FROM SYS.";
     private String sqlConstraintsSchema;
@@ -61,9 +51,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     private static final String SQL_TABLES_SCHEMA = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE '%s' AND TABLE_TYPE = '%s'";
     private static final String SQL_COLS_SCHEMA = "/*snapshot execution*/ SELECT TABLE_SCHEM,TABLE_NAME as column_table,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM like '%s' and COLUMN_NAME LIKE '%s'";
 
-
     private ExasolDataSource dataSource;
-
 
     // -----------------
     // Constructors
@@ -76,7 +64,6 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         this.sqlProceduresAll = sqlProceduresAll + dataSource.getTablePrefix(ExasolSysTablePrefix.ALL) + "_SCRIPTS WHERE SCRIPT_NAME like '%s'";
         this.sqlProcedureSchema = sqlProceduresAll + " AND SCRIPT_SCHEMA = '%s'";
     }
-
 
     // -----------------
     // Method Interface
@@ -91,46 +78,44 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         return getSupportedObjectTypes();
     }
 
-
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes() {
         return HYPER_LINKS_TYPES;
     }
-
 
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes() {
         return AUTOC_OBJ_TYPES;
     }
 
+	@Override
+	protected void findObjectsByMask(@NotNull ExasolExecutionContext executionContext, @NotNull JDBCSession session,
+									 @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
+									 @NotNull List<DBSObjectReference> references) throws DBException, SQLException {
+		String objectNameMask = params.getMask();
+		DBSObject parentObject = params.getParentObject();
+		int maxResults = params.getMaxResults();
+		log.debug("Search Mask:" + objectNameMask + " Object Type:" + objectType.getTypeName());
 
-    
-    @NotNull
-    @Override
-    protected void findObjectsByMask(ExasolExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
-    {
-        LOG.debug("Search Mask:" + objectNameMask + " Object Type:" + objectType.getTypeName());
+		ExasolSchema schema = parentObject instanceof ExasolSchema ? (ExasolSchema) parentObject : null;
+		if (schema == null && !params.isGlobalSearch()) {
+			schema = executionContext.getContextDefaults().getDefaultSchema();
+		}
 
-        ExasolSchema schema = parentObject instanceof ExasolSchema ? (ExasolSchema) parentObject : null;
-        if (schema == null && !globalSearch) {
-            schema = executionContext.getContextDefaults().getDefaultSchema();
-        }
-        
-        if (objectType == ExasolObjectType.TABLE) {
-            findTableObjectByName(session, schema, objectNameMask, maxResults, references, "TABLE");
-        } else if (objectType == ExasolObjectType.VIEW) {
-            findTableObjectByName(session, schema, objectNameMask, maxResults, references, "VIEW");
-        } else if (objectType == ExasolObjectType.FOREIGNKEY) {
-            findConstraintsByMask(session, schema, objectNameMask, maxResults, references, "FOREIGN KEY");
-        } else if (objectType == ExasolObjectType.PRIMARYKEY) {
-            findConstraintsByMask(session, schema, objectNameMask, maxResults, references, "PRIMARY KEY");
-        } else if (objectType == ExasolObjectType.SCRIPT) {
-            findProceduresByMask(session, schema, objectNameMask, maxResults, references);
-        } else if (objectType == ExasolObjectType.COLUMN) {
-            findTableColumnsByMask(session, schema, objectNameMask, maxResults, references);
-        }
-
-    }
+		if (objectType == ExasolObjectType.TABLE) {
+			findTableObjectByName(session, schema, objectNameMask, maxResults, references, "TABLE");
+		} else if (objectType == ExasolObjectType.VIEW) {
+			findTableObjectByName(session, schema, objectNameMask, maxResults, references, "VIEW");
+		} else if (objectType == ExasolObjectType.FOREIGNKEY) {
+			findConstraintsByMask(session, schema, objectNameMask, maxResults, references, "FOREIGN KEY");
+		} else if (objectType == ExasolObjectType.PRIMARYKEY) {
+			findConstraintsByMask(session, schema, objectNameMask, maxResults, references, "PRIMARY KEY");
+		} else if (objectType == ExasolObjectType.SCRIPT) {
+			findProceduresByMask(session, schema, objectNameMask, maxResults, references);
+		} else if (objectType == ExasolObjectType.COLUMN) {
+			findTableColumnsByMask(session, schema, objectNameMask, maxResults, references);
+		}
+	}
 
 	private void findTableColumnsByMask(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
 			List<DBSObjectReference> references) throws SQLException, DBException {
@@ -178,7 +163,6 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
 		
 	}
 
-
 	private void findProceduresByMask(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
 			List<DBSObjectReference> references) throws SQLException, DBException {
     	DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -225,7 +209,6 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     		}
     	}
 	}
-
 
 	private void findConstraintsByMask(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
 			List<DBSObjectReference> references, String constType) throws SQLException, DBException {
@@ -349,13 +332,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     		}
     	}				
 	}
- 
 
 	@Override
 	protected JDBCDataSource getDataSource() {
 		return this.dataSource;
 	}
-
-
 }
-

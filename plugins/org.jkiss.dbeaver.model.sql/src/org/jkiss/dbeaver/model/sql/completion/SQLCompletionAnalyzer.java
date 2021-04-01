@@ -721,14 +721,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         // Search using structure assistant
                         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                         if (structureAssistant != null) {
-                            Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
-                                monitor,
-                                executionContext,
-                                null,
-                                structureAssistant.getAutoCompleteObjectTypes(),
-                                request.getWordDetector().removeQuotes(token),
-                                request.getWordDetector().isQuoted(token),
-                                false, 2);
+                            DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
+                                    structureAssistant.getAutoCompleteObjectTypes(),
+                                    request.getWordDetector().removeQuotes(token)
+                            );
+                            params.setCaseSensitive(request.getWordDetector().isQuoted(token));
+                            params.setMaxResults(2);
+                            Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                             if (!references.isEmpty()) {
                                 childObject = references.iterator().next().resolveObject(monitor);
                             }
@@ -1012,15 +1011,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String objectName,
         @NotNull Map<String, Object> params) throws DBException
     {
-        Collection<DBSObjectReference> references = assistant.findObjectsByMask(
-            monitor,
-            request.getContext().getExecutionContext(),
-            rootSC,
-            objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
-            makeObjectNameMask(objectName, rootSC),
-            request.getWordDetector().isQuoted(objectName),
-            request.getContext().isSearchGlobally(),
-            MAX_STRUCT_PROPOSALS);
+        DBSStructureAssistant.ObjectsSearchParams assistantParams = new DBSStructureAssistant.ObjectsSearchParams(
+                objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
+                makeObjectNameMask(objectName, rootSC)
+        );
+        assistantParams.setParentObject(rootSC);
+        assistantParams.setCaseSensitive(request.getWordDetector().isQuoted(objectName));
+        assistantParams.setGlobalSearch(request.getContext().isSearchGlobally());
+        assistantParams.setMaxResults(MAX_STRUCT_PROPOSALS);
+        Collection<DBSObjectReference> references = assistant.findObjectsByMask(monitor, request.getContext().getExecutionContext(), assistantParams);
         for (DBSObjectReference reference : references) {
             proposals.add(
                 makeProposalsFromObject(
