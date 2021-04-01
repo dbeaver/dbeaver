@@ -56,12 +56,12 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
      * </ul>
      */
     class ObjectsSearchParams {
+        @NotNull
+        private final DBSObjectType[] objectTypes;
+        @NotNull
+        private final String mask;
         @Nullable
         private DBSObject parentObject;
-        @NotNull
-        private DBSObjectType[] objectTypes;
-        @NotNull
-        private String mask;
         private boolean caseSensitive;
         private boolean searchInComments;
         private boolean globalSearch;
