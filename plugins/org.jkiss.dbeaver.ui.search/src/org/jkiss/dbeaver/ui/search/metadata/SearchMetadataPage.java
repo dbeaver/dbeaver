@@ -357,8 +357,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     }
 
     @Override
-    public SearchMetadataQuery createQuery() throws DBException
-    {
+    public SearchMetadataQuery createQuery() {
         DBNNode selectedNode = getSelectedNode();
         DBSObjectContainer parentObject = null;
         if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
@@ -397,15 +396,16 @@ public class SearchMetadataPage extends AbstractSearchPage {
             }
         }
 
-        SearchMetadataParams params = new SearchMetadataParams();
+        DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
+                objectTypes.toArray(new DBSObjectType[0]),
+                objectNameMask
+        );
         params.setParentObject(parentObject);
-        params.setObjectTypes(objectTypes);
-        params.setObjectNameMask(objectNameMask);
         params.setCaseSensitive(caseSensitive);
         params.setSearchInComments(searchInComments);
         params.setMaxResults(maxResults);
-        return SearchMetadataQuery.createQuery(dataSource, params);
 
+        return new SearchMetadataQuery(dataSource, assistant, params);
     }
 
     @Override
