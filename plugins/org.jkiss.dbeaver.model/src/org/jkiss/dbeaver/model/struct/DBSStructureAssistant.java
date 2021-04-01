@@ -59,7 +59,7 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
         @NotNull
         private final DBSObjectType[] objectTypes;
         @NotNull
-        private final String mask;
+        private String mask;
         @Nullable
         private DBSObject parentObject;
         private boolean caseSensitive;
@@ -89,6 +89,10 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
         @NotNull
         public String getMask() {
             return mask;
+        }
+
+        public void setMask(@NotNull String mask) {
+            this.mask = mask;
         }
 
         public boolean isCaseSensitive() {
