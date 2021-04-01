@@ -160,23 +160,41 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return;
         }
 
+        StringBuilder sql = new StringBuilder("SELECT TOP ")
+                .append(params.getMaxResults())
+                .append(" * FROM ")
+                .append(SQLServerUtils.getSystemTableName(database, "all_objects"))
+                .append(" o ");
+        if (params.isSearchInComments()) {
+            sql.append("LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
+        }
+        sql.append("WHERE o.type IN (").append(objectTypeClause.toString()).append(") AND ");
+        if (params.isSearchInComments()) {
+            sql.append("(");
+        }
+        sql.append("o.name LIKE ? ");
+        if (params.isSearchInComments()) {
+            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)) ");
+        }
+        if (schema != null) {
+            sql.append("AND o.schema_id = ? ");
+        }
+        sql.append("ORDER BY o.name");
+
         // Seek for objects (join with public synonyms)
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "all_objects") + " o " +
-                "\nWHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
-                (schema == null ? "" : " AND o.schema_id=? ") +
-                "\nORDER BY o.name"))
-        {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
             dbStat.setString(1, params.getMask());
+            int schemaIdIdx = 2;
+            if (params.isSearchInComments()) {
+                dbStat.setString(2, params.getMask());
+                schemaIdIdx++;
+            }
             if (schema != null) {
-                dbStat.setLong(2, schema.getObjectId());
+                dbStat.setLong(schemaIdIdx, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (objects.size() < params.getMaxResults() && dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
+                while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
                     final String objectName = JDBCUtils.safeGetString(dbResult, "name");
                     final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
