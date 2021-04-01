@@ -251,6 +251,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return syntaxManager;
     }
 
+    @Nullable
+    public SQLRuleManager getRuleManager() {
+        if (parserContext == null) {
+            return null;
+        }
+        return parserContext.getRuleManager();
+    }
+
     @NotNull
     public SQLRuleScanner getRuleScanner() {
         return ruleScanner;

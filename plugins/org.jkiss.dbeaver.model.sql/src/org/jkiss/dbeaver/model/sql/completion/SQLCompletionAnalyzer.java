@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.*;
@@ -812,9 +813,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     @Nullable
     private Pair<String, String> extractTableName(@Nullable String tableAlias, boolean allowPartialMatch) {
         final IDocument document = request.getDocument();
-        final TPRuleBasedScanner scanner = request.getScanner();
         final SQLScriptElement activeQuery = request.getActiveQuery();
-
+        final SQLRuleManager ruleManager = request.getContext().getRuleManager();
+        final TPRuleBasedScanner scanner = new TPRuleBasedScanner();
+        scanner.setRules(ruleManager.getAllRules());
         scanner.setRange(document, activeQuery.getOffset(), activeQuery.getLength());
 
          /*
