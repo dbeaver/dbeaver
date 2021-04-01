@@ -409,7 +409,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
             UIUtils.asyncExec(() -> {
                 viewer.setInput(mappings);
                 viewer.expandAll(true);
-                UIUtils.packColumns(viewer.getTree(), false, new float[]{0.75f, 0.25f});
+                UIUtils.packColumns(viewer.getTree(), true, new float[]{0.75f, 0.25f});
                 updateCompletion();
             });
 

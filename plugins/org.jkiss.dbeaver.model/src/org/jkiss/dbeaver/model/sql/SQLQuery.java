@@ -245,6 +245,10 @@ public class SQLQuery implements SQLScriptElement {
         return null;
     }
 
+    public int getSelectItemCount() {
+        return selectItems == null ? 0 : selectItems.size();
+    }
+
     public SQLSelectItem getSelectItem(int index) {
         return selectItems == null || selectItems.size() <= index ? null : selectItems.get(index);
     }

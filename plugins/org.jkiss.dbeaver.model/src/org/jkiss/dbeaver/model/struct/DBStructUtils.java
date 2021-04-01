@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -44,9 +46,44 @@ public final class DBStructUtils {
 
     private static final Log log = Log.getLog(DBStructUtils.class);
 
+    @Nullable
+    public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attribute) throws DBException {
+        DBSEntityAttribute entityAttribute = attribute.getEntityAttribute();
+        if (entityAttribute != null) {
+            return getEnumerableConstraint(monitor, entityAttribute);
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute entityAttribute) throws DBException {
+        List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(monitor, entityAttribute, true);
+        DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
+        if (constraint != null) {
+            DBSEntity associatedEntity = getAssociatedEntity(monitor, constraint);
+            if (associatedEntity instanceof DBSDictionary) {
+                final DBSDictionary dictionary = (DBSDictionary) associatedEntity;
+                if (dictionary.supportsDictionaryEnumeration()) {
+                    return constraint;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBSEntity getAssociatedEntity(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityConstraint constraint) throws DBException {
+        if (constraint instanceof DBSEntityAssociationLazy) {
+            return  ((DBSEntityAssociationLazy) constraint).getAssociatedEntity(monitor);
+        } else if (constraint instanceof DBSEntityAssociation) {
+            return  ((DBSEntityAssociation) constraint).getAssociatedEntity();
+        }
+        return null;
+    }
+
     public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
         final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
-        final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
+        final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager) {
             DBEPersistAction[] ddlActions = ((SQLTableManager) entityEditor).getTableDDL(monitor, table, options);
             return SQLUtils.generateScript(table.getDataSource(), ddlActions, addComments);

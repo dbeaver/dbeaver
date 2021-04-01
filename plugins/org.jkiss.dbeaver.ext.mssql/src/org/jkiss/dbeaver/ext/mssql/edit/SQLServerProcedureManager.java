@@ -120,9 +120,9 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
                 new SQLDatabasePersistAction(
                     "Add procedure comment",
                     "EXEC " + SQLServerUtils.getSystemTableName(database, isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', N" + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'schema', N'" + procedure.getContainer().getName() + "'," +
-                        " 'procedure', N'" + procedure.getName() + "'"));
+                        " 'MS_Description', " + SQLUtils.quoteString(procedure, procedure.getDescription()) + "," +
+                        " 'schema', " + SQLUtils.quoteString(procedure, procedure.getContainer().getName()) + "," +
+                        " 'procedure', " + SQLUtils.quoteString(procedure, procedure.getName())));
         }
     }
 

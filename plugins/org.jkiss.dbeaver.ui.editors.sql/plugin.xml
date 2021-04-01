@@ -217,6 +217,10 @@
         <command id="org.jkiss.dbeaver.core.sql.editor.create" name="%command.org.jkiss.dbeaver.core.sql.editor.create.name" description="%command.org.jkiss.dbeaver.core.sql.editor.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.console" name="%command.org.jkiss.dbeaver.core.sql.editor.console.name" description="%command.org.jkiss.dbeaver.core.sql.editor.console.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.forSelection" name="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name" description="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.sql.editor.defaultCommand" name="%command.org.jkiss.dbeaver.core.sql.editor.open.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.sql.editor.open.default" name="%command.org.jkiss.dbeaver.core.sql.editor.open.default.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.default.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="command" name="SQL editor open command" optional="false"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.procedure.execute" name="%command.org.jkiss.dbeaver.core.procedure.execute.name" description="%command.org.jkiss.dbeaver.core.procedure.execute.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -238,6 +242,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list" name="%command.org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.trim.spaces" name="%org.jkiss.dbeaver.ui.editors.sql.trim.spaces.name" description="%org.jkiss.dbeaver.ui.editors.sql.trim.spaces.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.multi" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.word.wrap" name="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -319,6 +324,13 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.defaultCommand" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole">
             <enabledWhen>
                 <with variable="selection">
@@ -329,6 +341,7 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.open.default" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenDefaultSwitch"/>
         <handler commandId="org.jkiss.dbeaver.core.procedure.execute" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRunProcedureConsole">
             <enabledWhen>
                 <with variable="selection">
@@ -577,6 +590,7 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.trim.spaces" class="org.jkiss.dbeaver.ui.editors.text.handlers.TrimTextSpacesHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleSingleLineCommentHandler">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -688,10 +702,18 @@
             <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>
             <separator name="search" visible="true"/>
             <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand"/>
+            <separator name="settings" visible="true"/>
+
+            <menu id="SQLEditorOpenDefaultMenu" label="%menu.sqleditor.open.default">
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.open"/></command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.recent"/></command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.create"/></command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.console"/></command>
+            </menu>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-general?after=sql_tools">
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.defaultCommand"
                  label="SQL"
                  tooltip="%command.org.jkiss.dbeaver.core.sql.editor.open.description"
                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"

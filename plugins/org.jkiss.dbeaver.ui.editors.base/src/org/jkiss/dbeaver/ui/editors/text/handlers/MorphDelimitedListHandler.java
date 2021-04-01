@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -279,7 +280,7 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
         @Override
         protected void configureShell(Shell newShell) {
             super.configureShell(newShell);
-            newShell.setText("Delimited text options");
+            newShell.setText(EditorsMessages.dialog_morph_delimited_shell_text);
         }
 
         @Override
@@ -291,20 +292,20 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
             int textWidthHint = UIUtils.getFontHeight(parent) * 10;
 
             {
-                Group sourceGroup = UIUtils.createControlGroup(group, "Source", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-                sourceDelimCombo = UIUtils.createDelimiterCombo(sourceGroup, "Column Delimiter", new String[] {"\n", "\t", ";", ","}, morphSettings.getSourceDelimiter(), true);
+                Group sourceGroup = UIUtils.createControlGroup(group, EditorsMessages.dialog_morph_delimited_source_group, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+                sourceDelimCombo = UIUtils.createDelimiterCombo(sourceGroup, EditorsMessages.dialog_morph_delimited_source_group_delimiter, new String[] {"\n", "\t", ";", ","}, morphSettings.getSourceDelimiter(), true);
                 ((GridData) sourceDelimCombo.getLayoutData()).widthHint = textWidthHint;
             }
             {
-                Group targetGroup = UIUtils.createControlGroup(group, "Target", 2, GridData.FILL_BOTH, SWT.DEFAULT);
-                targetDelimCombo = UIUtils.createDelimiterCombo(targetGroup, "Result delimiter", new String[] {"\n", "\t", ";", ","}, morphSettings.getTargetDelimiter(), false);
-                quoteStringCombo = UIUtils.createDelimiterCombo(targetGroup, "String quote character", new String[] {"\"", "'"}, morphSettings.getQuoteString(), false);
-                wrapLineAtColumn = UIUtils.createLabelSpinner(targetGroup, "Wrap line at column", "Inserts line feeds after spcified number of characters. Zero means no wrap.", morphSettings.getWrapLine(), 0, Integer.MAX_VALUE);
-                leadingText = UIUtils.createLabelText(targetGroup, "Leading text", morphSettings.getLeadingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+                Group targetGroup = UIUtils.createControlGroup(group, EditorsMessages.dialog_morph_delimited_target_group_label, 2, GridData.FILL_BOTH, SWT.DEFAULT);
+                targetDelimCombo = UIUtils.createDelimiterCombo(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_delim_result, new String[] {"\n", "\t", ";", ","}, morphSettings.getTargetDelimiter(), false);
+                quoteStringCombo = UIUtils.createDelimiterCombo(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_delim_quote, new String[] {"\"", "'"}, morphSettings.getQuoteString(), false);
+                wrapLineAtColumn = UIUtils.createLabelSpinner(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_spinner_wrap_line, EditorsMessages.dialog_morph_delimited_target_group_spinner_wrap_line_tip, morphSettings.getWrapLine(), 0, Integer.MAX_VALUE);
+                leadingText = UIUtils.createLabelText(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_leading_text, morphSettings.getLeadingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
                 ((GridData) leadingText.getLayoutData()).widthHint = textWidthHint;
                 ((GridData) leadingText.getLayoutData()).verticalAlignment = GridData.FILL;
                 ((GridData) leadingText.getLayoutData()).grabExcessVerticalSpace = true;
-                trailingText = UIUtils.createLabelText(targetGroup, "Trailing text", morphSettings.getTrailingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+                trailingText = UIUtils.createLabelText(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_trailing_text, morphSettings.getTrailingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
                 ((GridData) trailingText.getLayoutData()).widthHint = textWidthHint;
                 ((GridData) trailingText.getLayoutData()).verticalAlignment = GridData.FILL;
                 ((GridData) trailingText.getLayoutData()).grabExcessVerticalSpace = true;
