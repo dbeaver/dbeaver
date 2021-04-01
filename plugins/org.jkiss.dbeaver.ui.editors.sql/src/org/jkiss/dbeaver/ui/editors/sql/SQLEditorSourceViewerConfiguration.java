@@ -183,6 +183,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         try {
             assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
             assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+            assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
         } catch (Throwable e) {
             // addContentAssistProcessor API was added in 4.12
             // Let's support older Eclipse versions

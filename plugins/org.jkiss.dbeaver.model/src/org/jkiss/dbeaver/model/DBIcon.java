@@ -44,7 +44,9 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_ADMIN = new DBIcon("admin", "tree/admin.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATABASE = new DBIcon("database", "tree/database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATABASE_CATEGORY = new DBIcon("database_category", "tree/database_category.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_DATABASE_SHARED = new DBIcon("database_shared", "tree/database_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA = new DBIcon("schema", "tree/schema.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_SCHEMA_SHARED = new DBIcon("schema_shared", "tree/schema_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_SYSTEM = new DBIcon("schema_system", "tree/schema_system.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_UTIL = new DBIcon("schema_util", "tree/schema_util.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE = new DBIcon("table", "tree/table.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -53,7 +55,9 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_TABLE_INDEX = new DBIcon("table_index", "tree/table_index.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_SYSTEM = new DBIcon("table_system", "tree/table_index.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_EXTERNAL = new DBIcon("table_external", "tree/table_external.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_TABLE_SHARED = new DBIcon("table_shared", "tree/table_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_VIEW = new DBIcon("view", "tree/view.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_VIEW_SHARED = new DBIcon("view_shared", "tree/view_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FUNCTION = new DBIcon("function", "tree/function.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PROCEDURE = new DBIcon("procedure", "tree/procedure.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_COLUMNS = new DBIcon("columns", "tree/columns.png"); //$NON-NLS-1$ //$NON-NLS-2$

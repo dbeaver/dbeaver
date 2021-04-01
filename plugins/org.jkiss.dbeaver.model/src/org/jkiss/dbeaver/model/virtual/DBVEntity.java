@@ -516,8 +516,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         for (DBSEntityAttribute column : allColumns) {
             if (column != keyColumn &&
                 column.getDataKind() == DBPDataKind.STRING &&
-                column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
-                column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH) {
+                (column.getMaxLength() <= 0 ||
+                    (column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
+                    column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH))) {
                 stringColumns.put(column.getName(), column);
             }
         }
