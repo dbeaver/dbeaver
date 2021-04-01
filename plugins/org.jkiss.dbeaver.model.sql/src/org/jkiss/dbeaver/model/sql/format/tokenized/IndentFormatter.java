@@ -44,10 +44,13 @@ class IndentFormatter {
     private int bracketsDepth = 0;
     private boolean encounterBetween = false;
     private List<Boolean> functionBracket = new ArrayList<>();
+    private List<Boolean> conditionBracket = new ArrayList<>();
     private final String[] blockHeaderStrings;
+    private boolean isFirstConditionInBrackets;
 
     private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN"};
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
+    private static final String[] CONDITION_KEYWORDS = {"WHERE", "ON", "HAVING"};
 
     IndentFormatter(SQLFormatterConfiguration formatterCfg, boolean isCompact) {
         this.formatterCfg = formatterCfg;
@@ -69,6 +72,8 @@ class IndentFormatter {
         switch (tokenString) {
             case "(":
                 functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
+                conditionBracket.add(isCondition(argList, index) ? Boolean.TRUE : Boolean.FALSE);
+                isFirstConditionInBrackets = true;
                 bracketIndent.add(indent);
                 bracketsDepth++;
                 // Adding indent after ( makes result too verbose and too multiline
@@ -78,18 +83,19 @@ class IndentFormatter {
                 }
                 break;
             case ")":
-                if (!bracketIndent.isEmpty() && !functionBracket.isEmpty()) {
+                if (!bracketIndent.isEmpty() && !functionBracket.isEmpty() && !conditionBracket.isEmpty()) {
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
                     if (!isCompact && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
                         result += insertReturnAndIndent(argList, index, indent);
                     }
                     functionBracket.remove(functionBracket.size() - 1);
+                    conditionBracket.remove(conditionBracket.size() - 1);
                     bracketsDepth--;
                 }
                 break;
             case ",":
                 if (!isCompact) {
-                    /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/
+                    /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevSpecialKeyword(argList, index)))*/
                     boolean isInsideAFunction = functionBracket.size() != 0 && functionBracket.get(functionBracket.size() - 1).equals(Boolean.TRUE);
                     boolean isAfterInKeyword = bracketsDepth > 0 && SQLConstants.KEYWORD_IN.equalsIgnoreCase(getPrevKeyword(argList, index));
                     if (!isInsideAFunction && !isAfterInKeyword)
@@ -121,7 +127,7 @@ class IndentFormatter {
             result += insertReturnAndIndent(argList, index + 1, indent);
         } else {
             if (blockHeaderStrings != null && ArrayUtils.contains(blockHeaderStrings, tokenString) || (SQLUtils.isBlockStartKeyword(dialect, tokenString) &&
-                            !SQLConstants.KEYWORD_SELECT.equalsIgnoreCase(getPrevDMLKeyword(argList, index)))) { // If SELECT is previous keyword, then we are already inside the block
+                            !SQLConstants.KEYWORD_SELECT.equalsIgnoreCase(getPrevSpecialKeyword(argList, index, false)))) { // If SELECT is previous keyword, then we are already inside the block
                 if (index > 0) {
                     result += insertReturnAndIndent(argList, index, indent - 1);
                 }
@@ -216,6 +222,9 @@ class IndentFormatter {
                     if ("CREATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
                         break;
                     }
+                    if (isFirstConditionInBrackets) {
+                        result = checkConditionDepth(result, argList, index);
+                    }
                 case "WHEN":
                     if ("CASE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
                         break;
@@ -263,7 +272,11 @@ class IndentFormatter {
                     break;
                 case "AND":  //$NON-NLS-1$
                     if (!encounterBetween) {
+                        // Don't add indent, if AND after BETWEEN or not first condition in expression in brackets
                         result += insertReturnAndIndent(argList, index, indent);
+                        if (isFirstConditionInBrackets) {
+                            result = checkConditionDepth(result, argList, index);
+                        }
                     }
                     encounterBetween = false;
                     break;
@@ -465,16 +478,34 @@ class IndentFormatter {
         return argList.get(ki).getString();
     }
 
-    private static String getPrevDMLKeyword(List<FormatterToken> argList, int index) {
+    private String getPrevSpecialKeyword(List<FormatterToken> argList, int index, boolean isCondition) {
         for (int i = index - 1; i >= 0; i--) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.KEYWORD) {
-                if (ArrayUtils.contains(DML_KEYWORD, token.getString().toUpperCase(Locale.ENGLISH))) {
+                String upperCaseToken = token.getString().toUpperCase(Locale.ENGLISH);
+                if ((isCondition && ArrayUtils.contains(CONDITION_KEYWORDS, upperCaseToken)) ||
+                        (!isCondition && ArrayUtils.contains(DML_KEYWORD, upperCaseToken))) {
                     return token.getString();
                 }
             }
         }
         return null;
+    }
+
+
+    private boolean isCondition(List<FormatterToken> argList, int index) {
+        return getPrevSpecialKeyword(argList, index, true) != null;
+    }
+
+    private int checkConditionDepth(int result, List<FormatterToken> argList, int index) {
+        if (conditionBracket.size() != 0 && conditionBracket.get(conditionBracket.size() - 1).equals(Boolean.TRUE)) {
+            // Add indent for first condition keyword in conditions expression in brackets
+            indent++;
+            result += insertReturnAndIndent(argList, index, indent);
+            isFirstConditionInBrackets = false;
+            return result;
+        }
+        return result;
     }
 
 }
