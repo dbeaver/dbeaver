@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
@@ -57,6 +58,11 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     @Override
     public SQLSyntaxManager getSyntaxManager() {
         return editor.getSyntaxManager();
+    }
+
+    @Override
+    public SQLRuleManager getRuleManager() {
+        return editor.getRuleManager();
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 
 import java.util.Map;
 
@@ -41,6 +42,8 @@ public interface SQLCompletionContext {
     DBCExecutionContext getExecutionContext();
 
     SQLSyntaxManager getSyntaxManager();
+
+    SQLRuleManager getRuleManager();
 
     boolean isUseFQNames();
 

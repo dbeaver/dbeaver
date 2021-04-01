@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.sql.completion;
 
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
-import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 
 public class SQLCompletionRequest {
 
@@ -38,7 +35,6 @@ public class SQLCompletionRequest {
     private final SQLScriptElement activeQuery;
     private final boolean simpleMode;
 
-    private final TPRuleBasedScanner scanner;
     private final SQLWordPartDetector wordDetector;
 
     private String wordPart;
@@ -51,15 +47,6 @@ public class SQLCompletionRequest {
         this.documentOffset = documentOffset;
         this.activeQuery = activeQuery;
         this.simpleMode = simpleMode;
-
-        final SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(context.getDataSource());
-
-        final SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(context.getDataSource(), false);
-
-        this.scanner = new TPRuleBasedScanner();
-        this.scanner.setRules(ruleManager.getAllRules());
 
         this.wordDetector = new SQLWordPartDetector(document, context.getSyntaxManager(), documentOffset);
         this.wordPart = wordDetector.getWordPart();
@@ -83,10 +70,6 @@ public class SQLCompletionRequest {
 
     public boolean isSimpleMode() {
         return simpleMode;
-    }
-
-    public TPRuleBasedScanner getScanner() {
-        return scanner;
     }
 
     public SQLWordPartDetector getWordDetector() {
