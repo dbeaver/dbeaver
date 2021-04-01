@@ -198,6 +198,7 @@ class IndentFormatter {
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index + 1, indent);
                     }
+                    isFirstConditionInBrackets = false;
                     break;
                 case "LEFT":
                 case "RIGHT":
