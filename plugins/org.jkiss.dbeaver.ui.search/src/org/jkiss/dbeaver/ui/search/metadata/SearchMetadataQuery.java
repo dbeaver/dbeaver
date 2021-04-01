@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -108,17 +105,15 @@ public class SearchMetadataQuery implements ISearchQuery {
             int totalObjects = 0;
             DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
             DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
-            Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
-                localMonitor,
-                executionContext,
-                params.getParentObject(),
-                objectTypes.toArray(new DBSObjectType[0]),
-                objectNameMask,
-                params.isCaseSensitive(),
-                true,
-                params.getSearchInComments(),
-                params.getMaxResults()
-            );
+
+            DBSStructureAssistant.ObjectsSearchParams assistantParams = new DBSStructureAssistant.ObjectsSearchParams(objectTypes.toArray(new DBSObjectType[0]), objectNameMask);
+            assistantParams.setParentObject(params.getParentObject());
+            assistantParams.setCaseSensitive(params.isCaseSensitive());
+            assistantParams.setGlobalSearch(true);
+            assistantParams.setSearchInComments(params.getSearchInComments());
+            assistantParams.setMaxResults(params.getMaxResults());
+
+            Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(localMonitor, executionContext, assistantParams);
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;
@@ -156,6 +151,4 @@ public class SearchMetadataQuery implements ISearchQuery {
         }
         return new SearchMetadataQuery(assistant, DBUtils.getDefaultContext(dataSource, true), params);
     }
-
-
 }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -38,10 +39,9 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * GenericDataSource
+ * GenericStructureAssistant
  */
-public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExecutionContext>
-{
+public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExecutionContext> {
     private final GenericDataSource dataSource;
 
     GenericStructureAssistant(GenericDataSource dataSource)
@@ -76,19 +76,24 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     }
 
     @Override
-    protected void findObjectsByMask(GenericExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException {
-        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : (globalSearch ? null : executionContext.getDefaultSchema());
+    protected void findObjectsByMask(@NotNull GenericExecutionContext executionContext, @NotNull JDBCSession session,
+                                     @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
+                                     @NotNull List<DBSObjectReference> references) throws DBException, SQLException {
+        DBSObject parentObject = params.getParentObject();
+        boolean globalSearch = params.isGlobalSearch();
+        String objectNameMask = params.getMask();
+        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : (params.isGlobalSearch() ? null : executionContext.getDefaultSchema());
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
-            schema == null ? (globalSearch ? null : executionContext.getDefaultCatalog()) : schema.getCatalog();
+                schema == null ? (globalSearch ? null : executionContext.getDefaultCatalog()) : schema.getCatalog();
 
         final GenericDataSource dataSource = getDataSource();
-        DBPIdentifierCase convertCase = caseSensitive ? dataSource.getSQLDialect().storesQuotedCase() : dataSource.getSQLDialect().storesUnquotedCase();
+        DBPIdentifierCase convertCase = params.isCaseSensitive() ? dataSource.getSQLDialect().storesQuotedCase() : dataSource.getSQLDialect().storesUnquotedCase();
         objectNameMask = convertCase.transform(objectNameMask);
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(session, catalog, schema, objectNameMask, maxResults, references);
+            findTablesByMask(session, catalog, schema, objectNameMask, params.getMaxResults(), references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(session, catalog, schema, objectNameMask, maxResults, references);
+            findProceduresByMask(session, catalog, schema, objectNameMask, params.getMaxResults(), references);
         }
     }
 

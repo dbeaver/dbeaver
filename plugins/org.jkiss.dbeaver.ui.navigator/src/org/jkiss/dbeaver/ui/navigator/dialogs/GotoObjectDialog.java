@@ -365,14 +365,14 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         @Override
         public void run(DBRProgressMonitor param) throws InvocationTargetException, InterruptedException {
             try {
-                result = structureAssistant.findObjectsByMask(
-                    monitor,
-                    executionContext,
-                    container,
-                    typesToSearch.toArray(new DBSObjectType[0]),
-                    nameMask,
-                    false,
-                    true, MAX_RESULT_COUNT);
+                DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
+                        typesToSearch.toArray(new DBSObjectType[0]),
+                        nameMask
+                );
+                params.setParentObject(container);
+                params.setGlobalSearch(true);
+                params.setMaxResults(MAX_RESULT_COUNT);
+                result = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                 hasMoreResults = result.size() >= MAX_RESULT_COUNT;
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
