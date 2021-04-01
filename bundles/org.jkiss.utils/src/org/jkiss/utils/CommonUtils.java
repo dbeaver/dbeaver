@@ -743,7 +743,7 @@ public class CommonUtils {
         return String.format("%1$"+length+ "s", string);
     }
 
-    public static boolean startsWithIgnoreCase(@NotNull String str, @NotNull String startPart) {
+    public static boolean startsWithIgnoreCase(@Nullable String str, @Nullable String startPart) {
         if (isEmpty(str) || isEmpty(startPart)) {
             return false;
         }
