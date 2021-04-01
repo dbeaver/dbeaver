@@ -189,20 +189,15 @@ public class SQLSemanticProcessor {
                     }
                     orderByElements.add(element);
                 }
-            } else {
-                Expression expression;
-                String filterOrder = filter.getOrder();
-                try {
-                    expression = CCJSqlParserUtil.parseExpression(filterOrder);
-                } catch (JSQLParserException e) {
-                    // Can't parse. Let's use custom expression
-                   expression = new CustomExpression(filterOrder);
-                }
-                if (expression != null) {
-                    OrderByElement element = new OrderByElement();
-                    element.setExpression(expression);
-                    orderByElements.add(element);
-                }
+            }
+            String filterOrder = filter.getOrder();
+            if (!CommonUtils.isEmpty(filterOrder)) {
+                // expression = CCJSqlParserUtil.parseExpression(filterOrder);
+                // It's good place to use parseExpression, but it parse fine just one column name, not "column1,column2" or "column1 DESC"
+                Expression expression = new CustomExpression(filterOrder);
+                OrderByElement element = new OrderByElement();
+                element.setExpression(expression);
+                orderByElements.add(element);
             }
 
         }
