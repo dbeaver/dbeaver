@@ -194,7 +194,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         if (calcCount) {
             query.append(", count(*)");
         } else {
-            query.append(", 1");
+            query.append(", '?'");
         }
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
@@ -228,7 +228,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult, formatValues, true);
+                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult, formatValues, calcCount);
                 }
             } else {
                 return Collections.emptyList();

@@ -256,7 +256,7 @@ public abstract class DBVUtils {
             } else {
                 keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
-            if (keyCount > 0) {
+            if (containsCount && keyCount > 0) {
                 values.add(new DBDLabelValuePairExt(keyLabel, keyValue, keyCount));
             } else {
                 values.add(new DBDLabelValuePair(keyLabel, keyValue));
