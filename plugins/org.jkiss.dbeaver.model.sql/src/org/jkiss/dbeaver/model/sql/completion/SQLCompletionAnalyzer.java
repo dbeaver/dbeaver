@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
-import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -838,8 +838,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
             We use "state machine" to process such sequences. The transition table is listed below:
                 UNMATCHED  -> TABLE_NAME ; if found starting token (FROM, UPDATE, JOIN, INTO, etc.).
-                TABLE_NAME -> ALIAS_AS   ; if found string token, and the alias is known.
-                TABLE_NAME -> MATCHED    ; if found string token, and the alias is unknown.
+                TABLE_NAME -> TABLE_DOT  ; if found string token.
+                TABLE_DOT  -> TABLE_NAME ; if found structure separator (dot).
+                TABLE_DOT  -> MATCHED    ; if found space, and the alias is unknown.
+                TABLE_DOT  -> ALIAS_AS   ; if found space, and the alias is known.
                 ALIAS_AS   -> ALIAS_NAME ; if found 'as' token.
                 ALIAS_NAME -> MATCHED    ; if found string token.
          */
@@ -847,20 +849,23 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         try {
             final int STATE_UNMATCHED   = 0;
             final int STATE_TABLE_NAME  = 1;
-            final int STATE_ALIAS_AS    = 2;
-            final int STATE_ALIAS_NAME  = 3;
-            final int STATE_MATCHED     = 4;
+            final int STATE_TABLE_DOT   = 2;
+            final int STATE_ALIAS_AS    = 3;
+            final int STATE_ALIAS_NAME  = 4;
+            final int STATE_MATCHED     = 5;
 
             int state = STATE_UNMATCHED;
             String matchedTableName = null;
             String matchedTableAlias = null;
+
+            final char structSeparator = request.getContext().getSyntaxManager().getStructSeparator();
 
             while (true) {
                 final TPToken tok = scanner.nextToken();
                 if (tok.isEOF()) {
                     break;
                 }
-                if (!(tok instanceof TPTokenDefault)) {
+                if (!(tok instanceof TPTokenAbstract) || tok.isWhitespace()) {
                     continue;
                 }
                 final String value = document.get(scanner.getTokenOffset(), scanner.getTokenLength());
@@ -873,7 +878,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
                 if (state == STATE_TABLE_NAME && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
-                    matchedTableName = value;
+                    matchedTableName = CommonUtils.notEmpty(matchedTableName) + value;
+                    state = STATE_TABLE_DOT;
+                    continue;
+                }
+                if (state == STATE_TABLE_DOT && value.indexOf(structSeparator) >= 0) {
+                    matchedTableName += value;
+                    state = STATE_TABLE_NAME;
+                    continue;
+                }
+                if (state == STATE_TABLE_DOT) {
                     if (CommonUtils.isEmpty(tableAlias)) {
                         state = STATE_MATCHED;
                     } else {
