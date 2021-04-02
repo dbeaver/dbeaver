@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -37,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -119,6 +121,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 // Search all objects
                 searchAllObjects(session, schema, params, objects);
             }
+            if (params.isSearchInComments()) {
+                searchInTableComments(session, schema, params, objects);
+            }
+
             // Sort objects. Put ones in the current schema first
             final OracleSchema activeSchema = executionContext.getContextDefaults().getDefaultSchema();
             objects.sort((o1, o2) -> {
@@ -269,33 +275,83 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                             log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                             continue;
                         }
-                        objects.add(
-                            new AbstractObjectReference(objectName, objectSchema, null, objectType.getTypeClass(), objectType) {
-                                @Override
-                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                    OracleSchema tableSchema = (OracleSchema) getContainer();
-                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), tableSchema, objectName);
-                                    if (object == null) {
-                                        throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
-                                    }
-                                    return object;
-                                }
-
-                                @NotNull
-                                @Override
-                                public String getFullyQualifiedName(DBPEvaluationContext context) {
-                                    if (objectType == OracleObjectType.SYNONYM && OracleConstants.USER_PUBLIC.equals(schemaName)) {
-                                        return DBUtils.getQuotedIdentifier(dataSource, objectName);
-                                    }
-                                    return super.getFullyQualifiedName(context);
-                                }
-                            });
+                        addObjectReference(objects, objectName, objectSchema, objectType, objectTypeName, schemaName, session);
                     }
                 }
             }
         }
     }
-    
+
+    private void addObjectReference(@NotNull Collection<DBSObjectReference> references, String objectName, @NotNull DBSObject objectSchema,
+                                    @NotNull OracleObjectType objectType, String objectTypeName, String schemaName, @NotNull JDBCSession session) {
+        references.add(
+                new AbstractObjectReference(objectName, objectSchema, null, objectType.getTypeClass(), objectType) {
+                    @Override
+                    public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        OracleSchema tableSchema = (OracleSchema) getContainer();
+                        DBSObject object = objectType.findObject(session.getProgressMonitor(), tableSchema, objectName);
+                        if (object == null) {
+                            throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                        }
+                        return object;
+                    }
+
+                    @NotNull
+                    @Override
+                    public String getFullyQualifiedName(DBPEvaluationContext context) {
+                        if (objectType == OracleObjectType.SYNONYM && OracleConstants.USER_PUBLIC.equals(schemaName)) {
+                            return DBUtils.getQuotedIdentifier(dataSource, objectName);
+                        }
+                        return super.getFullyQualifiedName(context);
+                    }
+                }
+        );
+    }
+
+    private void searchInTableComments(@NotNull JDBCSession session, @Nullable OracleSchema schema, @NotNull ObjectsSearchParams params,
+                                       @NotNull List<DBSObjectReference> objects) throws SQLException, DBException {
+        if (objects.size() >= params.getMaxResults() || !ArrayUtils.contains(params.getObjectTypes(), OracleObjectType.TABLE)) {
+            return;
+        }
+        StringBuilder sql = new StringBuilder("SELECT atc.OWNER, atc.TABLE_NAME, atc.TABLE_TYPE FROM ALL_TAB_COMMENTS atc WHERE ");
+        String mask = params.getMask();
+        if (params.isCaseSensitive()) {
+            sql.append("atc.COMMENTS ");
+        } else {
+            sql.append("UPPER(atc.COMMENTS) ");
+            mask = mask.toUpperCase();
+        }
+        sql.append("LIKE ? ");
+        if (schema != null) {
+            sql.append("AND atc.OWNER = ? ");
+        }
+        sql.append("ORDER BY atc.TABLE_NAME");
+
+        try (JDBCPreparedStatement preparedStatement = session.prepareStatement(sql.toString())) {
+            preparedStatement.setString(1, mask);
+            if (schema != null) {
+                preparedStatement.setString(2, schema.getName());
+            }
+            try (JDBCResultSet resultSet = preparedStatement.executeQuery()) {
+                while (!session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults() && resultSet.next()) {
+                    String owner = JDBCUtils.safeGetString(resultSet, "OWNER");
+                    String tableName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
+                    String tableType = JDBCUtils.safeGetString(resultSet, "TABLE_TYPE");
+                    OracleObjectType oracleObjectType = OracleObjectType.getByType(tableType);
+                    if (oracleObjectType == null || !oracleObjectType.isBrowsable() || tableName == null) {
+                        continue;
+                    }
+                    OracleSchema objectSchema = dataSource.getSchema(session.getProgressMonitor(), owner);
+                    if (objectSchema == null) {
+                        log.debug("Schema '" + owner + "' not found. Probably was filtered");
+                        continue;
+                    }
+                    addObjectReference(objects, tableName, objectSchema, oracleObjectType, tableType, owner, session);
+                }
+            }
+        }
+    }
+
     private boolean containsOnlyConstraintOrFK(DBSObjectType[] objectTypes) {
         for (DBSObjectType objectType : objectTypes) {
             if (!(objectType == OracleObjectType.CONSTRAINT || objectType == OracleObjectType.FOREIGN_KEY)) {
