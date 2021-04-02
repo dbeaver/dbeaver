@@ -194,7 +194,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         if (calcCount) {
             query.append(", count(*)");
         } else {
-            query.append(", '?'");
+            query.append(", NULL");
         }
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
