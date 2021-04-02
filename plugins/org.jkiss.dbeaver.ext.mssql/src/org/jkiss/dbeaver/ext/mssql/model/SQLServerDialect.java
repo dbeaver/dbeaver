@@ -271,4 +271,14 @@ public class SQLServerDialect extends JDBCSQLDialect {
         }
         return super.getUnquotedString(string);
     }
+
+    @Override
+    public String[] getSingleLineComments() {
+        if (!isSqlServer) {
+            // Sybase support also double slash as comment indicator (and "%" - but not recommend to use it in documentation)
+            return new String[]{"-- ", "//"};
+        } else {
+            return super.getSingleLineComments();
+        }
+    }
 }
