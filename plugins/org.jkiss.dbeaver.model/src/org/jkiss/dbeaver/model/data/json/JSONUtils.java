@@ -158,7 +158,11 @@ public class JSONUtils {
     }
 
     public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list) throws IOException {
-        if (!CommonUtils.isEmpty(list)) {
+        serializeStringList(json, tagName, list, false);
+    }
+
+    public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list, boolean force) throws IOException {
+        if (force || !CommonUtils.isEmpty(list)) {
             json.name(tagName);
             json.beginArray();
             for (String include : CommonUtils.safeCollection(list)) {
