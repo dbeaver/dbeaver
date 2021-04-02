@@ -855,7 +855,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (tok.isEOF()) {
                     break;
                 }
-                if (!(tok instanceof TPTokenAbstract)) {
+                if (!(tok instanceof TPTokenAbstract) || tok.isWhitespace()) {
                     continue;
                 }
                 final String value = document.get(scanner.getTokenOffset(), scanner.getTokenLength());
