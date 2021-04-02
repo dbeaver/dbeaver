@@ -265,6 +265,29 @@ public class SQLFormatterTokenizedTest {
         assertEquals(expectedString, formattedString);
     }
 
+    @Test
+    public void shouldDoDefaultFormatForStatementWidthManyConditionsAndAddIndentForFirstConditionInExpressionInsideBrackets() {
+        //given
+        String inputString = "SELECT * FROM table_name WHERE lname = 'Ivanov' AND (fname = 'Ivan' OR fname = 'Alex' OR fname = 'Ted' OR (1 = 1 AND 2 = 2));"; //#11063
+        String expectedString = "SELECT" + lineBreak +
+                "\t*" + lineBreak +
+                "FROM" + lineBreak +
+                "\ttable_name" + lineBreak +
+                "WHERE" + lineBreak +
+                "\tlname = 'Ivanov'" + lineBreak +
+                "\tAND (fname = 'Ivan'" + lineBreak +
+                "\t\tOR fname = 'Alex'" + lineBreak +
+                "\t\tOR fname = 'Ted'" + lineBreak +
+                "\t\tOR (1 = 1" + lineBreak +
+                "\t\t\tAND 2 = 2));";
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
+    }
+
 
     private String getExpectedStringWithLineBreakBeforeBraces() {
         StringBuilder sb = new StringBuilder();
