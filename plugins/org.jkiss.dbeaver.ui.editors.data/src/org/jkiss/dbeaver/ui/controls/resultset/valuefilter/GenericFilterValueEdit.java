@@ -88,6 +88,7 @@ class GenericFilterValueEdit {
     private Button toggleButton;
 
     private transient final Set<Object> savedValues = new HashSet<>();
+    private boolean showRowCount;
 
     GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         this.viewer = viewer;
@@ -222,7 +223,7 @@ class GenericFilterValueEdit {
         return (Collection<DBDLabelValuePair>) tableViewer.getInput();
     }
 
-    Text addFilterTextbox(Composite composite) {
+    Text addFilterText(Composite composite) {
 
         // Create filter text
         final Text valueFilterText = new Text(composite, SWT.BORDER);
@@ -239,6 +240,7 @@ class GenericFilterValueEdit {
 
     void loadValues(Runnable onFinish) {
         if (loadJob != null) {
+            loadJob.cancel();
             loadJob.schedule(200);
             return;
         }
@@ -304,7 +306,11 @@ class GenericFilterValueEdit {
             List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
                 DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read value enumeration")) {
-                        result = attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES, true, true);
+                        result = attributeEnumerable.getValueEnumeration(
+                            session,
+                            filterPattern,
+                            MAX_MULTI_VALUES, showRowCount,
+                            true);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -480,6 +486,10 @@ class GenericFilterValueEdit {
         return null;
     }
 
+    public Composite getButtonsPanel() {
+        return buttonsPanel;
+    }
+
     public Button createFilterButton(String label, SelectionAdapter selectionAdapter) {
         if (isCheckedTable) {
             Button button = UIUtils.createDialogButton(buttonsPanel, label, selectionAdapter);
@@ -488,6 +498,18 @@ class GenericFilterValueEdit {
         } else {
             return null;
         }
+    }
+
+    public boolean isDictionarySelector() {
+        return ResultSetUtils.getEnumerableConstraint(attribute) != null;
+    }
+
+    public boolean getShowRowCount() {
+        return showRowCount;
+    }
+
+    public void setShowRowCount(boolean showRowCount) {
+        this.showRowCount = showRowCount;
     }
 
     private abstract class KeyLoadJob extends AbstractJob {

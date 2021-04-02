@@ -164,7 +164,7 @@ public class FilterValueEditDialog extends BaseDialog{
         };
         handler.addContextMenu(elements);
 
-        handler.addFilterTextbox(composite);
+        handler.addFilterText(composite);
 
         handler.setFilterPattern(null);
         handler.loadValues(null);
