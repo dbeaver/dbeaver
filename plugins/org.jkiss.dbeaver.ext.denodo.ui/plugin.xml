@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.denodo.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="admin"
+                label="%denodo.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.denodo.views.DenodoConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.denodo/icons/denodo_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.denodo.views.DenodoConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.denodo/denodo_icon.png"
+                id="org.jkiss.dbeaver.ext.denodo.dataSourceEditorView"
+                dataSource="admin"
+                label="%denodo.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+</plugin>
