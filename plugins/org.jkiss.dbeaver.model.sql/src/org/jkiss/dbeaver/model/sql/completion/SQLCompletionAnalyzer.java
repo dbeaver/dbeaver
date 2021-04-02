@@ -126,9 +126,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     } else {
                         if (!isPrevWordEmpty && CommonUtils.isEmpty(prevDelimiter)) {
                             // Seems to be table alias
-                            return;
+                            //request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
+                        } else {
+                            request.setQueryType(SQLCompletionRequest.QueryType.TABLE);
                         }
-                        request.setQueryType(SQLCompletionRequest.QueryType.TABLE);
                     }
                 } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
                     request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
@@ -316,12 +317,18 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // SELECT ..
                 // Limit with FROM if we already have some expression
                 String delimiter = wordDetector.getPrevDelimiter();
-                if (!isPrevWordEmpty && (CommonUtils.isEmpty(delimiter) || delimiter.endsWith(")"))) {
+                if (delimiter.equals(ALL_COLUMNS_PATTERN) ||
+                    (!isPrevWordEmpty && (CommonUtils.isEmpty(delimiter) || delimiter.endsWith(")"))))
+                {
                     // last expression ends with space or with ")"
                     allowedKeywords = new HashSet<>();
                     allowedKeywords.add(SQLConstants.KEYWORD_FROM);
-                    if (CommonUtils.isEmpty(request.getWordPart())) {
+                    if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
                         matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                    }
+                    if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
+                        // Shift offset because we need space after *
+                        wordDetector.shiftOffset(1);
                     }
                 }
             } else if (sqlDialect.isEntityQueryWord(prevKeyWord)) {
@@ -331,9 +338,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 } else {
                     allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
                 }
+                if (CommonUtils.isEmpty(request.getWordPart())) {
+                    matchedKeywords = new ArrayList<>(allowedKeywords);
+                }
             }
 
-            if (!CommonUtils.isEmpty(request.getWordPart())) {
+            if (matchedKeywords.isEmpty() && !CommonUtils.isEmpty(request.getWordPart())) {
                 // Keyword assist
                 matchedKeywords = syntaxManager.getDialect().getMatchedKeywords(request.getWordPart());
                 if (!request.isSimpleMode()) {
