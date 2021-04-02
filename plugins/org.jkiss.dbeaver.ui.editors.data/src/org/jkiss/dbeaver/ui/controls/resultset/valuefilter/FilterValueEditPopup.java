@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.utils.CommonUtils;
 
 public class FilterValueEditPopup extends AbstractPopupPanel {
 
@@ -160,8 +161,9 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                 public String getText(Object element) {
                     if (element instanceof DBDLabelValuePairExt) {
                         return String.valueOf(((DBDLabelValuePairExt) element).getCount());
+                    } else {
+                        return CommonUtils.notEmpty(((DBDLabelValuePair) element).getLabel());
                     }
-                    return "";
                 }
             });
         }
