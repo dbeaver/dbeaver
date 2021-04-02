@@ -104,22 +104,29 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             GenericDataSource dataSource = container.getDataSource();
             String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Sybase procedure list")) {
+                // P – Transact-SQL or SQLJ procedure
+                // SF – scalar or user-defined functions - from SAP Adaptive Server version 16
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "select distinct so.name as proc_name,su.name as schema_name\n" +
+                    "select distinct so.name as proc_name,su.name as schema_name, so.[type] as type_name\n" +
                         "from " + dbName + ".dbo.sysobjects so, "+ dbName + ".dbo.sysusers su\n" +
-                        "where so.type = 'P'\n" +
+                        "where so.type IN ('P', 'SF')\n" +
                         "and su.uid = so.uid\n" +
                         "and su.name=?"))
                 {
                     dbStat.setString(1, container.getName());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.nextRow()) {
+                            String typeName = JDBCUtils.safeGetString(dbResult, "type_name");
+                            DBSProcedureType procedureType = DBSProcedureType.PROCEDURE;
+                            if ("SF".equals(typeName)) {
+                                procedureType = DBSProcedureType.FUNCTION;
+                            }
                             final GenericProcedure procedure = createProcedureImpl(
                                 container,
                                 JDBCUtils.safeGetString(dbResult, "proc_name"),
                                 null,
                                 null,
-                                DBSProcedureType.PROCEDURE,
+                                procedureType,
                                 null);
                             procedure.setSource(JDBCUtils.safeGetString(dbResult, "definition"));
                             container.addProcedure(procedure);
