@@ -17,12 +17,14 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Label value pair with count
  */
 public class DBDLabelValuePairExt extends DBDLabelValuePair {
 
-    private final long count;
+    private long count;
 
     public DBDLabelValuePairExt(String label, Object value, long count) {
         super(label, value);
@@ -31,5 +33,20 @@ public class DBDLabelValuePairExt extends DBDLabelValuePair {
 
     public long getCount() {
         return count;
+    }
+
+    @Override
+    public int compareTo(@NotNull Object o) {
+        if (o instanceof DBDLabelValuePairExt) {
+            long countCmp = count - ((DBDLabelValuePairExt) o).count;
+            if (countCmp != 0) {
+                return (int) countCmp;
+            }
+        }
+        return super.compareTo(o);
+    }
+
+    public void incCount() {
+        this.count++;
     }
 }

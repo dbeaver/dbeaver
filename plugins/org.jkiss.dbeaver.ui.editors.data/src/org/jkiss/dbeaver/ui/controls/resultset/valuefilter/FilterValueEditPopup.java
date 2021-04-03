@@ -50,6 +50,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private static final String DIALOG_ID = "DBeaver.FilterValueEditMenu";//$NON-NLS-1$
 
     private static final String PROP_SHOW_ROW_COUNT = "showRowCount";
+    private static final String PROP_QUERY_DATABASE = "queryDatabase";
 
     private Object value;
     private GenericFilterValueEdit filter;
@@ -175,14 +176,36 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         });
         filter.getTableViewer().addDoubleClickListener(event -> applyFilterValue());
 
+        Composite buttonsPanel = filter.getButtonsPanel();
+        {
+            Button queryDatabaseCheck = UIUtils.createCheckbox(
+                buttonsPanel,
+                "Read from server",
+                "Read possible values from database (may be slow). Otherwise use already fetched values.",
+                isQueryDatabaseEnabled(),
+                1);
+            ((GridLayout) buttonsPanel.getLayout()).numColumns++;
+            queryDatabaseCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    boolean isEnabled = queryDatabaseCheck.getSelection();
+                    getDialogBoundsSettings().put(PROP_QUERY_DATABASE, isEnabled);
+                    if (showRowCountCheck != null) {
+                        showRowCountCheck.setEnabled(isEnabled);
+                    }
+                    reloadFilterValues();
+                }
+            });
+            closeOnFocusLost(queryDatabaseCheck);
+        }
         if (!filter.isDictionarySelector()) {
             showRowCountCheck = UIUtils.createCheckbox(
-                filter.getButtonsPanel(),
+                buttonsPanel,
                 "Show row count",
                 "Show row count for each dictionary value.\nMay be slow for big tables.",
-                getDialogBoundsSettings().getBoolean(PROP_SHOW_ROW_COUNT),
+                isRowCountEnabled(),
                 1);
-            ((GridLayout) filter.getButtonsPanel().getLayout()).numColumns++;
+            ((GridLayout) buttonsPanel.getLayout()).numColumns++;
             showRowCountCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -190,6 +213,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     reloadFilterValues();
                 }
             });
+            showRowCountCheck.setEnabled(isQueryDatabaseEnabled());
+            closeOnFocusLost(showRowCountCheck);
         }
 
         filter.createFilterButton(ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply, new SelectionAdapter() {
@@ -207,8 +232,17 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         return tableComposite;
     }
 
+    private boolean isRowCountEnabled() {
+        return getDialogBoundsSettings().getBoolean(PROP_SHOW_ROW_COUNT);
+    }
+
+    private boolean isQueryDatabaseEnabled() {
+        return CommonUtils.getBoolean(getDialogBoundsSettings().get(PROP_QUERY_DATABASE), true);
+    }
+
     private void reloadFilterValues() {
-        filter.setShowRowCount(getDialogBoundsSettings().getBoolean(PROP_SHOW_ROW_COUNT));
+        filter.setQueryDatabase(isQueryDatabaseEnabled());
+        filter.setShowRowCount(isRowCountEnabled());
         filter.loadValues(() ->
             UIUtils.asyncExec(() -> {
                 Table table = filter.getTableViewer().getTable();
