@@ -116,9 +116,22 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 try {
                     String geometryType = postgreColumn.getAttributeGeometryType(monitor);
                     int geometrySRID = postgreColumn.getAttributeGeometrySRID(monitor);
+                    int geometryDimension = postgreColumn.getAttributeGeometryDimension(monitor);
                     if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
                         // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
                         sql.append("(").append(geometryType);
+                        if (!geometryType.endsWith("M")) {
+                            // PostGIS supports XYM geometries. Since it is also a 3-dimensional geometry,
+                            // we can distinguish between XYZ and XYM using this postfix (in fact, none of
+                            // supported geometries' names end with 'M', so we're free to add check as-is)
+                            // https://postgis.net/docs/using_postgis_dbmanagement.html#geometry_columns
+                            if (geometryDimension > 2) {
+                                sql.append('Z');
+                            }
+                            if (geometryDimension > 3) {
+                                sql.append('M');
+                            }
+                        }
                         if (geometrySRID > 0) {
                             sql.append(", ").append(geometrySRID);
                         }

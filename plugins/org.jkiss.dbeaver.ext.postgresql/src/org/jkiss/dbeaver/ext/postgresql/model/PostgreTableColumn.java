@@ -95,6 +95,18 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         }
     }
 
+    @Override
+    public int getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException {
+        if (geometryInfo == null) {
+            readGeometryInfo(monitor);
+        }
+        if (geometryInfo != null) {
+            return geometryInfo.dimension;
+        } else {
+            return -1;
+        }
+    }
+
     @Nullable
     @Override
     public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
