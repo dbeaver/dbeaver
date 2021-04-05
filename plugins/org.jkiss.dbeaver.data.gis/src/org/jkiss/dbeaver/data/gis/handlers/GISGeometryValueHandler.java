@@ -187,7 +187,12 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
                 os.write((byte) (srid >> 24));
             }
 
-            WKBWriter writer = new WKBWriter(2 /* default */, !leadingSRID && srid > 0);
+            final WKBWriter writer = new WKBWriter(
+                2 /* default */,
+                !leadingSRID ? ByteOrderValues.BIG_ENDIAN : ByteOrderValues.LITTLE_ENDIAN,
+                !leadingSRID && srid > 0
+            );
+
             writer.write(geometry, new OutputStreamOutStream(os));
 
             return os.toByteArray();
