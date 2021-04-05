@@ -161,7 +161,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         }
 
         StringBuilder sql = new StringBuilder("SELECT TOP ")
-                .append(params.getMaxResults())
+                .append(params.getMaxResults() - objects.size())
                 .append(" * FROM ")
                 .append(SQLServerUtils.getSystemTableName(database, "all_objects"))
                 .append(" o ");

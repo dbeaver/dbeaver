@@ -66,17 +66,14 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
     public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
                                                       @NotNull ObjectsSearchParams params) throws DBException {
         List<DBSObjectReference> references = new ArrayList<>();
-        int initialMaxResults = params.getMaxResults();
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : params.getObjectTypes()) {
                 findObjectsByMask(executionContext, session, type, params, references);
-                params.setMaxResults(initialMaxResults - references.size());
-                if (params.getMaxResults() < 1) {
+                if (references.size() >= params.getMaxResults()) {
                     break;
                 }
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             throw new DBException(ex, getDataSource());
         }
         return references;

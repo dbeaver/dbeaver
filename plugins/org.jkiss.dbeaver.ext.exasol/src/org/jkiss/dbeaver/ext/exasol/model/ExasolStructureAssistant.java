@@ -230,13 +230,13 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     	} else {
     		sql = String.format(sqlConstraintsSchema, ExasolUtils.quoteString(schema.getName()), constType, ExasolUtils.quoteString(params.getMask()));
     	}
-    	try (JDBCStatement dbstat = session.createStatement()) {
-    		try (JDBCResultSet dbResult = dbstat.executeQuery(sql)) {
-    			int num = params.getMaxResults();
-    			while (dbResult.next() && num-- > 0) {
-    				if (monitor.isCanceled()) {
-    					break;
-    				}
+    	try (JDBCStatement dbStat = session.createStatement()) {
+    		try (JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
+				if (dbResult == null) {
+					log.debug("Result set is null when looking for Exasol constraints");
+					return;
+				}
+    			while (!monitor.isCanceled() && dbResult.next() && references.size() < params.getMaxResults()) {
     				final String schemaName = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_SCHEMA");
     				final String tableName  = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TABLE");
     				final String constName       = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME");

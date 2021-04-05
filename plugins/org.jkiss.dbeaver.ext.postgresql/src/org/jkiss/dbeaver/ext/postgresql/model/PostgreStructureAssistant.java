@@ -152,18 +152,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "pc.relnamespace",
             "pc.relname",
-            params.getMaxResults()
+            params.getMaxResults() - objects.size()
         );
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
@@ -207,18 +203,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "pp.pronamespace",
             "pp.proname",
-            params.getMaxResults()
+            params.getMaxResults() - objects.size()
         );
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
@@ -261,18 +253,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "pc.connamespace",
             "pc.conname",
-            params.getMaxResults()
+            params.getMaxResults() - objects.size()
         );
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
                     final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
@@ -312,18 +300,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "c.relnamespace",
             "x.attname",
-            params.getMaxResults()
+            params.getMaxResults() - objects.size()
         );
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "attrelid");
                     final String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
