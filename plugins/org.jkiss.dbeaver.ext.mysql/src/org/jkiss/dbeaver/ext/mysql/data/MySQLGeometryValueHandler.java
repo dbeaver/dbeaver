@@ -25,7 +25,7 @@ public class MySQLGeometryValueHandler extends GISGeometryValueHandler {
     public static final MySQLGeometryValueHandler INSTANCE = new MySQLGeometryValueHandler();
 
     public MySQLGeometryValueHandler() {
-        super(true);
+        setInvertCoordinates(true);
         setLeadingSRID(true);
     }
 }
