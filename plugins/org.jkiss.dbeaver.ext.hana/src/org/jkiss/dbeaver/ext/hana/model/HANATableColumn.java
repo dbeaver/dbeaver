@@ -51,19 +51,44 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
     private static class GeometryInfo {
         private String type;
         private int srid = -1;
+        private int dimension = -1;
     }
 
     @Override
     public int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException {
-        readGeometryInfo(monitor);
-        return geometryInfo.srid;
+        if (geometryInfo == null) {
+            readGeometryInfo(monitor);
+        }
+        if (geometryInfo != null) {
+            return geometryInfo.srid;
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public int getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException {
+        if (geometryInfo == null) {
+            readGeometryInfo(monitor);
+        }
+        if (geometryInfo != null) {
+            return geometryInfo.dimension;
+        } else {
+            return -1;
+        }
     }
 
     @Nullable
     @Override
     public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
-        readGeometryInfo(monitor);
-        return geometryInfo.type;
+        if (geometryInfo == null) {
+            readGeometryInfo(monitor);
+        }
+        if (geometryInfo != null) {
+            return geometryInfo.type;
+        } else {
+            return null;
+        }
     }
 
     private void readGeometryInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -74,7 +99,7 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
         GeometryInfo gi = new GeometryInfo();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
             try (JDBCPreparedStatement dbStat = session
-                    .prepareStatement("SELECT SRS_ID, DATA_TYPE_NAME FROM SYS.ST_GEOMETRY_COLUMNS "
+                    .prepareStatement("SELECT SRS_ID, DATA_TYPE_NAME, COORD_DIMENSION FROM SYS.ST_GEOMETRY_COLUMNS "
                             + "WHERE SCHEMA_NAME=? AND TABLE_NAME=? AND COLUMN_NAME=?")) {
                 dbStat.setString(1, getTable().getSchema().getName());
                 dbStat.setString(2, getTable().getName());
@@ -90,6 +115,7 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
                             gi.srid -= FLAT_EARTH_SRID_START;
                         }
                         gi.type = dbResult.getString(2);
+                        gi.dimension = dbResult.getInt(3);
                     }
                 }
             }
