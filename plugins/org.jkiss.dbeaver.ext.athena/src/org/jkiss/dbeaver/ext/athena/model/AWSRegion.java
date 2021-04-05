@@ -36,7 +36,9 @@ public enum AWSRegion
     ap_southeast_1("ap-southeast-1", "Asia Pacific (Singapore)"),
     ap_southeast_2("ap-southeast-2", "Asia Pacific (Sydney)"),
     ap_south_1("ap-south-1", "Asia Pacific (Mumbai)"),
-    sa_east_1("sa-east-1", "South America (São Paulo)"),;
+    sa_east_1("sa-east-1", "South America (São Paulo)"),
+    cn_north_1("cn-north-1", "China (North)"),
+    cn_northwest_1("cn-northwest-1", "China (North-West)");
 
     private final String id;
     private final String name;
