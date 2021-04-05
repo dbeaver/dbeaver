@@ -52,14 +52,6 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
      */
     private boolean leadingSRID;
 
-    public GISGeometryValueHandler() {
-        this(false);
-    }
-
-    public GISGeometryValueHandler(boolean invertCoordinates) {
-        this.invertCoordinates = invertCoordinates;
-    }
-
     public boolean isFlipCoordinates() {
         return invertCoordinates;
     }
