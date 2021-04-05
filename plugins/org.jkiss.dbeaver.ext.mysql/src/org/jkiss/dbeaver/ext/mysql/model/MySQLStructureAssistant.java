@@ -108,16 +108,19 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                   List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = generateQuery(
+            params,
+            MySQLConstants.COL_TABLE_NAME,
+            "TABLE_COMMENT",
+            MySQLConstants.COL_TABLE_SCHEMA,
+            MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME,
+            MySQLConstants.META_TABLE_TABLES,
+            catalog
+        );
+
         // Load tables
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME +
-                " FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " + MySQLConstants.COL_TABLE_NAME + " LIKE ? " +
-                (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_TABLE_NAME + " LIMIT " + params.getMaxResults())) {
-            dbStat.setString(1, params.getMask().toLowerCase(Locale.ENGLISH));
-            if (catalog != null) {
-                dbStat.setString(2, catalog.getName());
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParameters(dbStat, params, catalog, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = params.getMaxResults();
                 while (dbResult.next() && tableNum-- > 0) {
@@ -149,16 +152,19 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                       List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = generateQuery(
+                params,
+                MySQLConstants.COL_ROUTINE_NAME,
+                "ROUTINE_COMMENT",
+                MySQLConstants.COL_ROUTINE_SCHEMA,
+                MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME,
+                MySQLConstants.META_TABLE_ROUTINES,
+                catalog
+        );
+
         // Load procedures
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT " + MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME +
-                " FROM " + MySQLConstants.META_TABLE_ROUTINES + " WHERE " + MySQLConstants.COL_ROUTINE_NAME + " LIKE ? " +
-                (catalog == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME + " LIMIT " + params.getMaxResults())) {
-            dbStat.setString(1, params.getMask().toLowerCase(Locale.ENGLISH));
-            if (catalog != null) {
-                dbStat.setString(2, catalog.getName());
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParameters(dbStat, params, catalog, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = params.getMaxResults();
                 while (dbResult.next() && tableNum-- > 0) {
@@ -190,16 +196,19 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                        List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = generateQuery(
+                params,
+                MySQLConstants.COL_CONSTRAINT_NAME,
+                null,
+                MySQLConstants.COL_TABLE_SCHEMA,
+                MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE,
+                MySQLConstants.META_TABLE_TABLE_CONSTRAINTS,
+                catalog
+        );
+
         // Load constraints
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE +
-                " FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MySQLConstants.COL_CONSTRAINT_NAME + " LIKE ? " +
-                (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_CONSTRAINT_NAME + " LIMIT " + params.getMaxResults())) {
-            dbStat.setString(1, params.getMask().toLowerCase(Locale.ENGLISH));
-            if (catalog != null) {
-                dbStat.setString(2, catalog.getName());
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParameters(dbStat, params, catalog, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = params.getMaxResults();
                 while (dbResult.next() && tableNum-- > 0) {
@@ -248,16 +257,19 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                         List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = generateQuery(
+                params,
+                MySQLConstants.COL_COLUMN_NAME,
+                "COLUMN_COMMENT",
+                MySQLConstants.COL_TABLE_SCHEMA,
+                MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME,
+                MySQLConstants.META_TABLE_COLUMNS,
+                catalog
+        );
+
         // Load columns
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME +
-                " FROM " + MySQLConstants.META_TABLE_COLUMNS + " WHERE " + MySQLConstants.COL_COLUMN_NAME + " LIKE ? " +
-                (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_COLUMN_NAME + " LIMIT " + params.getMaxResults())) {
-            dbStat.setString(1, params.getMask().toLowerCase(Locale.ENGLISH));
-            if (catalog != null) {
-                dbStat.setString(2, catalog.getName());
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParameters(dbStat, params, catalog, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = params.getMaxResults();
                 while (dbResult.next() && tableNum-- > 0) {
@@ -298,6 +310,38 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     });
                 }
             }
+        }
+    }
+
+    private static String generateQuery(@NotNull ObjectsSearchParams params, @NotNull String objectNameColumn, @Nullable String commentColumnName,
+                                        @NotNull String schemaColumnName, @NotNull String select, @NotNull String from,
+                                        @Nullable MySQLCatalog catalog) {
+        StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
+        if (params.isSearchInComments() && commentColumnName != null) {
+            sql.append("(");
+        }
+        sql.append(objectNameColumn).append(" LIKE ? ");
+        if (params.isSearchInComments() && commentColumnName != null) {
+            sql.append("OR ").append(commentColumnName).append(" LIKE ?) ");
+        }
+        if (catalog != null) {
+            sql.append("AND ").append(schemaColumnName).append(" = ? ");
+        }
+        sql.append("ORDER BY ").append(objectNameColumn).append(" LIMIT ").append(params.getMaxResults());
+        return sql.toString();
+    }
+
+    private static void fillParameters(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
+                                       @Nullable MySQLCatalog catalog, boolean hasCommentColumn) throws SQLException {
+        String mask = params.getMask().toLowerCase(Locale.ENGLISH);
+        statement.setString(1, mask);
+        int catalogNameIdx = 2;
+        if (params.isSearchInComments() && hasCommentColumn) {
+            statement.setString(2, mask);
+            catalogNameIdx++;
+        }
+        if (catalog != null) {
+            statement.setString(catalogNameIdx, catalog.getName());
         }
     }
 }
