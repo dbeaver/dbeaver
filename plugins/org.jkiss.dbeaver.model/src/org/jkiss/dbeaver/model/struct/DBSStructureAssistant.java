@@ -46,13 +46,13 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
      *
      * These include:
      * <ul>
-     *     <li>parentObject: parent (schema or catalog)</li>
-     *     <li>objectTypes: type of objects to search</li>
-     *     <li>mask: name mask</li>
-     *     <li>caseSensitive: case sensitive search (ignored by some implementations)</li>
-     *     <li>globalSearch: search in all available schemas/catalogs. If {@code false} then search with respect of active schema/catalog</li>
-     *     <li>maxResults: maximum number of results</li>
-     *     <li>searchInComments: perform additional search in comments (ignored by some implementations)</li>
+     *     <li>{@code parentObject}: parent (schema or catalog)</li>
+     *     <li>{@code objectTypes}: type of objects to search</li>
+     *     <li>{@code mask}: name mask</li>
+     *     <li>{@code caseSensitive}: case sensitive search (ignored by some implementations)</li>
+     *     <li>{@code globalSearch}: search in all available schemas/catalogs. If {@code false} then search with respect of active schema/catalog</li>
+     *     <li>{@code maxResults}: maximum number of results</li>
+     *     <li>{@code searchInComments}: perform additional search in comments (ignored by some implementations)</li>
      * </ul>
      */
     class ObjectsSearchParams {
