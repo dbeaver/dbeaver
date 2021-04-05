@@ -111,7 +111,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            if (ArrayUtils.contains(params.getObjectTypes(), OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && params.getMaxResults() > 0) {
+            if (ArrayUtils.contains(params.getObjectTypes(), OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY)) {
                 // Search constraints
                 findConstraintsByMask(session, schema, params, objects);
                 if (!containsOnlyConstraintOrFK(params.getObjectTypes())) {
@@ -166,11 +166,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 dbStat.setString(2, schema.getName());
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next() && objects.size() < params.getMaxResults()) {
                     final String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
                     final String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
                     final String constrName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
@@ -261,10 +257,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             dbStat.setString(schema != null ? 3 : 2, objectNameMask);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (objects.size() < params.getMaxResults() && dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
+                while (!session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults() && dbResult.next()) {
                     final String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
                     final String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
                     final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");

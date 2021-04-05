@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -115,18 +116,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             MySQLConstants.COL_TABLE_SCHEMA,
             MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME,
             MySQLConstants.META_TABLE_TABLES,
-            catalog
+            catalog,
+            objects
         );
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParameters(dbStat, params, catalog, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     objects.add(new AbstractObjectReference(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
@@ -159,18 +157,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 MySQLConstants.COL_ROUTINE_SCHEMA,
                 MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME,
                 MySQLConstants.META_TABLE_ROUTINES,
-                catalog
+                catalog,
+                objects
         );
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParameters(dbStat, params, catalog, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
                     final String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
                     objects.add(new AbstractObjectReference(procName, dataSource.getCatalog(catalogName), null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
@@ -203,18 +198,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 MySQLConstants.COL_TABLE_SCHEMA,
                 MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE,
                 MySQLConstants.META_TABLE_TABLE_CONSTRAINTS,
-                catalog
+                catalog,
+                objects
         );
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParameters(dbStat, params, catalog, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String constrName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
@@ -264,18 +256,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 MySQLConstants.COL_TABLE_SCHEMA,
                 MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME,
                 MySQLConstants.META_TABLE_COLUMNS,
-                catalog
+                catalog,
+                objects
         );
 
         // Load columns
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParameters(dbStat, params, catalog, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = params.getMaxResults();
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
@@ -315,7 +304,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
     private static String generateQuery(@NotNull ObjectsSearchParams params, @NotNull String objectNameColumn, @Nullable String commentColumnName,
                                         @NotNull String schemaColumnName, @NotNull String select, @NotNull String from,
-                                        @Nullable MySQLCatalog catalog) {
+                                        @Nullable MySQLCatalog catalog, @NotNull Collection<DBSObjectReference> references) {
         StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
         if (params.isSearchInComments() && commentColumnName != null) {
             sql.append("(");
@@ -327,7 +316,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         if (catalog != null) {
             sql.append("AND ").append(schemaColumnName).append(" = ? ");
         }
-        sql.append("ORDER BY ").append(objectNameColumn).append(" LIMIT ").append(params.getMaxResults());
+        sql.append("ORDER BY ").append(objectNameColumn).append(" LIMIT ").append(params.getMaxResults() - references.size());
         return sql.toString();
     }
 
