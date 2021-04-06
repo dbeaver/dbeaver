@@ -32,12 +32,13 @@ public class UISearchMessages extends NLS {
 	public static String dialog_search_objects_group_object_types;
 	public static String dialog_search_objects_group_objects_source;
 	public static String dialog_search_objects_item_list_info;
-	public static String dialog_search_objects_label_name_match;
+	public static String dialog_search_objects_label_match_type;
 	public static String dialog_search_objects_label_object_name;
 	public static String dialog_search_objects_message_no_objects_like_;
 	public static String dialog_search_objects_message_objects_found;
 	public static String dialog_search_objects_spinner_max_results;
     public static String dialog_search_objects_case_sensitive;
+	public static String dialog_search_objects_search_in_comments;
 	public static String dialog_search_objects_title;
 
     static {

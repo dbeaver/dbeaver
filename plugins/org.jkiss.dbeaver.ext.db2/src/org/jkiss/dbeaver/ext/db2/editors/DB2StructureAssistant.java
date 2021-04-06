@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -101,24 +98,20 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DB2ExecutionContext executionContext,
-        DBSObject parentObject,
-        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
-    {
-        List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(objectTypes.length);
-        for (DBSObjectType dbsObjectType : objectTypes) {
+    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull DB2ExecutionContext executionContext,
+                                                      @NotNull ObjectsSearchParams params) throws DBException {
+        List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(params.getObjectTypes().length);
+        for (DBSObjectType dbsObjectType : params.getObjectTypes()) {
             db2ObjectTypes.add((DB2ObjectType) dbsObjectType);
         }
 
-        DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
-        if (schema == null && !globalSearch) {
+        DB2Schema schema = params.getParentObject() instanceof DB2Schema ? (DB2Schema) params.getParentObject() : null;
+        if (schema == null && !params.isGlobalSearch()) {
             schema = executionContext.getContextDefaults().getDefaultSchema();
         }
 
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
-            return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
+            return searchAllObjects(session, schema, db2ObjectTypes, params);
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);
         }
@@ -128,17 +121,17 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     // Helpers
     // -----------------
 
-    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema, String objectNameMask,
-        List<DB2ObjectType> db2ObjectTypes, boolean caseSensitive, int maxResults) throws SQLException, DBException
-    {
+    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema, List<DB2ObjectType> db2ObjectTypes,
+                                                      @NotNull ObjectsSearchParams params) throws SQLException, DBException {
         List<DBSObjectReference> objects = new ArrayList<>();
 
-        String searchObjectNameMask = objectNameMask;
-        if (!caseSensitive) {
+        String searchObjectNameMask = params.getMask();
+        if (!params.isCaseSensitive()) {
             searchObjectNameMask = searchObjectNameMask.toUpperCase();
         }
 
         int nbResults = 0;
+        int maxResults = params.getMaxResults();
 
         // Tables, Alias, Views, Nicknames, MQT
         if ((db2ObjectTypes.contains(DB2ObjectType.ALIAS)) || (db2ObjectTypes.contains(DB2ObjectType.TABLE))
@@ -456,5 +449,4 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         SQL_COLS_ALL = sb.toString();
 
     }
-
 }

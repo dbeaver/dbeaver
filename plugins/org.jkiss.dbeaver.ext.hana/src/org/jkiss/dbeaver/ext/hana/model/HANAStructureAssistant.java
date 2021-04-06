@@ -41,8 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecutionContext> {
-
-    private HANADataSource dataSource;
+    private final HANADataSource dataSource;
 
     public HANAStructureAssistant(HANADataSource dataSource) {
         this.dataSource = dataSource;
@@ -74,49 +73,51 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         };
     }
 
-    protected void findObjectsByMask(JDBCExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject,
-            String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults,
-            List<DBSObjectReference> result) throws DBException, SQLException {
-        GenericSchema parentSchema = parentObject instanceof GenericSchema ? (GenericSchema) parentObject : null;
+    @Override
+    protected void findObjectsByMask(@NotNull JDBCExecutionContext executionContext, @NotNull JDBCSession session, @NotNull DBSObjectType objectType,
+                                     @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> references)
+                                        throws SQLException {
+        GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ? (GenericSchema) params.getParentObject() : null;
 
         if (objectType == RelationalObjectType.TYPE_TABLE)
-            findTablesByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+            findTablesByMask(session, parentSchema, params, references);
         if (objectType == RelationalObjectType.TYPE_VIEW)
-            findViewsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+            findViewsByMask(session, parentSchema, params, references);
         if (objectType == RelationalObjectType.TYPE_PROCEDURE)
-            findProceduresByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+            findProceduresByMask(session, parentSchema, params, references);
         if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN)
-            findTableColumnsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+            findTableColumnsByMask(session, parentSchema, params, references);
         if (objectType == RelationalObjectType.TYPE_VIEW_COLUMN)
-            findViewColumnsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+            findViewColumnsByMask(session, parentSchema, params, references);
     }
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext executionContext, DBSObject parentObject, DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException {
+    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext executionContext,
+                                                      @NotNull ObjectsSearchParams params) throws DBException {
         List<DBSObjectReference> result = new ArrayList<>();
-        List<DBSObjectType> objectTypesList = Arrays.asList(objectTypes);
+        List<DBSObjectType> objectTypesList = Arrays.asList(params.getObjectTypes());
         StringBuilder objectTypeClause = new StringBuilder(100);
-        GenericSchema parentSchema = parentObject instanceof GenericSchema ?
-                (GenericSchema) parentObject : (globalSearch || !(executionContext instanceof GenericExecutionContext) ? null : ((GenericExecutionContext) executionContext).getDefaultSchema());
+        GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ?
+                (GenericSchema) params.getParentObject() : (params.isGlobalSearch() || !(executionContext instanceof GenericExecutionContext) ? null : ((GenericExecutionContext) executionContext).getDefaultSchema());
 
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by mask")) {
             if (objectTypesList.contains(HANAObjectType.TABLE) || objectTypesList.contains(HANAObjectType.VIEW) || objectTypesList.contains(HANAObjectType.PROCEDURE) ||
                     objectTypesList.contains(HANAObjectType.SYNONYM)) {
-                for (DBSObjectType objectType : objectTypes) {
+                for (DBSObjectType objectType : params.getObjectTypes()) {
                     if (objectTypeClause.length() > 0) objectTypeClause.append(",");
                     objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
                 }
                 if (objectTypeClause.length() == 0) {
                     objectTypeClause.append("'TABLE', 'VIEW', 'SYNONYM', 'PROCEDURE'");
                 }
-                searchNotColumnObjects(session, parentSchema, objectNameMask, caseSensitive, maxResults, result, objectTypeClause.toString());
+                searchNotColumnObjects(session, parentSchema, params, result, objectTypeClause.toString());
             }
             if (objectTypesList.contains(RelationalObjectType.TYPE_TABLE_COLUMN)) {
-                findTableColumnsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+                findTableColumnsByMask(session, parentSchema, params, result);
             }
             if (objectTypesList.contains(RelationalObjectType.TYPE_VIEW_COLUMN)) {
-                findViewColumnsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+                findViewColumnsByMask(session, parentSchema, params, result);
             }
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);
@@ -125,26 +126,22 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         return result;
     }
 
-    private void searchNotColumnObjects(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-                                   boolean caseSensitive, int maxResults, List<DBSObjectReference> result, String objectTypeClause) throws SQLException, DBException {
-
-        String stmt =                       "SELECT SCHEMA_NAME, OBJECT_NAME, OBJECT_TYPE FROM SYS.OBJECTS WHERE";
-        stmt += caseSensitive ?             " OBJECT_NAME LIKE ?" : " UPPER(OBJECT_NAME) LIKE ?";
-        if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=	                            " AND OBJECT_TYPE IN (" + objectTypeClause + ")";
-        stmt +=                             " ORDER BY SCHEMA_NAME, OBJECT_NAME LIMIT " + maxResults;
-
+    private void searchNotColumnObjects(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                        List<DBSObjectReference> result, String objectTypeClause) throws SQLException {
+        String stmt = "SELECT SCHEMA_NAME, OBJECT_NAME, OBJECT_TYPE FROM SYS.OBJECTS WHERE";
+        stmt += params.isCaseSensitive() ? " OBJECT_NAME LIKE ?" : " UPPER(OBJECT_NAME) LIKE ?";
+        if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
+        stmt += " AND OBJECT_TYPE IN (" + objectTypeClause + ")";
+        stmt += " ORDER BY SCHEMA_NAME, OBJECT_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
-            if (parentSchema != null)
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            if (parentSchema != null) {
                 dbStat.setString(2, parentSchema.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int numResults = maxResults;
-                while (dbResult.next() && numResults-- > 0) {
-                    if (monitor.isCanceled())
-                        break;
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final String schemaName = dbResult.getString(1);
                     final String objectName = dbResult.getString(2);
                     final String objectTypeName = dbResult.getString(3);
@@ -181,23 +178,21 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findTablesByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-            boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
-        String stmt =                       "SELECT SCHEMA_NAME, TABLE_NAME, COMMENTS FROM SYS.TABLES WHERE";
-        stmt += caseSensitive ?             " TABLE_NAME LIKE ?" : " UPPER(TABLE_NAME) LIKE ?";
-        if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY SCHEMA_NAME, TABLE_NAME LIMIT " + maxResults;
+    private void findTablesByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                  List<DBSObjectReference> result) throws SQLException {
+        String stmt = "SELECT SCHEMA_NAME, TABLE_NAME, COMMENTS FROM SYS.TABLES WHERE";
+        stmt += params.isCaseSensitive() ? " TABLE_NAME LIKE ?" : " UPPER(TABLE_NAME) LIKE ?";
+        if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
+        stmt += " ORDER BY SCHEMA_NAME, TABLE_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
-            if (parentSchema != null)
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            if (parentSchema != null) {
                 dbStat.setString(2, parentSchema.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int numResults = maxResults;
-                while (dbResult.next() && numResults-- > 0) {
-                    if (monitor.isCanceled())
-                        break;
+                while (!monitor.isCanceled() && dbResult.next()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
                     String description = dbResult.getString(3);
@@ -224,23 +219,21 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findViewsByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-            boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
-        String stmt =                       "SELECT SCHEMA_NAME, VIEW_NAME, COMMENTS FROM SYS.VIEWS WHERE";
-        stmt += caseSensitive ?             " VIEW_NAME LIKE ?" : " UPPER(VIEW_NAME) LIKE ?";
-        if (parentSchema != null)stmt +=    " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY SCHEMA_NAME, VIEW_NAME LIMIT " + maxResults;
+    private void findViewsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                 List<DBSObjectReference> result) throws SQLException {
+        String stmt = "SELECT SCHEMA_NAME, VIEW_NAME, COMMENTS FROM SYS.VIEWS WHERE";
+        stmt += params.isCaseSensitive() ? " VIEW_NAME LIKE ?" : " UPPER(VIEW_NAME) LIKE ?";
+        if (parentSchema != null)stmt += " AND SCHEMA_NAME = ?";
+        stmt += " ORDER BY SCHEMA_NAME, VIEW_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
-            if (parentSchema != null)
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            if (parentSchema != null) {
                 dbStat.setString(2, parentSchema.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int numResults = maxResults;
-                while (dbResult.next() && numResults-- > 0) {
-                    if (monitor.isCanceled())
-                        break;
+                while (!monitor.isCanceled() && dbResult.next()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
                     String description = dbResult.getString(3);
@@ -267,23 +260,21 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-            boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
-        String stmt =                       "SELECT SCHEMA_NAME, PROCEDURE_NAME FROM SYS.PROCEDURES WHERE";
-        stmt += caseSensitive ?             " PROCEDURE_NAME LIKE ?" : " UPPER(PROCEDURE_NAME) LIKE ?";
-        if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY SCHEMA_NAME, PROCEDURE_NAME LIMIT " + maxResults;
+    private void findProceduresByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                      List<DBSObjectReference> result) throws SQLException {
+        String stmt = "SELECT SCHEMA_NAME, PROCEDURE_NAME FROM SYS.PROCEDURES WHERE";
+        stmt += params.isCaseSensitive() ? " PROCEDURE_NAME LIKE ?" : " UPPER(PROCEDURE_NAME) LIKE ?";
+        if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
+        stmt += " ORDER BY SCHEMA_NAME, PROCEDURE_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
-            if (parentSchema != null)
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            if (parentSchema != null) {
                 dbStat.setString(2, parentSchema.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int numResults = maxResults;
-                while (dbResult.next() && numResults-- > 0) {
-                    if (monitor.isCanceled())
-                        break;
+                while (!monitor.isCanceled() && dbResult.next()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
                     String description = null;
@@ -310,23 +301,21 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-            boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
-        String stmt =                       "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS FROM SYS.TABLE_COLUMNS WHERE";
-        stmt += caseSensitive ?             " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
-        if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY SCHEMA_NAME, TABLE_NAME, COLUMN_NAME LIMIT " + maxResults;
+    private void findTableColumnsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                        List<DBSObjectReference> result) throws SQLException {
+        String stmt = "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS FROM SYS.TABLE_COLUMNS WHERE";
+        stmt += params.isCaseSensitive() ? " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
+        if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
+        stmt += " ORDER BY SCHEMA_NAME, TABLE_NAME, COLUMN_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
-            if (parentSchema != null)
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            if (parentSchema != null) {
                 dbStat.setString(2, parentSchema.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int numResults = maxResults;
-                while (dbResult.next() && numResults-- > 0) {
-                    if (monitor.isCanceled())
-                        break;
+                while (!monitor.isCanceled() && dbResult.next()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
                     String columnName = dbResult.getString(3);
@@ -359,23 +348,21 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findViewColumnsByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
-            boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
-        String stmt =                       "SELECT SCHEMA_NAME, VIEW_NAME, COLUMN_NAME, COMMENTS FROM SYS.VIEW_COLUMNS WHERE";
-        stmt += caseSensitive ?             " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
-        if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY SCHEMA_NAME, VIEW_NAME, COLUMN_NAME LIMIT " + maxResults;
+    private void findViewColumnsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                       List<DBSObjectReference> result) throws SQLException {
+        String stmt = "SELECT SCHEMA_NAME, VIEW_NAME, COLUMN_NAME, COMMENTS FROM SYS.VIEW_COLUMNS WHERE";
+        stmt += params.isCaseSensitive() ? " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
+        if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
+        stmt += " ORDER BY SCHEMA_NAME, VIEW_NAME, COLUMN_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
-            if (parentSchema != null)
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            if (parentSchema != null) {
                 dbStat.setString(2, parentSchema.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int numResults = maxResults;
-                while (dbResult.next() && numResults-- > 0) {
-                    if (monitor.isCanceled())
-                        break;
+                while (!monitor.isCanceled() && dbResult.next()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
                     String columnName = dbResult.getString(3);
@@ -407,5 +394,4 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
             }
         }
     }
-
 }

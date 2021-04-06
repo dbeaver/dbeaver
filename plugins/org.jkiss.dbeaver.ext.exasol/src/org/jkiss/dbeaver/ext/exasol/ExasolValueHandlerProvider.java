@@ -38,7 +38,7 @@ public class ExasolValueHandlerProvider implements DBDValueHandlerProvider {
 
         switch (typeID) {
             case ExasolConstants.TYPE_GEOMETRY:
-                return new GISGeometryValueHandler(false);
+                return new GISGeometryValueHandler();
             default:
                 return null;
         }
