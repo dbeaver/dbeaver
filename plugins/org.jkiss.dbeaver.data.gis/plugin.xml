@@ -20,6 +20,7 @@
             <propertyGroup label="%property-group.org.jkiss.dbeaver.dataTypeProvider.label">
                 <property id="srid" label="SRID" type="string" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.srid.description" defaultValue="4326" required="false" validValues=""/>
                 <property id="invertCoordinates" label="%property-group.org.jkiss.dbeaver.dataTypeProvider.invertCoordinates.label" type="boolean" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.invertCoordinates.description" defaultValue="false" required="false"/>
+                <property id="leadingSrid" label="%property-group.org.jkiss.dbeaver.dataTypeProvider.leadingSrid.label" type="boolean" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.leadingSrid.description" defaultValue="false" required="false"/>
             </propertyGroup>
         </transformer>
 
