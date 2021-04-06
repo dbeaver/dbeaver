@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,14 +88,14 @@ public class SQLSearchUtils
                     DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                     if (structureAssistant != null) {
                         String objectNameMask = nameList.get(0);
-                        Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
-                            monitor,
-                            executionContext,
-                            sc,
-                            structureAssistant.getAutoCompleteObjectTypes(),
-                            identifierDetector.removeQuotes(objectNameMask),
-                            identifierDetector.isQuoted(objectNameMask),
-                            false, 2);
+                        DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
+                                structureAssistant.getAutoCompleteObjectTypes(),
+                                identifierDetector.removeQuotes(objectNameMask)
+                        );
+                        params.setParentObject(sc);
+                        params.setCaseSensitive(identifierDetector.isQuoted(objectNameMask));
+                        params.setMaxResults(2);
+                        Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                         if (!tables.isEmpty()) {
                             return tables.iterator().next().resolveObject(monitor);
                         }

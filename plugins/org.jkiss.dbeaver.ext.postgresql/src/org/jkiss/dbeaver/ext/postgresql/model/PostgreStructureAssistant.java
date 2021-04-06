@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -30,10 +31,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -43,8 +41,7 @@ import java.util.List;
 /**
  * PostgreStructureAssistant
  */
-public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExecutionContext>
-{
+public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExecutionContext> {
     private final PostgreDataSource dataSource;
 
     public PostgreStructureAssistant(PostgreDataSource dataSource)
@@ -89,25 +86,25 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
     }
 
     @Override
-    protected void findObjectsByMask(PostgreExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
-    {
+    protected void findObjectsByMask(@NotNull PostgreExecutionContext executionContext, @NotNull JDBCSession session,
+                                     @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
+                                     @NotNull List<DBSObjectReference> references) throws DBException, SQLException {
+        DBSObject parentObject = params.getParentObject();
         PostgreSchema ownerSchema = parentObject instanceof PostgreSchema ? (PostgreSchema) parentObject : null;
         final PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
 
-        PostgreDatabase database = parentObject instanceof PostgreObject ? ((PostgreObject) parentObject).getDatabase() :
-            executionContext.getDefaultCatalog();
+        PostgreDatabase database = parentObject instanceof PostgreObject ?
+                ((PostgreObject) parentObject).getDatabase() : executionContext.getDefaultCatalog();
         if (database == null) {
             database = dataSource.getDefaultInstance();
         }
         List<PostgreSchema> nsList = new ArrayList<>();
         if (ownerSchema != null) {
             nsList.add(0, ownerSchema);
-        } else if (!globalSearch) {
+        } else if (!params.isGlobalSearch()) {
             // Limit object search with search path
             for (String sn : executionContext.getSearchPath()) {
-                final PostgreSchema schema = database.getSchema(
-                    session.getProgressMonitor(),
-                    PostgreUtils.getRealSchemaName(database, sn));
+                PostgreSchema schema = database.getSchema(session.getProgressMonitor(), PostgreUtils.getRealSchemaName(database, sn));
                 if (schema != null) {
                     nsList.add(schema);
                 }
@@ -129,39 +126,40 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findTablesByMask(session, database, nsList, params, references);
         } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
-            findConstraintsByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findConstraintsByMask(session, database, nsList, params, references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findProceduresByMask(session, database, nsList, params, references);
         } else if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN) {
-            findTableColumnsByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
-        } else if (objectType == RelationalObjectType.TYPE_DATA_TYPE) {
-            findDataTypesByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findTableColumnsByMask(session, database, nsList, params, references);
         }
     }
 
-    private void findTablesByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String tableNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
-    {
+    private void findTablesByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
+                                  @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
+                                    throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = buildFindQuery(
+            "pc.oid,pc.relname,pc.relnamespace,pc.relkind",
+            "pg_catalog.pg_class pc",
+            "pc.relkind in('r','v','m')",
+            params.isSearchInComments(),
+            "pc.relname",
+            params.isCaseSensitive(),
+            "obj_description(pc.oid, 'pg_class')",
+            schema,
+            "pc.relnamespace",
+            "pc.relname",
+            params.getMaxResults() - objects.size()
+        );
+
         // Load tables
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT x.oid,x.relname,x.relnamespace,x.relkind FROM pg_catalog.pg_class x " +
-                "WHERE x.relkind in('r','v','m') AND x.relname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
-                " ORDER BY x.relname LIMIT " + maxResults)) {
-            dbStat.setString(1, tableNameMask);
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2, schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
@@ -189,28 +187,30 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String procNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
-    {
+    private void findProceduresByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
+                                      @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
+                                        throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = buildFindQuery(
+            "pp.oid, pp.*",
+            "pg_catalog.pg_proc pp",
+            "pp.proname NOT LIKE '\\_%'",
+            params.isSearchInComments(),
+            "pp.proname",
+            params.isCaseSensitive(),
+            "obj_description(pp.oid, 'pg_proc')",
+            schema,
+            "pp.pronamespace",
+            "pp.proname",
+            params.getMaxResults() - objects.size()
+        );
+
         // Load procedures
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT x.oid,x.* FROM pg_catalog.pg_proc x " +
-                "WHERE x.proname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
-                "AND x.proname NOT LIKE '\\_%'" + // Exclude procedures starting with underscore
-                (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
-                " ORDER BY x.proname LIMIT " + maxResults)) {
-            dbStat.setString(1, procNameMask);
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2, schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
@@ -237,27 +237,30 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String constrNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
-    {
+    private void findConstraintsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
+                                       @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
+                                        throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = buildFindQuery(
+            "pc.oid, pc.conname, pc.connamespace",
+            "pg_catalog.pg_constraint pc",
+            null,
+            params.isSearchInComments(),
+            "pc.conname",
+            params.isCaseSensitive(),
+            "obj_description(pc.oid, 'pg_constraint')",
+            schema,
+            "pc.connamespace",
+            "pc.conname",
+            params.getMaxResults() - objects.size()
+        );
+
         // Load constraints
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT x.oid,x.conname,x.connamespace FROM pg_catalog.pg_constraint x " +
-                "WHERE x.conname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND x.connamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
-                " ORDER BY x.conname LIMIT " + maxResults)) {
-            dbStat.setString(1, constrNameMask);
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2, schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
                     final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
@@ -281,28 +284,30 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String columnNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
-    {
+    private void findTableColumnsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
+                                        @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
+                                            throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        String sql = buildFindQuery(
+            "x.attname,x.attrelid,x.atttypid,c.relnamespace",
+            "pg_catalog.pg_attribute x, pg_catalog.pg_class c",
+            "c.oid=x.attrelid",
+            params.isSearchInComments(),
+            "x.attname",
+            params.isCaseSensitive(),
+            "col_description(c.oid, x.attnum)",
+            schema,
+            "c.relnamespace",
+            "x.attname",
+            params.getMaxResults() - objects.size()
+        );
+
         // Load constraints
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT x.attname,x.attrelid,x.atttypid,c.relnamespace " +
-                "FROM pg_catalog.pg_attribute x, pg_catalog.pg_class c\n" +
-                "WHERE c.oid=x.attrelid AND x.attname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND c.relnamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
-                " ORDER BY x.attname LIMIT " + maxResults)) {
-            dbStat.setString(1, columnNameMask);
-            if (!CommonUtils.isEmpty(schema)) {
-                PostgreUtils.setArrayParameter(dbStat, 2, schema);
-            }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, params, schema);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
+                while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "attrelid");
                     final String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
@@ -326,9 +331,38 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findDataTypesByMask(JDBCSession session, PostgreDatabase database, List<PostgreSchema> catalog, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) {
-        DBRProgressMonitor monitor = session.getProgressMonitor();
-
+    private static String buildFindQuery(@NotNull String select, @NotNull String from, @Nullable String where, boolean searchInComments,
+                                         @NotNull String name, boolean caseSensitive, @NotNull String descriptionClause,
+                                         @Nullable List<PostgreSchema> schema, @NotNull String namespace, @NotNull String orderBy, int maxResults) {
+        StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
+        if (where != null) {
+            sql.append(where).append(" AND ");
+        }
+        if (searchInComments) {
+            sql.append("(");
+        }
+        String likeClause = caseSensitive ? " LIKE ?" : " ILIKE ?";
+        sql.append(name).append(likeClause).append(" ");
+        if (searchInComments) {
+            sql.append("OR ").append(descriptionClause).append(likeClause).append(") ");
+        }
+        if (!CommonUtils.isEmpty(schema)) {
+            sql.append("AND ").append(namespace).append(" IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
+        }
+        sql.append("ORDER BY ").append(orderBy).append(" LIMIT ").append(maxResults);
+        return sql.toString();
     }
 
+    private static void fillParams(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
+                                   @Nullable List<PostgreSchema> schema) throws SQLException {
+        statement.setString(1, params.getMask());
+        int arrayParamIdx = 2;
+        if (params.isSearchInComments()) {
+            statement.setString(2, params.getMask());
+            arrayParamIdx++;
+        }
+        if (!CommonUtils.isEmpty(schema)) {
+            PostgreUtils.setArrayParameter(statement, arrayParamIdx, schema);
+        }
+    }
 }

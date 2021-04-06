@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -30,10 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -41,31 +39,26 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public class SearchMetadataQuery implements ISearchQuery {
-
     private static final Log log = Log.getLog(SearchMetadataQuery.class);
 
     private final DBSStructureAssistant structureAssistant;
     private final DBCExecutionContext executionContext;
-    private final SearchMetadataParams params;
+    @NotNull
+    private final DBSStructureAssistant.ObjectsSearchParams params;
     private SearchMetadataResult searchResult;
 
-    private SearchMetadataQuery(
-        DBSStructureAssistant structureAssistant,
-        DBCExecutionContext executionContext,
-        SearchMetadataParams params)
-    {
+    SearchMetadataQuery(@NotNull DBPDataSource dataSource, @NotNull DBSStructureAssistant<?> structureAssistant,
+                        @NotNull DBSStructureAssistant.ObjectsSearchParams params) {
         this.structureAssistant = structureAssistant;
-        this.executionContext = executionContext;
+        this.executionContext = DBUtils.getDefaultContext(dataSource, true);
         this.params = params;
     }
 
     @Override
-    public String getLabel()
-    {
-        return params.getObjectNameMask();
+    public String getLabel() {
+        return params.getMask();
     }
 
     @Override
@@ -89,33 +82,16 @@ public class SearchMetadataQuery implements ISearchQuery {
     @Override
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
         try {
-            List<DBSObjectType> objectTypes = params.getObjectTypes();
-            String objectNameMask = params.getObjectNameMask();
-
-            if (params.getMatchType() == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
-                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
-                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
-                }
-            } else if (params.getMatchType() == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
-                if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
-                    objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
-                }
-                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
-                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
-                }
+            String objectNameMask = params.getMask();
+            if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
+                params.setMask(objectNameMask);
             }
-
             int totalObjects = 0;
             DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
             DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
-            Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
-                localMonitor,
-                executionContext,
-                params.getParentObject(),
-                objectTypes.toArray(new DBSObjectType[0]),
-                objectNameMask,
-                params.isCaseSensitive(),
-                true, params.getMaxResults());
+
+            Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(localMonitor, executionContext, params);
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;
@@ -141,18 +117,4 @@ public class SearchMetadataQuery implements ISearchQuery {
             return GeneralUtils.makeExceptionStatus(e);
         }
     }
-
-    public static SearchMetadataQuery createQuery(
-        DBPDataSource dataSource,
-        SearchMetadataParams params)
-        throws DBException
-    {
-        DBSStructureAssistant assistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
-        if (dataSource == null || assistant == null) {
-            throw new DBException("Can't obtain database structure assistance from [" + dataSource + "]");
-        }
-        return new SearchMetadataQuery(assistant, DBUtils.getDefaultContext(dataSource, true), params);
-    }
-
-
 }
