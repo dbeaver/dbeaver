@@ -286,9 +286,9 @@ public class BeanUtilsTest {
 
     @Test
     public void testFindAncestorClass() {
-        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Object.class, "java.lang.Object"));
-        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Integer.class, "java.lang.Object"));
-        Assert.assertEquals(Number.class, BeanUtils.findAncestorClass(Integer.class, "java.lang.Number"));
+        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Object.class, Object.class.getName()));
+        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Integer.class, Object.class.getName()));
+        Assert.assertEquals(Number.class, BeanUtils.findAncestorClass(Integer.class, Number.class.getName()));
         Assert.assertNull(BeanUtils.findAncestorClass(String.class, Integer.class.getName()));
     }
 }
