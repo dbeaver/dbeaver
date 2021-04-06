@@ -69,6 +69,9 @@ public enum SQLServerAuthentication {
             properties.remove(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
         }
     }),
+    AD_INTERACTIVE(SQLServerMessages.authentication_ad_interactive_title, SQLServerMessages.authentication_ad_interactive_description, false, true, false, (connectionInfo, properties) -> {
+        properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTERACTIVE);
+    }),
     AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTEGRATED);
         properties.remove(DBConstants.DATA_SOURCE_PROPERTY_USER);
