@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -36,6 +37,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -45,6 +47,8 @@ import java.sql.Types;
  */
 public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     public static final PostgreGeometryValueHandler INSTANCE = new PostgreGeometryValueHandler();
+
+    private static final Log log = Log.getLog(PostgreGeometryValueHandler.class);
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
@@ -109,13 +113,13 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             return new DBGeometry((Geometry) object);
         } else if (object instanceof String) {
-            return makeGeometryFromWKT(session, (String) object, 2);
+            return makeGeometryFromWKT(session, (String) object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             return makeGeometryFromWKB(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
         } else {
-            return makeGeometryFromWKT(session, object.toString(), 2);
+            return makeGeometryFromWKT(session, object.toString());
         }
     }
 
@@ -147,64 +151,81 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
     private DBGeometry makeGeometryFromPGGeometry(DBCSession session, Object value) throws DBCException {
         try {
-            Object geometry = BeanUtils.invokeObjectMethod(value, "getGeometry");
-            if (geometry != null) {
-                // Handle 3D geometries (#3629)
-                Object dimension = BeanUtils.invokeObjectMethod(geometry, "getDimension");
-                if (dimension instanceof Number) {
-                    return makeGeometryFromWKT(session, geometry.toString(), ((Number) dimension).intValue());
+            final Object geometry = BeanUtils.invokeObjectMethod(value, "getGeometry");
+
+            try {
+                // The string representation of geometry values returned from PostGIS
+                // lacks 'Z' and 'M' modifiers for 3D and 4D geometries (which is not
+                // specification-friendly), thus making it impossible to parse later.
+                //
+                // Code below is trying to build a valid WKT from available data
+
+                // Use explicit cast because we want to fail if something went wrong
+                final String type = (String) BeanUtils.invokeObjectMethod(geometry, "getTypeString");
+                final boolean is3D = (Integer) BeanUtils.invokeObjectMethod(geometry, "getDimension") > 2;
+                final boolean isMeasured = (Boolean) BeanUtils.invokeObjectMethod(geometry, "isMeasured");
+                final int srid = (Integer) BeanUtils.invokeObjectMethod(geometry, "getSrid");
+
+                // PostGIS JDBC uses StringBuffer instead of StringBuilder, yup
+                final StringBuffer sb = new StringBuffer(type);
+
+                if (is3D) {
+                    sb.append('Z');
                 }
+
+                if (isMeasured) {
+                    sb.append('M');
+                }
+
+                BeanUtils.invokeObjectDeclaredMethod(
+                    geometry,
+                    "mediumWKT",
+                    new Class[]{StringBuffer.class},
+                    new Object[]{sb}
+                );
+
+                final Geometry result = new WKTReader().read(sb.toString());
+                result.setSRID(srid);
+
+                return new DBGeometry(result);
+            } catch (Throwable e) {
+                log.error("Error reading geometry from PGGeometry", e);
+                return makeGeometryFromWKT(session, geometry.toString());
             }
-            String pgString = value.toString();
-            return makeGeometryFromWKT(session, pgString, 2);
         } catch (Throwable e) {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
 
-    private DBGeometry makeGeometryFromWKT(DBCSession session, String pgString, int dimensions) throws DBCException {
+    private DBGeometry makeGeometryFromWKT(DBCSession session, String pgString) throws DBCException {
         if (CommonUtils.isEmpty(pgString)) {
             return new DBGeometry();
         }
-        // Convert from PostGIS EWKT to Geometry type
         try {
-            int divPos = pgString.indexOf(';');
-            if (divPos == -1) {
-                // No SRID
-                if (dimensions == 2) {
-                    try {
-                        Geometry geometry = new WKTReader().read(pgString);
-                        return new DBGeometry(geometry);
-                    } catch (ParseException e) {
-                        // Can't parse
-                        return new DBGeometry(pgString);
-                    }
-                } else {
-                    return new DBGeometry(pgString);
-                }
-            }
-            String sridString = pgString.substring(0, divPos);
-            String wktString = pgString.substring(divPos + 1);
-            int srid = 0;
-            if (sridString.startsWith("SRID=")) {
-                srid = CommonUtils.toInt(sridString.substring(5));
-            }
-            if (dimensions == 2) {
-                Geometry geometry = new WKTReader().read(wktString);
-                if (srid > 0) {
-                    geometry.setSRID(srid);
-                }
-                return new DBGeometry(geometry);
+            final String geometry;
+            final int srid;
+
+            if (pgString.startsWith("SRID=") && pgString.indexOf(';') > 5) {
+                final int index = pgString.indexOf(';');
+                geometry = pgString.substring(index + 1);
+                srid = CommonUtils.toInt(pgString.substring(5, index));
             } else {
-                return new DBGeometry(wktString, srid);
+                geometry = pgString;
+                srid = 0;
             }
+
+            final Geometry result = new WKTReader().read(geometry);
+            result.setSRID(srid);
+
+            return new DBGeometry(result);
         } catch (Throwable e) {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
 
     private String getStringFromGeometry(JDBCSession session, Geometry geometry) throws DBCException {
-        String strGeom = geometry.toString();
+        // Use all possible dimensions (4 stands for XYZM) for the most verbose output (see DBGeometry#getString)
+        final String strGeom = new WKTWriter(4).write(geometry);
         if (geometry.getSRID() > 0) {
             return "SRID=" + geometry.getSRID() + ";" + strGeom;
         } else {

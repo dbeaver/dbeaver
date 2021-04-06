@@ -279,6 +279,61 @@ public class BeanUtilsTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
+    public void testInvokeObjectDeclaredMethod() throws Throwable {
+        class DummyClass {
+            private int getValueA() {
+                return 123;
+            }
+
+            protected int getValueB() {
+                return 456;
+            }
+
+            protected int getValueC() {
+                return 789;
+            }
+        }
+
+        class DummyChild extends DummyClass {
+            @Override
+            protected int getValueC() {
+                return 0;
+            }
+        }
+
+        final DummyChild child = new DummyChild();
+
+        Assert.assertEquals(123, BeanUtils.invokeObjectDeclaredMethod(
+            child,
+            "getValueA",
+            new Class[0],
+            new Object[0]
+        ));
+
+        Assert.assertEquals(456, BeanUtils.invokeObjectDeclaredMethod(
+            child,
+            "getValueB",
+            new Class[0],
+            new Object[0]
+        ));
+
+        Assert.assertEquals(0, BeanUtils.invokeObjectDeclaredMethod(
+            child,
+            "getValueC",
+            new Class[0],
+            new Object[0]
+        ));
+
+        Assert.assertThrows(NoSuchMethodException.class, () -> BeanUtils.invokeObjectDeclaredMethod(
+            child,
+            "getValueD",
+            new Class[0],
+            new Object[0]
+        ));
+    }
+
+    @Test
     public void testInvokeStaticMethod() throws Throwable {
         Assert.assertEquals("0", BeanUtils.invokeStaticMethod(String.class,
                 "valueOf", new Class<?>[]{int.class}, new Object[]{0}));

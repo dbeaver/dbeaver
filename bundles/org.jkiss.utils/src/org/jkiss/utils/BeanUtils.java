@@ -17,7 +17,11 @@
 
 package org.jkiss.utils;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
@@ -353,6 +357,30 @@ public class BeanUtils {
         }
     }
 
+    @Nullable
+    public static Object invokeObjectDeclaredMethod(
+        @NotNull Object object,
+        @NotNull String methodName,
+        @NotNull Class<?>[] paramTypes,
+        @NotNull Object[] args) throws Throwable
+    {
+        for (Class<?> cls = object.getClass(); cls != null; cls = cls.getSuperclass()) {
+            for (Method method : cls.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && Arrays.equals(method.getParameterTypes(), paramTypes)) {
+                    if (!method.isAccessible()) {
+                        method.setAccessible(true);
+                    }
+                    try {
+                        return method.invoke(object, args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getTargetException();
+                    }
+                }
+            }
+        }
+        throw new NoSuchMethodException("Cannot find declared method " + methodName + "(" + Arrays.toString(paramTypes) + ")");
+    }
+
     public static Object invokeStaticMethod(Class<?> objectType, String name, Class<?> paramTypes[], Object args[])
         throws Throwable {
         Method method = objectType.getMethod(name, paramTypes);
@@ -365,5 +393,4 @@ public class BeanUtils {
             throw e.getTargetException();
         }
     }
-
 }

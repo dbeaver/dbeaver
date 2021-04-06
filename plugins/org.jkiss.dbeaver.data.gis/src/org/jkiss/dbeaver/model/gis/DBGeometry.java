@@ -18,13 +18,14 @@
 package org.jkiss.dbeaver.model.gis;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -68,12 +69,21 @@ public class DBGeometry implements DBDValue {
         this.properties = properties == null ? null : new LinkedHashMap<>(properties);
     }
 
+    @Nullable
     public Geometry getGeometry() {
         return rawValue instanceof Geometry ? (Geometry) rawValue : null;
     }
 
+    @Nullable
     public String getString() {
-        return rawValue == null ? null : CommonUtils.toString(rawValue);
+        if (rawValue == null) {
+            return null;
+        }
+        if (rawValue instanceof Geometry) {
+            // Use all possible dimensions (4 stands for XYZM) for the most verbose output
+            return new WKTWriter(4).write((Geometry) rawValue);
+        }
+        return rawValue.toString();
     }
 
     @Override
@@ -98,7 +108,8 @@ public class DBGeometry implements DBDValue {
 
     @Override
     public String toString() {
-        return rawValue == null ? null : rawValue.toString();
+        final String string = getString();
+        return string != null ? string : super.toString();
     }
 
     public int getSRID() {
