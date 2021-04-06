@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.*;
 
 public class SearchMetadataPage extends AbstractSearchPage {
-
     private static final String PROP_MASK = "search.metadata.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search.metadata.case-sensitive"; //$NON-NLS-1$
     private static final String PROP_MAX_RESULT = "search.metadata.max-results"; //$NON-NLS-1$
@@ -60,6 +59,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
+    private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments";
 
     private Table typesTable;
     private Combo searchText;
@@ -67,6 +67,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
     private String nameMask;
     private boolean caseSensitive;
+    private boolean searchInComments = true;
     private int maxResults;
     private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<>();
@@ -178,7 +179,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
             {
                 //new Label(searchGroup, SWT.NONE);
-                UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_label_name_match);
+                UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_label_match_type);
                 final Combo matchCombo = new Combo(settingsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
                 matchCombo.add(UISearchMessages.dialog_search_objects_combo_starts_with, SearchMetadataConstants.MATCH_INDEX_STARTS_WITH);
                 matchCombo.add(UISearchMessages.dialog_search_objects_combo_contains, SearchMetadataConstants.MATCH_INDEX_CONTAINS);
@@ -206,7 +207,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 maxResultsSpinner.addModifyListener(e -> maxResults = maxResultsSpinner.getSelection());
                 maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-                final Button caseCheckbox = UIUtils.createLabelCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_case_sensitive, caseSensitive);
+                Button caseCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_case_sensitive, null, caseSensitive, 2);
                 caseCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -214,8 +215,14 @@ public class SearchMetadataPage extends AbstractSearchPage {
                         caseSensitive = caseCheckbox.getSelection();
                     }
                 });
-                caseCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+                Button searchInCommentsCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, null, searchInComments, 2);
+                searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        searchInComments = searchInCommentsCheckbox.getSelection();
+                    }
+                });
             }
 
             Label otLabel = UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_group_object_types);
@@ -347,8 +354,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     }
 
     @Override
-    public SearchMetadataQuery createQuery() throws DBException
-    {
+    public SearchMetadataQuery createQuery() {
         DBNNode selectedNode = getSelectedNode();
         DBSObjectContainer parentObject = null;
         if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
@@ -387,14 +393,16 @@ public class SearchMetadataPage extends AbstractSearchPage {
             }
         }
 
-        SearchMetadataParams params = new SearchMetadataParams();
+        DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
+                objectTypes.toArray(new DBSObjectType[0]),
+                objectNameMask
+        );
         params.setParentObject(parentObject);
-        params.setObjectTypes(objectTypes);
-        params.setObjectNameMask(objectNameMask);
         params.setCaseSensitive(caseSensitive);
+        params.setSearchInComments(searchInComments);
         params.setMaxResults(maxResults);
-        return SearchMetadataQuery.createQuery(dataSource, params);
 
+        return new SearchMetadataQuery(dataSource, assistant, params);
     }
 
     @Override
@@ -402,6 +410,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     {
         nameMask = store.getString(PROP_MASK);
         caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
+        searchInComments = store.getBoolean(PROP_SEARCH_IN_COMMENTS);
         maxResults = store.getInt(PROP_MAX_RESULT);
         matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
         for (int i = 0; ;i++) {
@@ -428,6 +437,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     {
         store.setValue(PROP_MASK, nameMask);
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
+        store.setValue(PROP_SEARCH_IN_COMMENTS, searchInComments);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
         saveTreeState(store, PROP_SOURCES, dataSourceTree);
@@ -483,5 +493,4 @@ public class SearchMetadataPage extends AbstractSearchPage {
         }
         store.setValue(propName, sourcesString.toString());
     }
-
 }

@@ -300,7 +300,13 @@ public class SQLContextInformer
                                 // Container is not direct child of schema/catalog. Let's try struct assistant
                                 DBCExecutionContext executionContext = editor.getExecutionContext();
                                 if (executionContext != null) {
-                                    final List<DBSObjectReference> objReferences = structureAssistant.findObjectsByMask(monitor, executionContext, null, structureAssistant.getAutoCompleteObjectTypes(), containerNames[0], false, true, 1);
+                                    DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
+                                            structureAssistant.getAutoCompleteObjectTypes(),
+                                            containerNames[0]
+                                    );
+                                    params.setGlobalSearch(true);
+                                    params.setMaxResults(1);
+                                    List<DBSObjectReference> objReferences = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                                     if (objReferences.size() == 1) {
                                         childContainer = objReferences.get(0).resolveObject(monitor);
                                     }
@@ -353,7 +359,11 @@ public class SQLContextInformer
                     DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
                     DBCExecutionContext executionContext = editor.getExecutionContext();
                     if (executionContext != null) {
-                        Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, executionContext, container, objectTypes, objectName, caseSensitive, false, 10);
+                        DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(objectTypes, objectName);
+                        params.setParentObject(container);
+                        params.setCaseSensitive(caseSensitive);
+                        params.setMaxResults(10);
+                        Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                         if (!CommonUtils.isEmpty(objects)) {
                             cache.references.addAll(objects);
                         }
@@ -369,5 +379,4 @@ public class SQLContextInformer
             return Status.OK_STATUS;
         }
     }
-
 }
