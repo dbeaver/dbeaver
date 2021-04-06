@@ -29,6 +29,8 @@ public class SQLServerMessages extends NLS {
     public static String authentication_ad_password_description;
     public static String authentication_ad_msi_title;
     public static String authentication_ad_msi_description;
+    public static String authentication_ad_interactive_title;
+    public static String authentication_ad_interactive_description;
     public static String authentication_ad_integrated_title;
     public static String authentication_ad_integrated_description;
     public static String authentication_kerberos_title;
