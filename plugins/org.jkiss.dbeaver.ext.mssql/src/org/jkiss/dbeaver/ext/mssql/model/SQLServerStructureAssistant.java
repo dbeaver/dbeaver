@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -29,10 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,10 +37,7 @@ import java.util.List;
 /**
  * SQLServerStructureAssistant
  */
-public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLServerExecutionContext>
-{
-    static protected final Log log = Log.getLog(SQLServerStructureAssistant.class);
-
+public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLServerExecutionContext> {
     private final SQLServerDataSource dataSource;
 
     public SQLServerStructureAssistant(SQLServerDataSource dataSource)
@@ -107,19 +100,12 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull SQLServerExecutionContext executionContext,
-        DBSObject parentObject,
-        DBSObjectType[] objectTypes,
-        String objectNameMask,
-        boolean caseSensitive,
-        boolean globalSearch, int maxResults)
-        throws DBException
-    {
+    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerExecutionContext executionContext,
+                                                      @NotNull ObjectsSearchParams params) throws DBException {
+        DBSObject parentObject = params.getParentObject();
         SQLServerDatabase database = parentObject instanceof SQLServerDatabase ?
-            (SQLServerDatabase) parentObject :
-            (parentObject instanceof SQLServerSchema ? ((SQLServerSchema) parentObject).getDatabase() : null);
+                (SQLServerDatabase) parentObject :
+                (parentObject instanceof SQLServerSchema ? ((SQLServerSchema) parentObject).getDatabase() : null);
         if (database == null) {
             database = executionContext.getContextDefaults().getDefaultCatalog();
         }
@@ -131,7 +117,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         }
         SQLServerSchema schema = parentObject instanceof SQLServerSchema ? (SQLServerSchema) parentObject : null;
 
-        if (schema == null && !globalSearch) {
+        if (schema == null && !params.isGlobalSearch()) {
             schema = executionContext.getContextDefaults().getDefaultSchema();
         }
 
@@ -139,17 +125,16 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects
-            searchAllObjects(session, database, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
+            searchAllObjects(session, database, schema, params, objects);
 
             return objects;
         }
     }
 
-    private void searchAllObjects(final JDBCSession session, final SQLServerDatabase database, final SQLServerSchema schema, String objectNameMask, DBSObjectType[] objectTypes, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
-        throws DBException
-    {
-        final List<SQLServerObjectType> supObjectTypes = new ArrayList<>(objectTypes.length + 2);
-        for (DBSObjectType objectType : objectTypes) {
+    private void searchAllObjects(final JDBCSession session, final SQLServerDatabase database, final SQLServerSchema schema,
+                                  @NotNull ObjectsSearchParams params, List<DBSObjectReference> objects) throws DBException {
+        final List<SQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
+        for (DBSObjectType objectType : params.getObjectTypes()) {
             if (objectType instanceof SQLServerObjectType) {
                 supObjectTypes.add((SQLServerObjectType) objectType);
             } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
@@ -175,23 +160,41 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return;
         }
 
+        StringBuilder sql = new StringBuilder("SELECT TOP ")
+                .append(params.getMaxResults() - objects.size())
+                .append(" * FROM ")
+                .append(SQLServerUtils.getSystemTableName(database, "all_objects"))
+                .append(" o ");
+        if (params.isSearchInComments()) {
+            sql.append("LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
+        }
+        sql.append("WHERE o.type IN (").append(objectTypeClause.toString()).append(") AND ");
+        if (params.isSearchInComments()) {
+            sql.append("(");
+        }
+        sql.append("o.name LIKE ? ");
+        if (params.isSearchInComments()) {
+            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)) ");
+        }
+        if (schema != null) {
+            sql.append("AND o.schema_id = ? ");
+        }
+        sql.append("ORDER BY o.name");
+
         // Seek for objects (join with public synonyms)
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "all_objects") + " o " +
-                "\nWHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
-                (schema == null ? "" : " AND o.schema_id=? ") +
-                "\nORDER BY o.name"))
-        {
-            dbStat.setString(1, objectNameMask);
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+            dbStat.setString(1, params.getMask());
+            int schemaIdIdx = 2;
+            if (params.isSearchInComments()) {
+                dbStat.setString(2, params.getMask());
+                schemaIdIdx++;
+            }
             if (schema != null) {
-                dbStat.setLong(2, schema.getObjectId());
+                dbStat.setLong(schemaIdIdx, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (objects.size() < maxResults && dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
+                while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
                     final String objectName = JDBCUtils.safeGetString(dbResult, "name");
                     final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
@@ -221,6 +224,4 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             throw new DBException("Error while searching in system catalog", e, dataSource);
         }
     }
-
-
 }
