@@ -94,9 +94,9 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         createObjectTypesGroup(composite);
 
         searchInCommentsCheckbox = UIUtils.createCheckbox(
-                composite,
-                UINavigatorMessages.dialog_search_objects_search_in_comments,
-                !doNotSearchInComments
+            composite,
+            UINavigatorMessages.dialog_project_goto_object_checkbox_search_in_comments,
+            !doNotSearchInComments
         );
         GridData gd = new GridData();
         gd.horizontalIndent = 6;
