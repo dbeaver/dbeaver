@@ -17,6 +17,9 @@
 
 package org.jkiss.utils;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.lang.reflect.*;
 import java.util.Collection;
 import java.util.StringTokenizer;
@@ -366,4 +369,21 @@ public class BeanUtils {
         }
     }
 
+    /**
+     * Attempts to find a specified class from the
+     * supplied instance object of its inheritor.
+     *
+     * @param instance  an instance to locate the class from
+     * @param className a name of required class to locate
+     * @return the class object or <code>null</code> if <code>instance</code> does not inherit from specified class
+     */
+    @Nullable
+    public static Class<?> findClassFromInstance(@NotNull Object instance, @NotNull String className) {
+        for (Class<?> cls = instance.getClass(); cls != null; cls = cls.getSuperclass()) {
+            if (cls.getName().equals(className)) {
+                return cls;
+            }
+        }
+        return null;
+    }
 }
