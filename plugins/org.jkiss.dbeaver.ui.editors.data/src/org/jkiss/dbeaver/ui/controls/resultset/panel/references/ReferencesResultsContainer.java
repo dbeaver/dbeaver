@@ -458,13 +458,14 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 return "<No references>";
             }
             ReferenceKey key = (ReferenceKey) element;
-            String title;
+            String title = null;
             DBSObject targetEntity = key.targetEntity;
-            title = targetEntity.getName() + " (" + key.refAssociation.getName() + ")";
-            if (parentController.getDataContainer() != null && parentController.getDataContainer().getDataSource() != targetEntity.getDataSource()) {
-                title += " [" + targetEntity.getDataSource().getContainer().getName() + "]";
+            if (targetEntity != null && key.refAssociation != null) {
+                title = targetEntity.getName() + " (" + key.refAssociation.getName() + ")";
+                if (parentController.getDataContainer() != null && parentController.getDataContainer().getDataSource() != targetEntity.getDataSource()) {
+                    title += " [" + targetEntity.getDataSource().getContainer().getName() + "]";
+                }
             }
-
             return title;
         }
 
