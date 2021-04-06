@@ -370,17 +370,18 @@ public class BeanUtils {
     }
 
     /**
-     * Attempts to find a specified class from the
-     * supplied instance object of its inheritor.
+     * Attempts to find an ancestor class from the inherited class.
+     * If the supplied {@code inheritorClass} is already a required
+     * ancestor class, then that class is returned.
      *
-     * @param instance  an instance to locate the class from
-     * @param className a name of required class to locate
-     * @return the class object or <code>null</code> if <code>instance</code> does not inherit from specified class
+     * @param inheritorClass    an inheritor class to locate the ancestor class from
+     * @param ancestorClassName a name of an ancestor class to locate from the specified inheritor class
+     * @return the class object or {@code null} if {@code inheritorClass} does not inherit from the specified class
      */
     @Nullable
-    public static Class<?> findClassFromInstance(@NotNull Object instance, @NotNull String className) {
-        for (Class<?> cls = instance.getClass(); cls != null; cls = cls.getSuperclass()) {
-            if (cls.getName().equals(className)) {
+    public static Class<?> findAncestorClass(@NotNull Class<?> inheritorClass, @NotNull String ancestorClassName) {
+        for (Class<?> cls = inheritorClass; cls != null; cls = cls.getSuperclass()) {
+            if (cls.getName().equals(ancestorClassName)) {
                 return cls;
             }
         }

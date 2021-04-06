@@ -160,7 +160,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 //
                 // Code below is trying to build a valid WKT from available data
 
-                final Class<?> geometryClass = BeanUtils.findClassFromInstance(geometry, "org.postgis.Geometry");
+                final Class<?> geometryClass = BeanUtils.findAncestorClass(geometry.getClass(), "org.postgis.Geometry");
                 if (geometryClass == null) {
                     throw new DBCException("Cannot find geometry class");
                 }

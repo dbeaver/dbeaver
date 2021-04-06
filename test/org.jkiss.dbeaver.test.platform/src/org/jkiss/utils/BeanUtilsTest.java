@@ -283,4 +283,12 @@ public class BeanUtilsTest {
         Assert.assertEquals("0", BeanUtils.invokeStaticMethod(String.class,
                 "valueOf", new Class<?>[]{int.class}, new Object[]{0}));
     }
+
+    @Test
+    public void testFindAncestorClass() {
+        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Object.class, "java.lang.Object"));
+        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Integer.class, "java.lang.Object"));
+        Assert.assertEquals(Number.class, BeanUtils.findAncestorClass(Integer.class, "java.lang.Number"));
+        Assert.assertNull(BeanUtils.findAncestorClass(String.class, Integer.class.getName()));
+    }
 }
