@@ -37,6 +37,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -226,7 +227,8 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     private String getStringFromGeometry(JDBCSession session, Geometry geometry) throws DBCException {
-        String strGeom = geometry.toString();
+        // Use all possible dimensions (4 stands for XYZM) for the most verbose output (see DBGeometry#getString)
+        final String strGeom = new WKTWriter(4).write(geometry);
         if (geometry.getSRID() > 0) {
             return "SRID=" + geometry.getSRID() + ";" + strGeom;
         } else {
