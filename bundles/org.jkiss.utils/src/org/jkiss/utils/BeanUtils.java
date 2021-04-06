@@ -356,6 +356,29 @@ public class BeanUtils {
         }
     }
 
+    @Nullable
+    public static Object invokeObjectDeclaredMethod(
+        @NotNull Object object,
+        @NotNull String declaringClassName,
+        @NotNull String declaredMethodName,
+        @NotNull Class<?>[] paramTypes,
+        @NotNull Object[] args) throws Throwable
+    {
+        final Class<?> clazz = findAncestorClass(object.getClass(), declaringClassName);
+        if (clazz == null) {
+            throw new IllegalArgumentException("Cannot obtain declaring class " + declaringClassName + " from class " + object.getClass());
+        }
+        final Method method = clazz.getDeclaredMethod(declaredMethodName, paramTypes);
+        if (!method.isAccessible()) {
+            method.setAccessible(true);
+        }
+        try {
+            return method.invoke(object, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        }
+    }
+
     public static Object invokeStaticMethod(Class<?> objectType, String name, Class<?> paramTypes[], Object args[])
         throws Throwable {
         Method method = objectType.getMethod(name, paramTypes);
