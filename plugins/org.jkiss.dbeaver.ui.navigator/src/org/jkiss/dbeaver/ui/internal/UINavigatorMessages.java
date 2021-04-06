@@ -78,6 +78,7 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_project_create_wizard_error_cannot_create_message;
     public static String dialog_project_create_wizard_title;
     public static String dialog_project_goto_object_title;
+    public static String dialog_project_goto_object_checkbox_search_in_comments;
     
     public static String registry_entity_editor_descriptor_description;
     public static String registry_entity_editor_descriptor_name;
@@ -229,7 +230,6 @@ public class UINavigatorMessages extends NLS {
     public static String question_no_sql_available;
     public static String error_sql_generation_title;
     public static String error_sql_generation_message;
-    public static String dialog_search_objects_search_in_comments;
 
     static {
         // initialize resource bundle
