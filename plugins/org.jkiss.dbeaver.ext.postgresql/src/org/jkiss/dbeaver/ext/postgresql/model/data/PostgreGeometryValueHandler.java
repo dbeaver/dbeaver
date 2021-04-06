@@ -39,7 +39,6 @@ import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -161,11 +160,6 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 //
                 // Code below is trying to build a valid WKT from available data
 
-                final Class<?> geometryClass = BeanUtils.findAncestorClass(geometry.getClass(), PostgreConstants.POSTGIS_GEOMETRY_CLASS);
-                if (geometryClass == null) {
-                    throw new DBCException("Cannot obtain geometry class " + PostgreConstants.POSTGIS_GEOMETRY_CLASS + " from " + geometry.getClass());
-                }
-
                 // Use explicit cast because we want to fail if something went wrong
                 final String type = (String) BeanUtils.invokeObjectMethod(geometry, "getTypeString");
                 final boolean is3D = (Integer) BeanUtils.invokeObjectMethod(geometry, "getDimension") > 2;
@@ -183,9 +177,13 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                     sb.append('M');
                 }
 
-                final Method method = geometryClass.getDeclaredMethod("mediumWKT", StringBuffer.class);
-                method.setAccessible(true);
-                method.invoke(geometry, sb);
+                BeanUtils.invokeObjectDeclaredMethod(
+                    geometry,
+                    PostgreConstants.POSTGIS_GEOMETRY_CLASS,
+                    "mediumWKT",
+                    new Class[]{StringBuffer.class},
+                    new Object[]{sb}
+                );
 
                 final Geometry result = new WKTReader().read(sb.toString());
                 result.setSRID(srid);
