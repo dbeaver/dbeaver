@@ -83,7 +83,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 ((Geometry) value).setSRID(valueSRID);
             }
             statement.setObject(paramIndex, getStringFromGeometry(session, (Geometry)value), Types.OTHER);
-        } else if (value.getClass().getName().equals(PostgreConstants.POSTGIS_PG_GEOMETRY_CLASS)) {
+        } else if (value.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             statement.setObject(paramIndex, value, Types.OTHER);
         } else {
             String strValue = value.toString();
@@ -114,7 +114,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return new DBGeometry((Geometry) object);
         } else if (object instanceof String) {
             return makeGeometryFromWKT(session, (String) object);
-        } else if (object.getClass().getName().equals(PostgreConstants.POSTGIS_PG_GEOMETRY_CLASS)) {
+        } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             return makeGeometryFromWKB(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
@@ -179,7 +179,6 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
                 BeanUtils.invokeObjectDeclaredMethod(
                     geometry,
-                    PostgreConstants.POSTGIS_GEOMETRY_CLASS,
                     "mediumWKT",
                     new Class[]{StringBuffer.class},
                     new Object[]{sb}

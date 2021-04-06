@@ -306,7 +306,6 @@ public class BeanUtilsTest {
 
         Assert.assertEquals(123, BeanUtils.invokeObjectDeclaredMethod(
             child,
-            DummyClass.class.getName(),
             "getValueA",
             new Class[0],
             new Object[0]
@@ -314,7 +313,6 @@ public class BeanUtilsTest {
 
         Assert.assertEquals(456, BeanUtils.invokeObjectDeclaredMethod(
             child,
-            DummyClass.class.getName(),
             "getValueB",
             new Class[0],
             new Object[0]
@@ -322,16 +320,14 @@ public class BeanUtilsTest {
 
         Assert.assertEquals(0, BeanUtils.invokeObjectDeclaredMethod(
             child,
-            DummyClass.class.getName(),
             "getValueC",
             new Class[0],
             new Object[0]
         ));
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> BeanUtils.invokeObjectDeclaredMethod(
+        Assert.assertThrows(NoSuchMethodException.class, () -> BeanUtils.invokeObjectDeclaredMethod(
             child,
-            "some.imaginary.Class",
-            "getValueC",
+            "getValueD",
             new Class[0],
             new Object[0]
         ));
@@ -341,13 +337,5 @@ public class BeanUtilsTest {
     public void testInvokeStaticMethod() throws Throwable {
         Assert.assertEquals("0", BeanUtils.invokeStaticMethod(String.class,
                 "valueOf", new Class<?>[]{int.class}, new Object[]{0}));
-    }
-
-    @Test
-    public void testFindAncestorClass() {
-        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Object.class, Object.class.getName()));
-        Assert.assertEquals(Object.class, BeanUtils.findAncestorClass(Integer.class, Object.class.getName()));
-        Assert.assertEquals(Number.class, BeanUtils.findAncestorClass(Integer.class, Number.class.getName()));
-        Assert.assertNull(BeanUtils.findAncestorClass(String.class, Integer.class.getName()));
     }
 }

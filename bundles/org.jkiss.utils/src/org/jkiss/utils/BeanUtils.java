@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
@@ -359,24 +360,25 @@ public class BeanUtils {
     @Nullable
     public static Object invokeObjectDeclaredMethod(
         @NotNull Object object,
-        @NotNull String declaringClassName,
-        @NotNull String declaredMethodName,
+        @NotNull String methodName,
         @NotNull Class<?>[] paramTypes,
         @NotNull Object[] args) throws Throwable
     {
-        final Class<?> clazz = findAncestorClass(object.getClass(), declaringClassName);
-        if (clazz == null) {
-            throw new IllegalArgumentException("Cannot obtain declaring class " + declaringClassName + " from class " + object.getClass());
+        for (Class<?> cls = object.getClass(); cls != null; cls = cls.getSuperclass()) {
+            for (Method method : cls.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && Arrays.equals(method.getParameterTypes(), paramTypes)) {
+                    if (!method.isAccessible()) {
+                        method.setAccessible(true);
+                    }
+                    try {
+                        return method.invoke(object, args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getTargetException();
+                    }
+                }
+            }
         }
-        final Method method = clazz.getDeclaredMethod(declaredMethodName, paramTypes);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
-        try {
-            return method.invoke(object, args);
-        } catch (InvocationTargetException e) {
-            throw e.getTargetException();
-        }
+        throw new NoSuchMethodException("Cannot find declared method " + methodName + "(" + Arrays.toString(paramTypes) + ")");
     }
 
     public static Object invokeStaticMethod(Class<?> objectType, String name, Class<?> paramTypes[], Object args[])
@@ -390,24 +392,5 @@ public class BeanUtils {
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
         }
-    }
-
-    /**
-     * Attempts to find an ancestor class from the inherited class.
-     * If the supplied {@code inheritorClass} is already a required
-     * ancestor class, then that class is returned.
-     *
-     * @param inheritorClass    an inheritor class to locate the ancestor class from
-     * @param ancestorClassName a name of an ancestor class to locate from the specified inheritor class
-     * @return the class object or {@code null} if {@code inheritorClass} does not inherit from the specified class
-     */
-    @Nullable
-    public static Class<?> findAncestorClass(@NotNull Class<?> inheritorClass, @NotNull String ancestorClassName) {
-        for (Class<?> cls = inheritorClass; cls != null; cls = cls.getSuperclass()) {
-            if (cls.getName().equals(ancestorClassName)) {
-                return cls;
-            }
-        }
-        return null;
     }
 }
