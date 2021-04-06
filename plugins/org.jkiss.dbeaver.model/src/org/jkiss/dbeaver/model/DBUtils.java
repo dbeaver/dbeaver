@@ -1227,7 +1227,15 @@ public final class DBUtils {
                 }
             }
         }
+        // Check that transformers are applicable
+        if (limitTransformer instanceof DBCQueryTransformerExt && !((DBCQueryTransformerExt) limitTransformer).isApplicableTo(sqlQuery)) {
+            limitTransformer = null;
+        }
+        if (fetchAllTransformer instanceof DBCQueryTransformerExt && !((DBCQueryTransformerExt) fetchAllTransformer).isApplicableTo(sqlQuery)) {
+            fetchAllTransformer = null;
+        }
 
+        // Transform query
         boolean doScrollable = (offset > 0);
         String queryText;
         try {
