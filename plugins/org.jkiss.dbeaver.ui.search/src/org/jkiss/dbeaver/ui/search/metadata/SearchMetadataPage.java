@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.*;
 
 public class SearchMetadataPage extends AbstractSearchPage {
-
     private static final String PROP_MASK = "search.metadata.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search.metadata.case-sensitive"; //$NON-NLS-1$
     private static final String PROP_MAX_RESULT = "search.metadata.max-results"; //$NON-NLS-1$
@@ -208,7 +207,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 maxResultsSpinner.addModifyListener(e -> maxResults = maxResultsSpinner.getSelection());
                 maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-                final Button caseCheckbox = UIUtils.createLabelCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_case_sensitive, caseSensitive);
+                Button caseCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_case_sensitive, null, caseSensitive, 2);
                 caseCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -216,16 +215,14 @@ public class SearchMetadataPage extends AbstractSearchPage {
                         caseSensitive = caseCheckbox.getSelection();
                     }
                 });
-                caseCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                Button searchInCommentsCheckbox = UIUtils.createLabelCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, searchInComments);
+                Button searchInCommentsCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, null, searchInComments, 2);
                 searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         searchInComments = searchInCommentsCheckbox.getSelection();
                     }
                 });
-                caseCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
 
             Label otLabel = UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_group_object_types);
@@ -496,5 +493,4 @@ public class SearchMetadataPage extends AbstractSearchPage {
         }
         store.setValue(propName, sourcesString.toString());
     }
-
 }
