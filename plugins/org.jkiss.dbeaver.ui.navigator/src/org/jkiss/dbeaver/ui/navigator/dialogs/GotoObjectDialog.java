@@ -62,7 +62,7 @@ import java.util.regex.Pattern;
  */
 public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private static final String DIALOG_ID = "GotoObjectDialog";
-    private static final String DO_NOT_SEARCH_IN_COMMENTS = "SearchInComments";
+    private static final String DO_NOT_SEARCH_IN_COMMENTS = "DoNotSearchInComments";
 
     private static final boolean SHOW_OBJECT_TYPES = true;
     private static final int MAX_RESULT_COUNT = 1000;
@@ -74,6 +74,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     //This variable is "reverted" because we want to store it in preferences and be enabled by default.
     private boolean doNotSearchInComments;
+    private Button searchInCommentsCheckbox;
 
     public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container) {
         super(shell, true);
@@ -92,7 +93,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
         createObjectTypesGroup(composite);
 
-        Button searchInCommentsCheckbox = UIUtils.createCheckbox(
+        searchInCommentsCheckbox = UIUtils.createCheckbox(
                 composite,
                 UINavigatorMessages.dialog_search_objects_search_in_comments,
                 !doNotSearchInComments
@@ -178,6 +179,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     protected void restoreDialog(IDialogSettings settings) {
         super.restoreDialog(settings);
         doNotSearchInComments = settings.getBoolean(DO_NOT_SEARCH_IN_COMMENTS);
+        searchInCommentsCheckbox.setSelection(!doNotSearchInComments);
     }
 
     @Override
