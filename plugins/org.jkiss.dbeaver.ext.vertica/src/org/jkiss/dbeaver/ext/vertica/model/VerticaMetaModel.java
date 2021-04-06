@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -208,7 +207,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit(false);
+            return new QueryTransformerLimitVertica();
         }
         return null;
     }
