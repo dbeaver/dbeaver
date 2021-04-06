@@ -158,6 +158,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             int srid = 0;
 
             if (leadingSRID) {
+                // Read SRID with little endian order (the least significant bytes come first)
                 srid |= is.read();
                 srid |= is.read() << 8;
                 srid |= is.read() << 16;
@@ -181,6 +182,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             final int srid = geometry.getSRID();
 
             if (leadingSRID) {
+                // Write SRID with little endian order (the least significant bytes come first)
                 os.write((byte) (srid));
                 os.write((byte) (srid >> 8));
                 os.write((byte) (srid >> 16));
