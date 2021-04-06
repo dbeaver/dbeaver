@@ -83,7 +83,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 ((Geometry) value).setSRID(valueSRID);
             }
             statement.setObject(paramIndex, getStringFromGeometry(session, (Geometry)value), Types.OTHER);
-        } else if (value.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
+        } else if (value.getClass().getName().equals(PostgreConstants.POSTGIS_PG_GEOMETRY_CLASS)) {
             statement.setObject(paramIndex, value, Types.OTHER);
         } else {
             String strValue = value.toString();
@@ -114,7 +114,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return new DBGeometry((Geometry) object);
         } else if (object instanceof String) {
             return makeGeometryFromWKT(session, (String) object);
-        } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
+        } else if (object.getClass().getName().equals(PostgreConstants.POSTGIS_PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             return makeGeometryFromWKB(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
@@ -160,9 +160,9 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 //
                 // Code below is trying to build a valid WKT from available data
 
-                final Class<?> geometryClass = BeanUtils.findAncestorClass(geometry.getClass(), "org.postgis.Geometry");
+                final Class<?> geometryClass = BeanUtils.findAncestorClass(geometry.getClass(), PostgreConstants.POSTGIS_GEOMETRY_CLASS);
                 if (geometryClass == null) {
-                    throw new DBCException("Cannot find geometry class");
+                    throw new DBCException("Cannot find geometry class " + PostgreConstants.POSTGIS_GEOMETRY_CLASS + " from " + geometry.getClass());
                 }
 
                 // Use explicit cast because we want to fail if something went wrong
