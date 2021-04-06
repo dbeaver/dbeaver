@@ -229,6 +229,7 @@ public class UINavigatorMessages extends NLS {
     public static String question_no_sql_available;
     public static String error_sql_generation_title;
     public static String error_sql_generation_message;
+    public static String dialog_search_objects_search_in_comments;
 
     static {
         // initialize resource bundle

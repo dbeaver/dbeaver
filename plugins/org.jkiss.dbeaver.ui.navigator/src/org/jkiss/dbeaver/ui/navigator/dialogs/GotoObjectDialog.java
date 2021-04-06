@@ -61,16 +61,19 @@ import java.util.regex.Pattern;
  * GotoObjectDialog
  */
 public class GotoObjectDialog extends FilteredItemsSelectionDialog {
-
     private static final String DIALOG_ID = "GotoObjectDialog";
+    private static final String DO_NOT_SEARCH_IN_COMMENTS = "SearchInComments";
 
     private static final boolean SHOW_OBJECT_TYPES = true;
     private static final int MAX_RESULT_COUNT = 1000;
 
     private final DBCExecutionContext context;
-    private DBSObject container;
-    private Map<String, Boolean> enabledTypes = new HashMap<>();
+    private final DBSObject container;
+    private final Map<String, Boolean> enabledTypes = new HashMap<>();
     private boolean hasMoreResults;
+
+    //This variable is "reverted" because we want to store it in preferences and be enabled by default.
+    private boolean doNotSearchInComments;
 
     public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container) {
         super(shell, true);
@@ -84,15 +87,39 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     @Override
     protected Control createExtendedContentArea(Composite parent) {
+        Composite composite = UIUtils.createComposite(parent, 1);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        createObjectTypesGroup(composite);
+
+        Button searchInCommentsCheckbox = UIUtils.createCheckbox(
+                composite,
+                UINavigatorMessages.dialog_search_objects_search_in_comments,
+                !doNotSearchInComments
+        );
+        GridData gd = new GridData();
+        gd.horizontalIndent = 6;
+        searchInCommentsCheckbox.setLayoutData(gd);
+        searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doNotSearchInComments = !searchInCommentsCheckbox.getSelection();
+            }
+        });
+
+        return composite;
+    }
+
+    private void createObjectTypesGroup(Composite parent) {
         if (!SHOW_OBJECT_TYPES) {
-            return null;
+            return;
         }
         IDialogSettings driverSettings = DialogSettings.getOrCreateSection(
             getDialogSettings(), context.getDataSource().getContainer().getDriver().getId());
 
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context.getDataSource());
+        DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context.getDataSource());
         if (structureAssistant == null) {
-            return null;
+            return;
         }
 
         List<DBSObjectType> typesToSearch = new ArrayList<>();
@@ -104,51 +131,59 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
             typesToSearch.add(type);
         }
-        if (!CommonUtils.isEmpty(typesToSearch)) {
-            Group cbGroup = new Group(parent, SWT.NONE);
-            cbGroup.setText("Objects:");
-            RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
-            rowLayout.wrap = true;
-            cbGroup.setLayout(rowLayout);
-            cbGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (DBSObjectType type : typesToSearch) {
-                if (!isValidObjectType(type)) {
-                    continue;
-                }
-
-                Button cb = new Button(cbGroup, SWT.CHECK);
-                cb.setData(type);
-                String typeName = CommonUtils.notEmpty(type.getTypeName());
-                cb.setText(typeName);
-
-                boolean enabled;
-                if (driverSettings.get(typeName) != null) {
-                    enabled = driverSettings.getBoolean(typeName);
-                } else {
-                    enabled = true;
-                }
-                cb.setSelection(enabled);
-                enabledTypes.put(typeName, enabled);
-                cb.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        enabledTypes.put(typeName, cb.getSelection());
-                        driverSettings.put(typeName, cb.getSelection());
-                        applyFilter();
-                        //scheduleRefresh();
-                    }
-                });
+        if (CommonUtils.isEmpty(typesToSearch)) {
+            return;
+        }
+        Group cbGroup = new Group(parent, SWT.NONE);
+        cbGroup.setText("Objects:");
+        RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
+        rowLayout.wrap = true;
+        cbGroup.setLayout(rowLayout);
+        cbGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for (DBSObjectType type : typesToSearch) {
+            if (!isValidObjectType(type)) {
+                continue;
             }
 
-            return cbGroup;
-        }
+            Button cb = new Button(cbGroup, SWT.CHECK);
+            cb.setData(type);
+            String typeName = CommonUtils.notEmpty(type.getTypeName());
+            cb.setText(typeName);
 
-        return null;
+            boolean enabled;
+            if (driverSettings.get(typeName) != null) {
+                enabled = driverSettings.getBoolean(typeName);
+            } else {
+                enabled = true;
+            }
+            cb.setSelection(enabled);
+            enabledTypes.put(typeName, enabled);
+            cb.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    enabledTypes.put(typeName, cb.getSelection());
+                    driverSettings.put(typeName, cb.getSelection());
+                    applyFilter();
+                }
+            });
+        }
     }
 
     @Override
     protected IDialogSettings getDialogSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
+    @Override
+    protected void restoreDialog(IDialogSettings settings) {
+        super.restoreDialog(settings);
+        doNotSearchInComments = settings.getBoolean(DO_NOT_SEARCH_IN_COMMENTS);
+    }
+
+    @Override
+    protected void storeDialog(IDialogSettings settings) {
+        super.storeDialog(settings);
+        settings.put(DO_NOT_SEARCH_IN_COMMENTS, doNotSearchInComments);
     }
 
     @Override
@@ -372,6 +407,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 params.setParentObject(container);
                 params.setGlobalSearch(true);
                 params.setMaxResults(MAX_RESULT_COUNT);
+                params.setSearchInComments(!doNotSearchInComments);
                 result = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                 hasMoreResults = result.size() >= MAX_RESULT_COUNT;
             } catch (Exception e) {
