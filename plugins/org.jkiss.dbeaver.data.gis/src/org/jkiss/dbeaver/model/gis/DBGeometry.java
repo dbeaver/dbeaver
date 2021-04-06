@@ -80,7 +80,7 @@ public class DBGeometry implements DBDValue {
             return null;
         }
         if (rawValue instanceof Geometry) {
-            // Use all possible dimensions (4 stands for XYZM) for most verbose output
+            // Use all possible dimensions (4 stands for XYZM) for the most verbose output
             return new WKTWriter(4).write((Geometry) rawValue);
         }
         return rawValue.toString();
