@@ -442,34 +442,37 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public List<? extends GenericSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system synonyms")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema()) + ".synonyms WHERE schema_name(schema_id)=?")) {
-                dbStat.setString(1, container.getSchema().getName());
-                List<GenericSynonym> result = new ArrayList<>();
+    public List<? extends GenericSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
+        if (supportsSynonyms(container.getDataSource())) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system synonyms")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT * FROM " + SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema()) + ".synonyms WHERE schema_name(schema_id)=?")) {
+                    dbStat.setString(1, container.getSchema().getName());
+                    List<GenericSynonym> result = new ArrayList<>();
 
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, "name");
-                        if (name == null) {
-                            continue;
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            String name = JDBCUtils.safeGetString(dbResult, "name");
+                            if (name == null) {
+                                continue;
+                            }
+                            name = name.trim();
+                            SQLServerGenericSynonym synonym = new SQLServerGenericSynonym(
+                                    container,
+                                    name,
+                                    null,
+                                    JDBCUtils.safeGetString(dbResult, "base_object_name"));
+                            result.add(synonym);
                         }
-                        name = name.trim();
-                        SQLServerGenericSynonym synonym = new SQLServerGenericSynonym(
-                            container,
-                            name,
-                            null,
-                            JDBCUtils.safeGetString(dbResult, "base_object_name"));
-                        result.add(synonym);
                     }
-                }
-                return result;
+                    return result;
 
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, container.getDataSource());
             }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
         }
+        return null;
     }
 
     @Override
