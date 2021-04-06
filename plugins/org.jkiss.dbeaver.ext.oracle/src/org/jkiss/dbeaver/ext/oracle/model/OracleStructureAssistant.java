@@ -36,10 +36,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * OracleStructureAssistant
@@ -208,7 +205,6 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
 
     private void searchAllObjects(final JDBCSession session, final OracleSchema schema, @NotNull ObjectsSearchParams params,
                                   List<DBSObjectReference> objects) throws SQLException, DBException {
-        StringBuilder objectTypeClause = new StringBuilder(100);
         final List<OracleObjectType> oracleObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
         for (DBSObjectType objectType : params.getObjectTypes()) {
             if (objectType instanceof OracleObjectType) {
@@ -221,16 +217,13 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 oracleObjectTypes.add(OracleObjectType.PROCEDURE);
             }
         }
-        oracleObjectTypes.add(OracleObjectType.SYNONYM);
-        for (OracleObjectType objectType : oracleObjectTypes) {
-            if (objectTypeClause.length() > 0) objectTypeClause.append(",");
-            objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+        StringJoiner objectTypeClause = new StringJoiner(",");
+        for (OracleObjectType objectType: oracleObjectTypes) {
+            objectTypeClause.add("'" + objectType.getTypeName() + "'");
         }
         if (objectTypeClause.length() == 0) {
             return;
         }
-        // Always search for synonyms
-        objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
 
         // Seek for objects (join with public synonyms)
         OracleDataSource dataSource = (OracleDataSource) session.getDataSource();
@@ -244,7 +237,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
                     "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS") + " S," +
                         OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " O\n" +
-                    "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND " +
+                    "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.OBJECT_TYPE<>'JAVA CLASS' AND " +
                     (!params.isCaseSensitive() ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME") + "  LIKE ?)" +
                 "\nORDER BY OBJECT_NAME")) {
             if (!params.isCaseSensitive()) {
