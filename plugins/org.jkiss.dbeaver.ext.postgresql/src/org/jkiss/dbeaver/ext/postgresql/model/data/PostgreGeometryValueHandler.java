@@ -163,7 +163,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
                 final Class<?> geometryClass = BeanUtils.findAncestorClass(geometry.getClass(), PostgreConstants.POSTGIS_GEOMETRY_CLASS);
                 if (geometryClass == null) {
-                    throw new DBCException("Cannot find geometry class " + PostgreConstants.POSTGIS_GEOMETRY_CLASS + " from " + geometry.getClass());
+                    throw new DBCException("Cannot obtain geometry class " + PostgreConstants.POSTGIS_GEOMETRY_CLASS + " from " + geometry.getClass());
                 }
 
                 // Use explicit cast because we want to fail if something went wrong
