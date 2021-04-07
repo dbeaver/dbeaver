@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -173,7 +174,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         int oldSRID = sourceSRID;
         this.sourceSRID = srid;
         try {
-            reloadGeometryData(lastValue, true);
+            reloadGeometryData(lastValue, true, true);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Setting SRID", "Can't change source SRID to " + srid, e);
             sourceSRID = oldSRID;
@@ -197,17 +198,17 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     @Override
     public void refresh() {
         try {
-            reloadGeometryData(lastValue, true);
+            reloadGeometryData(lastValue, true, false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Refresh", "Can't refresh value viewer", e);
         }
     }
 
     public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
-        reloadGeometryData(values, false);
+        reloadGeometryData(values, false, true);
     }
 
-    public void reloadGeometryData(@Nullable DBGeometry[] values, boolean force) throws DBException {
+    public void reloadGeometryData(@Nullable DBGeometry[] values, boolean force, boolean recenter) throws DBException {
         if (!force && CommonUtils.equalObjects(lastValue, values)) {
             return;
         }
@@ -226,7 +227,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 if (ArrayUtils.isEmpty(values)) {
                     browser.setUrl("about:blank");
                 } else {
-                    File file = generateViewScript(values);
+                    final Bounds bounds = recenter ? null : Bounds.tryExtractFromBrowser(browser);
+                    final File file = generateViewScript(values, bounds);
                     browser.setUrl(file.toURI().toURL().toString());
                 }
             } catch (IOException e) {
@@ -237,7 +239,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         updateToolbar();
     }
 
-    private File generateViewScript(DBGeometry[] values) throws IOException {
+    private File generateViewScript(DBGeometry[] values, @Nullable Bounds bounds) throws IOException {
         if (scriptFile == null) {
             File tempDir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gis-viewer-files");
             checkIncludesExistence(tempDir);
@@ -358,6 +360,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                         return String.valueOf(toolsVisible);
                     case "geomCRS":
                         return geomCRS;
+                    case "geomBounds":
+                        return CommonUtils.toString(bounds, "undefined");
                     case "defaultTiles":
                         LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
                         if (descriptor == null) {
@@ -525,7 +529,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             public void run() {
                 flipCoordinates = !flipCoordinates;
                 try {
-                    reloadGeometryData(lastValue, true);
+                    reloadGeometryData(lastValue, true, true);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Render error", "Error rendering geometry", e);
                 }
@@ -578,6 +582,53 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             browser.execute("javascript:showTools(" + toolsVisible +");");
         } finally {
             gc.dispose();
+        }
+    }
+
+    private static class Bounds {
+        private final double north;
+        private final double east;
+        private final double south;
+        private final double west;
+
+        private Bounds(double north, double east, double south, double west) {
+            this.north = north;
+            this.east = east;
+            this.south = south;
+            this.west = west;
+        }
+
+        @Nullable
+        public static Bounds tryExtractFromBrowser(@NotNull Browser browser) {
+            try {
+                // https://leafletjs.com/reference-1.7.1.html#latlngbounds
+                final Object[] bounds = (Object[]) browser.evaluate(
+                    "if (typeof geoMap === 'undefined') {" +
+                    "    return undefined;" +
+                    "} else {" +
+                    "    let b = geoMap.getBounds();" +
+                    "    return [b.getNorth(), b.getEast(), b.getSouth(), b.getWest()];" +
+                    "}"
+                );
+                if (bounds == null) {
+                    // Variable 'geoMap' may be undefined during first run
+                    return null;
+                }
+                return new Bounds(
+                    CommonUtils.toDouble(bounds[0]),
+                    CommonUtils.toDouble(bounds[1]),
+                    CommonUtils.toDouble(bounds[2]),
+                    CommonUtils.toDouble(bounds[3])
+                );
+            } catch (Throwable e) {
+                log.error("Error retrieving map bounds", e);
+                return null;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return String.format("L.latLngBounds(L.latLng(%f, %f), L.latLng(%f, %f))", north, east, south, west);
         }
     }
 }
