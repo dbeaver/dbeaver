@@ -54,39 +54,39 @@ import java.util.Map;
  */
 public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DBPQualifiedObject {
 
-    private static final Log                   LOG              = Log.getLog(DB2DataType.class);
+    private static final Log log = Log.getLog(DB2DataType.class);
 
-    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>(32);            // See init below
+    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>(32); // See init below
 
-    private DBSObject                          parentNode;                                      // see below
+    private DBSObject parentNode; // See below
 
-    private DB2Schema                          db2Schema;
+    private DB2Schema db2Schema;
 
-    private String                             fullyQualifiedName;
+    private String fullyQualifiedName;
 
-    private TypeDesc                           typeDesc;
+    private TypeDesc typeDesc;
 
-    private Integer                            db2TypeId;
+    private Integer db2TypeId;
 
-    private String                             ownerCol;
-    private DB2OwnerType                       ownerType;
+    private String ownerCol;
+    private DB2OwnerType ownerType;
 
-    private String                             sourceSchemaName;
-    private String                             sourceModuleName;
-    private String                             sourceName;
+    private String sourceSchemaName;
+    private String sourceModuleName;
+    private String sourceName;
 
-    private DB2DataTypeMetaType                metaType;
+    private DB2DataTypeMetaType metaType;
 
-    private Integer                            length;
-    private Integer                            scale;
+    private Integer length;
+    private Integer scale;
 
-    private Timestamp                          createTime;
-    private Timestamp                          alterTime;
-    private Timestamp                          lastRegenTime;
-    private String                             constraintText;
-    private String                             remarks;
+    private Timestamp createTime;
+    private Timestamp alterTime;
+    private Timestamp lastRegenTime;
+    private String constraintText;
+    private String remarks;
 
-    private DB2Module                          db2Module;
+    private DB2Module db2Module;
 
     // -----------------------
     // Constructors
@@ -143,7 +143,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                 try {
                     this.db2Schema = db2DataSource.getSchema(new VoidProgressMonitor(), schemaName);
                 } catch (DBException e) {
-                    LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??", e);
+                    log.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??", e);
                     // In this case, 'this.db2Schema' will be null...
                 }
             }
@@ -172,16 +172,16 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
             // Check for Structured or Array like DataTypes
             switch (metaType) {
             case R:
-                tempTypeDesc = new TypeDesc(DBPDataKind.STRUCT, Types.STRUCT, null, null, null);
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRUCT, Types.STRUCT, 0, 0, 0, 0);
                 break;
             case A:
             case L:
-                tempTypeDesc = new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, null, null, null);
+                tempTypeDesc = new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, 0, 0, 0, 0);
                 break;
             default:
                 // If the UDT is based on a SYSIBM dataType, get it
                 if ((sourceSchemaName != null) && (sourceSchemaName.equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
-                    LOG.debug(name + " is a User Defined Type base on a System Data Type.");
+                    log.debug(name + " is a User Defined Type base on a System Data Type.");
                     tempTypeDesc = PREDEFINED_TYPES.get(sourceName);
                 } else {
                     // This UDT is based on another UDT, set it's TypeDesc to unkknown as looking for the base type recursively
@@ -190,8 +190,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                     // in
                     // module etc.
                     // It would have to be done recursively with a direct SQL. No real benefit here..
-                    LOG.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
-                    tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null);
+                    log.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
+                    tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, 0, 0, 0, 0);
                 }
                 break;
             }
@@ -245,11 +245,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Override
     public Integer getPrecision()
     {
-        if (typeDesc.precision != null) {
-            return typeDesc.precision;
-        } else {
-            return 0;
-        }
+        return typeDesc.precision;
     }
 
     @Nullable
@@ -269,21 +265,14 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Override
     public int getMinScale()
     {
-        if (typeDesc.minScale != null) {
-            return typeDesc.minScale;
-        } else {
-            return 0;
-        }
+        return typeDesc.minScale;
     }
 
     @Override
     public int getMaxScale()
     {
-        if (typeDesc.maxScale != null) {
-            return typeDesc.maxScale;
-        } else {
-            return 0;
-        }
+
+        return typeDesc.maxScale;
     }
 
     @NotNull
@@ -334,6 +323,9 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Property(viewable = true, editable = false, order = 5)
     public long getMaxLength()
     {
+        if (typeDesc != null && (typeDesc.dataKind == DBPDataKind.CONTENT || typeDesc.dataKind == DBPDataKind.STRING || typeDesc.dataKind == DBPDataKind.BINARY)) {
+            return typeDesc.charLength;
+        }
         return length;
     }
 
@@ -429,51 +421,53 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     // --------------
     private static final class TypeDesc {
         private final DBPDataKind dataKind;
-        private final Integer     sqlType;
-        private final Integer     precision;
-        private final Integer     minScale;
-        private final Integer     maxScale;
+        private final int sqlType;
+        private final int precision;
+        private final int minScale;
+        private final int maxScale;
+        private final int charLength;
 
-        private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale)
+        private TypeDesc(DBPDataKind dataKind, int sqlType, int precision, int minScale, int maxScale, int charLength)
         {
             this.dataKind = dataKind;
             this.sqlType = sqlType;
             this.precision = precision;
             this.minScale = minScale;
             this.maxScale = maxScale;
+            this.charLength = charLength;
         }
     }
 
     static {
-        PREDEFINED_TYPES.put("ARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, null, null, null));
-        PREDEFINED_TYPES.put("BIGINT", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 20, 0, 0));
-        PREDEFINED_TYPES.put("BINARY", new TypeDesc(DBPDataKind.BINARY, Types.BINARY, 254, null, null));
-        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.CONTENT, Types.BLOB, 2147483647, null, null));
-        PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, null, null, null));
-        PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 254, null, null));
-        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 2147483647, null, null));
-        PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE, 10, null, null));
-        PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 1073741823, null, null));
-        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 31, 0, 31));
-        PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 53, 0, 0));
-        PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 127, null, null));
-        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 10, 0, 0));
-        PREDEFINED_TYPES.put("LONG VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR, 32700, null, null));
-        PREDEFINED_TYPES.put("LONG VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR, 16350, null, null));
-        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 24, 0, 0));
-        PREDEFINED_TYPES.put("REFERENCE", new TypeDesc(DBPDataKind.REFERENCE, Types.REF, null, null, null));
-        PREDEFINED_TYPES.put("ROW", new TypeDesc(DBPDataKind.STRUCT, Types.ROWID, null, null, null));
-        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 5, 0, 0));
-        PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIME, 8, 0, 0));
-        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 32, 0, 12));
-        PREDEFINED_TYPES.put("VARBINARY", new TypeDesc(DBPDataKind.BINARY, Types.VARBINARY, 32762, null, null));
-        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 4000, null, null));
-        PREDEFINED_TYPES.put("VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 16336, null, null));
-        PREDEFINED_TYPES.put("XML", new TypeDesc(DBPDataKind.CONTENT, Types.SQLXML, null, null, null));
+        PREDEFINED_TYPES.put("ARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, 0, 0, 0, 0));
+        PREDEFINED_TYPES.put("BIGINT", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 20, 0, 0, 0));
+        PREDEFINED_TYPES.put("BINARY", new TypeDesc(DBPDataKind.BINARY, Types.BINARY, 0, 0, 0, 254));
+        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.CONTENT, Types.BLOB, 0, 0, 0, 2147483647));
+        PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, 0, 0, 0, 0));
+        PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 0, 0, 0, 254));
+        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 0, 0, 0, 2147483647));
+        PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE, 10, 0, 0, 0));
+        PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 0, 0, 0, 1073741823));
+        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 31, 0, 31, 0));
+        PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 53, 0, 0, 0));
+        PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 0, 0, 0, 127));
+        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 10, 0, 0, 0));
+        PREDEFINED_TYPES.put("LONG VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR, 0, 0, 0, 32700));
+        PREDEFINED_TYPES.put("LONG VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR, 0, 0, 0, 16350));
+        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 24, 0, 0, 0));
+        PREDEFINED_TYPES.put("REFERENCE", new TypeDesc(DBPDataKind.REFERENCE, Types.REF, 0, 0, 0, 0));
+        PREDEFINED_TYPES.put("ROW", new TypeDesc(DBPDataKind.STRUCT, Types.ROWID, 0, 0, 0, 0));
+        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 5, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIME, 8, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 32, 0, 12, 0));
+        PREDEFINED_TYPES.put("VARBINARY", new TypeDesc(DBPDataKind.BINARY, Types.VARBINARY, 0, 0, 0, 32762));
+        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0, 4000));
+        PREDEFINED_TYPES.put("VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0, 16336));
+        PREDEFINED_TYPES.put("XML", new TypeDesc(DBPDataKind.CONTENT, Types.SQLXML, 0, 0, 0, 0));
 
-        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Constants.EXT_TYPE_CURSOR, null, null, null));
+        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Constants.EXT_TYPE_CURSOR, 0, 0, 0, 0));
         PREDEFINED_TYPES.put(DB2Constants.TYPE_NAME_DECFLOAT,
-            new TypeDesc(DBPDataKind.NUMERIC, DB2Constants.EXT_TYPE_DECFLOAT, 34, 0, 0));
+            new TypeDesc(DBPDataKind.NUMERIC, DB2Constants.EXT_TYPE_DECFLOAT, 34, 0, 0, 0));
     }
 
 }

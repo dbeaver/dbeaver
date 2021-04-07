@@ -259,6 +259,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
 
     @Override
     public void setDataType(DB2DataType dataType) {
+        onChangeDataType(this.dataType, dataType);
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
     }

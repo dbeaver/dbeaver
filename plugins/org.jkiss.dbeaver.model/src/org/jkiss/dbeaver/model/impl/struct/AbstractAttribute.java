@@ -19,15 +19,14 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPToolTipObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -252,6 +251,22 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
     @Override
     public String toString() {
         return name + ", type=" + typeName + ", pos=" + ordinalPosition;
+    }
+
+    protected void onChangeDataType(DBSTypedObject oldType, DBSTypedObject newType) {
+        if (oldType != null && newType != null) {
+            DBPDataKind newTypeDataKind = newType.getDataKind();
+            if (oldType.getDataKind() != newTypeDataKind) {
+                long maxLength = newType.getMaxLength();
+                if ((newTypeDataKind == DBPDataKind.STRING || newTypeDataKind == DBPDataKind.CONTENT) && maxLength > this.maxLength) {
+                    this.maxLength = 100;
+                } else {
+                    this.maxLength = CommonUtils.toInt(maxLength, -1);
+                }
+                this.precision = CommonUtils.toInt(newType.getPrecision(), -1);
+                this.scale = CommonUtils.toInt(newType.getScale(), -1);
+            }
+        }
     }
 
 }

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -133,7 +134,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON MATERIALIZED VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS '" + view.getComment() + "'"));
+                    " IS " + SQLUtils.quoteString(view.getDataSource(), view.getComment())));
         }
     }
 
