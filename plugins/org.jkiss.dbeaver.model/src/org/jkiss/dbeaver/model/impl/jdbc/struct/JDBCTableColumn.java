@@ -23,14 +23,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBDummyNumberTransformer;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -182,15 +181,17 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         @Nullable Object valuePattern,
         int maxResults,
         boolean calcCount,
-        boolean formatValues) throws DBException
+        boolean formatValues,
+        boolean caseInsensitiveSearch) throws DBException
     {
+        final String identifier = DBUtils.getQuotedIdentifier(this);
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ");
         if (!calcCount) {
             query.append("DISTINCT ");
         }
-        query.append(DBUtils.getQuotedIdentifier(this));
+        query.append(identifier);
         if (calcCount) {
             query.append(", count(*)");
         } else {
@@ -203,15 +204,24 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //        }
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
         if (valuePattern instanceof String) {
-            query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this));
+            query.append("\nWHERE ");
             if (getDataKind() == DBPDataKind.STRING) {
-                query.append(" LIKE ?");
+                final SQLDialect dialect = getDataSource().getSQLDialect();
+                final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
+                    ? dialect.getCaseInsensitiveExpressionFormatter(DBCLogicalOperator.LIKE)
+                    : null;
+                if (caseInsensitiveSearch && caseInsensitiveFormatter != null) {
+                    query.append(caseInsensitiveFormatter.format(identifier, "?"));
+                } else {
+                    query.append(identifier).append(" LIKE ?");
+                }
+
             } else {
-                query.append(" = ?");
+                query.append(identifier).append(" = ?");
             }
         }
         if (calcCount) {
-            query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
+            query.append("\nGROUP BY ").append(identifier);
             query.append("\nORDER BY 2 DESC");
         } else {
             query.append("\nORDER BY 1");

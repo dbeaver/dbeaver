@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePairExt;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,6 +52,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
 
     private static final String PROP_SHOW_ROW_COUNT = "showRowCount";
     private static final String PROP_QUERY_DATABASE = "queryDatabase";
+    private static final String PROP_CASE_INSENSITIVE_SEARCH = "caseInsensitiveSearch";
 
     private Object value;
     private GenericFilterValueEdit filter;
@@ -94,6 +96,24 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             labelComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Label controlLabel = UIUtils.createControlLabel(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_choose_values);
             controlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (SQLUtils.getDialectFromObject(filter.getAttribute()).supportsLike()) {
+                final Button caseInsensitiveSearchCheck = UIUtils.createCheckbox(
+                    labelComposite,
+                    "Case-insensitive",
+                    "Perform case-insensitive search",
+                    isCaseInsensitiveSearchEnabled(),
+                    1
+                );
+                caseInsensitiveSearchCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        getDialogBoundsSettings().put(PROP_CASE_INSENSITIVE_SEARCH, caseInsensitiveSearchCheck.getSelection());
+                        reloadFilterValues();
+                    }
+                });
+                caseInsensitiveSearchCheck.setEnabled(isQueryDatabaseEnabled());
+                ((GridLayout) labelComposite.getLayout()).numColumns++;
+            }
             if (descReferrer instanceof DBSEntityAssociation) {
                 Link hintLabel = UIUtils.createLink(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_define_description, new SelectionAdapter() {
                     @Override
@@ -240,9 +260,14 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         return CommonUtils.getBoolean(getDialogBoundsSettings().get(PROP_QUERY_DATABASE), true);
     }
 
+    private boolean isCaseInsensitiveSearchEnabled() {
+        return CommonUtils.getBoolean(getDialogBoundsSettings().getBoolean(PROP_CASE_INSENSITIVE_SEARCH), true);
+    }
+
     private void reloadFilterValues() {
         filter.setQueryDatabase(isQueryDatabaseEnabled());
         filter.setShowRowCount(isRowCountEnabled());
+        filter.setCaseInsensitiveSearch(isCaseInsensitiveSearchEnabled());
         filter.loadValues(() ->
             UIUtils.asyncExec(() -> {
                 Table table = filter.getTableViewer().getTable();

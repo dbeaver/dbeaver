@@ -494,6 +494,7 @@ public class ReferenceValueEditor {
                     precedingKeys,
                     sortByValue,
                     sortAsc,
+                    false,
                     200);
 //                        for (DBDLabelValuePair pair : enumValues) {
 //                            keyValues.put(pair.getValue(), pair.getLabel());

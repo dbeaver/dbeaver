@@ -86,6 +86,7 @@ class GenericFilterValueEdit {
     private transient final Set<Object> savedValues = new HashSet<>();
     private boolean queryDatabase = true;
     private boolean showRowCount;
+    private boolean caseInsensitiveSearch;
 
     private transient volatile KeyLoadJob loadJob;
 
@@ -292,6 +293,7 @@ class GenericFilterValueEdit {
                         null,
                         true,
                         true,
+                        caseInsensitiveSearch,
                         MAX_MULTI_VALUES);
                 }
                 return null;
@@ -313,8 +315,10 @@ class GenericFilterValueEdit {
                         result = attributeEnumerable.getValueEnumeration(
                             session,
                             filterPattern,
-                            MAX_MULTI_VALUES, showRowCount,
-                            true);
+                            MAX_MULTI_VALUES,
+                            showRowCount,
+                            true,
+                            caseInsensitiveSearch);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -518,6 +522,10 @@ class GenericFilterValueEdit {
 
     void setShowRowCount(boolean showRowCount) {
         this.showRowCount = showRowCount;
+    }
+
+    public void setCaseInsensitiveSearch(boolean caseInsensitiveSearch) {
+        this.caseInsensitiveSearch = caseInsensitiveSearch;
     }
 
     private abstract class KeyLoadJob extends AbstractJob {
