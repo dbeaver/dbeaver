@@ -54,11 +54,11 @@ import java.util.Map;
  */
 public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DBPQualifiedObject {
 
-    private static final Log LOG = Log.getLog(DB2DataType.class);
+    private static final Log log = Log.getLog(DB2DataType.class);
 
     private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>(32); // See init below
 
-    private DBSObject parentNode; // see below
+    private DBSObject parentNode; // See below
 
     private DB2Schema db2Schema;
 
@@ -143,7 +143,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                 try {
                     this.db2Schema = db2DataSource.getSchema(new VoidProgressMonitor(), schemaName);
                 } catch (DBException e) {
-                    LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??", e);
+                    log.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??", e);
                     // In this case, 'this.db2Schema' will be null...
                 }
             }
@@ -181,7 +181,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
             default:
                 // If the UDT is based on a SYSIBM dataType, get it
                 if ((sourceSchemaName != null) && (sourceSchemaName.equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
-                    LOG.debug(name + " is a User Defined Type base on a System Data Type.");
+                    log.debug(name + " is a User Defined Type base on a System Data Type.");
                     tempTypeDesc = PREDEFINED_TYPES.get(sourceName);
                 } else {
                     // This UDT is based on another UDT, set it's TypeDesc to unkknown as looking for the base type recursively
@@ -190,7 +190,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                     // in
                     // module etc.
                     // It would have to be done recursively with a direct SQL. No real benefit here..
-                    LOG.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
+                    log.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
                     tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, 0, 0, 0, 0);
                 }
                 break;
