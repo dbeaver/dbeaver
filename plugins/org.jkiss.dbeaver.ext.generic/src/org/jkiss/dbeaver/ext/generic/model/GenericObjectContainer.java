@@ -380,9 +380,10 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        List<DBSObject> childrenList = new ArrayList<>();
-        childrenList.addAll(getTables(monitor));
-        childrenList.addAll(getSynonyms(monitor));
+        List<DBSObject> childrenList = new ArrayList<>(getTables(monitor));
+        if (dataSource.getMetaModel().supportsSynonyms(dataSource)) {
+            childrenList.addAll(getSynonyms(monitor));
+        }
         return childrenList;
     }
 
