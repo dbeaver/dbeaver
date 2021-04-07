@@ -245,7 +245,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (controller.isRecordMode()) {
             printRecord();
         } else {
-            printGrid(append);
+            // Don't use 'append' to cause the grid to refresh - recalculate column widths based on new data
+            printGrid(false);
         }
     }
 
@@ -254,6 +255,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         int maxColumnSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
         boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        boolean delimTop = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP);
+        boolean delimBottom = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM);
         boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
         this.showNulls = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
 
@@ -288,6 +291,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
 
         if (!append) {
+            if (delimTop) {
+                // Print divider before header
+                printSeparator(delimLeading, delimTrailing, colWidths, grid);
+            }
             // Print header
             if (delimLeading) grid.append("|");
             for (int i = 0; i < attrs.size(); i++) {
@@ -305,16 +312,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             grid.append("\n");
 
             // Print divider
-            // Print header
-            if (delimLeading) grid.append("|");
-            for (int i = 0; i < attrs.size(); i++) {
-                if (i > 0) grid.append("|");
-                for (int k = colWidths[i]; k > 0; k--) {
-                    grid.append("-");
-                }
-            }
-            if (delimTrailing) grid.append("|");
-            grid.append("\n");
+            printSeparator(delimLeading, delimTrailing, colWidths, grid);
         }
 
         // Print rows
@@ -356,12 +354,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             if (delimTrailing) grid.append("|");
             grid.append("\n");
         }
+        if (delimBottom) {
+            // Print divider after rows
+            printSeparator(delimLeading, delimTrailing, colWidths, grid);
+        }
         grid.setLength(grid.length() - 1); // cut last line feed
 
         if (append) {
             text.append(grid.toString());
         } else {
+            // Backup scroll position to restore it later
+            final int topIndex = text.getTopIndex();
+            final int horizontalIndex = text.getHorizontalIndex();
             text.setText(grid.toString());
+            text.setTopIndex(topIndex);
+            text.setHorizontalIndex(horizontalIndex);
         }
 
         totalRows = allRows.size();
@@ -438,6 +445,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         DBPPreferenceStore prefs = getController().getPreferenceStore();
         boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
         boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        boolean delimTop = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP);
+        boolean delimBottom = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM);
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
         boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
         String indent = extraSpaces ? " " : "";
@@ -459,9 +468,12 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 valueWidth = Math.max(valueWidth, values[i].length());
             }
         }
-        if (extraSpaces) {
-            //nameWidth += 1;
-            //valueWidth += 1;
+        final int extraSpacesNum = extraSpaces ? 2 : 0;
+        final int[] colWidths = {nameWidth + extraSpacesNum, valueWidth + extraSpacesNum};
+
+        if (delimTop) {
+            // Print divider before header
+            printSeparator(delimLeading, delimTrailing, colWidths, grid);
         }
 
         // Header
@@ -478,14 +490,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (delimTrailing) grid.append("|");
         grid.append("\n");
 
-        if (delimLeading) grid.append("|");
-        if (extraSpaces) grid.append("--");
-        for (int j = 0; j < nameWidth; j++) grid.append("-");
-        grid.append("|");
-        if (extraSpaces) grid.append("--");
-        for (int j = 0; j < valueWidth; j++) grid.append("-");
-        if (delimTrailing) grid.append("|");
-        grid.append("\n");
+        // Print divider between header and data
+        printSeparator(delimLeading, delimTrailing, colWidths, grid);
 
         if (currentRow != null) {
             // Values
@@ -511,8 +517,28 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 grid.append("\n");
             }
         }
+        if (delimBottom) {
+            // Print divider after record
+            printSeparator(delimLeading, delimTrailing, colWidths, grid);
+        }
         grid.setLength(grid.length() - 1); // cut last line feed
         text.setText(grid.toString());
+    }
+
+    private void printSeparator(boolean delimLeading, boolean delimTrailing, int[] colWidths, StringBuilder output) {
+        if (delimLeading) {
+            output.append('+');
+        }
+        for (int i = 0; i < colWidths.length; i++) {
+            if (i > 0) output.append('+');
+            for (int k = colWidths[i]; k > 0; k--) {
+                output.append('-');
+            }
+        }
+        if (delimTrailing) {
+            output.append('+');
+        }
+        output.append('\n');
     }
 
     @Override
