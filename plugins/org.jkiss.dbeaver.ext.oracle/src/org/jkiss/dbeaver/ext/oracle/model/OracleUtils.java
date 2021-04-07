@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.*;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
@@ -44,6 +46,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -99,6 +102,7 @@ public class OracleUtils {
             }
 
             String ddl;
+            // Read main object DDL
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
                 dbStat.setString(1, objectType);
@@ -129,9 +133,10 @@ public class OracleUtils {
             }
             ddl = ddl.trim();
 
-            if (ddlFormat != OracleDDLFormat.COMPACT) {
+            if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
+                // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+                        "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('INDEX',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
                     dbStat.setString(1, object.getName());
                     if (schema != null) {
                         dbStat.setString(2, schema.getName());
@@ -142,9 +147,14 @@ public class OracleUtils {
                         }
                     }
                 } catch (Exception e) {
-                    // No dependent DDL or something went wrong
-                    log.debug("Error reading dependent DDL", e);
+                    // No dependent index DDL or something went wrong
+                    log.debug("Error reading dependent index DDL", e);
                 }
+            }
+
+            if (ddlFormat != OracleDDLFormat.COMPACT) {
+                // Add object and objects columns info to main DDL
+                ddl = addCommentsToDDL(monitor, object, ddl);
             }
             return ddl;
 
@@ -158,6 +168,46 @@ public class OracleUtils {
         } finally {
             monitor.done();
         }
+    }
+
+    private static String addCommentsToDDL(DBRProgressMonitor monitor, OracleTableBase object, String ddl) {
+        StringBuilder ddlBuilder = new StringBuilder(ddl);
+        String objectFullName = object.getFullyQualifiedName(DBPEvaluationContext.DDL);
+
+        String objectComment = object.getComment(monitor);
+        if (!CommonUtils.isEmpty(objectComment)) {
+            String objectTypeName = "TABLE";
+            if (object instanceof OracleMaterializedView) {
+                objectTypeName = "MATERIALIZED VIEW";
+            }
+            ddlBuilder.append("\n\n").append("COMMENT ON ").append(objectTypeName).append(" ").append(objectFullName).append(" IS ").
+                    append(SQLUtils.quoteString(object.getDataSource(), objectComment)).append(";");
+        }
+
+        try {
+            List<OracleTableColumn> attributes = object.getAttributes(monitor);
+            if (!CommonUtils.isEmpty(attributes)) {
+                List<DBEPersistAction> actions = new ArrayList<>();
+                if (CommonUtils.isEmpty(objectComment)) {
+                    ddlBuilder.append("\n");
+                }
+                for (OracleTableColumn column : CommonUtils.safeCollection(attributes)) {
+                    String columnComment = column.getComment(monitor);
+                    if (!CommonUtils.isEmpty(columnComment)) {
+                        OracleTableColumnManager.addColumnCommentAction(monitor, actions, column);
+                    }
+                }
+                if (!CommonUtils.isEmpty(actions)) {
+                    for (DBEPersistAction action : actions) {
+                        ddlBuilder.append("\n").append(action.getScript());
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.debug("Error reading object columns", e);
+        }
+
+        return ddlBuilder.toString();
     }
 
     public static void setCurrentSchema(JDBCSession session, String schema) throws SQLException {
