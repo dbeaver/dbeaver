@@ -245,8 +245,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (controller.isRecordMode()) {
             printRecord();
         } else {
-            // Don't use 'append' to cause the grid to refresh - recalculate column widths based on new data
-            printGrid(false);
+            printGrid(append);
         }
     }
 
@@ -290,38 +289,31 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
         }
 
-        if (!append) {
-            if (delimTop) {
-                // Print divider before header
-                printSeparator(delimLeading, delimTrailing, colWidths, grid);
-            }
-            // Print header
-            if (delimLeading) grid.append("|");
-            for (int i = 0; i < attrs.size(); i++) {
-                if (i > 0) grid.append("|");
-                if (extraSpaces) grid.append(" ");
-                DBDAttributeBinding attr = attrs.get(i);
-                String attrName = getAttributeName(attr);
-                grid.append(attrName);
-                for (int k = colWidths[i] - attrName.length() - extraSpacesNum; k > 0; k--) {
-                    grid.append(" ");
-                }
-                if (extraSpaces) grid.append(" ");
-            }
-            if (delimTrailing) grid.append("|");
-            grid.append("\n");
-
-            // Print divider
+        if (delimTop) {
+            // Print divider before header
             printSeparator(delimLeading, delimTrailing, colWidths, grid);
         }
+        // Print header
+        if (delimLeading) grid.append("|");
+        for (int i = 0; i < attrs.size(); i++) {
+            if (i > 0) grid.append("|");
+            if (extraSpaces) grid.append(" ");
+            DBDAttributeBinding attr = attrs.get(i);
+            String attrName = getAttributeName(attr);
+            grid.append(attrName);
+            for (int k = colWidths[i] - attrName.length() - extraSpacesNum; k > 0; k--) {
+                grid.append(" ");
+            }
+            if (extraSpaces) grid.append(" ");
+        }
+        if (delimTrailing) grid.append("|");
+        grid.append("\n");
+
+        // Print divider
+        printSeparator(delimLeading, delimTrailing, colWidths, grid);
 
         // Print rows
-        int firstRow = append ? totalRows : 0;
-        if (append) {
-            grid.append("\n");
-        }
-        for (int i = firstRow; i < allRows.size(); i++) {
-            ResultSetRow row = allRows.get(i);
+        for (ResultSetRow row : allRows) {
             if (delimLeading) grid.append("|");
             for (int k = 0; k < attrs.size(); k++) {
                 if (k > 0) grid.append("|");
@@ -360,15 +352,17 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
         grid.setLength(grid.length() - 1); // cut last line feed
 
+        final int topIndex = text.getTopIndex();
+        final int horizontalIndex = text.getHorizontalIndex();
+        final int caretOffset = text.getCaretOffset();
+
+        text.setText(grid.toString());
+
         if (append) {
-            text.append(grid.toString());
-        } else {
-            // Backup scroll position to restore it later
-            final int topIndex = text.getTopIndex();
-            final int horizontalIndex = text.getHorizontalIndex();
-            text.setText(grid.toString());
+            // Restore scroll and caret position
             text.setTopIndex(topIndex);
             text.setHorizontalIndex(horizontalIndex);
+            text.setCaretOffset(caretOffset);
         }
 
         totalRows = allRows.size();
