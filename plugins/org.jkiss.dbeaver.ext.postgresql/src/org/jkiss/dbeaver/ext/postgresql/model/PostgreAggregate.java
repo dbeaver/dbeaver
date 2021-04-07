@@ -129,7 +129,7 @@ public class PostgreAggregate implements PostgreObject, DBPOverloadedObject, DBP
     @NotNull
     @Override
     public String getOverloadedName() {
-        return PostgreProcedure.makeOverloadedName(schema, name, function.getInputParameters(), true, false);
+        return function == null ? name : PostgreProcedure.makeOverloadedName(schema, name, function.getInputParameters(), true, false);
     }
 
 }
