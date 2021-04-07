@@ -458,7 +458,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 return "<No references>";
             }
             ReferenceKey key = (ReferenceKey) element;
-            String title = null;
+            String title = "";
             DBSObject targetEntity = key.targetEntity;
             if (targetEntity != null && key.refAssociation != null) {
                 title = targetEntity.getName() + " (" + key.refAssociation.getName() + ")";
