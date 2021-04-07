@@ -891,7 +891,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         state = STATE_MATCHED;
                     } else {
                         state = STATE_ALIAS_AS;
-                        continue;
                     }
                 }
                 if (state == STATE_ALIAS_AS && tok.getData() == SQLTokenType.T_KEYWORD && "AS".equalsIgnoreCase(value)) {
