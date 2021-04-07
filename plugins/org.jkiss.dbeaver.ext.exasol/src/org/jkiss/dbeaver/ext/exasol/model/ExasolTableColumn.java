@@ -145,6 +145,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
     @Override
     public void setDataType(ExasolDataType dataType) {
+        onChangeDataType(this.dataType, dataType);
         if (!this.dataType.getTypeName().equals(dataType.getTypeName()))
             this.changed = true;
         this.dataType = dataType;
