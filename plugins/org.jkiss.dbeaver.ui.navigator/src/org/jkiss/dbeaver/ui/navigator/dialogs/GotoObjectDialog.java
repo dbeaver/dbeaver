@@ -171,6 +171,11 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     }
 
     @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return null;
+    }
+
+    @Override
     protected IDialogSettings getDialogSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
