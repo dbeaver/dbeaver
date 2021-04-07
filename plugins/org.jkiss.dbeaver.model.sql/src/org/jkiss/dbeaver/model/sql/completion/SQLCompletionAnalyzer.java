@@ -211,17 +211,19 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         rootObject = dataSource;
                     }
                 }
-                if (rootObject != null) {
-                    makeProposalsFromChildren(rootObject, null, false, parameters);
-                }
-                if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
-                    // Filter out non-joinable tables
-                    DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
-                    if (leftTable instanceof DBSEntity) {
-                        filterNonJoinableProposals((DBSEntity)leftTable);
+                if (!isInLiteral) {
+                    if (rootObject != null) {
+                        makeProposalsFromChildren(rootObject, null, false, parameters);
+                    }
+                    if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
+                        // Filter out non-joinable tables
+                        DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
+                        if (leftTable instanceof DBSEntity) {
+                            filterNonJoinableProposals((DBSEntity) leftTable);
+                        }
                     }
                 }
-            } else {
+            } else if (!isInLiteral) {
                 DBSObject rootObject = null;
                 if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Part of column name
@@ -279,6 +281,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
 
             if (!request.isSimpleMode() &&
+                !isInLiteral &&
                 (queryType ==  SQLCompletionRequest.QueryType.EXEC ||
                 (queryType == SQLCompletionRequest.QueryType.COLUMN && request.getContext().isSearchProcedures())) &&
                 dataSource instanceof DBSObjectContainer)
@@ -286,7 +289,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 makeProceduresProposals(dataSource, wordPart, true);
             }
         } else {
-            if (!request.isSimpleMode() && !CommonUtils.isEmpty(prevWords)) {
+            if (!isInLiteral && !request.isSimpleMode() && !CommonUtils.isEmpty(prevWords)) {
                 if (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord)) {
                     makeProceduresProposals(dataSource, wordPart, false);
                 }
