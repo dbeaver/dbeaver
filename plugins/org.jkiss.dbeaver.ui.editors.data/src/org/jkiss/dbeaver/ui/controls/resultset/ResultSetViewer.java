@@ -2448,7 +2448,6 @@ public class ResultSetViewer extends Viewer
                 if (row != null) {
                     manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
                     manager.add(ActionUtils.makeCommandContribution(site, IActionConstants.CMD_PASTE_SPECIAL));
-                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
                 }
 
                 manager.add(new Separator());
@@ -2482,15 +2481,26 @@ public class ResultSetViewer extends Viewer
                     manager.add(navigateMenu);
                 }
 
+                final MenuManager editMenu = new MenuManager(
+                    ResultSetMessages.controls_resultset_viewer_action_edit,
+                    DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
+                    MENU_ID_EDIT
+                );
+
                 if (row != null) {
-//                    MenuManager editMenu = new MenuManager(
-//                        IDEWorkbenchMessages.Workbench_edit,
-//                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
-//                        MENU_ID_EDIT); //$NON-NLS-1$
-                    manager.add(new Separator());
-                    fillEditMenu(manager, attr, row, valueController);
-                    //manager.add(editMenu);
+                    fillEditMenu(editMenu, attr, row, valueController);
                 }
+
+                {
+                    editMenu.add(new Separator());
+                    editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
+                    editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
+                    editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
+                }
+
+                manager.add(new Separator());
+                manager.add(editMenu);
+                manager.add(new Separator());
             }
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
@@ -2572,7 +2582,7 @@ public class ResultSetViewer extends Viewer
         }
         viewMenu.add(new TransformComplexTypesToggleAction());
         if (attr.getDataKind() == DBPDataKind.BINARY || attr.getDataKind() == DBPDataKind.CONTENT) {
-            MenuManager binaryFormatMenu = new MenuManager("Binary format");
+            MenuManager binaryFormatMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_binary_format);
             binaryFormatMenu.setRemoveAllWhenShown(true);
             binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
             viewMenu.add(binaryFormatMenu);
@@ -2639,6 +2649,8 @@ public class ResultSetViewer extends Viewer
 
             // Edit items
             if (!valueController.isReadOnly()) {
+                editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
+                editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT_INLINE));
                 if (!DBUtils.isNullValue(value) && attr != null && !attr.isRequired()) {
                     editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_NULL));
                 }
@@ -2659,8 +2671,6 @@ public class ResultSetViewer extends Viewer
             } catch (Exception e) {
                 log.error(e);
             }
-
-            editMenu.add(new Separator());
         }
     }
 
