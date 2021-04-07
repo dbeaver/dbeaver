@@ -699,7 +699,7 @@ public class PostgreSchema implements
         protected PostgreAggregate fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreAggregate(owner, dbResult);
+            return new PostgreAggregate(session.getProgressMonitor(), owner, dbResult);
         }
     }
 
