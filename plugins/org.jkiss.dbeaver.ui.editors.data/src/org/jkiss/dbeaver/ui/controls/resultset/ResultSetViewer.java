@@ -2582,7 +2582,7 @@ public class ResultSetViewer extends Viewer
         }
         viewMenu.add(new TransformComplexTypesToggleAction());
         if (attr.getDataKind() == DBPDataKind.BINARY || attr.getDataKind() == DBPDataKind.CONTENT) {
-            MenuManager binaryFormatMenu = new MenuManager("Binary format");
+            MenuManager binaryFormatMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_binary_format);
             binaryFormatMenu.setRemoveAllWhenShown(true);
             binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
             viewMenu.add(binaryFormatMenu);
