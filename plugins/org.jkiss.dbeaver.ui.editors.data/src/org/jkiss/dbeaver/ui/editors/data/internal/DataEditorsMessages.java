@@ -70,6 +70,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_show_nulls;
     public static String pref_page_database_resultsets_label_text_delimiter_leading;
     public static String pref_page_database_resultsets_label_text_delimiter_trailing;
+    public static String pref_page_database_resultsets_label_text_delimiter_top;
+    public static String pref_page_database_resultsets_label_text_delimiter_bottom;
     public static String pref_page_database_resultsets_label_text_extra_spaces;
     
 	public static String virtual_structure_editor_abstract_job_load_entity;
