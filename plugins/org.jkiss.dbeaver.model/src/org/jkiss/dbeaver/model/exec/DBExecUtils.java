@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -648,7 +649,7 @@ public class DBExecUtils {
                 }
             }
 
-            boolean needsTableMetaForColumnResolution = session.getDataSource().getInfo().needsTableMetaForColumnResolution();
+            boolean needsTableMetaForColumnResolution = dataSource.getInfo().needsTableMetaForColumnResolution();
 
             final Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
 
@@ -711,7 +712,12 @@ public class DBExecUtils {
                     {
                         SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                         if (selectItem.isPlainColumn()) {
-                            columnName = DBUtils.getUnQuotedIdentifier(session.getDataSource(), selectItem.getName());
+                            if (DBUtils.isQuotedIdentifier(dataSource, columnName)) {
+                                columnName = DBUtils.getUnQuotedIdentifier(dataSource, selectItem.getName());
+                            } else {
+                                // #12008
+                                columnName = DBObjectNameCaseTransformer.transformName(dataSource, columnName);
+                            }
                         }
                     }
 
