@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -84,7 +85,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (command.getProperty("comment") != null) {
-            addColumnCommentAction(actions, command.getObject());
+            addColumnCommentAction(new VoidProgressMonitor(), actions, command.getObject());
         }
     }
 
@@ -100,15 +101,15 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
                 " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
-            addColumnCommentAction(actionList, column);
+            addColumnCommentAction(new VoidProgressMonitor(), actionList, column);
         }
     }
 
-    static void addColumnCommentAction(List<DBEPersistAction> actionList, OracleTableColumn column) {
+    public static void addColumnCommentAction(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, OracleTableColumn column) {
         actionList.add(new SQLDatabasePersistAction(
             "Comment column",
             "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS '" + column.getComment(new VoidProgressMonitor()) + "'"));
+                " IS " + SQLUtils.quoteString(column.getDataSource(), column.getComment(monitor))));
     }
 
     @Override

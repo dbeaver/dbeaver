@@ -127,7 +127,8 @@
                 geoMap.setView(bounds.getCenter(), geoMap.getZoom());
             }
         } else {
-            geoMap.fitBounds(bounds);
+            let geomBounds = ${geomBounds};
+            geoMap.fitBounds(geomBounds === undefined ? bounds : geomBounds);
         }
 
         function showTools(toolsVisible) {

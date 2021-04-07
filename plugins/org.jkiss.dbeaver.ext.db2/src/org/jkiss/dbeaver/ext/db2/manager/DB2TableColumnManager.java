@@ -73,7 +73,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     @Override
     public boolean canEditObject(DB2TableColumn object)
     {
-        // Edit is only availabe for DB2Table and not for other kinds of tables (View, MQTs, Nicknames..)
+        // Edit is only available for DB2Table and not for other kinds of tables (View, MQTs, Nicknames..)
         DB2TableBase db2TableBase = object.getParentObject();
         if ((db2TableBase != null) & (db2TableBase.getClass().equals(DB2Table.class))) {
             return true;
@@ -105,7 +105,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
 
         boolean hasColumnChanges = false;
         if (!command.getProperties().isEmpty()) {
-            final String deltaSQL = computeDeltaSQL(command);
+            final String deltaSQL = computeDeltaSQL(monitor, command);
             if (!deltaSQL.isEmpty()) {
                 hasColumnChanges = true;
                 String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL), deltaSQL);
@@ -135,7 +135,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // -------
     // Helpers
     // -------
-    private String computeDeltaSQL(ObjectChangeCommand command)
+    private String computeDeltaSQL(DBRProgressMonitor monitor, ObjectChangeCommand command)
     {
 
         if (command.getProperties().isEmpty() ||
@@ -170,7 +170,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         if (command.hasProperty("dataType") || command.hasProperty("maxLength") || command.hasProperty("scale")) {
             sb.append(LINE_SEPARATOR);
             sb.append(CLAUSE_SET_TYPE);
-            sb.append(DBUtils.getFullTypeName(column));
+            DataTypeModifier.appendModifier(monitor, column, sb, command);
         }
 
         return sb.toString();
