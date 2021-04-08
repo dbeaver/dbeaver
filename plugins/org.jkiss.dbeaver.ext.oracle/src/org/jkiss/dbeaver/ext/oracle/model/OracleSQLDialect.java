@@ -402,6 +402,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @Nullable
     @Override
     public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {
         if (operator == DBCLogicalOperator.LIKE) {
