@@ -46,6 +46,7 @@ public interface DBSDictionary
      * @param preceedingKeys other constrain key values. May be null.
      * @param sortByValue sort results by value
      * @param sortAsc ascending sorting (irrelevant is @sortByValue is false)
+     * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
      * @param maxResults maximum enumeration values in result set
      * @return statement with result set which contains valid enumeration values.
      */
@@ -57,6 +58,7 @@ public interface DBSDictionary
         @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean sortByValue,
         boolean sortAsc,
+        boolean caseInsensitiveSearch,
         int maxResults)
         throws DBException;
 
