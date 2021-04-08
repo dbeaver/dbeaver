@@ -300,7 +300,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         copyAsMenu.add(new Action(ResultSetMessages.dialog_copy_as_configuration_name) {
             @Override
             public void run() {
-                new CopyAsConfigurationDialog().open();
+                new CopyAsConfigurationDialog(viewer).open();
             }
         });
     }
