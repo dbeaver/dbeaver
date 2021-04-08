@@ -178,6 +178,10 @@ public class ResultSetMessages extends NLS {
     public static String dialog_toolbar_show_none;
     public static String dialog_toolbar_sort;
 
+    public static String dialog_copy_as_configuration_name;
+    public static String dialog_copy_as_configuration_error_saving_processor_properties_title;
+    public static String dialog_copy_as_configuration_error_saving_processor_properties_message;
+
     // Pref pages
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
     public static String pref_page_content_editor_checkbox_commit_on_value_apply;
