@@ -780,7 +780,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
                 ? dialect.getCaseInsensitiveExpressionFormatter(DBCLogicalOperator.LIKE)
                 : null;
-
             if (hasCond) query.append(" AND (");
             if (searchInKeys) {
                 final String identifier = DBUtils.getQuotedIdentifier(keyColumn);

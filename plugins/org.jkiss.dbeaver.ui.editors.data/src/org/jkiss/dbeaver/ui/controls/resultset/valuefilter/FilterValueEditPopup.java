@@ -28,6 +28,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class FilterValueEditPopup extends AbstractPopupPanel {
@@ -96,7 +98,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             labelComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Label controlLabel = UIUtils.createControlLabel(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_choose_values);
             controlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (SQLUtils.getDialectFromObject(filter.getAttribute()).supportsLike()) {
+            if (isAttributeSupportsLike()) {
                 final Button caseInsensitiveSearchCheck = UIUtils.createCheckbox(
                     labelComposite,
                     ResultSetMessages.dialog_filter_value_edit_table_checkbox_case_insensitive_label,
@@ -262,6 +264,12 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
 
     private boolean isCaseInsensitiveSearchEnabled() {
         return CommonUtils.getBoolean(getDialogBoundsSettings().getBoolean(PROP_CASE_INSENSITIVE_SEARCH), true);
+    }
+
+    private boolean isAttributeSupportsLike() {
+        final DBDAttributeBinding attribute = filter.getAttribute();
+        return ArrayUtils.contains(DBUtils.getAttributeOperators(attribute), DBCLogicalOperator.LIKE)
+            && SQLUtils.getDialectFromObject(attribute).getCaseInsensitiveExpressionFormatter(DBCLogicalOperator.LIKE) != null;
     }
 
     private void reloadFilterValues() {

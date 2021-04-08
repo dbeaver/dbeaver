@@ -268,8 +268,6 @@ public interface SQLDialect {
 
     boolean supportsNullability();
 
-    boolean supportsLike();
-
     @Nullable
     SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator);
 
