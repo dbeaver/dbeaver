@@ -996,10 +996,6 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 }
             }
         }
-        if (!readAllTypes && skipTables && valueType == Types.ARRAY) {
-            // Skip arrays as well
-            return null;
-        }
 
         return new PostgreDataType(
             session,

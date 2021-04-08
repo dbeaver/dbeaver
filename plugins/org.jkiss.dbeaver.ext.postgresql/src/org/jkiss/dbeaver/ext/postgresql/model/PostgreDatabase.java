@@ -608,16 +608,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
                 StringBuilder sql = new StringBuilder(256);
+                boolean supportsSysTypColumn = supportsSysTypCategoryColumn(session); // Do not read all array and table types, unless the user has decided otherwise
                 sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
-                        "\nFROM pg_catalog.pg_type t" +
-                        "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                        "\nFROM pg_catalog.pg_type t");
+                if (!readAllTypes && supportsSysTypColumn) {
+                    sql.append("\nLEFT OUTER JOIN pg_catalog.pg_type et ON et.oid=t.typelem "); // If typelem is not 0 then it identifies another row in pg_type
+                }
+                sql.append("\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
                         "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-                        "\nWHERE t.typname IS NOT null");
-                if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
-                    if (supportsSysTypCategoryColumn(session)) {
-                        sql.append("\nAND t.typcategory <> 'A'");
+                        "\nWHERE t.typname IS NOT NULL");
+                if (!readAllTypes) {
+                    sql.append("\nAND (c.relkind IS NULL OR c.relkind = 'c')");
+                    if (supportsSysTypColumn) {
+                        sql.append(" AND (et.typcategory IS NULL OR et.typcategory <> 'C')");
                     }
-                    sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
                 }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
