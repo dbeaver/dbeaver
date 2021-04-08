@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainerOptions;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -48,14 +48,16 @@ class CopyAsConfigurationDialog extends BaseDialog {
     private static final Log log = Log.getLog(CopyAsConfigurationDialog.class);
 
     private final Map<DataTransferProcessorDescriptor, Map<String, Object>> propertiesMap = CopyAsConfigurationStorage.getProcessorProperties();
+    private final IResultSetController resultSetController;
 
     private TableViewer processorsTable;
     private PropertyTreeViewer propertyEditor;
     private PropertySourceCustom propertySource;
     private DataTransferProcessorDescriptor selectedProcessor;
 
-    CopyAsConfigurationDialog() {
+    CopyAsConfigurationDialog(IResultSetController resultSetController) {
         super(UIUtils.getActiveShell(), ResultSetMessages.dialog_copy_as_configuration_name, null);
+        this.resultSetController = resultSetController;
     }
 
     @Override
@@ -74,25 +76,20 @@ class CopyAsConfigurationDialog extends BaseDialog {
         createNodesTable(sash);
         propertyEditor = new PropertyTreeViewer(sash, SWT.BORDER);
 
-        ResultSetViewer viewer = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
-        if (viewer != null) {
-            ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
-            ResultSetDataContainer dataContainer = new ResultSetDataContainer(viewer, options);
-            List<DataTransferProcessorDescriptor> model = DataTransferRegistry.getInstance().getAvailableConsumers(Collections.singleton(dataContainer)).stream()
-                .flatMap(node -> Arrays.stream(node.getProcessors()))
-                .filter(processor -> !processor.isBinaryFormat())
-                .sorted(Comparator.comparing(DataTransferProcessorDescriptor::getName))
-                .collect(Collectors.toList());
-            if (!model.isEmpty()) {
-                processorsTable.setInput(model);
-                selectedProcessor = model.get(0);
-                processorsTable.setSelection(new StructuredSelection(selectedProcessor));
-                showPropertiesForSelectedProcessor();
-            } else {
-                log.debug("No appropriate descriptor found, nothing to add to the configure page");
-            }
+        ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSetController, options);
+        List<DataTransferProcessorDescriptor> model = DataTransferRegistry.getInstance().getAvailableConsumers(Collections.singleton(dataContainer)).stream()
+            .flatMap(node -> Arrays.stream(node.getProcessors()))
+            .filter(processor -> !processor.isBinaryFormat())
+            .sorted(Comparator.comparing(DataTransferProcessorDescriptor::getName))
+            .collect(Collectors.toList());
+        if (!model.isEmpty()) {
+            processorsTable.setInput(model);
+            selectedProcessor = model.get(0);
+            processorsTable.setSelection(new StructuredSelection(selectedProcessor));
+            showPropertiesForSelectedProcessor();
         } else {
-            log.debug("Unable to fill processors table due: result set viewer not found");
+            log.debug("No appropriate descriptor found, nothing to add to the configure page");
         }
 
         UIUtils.maxTableColumnsWidth(processorsTable.getTable());
