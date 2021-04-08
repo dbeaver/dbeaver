@@ -215,13 +215,13 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                                 return;
                             }
                         } catch (DBException e) {
-                            log.warn("Unexpected DBException when calculating UI options for disableReferentialIntegrity checkbox");
+                            log.debug("Unexpected error when calculating UI options for disableReferentialIntegrity checkbox", e);
                         }
                     }
                 }
             });
         } catch (InvocationTargetException e) {
-            log.warn("Unexpected InvocationTargetException when calculating UI options for disableReferentialIntegrity checkbox");
+            log.debug("Unexpected error", e.getTargetException());
         } catch (InterruptedException e) {
             //ignore
         }
