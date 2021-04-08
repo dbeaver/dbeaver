@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -35,10 +34,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Types;
 import java.util.*;
 
 /**
@@ -423,7 +424,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public Object[] getPossibleValues(PostgreAttribute column)
         {
-            Set<PostgreDataType> types = new TreeSet<>(Comparator.comparing(JDBCDataType::getTypeName));
+            List<PostgreDataType> types = new ArrayList<>();
             try {
                 Collection<PostgreSchema> schemas = column.getDatabase().getSchemas(new VoidProgressMonitor());
                 for (PostgreSchema schema : schemas) {
@@ -434,7 +435,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 log.debug("Can't get data types from database schemas", e);
                 types.addAll(column.getDatabase().getLocalDataTypes());
             }
-            return types.toArray(new PostgreDataType[0]);
+            return types.stream()
+                    .sorted(Comparator
+                            .comparing((DBSTypedObject type) -> type.getTypeID() == Types.ARRAY) // Sort the arrays data types at the end of the list
+                            .thenComparing(DBSTypedObject::getTypeName))
+                    .toArray(PostgreDataType[]::new);
         }
     }
 
