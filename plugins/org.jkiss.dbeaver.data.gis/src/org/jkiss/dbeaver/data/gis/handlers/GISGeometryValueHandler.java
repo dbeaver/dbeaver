@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.data.gis.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -121,7 +122,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             }
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
-        } else if (object instanceof byte[] || object instanceof JDBCContentBytes) {
+        } else if (object instanceof byte[] || (object instanceof JDBCContentBytes && !DBUtils.isNullValue(object))) {
             byte[] bytes;
             if (object instanceof JDBCContentBytes) {
                 bytes = ((JDBCContentBytes) object).getRawValue();
@@ -208,7 +209,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
             return "'" + value.toString() + "'";
-        } else if (value instanceof JDBCContentBytes) {
+        } else if (value instanceof JDBCContentBytes && !DBUtils.isNullValue(value)) {
             byte[] bytes = ((JDBCContentBytes) value).getRawValue();
             if (bytes.length != 0) {
                 try {
