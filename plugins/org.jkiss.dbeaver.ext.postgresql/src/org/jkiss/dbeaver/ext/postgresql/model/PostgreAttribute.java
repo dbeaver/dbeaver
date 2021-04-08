@@ -37,8 +37,10 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Types;
 import java.util.*;
 
 /**
@@ -423,7 +425,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public Object[] getPossibleValues(PostgreAttribute column)
         {
-            Set<PostgreDataType> types = new TreeSet<>(Comparator.comparing(JDBCDataType::getTypeName));
+            List<PostgreDataType> types = new ArrayList<>();
             try {
                 Collection<PostgreSchema> schemas = column.getDatabase().getSchemas(new VoidProgressMonitor());
                 for (PostgreSchema schema : schemas) {
@@ -434,7 +436,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 log.debug("Can't get data types from database schemas", e);
                 types.addAll(column.getDatabase().getLocalDataTypes());
             }
-            return types.toArray(new PostgreDataType[0]);
+            PostgreDataType[] notArrayTypes = types.stream().filter(type -> type.getTypeID() != Types.ARRAY).sorted(Comparator.comparing(JDBCDataType::getTypeName)).toArray(PostgreDataType[]::new);
+            PostgreDataType[] arrayTypes = types.stream().filter(type -> type.getTypeID() == Types.ARRAY).sorted(Comparator.comparing(JDBCDataType::getTypeName)).toArray(PostgreDataType[]::new);
+            return ArrayUtils.concatArrays(notArrayTypes, arrayTypes);
         }
     }
 

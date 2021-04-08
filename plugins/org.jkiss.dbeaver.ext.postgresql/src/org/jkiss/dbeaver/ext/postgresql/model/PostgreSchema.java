@@ -456,12 +456,7 @@ public class PostgreSchema implements
     //@Property
     @Association
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
-        List<PostgreDataType> types = new ArrayList<>();
-        for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
-            types.add(dt);
-        }
-        DBUtils.orderObjects(types);
-        return types;
+        return dataTypeCache.getAllObjects(monitor, this);
     }
 
     @Override
