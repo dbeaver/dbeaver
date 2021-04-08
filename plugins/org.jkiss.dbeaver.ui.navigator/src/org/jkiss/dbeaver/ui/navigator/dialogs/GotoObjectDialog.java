@@ -62,8 +62,6 @@ import java.util.regex.Pattern;
  */
 public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private static final String DIALOG_ID = "GotoObjectDialog";
-    private static final String DO_NOT_SEARCH_IN_COMMENTS = "DoNotSearchInComments";
-
     private static final boolean SHOW_OBJECT_TYPES = true;
     private static final int MAX_RESULT_COUNT = 1000;
 
@@ -71,10 +69,6 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private final DBSObject container;
     private final Map<String, Boolean> enabledTypes = new HashMap<>();
     private boolean hasMoreResults;
-
-    //This variable is "reverted" because we want to store it in preferences and be enabled by default.
-    private boolean doNotSearchInComments;
-    private Button searchInCommentsCheckbox;
 
     public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container) {
         super(shell, true);
@@ -88,39 +82,15 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     @Override
     protected Control createExtendedContentArea(Composite parent) {
-        Composite composite = UIUtils.createComposite(parent, 1);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        createObjectTypesGroup(composite);
-
-        searchInCommentsCheckbox = UIUtils.createCheckbox(
-            composite,
-            UINavigatorMessages.dialog_project_goto_object_checkbox_search_in_comments,
-            !doNotSearchInComments
-        );
-        GridData gd = new GridData();
-        gd.horizontalIndent = 6;
-        searchInCommentsCheckbox.setLayoutData(gd);
-        searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                doNotSearchInComments = !searchInCommentsCheckbox.getSelection();
-            }
-        });
-
-        return composite;
-    }
-
-    private void createObjectTypesGroup(Composite parent) {
         if (!SHOW_OBJECT_TYPES) {
-            return;
+            return null;
         }
         IDialogSettings driverSettings = DialogSettings.getOrCreateSection(
             getDialogSettings(), context.getDataSource().getContainer().getDriver().getId());
 
         DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context.getDataSource());
         if (structureAssistant == null) {
-            return;
+            return null;
         }
 
         List<DBSObjectType> typesToSearch = new ArrayList<>();
@@ -133,7 +103,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             typesToSearch.add(type);
         }
         if (CommonUtils.isEmpty(typesToSearch)) {
-            return;
+            return null;
         }
         Group cbGroup = new Group(parent, SWT.NONE);
         cbGroup.setText("Objects:");
@@ -168,6 +138,8 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 }
             });
         }
+
+        return cbGroup;
     }
 
     @Override
@@ -178,19 +150,6 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     @Override
     protected IDialogSettings getDialogSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
-    }
-
-    @Override
-    protected void restoreDialog(IDialogSettings settings) {
-        super.restoreDialog(settings);
-        doNotSearchInComments = settings.getBoolean(DO_NOT_SEARCH_IN_COMMENTS);
-        searchInCommentsCheckbox.setSelection(!doNotSearchInComments);
-    }
-
-    @Override
-    protected void storeDialog(IDialogSettings settings) {
-        super.storeDialog(settings);
-        settings.put(DO_NOT_SEARCH_IN_COMMENTS, doNotSearchInComments);
     }
 
     @Override
@@ -414,7 +373,6 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 params.setParentObject(container);
                 params.setGlobalSearch(true);
                 params.setMaxResults(MAX_RESULT_COUNT);
-                params.setSearchInComments(!doNotSearchInComments);
                 result = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                 hasMoreResults = result.size() >= MAX_RESULT_COUNT;
             } catch (Exception e) {
