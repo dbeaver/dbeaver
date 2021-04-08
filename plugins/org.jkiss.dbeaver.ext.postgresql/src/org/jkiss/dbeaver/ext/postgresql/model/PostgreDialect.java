@@ -845,11 +845,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         return true;
     }
 
-    @Override
-    public boolean supportsLike() {
-        return true;
-    }
-
     @Nullable
     @Override
     public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {

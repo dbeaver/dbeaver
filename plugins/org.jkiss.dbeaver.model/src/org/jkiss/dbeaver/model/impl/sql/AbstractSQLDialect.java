@@ -518,11 +518,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return true;
     }
 
-    @Override
-    public boolean supportsLike() {
-        return false;
-    }
-
     @Nullable
     @Override
     public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {
