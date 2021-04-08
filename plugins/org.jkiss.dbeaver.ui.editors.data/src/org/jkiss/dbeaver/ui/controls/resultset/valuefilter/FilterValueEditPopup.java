@@ -99,8 +99,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             if (SQLUtils.getDialectFromObject(filter.getAttribute()).supportsLike()) {
                 final Button caseInsensitiveSearchCheck = UIUtils.createCheckbox(
                     labelComposite,
-                    "Case-insensitive",
-                    "Perform case-insensitive search",
+                    ResultSetMessages.dialog_filter_value_edit_table_checkbox_case_insensitive_label,
+                    ResultSetMessages.dialog_filter_value_edit_table_checkbox_case_insensitive_description,
                     isCaseInsensitiveSearchEnabled(),
                     1
                 );
@@ -200,8 +200,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         {
             Button queryDatabaseCheck = UIUtils.createCheckbox(
                 buttonsPanel,
-                "Read from server",
-                "Read possible values from database (may be slow). Otherwise use already fetched values.",
+                ResultSetMessages.dialog_filter_value_edit_table_checkbox_read_from_server_label,
+                ResultSetMessages.dialog_filter_value_edit_table_checkbox_read_from_server_description,
                 isQueryDatabaseEnabled(),
                 1);
             ((GridLayout) buttonsPanel.getLayout()).numColumns++;
@@ -221,8 +221,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         if (!filter.isDictionarySelector()) {
             showRowCountCheck = UIUtils.createCheckbox(
                 buttonsPanel,
-                "Show row count",
-                "Show row count for each dictionary value.\nMay be slow for big tables.",
+                ResultSetMessages.dialog_filter_value_edit_table_checkbox_show_row_count_label,
+                ResultSetMessages.dialog_filter_value_edit_table_checkbox_show_row_count_description,
                 isRowCountEnabled(),
                 1);
             ((GridLayout) buttonsPanel.getLayout()).numColumns++;
