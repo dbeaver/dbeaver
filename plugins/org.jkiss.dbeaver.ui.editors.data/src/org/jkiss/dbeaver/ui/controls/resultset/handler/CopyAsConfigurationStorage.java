@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
-import com.sun.istack.NotNull;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
