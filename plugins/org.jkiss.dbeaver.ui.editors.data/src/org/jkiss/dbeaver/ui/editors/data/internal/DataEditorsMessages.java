@@ -58,10 +58,14 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
     public static String pref_page_database_resultsets_label_show_boolean_config_link;
     public static String pref_page_database_resultsets_label_double_click_behavior;
-
     public static String pref_page_result_selector_editor;
 	public static String pref_page_result_selector_inline_editor;
 	public static String pref_page_result_selector_none;
+    public static String pref_page_result_selector_copy_cell;
+    public static String pref_page_result_selector_paste_cell_value;
+    public static String pref_page_database_resultsets_label_max_def_column_width;
+    public static String pref_page_database_resultsets_label_max_def_column_width_tip;
+
     // ResultSetPlainText
     public static String pref_page_database_resultsets_group_plain_text;
     public static String pref_page_database_resultsets_label_value_format;

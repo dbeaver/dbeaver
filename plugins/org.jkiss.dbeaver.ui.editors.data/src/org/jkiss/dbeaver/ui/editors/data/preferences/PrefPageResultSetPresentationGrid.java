@@ -52,6 +52,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     private Button showBooleanAsCheckbox;
     private Combo gridDoubleClickBehavior;
     private Text gridRowBatchSize;
+    private Text maxDefColumnWidth;
 
     public PrefPageResultSetPresentationGrid()
     {
@@ -72,7 +73,8 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX) ||
             store.contains(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK) ||
-            store.contains(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
+            store.contains(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
     }
 
     @Override
@@ -109,10 +111,13 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
-            gridDoubleClickBehavior.add("Copy selected cell", Spreadsheet.DoubleClickBehavior.COPY_VALUE.ordinal());
-            gridDoubleClickBehavior.add("Paste cell value into editor", Spreadsheet.DoubleClickBehavior.COPY_PASTE_VALUE.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_copy_cell, Spreadsheet.DoubleClickBehavior.COPY_VALUE.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_paste_cell_value, Spreadsheet.DoubleClickBehavior.COPY_PASTE_VALUE.ordinal());
             gridRowBatchSize = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
             gridRowBatchSize.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size_tip);
+
+            maxDefColumnWidth = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, "", SWT.BORDER);
+            maxDefColumnWidth.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
         }
 
         return composite;
@@ -137,6 +142,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
                     Spreadsheet.DoubleClickBehavior.NONE)
                     .ordinal());
             gridRowBatchSize.setText(store.getString(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE));
+            maxDefColumnWidth.setText(store.getString(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -157,6 +163,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, CommonUtils.toInt(gridRowBatchSize.getText()));
+            store.setValue(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH, CommonUtils.toInt(maxDefColumnWidth.getText()));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -176,6 +183,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
         store.setToDefault(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
     }
 
     @Override
