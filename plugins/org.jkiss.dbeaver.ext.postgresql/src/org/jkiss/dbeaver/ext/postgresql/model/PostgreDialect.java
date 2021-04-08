@@ -850,6 +850,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         return true;
     }
 
+    @Nullable
     @Override
     public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {
         if (operator == DBCLogicalOperator.LIKE) {

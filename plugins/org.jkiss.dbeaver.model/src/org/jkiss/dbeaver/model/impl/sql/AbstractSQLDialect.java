@@ -523,6 +523,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    @Nullable
     @Override
     public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {
         return null;
