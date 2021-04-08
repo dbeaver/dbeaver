@@ -434,7 +434,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (dictEntity != null) {
                             DBSEntityAttribute refAttribute = DBUtils.getReferenceAttribute(monitor, (DBSEntityAssociation) enumConstraint, attribute, false);
                             if (refAttribute != null) {
-                                valueEnumeration = ((DBSDictionary) dictEntity).getDictionaryEnumeration(monitor, refAttribute, null, Collections.emptyList(), true, true, MAX_ATTRIBUTE_VALUE_PROPOSALS);
+                                valueEnumeration = ((DBSDictionary) dictEntity).getDictionaryEnumeration(monitor, refAttribute, null, Collections.emptyList(), true, true, false, MAX_ATTRIBUTE_VALUE_PROPOSALS);
                             }
                         }
                     }
@@ -444,6 +444,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             session,
                             isInLiteral ? wordDetector.getFullWord() : null,
                             MAX_ATTRIBUTE_VALUE_PROPOSALS,
+                            false,
                             false,
                             false);
                     }

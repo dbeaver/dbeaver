@@ -665,7 +665,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, int maxResults) throws DBException {
+    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, boolean caseInsensitiveSearch, int maxResults) throws DBException {
         DBSEntity realEntity = getRealEntity(monitor);
         if (realEntity instanceof DBSDictionary) {
             return ((DBSDictionary) realEntity).getDictionaryEnumeration(
@@ -675,6 +675,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 preceedingKeys,
                 sortByValue,
                 sortAsc,
+                caseInsensitiveSearch,
                 maxResults);
         }
         return Collections.emptyList();
