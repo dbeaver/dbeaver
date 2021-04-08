@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
@@ -841,6 +843,15 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public boolean supportsNestedComments() {
         return true;
+    }
+
+    @Nullable
+    @Override
+    public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {
+        if (operator == DBCLogicalOperator.LIKE) {
+            return (left, right) -> left + " ILIKE " + right;
+        }
+        return super.getCaseInsensitiveExpressionFormatter(operator);
     }
 
     @NotNull
