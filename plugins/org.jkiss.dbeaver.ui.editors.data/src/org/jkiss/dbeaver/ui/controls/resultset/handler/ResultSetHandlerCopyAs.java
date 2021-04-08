@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -147,9 +148,13 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     settings.setOutputEncodingBOM(false);
                     settings.setOpenFolderOnFinish(false);
 
-                    Map<String, Object> properties = new HashMap<>();
-                    for (DBPPropertyDescriptor prop : processor.getProperties()) {
-                        properties.put(prop.getId(), prop.getDefaultValue());
+                    Map<DataTransferProcessorDescriptor, Map<String, Object>> propertiesMap = CopyAsConfigurationStorage.getProcessorProperties();
+                    Map<String, Object> properties = propertiesMap.get(processor);
+                    if (properties == null) {
+                        properties = new HashMap<>();
+                        for (DBPPropertyDescriptor prop : processor.getProperties()) {
+                            properties.put(prop.getId(), prop.getDefaultValue());
+                        }
                     }
                     properties.put(DBSDataManipulator.OPTION_USE_CURRENT_DIALECT_SETTINGS, true);
 
@@ -289,6 +294,14 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
             params.parameters = parameters;
             copyAsMenu.add(new CommandContributionItem(params));
         }
-    }
 
+        copyAsMenu.add(new Separator());
+
+        copyAsMenu.add(new Action(ResultSetMessages.dialog_copy_as_configuration_name) {
+            @Override
+            public void run() {
+                new CopyAsConfigurationDialog(viewer).open();
+            }
+        });
+    }
 }
