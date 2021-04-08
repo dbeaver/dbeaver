@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -98,9 +99,12 @@ public class DatabaseEditorListener implements INavigatorListener
                     dispose();
                     return;
                 }
-                IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
-                if (workbenchPage != null) {
-                    workbenchPage.closeEditor(databaseEditor, false);
+                IWorkbenchWindow workbenchWindow = databaseEditor.getSite().getWorkbenchWindow();
+                if (workbenchWindow != null) {
+                    IWorkbenchPage workbenchPage = workbenchWindow.getActivePage();
+                    if (workbenchPage != null) {
+                        workbenchPage.closeEditor(databaseEditor, false);
+                    }
                 }
             }
         }
