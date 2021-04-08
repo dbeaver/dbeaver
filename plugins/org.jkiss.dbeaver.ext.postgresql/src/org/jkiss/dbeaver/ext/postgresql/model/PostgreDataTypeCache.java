@@ -176,22 +176,31 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
-        // Initially cache only base types (everything but composite and arrays)
+        // Initially cache only base types (everything but composite and some arrays)
         PostgreDataSource dataSource = owner.getDataSource();
         boolean readAllTypes = dataSource.supportReadingAllDataTypes();
+        boolean supportsSysTypColumn = owner.getDatabase().supportsSysTypCategoryColumn(session);
         StringBuilder sql = new StringBuilder(256);
         sql.append("SELECT t.oid,t.*,c.relkind,").append(getBaseTypeNameClause(dataSource)).append(", d.description" +
-            "\nFROM pg_catalog.pg_type t" +
-            "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
-            "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-            "\nWHERE t.typname IS NOT null");
-        if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
-             if (owner.getDatabase().supportsSysTypCategoryColumn(session)) {
-                 sql.append("\nAND t.typcategory <> 'A'");
-             }
-             sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
+            "\nFROM pg_catalog.pg_type t");
+        if (!readAllTypes && supportsSysTypColumn) {
+            sql.append("\nLEFT OUTER JOIN pg_catalog.pg_type et ON et.oid=t.typelem ");
         }
-        sql.append("\nAND typnamespace=?");
+        sql.append("\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+            "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+            "\nWHERE t.typname IS NOT NULL");
+        if (!readAllTypes) {
+            sql.append("\nAND (c.relkind IS NULL OR c.relkind = 'c')");
+            if (supportsSysTypColumn) {
+                sql.append(" AND (et.typcategory IS NULL OR et.typcategory <> 'C')");
+            }
+        }
+        if (supportsSysTypColumn) {
+            sql.append(" ORDER BY CASE WHEN t.typcategory <> 'A' THEN 0 ELSE 1 END, t.typname");
+        } else {
+            sql.append(" ORDER BY t.typname");
+        }
+        sql.append("\nAND t.typnamespace=?");
             //"\nORDER by t.oid";
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
