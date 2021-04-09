@@ -120,7 +120,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         available = true;
                     }
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 available = false;
             }
             synchronized (availableViews) {

@@ -557,7 +557,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                         }
                     }
         		}
-            } catch (SQLException e) {
+            } catch (Exception e) {
             	monitor.subTask("Error refreshing job state " + e.getMessage());
             } finally {
                 monitor.done();

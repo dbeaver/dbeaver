@@ -98,7 +98,7 @@ class DB2ToolShowErrorDialog extends Dialog {
                     String msg = DB2Utils.getMessageFromCode(db2DataSource, sqlIntegerCode);
                     resultMessage.setText(msg);
                 } catch (Exception e1) {
-                    // Most propably, there is no message for this code. tell this to the user..
+                    // Most likely, there is no message for this code. tell this to the user..
                     resultMessage.setText(e1.getMessage());
                 }
             }
