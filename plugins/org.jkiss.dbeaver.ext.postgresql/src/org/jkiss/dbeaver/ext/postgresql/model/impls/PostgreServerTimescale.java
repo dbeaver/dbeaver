@@ -28,6 +28,11 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsEntityMetadataInResults() {
+        return true;
+    }
+
+    @Override
     public String getServerTypeName() {
         return "Timescale";
     }
