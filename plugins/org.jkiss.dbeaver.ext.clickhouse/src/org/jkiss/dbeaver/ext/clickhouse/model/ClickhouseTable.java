@@ -126,9 +126,9 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
                         fetchStatistics(dbResult);
                     }
                 }
-            } catch (SQLException e) {
-                log.error("Error reading table statistics", e);
             }
+        } catch (Exception e) {
+            log.error("Error reading relation statistics", e);
         }
     }
 

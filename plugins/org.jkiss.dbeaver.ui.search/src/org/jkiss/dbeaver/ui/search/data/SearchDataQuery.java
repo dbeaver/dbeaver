@@ -156,8 +156,10 @@ public class SearchDataQuery implements ISearchQuery {
                 searchResult.addObjects(Collections.singletonList(object));
                 return true;
             }
-            return false;
+        } catch (DBCException e) {
+            log.error("Error searching data in container", e);
         }
+        return false;
     }
 
     private DBCStatistics findRows(
