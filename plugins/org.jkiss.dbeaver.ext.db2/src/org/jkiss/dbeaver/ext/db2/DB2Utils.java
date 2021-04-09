@@ -101,8 +101,7 @@ public class DB2Utils {
     // ------------------------
     // Admin Command
     // ------------------------
-    public static void callAdminCmd(DBRProgressMonitor monitor, DB2DataSource dataSource, String command) throws SQLException
-    {
+    public static void callAdminCmd(DBRProgressMonitor monitor, DB2DataSource dataSource, String command) throws SQLException, DBCException {
         LOG.debug("Call admin_cmd with '" + command + "'");
         String sql = String.format(CALL_ADMIN_CMD, command);
 
@@ -215,8 +214,7 @@ public class DB2Utils {
     // Error Message
     // ------------------------
 
-    public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException
-    {
+    public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException, DBCException {
         try (JDBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), db2DataSource, "Get Error Code")) {
             return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
         }

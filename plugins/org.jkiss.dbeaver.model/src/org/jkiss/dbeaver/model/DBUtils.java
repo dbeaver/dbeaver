@@ -1621,30 +1621,28 @@ public final class DBUtils {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        try {
-            return (T) getOrOpenDefaultContext(object, true).openSession(monitor, DBCExecutionPurpose.META, task);
-        } catch (DBCException e) {
-            log.error("Error obtaining context", e);
-            return null;
+    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) throws DBCException {
+        DBCExecutionContext defaultContext = getOrOpenDefaultContext(object, true);
+        if (defaultContext == null) {
+            throw new DBCException("Default context not found");
         }
+        return (T) defaultContext.openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
+    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) throws DBCException {
         return (T) dataSource.getDefaultInstance().getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        try {
-            return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
-        } catch (DBCException e) {
-            log.error("Error obtaining context", e);
-            return null;
+    public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) throws DBCException {
+        DBCExecutionContext defaultContext = getOrOpenDefaultContext(object, true);
+        if (defaultContext == null) {
+            throw new DBCException("Default context not found");
         }
+        return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
     }
 
     @Nullable
@@ -1900,7 +1898,6 @@ public final class DBUtils {
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
-    @NotNull
     public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) throws DBCException {
         DBCExecutionContext context = DBUtils.getDefaultContext(object, meta);
         if (context == null) {

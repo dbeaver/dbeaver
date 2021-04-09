@@ -148,8 +148,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
                 if (comment == null) {
                     comment = "";
                 }
-            } catch (SQLException e) {
-                log.warn("Can't fetch table '" + getName() + "' comment", e);
+            } catch (Exception e) {
+                log.error("Can't fetch table '" + getName() + "' comment", e);
             }
         }
         return comment;

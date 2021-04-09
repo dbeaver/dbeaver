@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +139,8 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                 oldConstraintName = JDBCUtils.queryString(session, "SELECT name FROM " +
                     SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), "DEFAULT_CONSTRAINTS") +
                     " WHERE PARENT_OBJECT_ID = ? AND PARENT_COLUMN_ID = ?", column.getTable().getObjectId(), column.getObjectId());
-            } catch (SQLException e) {
-                log.error(e);
+            } catch (Exception e) {
+                log.error("Error reading default constraints", e);
             }
 
             if (oldConstraintName != null) {

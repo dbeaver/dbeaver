@@ -3534,13 +3534,11 @@ public class ResultSetViewer extends Viewer
                 }
                 for (DBDAttributeBinding attr : newAttributes) {
                     if (attr instanceof DBDAttributeBindingCustom) {
-                        try {
-                            attr.lateBinding(session, rows);
-                        } catch (DBException e) {
-                            log.debug("Error binding virtual attribute '" + attr.getName() + "'", e);
-                        }
+                        attr.lateBinding(session, rows);
                     }
                 }
+            } catch (Exception e) {
+                log.error("Error binding custom attributes", e);
             }
         }
         model.updateMetaData(newAttributes);

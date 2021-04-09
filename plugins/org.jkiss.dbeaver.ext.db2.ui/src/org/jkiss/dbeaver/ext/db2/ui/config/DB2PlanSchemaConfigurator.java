@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.ui.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -44,39 +45,44 @@ public class DB2PlanSchemaConfigurator implements DBEObjectConfigurator<DB2PlanC
     @Override
     public DB2PlanConfig configureObject(DBRProgressMonitor monitor, Object db2dataSource, DB2PlanConfig object) {
         DB2DataSource db2source = (DB2DataSource) db2dataSource;
-        JDBCSession session = DBUtils.openMetaSession(monitor, db2source, "Read EXPLAIN tables");
+        try {
+            JDBCSession session = DBUtils.openMetaSession(monitor, db2source, "Read EXPLAIN tables");
 
-        return new UITask<DB2PlanConfig>() {
-            @Override
-            protected DB2PlanConfig runTask() {
-                // No valid explain tables found, propose to create them in current authId
-                String msg = String.format(DB2Messages.dialog_explain_ask_to_create, object.getSessionUserSchema());
-                if (!UIUtils.confirmAction(DB2Messages.dialog_explain_no_tables, msg)) {
-                    return null;
-                }
-                // Ask the user in what tablespace to create the Explain tables and build a dialog with the list of usable tablespaces for the user to choose
-                DB2TablespaceChooser tsChooserDialog = null;
-                try {
-                    final List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, session);
-                    // NO Usable Tablespace found: End of the game..
-                    if (listTablespaces.isEmpty()) {
-                        DBWorkbench.getPlatformUI().showError(DB2Messages.dialog_explain_no_tablespace_found_title,
-                                DB2Messages.dialog_explain_no_tablespace_found);
+            return new UITask<DB2PlanConfig>() {
+                @Override
+                protected DB2PlanConfig runTask() {
+                    // No valid explain tables found, propose to create them in current authId
+                    String msg = String.format(DB2Messages.dialog_explain_ask_to_create, object.getSessionUserSchema());
+                    if (!UIUtils.confirmAction(DB2Messages.dialog_explain_no_tables, msg)) {
                         return null;
                     }
-                    tsChooserDialog = new DB2TablespaceChooser(
-                            UIUtils.getActiveWorkbenchShell(),
-                            listTablespaces);
-                } catch (SQLException e) {
-                    log.error(e);
+                    // Ask the user in what tablespace to create the Explain tables and build a dialog with the list of usable tablespaces for the user to choose
+                    DB2TablespaceChooser tsChooserDialog = null;
+                    try {
+                        final List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, session);
+                        // NO Usable Tablespace found: End of the game..
+                        if (listTablespaces.isEmpty()) {
+                            DBWorkbench.getPlatformUI().showError(DB2Messages.dialog_explain_no_tablespace_found_title,
+                                    DB2Messages.dialog_explain_no_tablespace_found);
+                            return null;
+                        }
+                        tsChooserDialog = new DB2TablespaceChooser(
+                                UIUtils.getActiveWorkbenchShell(),
+                                listTablespaces);
+                    } catch (SQLException e) {
+                        log.error(e);
+                    }
+                    if (tsChooserDialog != null && tsChooserDialog.open() == IDialogConstants.OK_ID) {
+                        object.setTablespace(tsChooserDialog.getSelectedTablespace());
+                        return object;
+                    } else {
+                        return null;
+                    }
                 }
-                if (tsChooserDialog != null && tsChooserDialog.open() == IDialogConstants.OK_ID) {
-                    object.setTablespace(tsChooserDialog.getSelectedTablespace());
-                    return object;
-                } else {
-                    return null;
-                }
-            }
-        }.execute();
+            }.execute();
+        } catch (DBCException e) {
+            log.error("Error reading EXPLAIN tables", e);
+        }
+        return object;
     }
 }

@@ -51,12 +51,10 @@ public class CollectionElementData {
             List<Object[]> rows = Collections.singletonList(row);
             for (int i = 0; i < count; i++) {
                 row[0] = collection.getItem(i);
-                try {
-                    elements[i].lateBinding(session, rows);
-                } catch (Throwable e) {
-                    log.error("Error binding collection element", e);
-                }
+                elements[i].lateBinding(session, rows);
             }
+        } catch (Exception e) {
+            log.error("Error reading collection elements info", e);
         }
     }
 
