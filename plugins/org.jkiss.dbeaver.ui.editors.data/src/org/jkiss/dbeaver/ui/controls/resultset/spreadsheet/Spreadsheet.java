@@ -58,7 +58,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         COPY_PASTE_VALUE
     }
 
-    public static final int MAX_DEF_COLUMN_WIDTH = 300;
+    public static final int MAX_DEF_COLUMN_WIDTH = 30; // Percents
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
     @NotNull
