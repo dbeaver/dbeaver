@@ -215,7 +215,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                             return;
                         }
                     } catch (DBException e) {
-                        log.debug("Unexpected error when calculating UI options for disableReferentialIntegrity checkbox", e);
+                        log.debug("Unexpected error when calculating UI options for 'Disable referential integrity' checkbox", e);
                     }
                 }
             });
