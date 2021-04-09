@@ -392,6 +392,9 @@ public abstract class DBVUtils {
     }
 
     public static DBVObject getVirtualObject(DBSObject source, boolean create) {
+        if (source == null) {
+            return null;
+        }
         if (source instanceof DBVObject) {
             return (DBVObject) source;
         }

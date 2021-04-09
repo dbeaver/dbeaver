@@ -627,7 +627,7 @@ public class PostgreSchema implements
                     }
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             log.debug("Error reading schema information ", e);
         }
     }
