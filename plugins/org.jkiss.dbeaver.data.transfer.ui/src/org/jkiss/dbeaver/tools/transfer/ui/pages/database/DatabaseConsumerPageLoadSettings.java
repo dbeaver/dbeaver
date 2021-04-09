@@ -29,9 +29,8 @@ import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -197,26 +196,26 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private void loadUISettingsForDisableReferentialIntegrityCheckbox() {
         try {
             getWizard().getRunnableContext().run(false, false, monitor -> {
-                for (DataTransferPipe pipe: getWizard().getSettings().getDataPipes()) {
-                    IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
-                    if (consumer instanceof DBPReferentialIntegrityController) {
-                        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
-                        try {
-                            if (controller.supportsChangingReferentialIntegrity(monitor)) {
-                                isDisablingReferentialIntegritySupported = true;
-                                String caveat = controller.getReferentialIntegrityDisableWarning(monitor);
-                                if (caveat.isEmpty()) {
-                                    disableReferentialIntegrityCheckboxTooltip =
-                                            DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
-                                } else {
-                                    disableReferentialIntegrityCheckboxTooltip =
-                                            DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats + "\n" + caveat;
-                                }
-                                return;
+                for (DBSDataContainer dataContainer : getSettings().getDataMappings().keySet()) {
+                    if (!(dataContainer instanceof DBPReferentialIntegrityController)) {
+                        continue;
+                    }
+                    DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) dataContainer;
+                    try {
+                        if (controller.supportsChangingReferentialIntegrity(monitor)) {
+                            isDisablingReferentialIntegritySupported = true;
+                            String caveat = controller.getReferentialIntegrityDisableWarning(monitor);
+                            if (caveat.isEmpty()) {
+                                disableReferentialIntegrityCheckboxTooltip =
+                                    DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
+                            } else {
+                                disableReferentialIntegrityCheckboxTooltip =
+                                    DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats + "\n" + caveat;
                             }
-                        } catch (DBException e) {
-                            log.debug("Unexpected error when calculating UI options for disableReferentialIntegrity checkbox", e);
+                            return;
                         }
+                    } catch (DBException e) {
+                        log.debug("Unexpected error when calculating UI options for 'Disable referential integrity' checkbox", e);
                     }
                 }
             });
