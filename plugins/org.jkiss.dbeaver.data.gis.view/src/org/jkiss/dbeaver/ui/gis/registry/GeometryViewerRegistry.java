@@ -128,6 +128,9 @@ public class GeometryViewerRegistry {
                             lastDefinition = attributes.getValue(KEY_LAYERS_DEF);
                             lastVisibility = attributes.getValue(KEY_IS_VISIBLE);
                             break;
+                        default:
+                            // ignore
+                            break;
                     }
                 }
 
@@ -150,6 +153,9 @@ public class GeometryViewerRegistry {
                                 layersDefinitionText,
                                 CommonUtils.getBoolean(lastVisibility, true)
                             ));
+                            break;
+                        default:
+                            // ignore
                             break;
                     }
                 }
