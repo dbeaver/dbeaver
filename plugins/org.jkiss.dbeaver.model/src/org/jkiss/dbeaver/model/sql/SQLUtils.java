@@ -460,6 +460,7 @@ public final class SQLUtils {
                     binding instanceof DBDAttributeBindingType)
                 {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
+                    attrName = getDialectFromDataSource(dataSource).getAttributeTypeCastClause(binding, attrName);
                 } else {
                     // Most likely it is an expression so we don't want to quote it
                     attrName = binding.getMetaAttribute().getName();
@@ -545,17 +546,21 @@ public final class SQLUtils {
             if (constraint.isReverseOperator()) {
                 conString.append("NOT ");
             }
+            SQLDialect dialect = dataSource.getSQLDialect();
+            DBSAttributeBase attribute = constraint.getAttribute();
             if (operator.getArgumentCount() > 0) {
                 conString.append(operator.getStringValue());
                 for (int i = 0; i < operator.getArgumentCount(); i++) {
                     if (i > 0) {
                         conString.append(" AND");
                     }
-                    String strValue;
-                    if (inlineCriteria) {
-                        strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
-                    } else {
-                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?");
+                    String strValue="";
+                    if (attribute != null) {
+                        if (inlineCriteria) {
+                            strValue = dialect.getTypeCastClause(attribute, convertValueToSQL(dataSource, attribute, value), true);
+                        } else {
+                            strValue = dialect.getTypeCastClause(attribute, "?", true);
+                        }
                     }
                     conString.append(' ').append(strValue);
                 }
@@ -575,8 +580,8 @@ public final class SQLUtils {
                 if (!hasNotNull) {
                     return "IS NULL";
                 }
-                if (hasNull) {
-                    conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
+                if (hasNull && attribute != null) {
+                    conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, attribute, DBPEvaluationContext.DML)).append(" ");
                 }
 
                 conString.append(operator.getStringValue());
@@ -585,6 +590,7 @@ public final class SQLUtils {
                     value = new Object[] {value};
                 }
                 boolean hasValue = false;
+
                 for (int i = 0; i < valueCount; i++) {
                     Object itemValue = Array.get(value, i);
                     if (DBUtils.isNullValue(itemValue)) {
@@ -594,10 +600,12 @@ public final class SQLUtils {
                         conString.append(",");
                     }
                     hasValue = true;
-                    if (inlineCriteria) {
-                        conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
-                    } else {
-                        conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?"));
+                    if (attribute != null) {
+                        if (inlineCriteria) {
+                            conString.append(dialect.getTypeCastClause(attribute, convertValueToSQL(dataSource, attribute, itemValue), true));
+                        } else {
+                            conString.append(dataSource.getSQLDialect().getTypeCastClause(attribute, "?", true));
+                        }
                     }
                 }
                 conString.append(")");
@@ -621,14 +629,10 @@ public final class SQLUtils {
 
         return dataSource.getSQLDialect().getTypeCastClause(
             attribute,
-            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat));
+            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat), false);
     }
 
     private static String convertValueToSQLFormat(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {
-        if (DBUtils.isNullValue(value)) {
-            return SQLConstants.NULL_VALUE;
-        }
-
         String strValue;
 
         if (value instanceof DBDContent) {
@@ -660,7 +664,7 @@ public final class SQLUtils {
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
-                    return sqlDialect.getTypeCastClause(attribute, sqlDialect.getQuotedString(strValue));
+                    return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
             default:

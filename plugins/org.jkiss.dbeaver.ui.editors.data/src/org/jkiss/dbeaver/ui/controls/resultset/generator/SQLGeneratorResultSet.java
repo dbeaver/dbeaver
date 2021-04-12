@@ -60,12 +60,14 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
 
     void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
         Object value = rsv.getModel().getCellValue(binding, firstRow);
-        sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML));
+        DBSAttributeBase attribute = binding.getAttribute();
+        String fullName = DBUtils.getObjectFullName(attribute, DBPEvaluationContext.DML);
+        sql.append(binding.getDataSource().getSQLDialect().getAttributeTypeCastClause(attribute, fullName));
         if (DBUtils.isNullValue(value)) {
             sql.append(" IS NULL");
         } else {
             sql.append("=");
-            appendAttributeValue(rsv, sql, binding, firstRow);
+            appendAttributeValue(rsv, sql, binding, firstRow, true);
         }
     }
 
@@ -88,7 +90,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
         return null;
     }
 
-    protected void appendAttributeValue(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
+    protected void appendAttributeValue(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row, boolean isWhereCondition)
     {
         DBPDataSource dataSource = binding.getDataSource();
         Object value = rsv.getModel().getCellValue(binding, row);
@@ -97,8 +99,12 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
             sql.append(
                     SQLUtils.quoteString(dataSource, SQLUtils.convertValueToSQL(dataSource, attribute, DBUtils.findValueHandler(dataSource, attribute), value, DBDDisplayFormat.UI)));
         } else {
+            String convertedValue = SQLUtils.convertValueToSQL(dataSource, attribute, value);
+            if (isWhereCondition) {
+                convertedValue = dataSource.getSQLDialect().getTypeCastClause(attribute, convertedValue, true);
+            }
             sql.append(
-                    SQLUtils.convertValueToSQL(dataSource, attribute, value));
+                    convertedValue);
         }
     }
 

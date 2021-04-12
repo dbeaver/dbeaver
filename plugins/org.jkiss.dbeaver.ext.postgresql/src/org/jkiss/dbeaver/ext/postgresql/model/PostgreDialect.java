@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
 import java.util.Arrays;
@@ -799,8 +800,26 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @NotNull
     @Override
-    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+    public String getAttributeTypeCastClause(DBSAttributeBase attribute, String attrName) {
+        if (CommonUtils.isEmpty(attrName)) {
+            return attrName;
+        }
         String typeName = attribute.getTypeName();
+        if (PostgreConstants.TYPE_JSON.equals(typeName)) {
+            // Convert column and value in text for json columns (value will be converted in getTypeCastClause)
+            attrName = attrName + "::text";
+        }
+        return attrName;
+    }
+
+    @NotNull
+    @Override
+    public String getTypeCastClause(DBSAttributeBase attribute, String expression, boolean isWhereCondition) {
+        String typeName = attribute.getTypeName();
+        if (isWhereCondition && PostgreConstants.TYPE_JSON.equals(typeName)) {
+            // Convert value in text for json columns in where condition
+            return expression + "::text";
+        }
         if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
             return expression + "::" + typeName;
         }

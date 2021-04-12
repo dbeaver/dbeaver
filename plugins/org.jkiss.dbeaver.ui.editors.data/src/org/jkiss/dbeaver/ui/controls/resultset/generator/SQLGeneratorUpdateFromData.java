@@ -53,7 +53,7 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
                 if (binding == null) {
                     appendDefaultValue(sql, attr);
                 } else {
-                    appendAttributeValue(getController(), sql, binding, firstRow);
+                    appendAttributeValue(getController(), sql, binding, firstRow, true);
                 }
 
                 hasAttr = true;

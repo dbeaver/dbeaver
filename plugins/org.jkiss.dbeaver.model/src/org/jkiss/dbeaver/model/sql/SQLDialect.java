@@ -278,13 +278,22 @@ public interface SQLDialect {
     DBPIdentifierCase storesQuotedCase();
 
     /**
+     * Enables to call particular cast operator or function for special attributes.
+     * @param attribute   attribute data to help decide whether cast and how to cast
+     * @param attrName    attribute name for casting
+     * @return            casted string
+     */
+    String getAttributeTypeCastClause(DBSAttributeBase attribute, String attrName);
+
+    /**
      * Enables to call particular cast operator or function for special data types.
      * @param attribute   attribute data to help decide whether cast and how to cast
      * @param expression      string representation for cast
+     * @param isWhereCondition      helps to understand the application place of the method
      * @return            casted string
      */
     @NotNull
-    String getTypeCastClause(DBSAttributeBase attribute, String expression);
+    String getTypeCastClause(DBSAttributeBase attribute, String expression, boolean isWhereCondition);
 
     /**
      * Quoting functions

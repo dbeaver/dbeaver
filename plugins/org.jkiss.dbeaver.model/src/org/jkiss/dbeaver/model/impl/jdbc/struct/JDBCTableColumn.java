@@ -184,7 +184,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         boolean formatValues,
         boolean caseInsensitiveSearch) throws DBException
     {
-        final String identifier = DBUtils.getQuotedIdentifier(this);
+        final String identifier = getDataSource().getSQLDialect().getAttributeTypeCastClause(this, DBUtils.getQuotedIdentifier(this));
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ");

@@ -335,7 +335,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+    public String getAttributeTypeCastClause(DBSAttributeBase attribute, String attrName) {
+        return attrName;
+    }
+
+    @NotNull
+    @Override
+    public String getTypeCastClause(DBSAttributeBase attribute, String expression, boolean isWhereCondition) {
         return expression;
     }
 
