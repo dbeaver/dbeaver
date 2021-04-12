@@ -284,11 +284,6 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_use_column_names;
     public static String pref_page_database_general_use_column_names_tip;
 
-	public static String value_format_selector_database_native;
-	public static String value_format_selector_display;
-	public static String value_format_selector_editable;
-	public static String value_format_selector_value;
-
     public static String dialog_text_check_box_record;
     
     public static String results_decorator_drag_and_drop_results_column;

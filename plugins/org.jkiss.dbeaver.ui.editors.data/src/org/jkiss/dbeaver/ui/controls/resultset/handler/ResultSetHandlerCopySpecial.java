@@ -29,10 +29,10 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
