@@ -58,7 +58,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         COPY_PASTE_VALUE
     }
 
-    public static final int MAX_DEF_COLUMN_WIDTH = 30; // Percents
+    public static final int MAX_DEF_COLUMN_WIDTH = 25; // Percents
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
     @NotNull
@@ -106,7 +106,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.setLinesVisible(true);
         super.setHeaderVisible(true);
         int maxDefColumnWidth = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
-        if (maxDefColumnWidth > 0) {
+        if (maxDefColumnWidth > 0 && maxDefColumnWidth <= 100) {
             super.setMaxColumnDefWidth(maxDefColumnWidth);
         } else {
             super.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);

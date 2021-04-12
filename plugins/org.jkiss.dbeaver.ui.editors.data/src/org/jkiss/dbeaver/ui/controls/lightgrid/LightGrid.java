@@ -576,7 +576,7 @@ public abstract class LightGrid extends Canvas {
                             int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth())
                                     / fatColumns.size();
                             int freeSpacePercent = (int) (((double) freeSpace / clientWidth) * 100);
-                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) (1.0 * maxColumnDefWidth / 100 * clientWidth));
+                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) ((double) maxColumnDefWidth / 100 * clientWidth));
                             for (GridColumn curColumn : fatColumns) {
                                 curColumn.setWidth(newFatWidth);
                             }
