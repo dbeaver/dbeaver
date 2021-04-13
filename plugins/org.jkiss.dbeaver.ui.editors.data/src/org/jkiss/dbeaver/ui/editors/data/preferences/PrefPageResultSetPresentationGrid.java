@@ -52,7 +52,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     private Button showBooleanAsCheckbox;
     private Combo gridDoubleClickBehavior;
     private Text gridRowBatchSize;
-    private Text maxDefColumnWidth;
+    private Spinner maxDefColumnWidth;
 
     public PrefPageResultSetPresentationGrid()
     {
@@ -116,8 +116,10 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             gridRowBatchSize = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
             gridRowBatchSize.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size_tip);
 
-            maxDefColumnWidth = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, "", SWT.BORDER);
+            maxDefColumnWidth = UIUtils.createLabelSpinner(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, 0, 0, 100);
             maxDefColumnWidth.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
+            maxDefColumnWidth.setDigits(0);
+            maxDefColumnWidth.setIncrement(1);
         }
 
         return composite;
@@ -142,7 +144,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
                     Spreadsheet.DoubleClickBehavior.NONE)
                     .ordinal());
             gridRowBatchSize.setText(store.getString(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE));
-            maxDefColumnWidth.setText(store.getString(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH));
+            maxDefColumnWidth.setSelection(store.getInt(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -163,7 +165,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, CommonUtils.toInt(gridRowBatchSize.getText()));
-            store.setValue(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH, CommonUtils.toInt(maxDefColumnWidth.getText()));
+            store.setValue(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH, CommonUtils.toInt(maxDefColumnWidth.getSelection()));
         } catch (Exception e) {
             log.warn(e);
         }
