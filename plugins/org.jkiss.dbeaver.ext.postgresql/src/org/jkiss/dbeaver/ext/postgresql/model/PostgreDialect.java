@@ -807,7 +807,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         String typeName = attribute.getTypeName();
         if (PostgreConstants.TYPE_JSON.equals(typeName)) {
             // Convert column and value in text for json columns (value will be converted in getTypeCastClause)
-            attrName = attrName + "::text";
+            return attrName + "::text";
         }
         return attrName;
     }
