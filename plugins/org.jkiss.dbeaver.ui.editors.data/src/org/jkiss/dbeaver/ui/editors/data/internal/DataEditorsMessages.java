@@ -42,6 +42,7 @@ public class DataEditorsMessages extends NLS {
     // ResultSetGrid
     public static String pref_page_database_resultsets_group_grid;
     public static String pref_page_database_resultsets_label_mark_odd_rows;
+    public static String pref_page_database_resultsets_label_highlight_rows_with_selected_cells;
     public static String pref_page_database_resultsets_label_colorize_data_types;
     public static String pref_page_database_resultsets_label_row_batch_size;
     public static String pref_page_database_resultsets_label_row_batch_size_tip;

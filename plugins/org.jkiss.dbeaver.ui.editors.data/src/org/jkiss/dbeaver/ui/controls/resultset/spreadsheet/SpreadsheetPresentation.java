@@ -144,6 +144,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Font italicFont;
 
     private boolean showOddRows = true;
+    private boolean highlightRowsWithSelectedCells;
     //private boolean showCelIcons = true;
     private boolean showAttrOrdering;
     private boolean supportsAttributeFilter;
@@ -817,6 +818,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        highlightRowsWithSelectedCells = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS);
         //showCelIcons = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
         rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
@@ -1636,7 +1638,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     private class ContentProvider implements IGridContentProvider {
-
         @NotNull
         @Override
         public Object[] getElements(boolean horizontal) {
@@ -1961,17 +1962,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Color getCellBackground(Object colElement, Object rowElement, boolean selected)
-        {
-            if (selected) {
-                Color normalColor = getCellBackground(colElement, rowElement, false);
+        public Color getCellBackground(Object colElement, Object rowElement, boolean selected) {
+            return getCellBackground(colElement, rowElement, selected, false);
+        }
+
+        private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
+            if (cellSelected) {
+                Color normalColor = getCellBackground(colElement, rowElement, false, true);
                 if (normalColor == null || normalColor == backgroundNormal) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
                     normalColor.getRGB(),
                     backgroundSelected.getRGB(),
-                    50);
+                    50
+                );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
             boolean recordMode = controller.isRecordMode();
@@ -1993,6 +1998,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!recordMode && inScope) {
                     return highlightScopeColor != null ? highlightScopeColor : backgroundSelected;
                 }
+            }
+
+            if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(row.getRowNumber())) {
+                Color normalColor = getCellBackground(colElement, rowElement, false, true);
+                Color selectedCellColor;
+                if (normalColor == null || normalColor == backgroundNormal) {
+                    selectedCellColor = backgroundSelected;
+                } else {
+                    RGB mixRGB = UIUtils.blend(
+                        normalColor.getRGB(),
+                        backgroundSelected.getRGB(),
+                        50
+                    );
+                    selectedCellColor = UIUtils.getSharedTextColors().getColor(mixRGB);
+                }
+                RGB mixRGB = UIUtils.blend(
+                    selectedCellColor.getRGB(),
+                    normalColor.getRGB(),
+                    40
+                );
+                return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
 
             switch (row.getState()) {
