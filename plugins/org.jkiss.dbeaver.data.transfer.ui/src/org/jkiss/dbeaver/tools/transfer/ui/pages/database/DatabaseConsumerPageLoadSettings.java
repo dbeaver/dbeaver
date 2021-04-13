@@ -29,9 +29,9 @@ import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -196,11 +196,11 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private void loadUISettingsForDisableReferentialIntegrityCheckbox() {
         try {
             getWizard().getRunnableContext().run(false, false, monitor -> {
-                for (DBSDataContainer dataContainer : getSettings().getDataMappings().keySet()) {
-                    if (!(dataContainer instanceof DBPReferentialIntegrityController)) {
+                for (DatabaseMappingContainer mappingContainer : getSettings().getDataMappings().values()) {
+                    if (!(mappingContainer.getTarget() instanceof DBPReferentialIntegrityController)) {
                         continue;
                     }
-                    DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) dataContainer;
+                    DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) mappingContainer.getTarget();
                     try {
                         if (controller.supportsChangingReferentialIntegrity(monitor)) {
                             isDisablingReferentialIntegritySupported = true;
