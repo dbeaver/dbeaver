@@ -101,7 +101,7 @@ public class ReferenceValueEditor {
 
     public boolean createEditorSelector(final Composite parent)
     {
-        if (!(valueController instanceof IAttributeController) || valueController.isReadOnly()) {
+        if (!(valueController instanceof IAttributeController)) {
             return false;
         }
         refConstraint = getEnumerableConstraint();
@@ -170,8 +170,10 @@ public class ReferenceValueEditor {
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
+                if (valueEditor.isReadOnly()) {
+                    return;
+                }
                 TableItem[] selection = editorSelector.getSelection();
                 if (selection != null && selection.length > 0) {
                     Object value = selection[0].getData();
