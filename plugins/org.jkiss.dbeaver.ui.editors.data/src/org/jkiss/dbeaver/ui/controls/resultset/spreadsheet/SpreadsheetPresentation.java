@@ -1638,12 +1638,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     private class ContentProvider implements IGridContentProvider {
-//        private boolean highlightRowsWithSelectedCells;
-//
-//        ContentProvider() {
-//            this.highlightRowsWithSelectedCells = DBWorkbench.;
-//        }
-
         @NotNull
         @Override
         public Object[] getElements(boolean horizontal) {
