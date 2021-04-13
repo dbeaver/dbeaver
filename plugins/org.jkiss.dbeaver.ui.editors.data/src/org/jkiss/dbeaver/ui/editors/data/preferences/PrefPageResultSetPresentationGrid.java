@@ -43,6 +43,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.grid"; //$NON-NLS-1$
 
     private Button gridShowOddRows;
+    private Button gridHighlightRowsWithSelectedCells;
     private Button colorizeDataTypes;
     //private Button gridShowCellIcons;
     private Button gridShowAttrIcons;
@@ -90,6 +91,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
+            gridHighlightRowsWithSelectedCells = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_highlight_rows_with_selected_cells, null, false, 2);
             colorizeDataTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
             //gridShowCellIcons = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
             gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
@@ -123,6 +125,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     {
         try {
             gridShowOddRows.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS));
+            gridHighlightRowsWithSelectedCells.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS));
             colorizeDataTypes.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES));
             //gridShowCellIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS));
             gridShowAttrIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS));
@@ -147,6 +150,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS, gridHighlightRowsWithSelectedCells.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, colorizeDataTypes.getSelection());
             //store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS, gridShowAttrIcons.getSelection());
@@ -167,7 +171,8 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);      
+        store.setToDefault(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         //store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
