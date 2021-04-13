@@ -144,6 +144,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Font italicFont;
 
     private boolean showOddRows = true;
+    private boolean highlightRowsWithSelectedCells;
     //private boolean showCelIcons = true;
     private boolean showAttrOrdering;
     private boolean supportsAttributeFilter;
@@ -817,6 +818,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        highlightRowsWithSelectedCells = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS);
         //showCelIcons = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
         rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
@@ -1636,6 +1638,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     private class ContentProvider implements IGridContentProvider {
+//        private boolean highlightRowsWithSelectedCells;
+//
+//        ContentProvider() {
+//            this.highlightRowsWithSelectedCells = DBWorkbench.;
+//        }
 
         @NotNull
         @Override
@@ -1961,18 +1968,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Color getCellBackground(Object colElement, Object rowElement, boolean selected)
-        {
-            if (selected) {
-                Color normalColor = getCellBackground(colElement, rowElement, false);
-                if (normalColor == null || normalColor == backgroundNormal) {
-                    return backgroundSelected;
-                }
-                RGB mixRGB = UIUtils.blend(
-                    normalColor.getRGB(),
-                    backgroundSelected.getRGB(),
-                    50);
-                return UIUtils.getSharedTextColors().getColor(mixRGB);
+        public Color getCellBackground(Object colElement, Object rowElement, boolean selected) {
+            return getCellBackground(colElement, rowElement, selected, false);
+        }
+
+        private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
+            if (cellSelected) {
+                return getSelectedCellBackground(colElement, rowElement);
             }
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
@@ -1993,6 +1995,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!recordMode && inScope) {
                     return highlightScopeColor != null ? highlightScopeColor : backgroundSelected;
                 }
+            }
+
+            if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(row.getRowNumber())) {
+                RGB mixRGB = UIUtils.blend(
+                    getSelectedCellBackground(colElement, rowElement).getRGB(),
+                    getCellBackground(colElement, rowElement, false, true).getRGB(),
+                    40
+                );
+                return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
 
             switch (row.getState()) {
@@ -2029,6 +2040,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 backgroundNormal = controller.getDefaultBackground();
             }
             return backgroundNormal;
+        }
+
+        private Color getSelectedCellBackground(Object colElement, Object rowElement) {
+            Color normalColor = getCellBackground(colElement, rowElement, false, true);
+            if (normalColor == null || normalColor == backgroundNormal) {
+                return backgroundSelected;
+            }
+            RGB mixRGB = UIUtils.blend(
+                normalColor.getRGB(),
+                backgroundSelected.getRGB(),
+                50
+            );
+            return UIUtils.getSharedTextColors().getColor(mixRGB);
         }
 
         @Override
