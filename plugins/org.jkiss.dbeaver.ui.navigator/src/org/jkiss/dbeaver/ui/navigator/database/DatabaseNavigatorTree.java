@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAlias;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
@@ -746,6 +747,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 object instanceof DBSTableIndex ||
                                 object instanceof DBSPackage ||
                                 object instanceof DBSSequence ||
+                                object instanceof DBSAlias ||
                                 object instanceof DBAUser;
                         break;
                 }
