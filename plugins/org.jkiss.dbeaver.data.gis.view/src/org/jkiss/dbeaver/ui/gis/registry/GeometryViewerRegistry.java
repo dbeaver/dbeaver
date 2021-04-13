@@ -109,36 +109,77 @@ public class GeometryViewerRegistry {
         try (InputStream in = new FileInputStream(cfg)) {
             SAXReader saxReader = new SAXReader(in);
             saxReader.parse(new SAXListener.BaseListener() {
+                private final StringBuilder buffer = new StringBuilder();
+                private String lastId;
+                private String lastLabel;
+                private String lastDefinition;
+                private String lastVisibility;
+
                 @Override
                 public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes attributes) {
-                    if (localName.equals(KEY_NON_VISIBLE_PREDEFINED_TILES)) {
-                        String id = attributes.getValue(KEY_ID);
-                        if (id != null) {
-                            notVisiblePredefinedTilesIds.add(id.trim());
-                        }
-                    } else if (localName.equals(KEY_USER_DEFINED_TILES)) {
-                        String id = attributes.getValue(KEY_ID);
-                        String label = attributes.getValue(KEY_LABEL);
-                        String layersDefinition = attributes.getValue(KEY_LAYERS_DEF);
-                        String isVisibleAttribute = attributes.getValue(KEY_IS_VISIBLE);
-                        if (id == null || label == null || layersDefinition == null || isVisibleAttribute == null) {
-                            return;
-                        }
-                        boolean isVisible;
-                        if (Boolean.TRUE.toString().equals(isVisibleAttribute)) {
-                            isVisible = true;
-                        } else if (Boolean.FALSE.toString().equals(isVisibleAttribute)) {
-                            isVisible = false;
-                        } else {
-                            log.warn("Unable to parse boolean value from xml config in " + getClass().getName());
-                            return;
-                        }
-                        userDefinedTiles.add(LeafletTilesDescriptor.createUserDefined(label.trim(), layersDefinition.trim(), isVisible));
+                    buffer.setLength(0);
+                    switch (localName) {
+                        case KEY_NON_VISIBLE_PREDEFINED_TILES:
+                            lastId = attributes.getValue(KEY_ID);
+                            break;
+                        case KEY_USER_DEFINED_TILES:
+                            lastId = attributes.getValue(KEY_ID);
+                            lastLabel = attributes.getValue(KEY_LABEL);
+                            lastDefinition = attributes.getValue(KEY_LAYERS_DEF);
+                            lastVisibility = attributes.getValue(KEY_IS_VISIBLE);
+                            break;
+                        default:
+                            // ignore
+                            break;
                     }
+                }
+
+                @Override
+                public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+                    switch (localName) {
+                        case KEY_NON_VISIBLE_PREDEFINED_TILES:
+                            if (CommonUtils.isNotEmpty(lastId)) {
+                                notVisiblePredefinedTilesIds.add(lastId.trim());
+                            }
+                            break;
+                        case KEY_USER_DEFINED_TILES:
+                            final String layersDefinitionText = getDefinitionText();
+                            if (CommonUtils.isEmpty(lastId) || CommonUtils.isEmpty(lastLabel) || CommonUtils.isEmpty(layersDefinitionText)) {
+                                log.debug("Malformed user-defined tiles descriptor, skipping");
+                                return;
+                            }
+                            userDefinedTiles.add(LeafletTilesDescriptor.createUserDefined(
+                                lastLabel.trim(),
+                                layersDefinitionText,
+                                CommonUtils.getBoolean(lastVisibility, true)
+                            ));
+                            break;
+                        default:
+                            // ignore
+                            break;
+                    }
+                }
+
+                @Override
+                public void saxText(SAXReader reader, String data) {
+                    buffer.append(data);
+                }
+
+                @Nullable
+                private String getDefinitionText() {
+                    if (lastDefinition != null) {
+                        // Backward compatibility
+                        return lastDefinition;
+                    }
+                    if (buffer.length() > 0) {
+                        // Read from CDATA
+                        return buffer.toString();
+                    }
+                    return null;
                 }
             });
         } catch (XMLException | IOException e) {
-            log.error("Error reading" + GeometryViewerRegistry.class.getName() + " configuration", e);
+            log.error("Error reading " + GeometryViewerRegistry.class.getName() + " configuration", e);
         }
     }
 
@@ -218,8 +259,8 @@ public class GeometryViewerRegistry {
                         try (XMLBuilder.Element ignored2 = xmlBuilder.startElement(KEY_USER_DEFINED_TILES)) {
                             xmlBuilder.addAttribute(KEY_ID, descriptor.getId());
                             xmlBuilder.addAttribute(KEY_LABEL, descriptor.getLabel());
-                            xmlBuilder.addAttribute(KEY_LAYERS_DEF, descriptor.getLayersDefinition());
                             xmlBuilder.addAttribute(KEY_IS_VISIBLE, descriptor.isVisible());
+                            xmlBuilder.addTextData(descriptor.getLayersDefinition());
                         }
                     }
                 }
