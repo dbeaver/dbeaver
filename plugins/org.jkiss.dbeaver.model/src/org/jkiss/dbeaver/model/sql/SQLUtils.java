@@ -748,7 +748,7 @@ public final class SQLUtils {
         return null;
     }
 
-    public static String generateEntityAlias(DBSEntity entity, DBRFinder<Boolean, String> aliasFinder) {
+    public static String generateEntityAlias(DBSEntity entity, boolean useUpperCase, DBRFinder<Boolean, String> aliasFinder) {
         String name = entity.getName();
         if (CommonUtils.isEmpty(name)) {
             return name;
@@ -770,10 +770,13 @@ public final class SQLUtils {
             prevChar = c;
         }
         String alias;
-        if(!CommonUtils.isEmpty(buf)) {
-            alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        }
-        else{
+        if (!CommonUtils.isEmpty(buf)) {
+            if (useUpperCase) {
+                alias = buf.toString().toUpperCase(Locale.ENGLISH);
+            } else {
+                alias = buf.toString().toLowerCase(Locale.ENGLISH);
+            }
+        } else {
             alias = "t";
         }
 
@@ -789,7 +792,7 @@ public final class SQLUtils {
         return alias;
     }
 
-        @NotNull
+    @NotNull
     public static String generateCommentLine(DBPDataSource dataSource, String comment)
     {
         String slComment = SQLConstants.ML_COMMENT_END;
