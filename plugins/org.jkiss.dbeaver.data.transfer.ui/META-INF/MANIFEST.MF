@@ -8,7 +8,8 @@ Bundle-Release-Date: 20210419
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.tools.transfer.ui.wizard
+Export-Package: org.jkiss.dbeaver.tools.transfer.ui.wizard,
+ org.jkiss.dbeaver.ui.controls
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
  org.eclipse.core.expressions,

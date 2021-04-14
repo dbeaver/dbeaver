@@ -22,18 +22,18 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 public class ValueFormatSelector {
     private final Combo formatCombo;
 
     public ValueFormatSelector(@NotNull Composite parent) {
-        UIUtils.createControlLabel(parent, UIMessages.value_format_selector_value);
+        UIUtils.createControlLabel(parent, DTUIMessages.value_format_selector_value);
         formatCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatCombo.add(UIMessages.value_format_selector_display);
-        formatCombo.add(UIMessages.value_format_selector_editable);
-        formatCombo.add(UIMessages.value_format_selector_database_native);
+        formatCombo.add(DTUIMessages.value_format_selector_display);
+        formatCombo.add(DTUIMessages.value_format_selector_editable);
+        formatCombo.add(DTUIMessages.value_format_selector_database_native);
     }
 
     public void select(@NotNull DBDDisplayFormat format) {
