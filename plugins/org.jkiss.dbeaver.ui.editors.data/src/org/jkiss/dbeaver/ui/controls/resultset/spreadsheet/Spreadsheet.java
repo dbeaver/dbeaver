@@ -35,6 +35,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -57,7 +58,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         COPY_PASTE_VALUE
     }
 
-    public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
     @NotNull
@@ -104,7 +104,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.setRowHeaderVisible(true);
         super.setLinesVisible(true);
         super.setHeaderVisible(true);
-        super.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);
+        super.setMaxColumnDefWidth(DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH));
 
         super.addListener(SWT.MouseDoubleClick, this);
         super.addListener(SWT.MouseDown, this);
