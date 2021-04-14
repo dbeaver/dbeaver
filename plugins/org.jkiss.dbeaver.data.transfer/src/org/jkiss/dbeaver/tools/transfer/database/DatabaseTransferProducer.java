@@ -261,7 +261,6 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                             if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit() && oldAutoCommit != null && oldAutoCommit) {
                                 try {
-                                    txnManager.commit(session);
                                     txnManager.setAutoCommit(session.getProgressMonitor(), true);
                                 } catch (Exception e) {
                                     log.error("Can't finish transaction in data producer connection", e);
