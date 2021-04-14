@@ -748,7 +748,7 @@ public final class SQLUtils {
         return null;
     }
 
-    public static String generateEntityAlias(DBSEntity entity, boolean useUpperCase, DBRFinder<Boolean, String> aliasFinder) {
+    public static String generateEntityAlias(DBSEntity entity, DBPIdentifierCase identifierCase, DBRFinder<Boolean, String> aliasFinder) {
         String name = entity.getName();
         if (CommonUtils.isEmpty(name)) {
             return name;
@@ -770,15 +770,10 @@ public final class SQLUtils {
             prevChar = c;
         }
         String alias;
-        if (!CommonUtils.isEmpty(buf)) {
-            if (useUpperCase) {
-                alias = buf.toString().toUpperCase(Locale.ENGLISH);
-            } else {
-                alias = buf.toString().toLowerCase(Locale.ENGLISH);
-            }
-        } else {
-            alias = "t";
+        if (CommonUtils.isEmpty(buf)) {
+            buf.append("t");
         }
+        alias = identifierCase.transform(buf.toString());
 
         String result = alias;
         for (int i = 2; i < 500; i++) {
