@@ -560,11 +560,12 @@ public abstract class LightGrid extends Canvas {
                 if (!fitValue) {
                     // If grid width more than screen - lets narrow too long columns
                     int clientWidth = getCurrentOrLastClientArea().width;
-                    if (totalWidth > clientWidth) {
+                    if (totalWidth > clientWidth && clientWidth != 0) {
                         int normalWidth = 0;
                         List<GridColumn> fatColumns = new ArrayList<>();
                         for (GridColumn curColumn : columns) {
-                            if (CommonUtils.isEmpty(curColumn.getChildren()) && curColumn.getWidth() > maxColumnDefWidth) {
+                            int curColumnWidthPercent = (int)((curColumn.getWidth() / (double)  clientWidth) * 100);
+                            if (CommonUtils.isEmpty(curColumn.getChildren()) && curColumnWidthPercent > maxColumnDefWidth) {
                                 fatColumns.add(curColumn);
                             } else {
                                 normalWidth += curColumn.getWidth();
@@ -574,7 +575,8 @@ public abstract class LightGrid extends Canvas {
                             // Narrow fat columns on decWidth
                             int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth())
                                 / fatColumns.size();
-                            int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
+                            int freeSpacePercent = (int) (((double) freeSpace / clientWidth) * 100);
+                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) ((double) maxColumnDefWidth / 100 * clientWidth));
                             for (GridColumn curColumn : fatColumns) {
                                 curColumn.setWidth(newFatWidth);
                             }
