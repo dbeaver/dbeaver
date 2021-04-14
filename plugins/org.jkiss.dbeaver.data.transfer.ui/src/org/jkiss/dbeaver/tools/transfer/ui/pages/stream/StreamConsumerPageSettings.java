@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -81,6 +82,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     private Combo lobEncodingCombo;
     private Combo formatProfilesCombo;
     private PropertySourceCustom propertySource;
+    private ValueFormatSelector valueFormatSelector;
 
     public StreamConsumerPageSettings() {
         super(DTMessages.data_transfer_wizard_settings_name);
@@ -176,6 +178,15 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                             case LOB_ENCODING_BINARY: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BINARY); break;
                             case LOB_ENCODING_NATIVE: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.NATIVE); break;
                         }
+                    }
+                });
+
+                valueFormatSelector = new ValueFormatSelector(generalSettings);
+                valueFormatSelector.select(settings.getValueFormat());
+                valueFormatSelector.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setValueFormat(valueFormatSelector.getSelection());
                     }
                 });
 
