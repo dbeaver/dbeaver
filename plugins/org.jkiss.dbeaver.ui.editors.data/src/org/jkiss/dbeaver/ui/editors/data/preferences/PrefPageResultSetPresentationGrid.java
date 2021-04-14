@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
@@ -124,15 +122,6 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             maxDefColumnWidth = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, "", SWT.BORDER);
             maxDefColumnWidth.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            maxDefColumnWidth.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    int newValue = CommonUtils.toInt(maxDefColumnWidth.getText());
-                    if (newValue < 0 || newValue > 100) {
-                        maxDefColumnWidth.setText(String.valueOf(ResultSetPreferences.MAX_DEF_COLUMN_WIDTH));
-                    }
-                }
-            });
         }
 
         return composite;
@@ -180,7 +169,9 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, CommonUtils.toInt(gridRowBatchSize.getText()));
-            store.setValue(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH, CommonUtils.toInt(maxDefColumnWidth.getText()));
+            int maxColumnWidth = CommonUtils.toInt(maxDefColumnWidth.getText());
+            maxColumnWidth = maxColumnWidth < 0 ? 0 : maxColumnWidth > 100 ? 100 : maxColumnWidth;
+            store.setValue(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH, maxColumnWidth);
         } catch (Exception e) {
             log.warn(e);
         }
