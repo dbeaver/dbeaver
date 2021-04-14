@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
-/**
- * ValueFormatSelector
- */
 public class ValueFormatSelector {
-
     private final Combo formatCombo;
 
     public ValueFormatSelector(@NotNull Composite parent) {
-        UIUtils.createControlLabel(parent, ResultSetMessages.value_format_selector_value);
+        UIUtils.createControlLabel(parent, DTUIMessages.value_format_selector_value);
         formatCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatCombo.add(ResultSetMessages.value_format_selector_display);
-        formatCombo.add(ResultSetMessages.value_format_selector_editable);
-        formatCombo.add(ResultSetMessages.value_format_selector_database_native);
+        formatCombo.add(DTUIMessages.value_format_selector_display);
+        formatCombo.add(DTUIMessages.value_format_selector_editable);
+        formatCombo.add(DTUIMessages.value_format_selector_database_native);
     }
 
     public void select(@NotNull DBDDisplayFormat format) {
@@ -52,4 +49,7 @@ public class ValueFormatSelector {
         }
     }
 
+    public void addSelectionListener(@NotNull SelectionListener selectionListener) {
+        formatCombo.addSelectionListener(selectionListener);
+    }
 }

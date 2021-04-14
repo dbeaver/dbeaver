@@ -69,6 +69,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private static final Log log = Log.getLog(StreamTransferConsumer.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
+    private static final String PROP_FORMAT = "format"; //$NON-NLS-1$
 
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VARIABLE_CATALOG = "catalog";
@@ -613,12 +614,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         @Override
         public DBDDisplayFormat getExportFormat() {
-            DBDDisplayFormat format = DBDDisplayFormat.UI;
-            Object formatProp = processorProperties.get(StreamConsumerSettings.PROP_FORMAT);
+            Object formatProp = processorProperties.get(PROP_FORMAT);
             if (formatProp != null) {
-                format = DBDDisplayFormat.valueOf(formatProp.toString().toUpperCase(Locale.ENGLISH));
+               return DBDDisplayFormat.valueOf(formatProp.toString().toUpperCase(Locale.ENGLISH));
             }
-            return format;
+            return settings.getValueFormat();
         }
 
         @Override

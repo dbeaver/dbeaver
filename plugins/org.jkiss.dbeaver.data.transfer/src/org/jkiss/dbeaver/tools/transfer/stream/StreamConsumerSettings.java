@@ -21,9 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,7 +60,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
     public static final String PROP_FILE_EXTENSION = "extension";
-    public static final String PROP_FORMAT = "format";
+
+    private static final String SETTING_VALUE_FORMAT = "valueFormat"; //$NON-NLS-1$
 
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
@@ -72,6 +73,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private String outputTimestampPattern = GeneralUtils.DEFAULT_TIMESTAMP_PATTERN;
 
     private DBDDataFormatterProfile formatterProfile;
+    @NotNull
+    private DBDDisplayFormat valueFormat = DBDDisplayFormat.UI;
 
     private boolean outputClipboard = false;
     private boolean useSingleFile = false;
@@ -253,6 +256,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(formatterProfile)) {
             this.formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(formatterProfile);
         }
+        valueFormat = DBDDisplayFormat.safeValueOf(CommonUtils.toString(settings.get(SETTING_VALUE_FORMAT)));
 
         final Map<String, Object> mappings = JSONUtils.getObjectOrNull(settings, "mappings");
         if (mappings != null && !mappings.isEmpty()) {
@@ -313,6 +317,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         } else {
             settings.put("formatterProfile", "");
         }
+        settings.put(SETTING_VALUE_FORMAT, valueFormat.name());
 
         if (!dataMappings.isEmpty()) {
             final Map<String, Object> mappings = new LinkedHashMap<>();
@@ -354,4 +359,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         return summary.toString();
     }
 
+    @NotNull
+    public DBDDisplayFormat getValueFormat() {
+        return valueFormat;
+    }
+
+    public void setValueFormat(@NotNull DBDDisplayFormat valueFormat) {
+        this.valueFormat = valueFormat;
+    }
 }
