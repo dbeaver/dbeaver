@@ -173,6 +173,10 @@ public class DTUIMessages extends NLS {
 	public static String sql_script_task_page_settings_error_message_you_must_select_script_execute;
 	public static String sql_script_task_page_settings_error_message_you_must_select_connection;
 
+	public static String value_format_selector_value;
+	public static String value_format_selector_display;
+	public static String value_format_selector_editable;
+	public static String value_format_selector_database_native;
 
 	static {
 		// initialize resource bundle

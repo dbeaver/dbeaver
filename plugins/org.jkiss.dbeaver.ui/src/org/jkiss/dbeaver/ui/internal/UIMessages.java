@@ -77,11 +77,6 @@ public class UIMessages extends NLS {
 
     public static String control_label_connection_folder;
 
-    public static String value_format_selector_value;
-    public static String value_format_selector_display;
-    public static String value_format_selector_editable;
-    public static String value_format_selector_database_native;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
