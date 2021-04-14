@@ -20,6 +20,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.widgets.Display;
@@ -124,7 +125,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         // Initialize app preferences
         DefaultScope.INSTANCE.getNode(CoreApplicationActivator.getDefault().getBundle().getSymbolicName());
-        //TrayDialog.setDialogHelpAvailable(true);
+
+        // Don't show Help button in JFace dialogs
+        TrayDialog.setDialogHelpAvailable(false);
 
 /*
         // Set default resource encoding to UTF-8
