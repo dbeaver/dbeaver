@@ -3946,16 +3946,6 @@ public class ResultSetViewer extends Viewer
     @NotNull
     public ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation)
     {
-        List<ResultSetRow> selectedRows = new ArrayList<>(getSelection().getSelectedRows());
-        int rowNum = curRow == null ? 0 : curRow.getVisualNumber();
-        int initRowCount = model.getRowCount();
-        if (rowNum >= initRowCount) {
-            rowNum = initRowCount - 1;
-        }
-        if (rowNum < 0) {
-            rowNum = 0;
-        }
-
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             throw new IllegalStateException("Can't add/copy rows in disconnected results");
@@ -3968,11 +3958,19 @@ public class ResultSetViewer extends Viewer
             final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
             final DBDAttributeBinding[] attributes = model.getAttributes();
 
-            final int[][] partitionedSelectedRows = groupContiguousRows(
-                selectedRows.stream()
-                    .mapToInt(ResultSetRow::getVisualNumber)
-                    .toArray()
-            );
+            final List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+            final int[][] partitionedSelectedRows;
+
+            if (selectedRows.isEmpty()) {
+                // No rows selected, use zero as the only row number
+                partitionedSelectedRows = new int[][]{new int[]{0, 0}};
+            } else {
+                partitionedSelectedRows = groupContiguousRows(
+                    selectedRows.stream()
+                        .mapToInt(ResultSetRow::getVisualNumber)
+                        .toArray()
+                );
+            }
 
             int partitionOffset = 0;
 
@@ -3981,20 +3979,21 @@ public class ResultSetViewer extends Viewer
                 final int partitionEnd = partitionRange[1];
                 final int partitionLength = partitionEnd - partitionStart + 1;
 
-                for (int partitionIndex = partitionStart; partitionIndex <= partitionEnd; partitionIndex++) {
-                    final int srcRowIndex;
-                    final int newRowIndex;
-                    final Object[] cells;
+                int srcRowIndex = partitionOffset + partitionStart;
+                int newRowIndex = partitionOffset + partitionStart;
 
-                    if (afterCurrent) {
-                        // We're inserting to the end of current partition - we need to account its length
-                        srcRowIndex = partitionOffset + partitionIndex;
-                        newRowIndex = partitionOffset + partitionIndex + partitionLength;
-                    } else {
-                        // We're inserting before the current partition - need to account already inserted rows
-                        srcRowIndex = partitionOffset + partitionIndex + (partitionIndex - partitionStart);
-                        newRowIndex = partitionOffset + partitionIndex;
-                    }
+                if (afterCurrent) {
+                    // If we insert to the end of current partition then we need to account its length
+                    newRowIndex += partitionLength;
+                }
+
+                if (newRowIndex > model.getRowCount()) {
+                    // May happen if we insert "after" current row and there are no rows at all
+                    newRowIndex = model.getRowCount();
+                }
+
+                for (int partitionIndex = partitionStart; partitionIndex <= partitionEnd; partitionIndex++) {
+                    final Object[] cells;
 
                     if (docAttribute != null) {
                         cells = new Object[1];
@@ -4053,6 +4052,14 @@ public class ResultSetViewer extends Viewer
                     }
 
                     curRow = model.addNewRow(newRowIndex, cells);
+
+                    newRowIndex++;
+                    srcRowIndex++;
+
+                    if (!afterCurrent) {
+                        // Need to account currently inserted row
+                        srcRowIndex++;
+                    }
                 }
 
                 partitionOffset += partitionLength;
