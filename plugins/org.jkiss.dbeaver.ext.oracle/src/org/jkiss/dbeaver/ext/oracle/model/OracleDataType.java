@@ -267,14 +267,17 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
-    {
-        return new DBEPersistAction[] {
-            new OracleObjectPersistAction(
-                OracleObjectType.VIEW,
-                "Compile type",
-                "ALTER TYPE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
-            )};
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) throws DBCException {
+        if (!isPredefined()) {
+            return new DBEPersistAction[]{
+                    new OracleObjectPersistAction(
+                            OracleObjectType.VIEW,
+                            "Compile type",
+                            "ALTER TYPE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
+                    )};
+        } else {
+            throw new DBCException("Can't compile " + getName() + ". Compilation works only for user-defined types.");
+        }
     }
 
     @Override
