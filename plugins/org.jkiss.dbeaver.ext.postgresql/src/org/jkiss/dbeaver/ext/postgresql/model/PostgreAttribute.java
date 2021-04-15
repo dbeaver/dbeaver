@@ -107,6 +107,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.acl = source.acl;
         this.typeId = source.typeId;
         this.typeMod = source.typeMod;
+        this.defaultValue = source.defaultValue;
     }
 
     @NotNull
