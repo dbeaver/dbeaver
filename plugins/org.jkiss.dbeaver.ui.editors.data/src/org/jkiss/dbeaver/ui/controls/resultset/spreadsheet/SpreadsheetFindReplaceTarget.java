@@ -25,6 +25,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -49,7 +54,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
 
     private static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
 
-    private final SpreadsheetPresentation owner;
+    private SpreadsheetPresentation owner;
     private Pattern searchPattern;
     private Color scopeHighlightColor;
     private boolean replaceAll;
@@ -89,6 +94,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public Point getSelection()
     {
+        refreshOwner();
         Collection<Integer> rowSelection = owner.getSpreadsheet().getRowSelection();
         int minRow = rowSelection.stream().mapToInt(v -> v).min().orElse(-1);
         int maxRow = rowSelection.stream().mapToInt(v -> v).max().orElse(-1);
@@ -323,4 +329,36 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         return "Target: " + (dataContainer == null ? null : dataContainer.getName());
     }
 
+    @NotNull
+    SpreadsheetPresentation getOwner() {
+        return owner;
+    }
+
+    void setOwner(@NotNull SpreadsheetPresentation newOwner) {
+        this.endSession();
+        this.setScope(null);
+        this.owner = newOwner;
+        this.beginSession();
+    }
+
+    private void refreshOwner() {
+        final SpreadsheetPresentation newOwner = getActiveSpreadsheet();
+        if (newOwner != null && newOwner != this.owner) {
+            setOwner(newOwner);
+            newOwner.setFindReplaceTarget(this);
+        }
+    }
+
+    @Nullable
+    private static SpreadsheetPresentation getActiveSpreadsheet() {
+        final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (workbenchWindow == null) {
+            return null;
+        }
+        final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+        if (activeEditor == null) {
+            return null;
+        }
+        return activeEditor.getAdapter(SpreadsheetPresentation.class);
+    }
 }

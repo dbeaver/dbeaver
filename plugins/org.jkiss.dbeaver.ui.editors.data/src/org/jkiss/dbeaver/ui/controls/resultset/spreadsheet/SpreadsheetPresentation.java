@@ -190,6 +190,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.autoFetchSegments = autoFetchSegments;
     }
 
+    void setFindReplaceTarget(@NotNull SpreadsheetFindReplaceTarget findReplaceTarget) {
+        this.findReplaceTarget = findReplaceTarget;
+    }
+
     @Nullable
     DBPDataSource getDataSource() {
         DBSDataContainer dataContainer = controller.getDataContainer();
@@ -1366,6 +1370,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             });
             return adapter.cast(page);
         } else if (adapter == IFindReplaceTarget.class) {
+            if (findReplaceTarget.getOwner() != this) {
+                findReplaceTarget.setOwner(this);
+            }
             return adapter.cast(findReplaceTarget);
         }
         return null;
