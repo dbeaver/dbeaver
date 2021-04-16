@@ -139,6 +139,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         return false;
     }
 
+    @Override
+    public boolean isTableCommentEditable() {
+        return true;
+    }
+
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }
