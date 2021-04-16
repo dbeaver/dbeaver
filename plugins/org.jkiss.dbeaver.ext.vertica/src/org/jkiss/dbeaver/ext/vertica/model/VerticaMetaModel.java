@@ -99,6 +99,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
                 "FROM v_catalog.odbc_columns col " +
                 "LEFT JOIN v_catalog.comments com ON com.object_type = 'COLUMN' " +
                 "AND com.object_schema = col.schema_name " +
+                "AND com.object_name = col.table_name " +
                 "AND com.child_object = col.column_name " +
                 "WHERE col.schema_name=? " +
                 (forTable != null ? "AND col.table_name=? " : " "));
