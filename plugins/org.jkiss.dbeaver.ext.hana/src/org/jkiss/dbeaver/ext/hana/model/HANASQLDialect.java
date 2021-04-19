@@ -94,4 +94,10 @@ public class HANASQLDialect extends GenericSQLDialect {
         return super.getColumnTypeModifiers(dataSource, column, ucTypeName, dataKind);
     }
 
+    @NotNull
+    @Override
+    public String getSearchStringEscape() {
+        // https://github.com/dbeaver/dbeaver/issues/9998#issuecomment-805710837
+        return "\\";
+    }
 }
