@@ -42,10 +42,9 @@ public class VerticaConstraintManager extends GenericPrimaryKeyManager {
         VerticaConstraint constraint = (VerticaConstraint) command.getObject();
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             actions.add(
-                    new SQLDatabasePersistAction(
-                            "Create check constraint",
-                            "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                                    " ADD CONSTRAINT CHECK (" + constraint.getCheckConstraintDefinition() + ")"
+                    new SQLDatabasePersistAction("Create check constraint", 
+                        "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                            " ADD CONSTRAINT CHECK (" + constraint.getCheckConstraintDefinition() + ")"
                     ));
         } else {
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);
@@ -58,20 +57,20 @@ public class VerticaConstraintManager extends GenericPrimaryKeyManager {
 
         if (command.getProperties().containsKey(DBConstants.PROP_ID_ENABLED)) {
             actionList.add(
-                    new SQLDatabasePersistAction("Alter constraint",
-                            "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                                    " ALTER CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName()) + " " +
-                                    (constraint.isEnabled() ? "ENABLED" : "DISABLED")
+                new SQLDatabasePersistAction("Alter constraint",
+                    "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                        " ALTER CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName()) + " " +
+                        (constraint.isEnabled() ? "ENABLED" : "DISABLED")
                     )
             );
         }
 
         if (command.getProperties().containsKey(DBConstants.PROP_ID_DESCRIPTION)) {
             actionList.add(
-                    new SQLDatabasePersistAction("Alter constraint description",
-                            "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName()) +
-                                    " ON " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
-                                    SQLUtils.quoteString(constraint, CommonUtils.notEmpty(constraint.getDescription()))
+                new SQLDatabasePersistAction("Alter constraint description",
+                    "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName()) +
+                        " ON " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
+                        SQLUtils.quoteString(constraint, CommonUtils.notEmpty(constraint.getDescription()))
                     )
             );
         }
