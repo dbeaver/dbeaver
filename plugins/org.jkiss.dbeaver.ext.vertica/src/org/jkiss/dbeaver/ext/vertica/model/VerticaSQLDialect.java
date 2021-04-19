@@ -26,7 +26,7 @@ import java.util.Arrays;
 
 public class VerticaSQLDialect extends GenericSQLDialect {
 
-        private static String[] VERTICA_KEYWORDS = new String[]{
+    private static String[] VERTICA_KEYWORDS = new String[]{
             // SELECT * FROM keywords WHERE reserved = 'R'
             "BIT",
             "COMMENT",
