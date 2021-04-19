@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -45,7 +47,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
 
     private static final Log log = Log.getLog(DB2SQLDialect.class);
 
-    public static final String[] EXEC_KEYWORDS = new String[]{"call"};
+    public static final String[] EXEC_KEYWORDS = new String[]{"CALL"};
 
     private static final String[][] DB2_BEGIN_END_BLOCK = new String[][]{
     };
@@ -104,6 +106,15 @@ public class DB2SQLDialect extends JDBCSQLDialect {
         if (allFunctions.isEmpty()) {
             super.loadFunctions(session, metaData, allFunctions);
         }
+    }
+
+    @NotNull
+    @Override
+    protected String getProcedureCallEndClause(DBSProcedure procedure) {
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return "FROM SYSIBM.SYSDUMMY1";
+        }
+        return super.getProcedureCallEndClause(procedure);
     }
 
     @Nullable

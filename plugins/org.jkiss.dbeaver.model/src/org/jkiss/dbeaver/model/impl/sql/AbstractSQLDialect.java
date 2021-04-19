@@ -743,6 +743,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         }
     }
 
+    @NotNull
+    protected String getProcedureCallEndClause(DBSProcedure procedure) {
+        return "";
+    }
+
     @Override
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
@@ -781,6 +786,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             }
         }
         sql.append(")");
+        String callEndClause = getProcedureCallEndClause(proc);
+        if (!CommonUtils.isEmpty(callEndClause)) {
+            sql.append(" ").append(callEndClause);
+        }
         if (!useBrackets) {
             sql.append(";");
         } else {
