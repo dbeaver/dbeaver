@@ -104,7 +104,7 @@ public class NavigatorUtils {
         }
         final List<DBNNode> nodes = new ArrayList<>();
         if (selection instanceof IStructuredSelection) {
-            for (Object selectedObject : ((IStructuredSelection) selection).toArray()) {
+            for (Object selectedObject : (IStructuredSelection) selection) {
                 if (selectedObject instanceof DBNNode) {
                     nodes.add((DBNNode) selectedObject);
                 }
