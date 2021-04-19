@@ -53,6 +53,7 @@ import java.util.regex.PatternSyntaxException;
 class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
     private static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
+    private static SpreadsheetFindReplaceTarget instance;
 
     private SpreadsheetPresentation owner;
     private Pattern searchPattern;
@@ -61,10 +62,17 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private boolean sessionActive = false;
     private List<GridPos> originalSelection = null;
 
-    SpreadsheetFindReplaceTarget(SpreadsheetPresentation owner)
-    {
-        this.owner = owner;
-        this.scopeHighlightColor = UIStyles.getDefaultTextColor("AbstractTextEditor.Color.FindScope", SWT.COLOR_LIST_SELECTION);
+    public static synchronized SpreadsheetFindReplaceTarget getInstance() {
+        if (instance == null) {
+            instance = new SpreadsheetFindReplaceTarget();
+            instance.scopeHighlightColor = UIStyles.getDefaultTextColor("AbstractTextEditor.Color.FindScope", SWT.COLOR_LIST_SELECTION);
+        }
+        return instance;
+    }
+
+    public synchronized SpreadsheetFindReplaceTarget owned(@NotNull SpreadsheetPresentation newOwner) {
+        refreshOwner(newOwner);
+        return this;
     }
 
     public boolean isSessionActive() {
@@ -94,7 +102,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public Point getSelection()
     {
-        refreshOwner();
+        final SpreadsheetPresentation newOwner = getActiveSpreadsheet();
+        if (newOwner != null && newOwner != this.owner) {
+            refreshOwner(newOwner);
+        }
         Collection<Integer> rowSelection = owner.getSpreadsheet().getRowSelection();
         int minRow = rowSelection.stream().mapToInt(v -> v).min().orElse(-1);
         int maxRow = rowSelection.stream().mapToInt(v -> v).max().orElse(-1);
@@ -329,23 +340,19 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         return "Target: " + (dataContainer == null ? null : dataContainer.getName());
     }
 
-    @NotNull
-    SpreadsheetPresentation getOwner() {
-        return owner;
-    }
-
-    void setOwner(@NotNull SpreadsheetPresentation newOwner) {
-        this.endSession();
-        this.setScope(null);
+    private void refreshOwner(@NotNull SpreadsheetPresentation newOwner) {
+        if (this.owner == newOwner) {
+            return;
+        }
+        final boolean refreshSession = this.sessionActive;
+        final Pattern searchPattern = this.searchPattern;
+        if (refreshSession) {
+            this.endSession();
+        }
         this.owner = newOwner;
-        this.beginSession();
-    }
-
-    private void refreshOwner() {
-        final SpreadsheetPresentation newOwner = getActiveSpreadsheet();
-        if (newOwner != null && newOwner != this.owner) {
-            setOwner(newOwner);
-            newOwner.setFindReplaceTarget(this);
+        if (refreshSession) {
+            this.beginSession();
+            this.searchPattern = searchPattern;
         }
     }
 

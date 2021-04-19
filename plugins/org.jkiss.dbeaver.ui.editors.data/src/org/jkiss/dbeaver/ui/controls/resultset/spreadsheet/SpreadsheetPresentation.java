@@ -128,8 +128,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<>();
 
-    private SpreadsheetFindReplaceTarget findReplaceTarget;
-
     // UI modifiers
     private Color backgroundAdded;
     private Color backgroundDeleted;
@@ -165,11 +163,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color highlightScopeColor;
     private boolean useNativeNumbersFormat;
 
-    public SpreadsheetPresentation() {
-        findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
-
-    }
-
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
     }
@@ -188,10 +181,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public void setAutoFetchSegments(boolean autoFetchSegments) {
         this.autoFetchSegments = autoFetchSegments;
-    }
-
-    void setFindReplaceTarget(@NotNull SpreadsheetFindReplaceTarget findReplaceTarget) {
-        this.findReplaceTarget = findReplaceTarget;
     }
 
     @Nullable
@@ -1370,10 +1359,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             });
             return adapter.cast(page);
         } else if (adapter == IFindReplaceTarget.class) {
-            if (findReplaceTarget.getOwner() != this) {
-                findReplaceTarget.setOwner(this);
-            }
-            return adapter.cast(findReplaceTarget);
+            return adapter.cast(SpreadsheetFindReplaceTarget.getInstance().owned(this));
         }
         return null;
     }
@@ -1989,6 +1975,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
+
+            final SpreadsheetFindReplaceTarget findReplaceTarget = SpreadsheetFindReplaceTarget
+                .getInstance()
+                .owned(SpreadsheetPresentation.this);
 
             if (findReplaceTarget.isSessionActive()) {
                 boolean hasScope = highlightScopeFirstLine >= 0 && highlightScopeLastLine >= 0;
