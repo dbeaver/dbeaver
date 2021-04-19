@@ -26,11 +26,7 @@ import java.util.Arrays;
 
 public class VerticaSQLDialect extends GenericSQLDialect {
 
-    public VerticaSQLDialect() {
-        super("Vertica", "vertica");
-    }
-
-    private static String[] VERTICA_KEYWORDS = new String[]{
+        private static String[] VERTICA_KEYWORDS = new String[]{
             // SELECT * FROM keywords WHERE reserved = 'R'
             "BIT",
             "COMMENT",
@@ -65,6 +61,10 @@ public class VerticaSQLDialect extends GenericSQLDialect {
             "DATETIME",
             "DECODE"
     };
+
+    public VerticaSQLDialect() {
+        super("Vertica", "vertica");
+    }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
