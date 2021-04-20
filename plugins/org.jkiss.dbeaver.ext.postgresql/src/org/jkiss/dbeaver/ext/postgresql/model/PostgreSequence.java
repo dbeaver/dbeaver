@@ -56,7 +56,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private long startValue;
-        private long lastValue;
+        private Long lastValue;
         private long minValue;
         private long maxValue;
         private long incrementBy;
@@ -64,7 +64,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private boolean isCycled;
 
         @Property(viewable = true, editable = true, updatable = true, order = 10)
-        public long getLastValue() {
+        public Long getLastValue() {
             return lastValue;
         }
 
@@ -166,7 +166,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
                             additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
-                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.lastValue = JDBCUtils.safeGetLongNullable(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
@@ -181,7 +181,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
                             additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
-                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.lastValue = JDBCUtils.safeGetLongNullable(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");

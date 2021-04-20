@@ -113,7 +113,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
         if (options.containsKey("startValue")) {
             ddl.append("\n\tSTART ").append(options.get("startValue"));
         }
-        if (options.containsKey("lastValue")) {
+        if (options.get("lastValue") != null) {
             ddl.append("\n\tRESTART ").append(options.get("lastValue"));
         }
         if (options.containsKey("cacheValue")) {
