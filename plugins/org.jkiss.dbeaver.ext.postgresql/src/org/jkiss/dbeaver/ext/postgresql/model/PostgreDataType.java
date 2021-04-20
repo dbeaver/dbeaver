@@ -982,6 +982,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                             case "xml":
                                 valueType = Types.SQLXML;
                                 break;
+                            case "int1":
+                            case "uint1":
+                            case "uint2":
+                            case "uint4":
+                            case "uint8":
+                                // All this types are custom, from pguint extension. Pguint is popular and we know that these types are numeric
+                                valueType = Types.NUMERIC;
+                                break;
                             default:
                                 valueType = Types.OTHER;
                                 break;
