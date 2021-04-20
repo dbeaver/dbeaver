@@ -112,6 +112,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     @Override
     protected String getProcedureCallEndClause(DBSProcedure procedure) {
         if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            // Only "Select from function_name" doesn't work for user-defined functions. See #10059
             return "FROM SYSIBM.SYSDUMMY1";
         }
         return super.getProcedureCallEndClause(procedure);
