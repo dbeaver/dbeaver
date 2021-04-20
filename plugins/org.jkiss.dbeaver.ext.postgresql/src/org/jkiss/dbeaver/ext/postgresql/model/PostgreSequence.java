@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -239,6 +240,12 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
 
+    }
+
+    @Nullable
+    @Override
+    public String[] getRelOptions() {
+        return null;
     }
 
     @Override
