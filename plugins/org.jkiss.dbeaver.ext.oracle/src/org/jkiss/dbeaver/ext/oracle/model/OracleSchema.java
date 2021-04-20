@@ -1275,7 +1275,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 .append("WHERE S.OWNER = ?\n");
             if (synonymName != null) sql.append(" AND S.SYNONYM_NAME = ? ");
             sql.append(synonymTypeFilter)
-                .append("AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n)\n");
+                .append("AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.SUBOBJECT_NAME IS NULL\n)\n");
             sql.append("GROUP BY OWNER, SYNONYM_NAME");
             if (synonymName == null) {
                 sql.append("\nORDER BY SYNONYM_NAME");
