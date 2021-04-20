@@ -86,10 +86,12 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
         final StringBuilder sequenceOptions = new StringBuilder();
         addSequenceOptions(sequenceOptions, command.getProperties());
 
-        actions.add(new SQLDatabasePersistAction(
-            "Alter sequence",
-            "ALTER SEQUENCE " + sequenceName + sequenceOptions
-        ));
+        if (sequenceOptions.length() > 0) {
+            actions.add(new SQLDatabasePersistAction(
+                "Alter sequence",
+                "ALTER SEQUENCE " + sequenceName + sequenceOptions
+            ));
+        }
     }
 
     @Override
