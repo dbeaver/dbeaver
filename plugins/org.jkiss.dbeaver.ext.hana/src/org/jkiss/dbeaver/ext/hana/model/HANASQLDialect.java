@@ -101,4 +101,11 @@ public class HANASQLDialect extends GenericSQLDialect {
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return BinaryFormatterHexString.INSTANCE;
     }
+
+    @NotNull
+    @Override
+    public String getSearchStringEscape() {
+        // https://github.com/dbeaver/dbeaver/issues/9998#issuecomment-805710837
+        return "\\";
+    }
 }
