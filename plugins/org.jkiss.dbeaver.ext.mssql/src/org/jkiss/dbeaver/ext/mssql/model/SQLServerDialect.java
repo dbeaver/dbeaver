@@ -48,6 +48,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
         "TOP",
         "SYNONYM",
+        "PERSISTED"
     };
 
     private static final String[][] SQLSERVER_QUOTE_STRINGS = {

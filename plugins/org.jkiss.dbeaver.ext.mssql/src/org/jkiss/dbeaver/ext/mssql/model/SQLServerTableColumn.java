@@ -63,6 +63,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private String collationName;
     private String description;
     private boolean hidden;
+    private boolean computedPersisted;
+    private String computedDefinition;
     private IdentityInfo identityInfo = new IdentityInfo();
 
     public static class IdentityInfo {
@@ -161,6 +163,10 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             this.setDefaultValue(dv);
         }
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        if (JDBCUtils.safeGetInt(dbResult, "is_computed") != 0) {
+            this.computedPersisted = JDBCUtils.safeGetInt(dbResult, "is_persisted") != 0;
+            this.computedDefinition = JDBCUtils.safeGetString(dbResult, "computed_definition");
+        }
     }
 
     @NotNull
@@ -249,6 +255,16 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
     public void setCollationName(String collationName) {
         this.collationName = collationName;
+    }
+
+    @Property(viewable = true, order = 76, visibleIf = IsColumnComputedValidator.class)
+    public String getComputedDefinition() {
+        return computedDefinition;
+    }
+
+    @Property(viewable = true, order = 77, visibleIf = IsColumnComputedValidator.class)
+    public boolean isComputedPersisted() {
+        return computedPersisted;
     }
 
     @Property(viewable = false, order = 80)
@@ -340,6 +356,13 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
                 log.debug("Error getting schema data types", e);
             }
             return allTypes.toArray();
+        }
+    }
+
+    public static class IsColumnComputedValidator implements IPropertyValueValidator<SQLServerTableColumn, Object> {
+        @Override
+        public boolean isValidValue(SQLServerTableColumn object, Object value) {
+            return CommonUtils.isNotEmpty(object.getComputedDefinition());
         }
     }
 }
