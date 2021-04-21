@@ -95,16 +95,23 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
         JDBCPreparedStatement dbStat;
-        dbStat = session.prepareStatement("SELECT com.comment AS REMARKS, col.*, col.sql_type_id AS SOURCE_DATA_TYPE, " +
-                "col.data_type_name AS TYPE_NAME, " +
-                "col.column_default AS COLUMN_DEF " +
-                "FROM v_catalog.odbc_columns col " +
-                "LEFT JOIN v_catalog.comments com ON com.object_type = 'COLUMN' " +
+        boolean supportsCommentReading = owner.getDataSource().isServerVersionAtLeast(9, 3);
+        StringBuilder ddl = new StringBuilder();
+        ddl.append("SELECT ");
+        if (supportsCommentReading) ddl.append("com.comment AS REMARKS,");
+        ddl.append("col.*, col.sql_type_id AS SOURCE_DATA_TYPE, col.data_type_name AS TYPE_NAME, col.column_default AS COLUMN_DEF " +
+            "FROM v_catalog.odbc_columns col ");
+        if (supportsCommentReading) {
+            ddl.append("LEFT JOIN v_catalog.comments com ON com.object_type = 'COLUMN' " +
                 "AND com.object_schema = col.schema_name " +
                 "AND com.object_name = col.table_name " +
-                "AND com.child_object = col.column_name " +
-                "WHERE col.schema_name=? " +
-                (forTable != null ? "AND col.table_name=? " : " "));
+                "AND com.child_object = col.column_name ");
+        }
+        ddl.append("WHERE col.schema_name=? ");
+        if (forTable != null) {
+            ddl.append("AND col.table_name=? ");
+        }
+        dbStat = session.prepareStatement(ddl.toString());
         if (forTable != null) {
             dbStat.setString(1, owner.getName());
             dbStat.setString(2, forTable.getName());
