@@ -22,7 +22,45 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 
+import java.util.Arrays;
+
 public class VerticaSQLDialect extends GenericSQLDialect {
+
+    private static String[] VERTICA_KEYWORDS = new String[]{
+            // SELECT * FROM keywords WHERE reserved = 'R'
+            "BIT",
+            "COMMENT",
+            "CORRELATION",
+            "ENCODED",
+            "ILIKE",
+            "ILIKEB",
+            "INTERVALYM",
+            "ISNULL",
+            "KSAFE",
+            "LIKEB",
+            "MINUS",
+            "MONEY",
+            "NCHAR",
+            "NOTNULL",
+            "NULLSEQUAL",
+            "OFFSET",
+            "PINNED",
+            "SMALLDATETIME",
+            "TEXT",
+            "TIMESERIES",
+            "TIMEZONE",
+            "TINYINT",
+            "UUID",
+            "VARCHAR2"
+    };
+
+    private static String[] VERTICA_FUNCTIONS = new String[]{
+            "CURRENT_DATABASE",
+            "CURRENT_SCHEMA",
+            "DATEDIFF",
+            "DATETIME",
+            "DECODE"
+    };
 
     public VerticaSQLDialect() {
         super("Vertica", "vertica");
@@ -30,6 +68,8 @@ public class VerticaSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
+        addSQLKeywords(Arrays.asList(VERTICA_KEYWORDS));
+        addFunctions(Arrays.asList(VERTICA_FUNCTIONS));
     }
 
     @Override
