@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -93,7 +94,7 @@ public class ExasolPrimaryKeyManager
 	{
 		final ExasolTableUniqueKey constraint = command.getObject();
 		
-		if (command.getProperties().containsKey("enabled"))
+		if (command.getProperties().containsKey(DBConstants.PROP_ID_ENABLED))
 		{
 			actionList.add(
 					new SQLDatabasePersistAction("Alter PK",
