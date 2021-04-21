@@ -72,16 +72,25 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
-        createOrReplaceSequenceQuery(actions, command.getObject());
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        actions.add(new SQLDatabasePersistAction(
+            "Create sequence",
+            "CREATE SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
+        ));
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
-        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceSequenceQuery(actionList, command.getObject());
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) {
+        final PostgreSequence sequence = (PostgreSequence) command.getObject();
+        final String sequenceName = sequence.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        final StringBuilder sequenceOptions = new StringBuilder();
+        addSequenceOptions(sequenceOptions, command.getProperties());
+
+        if (sequenceOptions.length() > 0) {
+            actions.add(new SQLDatabasePersistAction(
+                "Alter sequence",
+                "ALTER SEQUENCE " + sequenceName + sequenceOptions
+            ));
         }
     }
 
@@ -93,10 +102,32 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
         );
     }
 
-    private void createOrReplaceSequenceQuery(List<DBEPersistAction> actions, PostgreTableBase sequence)
-    {
-        actions.add(
-            new SQLDatabasePersistAction("Create sequence", "CREATE SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+    private void addSequenceOptions(StringBuilder ddl, Map<Object, Object> options) {
+        if (options.containsKey("incrementBy")) {
+            ddl.append("\n\tINCREMENT BY ").append(options.get("incrementBy"));
+        }
+        if (options.containsKey("minValue")) {
+            ddl.append("\n\tMINVALUE ").append(options.get("minValue"));
+        }
+        if (options.containsKey("maxValue")) {
+            ddl.append("\n\tMAXVALUE ").append(options.get("maxValue"));
+        }
+        if (options.containsKey("startValue")) {
+            ddl.append("\n\tSTART ").append(options.get("startValue"));
+        }
+        if (options.get("lastValue") != null) {
+            ddl.append("\n\tRESTART ").append(options.get("lastValue"));
+        }
+        if (options.containsKey("cacheValue")) {
+            ddl.append("\n\tCACHE ").append(options.get("cacheValue"));
+        }
+        if (options.containsKey("cycled")) {
+            ddl.append("\n\t");
+            if (!CommonUtils.toBoolean(options.get("cycled"))) {
+                ddl.append("NO ");
+            }
+            ddl.append("CYCLE");
+        }
     }
 
     @Override
