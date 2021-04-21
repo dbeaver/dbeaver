@@ -163,10 +163,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             this.setDefaultValue(dv);
         }
         this.description = JDBCUtils.safeGetString(dbResult, "description");
-        if (JDBCUtils.safeGetInt(dbResult, "is_computed") != 0) {
-            this.computedPersisted = JDBCUtils.safeGetInt(dbResult, "is_persisted") != 0;
-            this.computedDefinition = JDBCUtils.safeGetString(dbResult, "computed_definition");
-        }
+        this.computedPersisted = JDBCUtils.safeGetInt(dbResult, "is_persisted") != 0;
+        this.computedDefinition = JDBCUtils.safeGetString(dbResult, "computed_definition");
     }
 
     @NotNull
