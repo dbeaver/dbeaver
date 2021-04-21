@@ -44,78 +44,82 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
     private static final Log log = Log.getLog(NavigatorHandlerObjectMove.class);
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node == null || !(node.getParentNode() instanceof DBNContainer)) {
-            return null;
-        }
-        DBSObject object = ((DBNDatabaseNode) node).getObject();
-        if (!(object instanceof DBPOrderedObject)) {
-            return null;
-        }
+        final List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
 
-        @SuppressWarnings("unchecked")
-        DBEObjectReorderer<DBSObject> objectReorderer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectReorderer.class);
-        if (objectReorderer == null) {
-            return null;
-        }
-        DBPOrderedObject orderedObject = (DBPOrderedObject) object;
-        try {
-            // Sibling objects - they are involved in reordering process
-            List<DBSObject> siblingObjects = new ArrayList<>();
-            for (DBNNode siblingNode : node.getParentNode().getChildren(new VoidProgressMonitor())) {
-                if (siblingNode instanceof DBNDatabaseNode) {
-                    DBSObject siblingObject = ((DBNDatabaseNode) siblingNode).getObject();
-                    if (siblingObject.getClass() != object.getClass()) {
-                        log.warn("Sibling object class " + siblingObject.getClass() + " differs from moving object class " + object.getClass().getName());
+        for (DBNNode node : nodes) {
+            if (!(node.getParentNode() instanceof DBNContainer)) {
+                return null;
+            }
+            DBSObject object = ((DBNDatabaseNode) node).getObject();
+            if (!(object instanceof DBPOrderedObject)) {
+                return null;
+            }
+
+            @SuppressWarnings("unchecked")
+            DBEObjectReorderer<DBSObject> objectReorderer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectReorderer.class);
+            if (objectReorderer == null) {
+                return null;
+            }
+            DBPOrderedObject orderedObject = (DBPOrderedObject) object;
+            try {
+                // Sibling objects - they are involved in reordering process
+                List<DBSObject> siblingObjects = new ArrayList<>();
+                for (DBNNode siblingNode : node.getParentNode().getChildren(new VoidProgressMonitor())) {
+                    if (siblingNode instanceof DBNDatabaseNode) {
+                        DBSObject siblingObject = ((DBNDatabaseNode) siblingNode).getObject();
+                        if (siblingObject.getClass() != object.getClass()) {
+                            log.warn("Sibling object class " + siblingObject.getClass() + " differs from moving object class " + object.getClass().getName());
+                        } else {
+                            siblingObjects.add(siblingObject);
+                        }
                     } else {
-                        siblingObjects.add(siblingObject);
+                        log.warn("Wrong sibling node type: " + siblingNode);
                     }
-                } else {
-                    log.warn("Wrong sibling node type: " + siblingNode);
                 }
-            }
 
-            CommandTarget commandTarget = getCommandTarget(
-                HandlerUtil.getActiveWorkbenchWindow(event),
-                node.getParentNode(),
-                object.getClass(),
-                false);
-            String actionId = event.getCommand().getId();
+                CommandTarget commandTarget = getCommandTarget(
+                    HandlerUtil.getActiveWorkbenchWindow(event),
+                    node.getParentNode(),
+                    object.getClass(),
+                    false);
 
-            switch (actionId) {
-                case NavigatorCommands.CMD_OBJECT_MOVE_UP:
-                    objectReorderer.setObjectOrdinalPosition(
-                        commandTarget.getContext(),
-                        object,
-                        siblingObjects,
-                        orderedObject.getOrdinalPosition() - 1);
-                    break;
-                case NavigatorCommands.CMD_OBJECT_MOVE_DOWN:
-                    objectReorderer.setObjectOrdinalPosition(
-                        commandTarget.getContext(),
-                        object,
-                        siblingObjects,
-                        orderedObject.getOrdinalPosition() + 1);
-                    break;
-            }
-
-            if (object.isPersisted() && commandTarget.getEditor() == null) {
-                Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
-                if (!showScript(HandlerUtil.getActiveWorkbenchWindow(event), commandTarget.getContext(), options, "Reorder script")) {
-                    commandTarget.getContext().resetChanges(true);
-                    return false;
-                } else {
-                    ObjectSaver orderer = new ObjectSaver(commandTarget.getContext(), options);
-                    TasksJob.runTask("Change object '" + object.getName() + "' position", orderer);
+                switch (event.getCommand().getId()) {
+                    case NavigatorCommands.CMD_OBJECT_MOVE_UP:
+                        objectReorderer.setObjectOrdinalPosition(
+                            commandTarget.getContext(),
+                            object,
+                            siblingObjects,
+                            orderedObject.getOrdinalPosition() - 1);
+                        break;
+                    case NavigatorCommands.CMD_OBJECT_MOVE_DOWN:
+                        // Need to take in account total amount of moved objects to avoid overlapping
+                        objectReorderer.setObjectOrdinalPosition(
+                            commandTarget.getContext(),
+                            object,
+                            siblingObjects,
+                            orderedObject.getOrdinalPosition() + nodes.size());
+                        break;
+                    default:
+                        break;
                 }
+
+                if (object.isPersisted() && commandTarget.getEditor() == null) {
+                    Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
+                    if (!showScript(HandlerUtil.getActiveWorkbenchWindow(event), commandTarget.getContext(), options, "Reorder script")) {
+                        commandTarget.getContext().resetChanges(true);
+                        return false;
+                    } else {
+                        ObjectSaver orderer = new ObjectSaver(commandTarget.getContext(), options);
+                        TasksJob.runTask("Change object '" + object.getName() + "' position", orderer);
+                    }
+                }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Object move", "Error during object reposition", e);
+                return null;
             }
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Object move", "Error during object reposition", e);
         }
         return null;
     }
-
 }
