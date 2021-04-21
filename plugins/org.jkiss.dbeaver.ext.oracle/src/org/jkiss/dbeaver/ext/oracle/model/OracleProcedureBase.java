@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -81,6 +82,11 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
     public Collection<OracleProcedureArgument> getParameters(DBRProgressMonitor monitor) throws DBException
     {
         return argumentsCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleDependencyGroup> getDependencies(DBRProgressMonitor monitor) {
+        return OracleDependencyGroup.of(this);
     }
 
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
