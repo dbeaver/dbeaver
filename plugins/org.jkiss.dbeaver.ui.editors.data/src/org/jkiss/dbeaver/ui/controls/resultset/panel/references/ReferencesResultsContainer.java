@@ -64,6 +64,8 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
     private DBSDataContainer parentDataContainer;
     private DBSDataContainer dataContainer;
+    @Nullable
+    private Collection<DBSEntity> allEntities;
 
     private final List<ReferenceKey> referenceKeys = new ArrayList<>();
     private ReferenceKey activeReferenceKey;
@@ -167,11 +169,39 @@ class ReferencesResultsContainer implements IResultSetContainer {
     public void refreshReferences() {
         dataViewer.resetHistory();
         DBSDataContainer newParentContainer = this.parentController.getDataContainer();
-        if (newParentContainer != parentDataContainer) {
+        Collection<DBSEntity> newAllEntities = getAllEntities();
+        boolean isNewEntities = !newAllEntities.equals(allEntities);
+        if (isNewEntities) {
+            allEntities = newAllEntities;
+        }
+        if (newParentContainer != parentDataContainer || isNewEntities) {
             refreshReferenceKeyList();
         } else if (dataContainer != null) {
             refreshKeyValues(false);
         }
+    }
+
+    @NotNull
+    private Collection<DBSEntity> getAllEntities() {
+        Collection<DBDAttributeBinding> visibleAttributes = parentController.getModel().getVisibleAttributes();
+        if (visibleAttributes.isEmpty()) {
+            return Collections.emptySet();
+        }
+        DBSDataContainer parentDataContainer = parentController.getDataContainer();
+        if (parentDataContainer == null) {
+            return Collections.emptySet();
+        }
+        Collection<DBSEntity> result = new LinkedHashSet<>();
+        for (DBDAttributeBinding attr : visibleAttributes) {
+            DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
+            if (entityAttribute != null) {
+                result.add(entityAttribute.getParentObject());
+            }
+        }
+        if (result.isEmpty() && parentDataContainer instanceof DBSEntity) {
+            result.add((DBSEntity) parentDataContainer);
+        }
+        return result;
     }
 
     /**
@@ -195,16 +225,6 @@ class ReferencesResultsContainer implements IResultSetContainer {
         if (parentDataContainer == null) {
             return;
         }
-        Set<DBSEntity> allEntities = new LinkedHashSet<>();
-        for (DBDAttributeBinding attr : visibleAttributes) {
-            DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
-            if (entityAttribute != null) {
-                allEntities.add(entityAttribute.getParentObject());
-            }
-        }
-        if (allEntities.isEmpty() && parentDataContainer instanceof DBSEntity) {
-            allEntities.add((DBSEntity) parentDataContainer);
-        }
 
         List<ReferenceKeyMemo> refKeyMemos = new ArrayList<>();
         {
@@ -221,7 +241,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
             }
         }
 
-        if (!allEntities.isEmpty()) {
+        if (allEntities != null && !allEntities.isEmpty()) {
             new AbstractJob("Load reference keys") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
