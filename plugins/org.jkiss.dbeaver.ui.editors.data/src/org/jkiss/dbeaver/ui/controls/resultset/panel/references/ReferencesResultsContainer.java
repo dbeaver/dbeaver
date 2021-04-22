@@ -241,7 +241,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
             }
         }
 
-        if (allEntities != null && !allEntities.isEmpty()) {
+        if (!CommonUtils.isEmpty(allEntities)) {
             new AbstractJob("Load reference keys") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
