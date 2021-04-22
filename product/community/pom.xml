@@ -69,25 +69,6 @@
                                 <version>1.10.0</version>
                             </restrictTo>
                         </filter>
-
-                        <!--<filter>
-                            <type>eclipse-plugin</type>
-                            <id>com.sun.jna</id>
-                            <restrictTo>
-                                <type>eclipse-plugin</type>
-                                <id>com.sun.jna</id>
-                                <versionRange>[4.5.1, 5.0.0]</versionRange>
-                            </restrictTo>
-                        </filter>
-                        <filter>
-                            <type>eclipse-plugin</type>
-                            <id>com.sun.jna.platform</id>
-                            <restrictTo>
-                                <type>eclipse-plugin</type>
-                                <id>com.sun.jna.platform</id>
-                                <versionRange>[4.5.1, 5.0.0]</versionRange>
-                            </restrictTo>
-                        </filter>-->
                     </filters>
                 </configuration>
             </plugin>
