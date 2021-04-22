@@ -38,10 +38,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -49,6 +46,8 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
@@ -1253,10 +1252,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     /**
-     * Searcher. Filters elements by name
+     * Searcher. Filters elements by name and description
      */
     public class SearcherFilter implements ISearchExecutor {
-
         @Override
         public boolean performSearch(String searchString, int options) {
             try {
@@ -1286,10 +1284,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (element instanceof DBNNode) {
-                return pattern.matcher(((DBNNode) element).getName()).find();
+            if (element instanceof DBNNode && matches(((DBNNode) element).getName())) {
+                return true;
+            }
+            if (element instanceof DBSWrapper) {
+                DBSWrapper wrapper = (DBSWrapper) element;
+                DBSObject dbsObject = wrapper.getObject();
+                return dbsObject != null && matches(dbsObject.getDescription());
             }
             return false;
+        }
+
+        private boolean matches(@Nullable String string) {
+            return string != null && pattern.matcher(string).find();
         }
     }
 
