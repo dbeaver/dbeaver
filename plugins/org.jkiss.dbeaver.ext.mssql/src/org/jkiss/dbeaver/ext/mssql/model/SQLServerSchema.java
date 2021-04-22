@@ -422,7 +422,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
                 .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
                 .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
-            sql.append("WHERE ");
+            sql.append(" WHERE ");
             if (forTable != null) {
                 sql.append("t.object_id=?");
             } else {
