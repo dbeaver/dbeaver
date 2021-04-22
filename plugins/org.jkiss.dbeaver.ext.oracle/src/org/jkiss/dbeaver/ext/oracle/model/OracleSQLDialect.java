@@ -453,20 +453,18 @@ public class OracleSQLDialect extends JDBCSQLDialect {
 
     @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        if (dataKind == DBPDataKind.NUMERIC) {
+        if (dataKind == DBPDataKind.NUMERIC && (OracleConstants.TYPE_NUMBER.equals(typeName) || OracleConstants.TYPE_DECIMAL.equals(typeName))) {
             OracleDataType dataType = (OracleDataType) DBUtils.getDataType(column);
             Integer scale = column.getScale();
             int precision = CommonUtils.toInt(column.getPrecision());
-            if (OracleConstants.TYPE_NUMBER.equals(typeName) || OracleConstants.TYPE_DECIMAL.equals(typeName)) {
-                if (precision == 0 && dataType != null && scale != null && scale == dataType.getMinScale()) {
-                    return "";
-                }
-                if (precision == 0 || precision > OracleConstants.NUMERIC_MAX_PRECISION) {
-                    precision = OracleConstants.NUMERIC_MAX_PRECISION;
-                }
-                if (scale != null && precision > 0) {
-                    return "(" + precision + ',' + scale + ")";
-                }
+            if (precision == 0 && dataType != null && scale != null && scale == dataType.getMinScale()) {
+                return "";
+            }
+            if (precision == 0 || precision > OracleConstants.NUMERIC_MAX_PRECISION) {
+                precision = OracleConstants.NUMERIC_MAX_PRECISION;
+            }
+            if (scale != null && precision > 0) {
+                return "(" + precision + ',' + scale + ")";
             }
         } else if (dataKind == DBPDataKind.CONTENT || dataKind == DBPDataKind.BINARY) {
             switch (typeName) {
@@ -481,11 +479,11 @@ public class OracleSQLDialect extends JDBCSQLDialect {
             }
         } else if (dataKind == DBPDataKind.STRING) {
             if (typeName.equals(OracleConstants.TYPE_INTERVAL_YEAR_MONTH)) {
-                // FIXME: This interval type has year precision inside type name. Like INTERVAL YEAR(4) TO MONTH. Month do not have precision.
+                // FIXME: This interval type has year precision inside type name. Like INTERVAL YEAR(4) TO MONTH (Month do not have precision).
                 return "";
             } else if (typeName.equals(OracleConstants.TYPE_INTERVAL_DAY_SECOND)) {
                 // This interval type has fractional seconds precision. In bounds from 0 to 9. We can show this parameter.
-                // FIXME: This type has day precision inside type name. Like INTERVAL DAY(2) TO SECOND(6). So far we can't show it
+                // FIXME: This type has day precision inside type name. Like INTERVAL DAY(2) TO SECOND(6). So far we can't show it (But we do it in Column Manager)
                 Integer scale = column.getScale();
                 if (scale == null) {
                     return "";
