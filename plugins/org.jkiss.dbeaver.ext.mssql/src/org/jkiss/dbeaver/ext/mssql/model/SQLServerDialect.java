@@ -289,8 +289,8 @@ public class SQLServerDialect extends JDBCSQLDialect {
     @Override
     public String[] getSingleLineComments() {
         if (!isSqlServer) {
-            // Sybase support also double slash as comment indicator (and "%" - but not recommend to use it in documentation)
-            return new String[]{"-- ", "//"};
+            // Sybase supports double dash and double slash as single line comment indicators (and "%" - but not recommend to use it in documentation)
+            return new String[]{SQLConstants.SL_COMMENT, "//"};
         } else {
             return super.getSingleLineComments();
         }
