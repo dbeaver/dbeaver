@@ -56,6 +56,16 @@ import java.util.Map;
 public class DB2Routine extends DB2Object<DBSObject>
     implements DBSProcedure, DB2SourceObject, DBPRefreshableObject, DBPUniqueObject {
 
+    public enum FunctionType {
+        C("Column or aggregate"),
+        R("Row"),
+        S("Scalar"),
+        T("Table");
+
+        FunctionType(String type) {
+        }
+    }
+
     private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
     private String                     fullyQualifiedName;
@@ -89,6 +99,7 @@ public class DB2Routine extends DB2Object<DBSObject>
     private String                     jarSignature;
     private String                     javaClass;
     private DB2RoutineValidType        valid;
+    private FunctionType functionType;
 
     // -----------------------
     // Constructors
@@ -131,6 +142,9 @@ public class DB2Routine extends DB2Object<DBSObject>
         }
         if (db2DataSource.isAtLeastV9_7()) {
             this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");
+            if (type == DB2RoutineType.F) {
+                this.functionType = CommonUtils.valueOf(FunctionType.class, JDBCUtils.safeGetString(dbResult, "FUNCTIONTYPE"));
+            }
         }
 
         if (owner instanceof DB2Schema) {
@@ -172,6 +186,7 @@ public class DB2Routine extends DB2Object<DBSObject>
     }
 
     @Override
+    @Property(viewable = true, order = 7)
     public DBSProcedureType getProcedureType()
     {
         return type.getProcedureType();
@@ -197,7 +212,7 @@ public class DB2Routine extends DB2Object<DBSObject>
     @Override
     public String getUniqueName()
     {
-        // unique name is the "specifiname" column
+        // unique name is the "specificname" column
         return super.getName();
     }
 
@@ -374,4 +389,7 @@ public class DB2Routine extends DB2Object<DBSObject>
         return remarks;
     }
 
+    public FunctionType getFunctionType() {
+        return functionType;
+    }
 }

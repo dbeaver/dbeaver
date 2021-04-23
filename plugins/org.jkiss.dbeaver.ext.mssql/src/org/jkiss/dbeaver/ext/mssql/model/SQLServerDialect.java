@@ -48,6 +48,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
         "TOP",
         "SYNONYM",
+        "PERSISTED"
     };
 
     private static final String[][] SQLSERVER_QUOTE_STRINGS = {
@@ -184,7 +185,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     @Override
-    public String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.DATETIME) {
             if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName) ||
                     SQLServerConstants.TYPE_TIME.equalsIgnoreCase(typeName) ||
@@ -219,6 +220,20 @@ public class SQLServerDialect extends JDBCSQLDialect {
             }
         } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES , typeName)) {
             return null;
+        } else if (dataKind == DBPDataKind.NUMERIC &&
+                (SQLServerConstants.TYPE_NUMERIC.equals(typeName) || SQLServerConstants.TYPE_DECIMAL.equals(typeName))) {
+            // numeric and decimal - are synonyms in sql server
+            // The numeric precision has a range from 1 to 38. The default precision is 38.
+            // The scale has a range from 0 to p (precision). The scale can be specified only if the precision is specified. By default, the scale is zero
+            Integer precision = column.getPrecision();
+            if (precision < 1 || precision > SQLServerConstants.MAX_NUMERIC_PRECISION) {
+                precision = SQLServerConstants.MAX_NUMERIC_PRECISION;
+            }
+            Integer scale = column.getScale();
+            if (scale > precision) {
+                scale = precision;
+            }
+            return "(" + precision + "," + scale + ")";
         }
 
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
@@ -275,8 +290,8 @@ public class SQLServerDialect extends JDBCSQLDialect {
     @Override
     public String[] getSingleLineComments() {
         if (!isSqlServer) {
-            // Sybase support also double slash as comment indicator (and "%" - but not recommend to use it in documentation)
-            return new String[]{"-- ", "//"};
+            // Sybase supports double dash and double slash as single line comment indicators (and "%" - but not recommend to use it in documentation)
+            return new String[]{SQLConstants.SL_COMMENT, "//"};
         } else {
             return super.getSingleLineComments();
         }
