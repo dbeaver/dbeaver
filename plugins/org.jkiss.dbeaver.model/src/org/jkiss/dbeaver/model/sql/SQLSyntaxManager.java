@@ -195,11 +195,7 @@ public class SQLSyntaxManager {
             // Database specific
             return sqlDialect.storesUnquotedCase();
         } else {
-            try {
-                return DBPIdentifierCase.valueOf(caseName.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                return DBPIdentifierCase.MIXED;
-            }
+            return CommonUtils.valueOf(DBPIdentifierCase.class, caseName.toUpperCase(), DBPIdentifierCase.MIXED);
         }
     }
 }
