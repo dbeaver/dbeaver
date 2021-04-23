@@ -255,14 +255,22 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         this.collationName = collationName;
     }
 
-    @Property(viewable = true, order = 76, visibleIf = IsColumnComputedValidator.class)
+    @Property(editable = true, order = 76)
     public String getComputedDefinition() {
         return computedDefinition;
     }
 
-    @Property(viewable = true, order = 77, visibleIf = IsColumnComputedValidator.class)
+    public void setComputedDefinition(String computedDefinition) {
+        this.computedDefinition = computedDefinition;
+    }
+
+    @Property(editable = true, order = 77)
     public boolean isComputedPersisted() {
         return computedPersisted;
+    }
+
+    public void setComputedPersisted(boolean computedPersisted) {
+        this.computedPersisted = computedPersisted;
     }
 
     @Property(viewable = false, order = 80)
@@ -354,13 +362,6 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
                 log.debug("Error getting schema data types", e);
             }
             return allTypes.toArray();
-        }
-    }
-
-    public static class IsColumnComputedValidator implements IPropertyValueValidator<SQLServerTableColumn, Object> {
-        @Override
-        public boolean isValidValue(SQLServerTableColumn object, Object value) {
-            return CommonUtils.isNotEmpty(object.getComputedDefinition());
         }
     }
 }
