@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -108,11 +110,25 @@ public class DB2SQLDialect extends JDBCSQLDialect {
         }
     }
 
+    @Override
+    protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION && proc instanceof DB2Routine && ((DB2Routine) proc).getFunctionType() == DB2Routine.FunctionType.T) {
+            // Function call is special for table functions
+            return "SELECT * FROM TABLE (" + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
+        return super.getStoredProcedureCallInitialClause(proc);
+    }
+
     @NotNull
     @Override
     protected String getProcedureCallEndClause(DBSProcedure procedure) {
         if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
-            // Only "Select from function_name" doesn't work for user-defined functions. See #10059
+            // Only "Select function_name" doesn't work for user-defined DB2 functions. See #10059
+            if (procedure instanceof DB2Routine && ((DB2Routine) procedure).getFunctionType() == DB2Routine.FunctionType.T) {
+                // Start is in getStoredProcedureCallInitialClause
+                return ")";
+            }
+            // This part necessary for scalar functions
             return "FROM SYSIBM.SYSDUMMY1";
         }
         return super.getProcedureCallEndClause(procedure);
