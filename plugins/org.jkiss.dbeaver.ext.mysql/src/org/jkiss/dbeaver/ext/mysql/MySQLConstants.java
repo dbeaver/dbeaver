@@ -220,4 +220,5 @@ public class MySQLConstants {
     public static final String FLAG_VERSION = "-V";
 
     public static final String EXTRA_INFO_VIRTUAL_GENERATED = "VIRTUAL GENERATED";
+    public static final String EXTRA_INFO_DEFAULT_GENERATED = "DEFAULT_GENERATED";
 }
