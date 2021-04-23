@@ -40,11 +40,13 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * GenericProcedure
@@ -116,13 +118,29 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
-        return proceduresCache.getAllObjects(monitor, this);
+    public Collection<OracleDependencyGroup> getDependencies(DBRProgressMonitor monitor) {
+        return OracleDependencyGroup.of(this);
     }
 
     @Association
-    public Collection<OracleDependencyGroup> getDependencies(DBRProgressMonitor monitor) {
-        return OracleDependencyGroup.of(this);
+    public Collection<OracleProcedurePackaged> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+        return getProcedures(monitor)
+            .stream()
+            .filter(proc -> proc.getProcedureType() == DBSProcedureType.PROCEDURE)
+            .collect(Collectors.toList());
+    }
+
+    @Association
+    public Collection<OracleProcedurePackaged> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+        return getProcedures(monitor)
+            .stream()
+            .filter(proc -> proc.getProcedureType() == DBSProcedureType.FUNCTION)
+            .collect(Collectors.toList());
+    }
+
+    @Association
+    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        return proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
