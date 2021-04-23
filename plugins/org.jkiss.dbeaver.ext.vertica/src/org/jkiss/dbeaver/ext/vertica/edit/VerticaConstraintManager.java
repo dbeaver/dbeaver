@@ -44,7 +44,7 @@ public class VerticaConstraintManager extends GenericPrimaryKeyManager {
             actions.add(
                     new SQLDatabasePersistAction("Create check constraint", 
                         "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                            " ADD CONSTRAINT CHECK (" + constraint.getCheckConstraintDefinition() + ")"
+                            " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) + " CHECK (" + constraint.getCheckConstraintDefinition() + ")"
                     ));
         } else {
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);
