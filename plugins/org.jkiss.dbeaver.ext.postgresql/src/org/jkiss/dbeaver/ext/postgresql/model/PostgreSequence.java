@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -55,41 +56,75 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
-        private Number startValue;
-        private Number lastValue;
-        private Number minValue;
-        private Number maxValue;
-        private Number incrementBy;
-        private Number cacheValue;
+        private long startValue;
+        private Long lastValue;
+        private long minValue;
+        private long maxValue;
+        private long incrementBy;
+        private long cacheValue;
         private boolean isCycled;
 
-        @Property(viewable = true, editable = true, updatable = false, order = 10)
-        public Number getLastValue() {
+        @Property(viewable = true, editable = true, updatable = true, order = 10)
+        public Long getLastValue() {
             return lastValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 20)
-        public Number getStartValue() {
+
+        public void setLastValue(long lastValue) {
+            this.lastValue = lastValue;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, order = 20)
+        public long getStartValue() {
             return startValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 21)
-        public Number getMinValue() {
+
+        public void setStartValue(long startValue) {
+            this.startValue = startValue;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, order = 21)
+        public long getMinValue() {
             return minValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 22)
-        public Number getMaxValue() {
+
+        public void setMinValue(long minValue) {
+            this.minValue = minValue;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, order = 22)
+        public long getMaxValue() {
             return maxValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 23)
-        public Number getIncrementBy() {
+
+        public void setMaxValue(long maxValue) {
+            this.maxValue = maxValue;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, order = 23)
+        public long getIncrementBy() {
             return incrementBy;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 24)
-        public Number getCacheValue() {
+
+        public void setIncrementBy(long incrementBy) {
+            this.incrementBy = incrementBy;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, order = 24)
+        public long getCacheValue() {
             return cacheValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 25)
+
+        public void setCacheValue(long cacheValue) {
+            this.cacheValue = cacheValue;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, order = 25)
         public boolean isCycled() {
             return isCycled;
+        }
+
+        public void setCycled(boolean cycled) {
+            isCycled = cycled;
         }
     }
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
@@ -132,7 +167,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
                             additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
-                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.lastValue = JDBCUtils.safeGetLongNullable(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
@@ -146,7 +181,8 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                     "SELECT * from " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
-                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
+                            additionalInfo.lastValue = JDBCUtils.safeGetLongNullable(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
@@ -206,34 +242,24 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     }
 
+    @Nullable
+    @Override
+    public String[] getRelOptions() {
+        return null;
+    }
+
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         AdditionalInfo info = getAdditionalInfo(monitor);
-        StringBuilder sql = new StringBuilder();
-        sql.append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
-        sql.append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
-        if (info.getIncrementBy() != null && info.getIncrementBy().longValue() > 0) {
-            sql.append("\n\tINCREMENT BY ").append(info.getIncrementBy());
-        }
-        if (info.getMinValue() != null && info.getMinValue().longValue() > 0) {
-            sql.append("\n\tMINVALUE ").append(info.getMinValue());
-        } else {
-            sql.append("\n\tNO MINVALUE");
-        }
-        if (info.getMaxValue() != null && info.getMaxValue().longValue() > 0) {
-            sql.append("\n\tMAXVALUE ").append(info.getMaxValue());
-        } else {
-            sql.append("\n\tNO MAXVALUE");
-        }
-        Number startValue = info.getStartValue();
-        if (startValue != null && startValue.longValue() > 0) {
-            sql.append("\n\tSTART ").append(startValue);
-        }
-        if (info.getCacheValue() != null && info.getCacheValue().longValue() > 0) {
-            sql.append("\n\tCACHE ").append(info.getCacheValue())
-                .append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE")
-                .append(";");
-        }
+        StringBuilder sql = new StringBuilder()
+            .append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n")
+            .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL))
+            .append("\n\tINCREMENT BY ").append(info.getIncrementBy())
+            .append("\n\tMINVALUE ").append(info.getMinValue())
+            .append("\n\tMAXVALUE ").append(info.getMaxValue())
+            .append("\n\tSTART ").append(info.getStartValue())
+            .append("\n\tCACHE ").append(info.getCacheValue())
+            .append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE;");
 
 		if (!CommonUtils.isEmpty(getDescription())) {
 			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")

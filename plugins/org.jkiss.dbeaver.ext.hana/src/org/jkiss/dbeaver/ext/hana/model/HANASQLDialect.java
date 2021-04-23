@@ -21,9 +21,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -94,4 +96,16 @@ public class HANASQLDialect extends GenericSQLDialect {
         return super.getColumnTypeModifiers(dataSource, column, ucTypeName, dataKind);
     }
 
+    @NotNull
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHexString.INSTANCE;
+    }
+
+    @NotNull
+    @Override
+    public String getSearchStringEscape() {
+        // https://github.com/dbeaver/dbeaver/issues/9998#issuecomment-805710837
+        return "\\";
+    }
 }

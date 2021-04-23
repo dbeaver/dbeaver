@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jkiss.dbeaver</groupId>
-    <artifactId>dbeaver</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <relativePath>../../</relativePath>
-  </parent>
-  <artifactId>org.jkiss.dbeaver.rcp.feature</artifactId>
-  <version>2.1.130-SNAPSHOT</version>
-  <packaging>eclipse-feature</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../</relativePath>
+    </parent>
+    <artifactId>org.jkiss.dbeaver.rcp.feature</artifactId>
+    <version>2.1.130-SNAPSHOT</version>
+    <packaging>eclipse-feature</packaging>
+
+    <build>
+        <plugins>
+            <!-- Tycho configuration -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <filters>
+                        <!-- Limit JNA to version 4.5. Newer version added in E4 2021-03 and it leads to JNA dups. #12149 -->
+                        <filter>
+                            <type>eclipse-plugin</type>
+                            <id>com.sun.jna</id>
+                            <restrictTo>
+                                <type>eclipse-plugin</type>
+                                <id>com.sun.jna</id>
+                                <versionRange>[4.5.1, 5.0.0]</versionRange>
+                            </restrictTo>
+                        </filter>
+                        <filter>
+                            <type>eclipse-plugin</type>
+                            <id>com.sun.jna.platform</id>
+                            <restrictTo>
+                                <type>eclipse-plugin</type>
+                                <id>com.sun.jna.platform</id>
+                                <versionRange>[4.5.1, 5.0.0]</versionRange>
+                            </restrictTo>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

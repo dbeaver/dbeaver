@@ -3965,7 +3965,7 @@ public class ResultSetViewer extends Viewer
                 // No rows selected, use zero as the only row number
                 partitionedSelectedRows = new int[][]{new int[]{0, 0}};
             } else {
-                partitionedSelectedRows = groupContiguousRows(
+                partitionedSelectedRows = groupConsecutiveRows(
                     selectedRows.stream()
                         .mapToInt(ResultSetRow::getVisualNumber)
                         .toArray()
@@ -4090,7 +4090,7 @@ public class ResultSetViewer extends Viewer
      * @return grouped indexes
      */
     @NotNull
-    private static int[][] groupContiguousRows(@NotNull int[] indexes) {
+    private static int[][] groupConsecutiveRows(@NotNull int[] indexes) {
         final List<int[]> ranges = new ArrayList<>();
         for (int index = 1, start = 0, length = indexes.length; index <= length; index++) {
             if (index == length || indexes[index - 1] != indexes[index] - 1) {

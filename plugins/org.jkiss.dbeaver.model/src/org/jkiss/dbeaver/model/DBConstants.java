@@ -63,6 +63,7 @@ public class DBConstants {
     public static final String PROP_ID_TYPE_NAME = "typeName"; //NON-NLS-1
     public static final String PROP_ID_MAX_LENGTH = "maxLength"; //NON-NLS-1
     public static final String PROP_ID_NOT_NULL = "notNull"; //NON-NLS-1
+    public static final String PROP_ID_ENABLED = "enabled"; //NON-NLS-1
     public static final String PARAM_INIT_ON_TEST = "initOnTest"; //NON-NLS-1
     public static final String PARAM_OBJECT_DEFINITION_TEXT = "objectDefinitionText"; //NON-NLS-1
     public static final String PARAM_EXTENDED_DEFINITION_TEXT = "extendedDefinitionText"; //NON-NLS-1
