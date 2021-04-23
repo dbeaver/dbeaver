@@ -24,4 +24,8 @@
    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
    <plugin id="org.jkiss.bundle.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
+   <!-- Bouncycastle -->
+   <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
 </feature>
