@@ -102,10 +102,18 @@ public class OracleConstants {
     public static final String TYPE_NAME_GEOMETRY = "PUBLIC.SDO_GEOMETRY";
     public static final String TYPE_FQ_GEOMETRY = "MDSYS.SDO_GEOMETRY";
     public static final String TYPE_NAME_BFILE = "BFILE";
+    public static final String TYPE_NAME_CFILE = "CFILE";
+    public static final String TYPE_CONTENT_POINTER = "CONTENT POINTER";
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NUMBER = "NUMBER";
+    public static final String TYPE_DECIMAL = "DECIMAL";
     public static final String TYPE_NAME_REFCURSOR = "REFCURSOR";
+    public static final String TYPE_LONG = "LONG";
+    public static final String TYPE_LONG_RAW = "LONG RAW";
+    public static final String TYPE_OCTET = "OCTET";
+    public static final String TYPE_INTERVAL_YEAR_MONTH = "INTERVAL YEAR TO MONTH";
+    public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
     public static final int DATE_TYPE_LENGTH = 7;
@@ -168,6 +176,8 @@ public class OracleConstants {
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;
     public static final int NUMERIC_MAX_PRECISION = 38;
+    public static final int INTERVAL_DEFAULT_SECONDS_PRECISION = 6;
+    public static final int INTERVAL_DEFAULT_YEAR_DAY_PRECISION = 2;
 
     /**
      * Connection type
