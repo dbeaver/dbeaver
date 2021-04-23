@@ -63,6 +63,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private String collationName;
     private String description;
     private boolean hidden;
+    private boolean computedPersisted;
+    private String computedDefinition;
     private IdentityInfo identityInfo = new IdentityInfo();
 
     public static class IdentityInfo {
@@ -161,6 +163,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             this.setDefaultValue(dv);
         }
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.computedPersisted = JDBCUtils.safeGetInt(dbResult, "is_persisted") != 0;
+        this.computedDefinition = JDBCUtils.safeGetString(dbResult, "computed_definition");
     }
 
     @NotNull
@@ -249,6 +253,24 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
     public void setCollationName(String collationName) {
         this.collationName = collationName;
+    }
+
+    @Property(editable = true, order = 76)
+    public String getComputedDefinition() {
+        return computedDefinition;
+    }
+
+    public void setComputedDefinition(String computedDefinition) {
+        this.computedDefinition = computedDefinition;
+    }
+
+    @Property(editable = true, order = 77)
+    public boolean isComputedPersisted() {
+        return computedPersisted;
+    }
+
+    public void setComputedPersisted(boolean computedPersisted) {
+        this.computedPersisted = computedPersisted;
     }
 
     @Property(viewable = false, order = 80)
