@@ -80,7 +80,6 @@
                             <arch>x86_64</arch>
                         </environment>
                     </environments>
-
                 </configuration>
 
             </plugin>

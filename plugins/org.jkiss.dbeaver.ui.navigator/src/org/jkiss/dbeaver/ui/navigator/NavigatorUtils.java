@@ -97,6 +97,22 @@ public class NavigatorUtils {
         return null;
     }
 
+    @NotNull
+    public static List<DBNNode> getSelectedNodes(@NotNull ISelection selection) {
+        if (selection.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<DBNNode> nodes = new ArrayList<>();
+        if (selection instanceof IStructuredSelection) {
+            for (Object selectedObject : (IStructuredSelection) selection) {
+                if (selectedObject instanceof DBNNode) {
+                    nodes.add((DBNNode) selectedObject);
+                }
+            }
+        }
+        return Collections.unmodifiableList(nodes);
+    }
+
     /**
      * Find selected node for specified UI element
      * @param element ui element

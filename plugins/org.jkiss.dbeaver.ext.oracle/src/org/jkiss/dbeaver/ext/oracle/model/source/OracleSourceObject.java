@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model.source;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceType;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 
@@ -31,6 +32,6 @@ public interface OracleSourceObject extends DBSObjectWithScript, OracleStatefulO
 
     OracleSourceType getSourceType();
 
-    DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor);
+    DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) throws DBCException;
 
 }
