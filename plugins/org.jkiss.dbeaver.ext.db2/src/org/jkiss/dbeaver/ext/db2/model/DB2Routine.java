@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.*;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPUniqueObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -54,7 +51,7 @@ import java.util.Map;
  * @author Denis Forveille
  */
 public class DB2Routine extends DB2Object<DBSObject>
-    implements DBSProcedure, DB2SourceObject, DBPRefreshableObject, DBPUniqueObject {
+    implements DBSProcedure, DB2SourceObject, DBPRefreshableObject, DBPUniqueObject, DBPImageProvider {
 
     public enum FunctionType {
         C("Column or aggregate"),
@@ -170,7 +167,7 @@ public class DB2Routine extends DB2Object<DBSObject>
     @Override
     public DBSObjectState getObjectState()
     {
-        return DBSObjectState.UNKNOWN;
+        return valid == DB2RoutineValidType.Y ? DBSObjectState.NORMAL : DBSObjectState.UNKNOWN;
     }
 
     @Override
@@ -391,5 +388,15 @@ public class DB2Routine extends DB2Object<DBSObject>
 
     public FunctionType getFunctionType() {
         return functionType;
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        if (type == DB2RoutineType.F) {
+            return DBIcon.TREE_FUNCTION;
+        } else {
+            return DBIcon.TREE_PROCEDURE;
+        }
     }
 }
