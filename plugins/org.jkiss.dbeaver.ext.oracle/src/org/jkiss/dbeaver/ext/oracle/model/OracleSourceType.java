@@ -29,7 +29,8 @@ public enum OracleSourceType {
     TRIGGER(false),
     VIEW(true),
     MATERIALIZED_VIEW(true),
-    JAVA_SOURCE(false);
+    JAVA_SOURCE(false),
+    JOB(false);
 
     private final boolean isCustom;
 
