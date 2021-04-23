@@ -61,6 +61,9 @@
         <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerDatabaseConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase"/>
         </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerColumnConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
+        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerUniqueKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
         </configurator>

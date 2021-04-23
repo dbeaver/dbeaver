@@ -80,6 +80,16 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         }
     };
 
+    protected final ColumnModifier<SQLServerTableColumn> ComputedModifier = (monitor, column, sql, command) -> {
+        final String definition = column.getComputedDefinition();
+        if (CommonUtils.isNotEmpty(definition)) {
+            sql.append(" AS ").append(definition);
+        }
+        if (column.isComputedPersisted()) {
+            sql.append(" PERSISTED");
+        }
+    };
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, SQLServerTableColumn> getObjectsCache(SQLServerTableColumn object)
@@ -89,6 +99,9 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
+        if (CommonUtils.isNotEmpty(column.getComputedDefinition())) {
+            return new ColumnModifier[]{ComputedModifier, NotNullModifier};
+        }
         return new ColumnModifier[] {DataTypeModifier, IdentityModifier, CollateModifier, SQLServerDefaultModifier, NullNotNullModifier};
     }
 

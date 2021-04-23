@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
@@ -47,6 +48,33 @@ import java.util.Map;
  */
 public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableColumn, OracleTableBase> implements DBEObjectRenamer<OracleTableColumn> {
 
+    protected final ColumnModifier<OracleTableColumn> OracleDataTypeModifier = (monitor, column, sql, command) -> {
+        OracleDataType dataType = column.getDataType();
+        if (dataType != null) {
+            String typeName = dataType.getTypeName();
+            if (dataType.getDataKind() == DBPDataKind.STRING && column.isPersisted() &&
+                (OracleConstants.TYPE_INTERVAL_DAY_SECOND.equals(typeName) || OracleConstants.TYPE_INTERVAL_YEAR_MONTH.equals(typeName))) {
+                // These types have precision inside type name
+                Integer precision = column.getPrecision();
+                if (OracleConstants.TYPE_INTERVAL_YEAR_MONTH.equals(typeName) && precision != null) {
+                    if (precision != OracleConstants.INTERVAL_DEFAULT_YEAR_DAY_PRECISION) {
+                       String patchedName = " INTERVAL YEAR(" + precision + ") TO MONTH";
+                       sql.append(patchedName);
+                       return;
+                    }
+                } else {
+                    Integer scale = column.getScale(); // fractional seconds precision
+                    if (scale != null) {
+                        String patchedName = " INTERVAL DAY(" + precision + ") TO SECOND(" + scale + ")";
+                        sql.append(patchedName);
+                        return;
+                    }
+                }
+            }
+        }
+        DataTypeModifier.appendModifier(monitor, column, sql, command);
+    };
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object)
@@ -56,7 +84,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
 
     protected ColumnModifier[] getSupportedModifiers(OracleTableColumn column, Map<String, Object> options)
     {
-        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
+        return new ColumnModifier[] {OracleDataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
     }
 
     @Override

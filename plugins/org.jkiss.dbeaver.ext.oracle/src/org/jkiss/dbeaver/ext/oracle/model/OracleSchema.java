@@ -72,6 +72,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     final public DBLinkCache dbLinkCache = new DBLinkCache();
     final public ProceduresCache proceduresCache = new ProceduresCache();
     final public JavaCache javaCache = new JavaCache();
+    final public JobCache jobCache = new JobCache();
     final public SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
     final public SchedulerProgramCache schedulerProgramCache = new SchedulerProgramCache();
     final public RecycleBin recycleBin = new RecycleBin();
@@ -314,6 +315,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
+    public Collection<OracleJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return jobCache.getAllObjects(monitor, this);
+    }
+
+    @Association
     public Collection<OracleSchedulerJob> getSchedulerJobs(DBRProgressMonitor monitor)
             throws DBException
     {
@@ -412,6 +418,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         synonymCache.clearCache();
         schedulerJobCache.clearCache();
         recycleBin.clearCache();
+        jobCache.clearCache();
         return this;
     }
 
@@ -1275,7 +1282,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 .append("WHERE S.OWNER = ?\n");
             if (synonymName != null) sql.append(" AND S.SYNONYM_NAME = ? ");
             sql.append(synonymTypeFilter)
-                .append("AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n)\n");
+                .append("AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.SUBOBJECT_NAME IS NULL\n)\n");
             sql.append("GROUP BY OWNER, SYNONYM_NAME");
             if (synonymName == null) {
                 sql.append("\nORDER BY SYNONYM_NAME");
@@ -1435,4 +1442,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     }
 
+    static class JobCache extends JDBCObjectCache<OracleSchema, OracleJob> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
+            return session.prepareStatement(
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "JOBS") + " ORDER BY JOB"
+            );
+        }
+
+        @Override
+        protected OracleJob fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new OracleJob(owner, dbResult);
+        }
+    }
 }
