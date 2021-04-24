@@ -738,6 +738,12 @@
         <!-- SQL editor menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
+                <visibleWhen>
+                    <with variable="activeWorkbenchWindow.activePerspective">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </with>
+                </visibleWhen>
+
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
