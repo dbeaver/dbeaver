@@ -30,9 +30,6 @@ public final class DBeaverPreferences
 
     public static final String SECURITY_USE_BOUNCY_CASTLE = "security.jce.bc"; //$NON-NLS-1$
 
-    public static final String TOOLBARS_SHOW_GENERAL_ALWAYS = "toolbars.show.general.always"; //$NON-NLS-1$
-    public static final String TOOLBARS_SHOW_EDIT = "toolbars.show.edit"; //$NON-NLS-1$
-
     public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level"; //$NON-NLS-1$
 
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
