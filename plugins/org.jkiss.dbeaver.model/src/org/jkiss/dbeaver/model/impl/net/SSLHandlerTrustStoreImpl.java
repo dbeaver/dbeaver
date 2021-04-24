@@ -43,7 +43,11 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
     public static final String PROP_SSL_METHOD = "ssl.method";
+    public static final String PROP_SSL_FORCE_TLS12 = "ssl.forceTls12";
     public static final String CERT_TYPE = "ssl";
+
+    public static final String TLS_PROTOCOL_VAR_NAME = "jdk.tls.client.protocols";
+    public static final String TLS_1_2_VERSION = "TLSv1.2";
 
     /**
      * Creates certificates and adds them into trust store
@@ -115,7 +119,10 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
             trustManagers = trustManagerFactory.getTrustManagers();
         }
 
-        SSLContext sslContext = SSLContext.getInstance("SSL");
+        final boolean forceTLS12 = sslConfig.getBooleanProperty(PROP_SSL_FORCE_TLS12);
+
+
+        SSLContext sslContext = forceTLS12 ? SSLContext.getInstance(TLS_1_2_VERSION) : SSLContext.getInstance("SSL");
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
         return sslContext;
     }
