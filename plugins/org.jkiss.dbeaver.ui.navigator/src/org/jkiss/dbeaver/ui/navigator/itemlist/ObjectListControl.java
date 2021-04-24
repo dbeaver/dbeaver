@@ -46,8 +46,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
@@ -63,6 +61,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -1275,28 +1274,28 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private class SearchFilter extends ViewerFilter {
-        final Pattern pattern;
+    private static final class SearchFilter extends ViewerFilter {
+        private final Pattern pattern;
 
-        public SearchFilter(String searchString, boolean caseSensitiveSearch) throws PatternSyntaxException {
+        private SearchFilter(String searchString, boolean caseSensitiveSearch) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
         }
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (element instanceof DBNNode && matches(((DBNNode) element).getName())) {
-                return true;
+            if (!(element instanceof DBNNode)) {
+                return false;
             }
-            if (element instanceof DBSWrapper) {
-                DBSWrapper wrapper = (DBSWrapper) element;
-                DBSObject dbsObject = wrapper.getObject();
-                return dbsObject != null && matches(dbsObject.getDescription());
-            }
-            return false;
+            DBNNode node = (DBNNode) element;
+            return matches(node.getName()) || matches(node.getNodeDescription());
         }
 
-        private boolean matches(@Nullable String string) {
-            return string != null && pattern.matcher(string).find();
+        private boolean matches(@Nullable CharSequence charSequence) {
+            if (charSequence == null) {
+                return false;
+            }
+            Matcher matcher = pattern.matcher(charSequence);
+            return matcher.find();
         }
     }
 
