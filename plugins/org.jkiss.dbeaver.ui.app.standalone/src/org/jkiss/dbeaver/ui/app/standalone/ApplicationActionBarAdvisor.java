@@ -118,23 +118,29 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         for (IConfigurationElement searchActionItem : actionSet.getConfigurationElement().getChildren()) {
             String saId = searchActionItem.getAttribute("id");
             if ("org.eclipse.search.OpenSearchDialog".equals(saId) || "org.eclipse.search.OpenSearchDialogPage".equals(saId)) {
-                try {
-                    Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(searchActionItem, "getConfigurationElement", new Class[0], new Object[0]);
-                    if (cfgElement  != null) {
-                        Field pavField = cfgElement.getClass().getDeclaredField("propertiesAndValue");
-                        pavField.setAccessible(true);
-                        String[] pav = (String[]) pavField.get(cfgElement);
-                        for (int i = 0; i < pav.length; i += 2) {
-                            if (pav[i].equals("icon")) {
-                                pav[i + 1] = "platform:/plugin/" + CoreApplicationActivator.PLUGIN_ID + "/icons/eclipse/search.png";
-                            }
-                        }
+                patchActionSetIcon(searchActionItem, "platform:/plugin/" + CoreApplicationActivator.PLUGIN_ID + "/icons/eclipse/search.png");
+            } else if ("org.eclipse.search.OpenFileSearchPage".equals(saId)) {
+                patchActionSetIcon(searchActionItem, UIIcon.FIND_TEXT.getLocation());
+            }
+        }
+    }
+
+    private void patchActionSetIcon(IConfigurationElement searchActionItem, String iconPath) {
+        try {
+            Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(searchActionItem, "getConfigurationElement", new Class[0], new Object[0]);
+            if (cfgElement  != null) {
+                Field pavField = cfgElement.getClass().getDeclaredField("propertiesAndValue");
+                pavField.setAccessible(true);
+                String[] pav = (String[]) pavField.get(cfgElement);
+                for (int i = 0; i < pav.length; i += 2) {
+                    if (pav[i].equals("icon")) {
+                        pav[i + 1] = iconPath;
                     }
-                } catch (Throwable e) {
-                    // ignore
-                    log.debug("Failed to patch search actions", e);
                 }
             }
+        } catch (Throwable e) {
+            // ignore
+            log.debug("Failed to patch search actions", e);
         }
     }
 

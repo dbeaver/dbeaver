@@ -161,11 +161,15 @@
             <command commandId="org.eclipse.ui.edit.redo" label="%command.org.jkiss.dbeaver.core.edit.redo.name"/>
             <command commandId="org.eclipse.ui.edit.cut" label="%command.org.jkiss.dbeaver.core.edit.cut.name"/>
             <command commandId="org.eclipse.ui.edit.copy" label="%command.org.jkiss.dbeaver.core.edit.copy.name"/>
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.special.name"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.special.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.eclipse.ui.edit.paste" label="%command.org.jkiss.dbeaver.core.edit.paste.name"/>
             <command commandId="org.eclipse.ui.edit.delete" label="%command.org.jkiss.dbeaver.core.edit.delete.name"/>
             <separator name="find.ext" visible="true"/>
-            <command commandId="org.eclipse.ui.edit.findReplace" label="%command.org.jkiss.dbeaver.core.edit.findreplace.name"/>
+            <command commandId="org.eclipse.ui.edit.findReplace" label="%command.org.jkiss.dbeaver.core.edit.findreplace.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
             <separator name="additions" visible="true"/>
             <separator name="format" visible="true"/>
