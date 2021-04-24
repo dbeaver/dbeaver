@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
+import org.eclipse.osgi.internal.framework.BundleContextImpl;
+import org.eclipse.osgi.internal.framework.EquinoxContainer;
+import org.eclipse.osgi.internal.hookregistry.ClassLoaderHook;
+import org.eclipse.osgi.internal.hookregistry.HookRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -28,10 +32,17 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class CoreApplicationActivator extends AbstractUIPlugin {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.app.standalone";
+
+    private static final boolean PATCH_ECLIPSE_CLASSES = false;
 
     // The shared instance
     private static CoreApplicationActivator plugin;
@@ -42,6 +53,11 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
+
+        if (PATCH_ECLIPSE_CLASSES) {
+            activateHooks(context);
+        }
+
         // Set notifications handler
         DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
             @Override
@@ -85,6 +101,22 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
             bundleName = bundle.getSymbolicName();
         }
         return bundleName;
+    }
+
+    private void activateHooks(BundleContext context) {
+        EquinoxContainer container = ((BundleContextImpl)context).getContainer();
+        HookRegistry registry = container.getConfiguration().getHookRegistry();
+        List<ClassLoaderHook> hooks = new ArrayList<>(registry.getClassLoaderHooks());
+        hooks.add(new PatchClassLoaderHook());
+        List<ClassLoaderHook> newHooks = Collections.unmodifiableList(hooks);
+
+        try {
+            Field hooksField = registry.getClass().getDeclaredField("classLoaderHooksRO");
+            hooksField.setAccessible(true);
+            hooksField.set(registry, newHooks);
+        } catch (Throwable e) {
+            getLog().error("Error initializing class loader hook", e);
+        }
     }
 
     @Override
