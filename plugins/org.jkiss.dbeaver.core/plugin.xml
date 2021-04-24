@@ -1180,16 +1180,11 @@
         </perspective>
     </extension>
 
-<!--
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
-            <hiddenToolBarItem id="org.eclipse.ui.file.save"/>
-            <hiddenToolBarItem id="org.eclipse.ui.file.revert"/>
-            <hiddenToolBarItem id="org.eclipse.ui.file.undo"/>
-            <hiddenToolBarItem id="org.eclipse.ui.file.redo"/>
-            <hiddenToolBarItem id="org.eclipse.ui.file.refresh"/>
+            <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoNextEditPosition"/>
+            <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoLastEditPosition"/>
         </perspectiveExtension>
     </extension>
--->
 
 </plugin>
