@@ -1818,9 +1818,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery) {
-        if (resultsSash.getMaximizedControl() != null) {
-            toggleResultPanel();
-        }
+        showResultsPanel();
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
 
         DBCPlanStyle planStyle = planner.getPlanStyle();
@@ -1835,6 +1833,15 @@ public class SQLEditor extends SQLEditorBase implements
             if (planView != null) {
                 planView.explainQueryPlan(sqlQuery, planner);
             }
+        }
+    }
+
+    private void showResultsPanel() {
+        if (resultsSash.getMaximizedControl() != null) {
+            toggleResultPanel();
+        }
+        if (resultsSash.isDownHidden()) {
+            resultsSash.showDown();
         }
     }
 
@@ -3774,6 +3781,8 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void runPostExecuteActions(@Nullable SQLQueryResult result) {
+        showResultsPanel();
+
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             // Refresh active object
