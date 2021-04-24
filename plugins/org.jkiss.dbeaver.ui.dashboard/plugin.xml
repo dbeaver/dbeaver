@@ -67,9 +67,7 @@
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="dashboard" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen>
-                    <reference definitionId="DBeaverPerspectiveActive"/>
-                </visibleWhen>
+                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
             </command>
         </menuContribution>
 
