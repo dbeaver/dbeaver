@@ -44,16 +44,20 @@ import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.ResetWorkspaceStateAction;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
+import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -79,7 +83,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         super(configurer);
     }
 
-    private static final String[] actionSetId = new String[] {
+    private static final String[] REDUNTANT_ACTIONS_SETS = new String[] {
         "org.eclipse.ui.WorkingSetActionSet", //$NON-NLS-1$
         //"org.eclipse.ui.edit.text.actionSet.navigation", //$NON-NLS-1$
         //"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
@@ -96,12 +100,39 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         IActionSetDescriptor[] actionSets = asr.getActionSets();
 
         for (IActionSetDescriptor actionSet : actionSets) {
-            for (String element : actionSetId) {
-
-                if (element.equals(actionSet.getId())) {
+            if ("org.eclipse.search.searchActionSet".equals(actionSet.getId())) {
+                patchSearchIcons(actionSet);
+            } else {
+                if (ArrayUtils.contains(REDUNTANT_ACTIONS_SETS, actionSet.getId())) {
                     log.debug("Disable Eclipse action set '" + actionSet.getId() + "'");
                     IExtension ext = actionSet.getConfigurationElement().getDeclaringExtension();
-                    asr.removeExtension(ext, new Object[] { actionSet });
+                    asr.removeExtension(ext, new Object[]{actionSet});
+                }
+            }
+        }
+    }
+
+    private void patchSearchIcons(IActionSetDescriptor actionSet) {
+        // Patch search icons. Directly change icon reference in config registry
+        // FIXME: This is a very dirty hack but I didn't find any better way to patch search action icons
+        for (IConfigurationElement searchActionItem : actionSet.getConfigurationElement().getChildren()) {
+            String saId = searchActionItem.getAttribute("id");
+            if ("org.eclipse.search.OpenSearchDialog".equals(saId) || "org.eclipse.search.OpenSearchDialogPage".equals(saId)) {
+                try {
+                    Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(searchActionItem, "getConfigurationElement", new Class[0], new Object[0]);
+                    if (cfgElement  != null) {
+                        Field pavField = cfgElement.getClass().getDeclaredField("propertiesAndValue");
+                        pavField.setAccessible(true);
+                        String[] pav = (String[]) pavField.get(cfgElement);
+                        for (int i = 0; i < pav.length; i += 2) {
+                            if (pav[i].equals("icon")) {
+                                pav[i + 1] = "platform:/plugin/" + CoreApplicationActivator.PLUGIN_ID + "/icons/eclipse/search.png";
+                            }
+                        }
+                    }
+                } catch (Throwable e) {
+                    // ignore
+                    log.debug("Failed to patch search actions", e);
                 }
             }
         }
