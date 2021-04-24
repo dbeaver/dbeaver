@@ -490,7 +490,11 @@
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?before=window">
             <menu id="dataSourceMenu" label="%menu.database">
-                <!--<visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>-->
+                <visibleWhen>
+                    <with variable="activeWorkbenchWindow.activePerspective">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </with>
+                </visibleWhen>
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection"/>
