@@ -24,17 +24,26 @@
             </menu>
 
             <action id="org.jkiss.dbeaver.search.OpenDataSearchPage"
-                    definitionId="org.jkiss.dbeaver.search.OpenDataSearchPage"
-                    menubarPath="org.eclipse.search.menu/dialogGroup"
-                    label="%search.page.label.db.fulltext"
-                    icon="icons/search/data.png"
-                    class="org.jkiss.dbeaver.ui.search.data.OpenDataSearchPageAction"/>
+                definitionId="org.jkiss.dbeaver.search.OpenDataSearchPage"
+                menubarPath="org.eclipse.search.menu/dialogGroup"
+                label="%search.page.label.db.fulltext"
+                icon="icons/search/data.png"
+                class="org.jkiss.dbeaver.ui.search.data.OpenDataSearchPageAction"/>
             <action id="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
-                    definitionId="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
-                    menubarPath="org.eclipse.search.menu/dialogGroup"
-                    label="%search.page.label.db.metadata"
-                    icon="icons/search/metadata.png"
-                    class="org.jkiss.dbeaver.ui.search.metadata.OpenMetadataSearchPageAction"/>
+                definitionId="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
+                menubarPath="org.eclipse.search.menu/dialogGroup"
+                label="%search.page.label.db.metadata"
+                icon="icons/search/metadata.png"
+                class="org.jkiss.dbeaver.ui.search.metadata.OpenMetadataSearchPageAction"/>
+            <!-- This doesn't work anyway -->
+<!--
+            <action id="org.jkiss.dbeaver.search.OpenQuickSearch"
+                definitionId="org.jkiss.dbeaver.search.OpenQuickSearch"
+                menubarPath="org.eclipse.search.menu/dialogGroup"
+                label="Quick Search"
+                icon="icons/search/quick.png"
+                class="org.jkiss.dbeaver.ui.search.OpenQuickSearchAction"/>
+-->
         </actionSet>
     </extension>
 
