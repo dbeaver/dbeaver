@@ -38,10 +38,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -64,6 +61,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -1253,10 +1251,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     /**
-     * Searcher. Filters elements by name
+     * Searcher. Filters elements by name and description
      */
     public class SearcherFilter implements ISearchExecutor {
-
         @Override
         public boolean performSearch(String searchString, int options) {
             try {
@@ -1277,19 +1274,28 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private class SearchFilter extends ViewerFilter {
-        final Pattern pattern;
+    private static final class SearchFilter extends ViewerFilter {
+        private final Pattern pattern;
 
-        public SearchFilter(String searchString, boolean caseSensitiveSearch) throws PatternSyntaxException {
+        private SearchFilter(String searchString, boolean caseSensitiveSearch) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
         }
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (element instanceof DBNNode) {
-                return pattern.matcher(((DBNNode) element).getName()).find();
+            if (!(element instanceof DBNNode)) {
+                return false;
             }
-            return false;
+            DBNNode node = (DBNNode) element;
+            return matches(node.getName()) || matches(node.getNodeDescription());
+        }
+
+        private boolean matches(@Nullable CharSequence charSequence) {
+            if (charSequence == null) {
+                return false;
+            }
+            Matcher matcher = pattern.matcher(charSequence);
+            return matcher.find();
         }
     }
 
