@@ -63,6 +63,15 @@ class ReferencesResultsContainer implements IResultSetContainer {
     private ResultSetViewer dataViewer;
 
     private DBSDataContainer parentDataContainer;
+
+    /**
+     * Result of the toString() call on the latest parentDataContainer. It is used for detection if the underlying data container has changed.
+     * See <a href="https://github.com/dbeaver/dbeaver/issues/11201">this ticket.</a>
+     *
+     */
+    @Nullable
+    private String parentContainerStringDigest;
+
     private DBSDataContainer dataContainer;
 
     private final List<ReferenceKey> referenceKeys = new ArrayList<>();
@@ -164,10 +173,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
         return mainComposite;
     }
 
-    public void refreshReferences() {
+    void refreshReferences() {
         dataViewer.resetHistory();
-        DBSDataContainer newParentContainer = this.parentController.getDataContainer();
-        if (newParentContainer != parentDataContainer) {
+        DBSDataContainer newParentContainer = parentController.getDataContainer();
+        String newParentContainerDigest = newParentContainer != null ? newParentContainer.toString() : null;
+        if (newParentContainer != parentDataContainer || !Objects.equals(newParentContainerDigest, parentContainerStringDigest)) {
             refreshReferenceKeyList();
         } else if (dataContainer != null) {
             refreshKeyValues(false);
@@ -193,8 +203,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
         parentDataContainer = parentController.getDataContainer();
         if (parentDataContainer == null) {
+            parentContainerStringDigest = null;
             return;
         }
+        parentContainerStringDigest = parentDataContainer.toString();
+
         Set<DBSEntity> allEntities = new LinkedHashSet<>();
         for (DBDAttributeBinding attr : visibleAttributes) {
             DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
