@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -40,7 +39,7 @@ public abstract class NavigatorHandlerCreateColumnObjectBase extends NavigatorHa
     private static final Log log = Log.getLog(NavigatorHandlerCreateColumnObjectBase.class);
 
     static Object createColumnObject(@NotNull ExecutionEvent event, @NotNull Class<?> columnObjectSuperType) {
-        DBNNode node = NavigatorUtils.getSelectedNode(HandlerUtil.getCurrentSelection(event));
+        DBNNode node = NavigatorHandlerObjectCreateNew.getNodeFromSelection(HandlerUtil.getCurrentSelection(event));
         if (!(node instanceof DBNDatabaseItem)) {
             log.error("Selected node is not a database item");
             return null;

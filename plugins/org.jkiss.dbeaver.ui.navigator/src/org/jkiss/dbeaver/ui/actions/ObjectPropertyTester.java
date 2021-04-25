@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.List;
 
@@ -66,14 +67,14 @@ public class ObjectPropertyTester extends PropertyTester
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 
-        if (!(receiver instanceof DBNNode)) {
+        DBNNode node = RuntimeUtils.getObjectAdapter(receiver, DBNNode.class);
+        if (node == null) {
             return false;
         }
         Display display = Display.getCurrent();
         if (display == null) {
             return false;
         }
-        DBNNode node = (DBNNode)receiver;
 //System.out.println("TEST " + property + " ON " + node.getName());
 
         switch (property) {

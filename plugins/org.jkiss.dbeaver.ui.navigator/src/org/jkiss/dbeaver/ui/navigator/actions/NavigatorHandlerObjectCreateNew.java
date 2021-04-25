@@ -25,6 +25,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -54,6 +56,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -78,7 +81,12 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         boolean isFolder = CommonUtils.toBoolean(event.getParameter(NavigatorCommands.PARAM_OBJECT_TYPE_FOLDER));
 
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        DBNNode node = NavigatorUtils.getSelectedNode(selection);
+
+        if (selection.isEmpty()) {
+            return null;
+        }
+        DBNNode node = getNodeFromSelection(selection);
+
         if (node != null) {
             Class<?> newObjectType = null;
             if (objectType != null) {
@@ -112,6 +120,16 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         return null;
     }
 
+    @Nullable
+    static DBNNode getNodeFromSelection(ISelection selection) {
+        DBNNode node = null;
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            Object selectedObject = ((IStructuredSelection)selection).getFirstElement();
+            node = RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
+        }
+        return node;
+    }
+
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
@@ -127,7 +145,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         Object objectIcon = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
         if (typeName == null) {
             // Try to get type from active selection
-            DBNNode node = NavigatorUtils.getSelectedNode(element);
+            ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+            if (selectionProvider == null) {
+                return;
+            }
+            DBNNode node = getNodeFromSelection(selectionProvider.getSelection());
             if (node != null && !node.isDisposed()) {
                 List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
                 for (IContributionItem item : actions) {
@@ -418,7 +440,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return EMPTY_MENU;
             }
             IWorkbenchPartSite site = activePart.getSite();
-            DBNNode node = NavigatorUtils.getSelectedNode(site.getSelectionProvider());
+            DBNNode node = getNodeFromSelection(site.getSelectionProvider().getSelection());
 
             List<IContributionItem> createActions = fillCreateMenuItems(site, node);
             return createActions.toArray(new IContributionItem[0]);

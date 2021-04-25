@@ -39,12 +39,6 @@
             properties="standalone,hasActiveProject,hasMultipleProjects"
             type="java.lang.Object"/>
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
-            namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
-            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
-        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.datasource"
