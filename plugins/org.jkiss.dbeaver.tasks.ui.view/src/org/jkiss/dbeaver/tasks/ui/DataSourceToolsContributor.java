@@ -40,9 +40,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -63,8 +61,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             return;
         }
         DBSObject selectedObject = null;
-        INavigatorModelView navigatorModelView = GeneralUtils.adapt(activePart, INavigatorModelView.class);
-        if (navigatorModelView != null) {
+        {
             final ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
             if (selectionProvider != null) {
                 ISelection selection = selectionProvider.getSelection();
@@ -75,7 +72,8 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                     fillToolsMenu(menuItems, tools, selection);
                 }
             }
-        } else if (activePart instanceof IEditorPart) {
+        }
+        if (activePart instanceof IEditorPart) {
             IEditorInput editorInput = ((IEditorPart) activePart).getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput) {
                 selectedObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
