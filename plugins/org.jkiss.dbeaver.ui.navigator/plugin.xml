@@ -306,8 +306,8 @@
         <image commandId="org.jkiss.dbeaver.ui.tools.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"/>
         <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
 
-        <image commandId="org.jkiss.dbeaver.navigator.create.column.index" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
-        <image commandId="org.jkiss.dbeaver.navigator.create.column.constraint" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
+        <image commandId="org.jkiss.dbeaver.navigator.create.column.index" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/index.png"/>
+        <image commandId="org.jkiss.dbeaver.navigator.create.column.constraint" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/constraint.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">

@@ -302,7 +302,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private OBJECT_TYPE newObject;
         private Map<String, Object> options;
 
-        public ObjectCreator(DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CommandTarget commandTarget, CONTAINER_TYPE parentObject, DBSObject sourceObject, Map<String, Object> options) {
+        ObjectCreator(DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CommandTarget commandTarget, CONTAINER_TYPE parentObject, DBSObject sourceObject, Map<String, Object> options) {
             this.objectMaker = objectMaker;
             this.commandTarget = commandTarget;
             this.parentObject = parentObject;

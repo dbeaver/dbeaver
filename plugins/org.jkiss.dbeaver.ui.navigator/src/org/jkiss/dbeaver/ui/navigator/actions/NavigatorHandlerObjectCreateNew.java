@@ -140,15 +140,15 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
             return;
         }
+        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider == null) {
+            return;
+        }
 
         Object typeName = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
         Object objectIcon = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
         if (typeName == null) {
             // Try to get type from active selection
-            ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-            if (selectionProvider == null) {
-                return;
-            }
             DBNNode node = getNodeFromSelection(selectionProvider.getSelection());
             if (node != null && !node.isDisposed()) {
                 List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
@@ -179,7 +179,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (objectIcon != null) {
             element.setIcon(DBeaverIcons.getImageDescriptor(new DBIcon(objectIcon.toString())));
         } else {
-            DBPImage image = getObjectTypeIcon(element);
+            DBPImage image = getObjectTypeIcon(selectionProvider);
             if (image == null) {
                 image = DBIcon.TYPE_OBJECT;
             }
@@ -199,8 +199,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         return null;
     }
 
-    public static DBPImage getObjectTypeIcon(UIElement element) {
-        DBNNode node = NavigatorUtils.getSelectedNode(element);
+    public static DBPImage getObjectTypeIcon(ISelectionProvider selectionProvider) {
+        DBNNode node = getNodeFromSelection(selectionProvider.getSelection());
         if (node != null) {
             if (node instanceof DBNDatabaseNode && node.getParentNode() instanceof DBNDatabaseFolder) {
                 node = node.getParentNode();

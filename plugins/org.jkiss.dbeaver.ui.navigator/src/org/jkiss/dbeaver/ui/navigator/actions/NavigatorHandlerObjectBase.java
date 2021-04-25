@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -102,15 +103,18 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                     final IDatabaseEditorInput editorInput = (IDatabaseEditorInput) editor.getEditorInput();
                     if (editorInput.getDatabaseObject() == objectToSeek) {
                         workbenchWindow.getActivePage().activate(editor);
-                        switchEditorFolder(container, editor);
+                        if (editor.getAdapter(IDatabaseModellerEditor.class) == null) {
+                            // Switch to folder unless we are already in modelling mode
+                            switchEditorFolder(container, editor);
+                        }
                         return new CommandTarget((IDatabaseEditor) editor);
                     }
                 }
             }
 
-            if (openEditor && container instanceof DBNDatabaseNode) {
+            if (openEditor) {
                 final IDatabaseEditor editor = (IDatabaseEditor) NavigatorHandlerObjectOpen.openEntityEditor(
-                    (DBNDatabaseNode) container,
+                    container,
                     null,
                     workbenchWindow);
                 if (editor != null) {
