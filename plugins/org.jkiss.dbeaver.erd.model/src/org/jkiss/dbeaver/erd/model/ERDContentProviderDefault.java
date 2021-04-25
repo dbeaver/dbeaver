@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -87,6 +88,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
             }
             try {
 
+                boolean attrNodesCached = false;
                 Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
                 DBSEntityAttribute firstAttr = CommonUtils.isEmpty(attributes) ? null : attributes.iterator().next();
                 DBSObjectFilter columnFilter = firstAttr == null ? null :
@@ -100,6 +102,12 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                         }
                         if (columnFilter != null && !columnFilter.matches(attribute.getName())) {
                             continue;
+                        }
+                        if (!attrNodesCached) {
+                            // Pre-load navigator node as well.
+                            // It may be needed later because all ERD objects can be adapted to navigator nodes.
+                            DBNUtils.getNodeByObject(monitor, attribute, false);
+                            attrNodesCached = true;
                         }
 
                         switch (attributeVisibility) {

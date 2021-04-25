@@ -45,6 +45,7 @@ public class EditIndexPage extends AttributesSelectorPage {
     public static final String PROP_DESC = "desc";
 
     private final DBSTableIndex index;
+    private String indexName;
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;
     private boolean unique;
@@ -59,6 +60,7 @@ public class EditIndexPage extends AttributesSelectorPage {
     {
         super(title, index.getTable());
         this.index = index;
+        this.indexName = this.index.getName();
         this.indexTypes = new ArrayList<>(indexTypes);
         Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
     }
@@ -78,6 +80,14 @@ public class EditIndexPage extends AttributesSelectorPage {
     @Override
     protected void createContentsBeforeColumns(Composite panel)
     {
+        // Usually index name is auto-generated from column names
+/*
+        final Text nameText = entity != null ? UIUtils.createLabelText(panel, EditorsMessages.dialog_struct_edit_constrain_label_name, indexName) : null;
+        if (nameText != null) {
+            nameText.addModifyListener(e -> indexName = nameText.getText().trim());
+        }
+*/
+
         UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_index_label_type);
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -107,6 +117,10 @@ public class EditIndexPage extends AttributesSelectorPage {
                 }
             });
         }
+    }
+
+    public String getIndexName() {
+        return indexName;
     }
 
     public DBSIndexType getIndexType()
