@@ -114,9 +114,6 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreSequenceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTableColumnConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
-        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreExtensionConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
         </configurator>

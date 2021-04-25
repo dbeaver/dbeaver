@@ -52,9 +52,6 @@
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>
         </editor>
 
-        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableColumnConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
-        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableForeignKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
         </configurator>
