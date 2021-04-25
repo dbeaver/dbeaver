@@ -15,30 +15,27 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.generic.views;
+package org.jkiss.dbeaver.ui.editors.object.config;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 
 /**
- * Generic table column manager
+ * Base table column configurator
  */
-public class GenericTableColumnConfigurator implements DBEObjectConfigurator<GenericTableColumn> {
+public class BaseTableColumnConfigurator implements DBEObjectConfigurator<DBSEntityAttribute> {
     @Override
-    public GenericTableColumn configureObject(DBRProgressMonitor monitor, Object table, GenericTableColumn object) {
-        return new UITask<GenericTableColumn>() {
-            @Override
-            protected GenericTableColumn runTask() {
-                AttributeEditPage page = new AttributeEditPage(null, object);
-                if (!page.edit()) {
-                    return null;
-                }
-                return object;
+    public DBSEntityAttribute configureObject(DBRProgressMonitor monitor, Object table, DBSEntityAttribute column) {
+        return UITask.run(() -> {
+            AttributeEditPage page = new AttributeEditPage(null, column);
+            if (!page.edit()) {
+                return null;
             }
-        }.execute();
+            return column;
+        });
     }
 
 }
