@@ -117,7 +117,7 @@
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
             properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate"
-            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+            type="org.jkiss.dbeaver.model.DBPNamedObject"/>
 
         <propertyTester
             class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"

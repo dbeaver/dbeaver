@@ -409,7 +409,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.setContents(new EntityDiagram(null, "empty", getContentProvider(), getDecorator()));
 
         // Set context menu
-        ContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
+        ERDEditorContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
         viewer.setContextMenu(provider);
         IWorkbenchPartSite site = getSite();
         if (site instanceof IEditorSite) {
