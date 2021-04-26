@@ -156,12 +156,12 @@
                                   visibleIf="object.dataSource.atLeastV9_7" >
                              <items label="%tree.module.node.name" path="module" property="modules" icon="#module">
                                 <items label="%tree.conditions.node.name" path="condition" property="conditions" icon="#condition" navigable="false"/>
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
+                                <folder id="functions" type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
                                    <items label="%tree.functions.node.name" path="function" property="functions" icon="#procedure" navigable="true">
                                       <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                                    </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                                <folder id="procedures" type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                                    <items label="%tree.procedures.node.name" path="procedure" property="procedures" icon="#procedure" navigable="true">
                                       <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                                    </items>
