@@ -63,6 +63,15 @@ class ReferencesResultsContainer implements IResultSetContainer {
     private ResultSetViewer dataViewer;
 
     private DBSDataContainer parentDataContainer;
+
+    /**
+     * Full name of the latest parentDataContainer. It is used for detection if the underlying data container has changed.
+     * See <a href="https://github.com/dbeaver/dbeaver/issues/11201">this ticket.</a>
+     *
+     */
+    @Nullable
+    private String parentContainerFullName;
+
     private DBSDataContainer dataContainer;
 
     private final List<ReferenceKey> referenceKeys = new ArrayList<>();
@@ -164,14 +173,22 @@ class ReferencesResultsContainer implements IResultSetContainer {
         return mainComposite;
     }
 
-    public void refreshReferences() {
+    void refreshReferences() {
         dataViewer.resetHistory();
-        DBSDataContainer newParentContainer = this.parentController.getDataContainer();
-        if (newParentContainer != parentDataContainer) {
+        DBSDataContainer newParentContainer = parentController.getDataContainer();
+        if (newParentContainer != parentDataContainer || !Objects.equals(getDataContainerFullName(newParentContainer), parentContainerFullName)) {
             refreshReferenceKeyList();
         } else if (dataContainer != null) {
             refreshKeyValues(false);
         }
+    }
+
+    @Nullable
+    private static String getDataContainerFullName(@Nullable DBSDataContainer dataContainer) {
+        if (dataContainer == null) {
+            return null;
+        }
+        return DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DDL);
     }
 
     /**
@@ -192,9 +209,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
 
         parentDataContainer = parentController.getDataContainer();
+        parentContainerFullName = getDataContainerFullName(parentDataContainer);
         if (parentDataContainer == null) {
             return;
         }
+
         Set<DBSEntity> allEntities = new LinkedHashSet<>();
         for (DBDAttributeBinding attr : visibleAttributes) {
             DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
