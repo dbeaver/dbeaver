@@ -203,7 +203,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                        <folder id="procedures" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                             <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure" id="Procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
                                     <items ref="ProcedureArgumentAttributes"/>
@@ -216,7 +216,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.functions.node.name" icon="#functions" description="Functions">
+                        <folder id="functions" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.functions.node.name" icon="#functions" description="Functions">
                             <items label="%tree.function.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function" id="Function">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
                                     <items ref="ProcedureArgumentAttributes"/>

@@ -67,7 +67,7 @@
                                 <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true"/>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.procedures.node.name" icon="#procedures">
+                        <folder id="procedures" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.procedures.node.name" icon="#procedures">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <folder label="%tree.procedure_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
@@ -77,7 +77,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.functions.node.name" icon="#functions">
+                        <folder id="functions" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.functions.node.name" icon="#functions">
                             <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
                                 <folder label="%tree.function_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                     <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
