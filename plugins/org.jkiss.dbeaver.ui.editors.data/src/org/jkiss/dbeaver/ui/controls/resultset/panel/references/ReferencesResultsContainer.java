@@ -65,12 +65,12 @@ class ReferencesResultsContainer implements IResultSetContainer {
     private DBSDataContainer parentDataContainer;
 
     /**
-     * Result of the toString() call on the latest parentDataContainer. It is used for detection if the underlying data container has changed.
+     * Full name of the latest parentDataContainer. It is used for detection if the underlying data container has changed.
      * See <a href="https://github.com/dbeaver/dbeaver/issues/11201">this ticket.</a>
      *
      */
     @Nullable
-    private String parentContainerStringDigest;
+    private String parentContainerFullName;
 
     private DBSDataContainer dataContainer;
 
@@ -176,12 +176,19 @@ class ReferencesResultsContainer implements IResultSetContainer {
     void refreshReferences() {
         dataViewer.resetHistory();
         DBSDataContainer newParentContainer = parentController.getDataContainer();
-        String newParentContainerDigest = newParentContainer != null ? newParentContainer.toString() : null;
-        if (newParentContainer != parentDataContainer || !Objects.equals(newParentContainerDigest, parentContainerStringDigest)) {
+        if (newParentContainer != parentDataContainer || !Objects.equals(getDataContainerFullName(newParentContainer), parentContainerFullName)) {
             refreshReferenceKeyList();
         } else if (dataContainer != null) {
             refreshKeyValues(false);
         }
+    }
+
+    @Nullable
+    private static String getDataContainerFullName(@Nullable DBSDataContainer dataContainer) {
+        if (dataContainer == null) {
+            return null;
+        }
+        return DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DDL);
     }
 
     /**
@@ -202,11 +209,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
 
         parentDataContainer = parentController.getDataContainer();
+        parentContainerFullName = getDataContainerFullName(parentDataContainer);
         if (parentDataContainer == null) {
-            parentContainerStringDigest = null;
             return;
         }
-        parentContainerStringDigest = parentDataContainer.toString();
 
         Set<DBSEntity> allEntities = new LinkedHashSet<>();
         for (DBDAttributeBinding attr : visibleAttributes) {
