@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -47,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * OracleSchema
@@ -250,6 +252,22 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         throws DBException
     {
         return packageCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleProcedureStandalone> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+        return getProcedures(monitor)
+            .stream()
+            .filter(proc -> proc.getProcedureType() == DBSProcedureType.PROCEDURE)
+            .collect(Collectors.toList());
+    }
+
+    @Association
+    public Collection<OracleProcedureStandalone> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+        return getProcedures(monitor)
+            .stream()
+            .filter(proc -> proc.getProcedureType() == DBSProcedureType.FUNCTION)
+            .collect(Collectors.toList());
     }
 
     @Association
