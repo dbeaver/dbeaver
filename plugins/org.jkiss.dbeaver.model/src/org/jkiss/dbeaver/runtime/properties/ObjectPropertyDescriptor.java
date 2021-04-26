@@ -306,6 +306,15 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return object instanceof DBPPersistedObject && !((DBPPersistedObject) object).isPersisted();
     }
 
+    public boolean isEditPossible(Object context)
+    {
+        String expr = propInfo.editableExpr();
+        if (!CommonUtils.isEmpty(expr)) {
+            return Boolean.TRUE.equals(evaluateExpression(context, expr));
+        }
+        return propInfo.editable();
+    }
+
     @Override
     public String getCategory()
     {
