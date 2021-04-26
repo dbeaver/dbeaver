@@ -29,6 +29,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -103,6 +104,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public Point getSelection()
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return new Point(0, 0);
+        }
         Collection<Integer> rowSelection = owner.getSpreadsheet().getRowSelection();
         int minRow = rowSelection.stream().mapToInt(v -> v).min().orElse(-1);
         int maxRow = rowSelection.stream().mapToInt(v -> v).max().orElse(-1);
@@ -114,6 +118,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public String getSelectionText()
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return "";
+        }
         GridPos selection = (GridPos) owner.getSelection().getFirstElement();
         if (selection == null) {
             return "";
@@ -128,7 +135,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public boolean isEditable()
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        return owner.getController().getReadOnlyStatus() == null;
+        return owner != null && owner.getController().getReadOnlyStatus() == null;
     }
 
     @Override
@@ -141,6 +148,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public void beginSession()
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet(false);
+        if (owner == null) {
+            return;
+        }
         this.sessionActive = true;
         owner.getControl().redraw();
         this.originalSelection = new ArrayList<>(owner.getSpreadsheet().getSelection());
@@ -151,6 +161,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public void endSession()
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet(false);
+        if (owner == null) {
+            return;
+        }
         this.sessionActive = false;
         this.searchPattern = null;
         Control control = owner.getControl();
@@ -169,6 +182,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public void setScope(IRegion scope) {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return;
+        }
         if (scope == null || scope.getLength() == 0) {
             owner.highlightRows(-1, -1, null);
             if (scope == null) {
@@ -190,6 +206,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public void setSelection(int offset, int length)
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return;
+        }
         int columnCount = owner.getSpreadsheet().getColumnCount();
         List<GridPos> selRows = new ArrayList<>();
         for (int rowNum = 0; rowNum < length; rowNum++) {
@@ -216,9 +235,12 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
+        final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return - 1;
+        }
         searchPattern = null;
 
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
         ResultSetModel model = owner.getController().getModel();
         if (model.isEmpty()) {
             return -1;
@@ -317,6 +339,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public void replaceSelection(String text, boolean regExReplace)
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return;
+        }
         GridPos selection = (GridPos) owner.getSelection().getFirstElement();
         if (selection == null) {
             return;
@@ -342,6 +367,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public String toString()
     {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return super.toString();
+        }
         DBSDataContainer dataContainer = owner.getController().getDataContainer();
         return "Target: " + (dataContainer == null ? null : dataContainer.getName());
     }
@@ -362,24 +390,24 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
     }
 
-    @NotNull
+    @Nullable
     private SpreadsheetPresentation getActiveSpreadsheet() {
         return getActiveSpreadsheet(true);
     }
 
-    @NotNull
+    @Nullable
     private SpreadsheetPresentation getActiveSpreadsheet(boolean refreshActiveSpreadsheet) {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (workbenchWindow == null) {
-            throw new IllegalStateException("Can't obtain workbench window");
+            return null;
         }
         final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
         if (activeEditor == null) {
-            throw new IllegalStateException("Can't obtain active editor");
+            return null;
         }
         final SpreadsheetPresentation spreadsheet = activeEditor.getAdapter(SpreadsheetPresentation.class);
         if (spreadsheet == null) {
-            throw new IllegalStateException("Can't obtain active spreadsheet");
+            return null;
         }
         if (refreshActiveSpreadsheet) {
             refreshOwner(spreadsheet);
