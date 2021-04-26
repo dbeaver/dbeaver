@@ -14,26 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tasks;
+package org.jkiss.dbeaver.ext.oracle.tasks;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 
 import java.util.List;
 
-public class PostgreToolTableTriggerDisable extends PostgreToolWithStatus<PostgreTrigger, PostgreToolTableTriggerSettings> {
+public class OracleToolTableTriggerDisable extends SQLToolExecuteHandler<OracleTableTrigger, OracleToolTableTriggerSettings> {
+
+    @NotNull
     @Override
-    public PostgreToolTableTriggerSettings createToolSettings() {
-        return new PostgreToolTableTriggerSettings();
+    public OracleToolTableTriggerSettings createToolSettings() {
+        return new OracleToolTableTriggerSettings();
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, PostgreToolTableTriggerSettings settings, List<DBEPersistAction> queries, PostgreTrigger object) throws DBCException {
-        String sql = "ALTER TABLE " + object.getTable() + " DISABLE TRIGGER " + DBUtils.getQuotedIdentifier(object);
+    public void generateObjectQueries(DBCSession session, OracleToolTableTriggerSettings settings, List<DBEPersistAction> queries, OracleTableTrigger object) throws DBCException {
+        String sql = "ALTER TRIGGER " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DISABLE";
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
