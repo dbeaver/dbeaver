@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tasks;
+package org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
-import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
+public class OracleToolTriggerEnable extends OracleToolTriggerToggle {
 
-public class PostgreToolTableTriggerSettings extends SQLToolExecuteSettings<PostgreTrigger> {
-
+    public OracleToolTriggerEnable() {
+        super(true);
+    }
 }
