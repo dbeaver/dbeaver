@@ -55,8 +55,18 @@ public abstract class ObjectViewerRenderer {
     private final Cursor arrowCursor;
     private final Color selectionBackgroundColor;
 
+    // Cache
+    private transient int booleanValueWith;
+
     public ObjectViewerRenderer(
         ColumnViewer viewer)
+    {
+        this(viewer, true);
+    }
+
+    protected ObjectViewerRenderer(
+        ColumnViewer viewer,
+        boolean trackInput)
     {
         itemsViewer = viewer;
         this.isTree = (itemsViewer instanceof AbstractTreeViewer);
@@ -69,22 +79,24 @@ public abstract class ObjectViewerRenderer {
 
         itemsViewer.getControl().setCursor(arrowCursor);
 
-        final CellTrackListener actionsListener = new CellTrackListener();
-        SelectionAdapter selectionAdapter = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectedItem = lastClickItem = (Item) e.item;
+        if (trackInput) {
+            final CellTrackListener actionsListener = new CellTrackListener();
+            SelectionAdapter selectionAdapter = new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    selectedItem = lastClickItem = (Item) e.item;
+                }
+            };
+            if (isTree) {
+                getTree().addSelectionListener(selectionAdapter);
+            } else {
+                getTable().addSelectionListener(selectionAdapter);
             }
-        };
-        if (isTree) {
-            getTree().addSelectionListener(selectionAdapter);
-        } else {
-            getTable().addSelectionListener(selectionAdapter);
+            itemsViewer.getControl().addMouseListener(new MouseListener());
+            itemsViewer.getControl().addMouseTrackListener(actionsListener);
+            itemsViewer.getControl().addMouseMoveListener(actionsListener);
+            itemsViewer.getControl().addKeyListener(actionsListener);
         }
-        itemsViewer.getControl().addMouseListener(new MouseListener());
-        itemsViewer.getControl().addMouseTrackListener(actionsListener);
-        itemsViewer.getControl().addMouseMoveListener(actionsListener);
-        itemsViewer.getControl().addKeyListener(actionsListener);
     }
 
     public boolean isTree()
@@ -154,19 +166,40 @@ public abstract class ObjectViewerRenderer {
     private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {
         prepareLinkStyle(cellValue, null);
 
-        Rectangle itemBounds;
-        if (isTree) {
-            itemBounds = ((TreeItem)item).getTextBounds(column);
+        if (cellValue instanceof Boolean && booleanValueWith > 0) {
+            // Centered boolean - move x to center
+            Rectangle itemBounds;
+            if (isTree) {
+                itemBounds = ((TreeItem)item).getBounds(column);
+            } else {
+                itemBounds = ((TableItem)item).getBounds(column);
+            }
+            itemBounds.width = booleanValueWith;
+            if (getBooleanEditStyle() == ES_CENTERED) {
+                if (isTree) {
+                    itemBounds.x += (getTree().getColumn(column).getWidth() - booleanValueWith) / 2;
+                } else {
+                    itemBounds.x += (getTable().getColumn(column).getWidth() - booleanValueWith) / 2;
+                }
+            }
+            //itemBounds.x -= booleanValueWith / 4;
+            return itemBounds;
         } else {
-            itemBounds = ((TableItem)item).getTextBounds(column);
+            Rectangle itemBounds;
+            if (isTree) {
+                itemBounds = ((TreeItem)item).getTextBounds(column);
+            } else {
+                itemBounds = ((TableItem)item).getTextBounds(column);
+            }
+
+
+            Rectangle linkBounds = linkLayout.getBounds();
+            linkBounds.x += itemBounds.x;
+            linkBounds.y += itemBounds.y + 1;
+            linkBounds.height -= 2;
+
+            return linkBounds;
         }
-
-        Rectangle linkBounds = linkLayout.getBounds();
-        linkBounds.x += itemBounds.x;
-        linkBounds.y += itemBounds.y + 1;
-        linkBounds.height -= 2;
-
-        return linkBounds;
     }
 
     //////////////////////////////////////////////////////
@@ -176,6 +209,7 @@ public abstract class ObjectViewerRenderer {
         {
             GC gc = event.gc;
             if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
+                booleanValueWith = -1;
                 BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
                 Boolean value;
                 if (cellValue == null) {
@@ -191,6 +225,7 @@ public abstract class ObjectViewerRenderer {
                         // Paint only if item text is empty
                         String strValue = booleanStyle.getText(value);
                         Point textExtent = gc.textExtent(strValue);
+                        booleanValueWith = textExtent.x;
                         Rectangle columnBounds = isTree ? ((TreeItem) item).getBounds(columnIndex) : ((TableItem) item).getBounds(columnIndex);
                         //gc.setBackground(getControl().getBackground());
                         if ((booleanStyle == BooleanRenderer.Style.CHECKBOX || booleanStyle == BooleanRenderer.Style.TEXTBOX) && getBooleanEditStyle() == ES_CENTERED) {
@@ -205,6 +240,7 @@ public abstract class ObjectViewerRenderer {
 //                        (boolValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
                     Image image = DBeaverIcons.getImage(booleanStyle.getImage(value));
                     final Rectangle imageBounds = image.getBounds();
+                    booleanValueWith = imageBounds.width;
 
                     Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
 
@@ -284,8 +320,9 @@ public abstract class ObjectViewerRenderer {
                     resetCursor();
                 } else {
                     //tip = getCellString(cellValue);
-                    boolean ctrlPRessed = (stateMask & SWT.CTRL) != 0 || (stateMask & SWT.ALT) != 0;
-                    if (ctrlPRessed && isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
+                    boolean ctrlPressed = (stateMask & SWT.CTRL) != 0 || (stateMask & SWT.ALT) != 0;
+                    boolean isHyperlink = cellValue instanceof Boolean || (ctrlPressed && isHyperlink(cellValue));
+                    if (isHyperlink && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
                         resetCursor();

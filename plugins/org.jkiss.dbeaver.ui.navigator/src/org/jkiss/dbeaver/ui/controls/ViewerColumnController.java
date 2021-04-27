@@ -95,7 +95,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             control.addListener(SWT.MenuDetect, menuListener);
         }
 
-        cellRenderer = new ObjectViewerRenderer(viewer) {
+        cellRenderer = new ObjectViewerRenderer(viewer, false) {
             @Nullable
             @Override
             public Object getCellValue(Object element, int columnIndex) {
