@@ -53,8 +53,7 @@ import java.util.stream.Collectors;
 /**
  * SQLServerTable
  */
-public class SQLServerTable extends SQLServerTableBase implements DBPObjectStatistics, DBSCheckConstraintContainer
-{
+public class SQLServerTable extends SQLServerTableBase implements DBPObjectStatistics, DBSCheckConstraintContainer {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
@@ -64,24 +63,8 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
     private transient volatile long totalBytes = -1;
     private transient volatile long usedBytes = -1;
 
-    public SQLServerTable(SQLServerSchema schema)
-    {
+    public SQLServerTable(SQLServerSchema schema) {
         super(schema);
-    }
-
-    // Copy constructor
-    public SQLServerTable(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerTable source) throws DBException {
-        super(monitor, schema, source);
-
-        DBSObjectCache<SQLServerTableBase, SQLServerTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
-        // Copy columns
-        for (DBSEntityAttribute srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
-            if (DBUtils.isHiddenObject(srcColumn)) {
-                continue;
-            }
-            SQLServerTableColumn column = new SQLServerTableColumn(monitor, this, srcColumn);
-            colCache.cacheObject(column);
-        }
     }
 
     public SQLServerTable(
@@ -199,16 +182,6 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
         return OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option);
     }
 
-    @Nullable
-    @Association
-    public List<SQLServerTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Collection<SQLServerTableTrigger> allTriggers = getSchema().getTriggerCache().getAllObjects(monitor, getSchema());
-        return allTriggers
-            .stream()
-            .filter(p -> p.getTable() == this)
-            .collect(Collectors.toList());
-    }
-
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         references = null;
@@ -219,9 +192,13 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
         getContainer().getIndexCache().clearObjectCache(this);
         getContainer().getUniqueConstraintCache().clearObjectCache(this);
         getContainer().getForeignKeyCache().clearObjectCache(this);
-        getContainer().getTriggerCache().clearChildrenOf(this);
 
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    boolean supportsTriggers() {
+        return true;
     }
 
     @Override
@@ -304,5 +281,4 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
             return new SQLServerTableCheckConstraint(table, resultSet);
         }
     }
-
 }
