@@ -76,7 +76,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         @Property(viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
         @Property(viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
         @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
-        @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100) public String getDescription() { return description; }
+        @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100) public String getDescription() { return description; }
 
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 10) public long getRowCount() { return rowCount; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }

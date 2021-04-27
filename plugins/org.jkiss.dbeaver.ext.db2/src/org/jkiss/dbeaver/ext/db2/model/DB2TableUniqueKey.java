@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -141,7 +142,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = false, multiline = true, order = 4)
+    @Property(viewable = true, editable = false, length = PropertyLength.MULTILINE, order = 4)
     public String getDescription()
     {
         return remarks;

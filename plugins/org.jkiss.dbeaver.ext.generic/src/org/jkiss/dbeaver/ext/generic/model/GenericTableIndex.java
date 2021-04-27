@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
@@ -80,7 +81,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, order = 100)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription()
     {
         return null;

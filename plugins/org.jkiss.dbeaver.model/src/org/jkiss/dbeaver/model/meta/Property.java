@@ -30,6 +30,7 @@ import java.text.Format;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Property
 {
+
     String DEFAULT_LOCAL_STRING = "#"; //NON-NLS-1
     String RESOURCE_TYPE_NAME = "name"; //NON-NLS-1
     String RESOURCE_TYPE_DESCRIPTION = "description"; //NON-NLS-1
@@ -88,7 +89,7 @@ public @interface Property
     /**
      * Multiline properties usually contain some big texts
      */
-    boolean multiline() default false;
+    PropertyLength length() default PropertyLength.LONG;
 
     /**
      * Specific properties ae rendered separate from others

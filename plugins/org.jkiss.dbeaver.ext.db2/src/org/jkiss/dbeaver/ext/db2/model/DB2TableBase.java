@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -263,7 +264,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
     @Nullable
     @Override
-    @Property(viewable = false, order = 99, editable = true, updatable = true, multiline = true)
+    @Property(viewable = false, order = 99, editable = true, updatable = true, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

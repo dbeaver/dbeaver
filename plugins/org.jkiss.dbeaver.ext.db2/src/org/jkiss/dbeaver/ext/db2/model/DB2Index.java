@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -257,7 +258,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, multiline = true)
+    @Property(viewable = false, editable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

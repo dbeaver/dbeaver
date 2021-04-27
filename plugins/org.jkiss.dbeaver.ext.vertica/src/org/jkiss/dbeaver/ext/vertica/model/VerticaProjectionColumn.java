@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 
 /**
  * VerticaProjectionColumn
@@ -97,7 +98,7 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         return super.getPrecision();
     }
 
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     @Override
     public String getDescription() {
         return description;

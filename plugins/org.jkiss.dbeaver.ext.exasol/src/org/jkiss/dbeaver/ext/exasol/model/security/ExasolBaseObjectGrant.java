@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -194,7 +195,7 @@ public class ExasolBaseObjectGrant implements DBAPrivilege  {
 	}
 	
 	@Override
-    @Property(hidden = true, multiline = true)
+    @Property(hidden = true, length = PropertyLength.MULTILINE)
 	public String getDescription()
 	{
 		// No Description available

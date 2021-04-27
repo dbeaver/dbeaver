@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -131,7 +132,7 @@ public class ExasolConnection
     }
 
 	@Override
-	@Property(viewable = true, editable= true, updatable=true, multiline = true, order = 50)
+	@Property(viewable = true, editable= true, updatable=true, length = PropertyLength.MULTILINE, order = 50)
 	public String getDescription()
 	{
 		return this.comment;

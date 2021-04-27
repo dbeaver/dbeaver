@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
-import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -40,7 +37,10 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * PostgreAttribute
@@ -366,7 +366,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return description;
     }

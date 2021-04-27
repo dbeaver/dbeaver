@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -130,7 +131,7 @@ public class GreenplumExternalTable extends PostgreTable {
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 24,
-            multiline = true, valueRenderer = ExternalTableUriLocationsRenderer.class)
+            length = PropertyLength.MULTILINE, valueRenderer = ExternalTableUriLocationsRenderer.class)
     public String getUriLocations() {
         return this.uriLocationsHandler.getCommaSeparatedList();
     }

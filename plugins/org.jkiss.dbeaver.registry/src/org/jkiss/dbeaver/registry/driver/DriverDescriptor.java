@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -502,7 +503,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    @Property(viewable = true, multiline = true, order = 100)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return description;
     }

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
@@ -306,7 +307,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBSSequence, DBPRefr
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = true, updatable = true, multiline = true)
+    @Property(viewable = false, editable = true, updatable = true, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

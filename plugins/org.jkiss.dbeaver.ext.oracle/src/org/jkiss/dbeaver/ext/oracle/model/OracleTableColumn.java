@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -207,7 +204,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return getComment(monitor);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     @LazyProperty(cacheValidator = CommentLoadValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {

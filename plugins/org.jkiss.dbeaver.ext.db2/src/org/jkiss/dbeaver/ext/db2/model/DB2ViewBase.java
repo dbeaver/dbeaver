@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -136,7 +137,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, updatable = false, multiline = true)
+    @Property(viewable = false, editable = false, updatable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return super.getDescription();

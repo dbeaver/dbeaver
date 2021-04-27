@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
@@ -86,7 +87,7 @@ public abstract class AbstractTrigger implements DBSTrigger, DBPQualifiedObject,
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, order = 100)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription()
     {
         return description;

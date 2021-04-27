@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -184,7 +185,7 @@ public class ExasolUser extends ExasolGrantee
 	}
 
 	@Override
-	@Property(viewable = true, updatable=true, editable=true, multiline = true, order = 150)
+	@Property(viewable = true, updatable=true, editable=true, length = PropertyLength.MULTILINE, order = 150)
 	public String getDescription()
 	{
 		return this.description;

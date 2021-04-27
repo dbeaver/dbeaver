@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
@@ -220,7 +221,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         }
     }
 
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     @Nullable
     @Override
     public String getDescription() {

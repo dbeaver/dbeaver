@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -78,7 +79,7 @@ public class PropertyEditorUtils {
         }
         Class<?> propertyType = property.getDataType();
         if (propertyType == null || CharSequence.class.isAssignableFrom(propertyType)) {
-            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
+            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).getLength() == PropertyLength.MULTILINE) {
                 AdvancedTextCellEditor editor = new AdvancedTextCellEditor(parent);
                 setValidator(editor, property, object);
                 return editor;

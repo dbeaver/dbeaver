@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -113,7 +114,7 @@ public class ExasolFunction
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 11)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 11)
     public String getDescription() {
         return this.remarks;
     }

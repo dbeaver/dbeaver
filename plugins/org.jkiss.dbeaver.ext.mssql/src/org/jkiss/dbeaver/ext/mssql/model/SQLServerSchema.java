@@ -35,10 +35,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -133,7 +137,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return description;
     }

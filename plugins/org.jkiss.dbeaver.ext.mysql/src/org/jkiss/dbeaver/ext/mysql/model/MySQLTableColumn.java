@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -372,7 +373,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.collation = collation;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getComment()
     {
         return comment;

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -91,7 +92,7 @@ public class DB2RemoteServerOption extends DB2Object<DB2RemoteServer> {
         return createTime;
     }
 
-    @Property(viewable = true, editable = false, multiline = true, order = 5)
+    @Property(viewable = true, editable = false, length = PropertyLength.MULTILINE, order = 5)
     public String getRemarks()
     {
         return remarks;

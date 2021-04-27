@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -115,7 +116,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
         return library;
     }
 
-    @Property(viewable = true, multiline = true, order = 5)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 5)
     public String getRemarks()
     {
         return remarks;

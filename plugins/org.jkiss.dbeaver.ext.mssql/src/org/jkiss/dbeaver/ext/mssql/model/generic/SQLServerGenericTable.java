@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -66,7 +67,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPOverloaded
     }
 
     @Override
-    @Property(viewable = true, multiline = true, order = 100)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         String description = getDescription();
         if (description != null || !isSqlServer()) {

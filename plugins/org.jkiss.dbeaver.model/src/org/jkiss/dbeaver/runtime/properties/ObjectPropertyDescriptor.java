@@ -22,10 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
-import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -156,8 +153,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propType == Boolean.class || propType == Boolean.TYPE;
     }
 
-    public boolean isMultiLine() {
-        return propInfo.multiline();
+    public PropertyLength getLength() {
+        return propInfo.length();
     }
 
     public boolean isSpecific() {
@@ -236,7 +233,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isNumeric()) features.add("numeric");
         if (this.isNameProperty()) features.add("name");
 
-        if (this.isMultiLine()) features.add("multiline");
+        if (this.getLength() == PropertyLength.MULTILINE) features.add("multiline");
         if (this.isExpensive()) features.add("expensive");
         if (this.isEditPossible()) features.add("editPossible");
         if (this.isLinkPossible()) features.add("linkPossible");
@@ -266,7 +263,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return this.isNameProperty();
 
             case "multiline":
-                return this.isMultiLine();
+                return this.getLength() == PropertyLength.MULTILINE;
             case "expensive":
                 return this.isExpensive();
             case "editPossible":
