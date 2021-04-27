@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
@@ -62,7 +63,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, order = 10)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 10)
     public String getDescription() {
         return description;
     }

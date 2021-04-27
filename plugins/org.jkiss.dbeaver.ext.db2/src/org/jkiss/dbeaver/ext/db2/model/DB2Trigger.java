@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -334,7 +335,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
 
     @Nullable
     @Override
-    @Property(viewable = false, multiline = true)
+    @Property(viewable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
@@ -83,7 +84,7 @@ public class RedshiftExternalSchema extends PostgreSchema {
     }
 */
 
-    @Property(viewable = true, editable = false, updatable = false, multiline = true, order = 50)
+    @Property(viewable = true, editable = false, updatable = false, length = PropertyLength.MULTILINE, order = 50)
     public String getExternalOptions() {
         return esOptions;
     }

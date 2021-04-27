@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -380,7 +381,7 @@ public class DB2Routine extends DB2Object<DBSObject>
 
     @Nullable
     @Override
-    @Property(viewable = false, multiline = true)
+    @Property(viewable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

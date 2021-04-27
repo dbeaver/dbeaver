@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -114,7 +115,7 @@ public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableOb
         return version;
     }
 
-    @Property(viewable = true, editable = false, multiline = true, order = 5)
+    @Property(viewable = true, editable = false, length = PropertyLength.MULTILINE, order = 5)
     public String getRemarks()
     {
         return remarks;

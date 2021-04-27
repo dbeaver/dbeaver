@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -524,7 +525,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, multiline = true)
+    @Property(viewable = false, editable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

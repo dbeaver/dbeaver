@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -113,7 +114,7 @@ public class ExasolSecurityPolicy implements DBPRefreshableObject, DBPSaveableOb
 	
 
 	@Override
-    @Property(viewable = true,  order = 20, multiline= true)
+    @Property(viewable = true,  order = 20, length = PropertyLength.MULTILINE)
 	public String getDescription() {
 		return description;
 	}

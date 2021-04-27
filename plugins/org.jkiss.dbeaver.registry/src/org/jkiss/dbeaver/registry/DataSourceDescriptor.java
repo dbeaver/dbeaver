@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -347,7 +348,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, order = 2)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 2)
     public String getDescription()
     {
         return description;

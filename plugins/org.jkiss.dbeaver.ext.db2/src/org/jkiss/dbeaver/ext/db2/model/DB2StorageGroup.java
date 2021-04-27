@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -125,7 +126,7 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
 
     @Nullable
     @Override
-    @Property(viewable = false, multiline = true)
+    @Property(viewable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

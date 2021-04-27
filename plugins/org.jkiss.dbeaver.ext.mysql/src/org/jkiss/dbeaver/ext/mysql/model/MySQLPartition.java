@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
@@ -166,7 +167,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
         return description;
     }
 
-    @Property(viewable = true, multiline = true, order = 16)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 16)
     public String getComment()
     {
         return comment;

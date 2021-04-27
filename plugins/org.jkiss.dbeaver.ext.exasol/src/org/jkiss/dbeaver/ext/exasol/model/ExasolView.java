@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
@@ -77,7 +78,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
 
 
     @Override
-    @Property(viewable = true, editable = false, updatable = false, multiline = true, order = 40)
+    @Property(viewable = true, editable = false, updatable = false, length = PropertyLength.MULTILINE, order = 40)
     public String getDescription() {
         return super.getDescription();
     }

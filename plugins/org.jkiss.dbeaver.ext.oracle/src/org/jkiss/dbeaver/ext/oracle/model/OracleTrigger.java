@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -152,7 +153,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
 
     @Nullable
     @Override
-    @Property(multiline = true, order = 11)
+    @Property(length = PropertyLength.MULTILINE, order = 11)
     public String getDescription()
     {
         return description;

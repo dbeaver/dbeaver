@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -109,7 +110,7 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
     }
 
     @Override
-    @Property(viewable = true, editable = true, multiline = true, order = 20)
+    @Property(viewable = true, editable = true, length = PropertyLength.MULTILINE, order = 20)
     public String getCheckConstraintDefinition() {
         return definition;
     }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
@@ -337,7 +338,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 999, editable = true, updatable = true, multiline = true)
+    @Property(viewable = true, order = 999, editable = true, updatable = true, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

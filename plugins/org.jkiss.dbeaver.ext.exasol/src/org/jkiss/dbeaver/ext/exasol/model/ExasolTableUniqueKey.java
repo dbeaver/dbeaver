@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -113,7 +114,7 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, multiline = true, order = 4)
+    @Property(viewable = false, editable = false, length = PropertyLength.MULTILINE, order = 4)
     public String getDescription() {
         return null;
     }

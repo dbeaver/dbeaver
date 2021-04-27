@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -123,7 +124,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject, DBPQual
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, category = CAT_DETAILS, order = 100)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, category = CAT_DETAILS, order = 100)
     public String getDescription() {
         return eventComment;
     }

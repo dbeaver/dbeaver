@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -362,7 +363,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, multiline = true)
+    @Property(viewable = false, editable = false, length = PropertyLength.MULTILINE)
     public String getDescription()
     {
         return remarks;

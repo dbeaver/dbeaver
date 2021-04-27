@@ -281,7 +281,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return description;
     }
