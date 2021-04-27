@@ -492,6 +492,25 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+
+                <!-- DuckDB -->
+                <driver
+                        id="duckdb_jdbc"
+                        label="DuckDB"
+                        icon="icons/duckdb_icon.png"
+                        iconBig="icons/duckdb_icon_big.png"
+                        class="org.duckdb.DuckDBDriver"
+                        sampleURL="jdbc:duckdb:{file}"
+                        defaultPort=""
+                        webURL="https://duckdb.org/docs/api/java"
+                        embedded="true"
+                        anonymous="true"
+                        description="DuckDB JDBC driver"
+                        promoted="1"
+                        categories="sql,embedded">
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
+                </driver>
+
                 <!-- Teradata -->
                 <driver
                     id="teradata"
