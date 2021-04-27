@@ -29,18 +29,18 @@ import java.sql.ResultSet;
 /**
  * SQLServerTableTrigger
  */
-public class SQLServerTableTrigger extends SQLServerTriggerBase<SQLServerTableReal> {
-    public SQLServerTableTrigger(@NotNull SQLServerTableReal table, ResultSet dbResult) {
+public class SQLServerTableTrigger extends SQLServerTriggerBase<SQLServerTableBase> {
+    public SQLServerTableTrigger(@NotNull SQLServerTableBase table, ResultSet dbResult) {
         super(table, dbResult);
     }
 
-    public SQLServerTableTrigger(@NotNull SQLServerTableReal table, String name) {
+    public SQLServerTableTrigger(@NotNull SQLServerTableBase table, String name) {
         super(table, name);
     }
 
     @Override
     @Property(viewable = true, order = 4)
-    public SQLServerTableReal getTable() {
+    public SQLServerTableBase getTable() {
         return getParentObject();
     }
 
@@ -60,13 +60,11 @@ public class SQLServerTableTrigger extends SQLServerTriggerBase<SQLServerTableRe
         return getTable().getSchema().getTriggerCache().refreshObject(monitor, getSchema(), this);
     }
 
-    @Property(order = 21)
-    public boolean isDisableable() {
+    public boolean canDisable() {
         return !isDisabled() && !(getParentObject() instanceof SQLServerView);
     }
 
-    @Property(order = 22)
-    public boolean isEnableable() {
+    public boolean canEnable() {
         return isDisabled() && !(getParentObject() instanceof SQLServerView);
     }
 }

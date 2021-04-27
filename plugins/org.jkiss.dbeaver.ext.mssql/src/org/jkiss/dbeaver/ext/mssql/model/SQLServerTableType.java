@@ -116,4 +116,9 @@ public class SQLServerTableType extends SQLServerTableBase {
             }
         }
     }
+
+    @Override
+    boolean supportsTriggers() {
+        return false;
+    }
 }
