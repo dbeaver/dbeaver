@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -105,8 +108,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 workspaceLanguage.select(0);
             }
 
-            Label tipLabel = UIUtils.createLabel(groupLanguage, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
+            if (!((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).isLanguageChangeEnabled()) {
+                workspaceLanguage.setEnabled(false);
+
+                Label tipLabel = UIUtils.createLabel(groupLanguage,
+                    "File '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "' is read-only.\nLanguage can't be changed from preferences.");
+                tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
+
+                Link languageChangeLink = new Link(groupLanguage, SWT.NONE);
+                languageChangeLink.setText("See <a>instructions</a> how to change language manually.");
+                languageChangeLink.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        UIUtils.launchProgram(HelpUtils.getHelpExternalReference("UI-Language"));
+                    }
+                });
+                languageChangeLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
+
+            } else {
+                Label tipLabel = UIUtils.createLabel(groupLanguage, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
+                tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
+            }
         }
 
         // Notifications settings
@@ -175,22 +197,25 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         PrefUtils.savePreferenceStore(store);
 
         if (workspaceLanguage.getSelectionIndex() >= 0) {
-            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
-            try {
-                DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();
-                if (curLanguage != language) {
-                    ((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).setPlatformLanguage(language);
+            if (!((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).isLanguageChangeEnabled()) {
+                UIUtils.showMessageBox(getShell(), "Can't change language", "Language cannot be changed thru UI", SWT.ICON_ERROR);
+            } else {
+                PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
+                try {
+                    DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();
+                    if (curLanguage != language) {
+                        ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
 
-                    if (UIUtils.confirmAction(
-                        getShell(),
-                        "Restart " + GeneralUtils.getProductName(),
-                        "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?"))
-                    {
-                        UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            "Restart " + GeneralUtils.getProductName(),
+                            "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?")) {
+                            UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
+                        }
                     }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
                 }
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
 

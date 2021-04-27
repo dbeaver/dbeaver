@@ -177,6 +177,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     }
 
     @Override
+    public boolean isLanguageChangeEnabled() {
+        File iniFile = getApplicationConfiguration();
+        return iniFile.exists() && iniFile.canWrite();
+    }
+
+    @Override
     public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
         if (CommonUtils.equalObjects(language, this.language)) {
             return;
