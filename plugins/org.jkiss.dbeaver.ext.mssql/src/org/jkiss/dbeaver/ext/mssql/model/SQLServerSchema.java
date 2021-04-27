@@ -212,10 +212,16 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return tableCache.getTypedObjects(monitor, this, SQLServerTable.class);
     }
 
+    @Nullable
     public SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
-        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
-            if (table.getObjectId() == tableId && table instanceof SQLServerTable) {
-                return (SQLServerTable) table;
+        return getTable(monitor, tableId, SQLServerTable.class);
+    }
+
+    @Nullable
+    <T extends DBPObjectWithLongId> T getTable(DBRProgressMonitor monitor, long tableId, @NotNull Class<T> tableClass) throws DBException {
+        for (T table: tableCache.getTypedObjects(monitor, this, tableClass)) {
+            if (table.getObjectId() == tableId) {
+                return table;
             }
         }
         log.debug("Table '" + tableId + "' not found in schema " + getName());
@@ -225,7 +231,6 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     public SQLServerTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
         return tableCache.getObject(monitor, this, name);
     }
-
 
     @Association
     public Collection<SQLServerView> getViews(DBRProgressMonitor monitor) throws DBException {
@@ -911,7 +916,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected SQLServerTableTrigger fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             long tableId = JDBCUtils.safeGetLong(resultSet, "parent_id");
-            SQLServerTable table = getTable(session.getProgressMonitor(), tableId);
+            SQLServerTableReal table = getTable(session.getProgressMonitor(), tableId, SQLServerTableReal.class);
             if (table == null) {
                 log.debug("Trigger owner " + tableId + " not found");
                 return null;

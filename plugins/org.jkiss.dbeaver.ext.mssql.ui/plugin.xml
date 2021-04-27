@@ -131,16 +131,16 @@
                     group="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance"
                     label="Disable trigger(s)"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="!object.disabled"/>
+                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.disableable"/>
             </tool>
-              <tool
+            <tool
                     class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolTriggerEnable"
                     description="Enable trigger"
                     id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolTriggerEnable"
                     group="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance"
                     label="Enable trigger"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.disabled"/>
+                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.enableable"/>
             </tool>
         </tools>
     </extension>
