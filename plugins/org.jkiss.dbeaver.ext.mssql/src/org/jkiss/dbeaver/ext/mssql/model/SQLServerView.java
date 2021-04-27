@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * SQLServerView
  */
-public class SQLServerView extends SQLServerTableReal implements DBSView {
+public class SQLServerView extends SQLServerTableBase implements DBSView {
     private static final Log log = Log.getLog(SQLServerView.class);
 
     private String ddl;
@@ -156,5 +156,10 @@ public class SQLServerView extends SQLServerTableReal implements DBSView {
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
         return false;
+    }
+
+    @Override
+    boolean supportsTriggers() {
+        return true;
     }
 }

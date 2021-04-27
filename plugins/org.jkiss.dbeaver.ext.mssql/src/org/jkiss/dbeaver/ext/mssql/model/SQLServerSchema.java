@@ -212,22 +212,6 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return tableCache.getTypedObjects(monitor, this, SQLServerTable.class);
     }
 
-    @Nullable
-    public SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
-        return getTable(monitor, tableId, SQLServerTable.class);
-    }
-
-    @Nullable
-    <T extends DBPObjectWithLongId> T getTable(DBRProgressMonitor monitor, long tableId, @NotNull Class<T> tableClass) throws DBException {
-        for (T table: tableCache.getTypedObjects(monitor, this, tableClass)) {
-            if (table.getObjectId() == tableId) {
-                return table;
-            }
-        }
-        log.debug("Table '" + tableId + "' not found in schema " + getName());
-        return null;
-    }
-
     public SQLServerTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
         return tableCache.getObject(monitor, this, name);
     }
@@ -671,7 +655,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             }
             long refTableId = JDBCUtils.safeGetLong(dbResult, "referenced_object_id");
-            SQLServerTable refTable = refSchema.getTable(monitor, refTableId);
+            SQLServerTable refTable = getTable(monitor, refTableId);
             if (refTable == null) {
                 log.debug("Ref table " + refTableId + " not found in schema " + refSchema.getName());
                 return null;
@@ -693,7 +677,18 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             String fkName = JDBCUtils.safeGetString(dbResult, "name");
             DBSForeignKeyModifyRule deleteRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "delete_referential_action"));
             DBSForeignKeyModifyRule updateRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "update_referential_action"));
-            return new SQLServerTableForeignKey((SQLServerTable) parent, fkName, null, refConstraint, deleteRule, updateRule, true);
+            return new SQLServerTableForeignKey(parent, fkName, null, refConstraint, deleteRule, updateRule, true);
+        }
+
+        @Nullable
+        private SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
+            for (SQLServerTableBase table: tableCache.getAllObjects(monitor, SQLServerSchema.this)) {
+                if (table.getObjectId() == tableId && table instanceof SQLServerTable) {
+                    return (SQLServerTable) table;
+                }
+            }
+            log.debug("Table '" + tableId + "' not found in schema " + getName());
+            return null;
         }
 
         @Nullable
@@ -916,7 +911,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected SQLServerTableTrigger fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             long tableId = JDBCUtils.safeGetLong(resultSet, "parent_id");
-            SQLServerTableReal table = getTable(session.getProgressMonitor(), tableId, SQLServerTableReal.class);
+            SQLServerTableBase table = getTableWithTriggerSupport(session.getProgressMonitor(), tableId);
             if (table == null) {
                 log.debug("Trigger owner " + tableId + " not found");
                 return null;
@@ -924,6 +919,16 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             return new SQLServerTableTrigger(table, resultSet);
         }
 
+        @Nullable
+        private SQLServerTableBase getTableWithTriggerSupport(DBRProgressMonitor monitor, long tableId) throws DBException {
+            for (SQLServerTableBase table: tableCache.getAllObjects(monitor, SQLServerSchema.this)) {
+                if (table.getObjectId() == tableId && table.supportsTriggers()) {
+                    return table;
+                }
+            }
+            log.debug("Table '" + tableId + "' not found in schema " + getName());
+            return null;
+        }
     }
 
     @Override

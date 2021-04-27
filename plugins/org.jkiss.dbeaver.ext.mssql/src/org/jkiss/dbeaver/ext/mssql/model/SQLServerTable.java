@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 /**
  * SQLServerTable
  */
-public class SQLServerTable extends SQLServerTableReal implements DBPObjectStatistics, DBSCheckConstraintContainer {
+public class SQLServerTable extends SQLServerTableBase implements DBPObjectStatistics, DBSCheckConstraintContainer {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
@@ -194,6 +194,11 @@ public class SQLServerTable extends SQLServerTableReal implements DBPObjectStati
         getContainer().getForeignKeyCache().clearObjectCache(this);
 
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    boolean supportsTriggers() {
+        return true;
     }
 
     @Override

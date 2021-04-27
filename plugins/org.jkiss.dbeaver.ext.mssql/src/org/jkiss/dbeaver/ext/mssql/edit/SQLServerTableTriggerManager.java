@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerExecutionContext;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableReal;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * SQLServerTableTriggerManager
  */
-public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTableTrigger, SQLServerTableReal> {
+public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTableTrigger, SQLServerTableBase> {
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, SQLServerTableTrigger> getObjectsCache(SQLServerTableTrigger object)
@@ -50,7 +50,7 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     @Override
     protected SQLServerTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
                                                          Object copyFrom, Map<String, Object> options) {
-        SQLServerTableReal table = (SQLServerTableReal) container;
+        SQLServerTableBase table = (SQLServerTableBase) container;
         String newTriggerName = "NewTrigger";
         SQLServerTableTrigger newTrigger = new SQLServerTableTrigger(table, newTriggerName);
         newTrigger.setBody(
