@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -65,6 +62,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     final public ConstraintCache constraintCache = new ConstraintCache();
     final public ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
     final public TriggerCache triggerCache = new TriggerCache();
+    final public TableTriggerCache tableTriggerCache = new TableTriggerCache();
     final public IndexCache indexCache = new IndexCache();
     final public DataTypeCache dataTypeCache = new DataTypeCache();
     final public SequenceCache sequenceCache = new SequenceCache();
@@ -307,15 +305,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public Collection<OracleTableTrigger> getTableTriggers(DBRProgressMonitor monitor)
             throws DBException
     {
-        List<OracleTableTrigger> allTableTriggers = new ArrayList<>();
-        for (OracleTableBase table : tableCache.getAllObjects(monitor, this)) {
-            Collection<OracleTableTrigger> triggers = table.getTriggers(monitor);
-            if (!CommonUtils.isEmpty(triggers)) {
-                allTableTriggers.addAll(triggers);
-            }
-        }
-        allTableTriggers.sort(Comparator.comparing(OracleTrigger::getName));
-        return allTableTriggers;
+        return tableTriggerCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -431,6 +421,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         packageCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
+        tableTriggerCache.clearCache();
         dataTypeCache.clearCache();
         sequenceCache.clearCache();
         synonymCache.clearCache();
@@ -1364,6 +1355,69 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected OracleSchemaTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSchemaTrigger(oracleSchema, resultSet);
+        }
+    }
+
+    class TableTriggerCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableTrigger, OracleTriggerColumn> {
+        protected TableTriggerCache() {
+            super(tableCache, OracleTableBase.class, "TABLE_NAME", "TRIGGER_NAME");
+        }
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema schema, OracleTableBase table) throws SQLException {
+            final JDBCPreparedStatement dbStmt = session.prepareStatement(
+                "SELECT" + OracleUtils.getSysCatalogHint(schema.getDataSource()) + " t.*, c.*, c.COLUMN_NAME AS TRIGGER_COLUMN_NAME" +
+                "\nFROM " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), schema.getDataSource(), "TRIGGERS") + " t, " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), schema.getDataSource(), "TRIGGER_COLS") + " c" +
+                "\nWHERE t.TABLE_OWNER=?" + (table == null ? "" : " AND t.TABLE_NAME=?") +
+                " AND t.BASE_OBJECT_TYPE='TABLE' AND t.TABLE_OWNER=c.TABLE_OWNER(+) AND t.TABLE_NAME=c.TABLE_NAME(+)" +
+                " AND t.OWNER=c.TRIGGER_OWNER(+) AND t.TRIGGER_NAME=c.TRIGGER_NAME(+)" +
+                "\nORDER BY t.TRIGGER_NAME"
+            );
+            dbStmt.setString(1, schema.getName());
+            if (table != null) {
+                dbStmt.setString(2, table.getName());
+            }
+            return dbStmt;
+        }
+
+        @Nullable
+        @Override
+        protected OracleTableTrigger fetchObject(JDBCSession session, OracleSchema schema, OracleTableBase table, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new OracleTableTrigger(table, resultSet);
+        }
+
+        @Nullable
+        @Override
+        protected OracleTriggerColumn[] fetchObjectRow(JDBCSession session, OracleTableBase table, OracleTableTrigger trigger, JDBCResultSet resultSet) throws DBException {
+            final OracleTableBase refTable = OracleTableBase.findTable(
+                session.getProgressMonitor(),
+                table.getDataSource(),
+                JDBCUtils.safeGetString(resultSet, "TABLE_OWNER"),
+                JDBCUtils.safeGetString(resultSet, "TABLE_NAME")
+            );
+            if (refTable != null) {
+                final String columnName = JDBCUtils.safeGetString(resultSet, "TRIGGER_COLUMN_NAME");
+                if (columnName == null) {
+                    // Hack: by doing this we can avoid breaking object in cache (see JDBCCompositeCache.java:346)
+                    return new OracleTriggerColumn[]{null};
+                }
+                final OracleTableColumn tableColumn = refTable.getAttribute(session.getProgressMonitor(), columnName);
+                if (tableColumn == null) {
+                    log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' for trigger '" + trigger.getName() + "'");
+                }
+                return new OracleTriggerColumn[]{
+                    new OracleTriggerColumn(session.getProgressMonitor(), trigger, tableColumn, resultSet)
+                };
+            }
+            return null;
+        }
+
+        @Override
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableTrigger trigger, List<OracleTriggerColumn> columns) {
+            trigger.setColumns(columns);
         }
     }
 

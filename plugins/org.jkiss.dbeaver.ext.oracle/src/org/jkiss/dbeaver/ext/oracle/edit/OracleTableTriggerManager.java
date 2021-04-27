@@ -43,7 +43,7 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableTrigger> getObjectsCache(OracleTableTrigger object) {
-        return object.getTable().triggerCache;
+        return object.getTable().getSchema().tableTriggerCache;
     }
 
     @Override
