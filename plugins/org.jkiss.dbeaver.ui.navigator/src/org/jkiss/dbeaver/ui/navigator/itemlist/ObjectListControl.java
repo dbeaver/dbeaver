@@ -578,6 +578,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    protected void resetLazyPropertyCache(OBJECT_TYPE object, String property) {
+        synchronized (lazyCache) {
+            Map<String, Object> cache = lazyCache.get(object);
+            if (cache != null) {
+                cache.remove(property);
+            }
+        }
+    }
+
     private void clearLazyCache() {
         synchronized (lazyCache) {
             lazyCache.clear();
