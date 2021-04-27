@@ -263,8 +263,13 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         rowCount = null;
+        if (supportsTriggers()) {
+            getContainer().getTriggerCache().clearChildrenOf(this);
+        }
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
+
+    abstract boolean supportsTriggers();
 
     boolean isClustered(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (isView()) {
@@ -279,5 +284,21 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
             }
         }
         return false;
+    }
+
+    @NotNull
+    @Association
+    public List<SQLServerTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!supportsTriggers()) {
+            return Collections.emptyList();
+        }
+        SQLServerSchema schema = getSchema();
+        List<SQLServerTableTrigger> triggers = new ArrayList<>();
+        for (SQLServerTableTrigger trigger: schema.getTriggerCache().getAllObjects(monitor, schema)) {
+            if (this == trigger.getTable()) {
+                triggers.add(trigger);
+            }
+        }
+        return triggers;
     }
 }
