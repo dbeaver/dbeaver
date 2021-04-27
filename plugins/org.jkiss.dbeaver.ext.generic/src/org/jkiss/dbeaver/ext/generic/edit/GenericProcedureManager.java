@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -71,11 +72,19 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         GenericProcedure object = command.getObject();
+        String procedureName;
+        boolean showProcedureParameterNames = object.getDataSource().getMetaModel().showProcedureParameterNames();
+        try {
+            procedureName = object.getProcedureSignature(monitor, showProcedureParameterNames);
+        } catch (DBException e) {
+            log.debug("Can't read procedure/function parameters", e);
+            procedureName = object.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        }
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
                 "DROP " + object.getProcedureType().name() +  //$NON-NLS-2$
-                    " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL))
+                    " " + procedureName)
         );
     }
 

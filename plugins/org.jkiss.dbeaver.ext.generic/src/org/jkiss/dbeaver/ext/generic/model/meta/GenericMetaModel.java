@@ -458,6 +458,10 @@ public class GenericMetaModel {
         return "-- Source code not available";
     }
 
+    public boolean showProcedureParameterNames() {
+        return true;
+    }
+
     public String getPackageName(GenericDataSource dataSource, String catalogName, String procedureName, String specificName) {
 
         // Caused problems in #6241. Probably we should remove it (for now getPackageName always returns null so it is disabled anyway)
