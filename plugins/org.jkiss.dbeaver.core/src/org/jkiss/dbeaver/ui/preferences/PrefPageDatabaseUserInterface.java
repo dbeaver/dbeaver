@@ -198,7 +198,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             if (!((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).isLanguageChangeEnabled()) {
-                UIUtils.showMessageBox(getShell(), "Can't change language", "Language cannot be changed thru UI", SWT.ICON_ERROR);
+                UIUtils.showMessageBox(getShell(), "Can't change language", "Language cannot be changed from preferences", SWT.ICON_ERROR);
             } else {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
                 try {
