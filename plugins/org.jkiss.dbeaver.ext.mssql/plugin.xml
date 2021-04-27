@@ -76,7 +76,7 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers">
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table and view triggers">
                                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                     </folder>
                                 </items>
@@ -502,11 +502,11 @@
         </task>
         <task id="mssqlToolTriggerEnable" name="Enable trigger" description="Enable trigger(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableTriggerEnable">
             <datasource id="sqlserver"/>
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.disabled"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.enableable"/>
         </task>
         <task id="mssqlToolTriggerDisable" name="Disable trigger" description="Disable trigger(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableTriggerDisable">
             <datasource id="sqlserver"/>
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="!object.disabled"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.disableable"/>
         </task>
     </extension>
 

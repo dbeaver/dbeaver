@@ -37,8 +37,7 @@ import java.util.*;
 /**
  * SQLServerView
  */
-public class SQLServerView extends SQLServerTableBase implements DBSView
-{
+public class SQLServerView extends SQLServerTableReal implements DBSView {
     private static final Log log = Log.getLog(SQLServerView.class);
 
     private String ddl;
@@ -48,15 +47,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView
         super(schema);
     }
 
-    // Copy constructor
-    public SQLServerView(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerView source) throws DBException {
-        super(monitor, schema, source);
-    }
-
-    public SQLServerView(
-        SQLServerSchema catalog,
-        ResultSet dbResult)
-    {
+    public SQLServerView(SQLServerSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
     }
 
