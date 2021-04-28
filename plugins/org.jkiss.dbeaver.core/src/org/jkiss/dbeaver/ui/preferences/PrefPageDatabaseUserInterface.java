@@ -197,15 +197,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         PrefUtils.savePreferenceStore(store);
 
         if (workspaceLanguage.getSelectionIndex() >= 0) {
-            if (!((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).isLanguageChangeEnabled()) {
-                UIUtils.showMessageBox(getShell(), "Can't change language", "Language cannot be changed from preferences", SWT.ICON_ERROR);
-            } else {
-                PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
-                try {
-                    DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();
-                    if (curLanguage != language) {
-                        ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
+            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
+            DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();
 
+            try {
+                if (curLanguage != language) {
+                    if (!((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).isLanguageChangeEnabled()) {
+                        UIUtils.showMessageBox(getShell(), "Can't change language", "Language cannot be changed from preferences", SWT.ICON_ERROR);
+                    } else {
+                        ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
                         if (UIUtils.confirmAction(
                             getShell(),
                             "Restart " + GeneralUtils.getProductName(),
@@ -213,9 +213,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                             UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
                         }
                     }
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
                 }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
 
