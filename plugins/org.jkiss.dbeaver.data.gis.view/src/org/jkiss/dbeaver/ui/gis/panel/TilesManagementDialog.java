@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
+import org.jkiss.dbeaver.utils.HelpUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -348,7 +349,6 @@ class TilesManagementDialog extends BaseDialog {
     }
 
     private static class TileLayerDefinitionDialog extends BaseDialog {
-        private static final String TILE_LAYER_DEFINITION_EXPLANATION = "https://github.com/dbeaver/dbeaver/wiki/Working-with-Spatial-GIS-data#defining-custom-tile-layer";
 
         @Nullable
         private final LeafletTilesDescriptor originalTilesDescriptor;
@@ -410,7 +410,8 @@ class TilesManagementDialog extends BaseDialog {
             UIUtils.createLink(dialogArea, GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    UIUtils.launchProgram(TILE_LAYER_DEFINITION_EXPLANATION);
+                    UIUtils.launchProgram(
+                        HelpUtils.getHelpExternalReference("Working-with-Spatial-GIS-data#defining-custom-tile-layer"));
                 }
             });
 
