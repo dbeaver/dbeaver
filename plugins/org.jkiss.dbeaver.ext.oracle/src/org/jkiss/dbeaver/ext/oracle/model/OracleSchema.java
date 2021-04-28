@@ -1401,12 +1401,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             if (refTable != null) {
                 final String columnName = JDBCUtils.safeGetString(resultSet, "TRIGGER_COLUMN_NAME");
                 if (columnName == null) {
-                    // Hack: by doing this we can avoid breaking object in cache (see JDBCCompositeCache.java:346)
-                    return new OracleTriggerColumn[]{null};
+                    return null;
                 }
                 final OracleTableColumn tableColumn = refTable.getAttribute(session.getProgressMonitor(), columnName);
                 if (tableColumn == null) {
                     log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' for trigger '" + trigger.getName() + "'");
+                    return null;
                 }
                 return new OracleTriggerColumn[]{
                     new OracleTriggerColumn(session.getProgressMonitor(), trigger, tableColumn, resultSet)
@@ -1418,6 +1418,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         protected void cacheChildren(DBRProgressMonitor monitor, OracleTableTrigger trigger, List<OracleTriggerColumn> columns) {
             trigger.setColumns(columns);
+        }
+
+        @Override
+        protected boolean isEmptyObjectRowsAllowed() {
+            return true;
         }
     }
 
