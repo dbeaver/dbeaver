@@ -181,6 +181,16 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
+    public boolean supportsOverloadedProcedureNames() {
+        return true;
+    }
+
+    @Override
+    public boolean showProcedureParamNames() {
+        return true;
+    }
+
+    @Override
     public boolean supportsSequences(GenericDataSource dataSource) {
         return true;
     }
