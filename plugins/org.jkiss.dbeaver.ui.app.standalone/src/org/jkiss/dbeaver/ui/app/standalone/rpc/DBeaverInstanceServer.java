@@ -46,12 +46,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.Map;
@@ -69,8 +69,9 @@ public class DBeaverInstanceServer implements IInstanceController {
     private static int portNumber;
     private static Registry registry;
 
-    private static final RMIClientSocketFactory CSF_DEFAULT = (host, port) -> new Socket(InetAddress.getLoopbackAddress(), port);
+    private static final RMIClientSocketFactory CSF_DEFAULT = RMISocketFactory.getDefaultSocketFactory();
     private static final RMIServerSocketFactory SSF_LOCAL = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+    private static boolean localRMI = false;
 
     @Override
     public String getVersion() {
@@ -189,8 +190,8 @@ public class DBeaverInstanceServer implements IInstanceController {
 
             {
                 IInstanceController stub;
-                if (System.getProperty(VAR_RMI_SERVER_HOSTNAME) == null) {
-                    stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0, CSF_DEFAULT, SSF_LOCAL);
+                if (localRMI) {
+                    stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0, null, SSF_LOCAL);
                 } else {
                     stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
                 }
@@ -223,6 +224,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         // It is tricky (https://groups.google.com/g/comp.lang.java.programmer/c/QQT2EOTFoKk?pli=1)
         if (System.getProperty(VAR_RMI_SERVER_HOSTNAME) == null) {
             System.setProperty(VAR_RMI_SERVER_HOSTNAME, "127.0.0.1");
+            localRMI = true;
 
             registry = LocateRegistry.createRegistry(portNumber, CSF_DEFAULT, SSF_LOCAL);
         } else {
