@@ -21,6 +21,7 @@ import org.eclipse.help.IHelpResource;
 import org.eclipse.ui.help.AbstractHelpUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 
 /**
  * Lightweight help UI
@@ -28,7 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class GitHubWikiHelpUI extends AbstractHelpUI {
 
     private static final Log log = Log.getLog(GitHubWikiHelpUI.class);
-    public static final String GITHUB_HELP_ROOT = "https://github.com/dbeaver/dbeaver/wiki/";
+    public static final String GITHUB_HELP_ROOT = HelpUtils.GLOBAL_HELP_PREFIX;
 
     @Override
     public void displayHelp()
