@@ -472,6 +472,16 @@ public class GenericMetaModel {
         return null;
     }
 
+
+
+    public boolean supportsOverloadedProcedureNames() {
+        return false;
+    }
+
+    public boolean showProcedureParamNames() {
+        return false;
+    }
+
     //////////////////////////////////////////////////////
     // Catalog load
 
