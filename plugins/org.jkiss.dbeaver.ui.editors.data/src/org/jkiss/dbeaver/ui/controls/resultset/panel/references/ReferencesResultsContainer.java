@@ -215,9 +215,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
 
         Set<DBSEntity> allEntities = new LinkedHashSet<>();
+        Collection<DBSEntityAttribute> entityAttributes = new HashSet<>();
         for (DBDAttributeBinding attr : visibleAttributes) {
             DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
             if (entityAttribute != null) {
+                entityAttributes.add(entityAttribute);
                 allEntities.add(entityAttribute.getParentObject());
             }
         }
@@ -255,13 +257,30 @@ class ReferencesResultsContainer implements IResultSetContainer {
                             }
                             // Foreign keys
                             Collection<? extends DBSEntityAssociation> associations = DBVUtils.getAllAssociations(monitor, entity);
-                            for (DBSEntityAssociation assoc : associations) {
-                                if (assoc instanceof DBSEntityReferrer) {
-                                    List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
-                                    if (!CommonUtils.isEmpty(attrs)) {
-                                        ReferenceKey referenceKey = new ReferenceKey(monitor, false, assoc.getAssociatedEntity(), assoc, attrs);
-                                        refs.add(referenceKey);
+                            for (DBSEntityAssociation association: associations) {
+                                if (!(association instanceof DBSEntityReferrer)) {
+                                    continue;
+                                }
+                                DBSEntityReferrer entityReferrer = (DBSEntityReferrer) association;
+                                List<? extends DBSEntityAttributeRef> attributeRefs = entityReferrer.getAttributeReferences(monitor);
+                                if (attributeRefs == null) {
+                                    continue;
+                                }
+                                Collection<DBSEntityAttribute> attributes = new HashSet<>();
+                                for (DBSEntityAttributeRef attributeRef: attributeRefs) {
+                                    DBSEntityAttribute entityAttribute = attributeRef.getAttribute();
+                                    if (entityAttribute != null) {
+                                        attributes.add(entityAttribute);
                                     }
+                                }
+                                if (!attributes.isEmpty() && entityAttributes.containsAll(attributes)) {
+                                    refs.add(new ReferenceKey(
+                                        monitor,
+                                        false,
+                                        association.getAssociatedEntity(),
+                                        association,
+                                        attributeRefs
+                                    ));
                                 }
                             }
 
