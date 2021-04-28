@@ -39,7 +39,6 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         // Common
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.KEEP_STATEMENT_OPEN, false);
 
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_LONG_AS_LOB, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, true);
@@ -98,5 +97,4 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         // Override default editor page
         //PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE, DatabaseDataEditor.class.getName());
     }
-
 }
