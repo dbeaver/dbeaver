@@ -59,7 +59,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button filterForceSubselect;
 
     private Button keepStatementOpenCheck;
-    private Button alwaysUseAllColumns;
     private Button newRowsAfter;
     private Button refreshAfterUpdate;
     private Button useNavigatorFilters;
@@ -87,7 +86,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_READ_METADATA) ||
             store.contains(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
-            store.contains(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
@@ -170,7 +168,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             miscGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
             newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
             useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
@@ -209,7 +206,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
-            alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
             newRowsAfter.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
             refreshAfterUpdate.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
             useNavigatorFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
@@ -240,7 +236,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
 
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
@@ -269,7 +264,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
 
         store.setToDefault(ResultSetPreferences.KEEP_STATEMENT_OPEN);
-        store.setToDefault(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
         store.setToDefault(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
         store.setToDefault(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
@@ -287,5 +281,4 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         return PAGE_ID;
     }
-
 }
