@@ -101,6 +101,11 @@ public abstract class JDBCCompositeCache<
 
     }
 
+    // Checks whether object may not have any children or this situation should be treated as an error.
+    protected boolean isEmptyObjectRowsAllowed() {
+        return false;
+    }
+
     @NotNull
     @Override
     public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
@@ -344,10 +349,12 @@ public abstract class JDBCCompositeCache<
                         }
                         ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
                         if (rowRef == null || rowRef.length == 0) {
-                            // At least one of rows is broken.
-                            // So entire object is broken, let's just skip it.
-                            objectInfo.broken = true;
-                            //log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
+                            if (!isEmptyObjectRowsAllowed()) {
+                                // At least one of rows is broken.
+                                // So entire object is broken, let's just skip it.
+                                objectInfo.broken = true;
+                                //log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
+                            }
                             continue;
                         }
                         for (ROW_REF row : rowRef) {

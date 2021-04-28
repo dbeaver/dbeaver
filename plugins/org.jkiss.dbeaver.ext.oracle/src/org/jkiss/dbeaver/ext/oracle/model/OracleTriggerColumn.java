@@ -47,7 +47,7 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
     {
         this.trigger = trigger;
         this.tableColumn = tableColumn;
-        this.name = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
+        this.name = JDBCUtils.safeGetString(dbResult, "TRIGGER_COLUMN_NAME");
         this.columnList = JDBCUtils.safeGetBoolean(dbResult, "COLUMN_LIST", "YES");
     }
 
