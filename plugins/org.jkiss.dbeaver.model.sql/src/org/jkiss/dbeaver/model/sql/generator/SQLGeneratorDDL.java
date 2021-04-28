@@ -90,13 +90,16 @@ public class SQLGeneratorDDL extends SQLGenerator<DBPScriptObject> {
         }
         sql.append("\n");
         if (object instanceof DBPScriptObjectExt) {
-            String definition2 = CommonUtils.notEmpty(((DBPScriptObjectExt) object).getExtendedDefinitionText(monitor)).trim();
-            sql.append("\n");
-            sql.append(definition2);
-            if (!definition2.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
-                sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+            String extendedDefinitionText = ((DBPScriptObjectExt) object).getExtendedDefinitionText(monitor);
+            if (CommonUtils.isNotEmpty(extendedDefinitionText)) {
+                String definition2 = extendedDefinitionText.trim();
+                sql.append("\n");
+                sql.append(definition2);
+                if (!definition2.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+                    sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+                }
+                sql.append("\n");
             }
-            sql.append("\n");
         }
     }
 
