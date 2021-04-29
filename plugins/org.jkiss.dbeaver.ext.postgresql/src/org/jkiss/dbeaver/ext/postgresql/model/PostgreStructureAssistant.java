@@ -144,7 +144,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         String sql = buildFindQuery(
             "pc.oid,pc.relname,pc.relnamespace,pc.relkind",
             "pg_catalog.pg_class pc",
-            "pc.relkind in('r','v','m')",
+            "pc.relkind in('r','v','m','f')",
             params.isSearchInComments(),
             "pc.relname",
             params.isCaseSensitive(),
