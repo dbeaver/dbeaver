@@ -144,4 +144,6 @@ public interface PostgreServerExtension {
     boolean supportsDisablingAllTriggers();
 
     boolean supportsGeneratedColumns();
+
+    boolean supportsKeyAndIndexRename();
 }
