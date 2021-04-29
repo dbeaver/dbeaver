@@ -64,8 +64,14 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     private static final Log log = Log.getLog(DBeaverInstanceServer.class);
 
+    private static final String VAR_RMI_SERVER_HOSTNAME = "java.rmi.server.hostname";
+
     private static int portNumber;
     private static Registry registry;
+
+    private static final RMIClientSocketFactory CSF_DEFAULT = RMISocketFactory.getDefaultSocketFactory();
+    private static final RMIServerSocketFactory SSF_LOCAL = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+    private static boolean localRMI = false;
 
     @Override
     public String getVersion() {
@@ -183,7 +189,14 @@ public class DBeaverInstanceServer implements IInstanceController {
             openRmiRegistry();
 
             {
-                IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
+                IInstanceController stub;
+                if (localRMI) {
+                    stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0, null, SSF_LOCAL);
+                } else {
+                    stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
+                }
+
+                //IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
                 registry.bind(CONTROLLER_ID, stub);
             }
             for (CommandLineParameterHandler remoteHandler : DBeaverCommandLine.getRemoteParameterHandlers(commandLine)) {
@@ -207,11 +220,13 @@ public class DBeaverInstanceServer implements IInstanceController {
         portNumber = IOUtils.findFreePort(20000, 65000);
 
         log.debug("Starting RMI server at " + portNumber);
+        // We must bing to localhost only
+        // It is tricky (https://groups.google.com/g/comp.lang.java.programmer/c/QQT2EOTFoKk?pli=1)
+        if (System.getProperty(VAR_RMI_SERVER_HOSTNAME) == null) {
+            System.setProperty(VAR_RMI_SERVER_HOSTNAME, "127.0.0.1");
+            localRMI = true;
 
-        if (System.getProperty("java.rmi.server.hostname") == null) {
-            RMIClientSocketFactory csf = RMISocketFactory.getDefaultSocketFactory();
-            RMIServerSocketFactory ssf = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
-            registry = LocateRegistry.createRegistry(portNumber, csf, ssf);
+            registry = LocateRegistry.createRegistry(portNumber, CSF_DEFAULT, SSF_LOCAL);
         } else {
             registry = LocateRegistry.createRegistry(portNumber);
         }

@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Properties;
 
 /**
@@ -44,7 +45,10 @@ public class InstanceClient {
                 props.load(is);
             }
             String rmiPort = props.getProperty("port");
-            return (IInstanceController) LocateRegistry.getRegistry(InetAddress.getLoopbackAddress().getHostAddress(), Integer.parseInt(rmiPort)).lookup(IInstanceController.CONTROLLER_ID);
+            Registry registry = LocateRegistry.getRegistry(
+                InetAddress.getLoopbackAddress().getHostAddress(),
+                Integer.parseInt(rmiPort));
+            return (IInstanceController) registry.lookup(IInstanceController.CONTROLLER_ID);
         } catch (Exception e) {
             log.error("Error reading RMI config", e);
         }

@@ -98,5 +98,4 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         // Override default editor page
         //PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE, DatabaseDataEditor.class.getName());
     }
-
 }
