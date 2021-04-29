@@ -57,7 +57,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     private long rsOffset = -1;
     private long rsMaxRows = -1;
 
-    private int updateCount;
+    private long updateCount;
     private Throwable executeError;
 
     public JDBCStatementImpl(@NotNull JDBCSession connection, @NotNull STATEMENT original, boolean disableLogging)
@@ -188,10 +188,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int getUpdateRowCount() throws DBCException
-    {
+    public long getUpdateRowCount() throws DBCException {
         try {
-            return getUpdateCount();
+            try {
+                return getLargeUpdateCount();
+            } catch (Throwable ignored) {
+                return getUpdateCount();
+            }
         } catch (SQLException e) {
             throw new DBCException(e, connection.getExecutionContext());
         }
@@ -642,7 +645,17 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     {
         int uc = getOriginal().getUpdateCount();
         if (uc >= 0) {
-            // Cache update cound (for QM logging)
+            // Cache update count (for QM logging)
+            this.updateCount = uc;
+        }
+        return uc;
+    }
+
+    @Override
+    public long getLargeUpdateCount() throws SQLException {
+        final long uc = getOriginal().getLargeUpdateCount();
+        if (uc >= 0) {
+            // Cache update count (for QM logging)
             this.updateCount = uc;
         }
         return uc;
