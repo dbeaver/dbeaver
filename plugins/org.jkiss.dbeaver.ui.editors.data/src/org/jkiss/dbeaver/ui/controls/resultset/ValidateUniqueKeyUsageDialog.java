@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -30,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -38,28 +37,25 @@ import java.util.List;
 /**
  * Confirm virtual key usage dialog
  */
-class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
-
+final class ValidateUniqueKeyUsageDialog extends MessageDialog {
     @NotNull
     private final ResultSetViewer viewer;
-    @NotNull
-    private final DBCExecutionContext executionContext;
 
-    protected ValidateUniqueKeyUsageDialog(@NotNull ResultSetViewer viewer, @NotNull DBCExecutionContext executionContext)
-    {
+    private ValidateUniqueKeyUsageDialog(@NotNull ResultSetViewer viewer) {
         super(
             viewer.getControl().getShell(),
-            "No unique key - multiple rows modification possible",
+            ResultSetMessages.validate_unique_key_usage_dialog_title,
             null,
-            "There is no physical unique key defined for  '" + DBUtils.getObjectFullName(viewer.getVirtualEntityIdentifier().getUniqueKey().getParentObject(), DBPEvaluationContext.UI) +
-                "'.\nDBeaver will use all columns as unique key. Possible multiple rows modification. \nAre you sure you want to proceed?",
+            ResultSetMessages.validate_unique_key_usage_dialog_main_question,
             WARNING,
-            new String[]{"Use All Columns", "Custom Unique Key", IDialogConstants.CANCEL_LABEL},
-            0,
-            "Do not ask again for '" + executionContext.getDataSource().getContainer().getName() + "'",
-            false);
+            new String[]{
+                ResultSetMessages.validate_unique_key_usage_dialog_use_all_columns,
+                ResultSetMessages.validate_unique_key_usage_dialog_custom_unique_key,
+                IDialogConstants.CANCEL_LABEL
+            },
+            2
+        );
         this.viewer = viewer;
-        this.executionContext = executionContext;
     }
 
     @Override
@@ -68,25 +64,20 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     }
 
     @Override
-    protected void buttonPressed(int buttonId)
-    {
-        executionContext.getDataSource().getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, getToggleState());
-        switch (buttonId)
-        {
-            case IDialogConstants.CANCEL_ID:
-                super.buttonPressed(buttonId);
-                break;
-            case IDialogConstants.INTERNAL_ID:
+    protected void buttonPressed(int buttonId) {
+        switch (buttonId) {
+            case 0:
                 if (useAllColumns(viewer)) {
                     super.buttonPressed(IDialogConstants.OK_ID);
                 }
                 break;
-            case IDialogConstants.INTERNAL_ID + 1:
+            case 1:
                 editCustomKey();
-
+                break;
+            case 2:
+                super.buttonPressed(IDialogConstants.CANCEL_ID);
                 break;
         }
-        executionContext.getDataSource().getContainer().persistConfiguration();
     }
 
     private void editCustomKey()
@@ -109,7 +100,10 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             }
         }
         if (uniqueColumns.isEmpty()) {
-            DBWorkbench.getPlatformUI().showError("Use All Columns", "No valid columns found for unique key");
+            DBWorkbench.getPlatformUI().showError(
+                ResultSetMessages.validate_unique_key_usage_dialog_use_all_columns,
+                ResultSetMessages.validate_unique_key_usage_dialog_use_all_columns_no_valid_columns_found
+            );
             return false;
         }
         constraint.setAttributes(uniqueColumns);
@@ -120,16 +114,19 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
                 new VoidProgressMonitor(),
                 viewer.getModel().getAttributes());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Use All Columns", "Can't reload unique columns", e);
+            DBWorkbench.getPlatformUI().showError(
+                ResultSetMessages.validate_unique_key_usage_dialog_use_all_columns,
+                ResultSetMessages.validate_unique_key_usage_dialog_use_all_columns_cannot_reload_unique_columns,
+                e
+            );
             return false;
         }
 
         return true;
     }
 
-    public static boolean validateUniqueKey(@NotNull ResultSetViewer viewer, @NotNull DBCExecutionContext executionContext)
-    {
-        final DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
+    static boolean validateUniqueKey(@NotNull ResultSetViewer viewer, @NotNull DBCExecutionContext executionContext) {
+        DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
         if (identifier == null) {
             // No key
             return false;
@@ -138,16 +135,13 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             // Key already defined
             return true;
         }
-
         if (executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS)) {
             if (useAllColumns(viewer)) {
                 return true;
             }
         }
-
-        ValidateUniqueKeyUsageDialog dialog = new ValidateUniqueKeyUsageDialog(viewer, executionContext);
+        ValidateUniqueKeyUsageDialog dialog = new ValidateUniqueKeyUsageDialog(viewer);
         int result = dialog.open();
         return result == IDialogConstants.OK_ID;
     }
-
 }

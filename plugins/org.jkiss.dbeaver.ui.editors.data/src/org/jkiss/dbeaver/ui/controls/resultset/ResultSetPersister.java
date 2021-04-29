@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.UIConfirmation;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -560,7 +560,7 @@ class ResultSetPersister {
             if (identifier != null) {
                 if (CommonUtils.isEmpty(identifier.getAttributes())) {
                     // Empty identifier. We have to define it
-                    if (!UIConfirmation.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
+                    if (!UITask.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
                         throw new DBCException("No unique key defined");
                     }
                 }
