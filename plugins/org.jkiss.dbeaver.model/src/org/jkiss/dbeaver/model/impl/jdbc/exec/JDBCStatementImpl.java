@@ -190,14 +190,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     @Override
     public long getUpdateRowCount() throws DBCException {
         try {
-            final int updateCount = getUpdateCount();
-            if (updateCount < Integer.MAX_VALUE) {
-                return updateCount;
-            }
             try {
                 return getLargeUpdateCount();
-            } catch (UnsupportedOperationException ignored) {
-                return updateCount;
+            } catch (Throwable ignored) {
+                return getUpdateCount();
             }
         } catch (SQLException e) {
             throw new DBCException(e, connection.getExecutionContext());
