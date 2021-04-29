@@ -67,7 +67,7 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     }
 
     @Override
-    public int getUpdateRowCount() throws DBCException {
+    public long getUpdateRowCount() throws DBCException {
         return 0;
     }
 
