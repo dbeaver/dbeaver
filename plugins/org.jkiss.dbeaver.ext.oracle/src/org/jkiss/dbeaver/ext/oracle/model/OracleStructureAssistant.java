@@ -46,6 +46,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
 
     private final OracleDataSource dataSource;
 
+    public static final boolean SEARCH_IN_SYNONYMS = false;
+
     public OracleStructureAssistant(OracleDataSource dataSource)
     {
         this.dataSource = dataSource;
@@ -211,6 +213,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 oracleObjectTypes.add((OracleObjectType) objectType);
                 if (objectType == OracleObjectType.PROCEDURE) {
                     oracleObjectTypes.add(OracleObjectType.FUNCTION);
+                } else if (objectType == OracleObjectType.TABLE) {
+                    oracleObjectTypes.add(OracleObjectType.VIEW);
                 }
             } else if (DBSProcedure.class.isAssignableFrom(objectType.getTypeClass())) {
                 oracleObjectTypes.add(OracleObjectType.FUNCTION);
@@ -228,18 +232,21 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         // Seek for objects (join with public synonyms)
         OracleDataSource dataSource = (OracleDataSource) session.getDataSource();
         String objectNameMask = params.getMask();
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM " +
-                "   (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " WHERE " +
-                    "OBJECT_TYPE IN (" + objectTypeClause + ") AND " + (!params.isCaseSensitive() ? "UPPER(OBJECT_NAME)" : "OBJECT_NAME") + " LIKE ? " +
-                    (schema == null ? "" : " AND OWNER=?") +
-                    "UNION ALL\n" +
-                "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS") + " S," +
-                        OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " O\n" +
-                    "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.OBJECT_TYPE<>'JAVA CLASS' AND " +
-                    (!params.isCaseSensitive() ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME") + "  LIKE ?)" +
-                "\nORDER BY OBJECT_NAME")) {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT ")
+            .append(OracleUtils.getSysCatalogHint(dataSource)).append(" DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (")
+            .append("\nSELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ")
+            .append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS"))
+            .append(" WHERE ").append("OBJECT_TYPE IN (").append(objectTypeClause).append(") AND ")
+            .append(!params.isCaseSensitive() ? "UPPER(OBJECT_NAME)" : "OBJECT_NAME").append(" LIKE ? ")
+            .append(schema == null ? "" : " AND OWNER=?");
+        if (SEARCH_IN_SYNONYMS) {
+            query.append("UNION ALL\nSELECT ").append(OracleUtils.getSysCatalogHint(dataSource)).append(" O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n")
+                .append("FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS")).append(" S,").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS")).append(" O\n")
+                .append("WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.OBJECT_TYPE<>'JAVA CLASS' AND ").append(!params.isCaseSensitive() ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME").append("  LIKE ?");
+        }
+        query.append(")\nORDER BY OBJECT_NAME");
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
             if (!params.isCaseSensitive()) {
                 objectNameMask = objectNameMask.toUpperCase();
             }
@@ -247,7 +254,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }
-            dbStat.setString(schema != null ? 3 : 2, objectNameMask);
+            if (SEARCH_IN_SYNONYMS) {
+                dbStat.setString(schema != null ? 3 : 2, objectNameMask);
+            }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults() && dbResult.next()) {
