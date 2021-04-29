@@ -18,14 +18,12 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -127,7 +125,7 @@ final class ValidateUniqueKeyUsageDialog extends MessageDialog {
         return true;
     }
 
-    static boolean validateUniqueKey(@NotNull ResultSetViewer viewer) {
+    static boolean validateUniqueKey(@NotNull ResultSetViewer viewer, @NotNull DBCExecutionContext executionContext) {
         DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
         if (identifier == null) {
             // No key
@@ -136,6 +134,11 @@ final class ValidateUniqueKeyUsageDialog extends MessageDialog {
         if (!CommonUtils.isEmpty(identifier.getAttributes())) {
             // Key already defined
             return true;
+        }
+        if (executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS)) {
+            if (useAllColumns(viewer)) {
+                return true;
+            }
         }
         ValidateUniqueKeyUsageDialog dialog = new ValidateUniqueKeyUsageDialog(viewer);
         int result = dialog.open();

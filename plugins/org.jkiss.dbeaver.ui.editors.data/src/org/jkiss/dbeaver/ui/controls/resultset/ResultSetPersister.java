@@ -560,7 +560,7 @@ class ResultSetPersister {
             if (identifier != null) {
                 if (CommonUtils.isEmpty(identifier.getAttributes())) {
                     // Empty identifier. We have to define it
-                    if (!UITask.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer))) {
+                    if (!UITask.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
                         throw new DBCException("No unique key defined");
                     }
                 }
