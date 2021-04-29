@@ -112,7 +112,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         }
 
         try {
-            this.supportsUnquotedMixedCase = metaData.supportsMixedCaseIdentifiers();
+            this.supportsUnquotedMixedCase = !metaData.supportsMixedCaseIdentifiers();
         } catch (Throwable e) {
             log.debug("Error getting supportsUnquotedMixedCase:" + e.getMessage());
             this.supportsUnquotedMixedCase = false;

@@ -56,7 +56,7 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
             return value;
         }
         if (DBUtils.isQuotedIdentifier(dataSource, value)) {
-            if (dialect.supportsQuotedMixedCase() || dialect.supportsUnquotedMixedCase()) {
+            if (dialect.supportsQuotedMixedCase()) {
                 return value;
             }
             value = DBUtils.getUnQuotedIdentifier(dataSource, value);
