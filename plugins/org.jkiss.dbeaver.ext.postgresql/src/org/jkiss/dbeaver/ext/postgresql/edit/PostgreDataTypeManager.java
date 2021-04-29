@@ -43,6 +43,11 @@ import java.util.Map;
 public class PostgreDataTypeManager extends SQLObjectEditor<PostgreDataType, PostgreSchema> implements DBEObjectRenamer<PostgreDataType> {
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return false;
+    }
+
+    @Override
     protected PostgreDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         throw new DBCException("Not Implemented");
     }
