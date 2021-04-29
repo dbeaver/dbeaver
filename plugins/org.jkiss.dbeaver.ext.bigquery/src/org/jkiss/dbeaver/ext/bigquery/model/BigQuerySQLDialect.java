@@ -19,10 +19,15 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
 /**
- * Snowflake constants
+ * BigQuery SQL dialect
  */
 public class BigQuerySQLDialect extends GenericSQLDialect {
     public BigQuerySQLDialect() {
         super("BigQuery", "google_bigquery");
+    }
+
+    @Override
+    public char getStringEscapeCharacter() {
+        return '\\';
     }
 }
