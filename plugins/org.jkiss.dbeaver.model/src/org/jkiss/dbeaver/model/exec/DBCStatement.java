@@ -97,7 +97,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
      * @return number of row updated
      * @throws DBCException on error
      */
-    int getUpdateRowCount() throws DBCException;
+    long getUpdateRowCount() throws DBCException;
 
     /**
      * Checks whether there are additional results (result set or update count).

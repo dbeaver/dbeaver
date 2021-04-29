@@ -287,5 +287,4 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         return PAGE_ID;
     }
-
 }
