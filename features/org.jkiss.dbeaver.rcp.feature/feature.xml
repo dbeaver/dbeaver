@@ -161,4 +161,8 @@
     <plugin id="org.eclipse.core.filesystem.macosx" os="macosx" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
     <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" os="macosx" ws="cocoa" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 
+    <!-- JNA explicit version deps -->
+    <plugin id="com.sun.jna" download-size="0" install-size="0" version="4.5.1.v20190425-1842" unpack="false"/>
+    <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="4.5.1.v20190425-1842" unpack="false"/>
+
 </feature>

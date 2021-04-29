@@ -91,5 +91,4 @@ public final class ResultSetPreferences {
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
-
 }
