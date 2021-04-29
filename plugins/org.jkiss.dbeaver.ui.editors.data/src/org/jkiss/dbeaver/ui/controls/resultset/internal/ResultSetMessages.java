@@ -124,10 +124,10 @@ public class ResultSetMessages extends NLS {
 
     public static String actions_name_color_by;
     public static String actions_name_color_reset_by;
-	public static String actions_name_colorize_data_types;
-	public static String actions_name_row_colors;
-	public static String actions_name_structurize_complex_types;
-	public static String actions_spreadsheet_copy_special;
+    public static String actions_name_colorize_data_types;
+    public static String actions_name_row_colors;
+    public static String actions_name_structurize_complex_types;
+    public static String actions_spreadsheet_copy_special;
 
     // Data managers (FIXME: model_jdbc_ is a legacy prefix)
     public static String model_jdbc_bad_content_value_;
@@ -279,7 +279,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
 
-	public static String pref_page_results_group_advanced;
+    public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
     public static String pref_page_database_general_use_column_names;
     public static String pref_page_database_general_use_column_names_tip;
@@ -304,6 +304,13 @@ public class ResultSetMessages extends NLS {
     public static String virtual_edit_columns_page_dialog_button_remove;
     public static String virtual_edit_columns_page_confirm_action_delete;
     public static String virtual_edit_columns_page_confirm_action_question_delete_column;
+
+    public static String validate_unique_key_usage_dialog_title;
+    public static String validate_unique_key_usage_dialog_main_question;
+    public static String validate_unique_key_usage_dialog_use_all_columns;
+    public static String validate_unique_key_usage_dialog_custom_unique_key;
+    public static String validate_unique_key_usage_dialog_use_all_columns_no_valid_columns_found;
+    public static String validate_unique_key_usage_dialog_use_all_columns_cannot_reload_unique_columns;
 
     static {
         // initialize resource bundle

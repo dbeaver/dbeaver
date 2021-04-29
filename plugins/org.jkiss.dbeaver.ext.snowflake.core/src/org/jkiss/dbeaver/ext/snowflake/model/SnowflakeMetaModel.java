@@ -107,6 +107,11 @@ public class SnowflakeMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsOverloadedProcedureNames() {
+        return true;
+    }
+
+    @Override
     public boolean isTableCommentEditable() {
         return true;
     }
