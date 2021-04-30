@@ -59,10 +59,10 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
                     if (!CommonUtils.isEmpty(attributeReferences)) {
                         boolean hasKey = false;
                         for (DBSEntityAttributeRef column : attributeReferences) {
+                            if (hasKey) pkNames.append(",");
                             DBSEntityAttribute attribute = column.getAttribute();
                             if (attribute == null) continue;
                             pkNames.append(attribute.getName());
-                            if (hasKey) pkNames.append(",");
                             hasKey = true;
                         }
                         StringBuilder updateExpression = new StringBuilder();
