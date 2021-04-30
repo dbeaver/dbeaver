@@ -48,6 +48,11 @@ import java.util.Map;
  */
 public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableForeignKey, PostgreTableBase> implements DBEObjectRenamer<PostgreTableForeignKey> {
 
+    @Override
+    public boolean canRenameObject(PostgreTableForeignKey object) {
+        return object.getDataSource().getServerType().supportsKeyAndIndexRename();
+    }
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableForeignKey> getObjectsCache(PostgreTableForeignKey object)
@@ -115,10 +120,6 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
 
     @Override
     public void renameObject(DBECommandContext commandContext, PostgreTableForeignKey object, String newName) throws DBException {
-        boolean supportsKeyRename = object.getDataSource().getServerType().supportsKeyAndIndexRename();
-        if (!supportsKeyRename) {
-            throw new DBCException("Feature is not Implemented");
-        }
         processObjectRename(commandContext, object, newName);
     }
 
