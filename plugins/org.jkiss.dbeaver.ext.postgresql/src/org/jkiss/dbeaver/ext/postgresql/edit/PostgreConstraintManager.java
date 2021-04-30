@@ -46,6 +46,11 @@ import java.util.Map;
  */
 public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase> {
 
+    @Override
+    public boolean canRenameObject(PostgreTableConstraintBase object) {
+        return object.getDataSource().getServerType().supportsKeyAndIndexRename();
+    }
+
     @Nullable
     @Override
     public DBSObjectCache<PostgreTableContainer, PostgreTableConstraintBase> getObjectsCache(PostgreTableConstraintBase object)
@@ -111,10 +116,6 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
     @Override
     public void renameObject(DBECommandContext commandContext, PostgreTableConstraintBase object, String newName) throws DBException {
-        boolean supportsKeyRename = object.getDataSource().getServerType().supportsKeyAndIndexRename();
-        if (!supportsKeyRename) {
-            throw new DBCException("Feature is not Implemented");
-        }
         processObjectRename(commandContext, object, newName);
     }
 
