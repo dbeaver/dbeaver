@@ -129,7 +129,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     public String toString() {
         String clause = getOperator() == null ?
             (getCriteria() == null ? "" : getCriteria()) :
-            (isReverseOperator() ? "NOT " : "") + getOperator().getStringValue() + " " + getValue();
+            (isReverseOperator() ? "NOT " : "") + getOperator().getExpression() + " " + getValue();
         return attributeName + " " + clause;
     }
 

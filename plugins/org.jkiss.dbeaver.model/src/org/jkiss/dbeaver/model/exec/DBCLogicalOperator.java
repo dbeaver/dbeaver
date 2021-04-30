@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -145,10 +146,16 @@ public enum DBCLogicalOperator {
         this.argumentCount = argumentCount;
     }
 
+    @NotNull
+    public String getId() {
+        return name();
+    }
+
     /**
      * Operator string representation
      */
-    public String getStringValue() {
+    @NotNull
+    public String getExpression() {
         return stringValue;
     }
 

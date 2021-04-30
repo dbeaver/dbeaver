@@ -549,14 +549,14 @@ public class ColorSettingsDialog extends BaseDialog {
         String text;
         Object[] values = co.getAttributeValues();
         if (ArrayUtils.isEmpty(values)) {
-            text = co.getOperator().getStringValue() + " ?";
+            text = co.getOperator().getExpression() + " ?";
         } else if (values.length == 1) {
-            text = co.getOperator().getStringValue() + " " + DBValueFormatting.getDefaultValueDisplayString(values[0], DBDDisplayFormat.UI);
+            text = co.getOperator().getExpression() + " " + DBValueFormatting.getDefaultValueDisplayString(values[0], DBDDisplayFormat.UI);
         } else {
             if (co.isRange()) {
                 text = "In " + Arrays.toString(values);
             } else {
-                text = co.getOperator().getStringValue() + " " + Arrays.toString(values);
+                text = co.getOperator().getExpression() + " " + Arrays.toString(values);
             }
         }
         tableItem.setText(0, text);
