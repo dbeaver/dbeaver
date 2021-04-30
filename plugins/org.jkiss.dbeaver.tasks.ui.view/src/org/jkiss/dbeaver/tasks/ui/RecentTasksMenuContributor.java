@@ -44,8 +44,7 @@ public class RecentTasksMenuContributor extends DataSourceMenuContributor
             return;
         }
         DBTTask[] tasks = Arrays.stream(project.getTaskManager().getAllTasks())
-            .filter(task -> task.getLastRun() != null)
-            .sorted(Comparator.comparing((DBTTask task) -> task.getLastRun().getStartTime()).reversed())
+            .sorted(Comparator.comparing(DBTTask::getUpdateTime).reversed())
             .limit(MAX_ITEMS)
             .toArray(DBTTask[]::new);
 
