@@ -72,6 +72,12 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_view_script_button;
     public static String actions_navigator_filter_objects;
     public static String actions_navigator_search_tip;
+    public static String actions_navigator_search_filter_connection_name;
+    public static String actions_navigator_search_filter_connection_description;
+    public static String actions_navigator_search_filter_container_name;
+    public static String actions_navigator_search_filter_container_description;
+    public static String actions_navigator_search_filter_object_name;
+    public static String actions_navigator_search_filter_object_description;
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;

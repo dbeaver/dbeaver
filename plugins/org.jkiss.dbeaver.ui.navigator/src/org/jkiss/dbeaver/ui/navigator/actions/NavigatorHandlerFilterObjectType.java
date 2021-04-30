@@ -73,27 +73,8 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             curObjectType = ((DatabaseNavigatorView) partSite.getPart()).getNavigatorTree().getFilterObjectType();
         }
 
-        String text, toolTip;
-        switch (objectType) {
-            case connection:
-                text = "Filter connections";
-                toolTip = "Filter connections by name";
-                break;
-            case container:
-                text = "Filter databases or schemas";
-                toolTip = "Filter containers (databases or schemas) by name";
-                break;
-            case table:
-                text = "Filter tables, procedures";
-                toolTip = "Filter objects (tables, procedures, users, etc) by name";
-                break;
-            default:
-                return;
-        }
-        element.setText(text);
-        element.setTooltip(toolTip);
+        element.setText(objectType.getName());
+        element.setTooltip(objectType.getDescription());
         element.setChecked(objectType == curObjectType);
-
     }
-
 }
