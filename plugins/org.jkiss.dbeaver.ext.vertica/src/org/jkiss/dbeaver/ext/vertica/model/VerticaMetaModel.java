@@ -191,15 +191,18 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
-    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system sequences")) {
+    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM v_catalog.sequences WHERE sequence_schema=? ORDER BY sequence_name")) {
+                "SELECT s.*, c.comment FROM v_catalog.sequences s\n" +
+                    "LEFT JOIN v_catalog.comments c\n" +
+                    "ON s.sequence_id = c.object_id\n" +
+                    "WHERE sequence_schema=? ORDER BY sequence_name")) {
                 dbStat.setString(1, container.getSchema().getName());
                 List<GenericSequence> result = new ArrayList<>();
 
@@ -210,14 +213,17 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
                             continue;
                         }
                         name = name.trim();
-                        GenericSequence sequence = new GenericSequence(
+                        VerticaSequence sequence = new VerticaSequence(
                             container,
                             name,
-                            null,
+                            JDBCUtils.safeGetString(dbResult, "comment"),
                             JDBCUtils.safeGetLong(dbResult, "current_value"),
                             JDBCUtils.safeGetLong(dbResult, "minimum"),
                             JDBCUtils.safeGetLong(dbResult, "maximum"),
-                            JDBCUtils.safeGetLong(dbResult, "increment_by")
+                            JDBCUtils.safeGetLong(dbResult, "increment_by"),
+                            JDBCUtils.safeGetString(dbResult, "identity_table_name"),
+                            JDBCUtils.safeGetLong(dbResult, "session_cache_count"),
+                            JDBCUtils.safeGetBoolean(dbResult, "allow_cycle")
                         );
                         result.add(sequence);
                     }
