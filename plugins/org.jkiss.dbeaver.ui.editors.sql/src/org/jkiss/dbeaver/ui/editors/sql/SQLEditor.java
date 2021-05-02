@@ -1489,19 +1489,22 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void toggleResultPanel() {
-        if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(sqlEditorPanel);
-            switchFocus(false);
-        } else {
-            // Show both editor and results
-            // Check for existing query processors (maybe all result tabs were closed)
-            if (resultTabs.getItemCount() == 0) {
-                createQueryProcessor(true, true);
-            }
+        UIUtils.syncExec(() -> {
+            if (resultsSash.getMaximizedControl() == null) {
+                resultsSash.setMaximizedControl(sqlEditorPanel);
+                switchFocus(false);
+            } else {
+                // Show both editor and results
+                // Check for existing query processors (maybe all result tabs were closed)
+                if (resultTabs.getItemCount() == 0) {
+                    createQueryProcessor(true, true);
+                }
 
-            resultsSash.setMaximizedControl(null);
-            switchFocus(true);
-        }
+                resultsSash.setMaximizedControl(null);
+
+                switchFocus(true);
+            }
+        });
     }
 
     public void toggleEditorMaximize()
@@ -1840,9 +1843,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultsSash.getMaximizedControl() != null) {
             toggleResultPanel();
         }
-        if (resultsSash.isDownHidden()) {
-            resultsSash.showDown();
-        }
+        UIUtils.syncExec(() -> {
+            if (resultsSash.isDownHidden()) {
+                resultsSash.showDown();
+            }
+        });
     }
 
     private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
