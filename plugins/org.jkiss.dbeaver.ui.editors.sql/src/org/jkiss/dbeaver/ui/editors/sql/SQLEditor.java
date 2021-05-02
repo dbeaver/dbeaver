@@ -3897,13 +3897,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
-                monitor.beginTask("Read server output", 1);
-                try {
-                    dumpOutput(monitor);
-                } finally {
-                    monitor.done();
-                }
-
+                dumpOutput(monitor);
                 schedule(200);
             }
 
@@ -3925,6 +3919,9 @@ public class SQLEditor extends SQLEditorBase implements
 
             if (!outputs.isEmpty()) {
                 for (ServerOutputInfo info : outputs) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     try {
                         info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, outputWriter);
                     } catch (Exception e) {
@@ -3933,7 +3930,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
 
-            {
+            if (!monitor.isCanceled()) {
                 // Check running queries for async output
                 DBCServerOutputReader outputReader = null;
                 final DBCExecutionContext executionContext = getExecutionContext();
