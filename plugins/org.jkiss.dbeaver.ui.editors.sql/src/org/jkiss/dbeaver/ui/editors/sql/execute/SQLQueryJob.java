@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -636,11 +637,11 @@ public class SQLQueryJob extends DataSourceJob
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
-                statistics.getRowsUpdated(),
+                statistics.getRowsUpdated() < 0 ? 0 : statistics.getRowsUpdated(),
                 statistics.getExecuteTime(),
                 statistics.getFetchTime(),
                 statistics.getTotalTime(),
-                new Date());
+                new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
             // Single statement
