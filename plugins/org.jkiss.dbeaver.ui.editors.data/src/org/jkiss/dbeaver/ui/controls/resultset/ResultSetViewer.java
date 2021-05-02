@@ -4393,12 +4393,12 @@ public class ResultSetViewer extends Viewer
         strValue = strValue.replaceAll("\\s+", " ").replace("@", "^").trim();
         strValue = UITextUtils.getShortText(sizingGC, strValue, 150);
         if (operator.getArgumentCount() == 0) {
-            return operator.getStringValue();
+            return operator.getExpression();
         } else {
             if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
                 strValue = "'" + strValue + "'";
             }
-            return operator.getStringValue() + " " + strValue;
+            return operator.getExpression() + " " + strValue;
         }
     }
 

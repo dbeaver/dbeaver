@@ -533,7 +533,7 @@ public final class SQLUtils {
             Object value = constraint.getValue();
             if (DBUtils.isNullValue(value)) {
                 if (operator.getArgumentCount() == 0) {
-                    return operator.getStringValue();
+                    return operator.getExpression();
                 }
                 conString.append("IS ");
                 if (constraint.isReverseOperator()) {
@@ -546,7 +546,7 @@ public final class SQLUtils {
                 conString.append("NOT ");
             }
             if (operator.getArgumentCount() > 0) {
-                conString.append(operator.getStringValue());
+                conString.append(operator.getExpression());
                 for (int i = 0; i < operator.getArgumentCount(); i++) {
                     if (i > 0) {
                         conString.append(" AND");
@@ -579,7 +579,7 @@ public final class SQLUtils {
                     conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
-                conString.append(operator.getStringValue());
+                conString.append(operator.getExpression());
                 conString.append(" (");
                 if (!value.getClass().isArray()) {
                     value = new Object[] {value};
