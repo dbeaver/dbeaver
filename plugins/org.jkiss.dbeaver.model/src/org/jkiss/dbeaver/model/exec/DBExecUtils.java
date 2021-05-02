@@ -727,16 +727,22 @@ public class DBExecUtils {
                         bindingMeta.setPseudoAttribute(pseudoAttribute);
                     }
 
-                    DBSEntityAttribute tableColumn;
+                    DBSEntityAttribute tableColumn = null;
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
-                    } else {
+                    } else if (columnName != null) {
                         tableColumn = attrEntity.getAttribute(monitor, columnName);
                     }
 
-                    if (tableColumn != null && updateColumnMeta) {
-                        boolean updateColumnHandler = (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) && rows != null;
-                        if (bindingMeta.setEntityAttribute(tableColumn, updateColumnHandler)) {
+                    if (tableColumn != null) {
+                        boolean updateColumnHandler = updateColumnMeta &&
+                            (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
+                            rows != null;
+                        if (!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) {
+                            // Different data kind. Probably it is an alias which conflicts with column name
+                            // Do not update entity attribute.
+                            // It is a silly workaround for PG-like databases
+                        } else if (bindingMeta.setEntityAttribute(tableColumn, updateColumnHandler) && rows != null) {
                             // We have new type and new value handler.
                             // We have to fix already fetched values.
                             // E.g. we fetched strings and found out that we should handle them as LOBs or enums.

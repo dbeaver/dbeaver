@@ -70,7 +70,7 @@ public class FilterValueEditDialog extends BaseDialog{
     {
         Composite composite = super.createDialogArea(parent);
 
-        Label label = UIUtils.createControlLabel(composite, handler.getAttribute().getName() + " " + handler.getOperator().getStringValue());
+        Label label = UIUtils.createControlLabel(composite, handler.getAttribute().getName() + " " + handler.getOperator().getExpression());
         label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         int argumentCount = handler.getOperator().getArgumentCount();
