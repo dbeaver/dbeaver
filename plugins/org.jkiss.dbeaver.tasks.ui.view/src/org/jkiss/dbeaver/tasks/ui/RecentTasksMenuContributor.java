@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.tasks.ui;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.tasks.ui.view.TaskHandlerRun;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -31,12 +29,11 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class RecentTasksMenuContributor extends DataSourceMenuContributor
 {
-    private static final Log log = Log.getLog(RecentTasksMenuContributor.class);
-
     private static final int MAX_ITEMS = 5;
 
     @Override
@@ -46,18 +43,12 @@ public class RecentTasksMenuContributor extends DataSourceMenuContributor
         if (project == null) {
             return;
         }
-        DBTTask[] tasks = project.getTaskManager().getAllTasks();
-        Arrays.sort(tasks, (o1, o2) -> {
-            DBTTaskRun lr1 = o1.getLastRun();
-            DBTTaskRun lr2 = o1.getLastRun();
-            if (lr1 == lr2) return o1.getCreateTime().compareTo(o2.getCreateTime());
-            else if (lr1 == null) return -1;
-            else if (lr2 == null) return 1;
-            else return lr1.getStartTime().compareTo(lr2.getStartTime());
-        });
+        DBTTask[] tasks = Arrays.stream(project.getTaskManager().getAllTasks())
+            .sorted(Comparator.comparing(DBTTask::getUpdateTime).reversed())
+            .limit(MAX_ITEMS)
+            .toArray(DBTTask[]::new);
 
-        for (int i = 0; i < tasks.length && i <= MAX_ITEMS; i++) {
-            DBTTask task = tasks[i];
+        for (DBTTask task : tasks) {
             DBPImage taskIcon = task.getType().getIcon();
             if (taskIcon == null) taskIcon = DBIcon.TREE_TASK;
             menuItems.add(ActionUtils.makeActionContribution(new Action(task.getName(), DBeaverIcons.getImageDescriptor(taskIcon)) {
