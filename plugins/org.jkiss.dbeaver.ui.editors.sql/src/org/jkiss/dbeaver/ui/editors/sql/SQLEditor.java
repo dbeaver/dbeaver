@@ -92,10 +92,7 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
-import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -150,10 +147,10 @@ public class SQLEditor extends SQLEditorBase implements
     private static Image IMG_OUTPUT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT);
     private static Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
-    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
-    private static final String TOOLBAR_GROUP_TOP = "top";
-    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
-    private static final String TOOLBAR_GROUP_PANELS = "panelToggles";
+//    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
+//    private static final String TOOLBAR_GROUP_TOP = "top";
+//    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
+//    private static final String TOOLBAR_GROUP_PANELS = "panelToggles";
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";
@@ -171,6 +168,7 @@ public class SQLEditor extends SQLEditorBase implements
     private Composite presentationStack;
     private SashForm sqlExtraPanelSash;
     private CTabFolder sqlExtraPanelFolder;
+    private ToolBarManager sqlExtraPanelToolbar;
 
     private CTabFolder resultTabs;
     private TabFolderReorder resultTabsReorder;
@@ -464,7 +462,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBPProject project = getProject();
         IDocument document = getDocument();
-        if (document == null || document.getNumberOfLines() == 0) {
+        if (project == null || document == null || document.getNumberOfLines() == 0) {
             return null;
         }
 
@@ -475,7 +473,12 @@ public class SQLEditor extends SQLEditorBase implements
             if (matcher.matches()) {
                 String connSpec = matcher.group(1).trim();
                 if (!CommonUtils.isEmpty(connSpec)) {
-                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(project, connSpec, null, true, false);
+                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
+                        project,
+                        connSpec,
+                        null,
+                        true,
+                        false);
                     if (dataSource != null) {
                         return dataSource;
                     }
@@ -494,6 +497,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         IDocument document = getDocument();
+        if (document == null) {
+            log.error("Document is null");
+            return;
+        }
 
         try {
 
@@ -534,7 +541,12 @@ public class SQLEditor extends SQLEditorBase implements
             log.debug("Error extracting datasource info from script's content", e);
         }
 
-        UIUtils.asyncExec(() -> getTextViewer().refresh());
+        UIUtils.asyncExec(() -> {
+            TextViewer textViewer = getTextViewer();
+            if (textViewer != null) {
+                textViewer.refresh();
+            }
+        });
     }
 
     public void addListener(SQLEditorListener listener) {
@@ -572,31 +584,6 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         sideToolBar.redraw();
-    }
-
-    private class OutputLogWriter extends Writer {
-        @Override
-        public void write(@NotNull final char[] cbuf, final int off, final int len) {
-            UIUtils.syncExec(() -> {
-                if (!outputViewer.isDisposed()) {
-                    outputViewer.getOutputWriter().write(cbuf, off, len);
-                    outputViewer.scrollToEnd();
-                    if (!outputViewer.isVisible()) {
-                        updateOutputViewerIcon(true);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void flush() throws IOException {
-            outputViewer.getOutputWriter().flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-
-        }
     }
 
     private class OpenContextJob extends AbstractJob {
@@ -819,6 +806,20 @@ public class SQLEditor extends SQLEditorBase implements
 //        testItem.setShowClose(true);
 //        testItem.setControl(new StyledText(sqlExtraPanelPlaceholder, SWT.NONE));
         sqlExtraPanelFolder.setSelection(0);
+        sqlExtraPanelFolder.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                CTabItem item = sqlExtraPanelFolder.getSelection();
+                if (item != null) {
+                    IActionContributor ac = (IActionContributor) item.getData("actionContributor");
+                    updateExtraViewToolbar(ac);
+                }
+            }
+        });
+
+        sqlExtraPanelToolbar = new ToolBarManager();
+        sqlExtraPanelToolbar.createControl(sqlExtraPanelFolder);
+        sqlExtraPanelFolder.setTopRight(sqlExtraPanelToolbar.getControl());
 
         restoreSashRatio(sqlExtraPanelSash, SQLPreferenceConstants.EXTRA_PANEL_RATIO);
         sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
@@ -991,9 +992,12 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean validateEditorInputState() {
         boolean res = super.validateEditorInputState();
         if (res) {
-            StyledText textWidget = getViewer().getTextWidget();
-            if (textWidget != null && !textWidget.isDisposed()) {
-                textWidget.setFocus();
+            SourceViewer viewer = getViewer();
+            if (viewer != null) {
+                StyledText textWidget = viewer.getTextWidget();
+                if (textWidget != null && !textWidget.isDisposed()) {
+                    textWidget.setFocus();
+                }
             }
         }
         return res;
@@ -1149,7 +1153,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 if (pinnedTabsCount > 1 || resultTabsCount > 1 || (activeTab != null && activeTab.getShowClose())) {
                     manager.add(new Separator());
-                    if (pinnedTabsCount > 1 && !activeTab.getShowClose()) {
+                    if (pinnedTabsCount > 1 && activeTab != null && !activeTab.getShowClose()) {
                         manager.add(new Separator());
                         manager.add(new Action(SQLEditorMessages.action_result_tabs_unpin_all_tabs) {
                             @Override
@@ -1246,16 +1250,12 @@ public class SQLEditor extends SQLEditorBase implements
     private void setActiveResultsContainer(QueryResultsContainer data) {
         curResultsContainer = data;
         curQueryProcessor = curResultsContainer.queryProcessor;
-        ResultSetViewer rsv = curResultsContainer.getResultSetController();
-        if (rsv != null) {
-            //rsv.getActivePresentation().getControl().setFocus();
-        }
     }
 
     /////////////////////////////////////////////////////////////
     // Panels
 
-    private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view) {
+    private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view, IActionContributor actionContributor) {
         VerticalButton viewItem = getViewToolItem(commandId);
         if (viewItem == null) {
             log.warn("Tool item for command " + commandId + " not found");
@@ -1288,6 +1288,7 @@ public class SQLEditor extends SQLEditorBase implements
         item.setToolTipText(toolTip);
         item.setImage(image);
         item.setData(view);
+        item.setData("actionContributor", actionContributor);
         // De-select tool item on tab close
         item.addDisposeListener(e -> {
             if (!viewItem.isDisposed()) {
@@ -1300,6 +1301,17 @@ public class SQLEditor extends SQLEditorBase implements
         });
         sqlExtraPanelFolder.setSelection(item);
         viewItem.redraw();
+
+        updateExtraViewToolbar(actionContributor);
+    }
+
+    private void updateExtraViewToolbar(IActionContributor actionContributor) {
+        // Update toolbar
+        sqlExtraPanelToolbar.removeAll();
+        if (actionContributor != null) {
+            actionContributor.contributeActions(sqlExtraPanelToolbar);
+        }
+        sqlExtraPanelToolbar.update(true);
     }
 
     private VerticalButton getViewToolItem(String commandId) {
@@ -1327,11 +1339,25 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void showOutputPanel() {
-        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, SQLEditorMessages.editors_sql_output_tip, IMG_OUTPUT, outputViewer.getControl());
+        showExtraView(
+            SQLEditorCommands.CMD_SQL_SHOW_OUTPUT,
+            SQLEditorMessages.editors_sql_output,
+            SQLEditorMessages.editors_sql_output_tip,
+            IMG_OUTPUT,
+            outputViewer.getControl(),
+            manager -> {
+                manager.add(new OutputAutoShowToggleAction());
+            });
     }
 
     public void showExecutionLogPanel() {
-        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_LOG, SQLEditorMessages.editors_sql_execution_log, SQLEditorMessages.editors_sql_execution_log_tip, IMG_LOG, logViewer);
+        showExtraView(
+            SQLEditorCommands.CMD_SQL_SHOW_LOG,
+            SQLEditorMessages.editors_sql_execution_log,
+            SQLEditorMessages.editors_sql_execution_log_tip,
+            IMG_LOG,
+            logViewer,
+            null);
     }
 
     public <T> T getExtraPresentationPanel(Class<T> panelClass) {
@@ -1423,14 +1449,14 @@ public class SQLEditor extends SQLEditorBase implements
             boolean sideBarChanged = false;
             if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
                 // Remove all presentation panel toggles
-                for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                //for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
                     for (Control vb : presentationSwitchFolder.getChildren()) {
                         if (vb.getData() instanceof SQLPresentationPanelDescriptor) { // || vb instanceof Label
                             vb.dispose();
                             sideBarChanged = true;
                         }
                     }
-                }
+                //}
                 // Close all panels
                 for (CTabItem tabItem : resultTabs.getItems()) {
                     if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
@@ -3887,6 +3913,31 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private class OutputLogWriter extends Writer {
+        @Override
+        public void write(@NotNull final char[] cbuf, final int off, final int len) {
+            UIUtils.syncExec(() -> {
+                if (!outputViewer.isDisposed()) {
+                    outputViewer.getOutputWriter().write(cbuf, off, len);
+                    outputViewer.scrollToEnd();
+                    if (!outputViewer.isVisible()) {
+                        updateOutputViewerIcon(true);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void flush() throws IOException {
+            outputViewer.getOutputWriter().flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+
+        }
+    }
+
     private class ServerOutputReader extends AbstractJob {
 
         ServerOutputReader() {
@@ -3982,4 +4033,19 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
     }
+
+    private class OutputAutoShowToggleAction extends Action {
+        OutputAutoShowToggleAction() {
+            super(SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view, AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
+            setChecked(getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW));
+        }
+
+        @Override
+        public void run() {
+            getActivePreferenceStore().setValue(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, isChecked());
+        }
+
+    }
+
 }
