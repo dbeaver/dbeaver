@@ -872,11 +872,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
                 final String value = document.get(scanner.getTokenOffset(), scanner.getTokenLength());
-                if (state == STATE_UNMATCHED && tok.getData() == SQLTokenType.T_KEYWORD &&
-                    (value.equalsIgnoreCase(SQLConstants.KEYWORD_FROM) ||
-                        value.equalsIgnoreCase(SQLConstants.KEYWORD_UPDATE) ||
-                        value.equalsIgnoreCase(SQLConstants.KEYWORD_JOIN) ||
-                        value.equalsIgnoreCase(SQLConstants.KEYWORD_INTO))) {
+                if (state == STATE_UNMATCHED && (isTableQueryToken(tok, value) || ",".equals(value))) {
                     state = STATE_TABLE_NAME;
                     continue;
                 }
@@ -901,6 +897,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     state = STATE_ALIAS_NAME;
                     continue;
                 }
+                if (tok.getData() == SQLTokenType.T_KEYWORD) {
+                    // Any keyword but AS resets state to
+                    state = CommonUtils.isEmpty(matchedTableName) ? STATE_UNMATCHED : STATE_MATCHED;
+                }
                 if ((state == STATE_ALIAS_AS || state == STATE_ALIAS_NAME) && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
                     matchedTableAlias = value;
                     state = STATE_MATCHED;
@@ -923,6 +923,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         return null;
+    }
+
+    private static boolean isTableQueryToken(TPToken tok, String value) {
+        return tok.getData() == SQLTokenType.T_KEYWORD &&
+            (value.equalsIgnoreCase(SQLConstants.KEYWORD_FROM) ||
+                value.equalsIgnoreCase(SQLConstants.KEYWORD_UPDATE) ||
+                value.equalsIgnoreCase(SQLConstants.KEYWORD_JOIN) ||
+                value.equalsIgnoreCase(SQLConstants.KEYWORD_INTO));
     }
 
     private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart, boolean addFirst, Map<String, Object> params) throws DBException {
