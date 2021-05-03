@@ -241,4 +241,9 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     public boolean supportsRolesWithCreateDBAbility() {
         return false;
     }
+
+    @Override
+    public boolean supportsKeyAndIndexRename() {
+        return true;
+    }
 }

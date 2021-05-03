@@ -41,4 +41,8 @@ public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObje
     void renameObject(DBECommandContext commandContext, OBJECT_TYPE object, String newName)
         throws DBException;
 
+    default boolean canRenameObject(OBJECT_TYPE object) {
+        return true;
+    }
+
 }

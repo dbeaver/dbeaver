@@ -18,16 +18,15 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -45,7 +44,12 @@ import java.util.Map;
 /**
  * Postgre constraint manager
  */
-public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase, PostgreTableBase> {
+public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase> {
+
+    @Override
+    public boolean canRenameObject(PostgreTableConstraintBase object) {
+        return object.getDataSource().getServerType().supportsKeyAndIndexRename();
+    }
 
     @Nullable
     @Override
@@ -110,4 +114,19 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
+    @Override
+    public void renameObject(DBECommandContext commandContext, PostgreTableConstraintBase object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+        PostgreTableConstraintBase constraint = command.getObject();
+        actions.add(
+                new SQLDatabasePersistAction(
+                        "Rename constraint",
+                        "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
+                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) + " TO " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), command.getNewName())) //$NON-NLS-1$
+        );
+    }
 }
