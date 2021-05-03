@@ -548,7 +548,7 @@ public class SQLScriptParser
                 element = parsedElement;
             } else {
                 // Use selected query as is
-                selText = SQLUtils.fixLineFeeds(selText);
+                selText = SQLUtils.fixLineFeeds(parsedElement.getOriginalText());
                 element = new SQLQuery(context.getDataSource(), selText, selOffset, selLength);
             }
         } else if (selOffset >= 0) {
