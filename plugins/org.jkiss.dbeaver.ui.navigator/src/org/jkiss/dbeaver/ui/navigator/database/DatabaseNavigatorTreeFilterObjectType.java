@@ -16,8 +16,29 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+
 public enum DatabaseNavigatorTreeFilterObjectType {
-    connection,
-    container,
-    table
+    connection(UINavigatorMessages.actions_navigator_search_filter_connection_name, UINavigatorMessages.actions_navigator_search_filter_connection_description),
+    container(UINavigatorMessages.actions_navigator_search_filter_container_name, UINavigatorMessages.actions_navigator_search_filter_container_description),
+    table(UINavigatorMessages.actions_navigator_search_filter_object_name, UINavigatorMessages.actions_navigator_search_filter_object_description);
+
+    private final String name;
+    private final String description;
+
+    DatabaseNavigatorTreeFilterObjectType(@NotNull String name, @NotNull String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    @NotNull
+    public String getDescription() {
+        return description;
+    }
 }
