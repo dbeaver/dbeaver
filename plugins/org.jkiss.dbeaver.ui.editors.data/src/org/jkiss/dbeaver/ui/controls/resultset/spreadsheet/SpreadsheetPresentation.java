@@ -1997,7 +1997,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(row.getRowNumber())) {
+            if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(row.getVisualNumber())) {
                 Color normalColor = getCellBackground(colElement, rowElement, false, true);
                 Color selectedCellColor;
                 if (normalColor == null || normalColor == backgroundNormal) {
