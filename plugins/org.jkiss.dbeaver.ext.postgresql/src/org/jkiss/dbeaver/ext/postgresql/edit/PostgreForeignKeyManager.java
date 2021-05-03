@@ -22,11 +22,16 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -41,7 +46,12 @@ import java.util.Map;
 /**
  * Postgre foreign key manager
  */
-public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableForeignKey, PostgreTableBase> {
+public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableForeignKey, PostgreTableBase> implements DBEObjectRenamer<PostgreTableForeignKey> {
+
+    @Override
+    public boolean canRenameObject(PostgreTableForeignKey object) {
+        return object.getDataSource().getServerType().supportsKeyAndIndexRename();
+    }
 
     @Nullable
     @Override
@@ -108,4 +118,19 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Override
+    public void renameObject(DBECommandContext commandContext, PostgreTableForeignKey object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+        PostgreTableForeignKey foreignKey = command.getObject();
+        actions.add(
+                new SQLDatabasePersistAction(
+                        "Rename constraint",
+                        "ALTER TABLE " + foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
+                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(foreignKey) + " TO " + DBUtils.getQuotedIdentifier(foreignKey.getDataSource(), command.getNewName())) //$NON-NLS-1$
+        );
+    }
 }

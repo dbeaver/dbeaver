@@ -472,4 +472,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsGeneratedColumns() {
         return false;
     }
+
+    @Override
+    public boolean supportsKeyAndIndexRename() {
+        return false;
+    }
 }

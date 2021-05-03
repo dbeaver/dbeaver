@@ -70,4 +70,9 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsGeneratedColumns() {
         return dataSource.isServerVersionAtLeast(12, 0);
     }
+
+    @Override
+    public boolean supportsKeyAndIndexRename() {
+        return dataSource.isServerVersionAtLeast(9, 2);
+    }
 }

@@ -156,12 +156,13 @@ public class ObjectPropertyTester extends PropertyTester
                         return false;
                     }
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
-                    return
-                        object != null &&
-                            !DBUtils.isReadOnly(object) &&
-                            object.isPersisted() &&
-                            node.getParentNode() instanceof DBNContainer &&
-                            getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
+                    if (object != null) {
+                        DBEObjectRenamer objectRenamer = getObjectManager(object.getClass(), DBEObjectRenamer.class);
+                        return !DBUtils.isReadOnly(object) &&
+                                object.isPersisted() &&
+                                node.getParentNode() instanceof DBNContainer &&
+                                objectRenamer != null && objectRenamer.canRenameObject(object);
+                    }
                 }
                 break;
             }
