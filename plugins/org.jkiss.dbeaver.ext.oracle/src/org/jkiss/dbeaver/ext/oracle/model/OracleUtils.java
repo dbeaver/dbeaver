@@ -326,7 +326,7 @@ public class OracleUtils {
                             line = "";
                         }
                         source.append(line);
-                        if (!line.endsWith("\n")) {
+                        if (sourceObject instanceof OracleJavaClass && !line.endsWith("\n")) {
                             // Java source
                             source.append("\n");
                         }
