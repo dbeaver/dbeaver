@@ -207,7 +207,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     @LazyProperty(cacheValidator = CommentLoadValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
-        if (comment == null) {
+        if (isPersisted() && comment == null) {
             // Load comments for all table columns
             getTable().loadColumnComments(monitor);
         }

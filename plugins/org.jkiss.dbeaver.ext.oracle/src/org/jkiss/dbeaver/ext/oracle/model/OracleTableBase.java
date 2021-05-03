@@ -195,7 +195,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
                     }
                 }
             }
-            for (OracleTableColumn col : getAttributes(monitor)) {
+            for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
                 col.cacheComment();
             }
         } catch (Exception e) {
