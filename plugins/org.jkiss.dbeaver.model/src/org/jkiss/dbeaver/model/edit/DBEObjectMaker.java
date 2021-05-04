@@ -48,6 +48,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     String OPTION_OBJECT_TYPE = "objectType";
     String OPTION_DELETE_CASCADE = "deleteCascade";
     String OPTION_CLOSE_EXISTING_CONNECTIONS = "closeExistingConnections";
+    String OPTION_ACTIVE_EDITOR = "activeEditor";
 
     long getMakerOptions(DBPDataSource dataSource);
 
