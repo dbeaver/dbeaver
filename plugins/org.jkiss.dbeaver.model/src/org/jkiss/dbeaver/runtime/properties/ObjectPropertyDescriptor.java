@@ -438,9 +438,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 // Use void monitor because this object already read by readValue
                 object = getParent().getGroupObject(object, new VoidProgressMonitor());
             }
+            final Class<?> argType = setter.getParameterTypes()[0];
             if (value == null) {
                 // Check for primitive argument
-                final Class<?> argType = setter.getParameterTypes()[0];
                 if (argType == Integer.TYPE) {
                     value = 0;
                 } else if (argType == Short.TYPE) {
@@ -455,6 +455,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                     value = false;
                 } else if (argType == Character.TYPE) {
                     value = ' ';
+                }
+            } else {
+                if (argType == Boolean.TYPE || argType == Boolean.class && !(value instanceof Boolean)) {
+                    value = CommonUtils.toBoolean(value);
                 }
             }
             setter.invoke(object, value);

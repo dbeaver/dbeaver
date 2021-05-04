@@ -61,6 +61,8 @@ public class PropertyEditorUtils {
 
     public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property, int style)
     {
+        boolean isPropertySheet = (style & SWT.SHEET) != 0;
+        style &= ~SWT.SHEET;
         // List
         if (property instanceof IPropertyValueListProvider) {
             final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
@@ -93,7 +95,11 @@ public class PropertyEditorUtils {
             setValidator(editor, property, object);
             return editor;
         } else if (BeanUtils.isBooleanType(propertyType)) {
-            return new CustomCheckboxCellEditor(parent, style);
+            if (isPropertySheet) {
+                return new CustomComboBoxCellEditor(parent, new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString()} , SWT.DROP_DOWN | SWT.READ_ONLY);
+            } else {
+                return new CustomCheckboxCellEditor(parent, style);
+            }
             //return new CheckboxCellEditor(parent);
         } else if (propertyType.isEnum()) {
             final Object[] enumConstants = propertyType.getEnumConstants();

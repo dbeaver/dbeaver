@@ -78,7 +78,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
         if (!delegate.isEditable(propSource.getEditableValue())) {
             return null;
         }
-        return PropertyEditorUtils.createCellEditor(parent, propSource.getEditableValue(), delegate, SWT.NONE);
+        return PropertyEditorUtils.createCellEditor(parent, propSource.getEditableValue(), delegate, SWT.SHEET);
     }
 
     @Override

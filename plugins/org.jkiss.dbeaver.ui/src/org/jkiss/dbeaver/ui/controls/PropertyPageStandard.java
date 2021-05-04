@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
@@ -132,7 +133,12 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
             for (PropertySourceCache cache : curSelection) {
                 if (cache.object == object) {
                     if (!cache.cached) {
-                        cache.propertySource = RuntimeUtils.getObjectAdapter(object, IPropertySource.class);
+                        if (object instanceof IAdaptable) {
+                            cache.propertySource = ((IAdaptable) object).getAdapter(IPropertySource.class);
+                        }
+                        if (cache.propertySource == null) {
+                            cache.propertySource = RuntimeUtils.getObjectAdapter(object, IPropertySource.class);
+                        }
                         cache.cached = true;
                     }
                     return cache.propertySource;
