@@ -59,33 +59,10 @@ public class ERDObjectAdapter implements IAdapterFactory {
                     }
 
                     DBNDatabaseNode node = DBNUtils.getNodeByObject((DBSObject) object);
-
-                    // That's tricky
-                    // Try to get Table folder. It is handy for Create New command
                     if (node instanceof DBNDatabaseItem && node.getObject() instanceof DBSStructContainer) {
-                        for (DBXTreeNode childFolderMeta : node.getMeta().getChildren(node)) {
-                            if (childFolderMeta instanceof DBXTreeFolder) {
-                                List<DBXTreeNode> childItems = childFolderMeta.getChildren(node);
-                                if (!childItems.isEmpty()) {
-                                    DBXTreeNode itemMeta = childItems.get(0);
-                                    if (itemMeta instanceof DBXTreeItem && ((DBXTreeItem) itemMeta).getPropertyName().contains("table")) {
-                                        try {
-                                            // Safe to use fake monitor because we read local folders
-                                            for (DBNDatabaseNode navFolder : node.getChildren(new VoidProgressMonitor())) {
-                                                if (navFolder.getMeta() == childFolderMeta) {
-                                                    node = navFolder;
-                                                    break;
-                                                }
-                                            }
-                                        } catch (DBException ignored) {
-                                            // Shouldn't be here
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        node = getTablesFolderNode(node);
                     }
+
                     if (node != null) {
                         return adapterType.cast(node);
                     }
@@ -113,6 +90,34 @@ public class ERDObjectAdapter implements IAdapterFactory {
             }
         }
         return null;
+    }
+
+    // That's tricky
+    // Try to get Table folder. It is handy for Create New command
+    private DBNDatabaseNode getTablesFolderNode(DBNDatabaseNode node) {
+        for (DBXTreeNode childFolderMeta : node.getMeta().getChildren(node)) {
+            if (childFolderMeta instanceof DBXTreeFolder) {
+                List<DBXTreeNode> childItems = childFolderMeta.getChildren(node);
+                if (!childItems.isEmpty()) {
+                    DBXTreeNode itemMeta = childItems.get(0);
+                    if (itemMeta instanceof DBXTreeItem && ((DBXTreeItem) itemMeta).getPropertyName().contains("table")) {
+                        try {
+                            // Safe to use fake monitor because we read local folders
+                            for (DBNDatabaseNode navFolder : node.getChildren(new VoidProgressMonitor())) {
+                                if (navFolder.getMeta() == childFolderMeta) {
+                                    node = navFolder;
+                                    break;
+                                }
+                            }
+                        } catch (DBException ignored) {
+                            // Shouldn't be here
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return node;
     }
 
     @Override
