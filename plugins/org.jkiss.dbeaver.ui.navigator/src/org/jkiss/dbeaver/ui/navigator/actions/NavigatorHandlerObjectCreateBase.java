@@ -148,6 +148,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             Map<String, Object> options = new HashMap<>();
             options.put(DBEObjectMaker.OPTION_CONTAINER, container);
             options.put(DBEObjectMaker.OPTION_OBJECT_TYPE, newObjectType);
+            options.put(DBEObjectMaker.OPTION_ACTIVE_EDITOR, workbenchWindow.getActivePage().getActiveEditor());
             createDatabaseObject(commandTarget, objectMaker, parentObject instanceof DBPObject ? (DBPObject) parentObject : null, sourceObject, options);
         }
         catch (Throwable e) {
