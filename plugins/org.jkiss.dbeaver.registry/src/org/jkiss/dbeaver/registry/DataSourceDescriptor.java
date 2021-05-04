@@ -778,39 +778,39 @@ public class DataSourceDescriptor
 
         // Update auth properties if possible
 
-        // 1. Get credentials from origin
-        DBPDataSourceOrigin dsOrigin = getOrigin();
-        if (dsOrigin instanceof DBAAuthCredentialsProvider) {
-            monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
-            try {
-                ((DBAAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
-            } finally {
-                monitor.done();
-            }
-        }
-
-        // 2. Get credentials from global provider
-        boolean authProvided = true;
-        DBAAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
-        if (authProvider != null) {
-            authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
-        } else {
-            // 3. USe legacy password provider
-            if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
-                // Ask for password
-                authProvided = askForPassword(this, null, false);
-            }
-        }
-        if (!authProvided) {
-            // Auth parameters were canceled
-            updateDataSourceObject(this);
-            return false;
-        }
-
         processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
         connecting = true;
         try {
+            // 1. Get credentials from origin
+            DBPDataSourceOrigin dsOrigin = getOrigin();
+            if (dsOrigin instanceof DBAAuthCredentialsProvider) {
+                monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
+                try {
+                    ((DBAAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                } finally {
+                    monitor.done();
+                }
+            }
+
+            // 2. Get credentials from global provider
+            boolean authProvided = true;
+            DBAAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
+            if (authProvider != null) {
+                authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
+            } else {
+                // 3. USe legacy password provider
+                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                    // Ask for password
+                    authProvided = askForPassword(this, null, false);
+                }
+            }
+            if (!authProvided) {
+                // Auth parameters were canceled
+                updateDataSourceObject(this);
+                return false;
+            }
+
             // Resolve variables
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
                 !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()))
