@@ -91,6 +91,7 @@ public class AttributePart extends PropertyAwarePart {
      */
     @Override
     protected void createEditPolicies() {
+        getDiagram().getModelAdapter().installPartEditPolicies(this);
         if (isEditEnabled()) {
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
             installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new AttributeDirectEditPolicy());
@@ -114,6 +115,8 @@ public class AttributePart extends PropertyAwarePart {
 */
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
             ERDUIUtils.openObjectEditor(getAttribute());
+        } else {
+            getDiagram().getModelAdapter().performPartRequest(this, request);
         }
     }
 

@@ -20,6 +20,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.model.ERDContainer;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
@@ -73,6 +74,7 @@ public interface ERDContainerDecorated extends ERDContainer {
         }
     }
 
+    @NotNull
     ERDDecorator getDecorator();
 
     ERDAttributeVisibility getAttributeVisibility();

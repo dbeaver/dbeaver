@@ -74,6 +74,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected void createEditPolicies() {
+        getDiagramPart().getDiagram().getModelAdapter().installPartEditPolicies(this);
+
         installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new AssociationBendEditPolicy());
 

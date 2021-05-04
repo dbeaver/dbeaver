@@ -64,6 +64,8 @@ public class NotePart extends NodePart
 	@Override
     protected void createEditPolicies()
 	{
+        getDiagram().getModelAdapter().installPartEditPolicies(this);
+
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
@@ -97,6 +99,8 @@ public class NotePart extends NodePart
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
 				return;
 			performDirectEdit();
+        } else {
+            getDiagram().getModelAdapter().performPartRequest(this, request);
         }
 	}
 
