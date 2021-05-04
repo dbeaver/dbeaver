@@ -16,29 +16,21 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.draw2d.geometry.Insets;
-import org.eclipse.gef.EditPartFactory;
-import org.eclipse.gef.palette.PaletteRoot;
-import org.jkiss.code.NotNull;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.Request;
 
 /**
- * ERD object adapter
+ * Empty model adapter
  */
-public interface ERDDecorator {
+public class ERDModelAdapterDefault implements ERDModelAdapter {
 
-    boolean showCheckboxes();
+    @Override
+    public void installPartEditPolicies(EditPart editPart) {
 
-    boolean supportsAttributeVisibility();
+    }
 
-    /**
-     * Margin around entity figure. This affects diagram connections layout
-     */
-    @NotNull
-    Insets getDefaultEntityInsets();
+    @Override
+    public void performPartRequest(EditPart editPart, Request request) {
 
-    @NotNull
-    EditPartFactory createPartFactory();
-
-    void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
-
+    }
 }

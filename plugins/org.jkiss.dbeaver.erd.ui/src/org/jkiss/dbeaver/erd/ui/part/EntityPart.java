@@ -24,6 +24,7 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
+import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.jkiss.dbeaver.erd.model.ERDElement;
@@ -80,6 +81,8 @@ public class EntityPart extends NodePart {
      */
     @Override
     protected void createEditPolicies() {
+        getDiagram().getModelAdapter().installPartEditPolicies(this);
+
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
@@ -98,14 +101,14 @@ public class EntityPart extends NodePart {
     @Override
     public void performRequest(Request request) {
         if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
-/*
             if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
 				return;
 			performDirectEdit();
-*/
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
             ERDUIUtils.openObjectEditor(getEntity());
+        } else {
+            getDiagram().getModelAdapter().performPartRequest(this, request);
         }
     }
 

@@ -19,6 +19,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.IdentityHashMap;
@@ -41,6 +43,7 @@ import java.util.Map;
 public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     private static final Log log = Log.getLog(EntityDiagram.class);
 
+    private ERDModelAdapter modelAdapter;
     private ERDDecorator decorator;
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
@@ -54,12 +57,23 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
 
     public EntityDiagram(DBSObject container, String name, ERDContentProvider contentProvider, ERDDecorator decorator) {
         super(container, name, contentProvider);
+        this.modelAdapter = RuntimeUtils.getObjectAdapter(this, ERDModelAdapter.class);
+        if (this.modelAdapter == null) {
+            this.modelAdapter = new ERDModelAdapterDefault();
+        }
         this.decorator = decorator;
+
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
     }
 
+    @NotNull
+    public ERDModelAdapter getModelAdapter() {
+        return modelAdapter;
+    }
+
+    @NotNull
     public ERDDecorator getDecorator() {
         return decorator;
     }

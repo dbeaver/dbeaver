@@ -358,9 +358,10 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         }
     }
 
-    private class ToolEntryTable extends ToolEntry {
+    private static class ToolEntryTable extends ToolEntry {
         private final DBSEntity table;
-        public ToolEntryTable(DBSEntity table)
+
+        ToolEntryTable(DBSEntity table)
         {
             super(table.getName(), table.getDescription(),
                 DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE),
@@ -369,6 +370,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             setDescription(DBUtils.getObjectFullName(table, DBPEvaluationContext.UI));
             this.table = table;
         }
+
         @Override
         public Tool createTool()
         {
@@ -377,9 +379,10 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     }
 
     public static class ToolSelectTable extends SelectionTool {
+
         private final DBSEntity table;
 
-        public ToolSelectTable(DBSEntity table)
+        ToolSelectTable(DBSEntity table)
         {
             this.table = table;
         }

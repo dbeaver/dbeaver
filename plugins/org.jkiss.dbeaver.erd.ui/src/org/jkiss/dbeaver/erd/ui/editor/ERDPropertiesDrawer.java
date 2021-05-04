@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.model;
+/*
+ * Created on Aug 12, 2004
+ */
+package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.draw2d.geometry.Insets;
-import org.eclipse.gef.EditPartFactory;
-import org.eclipse.gef.palette.PaletteRoot;
-import org.jkiss.code.NotNull;
+import org.eclipse.gef.palette.PaletteDrawer;
+import org.eclipse.gef.palette.SelectionToolEntry;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
- * ERD object adapter
+ * Experimental drawer.
+ * Unfortunately it is not possible to customize drawer look-and-feel. All UI rendering is performed by GEF.
  */
-public interface ERDDecorator {
+public class ERDPropertiesDrawer extends PaletteDrawer
+{
 
-    boolean showCheckboxes();
+	public ERDPropertiesDrawer() {
+		super("Properties", DBeaverIcons.getImageDescriptor(UIIcon.PROPERTIES));
+		setDescription("Object properties");
+		setId("erd-properties");
 
-    boolean supportsAttributeVisibility();
-
-    /**
-     * Margin around entity figure. This affects diagram connections layout
-     */
-    @NotNull
-    Insets getDefaultEntityInsets();
-
-    @NotNull
-    EditPartFactory createPartFactory();
-
-    void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
+		add(new SelectionToolEntry());
+	}
 
 }

@@ -22,6 +22,7 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.palette.*;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditPartFactory;
@@ -54,18 +55,20 @@ public class ERDDecoratorDefault implements ERDDecorator {
         return true;
     }
 
+    @NotNull
     @Override
     public Insets getDefaultEntityInsets() {
         return new Insets(20, 20, 10, 20);
     }
 
+    @NotNull
     @Override
     public EditPartFactory createPartFactory() {
         return new ERDEditPartFactory();
     }
 
     @Override
-    public void fillPalette(PaletteRoot paletteRoot, boolean readOnly) {
+    public void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly) {
         // a group of default control tools
         PaletteDrawer controls = createToolsDrawer(paletteRoot);
 
