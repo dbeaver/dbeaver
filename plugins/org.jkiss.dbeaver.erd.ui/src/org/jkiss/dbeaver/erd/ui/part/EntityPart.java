@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.erd.ui.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.erd.ui.directedit.TableNameCellEditorValidator;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
@@ -168,6 +169,24 @@ public class EntityPart extends NodePart {
         label.setVisible(true);
         refreshVisuals();
         entityFigure.refreshColors();
+    }
+
+    @Override
+    protected void commitRefresh(PropertyChangeEvent evt) {
+        super.commitRefresh(evt);
+    }
+
+    // Workaround: attribute figures aren't direct children of entity figure
+    // so we delegate child removal to entity part
+    @Override
+    protected void removeChildVisual(EditPart childEditPart) {
+        EntityFigure figure = getFigure();
+        if (childEditPart instanceof AttributePart) {
+            AttributeItemFigure childFigure = ((AttributePart) childEditPart).getFigure();
+            figure.remove(childFigure);
+        } else {
+            super.removeChildVisual(childEditPart);
+        }
     }
 
     //******************* Layout related methods *********************/

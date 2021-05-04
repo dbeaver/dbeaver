@@ -76,13 +76,13 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
         String property = evt.getPropertyName();
 
         switch (property) {
-            case ERDObject.CHILD:
+            case ERDObject.PROP_CHILD:
                 refreshChildren();
                 break;
-            case ERDObject.INPUT:
+            case ERDObject.PROP_INPUT:
                 refreshTargetConnections();
                 break;
-            case ERDObject.OUTPUT:
+            case ERDObject.PROP_OUTPUT:
                 refreshSourceConnections();
                 break;
         }
@@ -91,7 +91,7 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
          * if (FlowElement.CHILDREN.equals(prop)) refreshChildren(); else if
 		 * (FlowElement.INPUTS.equals(prop)) refreshTargetConnections(); else if
 		 * (FlowElement.OUTPUTS.equals(prop)) refreshSourceConnections(); else
-		 * if (Activity.NAME.equals(prop)) refreshVisuals(); // Causes Graph to
+		 * if (Activity.PROP_NAME.equals(prop)) refreshVisuals(); // Causes Graph to
 		 * re-layout
 		 */
         ((GraphicalEditPart) (getViewer().getContents())).getFigure().revalidate();
