@@ -17,14 +17,18 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBASession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Session provider service
  */
 public interface DBASessionProviderService {
 
-    DBASession acquireSession(DBAAuthSpace space) throws DBException;
+    @Nullable
+    DBASession acquireSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space) throws DBException;
 
 }

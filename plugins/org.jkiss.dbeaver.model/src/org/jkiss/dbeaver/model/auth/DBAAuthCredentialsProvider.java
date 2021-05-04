@@ -17,9 +17,11 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Auth credentials provider.
@@ -30,7 +32,7 @@ public interface DBAAuthCredentialsProvider {
      * Fill credential parameters in the specified container and configuration.
      * Returns false on auth cancel. True otherwise.
      */
-    boolean provideAuthParameters(DBPDataSourceContainer dataSourceContainer, DBPConnectionConfiguration configuration)
+    boolean provideAuthParameters(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration configuration)
         throws DBException;
 
 }
