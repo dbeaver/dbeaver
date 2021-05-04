@@ -36,8 +36,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -320,11 +321,12 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             return;
         }
 
-        for (Object obj: selection) { //fixme O(n^2)
-            if (!(obj instanceof DBNDatabaseItem)) {
+        for (Object selItem: selection) {
+            DBNNode selNode = RuntimeUtils.getObjectAdapter(selItem, DBNNode.class);
+            if (!(selNode instanceof DBNDatabaseNode)) {
                 continue;
             }
-            DBSObject dbsObject = ((DBNDatabaseItem) obj).getObject();
+            DBSObject dbsObject = ((DBNDatabaseNode) selNode).getObject();
             TableItem[] tableColumns = columnsTable.getItems();
             for (TableItem tableItem: tableColumns) {
                 Object data = tableItem.getData();
