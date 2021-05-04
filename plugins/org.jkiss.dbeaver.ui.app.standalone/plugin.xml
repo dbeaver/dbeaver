@@ -134,6 +134,14 @@
             icon="icons/templates_view.png"
             category="org.eclipse.ui"
             class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
+        <view
+            allowMultiple="true"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.views.properties.PropertySheet"
+            icon="icons/properties_view.png"
+            id="org.eclipse.ui.views.PropertySheet"
+            name="%view.properties.title">
+        </view>
         <!--view
                 id="org.eclipse.help.ui.HelpView"
                 category="org.jkiss.dbeaver.core.category"
