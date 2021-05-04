@@ -115,11 +115,15 @@ public class AttributePart extends PropertyAwarePart {
         columnLabel.repaint();
     }
 
-    public void handleNameChange(String textValue) {
-        EditableLabel label = getFigure().getLabel();
-        label.setText(textValue);
+    public void handleNameChange() {
+        AttributeItemFigure figure = getFigure();
+        figure.updateLabels();
         setSelected(EditPart.SELECTED_NONE);
-        label.revalidate();
+        figure.revalidate();
+        //EditableLabel label = getFigure().getLabel();
+        //label.setText(textValue);
+        //setSelected(EditPart.SELECTED_NONE);
+        //label.revalidate();
     }
 
     /**
@@ -129,17 +133,6 @@ public class AttributePart extends PropertyAwarePart {
     protected void commitNameChange(PropertyChangeEvent evt) {
         AttributeItemFigure figure = getFigure();
         figure.updateLabels();
-        setSelected(EditPart.SELECTED_PRIMARY);
-        figure.revalidate();
-    }
-
-
-    /**
-     * Reverts state back to prior edit state
-     */
-    public void revertNameChange(String oldValue) {
-        AttributeItemFigure figure = getFigure();
-        figure.setVisible(true);
         setSelected(EditPart.SELECTED_PRIMARY);
         figure.revalidate();
     }

@@ -437,6 +437,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Override
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+            if (CommonUtils.equalObjects(oldName, newName)) {
+                return new DBEPersistAction[0];
+            }
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectRenameActions(monitor, executionContext, actions, this, options);
             return actions.toArray(new DBEPersistAction[0]);

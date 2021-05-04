@@ -21,10 +21,16 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.eclipse.ui.IEditorInput;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDObject;
+import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -58,6 +64,21 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     @NotNull
     public EntityDiagram getDiagram() {
         return getDiagramPart().getDiagram();
+    }
+
+    @NotNull
+    public ERDEditorPart getEditor() {
+        return ((ERDGraphicalViewer)getViewer()).getEditor();
+    }
+
+    @Nullable
+    public DBECommandContext getCommandContext() {
+        ERDEditorPart editor = getEditor();
+        IEditorInput editorInput = editor.getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            return ((IDatabaseEditorInput) editorInput).getCommandContext();
+        }
+        return null;
     }
 
     protected boolean isEditEnabled() {

@@ -119,6 +119,18 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         return CommonUtils.safeList(attributes);
     }
 
+    public ERDEntityAttribute getAttribute(DBSEntityAttribute attribute) {
+        if (attribute == null) {
+            return null;
+        }
+        for (ERDEntityAttribute attr : attributes) {
+            if (attr.getObject() == attribute) {
+                return attr;
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public List<ERDEntityAttribute> getCheckedAttributes() {
         List<ERDEntityAttribute> result = new ArrayList<>();

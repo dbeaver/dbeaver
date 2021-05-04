@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.erd.ui.directedit;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.commands.Command;
@@ -32,8 +31,6 @@ import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Text;
@@ -45,7 +42,6 @@ import org.jkiss.dbeaver.erd.ui.figures.NoteFigure;
  */
 public class ExtendedDirectEditManager extends DirectEditManager {
 
-    private Font figureFont;
     private VerifyListener verifyListener;
     private IFigure figure;
     private String originalValue;
@@ -77,21 +73,6 @@ public class ExtendedDirectEditManager extends DirectEditManager {
         }
     }
 
-    /**
-     * @see org.eclipse.gef.tools.DirectEditManager#bringDown()
-     */
-    @Override
-    protected void bringDown() {
-        Font disposeFont = figureFont;
-        figureFont = null;
-        super.bringDown();
-        if (disposeFont != null)
-            disposeFont.dispose();
-    }
-
-    /**
-     * @see org.eclipse.gef.tools.DirectEditManager#initCellEditor()
-     */
     @Override
     protected void initCellEditor() {
 
@@ -132,21 +113,8 @@ public class ExtendedDirectEditManager extends DirectEditManager {
         //set the initial value of the
         originalValue = getFigureText(this.figure);
         getCellEditor().setValue(originalValue);
-
-        //calculate the font size of the underlying
-        figureFont = figure.getFont();
-        FontData data = figureFont.getFontData()[0];
-        Dimension fontSize = new Dimension(0, data.getHeight());
-
-        //set the font to be used
-        this.figure.translateToAbsolute(fontSize);
-        data.setHeight(fontSize.height);
-        figureFont = new Font(null, data);
-
-        //set the validator for the CellEditor
         getCellEditor().setValidator(validator);
 
-        text.setFont(figureFont);
         text.selectAll();
     }
 

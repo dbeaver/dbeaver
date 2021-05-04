@@ -44,6 +44,10 @@ public class ERDEditorViewer extends Viewer
         this.editorPart = editorPart;
     }
 
+    public ERDEditorPart getEditorPart() {
+        return editorPart;
+    }
+
     @Override
     public Control getControl() {
         return editorPart.getGraphicalViewer().getControl();
