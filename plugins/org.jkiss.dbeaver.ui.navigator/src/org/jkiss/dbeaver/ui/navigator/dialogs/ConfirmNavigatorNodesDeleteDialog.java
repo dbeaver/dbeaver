@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -44,7 +45,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
 
     private final NavigatorObjectsDeleter deleter;
 
-    private ConfirmNavigatorNodesDeleteDialog(Shell shell, String title, String message, List<?> selectedObjects, NavigatorObjectsDeleter deleter) {
+    private ConfirmNavigatorNodesDeleteDialog(Shell shell, String title, String message, List<?> selectedObjects, @Nullable NavigatorObjectsDeleter deleter) {
         super(shell, title, DBeaverIcons.getImage(UIIcon.REJECT), message, MessageDialog.ERROR, null, 0);
         this.selectedObjects = selectedObjects;
         this.deleter = deleter;
@@ -75,9 +76,12 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         if (selectedObjects.size() > 1) {
             createObjectsTable(parent);
         }
-        createDeleteContents(parent);
-        for (NavigatorObjectsDeleter.Option option: deleter.getSupportedOptions()) {
-            createCheckbox(parent, option);
+        if (deleter != null) {
+            createDeleteContents(parent);
+
+            for (NavigatorObjectsDeleter.Option option : deleter.getSupportedOptions()) {
+                createCheckbox(parent, option);
+            }
         }
         return super.createCustomArea(parent);
     }
@@ -97,6 +101,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
         gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
         objectsTable.setLayoutData(gd);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
+        UIUtils.createTableColumn(objectsTable, SWT.LEFT, "Type");
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
         for (Object obj: selectedObjects) {
             if (!(obj instanceof DBNNode)) {
@@ -109,13 +114,15 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
                 item.setText(0, node.getName());
                 IResource resource = ((DBNResource) node).getResource();
                 IPath resLocation = resource == null ? null : resource.getLocation();
-                item.setText(1, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
+                item.setText(1, "File");
+                item.setText(2, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
             } else {
                 item.setText(0, node.getNodeFullName());
-                item.setText(1, CommonUtils.toString(node.getNodeDescription()));
+                item.setText(1, node.getNodeType());
+                item.setText(2, CommonUtils.toString(node.getNodeDescription()));
             }
         }
-        UIUtils.packColumns(objectsTable, true);
+        UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
     }
 
     private void createDeleteContents(Composite parent) {
@@ -166,7 +173,7 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
     protected void createButtonsForButtonBar(final Composite parent) {
         createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, false);
         createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, true);
-        if (deleter.supportsShowViewScript()) {
+        if (deleter != null && deleter.supportsShowViewScript()) {
             createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
         }
     }

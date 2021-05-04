@@ -77,8 +77,8 @@ public class EntityPart extends NodePart {
     protected void createEditPolicies() {
         getDiagram().getModelAdapter().installPartEditPolicies(this);
 
-        final boolean editEnabled = isEditEnabled();
-        if (editEnabled) {
+        final boolean layoutEnabled = isLayoutEnabled();
+        if (layoutEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());

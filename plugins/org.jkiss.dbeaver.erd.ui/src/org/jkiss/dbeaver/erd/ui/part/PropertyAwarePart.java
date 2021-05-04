@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.erd.ui.part;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
@@ -81,6 +83,10 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         return null;
     }
 
+    protected boolean isLayoutEnabled() {
+        return getDiagram().isLayoutManualAllowed();
+    }
+
     protected boolean isEditEnabled() {
         return getDiagram().isEditEnabled();
     }
@@ -93,7 +99,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     public void activate() {
         super.activate();
         ERDObject<?> erdObject = (ERDObject<?>) getModel();
-        if (isEditEnabled()) {
+        if (isLayoutEnabled() || isEditEnabled()) {
             erdObject.addPropertyChangeListener(this);
         }
     }
@@ -101,7 +107,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     @Override
     public void deactivate() {
         super.deactivate();
-        if (isEditEnabled()) {
+        if (isLayoutEnabled() || isEditEnabled()) {
             ERDObject<?> erdObject = (ERDObject<?>) getModel();
             erdObject.removePropertyChangeListener(this);
         }
@@ -131,6 +137,19 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             case ERDObject.PROP_CONTENTS:
                 commitRefresh(evt);
                 break;
+            case ERDObject.PROP_SIZE: {
+                IFigure figure = getFigure();
+                if (this instanceof NodePart) {
+                    Rectangle curBounds = figure.getBounds().getCopy();
+                    Dimension newSize = figure.getPreferredSize();
+                    curBounds.width = newSize.width;
+                    curBounds.height = newSize.height;
+                    ((NodePart) this).modifyBounds(curBounds);
+                } else {
+                    figure.setSize(figure.getPreferredSize());
+                }
+                break;
+            }
         }
 
         //we want direct edit name changes to update immediately

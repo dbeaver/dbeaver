@@ -57,7 +57,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
-import org.jkiss.dbeaver.erd.ui.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
 import org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester;
 import org.jkiss.dbeaver.erd.ui.directedit.StatusLineValidationMessageHandler;
@@ -895,7 +894,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
         toolBarManager.add(new DiagramToggleGridAction());
         toolBarManager.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
-        toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
+        //toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
         toolBarManager.add(new Separator());
         {
             toolBarManager.add(ActionUtils.makeCommandContribution(
@@ -909,12 +908,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 IWorkbenchCommandConstants.FILE_SAVE_AS,
                 ERDUIMessages.erd_editor_control_action_save_external_format,
                 UIIcon.PICTURE_SAVE));
-
-            toolBarManager.add(ActionUtils.makeCommandContribution(
-                getSite(),
-                IWorkbenchCommandConstants.FILE_SAVE,
-                null,
-                UIIcon.SAVE));
         }
         toolBarManager.add(new Separator());
         {

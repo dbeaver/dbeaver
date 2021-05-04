@@ -237,7 +237,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     }
 
     public boolean isEditEnabled() {
-        return isLayoutManualAllowed();
+        return false;
     }
 
     /**

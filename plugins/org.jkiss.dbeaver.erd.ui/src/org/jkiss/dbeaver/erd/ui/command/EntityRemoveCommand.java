@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class EntityDeleteCommand extends Command {
+public class EntityRemoveCommand extends Command {
 
     private EntityPart entityPart;
     private DiagramPart diagramPart;
@@ -40,7 +40,7 @@ public class EntityDeleteCommand extends Command {
     private List<ERDAssociation> primaryKeyRelationships = new ArrayList<>();
     //private Rectangle bounds;
 
-    public EntityDeleteCommand(EntityPart entityPart) {
+    public EntityRemoveCommand(EntityPart entityPart) {
         this.entityPart = entityPart;
         this.diagramPart = entityPart.getDiagramPart();
         this.entity = entityPart.getEntity();

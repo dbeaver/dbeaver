@@ -40,6 +40,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
     public static final String PROP_OUTPUT = "OUTPUT";
     public static final String PROP_NAME = "NAME";
     public static final String PROP_CONTENTS = "CONTENTS";
+    public static final String PROP_SIZE = "SIZE";
 
     private transient PropertyChangeSupport listeners = null;//new PropertyChangeSupport(this);
 

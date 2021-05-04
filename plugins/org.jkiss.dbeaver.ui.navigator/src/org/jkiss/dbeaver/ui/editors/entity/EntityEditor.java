@@ -660,7 +660,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     protected void pageChange(int newPageIndex) {
-        super.pageChange(newPageIndex);
+        try {
+            super.pageChange(newPageIndex);
+        } catch (Throwable e) {
+            log.error(e);
+        }
 
         activeEditor = getEditor(newPageIndex);
 
