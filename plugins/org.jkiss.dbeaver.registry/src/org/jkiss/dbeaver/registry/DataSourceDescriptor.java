@@ -781,7 +781,12 @@ public class DataSourceDescriptor
         // 1. Get credentials from origin
         DBPDataSourceOrigin dsOrigin = getOrigin();
         if (dsOrigin instanceof DBAAuthCredentialsProvider) {
-            ((DBAAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+            monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
+            try {
+                ((DBAAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+            } finally {
+                monitor.done();
+            }
         }
 
         // 2. Get credentials from global provider
