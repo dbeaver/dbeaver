@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 import org.jkiss.dbeaver.model.auth.DBAAuthToken;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.auth.DBASessionProviderService;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,18 +48,18 @@ public class SessionContextImpl implements DBASessionContext {
 
     @Nullable
     @Override
-    public DBASession getSpaceSession(DBAAuthSpace space) throws DBException {
+    public DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space) throws DBException {
         for (DBASession session : sessions) {
             if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
                 return session;
             }
         }
-        DBASession session = parentContext == null ? null : parentContext.getSpaceSession(space);
+        DBASession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space);
         if (session == null) {
             DBASessionProviderService sessionProviderService = DBWorkbench.getService(DBASessionProviderService.class);
             if (sessionProviderService != null) {
                 try {
-                    session = sessionProviderService.acquireSession(space);
+                    session = sessionProviderService.acquireSession(monitor, space);
                 } catch (Exception e) {
                     throw new DBException("Error acquiring session", e);
                 }

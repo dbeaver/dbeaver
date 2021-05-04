@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBASession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Session context.
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.model.access.DBASession;
 public interface DBASessionContext {
 
     @Nullable
-    DBASession getSpaceSession(DBAAuthSpace space) throws DBException;
+    DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space) throws DBException;
 
     DBAAuthToken[] getSavedTokens();
 
