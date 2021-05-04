@@ -61,7 +61,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     }
 
     protected boolean isEditEnabled() {
-        return getDiagram().isLayoutManualAllowed();
+        return getDiagram().isEditEnabled();
     }
 
     protected boolean isColumnDragAndDropSupported() {

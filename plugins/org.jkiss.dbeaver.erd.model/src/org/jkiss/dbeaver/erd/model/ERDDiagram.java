@@ -236,6 +236,10 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         this.layoutManualDesired = layoutManualDesired;
     }
 
+    public boolean isEditEnabled() {
+        return isLayoutManualAllowed();
+    }
+
     /**
      * @return Returns whether we can lay out individual entities manually using the XYLayout
      */

@@ -45,12 +45,12 @@ import org.jkiss.dbeaver.erd.ui.figures.NoteFigure;
  */
 public class ExtendedDirectEditManager extends DirectEditManager {
 
-    protected Font figureFont;
-    protected VerifyListener verifyListener;
-    protected IFigure figure;
-    protected String originalValue;
+    private Font figureFont;
+    private VerifyListener verifyListener;
+    private IFigure figure;
+    private String originalValue;
     private boolean committing = false;
-    private ICellEditorValidator validator = null;
+    private ICellEditorValidator validator;
 
     /**
      * Creates a new ActivityDirectEditManager with the given attributes.
@@ -109,10 +109,10 @@ public class ExtendedDirectEditManager extends DirectEditManager {
                 Text text = (Text) getCellEditor().getControl();
                 String oldText = text.getText();
                 String leftText = oldText.substring(0, event.start);
-                String rightText = oldText.substring(event.end, oldText.length());
+                String rightText = oldText.substring(event.end);
                 GC gc = new GC(text);
 
-                String s = leftText + event.text + rightText;
+                //String s = leftText + event.text + rightText;
 
                 Point size = gc.textExtent(leftText + event.text + rightText);
 
@@ -134,7 +134,6 @@ public class ExtendedDirectEditManager extends DirectEditManager {
         getCellEditor().setValue(originalValue);
 
         //calculate the font size of the underlying
-        IFigure figure = getEditPart().getFigure();
         figureFont = figure.getFont();
         FontData data = figureFont.getFontData()[0];
         Dimension fontSize = new Dimension(0, data.getHeight());
@@ -168,7 +167,7 @@ public class ExtendedDirectEditManager extends DirectEditManager {
 
             //we set the cell editor control to invisible to remove any
             // possible flicker
-            getCellEditor().getControl().setVisible(false);
+            //getCellEditor().getControl().setVisible(false);
             if (isDirty()) {
                 CommandStack stack = getEditPart().getViewer().getEditDomain().getCommandStack();
                 EditPolicy editPolicy = getEditPart().getEditPolicy(EditPolicy.DIRECT_EDIT_ROLE);

@@ -55,6 +55,11 @@ public class ERDDecoratorDefault implements ERDDecorator {
         return true;
     }
 
+    @Override
+    public boolean supportsStructureEdit() {
+        return true;
+    }
+
     @NotNull
     @Override
     public Insets getDefaultEntityInsets() {
