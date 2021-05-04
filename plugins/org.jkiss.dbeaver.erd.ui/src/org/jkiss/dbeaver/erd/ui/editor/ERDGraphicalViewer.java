@@ -39,6 +39,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
@@ -338,21 +339,31 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             if (action == DBPEvent.Action.OBJECT_SELECT || !usedDataSources.containsKey(object.getDataSource().getContainer())) {
                 return;
             }
-            DBSEntity entity = null;
+            DBSEntity entity;
+            DBSEntityAttribute entityAttribute;
             if (object instanceof DBSEntityAttribute) {
-                entity = ((DBSEntityAttribute) object).getParentObject();
+                entityAttribute = (DBSEntityAttribute) object;
+                entity = entityAttribute.getParentObject();
             } else if (object instanceof DBSEntity) {
+                entityAttribute = null;
                 entity = (DBSEntity) object;
+            } else {
+                return;
             }
 
-            if (entity != null) {
-                ERDEntity erdEntity = editor.getDiagram().getEntity(entity);
-                if (erdEntity != null) {
-                    UIUtils.asyncExec(() -> {
+            ERDEntity erdEntity = editor.getDiagram().getEntity(entity);
+            if (erdEntity != null) {
+                UIUtils.asyncExec(() -> {
+                    if (entityAttribute == null) {
                         erdEntity.reloadAttributes(editor.getDiagram());
                         erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
-                    });
-                }
+                    } else {
+                        ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
+                        if (erdAttribute != null) {
+                            erdAttribute.firePropertyChange(ERDEntityAttribute.PROP_NAME, entityAttribute.getName(), entityAttribute.getName());
+                        }
+                    }
+                });
             }
 
         }
