@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -97,12 +98,20 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             }
         }
         if (objectToSeek != null) {
-            for (final IEditorReference editorRef : workbenchWindow.getActivePage().getEditorReferences()) {
+            IWorkbenchPage activePage = workbenchWindow.getActivePage();
+            IEditorPart activeEditor = activePage.getActiveEditor();
+            if (activeEditor instanceof IDatabaseEditor) {
+                IDatabaseModellerEditor modellerEditor = activeEditor.getAdapter(IDatabaseModellerEditor.class);
+                if (modellerEditor != null && modellerEditor.containsModelObject(objectToSeek)) {
+                    return new CommandTarget((IDatabaseEditor) activeEditor);
+                }
+            }
+            for (final IEditorReference editorRef : activePage.getEditorReferences()) {
                 final IEditorPart editor = editorRef.getEditor(false);
                 if (editor instanceof IDatabaseEditor) {
                     final IDatabaseEditorInput editorInput = (IDatabaseEditorInput) editor.getEditorInput();
                     if (editorInput.getDatabaseObject() == objectToSeek) {
-                        workbenchWindow.getActivePage().activate(editor);
+                        activePage.activate(editor);
                         if (editor.getAdapter(IDatabaseModellerEditor.class) == null) {
                             // Switch to folder unless we are already in modelling mode
                             switchEditorFolder(container, editor);

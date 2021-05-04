@@ -386,7 +386,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                         } else {
                             ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
                             if (erdAttribute != null) {
-                                erdEntity.removeAttribute(erdAttribute, true);
+                                erdEntity.removeAttribute(erdAttribute, false);
+                                erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
                             }
                         }
                     });
