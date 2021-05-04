@@ -18,15 +18,25 @@ package org.jkiss.dbeaver.erd.ui.model;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.gef.EditPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.model.ERDObject;
+import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
+
+import java.util.List;
 
 /**
  * ERD object adapter
@@ -43,7 +53,39 @@ public class ERDObjectAdapter implements IAdapterFactory {
             if (model instanceof ERDObject) {
                 Object object = ((ERDObject<?>) model).getObject();
                 if (object instanceof DBSObject) {
+
+                    if (adaptableObject instanceof DiagramPart && ((DBSObject) object).getParentObject() instanceof DBSStructContainer) {
+                        object = ((DBSObject) object).getParentObject();
+                    }
+
                     DBNDatabaseNode node = DBNUtils.getNodeByObject((DBSObject) object);
+
+                    // That's tricky
+                    // Try to get Table folder. It is handy for Create New command
+                    if (node instanceof DBNDatabaseItem && node.getObject() instanceof DBSStructContainer) {
+                        for (DBXTreeNode childFolderMeta : node.getMeta().getChildren(node)) {
+                            if (childFolderMeta instanceof DBXTreeFolder) {
+                                List<DBXTreeNode> childItems = childFolderMeta.getChildren(node);
+                                if (!childItems.isEmpty()) {
+                                    DBXTreeNode itemMeta = childItems.get(0);
+                                    if (itemMeta instanceof DBXTreeItem && ((DBXTreeItem) itemMeta).getPropertyName().contains("table")) {
+                                        try {
+                                            // Safe to use fake monitor because we read local folders
+                                            for (DBNDatabaseNode navFolder : node.getChildren(new VoidProgressMonitor())) {
+                                                if (navFolder.getMeta() == childFolderMeta) {
+                                                    node = navFolder;
+                                                    break;
+                                                }
+                                            }
+                                        } catch (DBException ignored) {
+                                            // Shouldn't be here
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     if (node != null) {
                         return adapterType.cast(node);
                     }
