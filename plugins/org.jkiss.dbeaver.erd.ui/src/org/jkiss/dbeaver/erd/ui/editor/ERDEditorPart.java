@@ -89,6 +89,7 @@ import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
+import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectSearcher;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -893,6 +894,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //toolBarManager.add(createAttributeVisibilityMenu());
         toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
         toolBarManager.add(new DiagramToggleGridAction());
+        toolBarManager.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
         toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
         toolBarManager.add(new Separator());
         {
