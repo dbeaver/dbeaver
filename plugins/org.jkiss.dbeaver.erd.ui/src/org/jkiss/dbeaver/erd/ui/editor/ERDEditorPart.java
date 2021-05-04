@@ -896,6 +896,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //toolBarManager.add(createAttributeVisibilityMenu());
         toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
         toolBarManager.add(new DiagramToggleGridAction());
+        toolBarManager.add(new Separator());
+        toolBarManager.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
         toolBarManager.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
         //toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
         toolBarManager.add(new Separator());

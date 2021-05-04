@@ -34,7 +34,9 @@ public class DBeaverPerspective implements IPerspectiveFactory
     public static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
 
     public static final String FOLDER_NAVIGATION = "navigation"; //$NON-NLS-1$
-    public static final String FOLDER_HELP = "help"; //$NON-NLS-1$
+    public static final String FOLDER_RIGHT = "right"; //$NON-NLS-1$
+    public static final String FOLDER_RIGHT_TOP = "rightTop"; //$NON-NLS-1$
+    public static final String FOLDER_RIGHT_MIDDLE = "rightMiddle"; //$NON-NLS-1$
     public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft"; //$NON-NLS-1$
     public static final String FOLDER_BOTTOM_RIGHT = "bottomRight"; //$NON-NLS-1$
 
@@ -53,14 +55,6 @@ public class DBeaverPerspective implements IPerspectiveFactory
         treeFolder.addView(DatabaseNavigatorView.VIEW_ID);
         treeFolder.addView(ProjectNavigatorView.VIEW_ID);
         treeFolder.addPlaceholder(TemplatesView.ID);
-
-        // Right
-        IPlaceholderFolderLayout right = layout.createPlaceholderFolder(
-            FOLDER_HELP,
-            IPageLayout.RIGHT,
-            0.8f,
-            editorArea);
-        right.addPlaceholder(IActionConstants.HELP_VIEW_ID);
 
         // Bottom left.
         //IPlaceholderFolderLayout bottomLeft = layout.createPlaceholderFolder(
@@ -81,9 +75,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder(IActionConstants.LOG_VIEW_ID);
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
         bottomRight.addPlaceholder(ShellProcessView.VIEW_ID);
-        bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);
-        bottomRight.addPlaceholder(IPageLayout.ID_OUTLINE);
         bottomRight.addPlaceholder(IPageLayout.ID_TASK_LIST);
         bottomRight.addPlaceholder(IPageLayout.ID_BOOKMARKS);
 
@@ -96,9 +88,30 @@ public class DBeaverPerspective implements IPerspectiveFactory
         layout.addShowViewShortcut(DatabaseNavigatorView.VIEW_ID);
         layout.addShowViewShortcut(ProjectNavigatorView.VIEW_ID);
         layout.addShowViewShortcut(ProjectExplorerView.VIEW_ID);
-        layout.addShowViewShortcut(IPageLayout.ID_PROP_SHEET);
         layout.addShowViewShortcut(QueryManagerView.VIEW_ID);
         layout.addShowViewShortcut(IActionConstants.LOG_VIEW_ID);
+
+        // Right - properties, help and outline
+        IPlaceholderFolderLayout right = layout.createPlaceholderFolder(
+            FOLDER_RIGHT,
+            IPageLayout.RIGHT,
+            0.8f,
+            editorArea);
+        IPlaceholderFolderLayout rightTop = layout.createPlaceholderFolder(
+            FOLDER_RIGHT_TOP,
+            IPageLayout.TOP,
+            0.5f,
+            FOLDER_RIGHT);
+        rightTop.addPlaceholder(IPageLayout.ID_PROP_SHEET);
+        rightTop.addPlaceholder(IActionConstants.HELP_VIEW_ID);
+
+        IPlaceholderFolderLayout rightMiddle = layout.createPlaceholderFolder(
+            FOLDER_RIGHT_TOP,
+            IPageLayout.BOTTOM,
+            0.5f,
+            FOLDER_RIGHT);
+        rightMiddle.addPlaceholder(IPageLayout.ID_OUTLINE);
+
     }
 
 }
