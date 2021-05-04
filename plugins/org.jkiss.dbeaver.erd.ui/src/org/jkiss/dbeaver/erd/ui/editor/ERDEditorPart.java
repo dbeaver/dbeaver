@@ -82,6 +82,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
@@ -931,6 +933,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public boolean isActiveTask() {
         return diagramLoadingJob != null && diagramLoadingJob.getState() == Job.RUNNING;
+    }
+
+    @Override
+    public boolean containsModelObject(DBSObject object) {
+        return object instanceof DBSEntity && getDiagram().getEntity((DBSEntity) object) != null;
     }
 
     private class ChangeAttributePresentationAction extends Action {

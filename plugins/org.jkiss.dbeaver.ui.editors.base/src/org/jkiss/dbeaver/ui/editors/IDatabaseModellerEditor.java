@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * IDatabaseModellerEditor - editor which supports database object modelling
@@ -24,5 +25,6 @@ import org.eclipse.ui.IEditorPart;
 public interface IDatabaseModellerEditor extends IEditorPart
 {
 
+    boolean containsModelObject(DBSObject object);
 
 }
