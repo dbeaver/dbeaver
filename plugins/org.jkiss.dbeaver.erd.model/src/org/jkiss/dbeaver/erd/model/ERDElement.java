@@ -62,7 +62,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
         }
         associations.add(rel);
         if (reflect) {
-            firePropertyChange(OUTPUT, null, rel);
+            firePropertyChange(PROP_OUTPUT, null, rel);
         }
     }
 
@@ -77,7 +77,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
         }
         references.add(table);
         if (reflect) {
-            firePropertyChange(INPUT, null, table);
+            firePropertyChange(PROP_INPUT, null, table);
         }
     }
 
@@ -89,7 +89,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
     public void removeAssociation(ERDAssociation table, boolean reflect) {
         associations.remove(table);
         if (reflect) {
-            firePropertyChange(OUTPUT, table, null);
+            firePropertyChange(PROP_OUTPUT, table, null);
         }
     }
 
@@ -101,7 +101,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
     public void removeReferenceAssociation(ERDAssociation table, boolean reflect) {
         references.remove(table);
         if (reflect) {
-            firePropertyChange(INPUT, table, null);
+            firePropertyChange(PROP_INPUT, table, null);
         }
     }
 

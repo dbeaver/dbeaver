@@ -38,12 +38,15 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -312,23 +315,46 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
-        if (!(event.getObject() instanceof DBPDataSourceContainer)) {
+        DBSObject object = event.getObject();
+        if (object == null || DBWorkbench.getPlatform().isShuttingDown()) {
             return;
         }
-        DBPDataSourceContainer container = (DBPDataSourceContainer)event.getObject();
-        if (usedDataSources.containsKey(container) &&
-            event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
-            Boolean.FALSE.equals(event.getEnabled()) &&
-            !DBWorkbench.getPlatform().isShuttingDown())
-        {
-            // Close editor only if it is simple disconnect
-            // Workbench shutdown doesn't close editor
-            UIUtils.asyncExec(() -> {
-                IWorkbenchPartSite site = editor.getSite();
-                if (site != null && site.getWorkbenchWindow() != null) {
-                    site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
+        DBPEvent.Action action = event.getAction();
+        if (object instanceof DBPDataSourceContainer) {
+            DBPDataSourceContainer container = (DBPDataSourceContainer) object;
+            if (usedDataSources.containsKey(container) &&
+                action == DBPEvent.Action.OBJECT_UPDATE &&
+                Boolean.FALSE.equals(event.getEnabled())) {
+                // Close editor only if it is simple disconnect
+                // Workbench shutdown doesn't close editor
+                UIUtils.asyncExec(() -> {
+                    IWorkbenchPartSite site = editor.getSite();
+                    if (site != null && site.getWorkbenchWindow() != null) {
+                        site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
+                    }
+                });
+            }
+        } else {
+            if (action == DBPEvent.Action.OBJECT_SELECT || !usedDataSources.containsKey(object.getDataSource().getContainer())) {
+                return;
+            }
+            DBSEntity entity = null;
+            if (object instanceof DBSEntityAttribute) {
+                entity = ((DBSEntityAttribute) object).getParentObject();
+            } else if (object instanceof DBSEntity) {
+                entity = (DBSEntity) object;
+            }
+
+            if (entity != null) {
+                ERDEntity erdEntity = editor.getDiagram().getEntity(entity);
+                if (erdEntity != null) {
+                    UIUtils.asyncExec(() -> {
+                        erdEntity.reloadAttributes(editor.getDiagram());
+                        erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
+                    });
                 }
-            });
+            }
+
         }
     }
 

@@ -92,26 +92,29 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         String property = evt.getPropertyName();
 
         switch (property) {
-            case ERDObject.CHILD:
+            case ERDObject.PROP_CHILD:
                 handleChildChange(evt);
                 break;
-            case ERDObject.REORDER:
+            case ERDObject.PROP_REORDER:
                 handleReorderChange(evt);
                 break;
-            case ERDObject.OUTPUT:
+            case ERDObject.PROP_OUTPUT:
                 handleOutputChange(evt);
                 break;
-            case ERDObject.INPUT:
+            case ERDObject.PROP_INPUT:
                 handleInputChange(evt);
                 break;
-            case ERDObject.NAME:
+            case ERDObject.PROP_NAME:
                 commitNameChange(evt);
+                break;
+            case ERDObject.PROP_CONTENTS:
+                commitRefresh(evt);
                 break;
         }
 
         //we want direct edit name changes to update immediately
         //not use the Graph animation, if automatic layout is being used
-        if (ERDObject.NAME.equals(property)) {
+        if (ERDObject.PROP_NAME.equals(property)) {
             GraphicalEditPart graphicalEditPart = (GraphicalEditPart) (getViewer().getContents());
             IFigure partFigure = graphicalEditPart.getFigure();
             partFigure.getUpdateManager().performUpdate();
@@ -136,7 +139,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         Object oldValue = evt.getOldValue();
 
         if (!((oldValue != null) ^ (newValue != null))) {
-            throw new IllegalStateException("Exactly one of old or new values must be non-null for INPUT event");
+            throw new IllegalStateException("Exactly one of old or new values must be non-null for PROP_INPUT event");
         }
 
         if (newValue != null) {
@@ -184,7 +187,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         Object oldValue = evt.getOldValue();
 
         if (!((oldValue != null) ^ (newValue != null))) {
-            throw new IllegalStateException("Exactly one of old or new values must be non-null for INPUT event");
+            throw new IllegalStateException("Exactly one of old or new values must be non-null for PROP_INPUT event");
         }
 
         if (newValue != null) {
@@ -227,7 +230,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         Object oldValue = evt.getOldValue();
 
         if ((oldValue != null) == (newValue != null)) {
-            throw new IllegalStateException("Exactly one of old or new values must be non-null for CHILD event");
+            throw new IllegalStateException("Exactly one of old or new values must be non-null for PROP_CHILD event");
         }
 
         if (newValue != null) {
@@ -265,7 +268,16 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         refreshVisuals();
     }
 
+    // Refresh part name
     protected void commitNameChange(PropertyChangeEvent evt) {
     }
+
+    // Refresh part contents
+    protected void commitRefresh(PropertyChangeEvent evt) {
+        commitNameChange(evt);
+        refreshChildren();
+        refreshVisuals();
+    }
+
 
 }

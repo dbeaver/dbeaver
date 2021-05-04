@@ -239,6 +239,7 @@ public class EntityFigure extends Figure {
         return attributeFigure;
     }
 
+    // Workaround: attribute figures aren't direct children of entity figure
     @Override
     public void add(IFigure figure, Object constraint, int index) {
         if (figure instanceof AttributeItemFigure) {
@@ -275,5 +276,26 @@ public class EntityFigure extends Figure {
         result.addAll(keyFigure.getAttributes());
         result.addAll(attributeFigure.getAttributes());
         return result;
+    }
+
+    // Workaround: attribute figures aren't direct children of entity figure
+    @Override
+    public void remove(IFigure figure) {
+        if (figure instanceof AttributeItemFigure) {
+            AttributeItemFigure attrFigure = (AttributeItemFigure) figure;
+            AttributeListFigure listFigure;
+            if (keyFigure.getAttributes().contains(figure)) {
+                listFigure = keyFigure;
+            } else {
+                listFigure = attributeFigure;
+            }
+            listFigure.remove(attrFigure);
+            if (attrFigure.getRightPanel() != null) {
+                listFigure.remove(attrFigure.getRightPanel());
+            }
+            this.revalidate();
+        } else {
+            super.remove(figure);
+        }
     }
 }

@@ -121,13 +121,13 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
 
 
         if (reflect) {
-            firePropertyChange(CHILD, null, entity);
+            firePropertyChange(PROP_CHILD, null, entity);
 /*
             for (ERDAssociation rel : entity.getReferences()) {
-                entity.firePropertyChange(INPUT, null, rel);
+                entity.firePropertyChange(PROP_INPUT, null, rel);
             }
             for (ERDAssociation rel : entity.getAssociations()) {
-                entity.firePropertyChange(OUTPUT, null, rel);
+                entity.firePropertyChange(PROP_OUTPUT, null, rel);
             }
 */
         }
@@ -136,10 +136,10 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
 
         if (reflect) {
             for (ERDAssociation rel : entity.getReferences()) {
-                rel.getSourceEntity().firePropertyChange(OUTPUT, null, rel);
+                rel.getSourceEntity().firePropertyChange(PROP_OUTPUT, null, rel);
             }
             for (ERDAssociation rel : entity.getAssociations()) {
-                rel.getTargetEntity().firePropertyChange(INPUT, null, rel);
+                rel.getTargetEntity().firePropertyChange(PROP_INPUT, null, rel);
             }
         }
     }
@@ -166,7 +166,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
 
         }
         if (reflect) {
-            firePropertyChange(CHILD, entity, null);
+            firePropertyChange(PROP_CHILD, entity, null);
         }
     }
 
@@ -188,7 +188,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         }
 
         if (reflect) {
-            firePropertyChange(CHILD, null, note);
+            firePropertyChange(PROP_CHILD, null, note);
         }
     }
 
@@ -198,7 +198,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         }
 
         if (reflect) {
-            firePropertyChange(CHILD, note, null);
+            firePropertyChange(PROP_CHILD, note, null);
         }
     }
 
