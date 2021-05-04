@@ -24,6 +24,8 @@ import org.eclipse.gef.Request;
  */
 public interface ERDModelAdapter {
 
+    boolean supportsModelEdit();
+
     void installPartEditPolicies(EditPart editPart);
 
     void performPartRequest(EditPart editPart, Request request);

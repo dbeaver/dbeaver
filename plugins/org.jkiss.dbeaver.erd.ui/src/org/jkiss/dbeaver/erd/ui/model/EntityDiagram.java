@@ -125,7 +125,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
 
     @Override
     public boolean isEditEnabled() {
-        return super.isEditEnabled() && decorator.supportsStructureEdit();
+        return decorator.supportsStructureEdit() && modelAdapter.supportsModelEdit();
     }
 
     /**

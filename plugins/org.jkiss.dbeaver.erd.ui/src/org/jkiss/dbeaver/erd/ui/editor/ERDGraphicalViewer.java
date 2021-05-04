@@ -40,11 +40,15 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.model.ERDObject;
+import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -320,52 +324,110 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         if (object == null || DBWorkbench.getPlatform().isShuttingDown()) {
             return;
         }
-        DBPEvent.Action action = event.getAction();
         if (object instanceof DBPDataSourceContainer) {
-            DBPDataSourceContainer container = (DBPDataSourceContainer) object;
-            if (usedDataSources.containsKey(container) &&
-                action == DBPEvent.Action.OBJECT_UPDATE &&
-                Boolean.FALSE.equals(event.getEnabled())) {
-                // Close editor only if it is simple disconnect
-                // Workbench shutdown doesn't close editor
-                UIUtils.asyncExec(() -> {
-                    IWorkbenchPartSite site = editor.getSite();
-                    if (site != null && site.getWorkbenchWindow() != null) {
-                        site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
-                    }
-                });
-            }
+            handleDataSourceContainerChange(event, (DBPDataSourceContainer) object);
+            return;
+        }
+
+        // Object change
+        DBPEvent.Action action = event.getAction();
+        if (action == DBPEvent.Action.OBJECT_SELECT || !usedDataSources.containsKey(object.getDataSource().getContainer())) {
+            return;
+        }
+        DBSEntity entity;
+        DBSEntityAttribute entityAttribute;
+        if (object instanceof DBSEntityAttribute) {
+            entityAttribute = (DBSEntityAttribute) object;
+            entity = entityAttribute.getParentObject();
+        } else if (object instanceof DBSEntity) {
+            entityAttribute = null;
+            entity = (DBSEntity) object;
         } else {
-            if (action == DBPEvent.Action.OBJECT_SELECT || !usedDataSources.containsKey(object.getDataSource().getContainer())) {
-                return;
-            }
-            DBSEntity entity;
-            DBSEntityAttribute entityAttribute;
-            if (object instanceof DBSEntityAttribute) {
-                entityAttribute = (DBSEntityAttribute) object;
-                entity = entityAttribute.getParentObject();
-            } else if (object instanceof DBSEntity) {
-                entityAttribute = null;
-                entity = (DBSEntity) object;
-            } else {
-                return;
-            }
+            return;
+        }
 
-            ERDEntity erdEntity = editor.getDiagram().getEntity(entity);
-            if (erdEntity != null) {
-                UIUtils.asyncExec(() -> {
-                    if (entityAttribute == null) {
-                        erdEntity.reloadAttributes(editor.getDiagram());
-                        erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
-                    } else {
-                        ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
-                        if (erdAttribute != null) {
-                            erdAttribute.firePropertyChange(ERDEntityAttribute.PROP_NAME, entityAttribute.getName(), entityAttribute.getName());
-                        }
+        EntityDiagram diagram = editor.getDiagram();
+        switch (action) {
+            case OBJECT_ADD: {
+                if (entityAttribute != null) {
+                    // New attribute
+                    ERDEntity erdEntity = diagram.getEntity(entity);
+                    if (erdEntity != null) {
+                        UIUtils.asyncExec(() -> {
+                            erdEntity.reloadAttributes(diagram);
+                            erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
+                        });
                     }
-                });
-            }
 
+                } else {
+                    // New entity. Add it if it has the same object container
+                    // or if this entity was created from the same editor
+                    DBSObject diagramContainer = diagram.getObject();
+                    if (diagramContainer == entity.getParentObject()) {
+
+                        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(
+                            new VoidProgressMonitor(),
+                            diagram,
+                            Collections.emptyList(),
+                            entity,
+                            null);
+                        diagram.addEntity(erdEntity, true);
+                    }
+                }
+                break;
+            }
+            case OBJECT_REMOVE: {
+                ERDEntity erdEntity = diagram.getEntity(entity);
+                if (erdEntity != null) {
+                    UIUtils.asyncExec(() -> {
+                        if (entityAttribute == null) {
+                            // Entity delete
+                            diagram.removeEntity(erdEntity, true);
+                        } else {
+                            ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
+                            if (erdAttribute != null) {
+                                erdEntity.removeAttribute(erdAttribute, true);
+                            }
+                        }
+                    });
+                }
+                break;
+            }
+            case OBJECT_UPDATE: {
+                ERDEntity erdEntity = diagram.getEntity(entity);
+                if (erdEntity != null) {
+                    UIUtils.asyncExec(() -> {
+                        if (entityAttribute == null) {
+                            erdEntity.reloadAttributes(diagram);
+                            erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
+                        } else {
+                            ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
+                            if (erdAttribute != null) {
+                                erdAttribute.firePropertyChange(ERDEntityAttribute.PROP_NAME, null, entityAttribute.getName());
+                                // Resize entity
+                                erdEntity.firePropertyChange(ERDObject.PROP_SIZE, null, null);
+                            }
+                        }
+                    });
+                }
+                break;
+            }
+        }
+    }
+
+    private void handleDataSourceContainerChange(DBPEvent event, DBPDataSourceContainer object) {
+        DBPDataSourceContainer container = object;
+        if (usedDataSources.containsKey(container) &&
+            event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
+            Boolean.FALSE.equals(event.getEnabled())) {
+            // Close editor only if it is simple disconnect
+            // Workbench shutdown doesn't close editor
+            UIUtils.asyncExec(() -> {
+                IWorkbenchPartSite site = editor.getSite();
+                if (site != null && site.getWorkbenchWindow() != null) {
+                    site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
+                }
+            });
         }
     }
 

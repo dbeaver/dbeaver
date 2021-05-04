@@ -16,26 +16,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.Request;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Empty model adapter
+ * Command which modifies/deletes/creates a database object
  */
-public class ERDModelAdapterDefault implements ERDModelAdapter {
+public interface ERDDatabaseObjectModifyCommand {
 
-    @Override
-    public boolean supportsModelEdit() {
-        return false;
-    }
+    DBSObject getDatabaseObject();
 
-    @Override
-    public void installPartEditPolicies(EditPart editPart) {
 
-    }
-
-    @Override
-    public void performPartRequest(EditPart editPart, Request request) {
-
-    }
 }

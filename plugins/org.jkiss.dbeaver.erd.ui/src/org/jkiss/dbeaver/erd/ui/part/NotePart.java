@@ -66,8 +66,8 @@ public class NotePart extends NodePart
 	{
         getDiagram().getModelAdapter().installPartEditPolicies(this);
 
-        final boolean editEnabled = isEditEnabled();
-        if (editEnabled) {
+        final boolean layoutEnabled = isLayoutEnabled();
+        if (layoutEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());

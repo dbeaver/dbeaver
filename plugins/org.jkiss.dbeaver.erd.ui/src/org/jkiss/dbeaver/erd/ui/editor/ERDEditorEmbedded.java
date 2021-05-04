@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
@@ -94,6 +95,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         super.fillDefaultEditorContributions(toolBarManager);
 
         toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
+
+        DatabaseEditorUtils.contributeStandardEditorActions(getSite(), toolBarManager);
     }
 
     @Override

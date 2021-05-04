@@ -63,6 +63,15 @@ public class ExtendedDirectEditManager extends DirectEditManager {
         this.validator = validator;
     }
 
+    protected IFigure getCellEditorFrame() {
+        IFigure cellEditorFrame = super.getCellEditorFrame();
+        if (cellEditorFrame.getBorder() != null) {
+            //cellEditorFrame.setBorder(null);
+        }
+        return cellEditorFrame;
+    }
+
+
     private static String getFigureText(IFigure figure) {
         if (figure instanceof Label) {
             return ((Label) figure).getText();
