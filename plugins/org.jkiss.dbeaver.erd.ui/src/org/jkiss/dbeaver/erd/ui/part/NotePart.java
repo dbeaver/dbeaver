@@ -118,7 +118,7 @@ public class NotePart extends NodePart
         return figure.containsPoint(requestLoc);
     }
 
-    protected void performDirectEdit() {
+    private void performDirectEdit() {
         if (manager == null) {
             NoteFigure figure = (NoteFigure) getFigure();
             manager = new ExtendedDirectEditManager(

@@ -59,6 +59,14 @@ public final class RuntimeUtils {
         return Platform.getAdapterManager().getAdapter(adapter, objectType);
     }
 
+    public static <T> T getObjectAdapter(Object adapter, Class<T> objectType, boolean force) {
+        IAdapterManager adapterManager = Platform.getAdapterManager();
+        if (force) {
+            adapterManager.loadAdapter(adapter, objectType.getName());
+        }
+        return adapterManager.getAdapter(adapter, objectType);
+    }
+
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor) {
         if (monitor instanceof DBRProgressMonitor) {
             return (DBRProgressMonitor) monitor;

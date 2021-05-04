@@ -24,17 +24,11 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
-import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
-import org.jkiss.dbeaver.erd.ui.directedit.ExtendedDirectEditManager;
-import org.jkiss.dbeaver.erd.ui.directedit.LabelCellEditorLocator;
-import org.jkiss.dbeaver.erd.ui.directedit.TableNameCellEditorValidator;
-import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
@@ -86,50 +80,18 @@ public class EntityPart extends NodePart {
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
-            //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
-            //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
         }
     }
 
-    //******************* Direct editing related methods *********************/
-
-    /**
-     * @see org.eclipse.gef.EditPart#performRequest(org.eclipse.gef.Request)
-     */
     @Override
     public void performRequest(Request request) {
-        if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
-            if (request instanceof DirectEditRequest
-					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
-				return;
-			performDirectEdit();
-        } else if (request.getType() == RequestConstants.REQ_OPEN) {
+        if (request.getType() == RequestConstants.REQ_OPEN) {
             ERDUIUtils.openObjectEditor(getEntity());
         } else {
             getDiagram().getModelAdapter().performPartRequest(this, request);
         }
-    }
-
-    private boolean directEditHitTest(Point requestLoc) {
-        EntityFigure figure = getFigure();
-        EditableLabel nameLabel = figure.getNameLabel();
-        nameLabel.translateToRelative(requestLoc);
-        return nameLabel.containsPoint(requestLoc);
-    }
-
-    protected void performDirectEdit() {
-        if (manager == null) {
-            ERDGraphicalViewer viewer = getViewer();
-            ValidationMessageHandler handler = viewer.getValidationHandler();
-
-            EntityFigure figure = getFigure();
-            EditableLabel nameLabel = figure.getNameLabel();
-            manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(nameLabel),
-                nameLabel, new TableNameCellEditorValidator(handler));
-        }
-        manager.show();
     }
 
     public void handleNameChange(String value) {

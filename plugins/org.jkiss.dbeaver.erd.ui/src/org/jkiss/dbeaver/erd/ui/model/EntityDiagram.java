@@ -57,7 +57,8 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
 
     public EntityDiagram(DBSObject container, String name, ERDContentProvider contentProvider, ERDDecorator decorator) {
         super(container, name, contentProvider);
-        this.modelAdapter = RuntimeUtils.getObjectAdapter(this, ERDModelAdapter.class);
+        // Get model adapter (force adapter plugin activation if needed)
+        this.modelAdapter = RuntimeUtils.getObjectAdapter(this, ERDModelAdapter.class, true);
         if (this.modelAdapter == null) {
             this.modelAdapter = new ERDModelAdapterDefault();
         }
@@ -120,6 +121,11 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
      */
     public void setLayoutManualDesired(boolean layoutManualDesired) {
         this.layoutManualDesired = layoutManualDesired;
+    }
+
+    @Override
+    public boolean isEditEnabled() {
+        return super.isEditEnabled() && decorator.supportsStructureEdit();
     }
 
     /**
