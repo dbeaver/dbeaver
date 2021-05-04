@@ -94,23 +94,10 @@ public class EntityPart extends NodePart {
         }
     }
 
-    public void handleNameChange(String value) {
+    public void handleNameChange() {
         EntityFigure entityFigure = getFigure();
         EditableLabel label = entityFigure.getNameLabel();
-        label.setVisible(false);
-        refreshVisuals();
-    }
-
-    /**
-     * Reverts to existing name in model when exiting from a direct edit
-     * (possibly before a commit which will result in a change in the label
-     * value)
-     */
-    public void revertNameChange() {
-        EntityFigure entityFigure = getFigure();
-        EditableLabel label = entityFigure.getNameLabel();
-        ERDEntity entity = getEntity();
-        label.setText(entity.getObject().getName());
+        label.setText(getEntity().getName());
         label.setVisible(true);
         refreshVisuals();
     }
