@@ -24,6 +24,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDObject;
@@ -32,7 +33,11 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -319,5 +324,28 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         refreshVisuals();
     }
 
-
+    @Override
+    public Object getAdapter(Class key) {
+        if (key == IPropertySource.class) {
+            Object model = getModel();
+            if (model instanceof ERDObject) {
+                Object object = ((ERDObject) model).getObject();
+                if (object instanceof DBSObject) {
+                    if (isEditEnabled()) {
+                        DBECommandContext commandContext = getCommandContext();
+                        if (commandContext != null) {
+                            PropertySourceEditable pse = new PropertySourceEditable(commandContext, object, object);
+                            pse.collectProperties();
+                            return new PropertySourceDelegate(pse);
+                        }
+                    }
+                    PropertyCollector propertyCollector = new PropertyCollector(object, false);
+                    propertyCollector.collectProperties();
+                    return new PropertySourceDelegate(propertyCollector);
+                }
+            }
+            return null;
+        }
+        return super.getAdapter(key);
+    }
 }

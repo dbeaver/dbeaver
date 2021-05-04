@@ -39,9 +39,11 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     private Label checkBox;
     private boolean checked;
+    private boolean isPropertySheet;
 
-    public CustomCheckboxCellEditor(Composite parent) {
+    public CustomCheckboxCellEditor(Composite parent, int style, boolean isPropertySheet) {
         this(parent, SWT.NONE);
+        this.isPropertySheet = isPropertySheet;
     }
 
     public CustomCheckboxCellEditor(Composite parent, int style) {

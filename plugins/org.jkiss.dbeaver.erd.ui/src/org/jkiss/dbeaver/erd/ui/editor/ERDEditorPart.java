@@ -88,6 +88,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -281,7 +282,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         } else if (adapter == ActionRegistry.class) {
             return getActionRegistry();
         } else if (adapter == IPropertySheetPage.class) {
-            return getPropertySheetPage();
+            return new PropertyPageStandard();
         } else if (adapter == IContentOutlinePage.class) {
             return getOverviewOutlinePage();
         } else if (adapter == ZoomManager.class) {

@@ -89,7 +89,9 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBPPropertySource.class) {
-            return adapter.cast(new PropertyCollector(object, false));
+            PropertyCollector propertyCollector = new PropertyCollector(object, false);
+            propertyCollector.collectProperties();
+            return adapter.cast(propertyCollector);
         }
         return null;
     }
