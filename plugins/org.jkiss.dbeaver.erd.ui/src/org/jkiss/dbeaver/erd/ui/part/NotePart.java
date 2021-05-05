@@ -64,8 +64,6 @@ public class NotePart extends NodePart
 	@Override
     protected void createEditPolicies()
 	{
-        getDiagram().getModelAdapter().installPartEditPolicies(this);
-
         final boolean layoutEnabled = isLayoutEnabled();
         if (layoutEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
@@ -77,6 +75,8 @@ public class NotePart extends NodePart
 
             //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
         }
+
+        getDiagram().getModelAdapter().installPartEditPolicies(this);
 	}
 
     @Override

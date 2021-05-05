@@ -25,8 +25,7 @@ import org.jkiss.dbeaver.erd.ui.part.EntityPart;
  * Handles deletion of tables
  * @author Serge Rider
  */
-public class EntityEditPolicy extends ComponentEditPolicy
-{
+public class EntityEditPolicy extends ComponentEditPolicy {
 
 	@Override
     protected Command createDeleteCommand(GroupRequest request)
