@@ -124,7 +124,7 @@ public class NavigatorObjectsDeleter {
                 commandTarget = NavigatorHandlerObjectBase.getCommandTarget(
                         window,
                         node.getParentNode(),
-                        object.getClass(),
+                    null, object.getClass(),
                         false
                 );
             } catch (DBException e) {
@@ -217,7 +217,7 @@ public class NavigatorObjectsDeleter {
                     NavigatorHandlerObjectBase.getCommandTarget(
                     window,
                     node.getParentNode(),
-                    object.getClass(),
+                        null, object.getClass(),
                     false
             );
             if (!object.isPersisted() || commandTarget.getEditor() != null) {
@@ -326,7 +326,7 @@ public class NavigatorObjectsDeleter {
             commandTarget = NavigatorHandlerObjectBase.getCommandTarget(
                     window,
                     node.getParentNode(),
-                    object.getClass(),
+                null, object.getClass(),
                     false
             );
         } catch (DBException e) {

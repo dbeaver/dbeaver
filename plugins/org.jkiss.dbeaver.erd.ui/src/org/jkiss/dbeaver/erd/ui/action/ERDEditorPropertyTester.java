@@ -31,6 +31,7 @@ public class ERDEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_REDO = "canRedo";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_EDITABLE = "editable";
+    public static final String PROP_EDIT_MODE = "editMode";
     public static final String SUPPORTS_STRUCTURE_EDIT = "supportsStructureEdit";
 
     @Override
@@ -50,6 +51,8 @@ public class ERDEditorPropertyTester extends PropertyTester
                 DeleteAction deleteAction = new DeleteAction((IWorkbenchPart) erdEditor);
                 deleteAction.update();
                 return deleteAction.isEnabled();
+            case PROP_EDIT_MODE:
+                return erdEditor.getDiagram().isEditEnabled();
             case SUPPORTS_STRUCTURE_EDIT:
                 return erdEditor.getDecorator().supportsStructureEdit() &&
                     erdEditor.getCommandContext() != null;

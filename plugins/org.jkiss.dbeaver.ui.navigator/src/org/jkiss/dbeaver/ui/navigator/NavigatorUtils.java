@@ -92,6 +92,8 @@ public class NavigatorUtils {
             Object selectedObject = ((IStructuredSelection)selection).getFirstElement();
             if (selectedObject instanceof DBNNode) {
                 return (DBNNode) selectedObject;
+            } else {
+                return RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
             }
         }
         return null;
@@ -107,6 +109,11 @@ public class NavigatorUtils {
             for (Object selectedObject : (IStructuredSelection) selection) {
                 if (selectedObject instanceof DBNNode) {
                     nodes.add((DBNNode) selectedObject);
+                } else {
+                    DBNNode node = RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
+                    if (node != null) {
+                        nodes.add(node);
+                    }
                 }
             }
         }

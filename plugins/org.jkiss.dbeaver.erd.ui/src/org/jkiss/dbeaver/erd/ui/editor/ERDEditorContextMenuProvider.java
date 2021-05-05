@@ -72,7 +72,9 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
             menu.add(new Separator());
 
             menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
-            menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_DELETE));
+            if (ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.EDIT_DELETE, editor.getSite())) {
+                menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_DELETE));
+            }
 
             menu.add(new Separator());
 
