@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
@@ -108,10 +109,13 @@ public class AttributePart extends PropertyAwarePart {
     public void setSelected(int value) {
         super.setSelected(value);
         EditableLabel columnLabel = getFigure().getLabel();
-        if (value != EditPart.SELECTED_NONE)
-            columnLabel.setSelected(true);
-        else
-            columnLabel.setSelected(false);
+        columnLabel.setSelected(value != EditPart.SELECTED_NONE);
+        if (false) {
+            IFigure rightPanel = getFigure().getRightPanel();
+            if (rightPanel instanceof EditableLabel) {
+                ((EditableLabel) rightPanel).setSelected(value != EditPart.SELECTED_NONE);
+            }
+        }
         columnLabel.repaint();
     }
 
