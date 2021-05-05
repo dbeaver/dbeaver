@@ -325,9 +325,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 {
                     // last expression ends with space or with ")"
                     allowedKeywords = new HashSet<>();
-                    allowedKeywords.add(SQLConstants.KEYWORD_FROM);
-                    if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
-                        matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                    if (proposals.isEmpty() && CommonUtils.isEmpty(wordDetector.getPrevWords())) {
+                        // No proposals for *. Probably it is a query start
+                        allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                        if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
+                            matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                        }
                     }
                     if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
                         // Shift offset because we need space after *
