@@ -80,23 +80,23 @@ public class DatabaseEditorUtils {
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_SAVE,
-            null,
+            "Save ...",
             UIIcon.SAVE,
-            null,
+            "Preview changes and save",
             true));
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_REVERT,
             null,
             UIIcon.RESET,
-            null,
+            "Revert all changes in the current editor",
             true));
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_REFRESH,
             null,
             UIIcon.REFRESH,
-            null,
+            "Refresh editor contents",
             true));
     }
 

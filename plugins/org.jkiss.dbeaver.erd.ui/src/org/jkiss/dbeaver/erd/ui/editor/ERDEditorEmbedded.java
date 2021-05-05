@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -63,6 +64,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
     private static final String PROP_DIAGRAM_STATE = "erd.diagram.state";
     private static final String PROPS_DIAGRAM_SERIALIZED = "serialized";
+    private static final String GROUP_SAVE = "save";
 
     private Composite parent;
 
@@ -95,6 +97,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         super.fillDefaultEditorContributions(toolBarManager);
 
         toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
+
+        toolBarManager.add(new Separator(GROUP_SAVE));
 
         DatabaseEditorUtils.contributeStandardEditorActions(getSite(), toolBarManager);
     }

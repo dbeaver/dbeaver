@@ -47,6 +47,7 @@ import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -1088,6 +1089,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void fillCustomActions(IContributionManager toolBarManager) {
             fillDefaultEditorContributions(toolBarManager);
+        }
+
+        @Override
+        protected void populateCustomActions(ContributionManager contributionManager) {
+            // Add dynamic toolbar contributions
+            final IMenuService menuService = getSite().getService(IMenuService.class);
+            if (menuService != null) {
+                menuService.populateContributionManager(contributionManager, "toolbar:ERDEditorToolbar");
+            }
         }
 
         @Override
