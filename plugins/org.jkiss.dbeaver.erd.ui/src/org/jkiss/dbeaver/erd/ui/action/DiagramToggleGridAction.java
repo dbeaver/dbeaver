@@ -31,19 +31,18 @@ import org.jkiss.dbeaver.utils.PrefUtils;
  *
  * @author Serge Rider
  */
-public class DiagramToggleGridAction extends Action
-{
-	public DiagramToggleGridAction()
-	{
-		super(ERDUIMessages.erd_editor_control_action_toggle_grid, ERDUIActivator.getImageDescriptor("icons/layer_grid.png"));
-	}
+public class DiagramToggleGridAction extends Action {
 
-	@Override
-    public void run()
-	{
+    public DiagramToggleGridAction() {
+        super(ERDUIMessages.erd_editor_control_action_toggle_grid, AS_CHECK_BOX);
+        setImageDescriptor(ERDUIActivator.getImageDescriptor("icons/layer_grid.png"));
+        setChecked(ERDUIActivator.getDefault().getPreferences().getBoolean(ERDUIConstants.PREF_GRID_ENABLED));
+    }
+
+    @Override
+    public void run() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        final boolean gridEnabled = store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED);
-        store.setValue(ERDUIConstants.PREF_GRID_ENABLED, !gridEnabled);
+        store.setValue(ERDUIConstants.PREF_GRID_ENABLED, isChecked());
         PrefUtils.savePreferenceStore(store);
     }
 
