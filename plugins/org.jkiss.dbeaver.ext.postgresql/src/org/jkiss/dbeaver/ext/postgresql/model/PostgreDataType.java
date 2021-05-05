@@ -625,7 +625,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 }
                 PostgreCollation collation = getCollationId(monitor);
                 if (collation != null) {
-                    sql.append("\n\tCOLLATE ").append(collation.getName()); //$NON-NLS-1$
+                    sql.append("\n\tCOLLATE ").append(DBUtils.getQuotedIdentifier(collation)); //$NON-NLS-1$
                 }
                 if (!CommonUtils.isEmpty(defaultValue)) {
                     sql.append("\n\tDEFAULT ").append(defaultValue); //$NON-NLS-1$
