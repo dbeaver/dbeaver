@@ -850,7 +850,7 @@
     <extension point="org.eclipse.ui.contexts">
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset"
-                parentId="org.jkiss.dbeaver.ui.editors.sql"
+                parentId="org.eclipse.ui.contexts.window"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
