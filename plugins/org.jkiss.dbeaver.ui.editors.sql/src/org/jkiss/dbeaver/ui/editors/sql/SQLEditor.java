@@ -1427,6 +1427,8 @@ public class SQLEditor extends SQLEditorBase implements
                 //if (epHasFocus) {
                     getEditorControlWrapper().setFocus();
                 //}
+                // Set selection provider back to the editor
+                getSite().setSelectionProvider(new DynamicSelectionProvider());
             } else {
                 if (extraPresentation == null) {
                     // Lazy activation
@@ -3773,6 +3775,14 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean lastFocusInEditor = true;
         @Override
         public ISelectionProvider getProvider() {
+            if (extraPresentation != null && getExtraPresentationState() == SQLEditorPresentation.ActivationType.VISIBLE) {
+                if (getExtraPresentationControl().isFocusControl()) {
+                    ISelectionProvider selectionProvider = extraPresentation.getSelectionProvider();
+                    if (selectionProvider != null) {
+                        return selectionProvider;
+                    }
+                }
+            }
             ResultSetViewer rsv = getActiveResultSetViewer();
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();

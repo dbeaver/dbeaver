@@ -172,7 +172,7 @@
              class="org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester"
              id="org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.erd.ui.editor"
-             properties="canUndo,canRedo,canDelete,editable"
+             properties="canUndo,canRedo,canDelete,editable,supportsStructureEdit"
              type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
        </propertyTester>
     </extension>
