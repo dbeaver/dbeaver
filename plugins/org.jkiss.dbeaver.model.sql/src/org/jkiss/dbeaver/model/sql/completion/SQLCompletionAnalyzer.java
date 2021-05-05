@@ -331,8 +331,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
                             matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
                         }
-                    }
-                    if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
+                    } else if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
                         // Shift offset because we need space after *
                         wordDetector.shiftOffset(1);
                     }
