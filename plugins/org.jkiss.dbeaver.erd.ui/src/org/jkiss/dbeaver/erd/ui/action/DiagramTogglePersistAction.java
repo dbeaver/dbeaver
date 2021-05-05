@@ -33,8 +33,10 @@ public class DiagramTogglePersistAction extends Action {
     private final ERDEditorEmbedded editor;
 
     public DiagramTogglePersistAction(ERDEditorEmbedded editor) {
-        super("Persist diagram", AS_CHECK_BOX);
+        super("Keep layout", AS_CHECK_BOX);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE_TO_DATABASE));
+        setDescription("Save diagram layout locally.\nOtherwise entities layout will be reverted on editor reopen.");
+        setToolTipText(getDescription());
         this.editor = editor;
     }
 

@@ -19,7 +19,6 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -72,15 +71,8 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
 
             menu.add(new Separator());
 
-            //menu.add(new Separator(GEFActionConstants.GROUP_EDIT));
-            //menu.add(new Separator(GEFActionConstants.GROUP_UNDO));
-            //menu.add(new Separator(GEFActionConstants.GROUP_COPY));
             menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
             menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_DELETE));
-
-            menu.add(new Separator(GEFActionConstants.GROUP_VIEW));
-            menu.add(new Separator(GEFActionConstants.GROUP_FIND));
-            menu.add(new Separator(GEFActionConstants.GROUP_SAVE));
 
             menu.add(new Separator());
 
