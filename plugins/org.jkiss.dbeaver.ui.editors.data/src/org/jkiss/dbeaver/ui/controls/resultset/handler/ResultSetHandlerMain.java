@@ -242,7 +242,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 for (Object cell : selection.toArray()) {
                     DBDAttributeBinding attr = selection.getElementAttribute(cell);
                     ResultSetRow row = selection.getElementRow(cell);
-                    if (row != null && attr != null) {
+                    if (row != null && attr != null && !DBExecUtils.isAttributeReadOnly(attr)) {
                         ResultSetValueController valueController = new ResultSetValueController(
                             rsv,
                             attr,
