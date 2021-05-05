@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -48,6 +49,8 @@ import java.util.Map;
 public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
     private static final Log log = Log.getLog(VerticaMetaModel.class);
+
+    Boolean available;
 
     public VerticaMetaModel() {
         super();
@@ -95,7 +98,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
         JDBCPreparedStatement dbStat;
-        boolean supportsCommentReading = owner.getDataSource().isServerVersionAtLeast(9, 3);
+        boolean supportsCommentReading = isChildCommentColumnAvailable(session.getProgressMonitor(), owner.getDataSource());
         StringBuilder ddl = new StringBuilder();
         ddl.append("SELECT ");
         if (supportsCommentReading) ddl.append("com.comment AS REMARKS,");
@@ -119,6 +122,27 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
             dbStat.setString(1, owner.getName());
         }
         return dbStat;
+    }
+
+    private boolean isChildCommentColumnAvailable(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource) {
+        // child_object is very helpful column in v_catalog.comments table, but it's not available in Vertica versions < 9.3 and in some other cases
+        if (available == null) {
+            try {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Check child comment column existence")) {
+                    try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                            "SELECT 1 FROM v_catalog.comments c " +
+                                    "WHERE c.child_object = 'testDBeaver'"))
+                    {
+                        dbStat.setFetchSize(1);
+                        dbStat.execute();
+                        available = true;
+                    }
+                }
+            } catch (Exception e) {
+                available = false;
+            }
+        }
+        return available;
     }
 
     @Override
