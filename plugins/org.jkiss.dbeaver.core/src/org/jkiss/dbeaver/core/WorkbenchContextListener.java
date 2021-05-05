@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributions;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 /**
@@ -197,7 +194,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         }
         try {
             contextService.deferUpdates(true);
-            if (part instanceof INavigatorModelView) {
+//            if (part instanceof INavigatorModelView) {
                 // We check for instanceof (do not use adapter) because otherwise it become active
                 // for all entity editor and clashes with SQL editor and other complex stuff.
 //                if (activationNavigator != null) {
@@ -205,14 +202,16 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 //                    contextService.deactivateContext(activationNavigator);
 //                }
 //                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
-            }
-            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
-                if (activationSQL != null) {
-                    //log.debug("Double activation of SQL context");
-                    contextService.deactivateContext(activationSQL);
-                }
-                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
-            }
+//            }
+
+            // What the point of setting SQL editor context here? It is set by editor itself
+//            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
+//                if (activationSQL != null) {
+//                    //log.debug("Double activation of SQL context");
+//                    contextService.deactivateContext(activationSQL);
+//                }
+//                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
+//            }
             if (part.getAdapter(ResultSetViewer.class) != null ||
                 (part instanceof SQLEditor) ||
                 (part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
@@ -248,10 +247,10 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 //                contextService.deactivateContext(activationNavigator);
 //                activationNavigator = null;
 //            }
-            if (activationSQL != null) {
-                contextService.deactivateContext(activationSQL);
-                activationSQL = null;
-            }
+//            if (activationSQL != null) {
+//                contextService.deactivateContext(activationSQL);
+//                activationSQL = null;
+//            }
             if (activationResults != null) {
                 contextService.deactivateContext(activationResults);
                 activationResults = null;
