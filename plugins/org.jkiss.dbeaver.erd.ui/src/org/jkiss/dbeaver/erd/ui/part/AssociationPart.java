@@ -254,7 +254,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     @Override
     public void performRequest(Request request) {
         if (request.getType() == RequestConstants.REQ_OPEN) {
-            ERDUIUtils.openObjectEditor(getAssociation());
+            ERDUIUtils.openObjectEditor(getDiagramPart().getDiagram(), getAssociation());
         }
     }
 

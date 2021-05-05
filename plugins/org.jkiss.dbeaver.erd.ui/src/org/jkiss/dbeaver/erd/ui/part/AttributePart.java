@@ -91,7 +91,7 @@ public class AttributePart extends PropertyAwarePart {
     @Override
     public void performRequest(Request request) {
         if (request.getType() == RequestConstants.REQ_OPEN) {
-            ERDUIUtils.openObjectEditor(getAttribute());
+            ERDUIUtils.openObjectEditor(getDiagram(), getAttribute());
         } else {
             getDiagram().getModelAdapter().performPartRequest(this, request);
         }
