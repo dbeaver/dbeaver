@@ -218,6 +218,8 @@ public class DiagramPart extends PropertyAwarePart {
     {
         installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
         installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+
+        getDiagram().getModelAdapter().installPartEditPolicies(this);
     }
 
     /**

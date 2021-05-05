@@ -23,7 +23,6 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
 import java.beans.PropertyChangeEvent;
@@ -80,12 +78,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 
     @Nullable
     public DBECommandContext getCommandContext() {
-        ERDEditorPart editor = getEditor();
-        IEditorInput editorInput = editor.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            return ((IDatabaseEditorInput) editorInput).getCommandContext();
-        }
-        return null;
+        return getEditor().getCommandContext();
     }
 
     protected boolean isLayoutEnabled() {

@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -91,6 +92,7 @@ import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectSearcher;
@@ -224,6 +226,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (hasProgressControl()) {
             progressControl.createProgressPanel();
         }
+    }
+
+    public DBECommandContext getCommandContext() {
+        IEditorInput editorInput = this.getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            return ((IDatabaseEditorInput) editorInput).getCommandContext();
+        }
+        return null;
     }
 
     protected void updateToolbarActions() {

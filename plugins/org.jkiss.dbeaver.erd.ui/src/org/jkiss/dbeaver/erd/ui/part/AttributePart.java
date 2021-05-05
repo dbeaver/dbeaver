@@ -80,13 +80,13 @@ public class AttributePart extends PropertyAwarePart {
      */
     @Override
     protected void createEditPolicies() {
-        getDiagram().getModelAdapter().installPartEditPolicies(this);
         if (isLayoutEnabled()) {
             if (getEditPolicy(EditPolicy.CONTAINER_ROLE) == null && isColumnDragAndDropSupported()) {
                 installEditPolicy(EditPolicy.CONTAINER_ROLE, new AttributeConnectionEditPolicy(this));
                 installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE, new AttributeDragAndDropEditPolicy(this));
             }
         }
+        getDiagram().getModelAdapter().installPartEditPolicies(this);
     }
 
     @Override

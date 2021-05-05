@@ -51,7 +51,8 @@ public class ERDEditorPropertyTester extends PropertyTester
                 deleteAction.update();
                 return deleteAction.isEnabled();
             case SUPPORTS_STRUCTURE_EDIT:
-                return erdEditor.getDecorator().supportsStructureEdit();
+                return erdEditor.getDecorator().supportsStructureEdit() &&
+                    erdEditor.getCommandContext() != null;
         }
         return false;
     }
