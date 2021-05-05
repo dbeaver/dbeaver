@@ -152,7 +152,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             }
 
             @Override
-            protected LoadingJob<Collection<T>> createLoadService()
+            protected LoadingJob<Collection<T>> createLoadService(boolean forUpdate)
             {
                 return LoadingJob.createService(
                     new AbstractLoadService<Collection<T>>() {
@@ -198,8 +198,8 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             }
 
             @Override
-            protected void setListData(Collection<T> items, boolean append) {
-                super.setListData(items, append);
+            protected void setListData(Collection<T> items, boolean append, boolean forUpdate) {
+                super.setListData(items, append, forUpdate);
                 if (selectedObjects != null) {
                     getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
                 }

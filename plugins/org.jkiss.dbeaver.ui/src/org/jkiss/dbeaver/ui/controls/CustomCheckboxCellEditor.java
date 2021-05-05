@@ -37,14 +37,10 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CustomCheckboxCellEditor extends CellEditor {
 
+    private static final boolean CHANGE_ON_ACTIVATE = false;
+
     private Label checkBox;
     private boolean checked;
-    private boolean isPropertySheet;
-
-    public CustomCheckboxCellEditor(Composite parent, int style, boolean isPropertySheet) {
-        this(parent, SWT.NONE);
-        this.isPropertySheet = isPropertySheet;
-    }
 
     public CustomCheckboxCellEditor(Composite parent, int style) {
         super(parent, style);
@@ -56,6 +52,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         checkBox = new Label(parent, SWT.NONE);
         //setCheckIcon();
         checkBox.setFont(parent.getFont());
+        checkBox.setBackground(null);
 
         checkBox.addFocusListener(new FocusAdapter() {
             @Override
@@ -98,7 +95,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     public LayoutData getLayoutData() {
         LayoutData layoutData = super.getLayoutData();
         if ((getStyle() & SWT.LEFT) == SWT.LEFT) {
-            layoutData.grabHorizontal = false;
+            layoutData.grabHorizontal = true;
             layoutData.horizontalAlignment = SWT.LEFT;
         } else {
             layoutData.grabHorizontal = false;
@@ -107,7 +104,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         return layoutData;
     }
 
-    void applyEditorValue() {
+    private void applyEditorValue() {
         // must set the selection before getting value
         Object newValue = doGetValue();
         markDirty();
@@ -124,14 +121,18 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     public void activate() {
-        checked = !checked;
+        if (CHANGE_ON_ACTIVATE) {
+            checked = !checked;
+        }
         setCheckIcon();
-        applyEditorValue();
-        // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
-        UIUtils.asyncExec(() -> {
-            fireApplyEditorValue();
-            dispose();
-        });
+        if (CHANGE_ON_ACTIVATE) {
+            applyEditorValue();
+            // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
+            UIUtils.asyncExec(() -> {
+                fireApplyEditorValue();
+                dispose();
+            });
+        }
     }
 
     private void addMouseListener() {

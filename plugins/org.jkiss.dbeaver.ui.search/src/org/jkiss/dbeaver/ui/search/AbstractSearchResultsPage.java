@@ -233,7 +233,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
 
         @Override
-        protected LoadingJob<Collection<DBNNode>> createLoadService()
+        protected LoadingJob<Collection<DBNNode>> createLoadService(boolean forUpdate)
         {
             // No load service
             return null;

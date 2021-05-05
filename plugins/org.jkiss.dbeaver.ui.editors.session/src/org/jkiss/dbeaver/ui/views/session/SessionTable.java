@@ -64,7 +64,7 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
     }
 
     @Override
-    protected LoadingJob<Collection<SESSION_TYPE>> createLoadService()
+    protected LoadingJob<Collection<SESSION_TYPE>> createLoadService(boolean forUpdate)
     {
         return LoadingJob.createService(
             new LoadSessionsService(),

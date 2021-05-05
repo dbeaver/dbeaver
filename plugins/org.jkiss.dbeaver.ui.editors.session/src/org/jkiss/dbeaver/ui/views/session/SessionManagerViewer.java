@@ -561,7 +561,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         @Override
-        protected LoadingJob<Collection<DBPObject>> createLoadService() {
+        protected LoadingJob<Collection<DBPObject>> createLoadService(boolean forUpdate) {
             return LoadingJob.createService(
                 new SessionDetailsLoadService(sessionDetails),
                 new ObjectsLoadVisualizer());
