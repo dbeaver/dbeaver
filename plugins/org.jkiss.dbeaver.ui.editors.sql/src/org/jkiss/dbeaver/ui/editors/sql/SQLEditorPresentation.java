@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 
 public interface SQLEditorPresentation {
@@ -23,6 +24,8 @@ public interface SQLEditorPresentation {
     void createPresentation(Composite parent, SQLEditor editor);
 
     void dispose();
+
+    ISelectionProvider getSelectionProvider();
 
     enum ActivationType {
         HIDDEN,
