@@ -93,7 +93,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public Object getDataSourceFeature(String featureId) {
         switch (featureId) {
-            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
                 return 4000;
         }
 

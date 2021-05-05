@@ -54,7 +54,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     private static final String CAT_FLAGS = "Flags";
     private static final String CAT_PROPS = "Properties";
-    private static final String CAT_STATS = "Statistics";
 
     public static final float DEFAULT_EST_ROWS = 1000.0f;
     public static final float DEFAULT_COST = 100.0f;
@@ -549,12 +548,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procTransform;
     }
 
-    @Property(category = CAT_STATS, viewable = false, order = 30)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 30)
     public float getExecCost() {
         return execCost;
     }
 
-    @Property(category = CAT_STATS, viewable = false, order = 31)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 31)
     public float getEstRows() {
         return estRows;
     }

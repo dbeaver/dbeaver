@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionAccessMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -191,31 +192,31 @@ public class DB2TablePartition extends DB2Object<DB2Table> implements DBSTablePa
         return highValue;
     }
 
-    @Property(viewable = false, order = 20, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 20, category = DBConstants.CAT_STATISTICS)
     public Timestamp getStatsTime()
     {
         return statsTime;
     }
 
-    @Property(viewable = false, order = 21, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 21, category = DBConstants.CAT_STATISTICS)
     public Long getCard()
     {
         return card;
     }
 
-    @Property(viewable = false, order = 22, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 22, category = DBConstants.CAT_STATISTICS)
     public Long getnPages()
     {
         return nPages;
     }
 
-    @Property(viewable = false, order = 23, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 23, category = DBConstants.CAT_STATISTICS)
     public Long getfPages()
     {
         return fPages;
     }
 
-    @Property(viewable = false, order = 24, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 24, category = DBConstants.CAT_STATISTICS)
     public Long getOverFLow()
     {
         return overFLow;

@@ -181,7 +181,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return null;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, expensive = true, order = 23)
     public Long getRowCount(DBRProgressMonitor monitor) throws DBCException
     {
         if (rowCount != null || !isPersisted()) {

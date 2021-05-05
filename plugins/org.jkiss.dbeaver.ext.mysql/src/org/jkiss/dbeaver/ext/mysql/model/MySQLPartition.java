@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -34,9 +35,7 @@ import java.util.List;
 /**
  * MySQLPartition
  */
-public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTablePartition
-{
-    private static final String CAT_STATS = "Statistics";
+public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTablePartition {
 
     private MySQLPartition parent;
     private List<MySQLPartition> subPartitions;
@@ -179,61 +178,61 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
         return nodegroup;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 6)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 6)
     public long getTableRows()
     {
         return tableRows;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 7)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 7)
     public long getAvgRowLength()
     {
         return avgRowLength;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 8)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 8)
     public long getDataLength()
     {
         return dataLength;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 9)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 9)
     public long getMaxDataLength()
     {
         return maxDataLength;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 10)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 10)
     public long getIndexLength()
     {
         return indexLength;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 11)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 11)
     public long getDataFree()
     {
         return dataFree;
     }
 
-    @Property(category = CAT_STATS, viewable = false, order = 12)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 12)
     public Date getCreateTime()
     {
         return createTime;
     }
 
-    @Property(category = CAT_STATS, viewable = false, order = 13)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 13)
     public Date getUpdateTime()
     {
         return updateTime;
     }
 
-    @Property(category = CAT_STATS, viewable = false, order = 14)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 14)
     public Date getCheckTime()
     {
         return checkTime;
     }
 
-    @Property(category = CAT_STATS, viewable = true, order = 15)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 15)
     public long getChecksum()
     {
         return checksum;

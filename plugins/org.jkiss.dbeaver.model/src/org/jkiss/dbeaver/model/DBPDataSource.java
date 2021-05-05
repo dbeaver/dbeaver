@@ -34,6 +34,20 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
 public interface DBPDataSource extends DBSInstanceContainer
 {
     /**
+     * Row limit (setMaxSize) affects DML (UPDATE, INSERT, etc) statements.
+     */
+    String FEATURE_LIMIT_AFFECTS_DML = "datasource.limit-affects-dml";
+    /**
+     * LOB value operations require enabled transactions. I.e. LOB locator life time is 1 transaction.
+     */
+    String FEATURE_LOB_REQUIRE_TRANSACTIONS = "datasource.lob-require-transactions";
+    /**
+     * Max string length. Used by data transfer/compare/migration tools.
+     * null means "unknown", -1 means any length (i.e. explicit length is not needed)
+     */
+    String FEATURE_MAX_STRING_LENGTH = "datasource.max-string-type-length";
+
+    /**
      * Datasource container
      * @return container implementation
      */

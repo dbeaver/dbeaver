@@ -1211,7 +1211,7 @@ public final class DBUtils {
         final boolean hasLimits = (offset > 0 || selectQuery) && maxRows > 0;
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
-        boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBConstants.FEATURE_LIMIT_AFFECTS_DML));
+        boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         if (selectQuery) {

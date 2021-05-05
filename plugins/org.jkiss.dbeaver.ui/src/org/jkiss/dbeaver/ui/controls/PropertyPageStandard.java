@@ -66,6 +66,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
             }
         );
         setPropertySourceProvider(this);
+
         // Register lazy load listener
         PropertiesContributor.getInstance().addLazyListener(this);
     }

@@ -33,7 +33,6 @@ public class OracleServerSession extends AbstractServerSession {
     public static final String CAT_PROCESS = "Process";
     public static final String CAT_IO = "IO";
     public static final String CAT_WAIT = "Wait";
-    //public static final String CAT_STAT = "Statistics";
 
     private long instId;
     private long sid;

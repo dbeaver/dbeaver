@@ -95,7 +95,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     @Override
     public Object getDataSourceFeature(String featureId) {
         switch (featureId) {
-            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
                 if (isServerVersionAtLeast(5, 0)) {
                     return 65535;
                 } else {

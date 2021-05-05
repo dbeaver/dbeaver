@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -35,12 +36,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
-import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * SQLServerTable
@@ -80,20 +77,20 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
         return false;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 30)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, expensive = true, order = 30)
     @Override
     public Long getRowCount(DBRProgressMonitor monitor) throws DBCException {
         readTableStats(monitor);
         return super.getRowCount(monitor);
     }
 
-    @Property(viewable = true, category = CAT_STATISTICS, order = 31)
+    @Property(viewable = true, category = DBConstants.CAT_STATISTICS, order = 31)
     public long getTotalBytes(DBRProgressMonitor monitor) throws DBCException {
         readTableStats(monitor);
         return totalBytes;
     }
 
-    @Property(viewable = true, category = CAT_STATISTICS, order = 32)
+    @Property(viewable = true, category = DBConstants.CAT_STATISTICS, order = 32)
     public long getUsedBytes(DBRProgressMonitor monitor) throws DBCException {
         readTableStats(monitor);
         return usedBytes;

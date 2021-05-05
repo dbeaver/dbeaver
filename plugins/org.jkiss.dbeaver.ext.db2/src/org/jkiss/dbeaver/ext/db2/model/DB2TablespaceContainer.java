@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -83,13 +83,13 @@ public class DB2TablespaceContainer extends DB2Object<DB2Tablespace> {
         return containerType;
     }
 
-    @Property(viewable = true, editable = false, order = 4, category = DB2Constants.CAT_STATS)
+    @Property(viewable = true, editable = false, order = 4, category = DBConstants.CAT_STATISTICS)
     public Long getTotalPages()
     {
         return totalPages;
     }
 
-    @Property(viewable = true, editable = false, order = 5, category = DB2Constants.CAT_STATS)
+    @Property(viewable = true, editable = false, order = 5, category = DBConstants.CAT_STATISTICS)
     public Long getUsablePages()
     {
         return usablePages;

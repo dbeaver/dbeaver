@@ -35,7 +35,7 @@ public class ExasolConstants {
     public static final String CAT_OWNER = "Owner";
     public static final String CAT_SOURCE = "Source";
     public static final String CAT_PERFORMANCE = "Performance";
-    public static final String CAT_STATS = "Statistics";
+
     public static final String DRV_CLIENT_NAME = "clientname";
     public static final String DRV_CLIENT_VERSION = "clientversion";
     public static final String DRV_QUERYTIMEOUT = "querytimeout";

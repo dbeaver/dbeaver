@@ -92,7 +92,6 @@ public class DB2Constants {
     public static final String             CAT_PERFORMANCE             = "Performance";
     public static final String             CAT_REMOTE                  = "Remote";
     public static final String             CAT_TEMPORAL                = "Temporal";
-    public static final String             CAT_STATS                   = "Statistics";
     public static final String             CAT_TABLESPACE              = "Tablespace";
 
     public static final String             PLAN_COST_FORMAT            = "###,###,###,##0.000";

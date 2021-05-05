@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -54,7 +55,6 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
-    public static final String CATEGORY_STATISTICS = "Statistics";
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -78,17 +78,17 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
         @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100) public String getDescription() { return description; }
 
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 10) public long getRowCount() { return rowCount; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 12, formatter = ByteNumberFormat.class) public long getDataLength() { return dataLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 13, formatter = ByteNumberFormat.class) public long getMaxDataLength() { return maxDataLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 14, formatter = ByteNumberFormat.class) public long getDataFree() { return dataFree; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 15, formatter = ByteNumberFormat.class) public long getIndexLength() { return indexLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 16) public String getRowFormat() { return rowFormat; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 10) public long getRowCount() { return rowCount; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 12, formatter = ByteNumberFormat.class) public long getDataLength() { return dataLength; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 13, formatter = ByteNumberFormat.class) public long getMaxDataLength() { return maxDataLength; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 14, formatter = ByteNumberFormat.class) public long getDataFree() { return dataFree; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 15, formatter = ByteNumberFormat.class) public long getIndexLength() { return indexLength; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 16) public String getRowFormat() { return rowFormat; }
 
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 20) public Date getCreateTime() { return createTime; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 21) public Date getUpdateTime() { return updateTime; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 22) public Date getCheckTime() { return checkTime; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 20) public Date getCreateTime() { return createTime; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 21) public Date getUpdateTime() { return updateTime; }
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 22) public Date getCheckTime() { return checkTime; }
 
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
