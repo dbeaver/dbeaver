@@ -451,19 +451,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 String id = conMap.getKey();
                 String dsProviderID = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
                 if (CommonUtils.isEmpty(dsProviderID)) {
-                    log.warn("Empty datasource provider for datasource '" + id + "'");
+                    log.debug("Empty datasource provider for datasource '" + id + "'");
                     continue;
                 }
                 DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(
                     dsProviderID);
                 if (provider == null) {
-                    log.warn("Can't find datasource provider " + dsProviderID + " for datasource '" + id + "'");
+                    log.debug("Can't find datasource provider " + dsProviderID + " for datasource '" + id + "'");
                     provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(dsProviderID);
                 }
                 String driverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
                 DriverDescriptor driver = provider.getDriver(driverId);
                 if (driver == null) {
-                    log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + id + "'. Create new driver");
+                    log.debug("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + id + "'. Create new driver");
                     driver = provider.createDriver(driverId);
                     driver.setName(driverId);
                     driver.setDescription("Missing driver " + driverId);
