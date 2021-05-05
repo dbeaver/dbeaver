@@ -88,7 +88,7 @@
                                 <items label="%tree.function_columns.node.name" itemLabel="%tree.function_column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" >
+                        <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" >
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
                     </items>
@@ -195,6 +195,7 @@
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaTableColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaProjectionColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn"/>
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaConstraintManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaSequenceManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaSequence"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
