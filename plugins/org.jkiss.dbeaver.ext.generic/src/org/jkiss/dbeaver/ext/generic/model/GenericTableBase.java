@@ -248,7 +248,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
-    @Property(viewable = false, expensive = true, order = 5, category = CAT_STATISTICS)
+    @Property(viewable = false, expensive = true, order = 5, category = DBConstants.CAT_STATISTICS)
     public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {

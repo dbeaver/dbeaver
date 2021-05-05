@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -58,13 +59,13 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
         return tableSize != null;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 20, formatter = ByteNumberFormat.class)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 20, formatter = ByteNumberFormat.class)
     @Override
     public long getStatObjectSize() {
         return tableSize == null ? 0 : tableSize;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 21)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 21)
     @Nullable
     @Override
     public synchronized Long getRowCount(DBRProgressMonitor monitor) {
@@ -72,25 +73,25 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
         return tableRows;
     }
 
-    @Property(category = CAT_STATISTICS, order = 22)
+    @Property(category = DBConstants.CAT_STATISTICS, order = 22)
     public Date getLastModifyTime(DBRProgressMonitor monitor) {
         readStatistics(monitor);
         return lastModifyTime;
     }
 
-    @Property(category = CAT_STATISTICS, order = 23)
+    @Property(category = DBConstants.CAT_STATISTICS, order = 23)
     public String getMinDate(DBRProgressMonitor monitor) {
         readStatistics(monitor);
         return minDate;
     }
 
-    @Property(category = CAT_STATISTICS, order = 24)
+    @Property(category = DBConstants.CAT_STATISTICS, order = 24)
     public String getMaxDate(DBRProgressMonitor monitor) {
         readStatistics(monitor);
         return maxDate;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 25)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 25)
     public String getEngine(DBRProgressMonitor monitor) {
         readStatistics(monitor);
         return engine;

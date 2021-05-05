@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintType;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -203,7 +204,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         return fumcPath;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
     public Integer getPrecentValid()
     {
         return precentValid;

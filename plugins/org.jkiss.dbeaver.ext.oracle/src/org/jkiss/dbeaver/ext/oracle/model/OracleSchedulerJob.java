@@ -48,7 +48,6 @@ import java.util.Map;
 public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObjectExt {
 
     private static final String CAT_SETTINGS = "Settings";
-    private static final String CAT_STATISTICS = "Statistics";
     private static final String CAT_EVENTS = "Events";
     private static final String CAT_ADVANCED = "Advanced";
 
@@ -339,37 +338,37 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return jobPriority;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 39)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 39)
     public long getRunCount() {
         return runCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 40)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 40)
     public long getMaxRuns() {
         return maxRuns;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 41)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 41)
     public long getFailureCount() {
         return failureCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 42)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 42)
     public long getMaxFailures() {
         return maxFailures;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 43)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 43)
     public long getRetryCount() {
         return retryCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 44)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 44)
     public String getLastStartDate() {
         return lastStartDate;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 45)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 45)
     public String getLastRunDuration() {
         return lastRunDuration;
     }

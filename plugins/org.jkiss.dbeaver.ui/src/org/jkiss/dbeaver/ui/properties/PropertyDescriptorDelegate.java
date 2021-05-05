@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySheetEntry;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -83,7 +84,11 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
 
     @Override
     public String getCategory() {
-        return delegate.getCategory();
+        String category = delegate.getCategory();
+        if (CommonUtils.isEmpty(category)) {
+            category = DBConstants.CAT_MAIN;
+        }
+        return category;
     }
 
     @Override
@@ -98,6 +103,12 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
 
     @Override
     public String[] getFilterFlags() {
+        if (delegate.hasFeature(DBConstants.PROP_FEATURE_EXPENSIVE) ||
+            delegate.hasFeature(DBConstants.PROP_FEATURE_HIDDEN) ||
+            DBConstants.CAT_STATISTICS.equals(delegate.getCategory()))
+        {
+            return new String[] { IPropertySheetEntry.FILTER_ID_EXPERT };
+        }
         return null;
     }
 

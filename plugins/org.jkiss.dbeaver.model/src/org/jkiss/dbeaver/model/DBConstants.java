@@ -29,31 +29,7 @@ import java.util.Locale;
 public class DBConstants {
 
     /////////////////////////////////
-    // Features
-
-    /**
-     * Row limit (setMaxSize) affects DML (UPDATE, INSERT, etc) statements.
-     */
-    public static final String FEATURE_LIMIT_AFFECTS_DML = "datasource.limit-affects-dml";
-    /**
-     * LOB value operations require enabled transactions. I.e. LOB locator life time is 1 transaction.
-     */
-    public static final String FEATURE_LOB_REQUIRE_TRANSACTIONS = "datasource.lob-require-transactions";
-    /**
-     * Max string length. Used by data transfer/compare/migration tools.
-     * null means "unknown", -1 means any length (i.e. explicit length is not needed)
-     */
-    public static final String FEATURE_MAX_STRING_LENGTH = "datasource.max-string-type-length";
-
-    /////////////////////////////////
-    // Misc
-
-    public static final int METADATA_FETCH_SIZE = 1000;
-
-    public static final String DATA_SOURCE_PROPERTY_USER = "user"; //NON-NLS-1
-    public static final String DATA_SOURCE_PROPERTY_PASSWORD = "password"; //NON-NLS-1
-
-    public static final String NULL_VALUE_LABEL = "[NULL]"; //NON-NLS-1
+    // Standard properties
 
     public static final String PROP_ID_NAME = "name"; //NON-NLS-1
     public static final String PROP_ID_DESCRIPTION = "description"; //NON-NLS-1
@@ -68,8 +44,21 @@ public class DBConstants {
     public static final String PARAM_OBJECT_DEFINITION_TEXT = "objectDefinitionText"; //NON-NLS-1
     public static final String PARAM_EXTENDED_DEFINITION_TEXT = "extendedDefinitionText"; //NON-NLS-1
 
+    /////////////////////////////////
+    // Variables
+
     public static final String VAR_CONTEXT_NAME = "context.name";
     public static final String VAR_CONTEXT_ID = "context.id";
+
+    /////////////////////////////////
+    // Misc
+
+    public static final int METADATA_FETCH_SIZE = 1000;
+
+    public static final String DATA_SOURCE_PROPERTY_USER = "user"; //NON-NLS-1
+    public static final String DATA_SOURCE_PROPERTY_PASSWORD = "password"; //NON-NLS-1
+
+    public static final String NULL_VALUE_LABEL = "[NULL]"; //NON-NLS-1
 
     // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
     // Left for backward compatibility. Do not use it for new provider property names
@@ -123,4 +112,27 @@ public class DBConstants {
     public static final String LABEL_NA = "N/A";
 
     public static final String DEBUG_LOG_FILE_NAME = "dbeaver-debug.log";
+
+    /////////////////////////////////
+    // Property categories and features
+
+    public static final String CAT_MAIN = "Main";
+    public static final String CAT_STATISTICS = "Statistics";
+
+    public static final String PROP_FEATURE_EXPENSIVE = "expensive";
+    public static final String PROP_FEATURE_NUMERIC = "numeric";
+    public static final String PROP_FEATURE_DATETME = "datetme";
+    public static final String PROP_FEATURE_HIDDEN = "hidden";
+    public static final String PROP_FEATURE_REMOTE = "remote";
+    public static final String PROP_FEATURE_OPTIONAL = "optional";
+    public static final String PROP_FEATURE_SPECIFIC = "specific";
+    public static final String PROP_FEATURE_REQUIRED = "required";
+    public static final String PROP_FEATURE_PASSWORD = "password";
+    public static final String PROP_FEATURE_NAME = "name";
+    public static final String PROP_FEATURE_MULTILINE = "multiline";
+    public static final String PROP_FEATURE_EDIT_POSSIBLE = "editPossible";
+    public static final String PROP_FEATURE_LINK_POSSIBLE = "linkPossible";
+    public static final String PROP_FEATURE_HREF = "href";
+    public static final String PROP_FEATURE_VIEWABLE = "viewable";
+
 }

@@ -206,9 +206,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     @Override
     public Object getDataSourceFeature(String featureId) {
         switch (featureId) {
-            case DBConstants.FEATURE_LIMIT_AFFECTS_DML:
+            case DBPDataSource.FEATURE_LIMIT_AFFECTS_DML:
                 return true;
-            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
                 return 8000;
         }
         return super.getDataSourceFeature(featureId);

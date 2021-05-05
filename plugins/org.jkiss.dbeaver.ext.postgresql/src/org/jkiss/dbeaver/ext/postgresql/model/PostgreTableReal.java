@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -86,12 +87,12 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         return triggerCache;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 22)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 22)
     public long getRowCountEstimate() {
         return rowCountEstimate;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, expensive = true, order = 23)
     public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
@@ -115,7 +116,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         return rowCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 24, formatter = ByteNumberFormat.class)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 24, formatter = ByteNumberFormat.class)
     public Long getDiskSpace(DBRProgressMonitor monitor)
     {
         readTableStats(monitor);
@@ -123,7 +124,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         return diskSpace;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 25, formatter = ByteNumberFormat.class)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 25, formatter = ByteNumberFormat.class)
     public long getRelationSize(DBRProgressMonitor monitor) {
         readTableStats(monitor);
         return tableRelSize;

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -243,7 +244,7 @@ public class DB2PlanObject extends DB2PlanNode implements DBCPlanCostNode {
         return createTime;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Timestamp getStatsTime()
     {
         return statsTime;
@@ -285,91 +286,91 @@ public class DB2PlanObject extends DB2PlanNode implements DBCPlanCostNode {
         return extentSize;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getPages()
     {
         return pages;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Double getOverHead()
     {
         return overHead;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Double getTransferRate()
     {
         return transferRate;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Double getCluster()
     {
         return cluster;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getnLeaf()
     {
         return nLeaf;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Integer getnLevels()
     {
         return nLevels;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getOverFlow()
     {
         return overFlow;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getFullKeyCard()
     {
         return fullKeyCard;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getFirstKeyCard()
     {
         return firstKeyCard;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getFirst2KeyCard()
     {
         return first2KeyCard;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getFirst3KeyCard()
     {
         return first3KeyCard;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getFirst4KeyCard()
     {
         return first4KeyCard;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Long getSequentialPages()
     {
         return sequentialPages;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public Integer getDensity()
     {
         return density;
     }
 
-    @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
+    @Property(editable = false, viewable = false, category = DBConstants.CAT_STATISTICS)
     public String getStatsSrc()
     {
         return statsSrc;

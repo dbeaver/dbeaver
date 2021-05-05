@@ -42,7 +42,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OracleTable
@@ -81,41 +84,41 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         private int avgSpaceFreelistBlocks;
         private int numFreelistBlocks;
 
-        @Property(category = CAT_STATISTICS, order = 31)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 31)
         public int getPctFree() { return pctFree; }
-        @Property(category = CAT_STATISTICS, order = 32)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 32)
         public int getPctUsed() { return pctUsed; }
-        @Property(category = CAT_STATISTICS, order = 33)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 33)
         public int getIniTrans() { return iniTrans; }
-        @Property(category = CAT_STATISTICS, order = 34)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 34)
         public int getMaxTrans() { return maxTrans; }
-        @Property(category = CAT_STATISTICS, order = 35)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 35)
         public int getInitialExtent() { return initialExtent; }
-        @Property(category = CAT_STATISTICS, order = 36)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 36)
         public int getNextExtent() { return nextExtent; }
-        @Property(category = CAT_STATISTICS, order = 37)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 37)
         public int getMinExtents() { return minExtents; }
-        @Property(category = CAT_STATISTICS, order = 38)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 38)
         public int getMaxExtents() { return maxExtents; }
-        @Property(category = CAT_STATISTICS, order = 39)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 39)
         public int getPctIncrease() { return pctIncrease; }
-        @Property(category = CAT_STATISTICS, order = 40)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 40)
         public int getFreelists() { return freelists; }
-        @Property(category = CAT_STATISTICS, order = 41)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 41)
         public int getFreelistGroups() { return freelistGroups; }
-        @Property(category = CAT_STATISTICS, order = 42)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 42)
         public int getBlocks() { return blocks; }
-        @Property(category = CAT_STATISTICS, order = 43)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 43)
         public int getEmptyBlocks() { return emptyBlocks; }
-        @Property(category = CAT_STATISTICS, order = 44)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 44)
         public int getAvgSpace() { return avgSpace; }
-        @Property(category = CAT_STATISTICS, order = 45)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 45)
         public int getChainCount() { return chainCount; }
-        @Property(category = CAT_STATISTICS, order = 46)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 46)
         public int getAvgRowLen() { return avgRowLen; }
-        @Property(category = CAT_STATISTICS, order = 47)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 47)
         public int getAvgSpaceFreelistBlocks() { return avgSpaceFreelistBlocks; }
-        @Property(category = CAT_STATISTICS, order = 48)
+        @Property(category = DBConstants.CAT_STATISTICS, order = 48)
         public int getNumFreelistBlocks() { return numFreelistBlocks; }
     }
 
@@ -188,7 +191,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
 
-    @Property(viewable = false, category = CAT_STATISTICS, formatter = ByteNumberFormat.class)
+    @Property(viewable = false, category = DBConstants.CAT_STATISTICS, formatter = ByteNumberFormat.class)
     public Long getTableSize(DBRProgressMonitor monitor) throws DBCException {
         if (tableSize == null) {
             loadSize(monitor);

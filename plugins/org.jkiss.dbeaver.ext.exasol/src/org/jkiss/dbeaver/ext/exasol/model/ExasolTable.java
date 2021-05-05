@@ -20,17 +20,13 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableIndexCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTablePartitionColumnCache;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -108,22 +104,22 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
             return createTime;
         }
 
-        @Property(viewable = true, expensive = false, editable = false, order = 150, category = ExasolConstants.CAT_STATS, formatter = ByteNumberFormat.class)
+        @Property(viewable = true, expensive = false, editable = false, order = 150, category = DBConstants.CAT_STATISTICS, formatter = ByteNumberFormat.class)
         public long getRawsize(DBRProgressMonitor monitor) throws DBCException {
             return sizeRaw;
         }
 
-        @Property(viewable = true, expensive = false, editable = false, order = 200, category = ExasolConstants.CAT_STATS, formatter = ByteNumberFormat.class)
+        @Property(viewable = true, expensive = false, editable = false, order = 200, category = DBConstants.CAT_STATISTICS, formatter = ByteNumberFormat.class)
         public long getCompressedsize(DBRProgressMonitor monitor) throws DBCException {
             return sizeCompressed;
         }
 
-        @Property(viewable = true, expensive = false, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
+        @Property(viewable = true, expensive = false, editable = false, order = 250, category = DBConstants.CAT_STATISTICS)
         public float getDeletePercentage(DBRProgressMonitor monitor) throws DBCException {
             return this.deletePercentage;
         }    
         
-        @Property(viewable = true, expensive = false, editable = false, order = 300, category = ExasolConstants.CAT_STATS)
+        @Property(viewable = true, expensive = false, editable = false, order = 300, category = DBConstants.CAT_STATISTICS)
         public long getTableCount(DBRProgressMonitor monitor) throws DBCException {
         	return this.tablecount;
         }

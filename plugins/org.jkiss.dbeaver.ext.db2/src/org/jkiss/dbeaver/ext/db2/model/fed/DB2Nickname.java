@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableAccessMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -176,31 +177,31 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
         return cachingAllowed;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
     public Long getCard()
     {
         return card;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
     public Timestamp getStatsTime()
     {
         return statsTime;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
     public Long getnPages()
     {
         return nPages;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
     public Long getfPages()
     {
         return fPages;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
     public Long getOverFLow()
     {
         return overFLow;

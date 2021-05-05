@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnCompression;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnGenerated;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -399,55 +400,55 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return transactionStartId;
     }
 
-    @Property(viewable = false, order = 150, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 150, category = DBConstants.CAT_STATISTICS)
     public Long getColcard()
     {
         return colcard;
     }
 
-    @Property(viewable = false, order = 152, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 152, category = DBConstants.CAT_STATISTICS)
     public Integer getAvgLength()
     {
         return avgLength;
     }
 
-    @Property(viewable = false, order = 153, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 153, category = DBConstants.CAT_STATISTICS)
     public String getLow2key()
     {
         return low2key;
     }
 
-    @Property(viewable = false, order = 154, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 154, category = DBConstants.CAT_STATISTICS)
     public String getHigh2key()
     {
         return high2key;
     }
 
-    @Property(viewable = false, order = 155, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 155, category = DBConstants.CAT_STATISTICS)
     public Integer getPctInlined()
     {
         return pctInlined;
     }
 
-    @Property(viewable = false, order = 156, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 156, category = DBConstants.CAT_STATISTICS)
     public Integer getPctEncoded()
     {
         return pctEncoded;
     }
 
-    @Property(viewable = false, order = 157, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 157, category = DBConstants.CAT_STATISTICS)
     public Integer getNbQuantiles()
     {
         return nbQuantiles;
     }
 
-    @Property(viewable = false, order = 158, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 158, category = DBConstants.CAT_STATISTICS)
     public Integer getNbMostFreq()
     {
         return nbMostFreq;
     }
 
-    @Property(viewable = false, order = 159, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 159, category = DBConstants.CAT_STATISTICS)
     public Long getNbNulls()
     {
         return nbNulls;

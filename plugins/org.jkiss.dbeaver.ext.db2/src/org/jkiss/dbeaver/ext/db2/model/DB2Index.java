@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexPageSplit;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -270,43 +271,43 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
         return createTime;
     }
 
-    @Property(viewable = false, editable = false, order = 30, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, order = 30, category = DBConstants.CAT_STATISTICS)
     public Timestamp getStatsTime()
     {
         return statsTime;
     }
 
-    @Property(viewable = true, editable = false, order = 31, category = DB2Constants.CAT_STATS)
+    @Property(viewable = true, editable = false, order = 31, category = DBConstants.CAT_STATISTICS)
     public Long getFullKeycard()
     {
         return fullKeycard;
     }
 
-    @Property(viewable = false, editable = false, order = 32, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, order = 32, category = DBConstants.CAT_STATISTICS)
     public Long getFirstKeycard()
     {
         return firstKeycard;
     }
 
-    @Property(viewable = false, editable = false, order = 33, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, order = 33, category = DBConstants.CAT_STATISTICS)
     public Long getFirst2Keycard()
     {
         return first2Keycard;
     }
 
-    @Property(viewable = false, editable = false, order = 34, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, order = 34, category = DBConstants.CAT_STATISTICS)
     public Long getFirst3Keycard()
     {
         return first3Keycard;
     }
 
-    @Property(viewable = false, editable = false, order = 35, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, order = 35, category = DBConstants.CAT_STATISTICS)
     public Long getFirst4Keycard()
     {
         return first4Keycard;
     }
 
-    @Property(viewable = false, editable = false, order = 36, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, editable = false, order = 36, category = DBConstants.CAT_STATISTICS)
     public Integer getClusterRatio()
     {
         return clusterRatio;

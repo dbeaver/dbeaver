@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,11 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public Object getPropertyValue(Object id) {
-        return source.getPropertyValue(null, CommonUtils.toString(id));
+        Object value = source.getPropertyValue(null, CommonUtils.toString(id));
+        if (value instanceof DBPNamedObject) {
+            return ((DBPNamedObject) value).getName();
+        }
+        return CommonUtils.toString(value);
     }
 
     @Override

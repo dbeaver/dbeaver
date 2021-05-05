@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -76,13 +77,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = true, order = 20)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 20)
     public long getRowCount()
     {
         return rowCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 21)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, expensive = true, order = 21)
     public synchronized Long getRealRowCount(DBRProgressMonitor monitor)
     {
         if (realRowCount != null) {
