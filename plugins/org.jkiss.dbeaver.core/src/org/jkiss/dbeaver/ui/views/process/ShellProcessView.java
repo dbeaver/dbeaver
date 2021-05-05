@@ -65,12 +65,8 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         if (processDescriptor != null) {
             if (processDescriptor.isRunning()) {
                 processDescriptor.terminate();
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        setPartName(processDescriptor.getName() + " (destroyed: " + processDescriptor.getExitValue() + ")");
-                    }
-                });
+                UIUtils.asyncExec(() ->
+                    setPartName(processDescriptor.getName() + " (destroyed: " + processDescriptor.getExitValue() + ")"));
 
             }
         }
@@ -107,7 +103,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
 
     private class ProcessLogger extends AbstractJob {
 
-        protected ProcessLogger()
+        ProcessLogger()
         {
             super(processDescriptor.getName());
         }
@@ -150,14 +146,11 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
             return;
         }
         final String logLine = line + GeneralUtils.getDefaultLineSeparator();
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (processLogText == null || processLogText.isDisposed()) {
-                    return;
-                }
-                processLogText.append(logLine);
+        UIUtils.asyncExec(() -> {
+            if (processLogText == null || processLogText.isDisposed()) {
+                return;
             }
+            processLogText.append(logLine);
         });
     }
 
