@@ -133,6 +133,14 @@ public class AttributeItemFigure extends Figure
 
     public void updateLabels() {
         getLabel().setText(part.getAttributeLabel());
+
+        if (part.getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.ICONS)) {
+            DBPImage labelImage = part.getAttribute().getLabelImage();
+            if (labelImage != null) {
+                getLabel().setIcon(DBeaverIcons.getImage(labelImage));
+            }
+        }
+
         if (rightPanel instanceof Label) {
 
             String rightText = "";
