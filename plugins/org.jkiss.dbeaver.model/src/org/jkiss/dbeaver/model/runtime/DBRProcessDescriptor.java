@@ -89,9 +89,9 @@ public class DBRProcessDescriptor
         return process;
     }
 
-    public boolean isRunning()
-    {
-        return process != null;
+    public boolean isRunning() {
+        Process theProcess = this.process;
+        return theProcess != null && theProcess.isAlive();
     }
 
     public int getExitValue()
@@ -196,4 +196,23 @@ public class DBRProcessDescriptor
         }
         return buf.toString();
     }
+
+    public String dumpOutput() {
+        if (process == null) {
+            return null;
+        }
+        StringWriter buf = new StringWriter();
+        try {
+            InputStream inputStream = process.getInputStream();
+            if (inputStream != null) {
+                // Note: do not close reader because it will close process error stream
+                Reader input = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding());
+                IOUtils.copyText(input, buf);
+            }
+        } catch (IOException e) {
+            e.printStackTrace(new PrintWriter(buf, true));
+        }
+        return buf.toString();
+    }
+
 }
