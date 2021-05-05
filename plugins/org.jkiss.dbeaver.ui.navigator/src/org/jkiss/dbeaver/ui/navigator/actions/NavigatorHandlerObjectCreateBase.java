@@ -141,7 +141,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
                 container,
-                newObjectType,
+                null, newObjectType,
                 openEditor);
 
             // Parent is model object - not node

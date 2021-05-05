@@ -84,6 +84,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     protected static CommandTarget getCommandTarget(
         IWorkbenchWindow workbenchWindow,
         DBNNode container,
+        DBNDatabaseNode objectNode,
         Class<?> childType,
         boolean openEditor)
         throws DBException
@@ -95,6 +96,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             final DBEStructEditor parentStructEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
             if (parentStructEditor != null && RuntimeUtils.isTypeSupported(childType, parentStructEditor.getChildTypes())) {
                 objectToSeek = (DBSObject) parentObject;
+            } else if (objectNode != null) {
+                objectToSeek = objectNode.getObject();
             }
         }
         if (objectToSeek != null) {

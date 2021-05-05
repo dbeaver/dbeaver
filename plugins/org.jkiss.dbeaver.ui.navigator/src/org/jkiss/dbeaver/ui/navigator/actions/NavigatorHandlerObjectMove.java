@@ -84,7 +84,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                     CommandTarget commandTarget = getCommandTarget(
                         HandlerUtil.getActiveWorkbenchWindow(event),
                         node.getParentNode(),
-                        object.getClass(),
+                        null, object.getClass(),
                         false);
 
                     switch (event.getCommand().getId()) {

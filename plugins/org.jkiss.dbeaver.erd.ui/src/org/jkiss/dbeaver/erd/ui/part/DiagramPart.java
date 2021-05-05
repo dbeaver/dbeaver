@@ -103,6 +103,11 @@ public class DiagramPart extends PropertyAwarePart {
         super.deactivate();
     }
 
+    @Override
+    public void performRequest(Request request) {
+        getDiagram().getModelAdapter().performPartRequest(this, request);
+    }
+
     public void resetFonts()
     {
         UIUtils.dispose(boldFont);

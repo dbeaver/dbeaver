@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -50,11 +51,12 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection) selection;
             Object element = structSelection.getFirstElement();
-            if (element instanceof DBNNode) {
+            DBNNode node = RuntimeUtils.getObjectAdapter(element, DBNNode.class);
+            if (node != null) {
                 renameNode(
                     HandlerUtil.getActiveWorkbenchWindow(event),
                     HandlerUtil.getActiveShell(event),
-                    (DBNNode) element, null);
+                    node, null);
             }
         }
         return null;
@@ -102,6 +104,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                         CommandTarget commandTarget = getCommandTarget(
                             workbenchWindow,
                             node.getParentNode(),
+                            node,
                             object.getClass(),
                             false);
 

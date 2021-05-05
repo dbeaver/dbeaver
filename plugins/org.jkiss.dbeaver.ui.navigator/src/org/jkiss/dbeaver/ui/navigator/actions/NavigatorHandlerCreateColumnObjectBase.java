@@ -80,7 +80,7 @@ public abstract class NavigatorHandlerCreateColumnObjectBase extends NavigatorHa
 
         DBECommandContext commandContext;
         try {
-            commandContext = getCommandTarget(HandlerUtil.getActiveWorkbenchWindow(event), containerNode, columnObjectConcreteType, false).getContext();
+            commandContext = getCommandTarget(HandlerUtil.getActiveWorkbenchWindow(event), containerNode, null, columnObjectConcreteType, false).getContext();
             createNewObject(maker, commandContext, entityObject);
         } catch (DBException e) {
             log.warn("Unable to create object of type " + columnObjectConcreteType.getName(), e);
