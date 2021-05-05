@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui;
 
+import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
@@ -24,7 +28,9 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
@@ -33,16 +39,31 @@ public class ERDUIUtils
 {
     private static final Log log = Log.getLog(ERDUIUtils.class);
 
-    public static void openObjectEditor(@NotNull ERDObject object) {
-        if (object.getObject() instanceof DBSObject) {
+    public static final boolean OPEN_OBJECT_PROPERTIES = true;
+
+    public static void openObjectEditor(@NotNull EntityDiagram diagram, @NotNull ERDObject object) {
+        Object dbObject = object.getObject();
+        if (dbObject instanceof DBSObject) {
             UIUtils.runUIJob("Open object editor", monitor -> {
-                DBNDatabaseNode node = DBNUtils.getNodeByObject(
-                    monitor,
-                    (DBSObject) object.getObject(),
-                    true
-                );
-                if (node != null) {
-                    NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
+                if (!(dbObject instanceof DBSEntity) && OPEN_OBJECT_PROPERTIES) {
+                    try {
+                        IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+                        IViewPart propsView = activePage.showView(IPageLayout.ID_PROP_SHEET);
+                        if (propsView != null) {
+                            propsView.setFocus();
+                        }
+                    } catch (PartInitException e) {
+                        DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
+                    }
+                } else {
+                    DBNDatabaseNode node = DBNUtils.getNodeByObject(
+                        monitor,
+                        (DBSObject) dbObject,
+                        true
+                    );
+                    if (node != null) {
+                        NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
+                    }
                 }
             });
         }

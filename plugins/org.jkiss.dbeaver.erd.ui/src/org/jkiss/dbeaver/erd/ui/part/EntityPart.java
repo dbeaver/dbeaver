@@ -88,7 +88,7 @@ public class EntityPart extends NodePart {
     @Override
     public void performRequest(Request request) {
         if (request.getType() == RequestConstants.REQ_OPEN) {
-            ERDUIUtils.openObjectEditor(getEntity());
+            ERDUIUtils.openObjectEditor(getDiagram(), getEntity());
         } else {
             getDiagram().getModelAdapter().performPartRequest(this, request);
         }
