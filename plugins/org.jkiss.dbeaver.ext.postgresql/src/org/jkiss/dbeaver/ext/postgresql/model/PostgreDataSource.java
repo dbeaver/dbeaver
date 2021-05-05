@@ -81,7 +81,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     {
         super(monitor, container, new PostgreDialect());
 
-        hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
+        // Statistics was disabled then mark it as already read
+        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
+            PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
     // Constructor for tests

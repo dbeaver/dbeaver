@@ -48,6 +48,7 @@ public class PostgreConstants {
     public static final String PROP_USE_PREPARED_STATEMENTS = DBConstants.INTERNAL_PROP_PREFIX + "use-prepared-statements-db@";
     public static final String PROP_DD_PLAIN_STRING = "postgresql.dd.plain.string";
     public static final String PROP_DD_TAG_STRING = "postgresql.dd.tag.string";
+    public static final String PROP_SHOW_DATABASE_STATISTICS = "show-database-statistics";
 
     public static final String PROP_SSL = "ssl";
 

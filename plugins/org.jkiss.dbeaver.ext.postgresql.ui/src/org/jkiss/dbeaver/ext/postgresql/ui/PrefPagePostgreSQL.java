@@ -43,6 +43,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     private Button showNonDefault;
     private Button showTemplates;
     private Button showUnavailable;
+    private Button showDatabaseStatistics;
     private Button readAllDataTypes;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
@@ -94,6 +95,13 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                     globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
                     2
             );
+            showDatabaseStatistics = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_connection_database_statistics,
+                PostgreMessages.dialog_setting_connection_database_statistics_tip,
+                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS),
+                2
+            );
             readAllDataTypes = UIUtils.createCheckbox(secureGroup,
                     PostgreMessages.dialog_setting_connection_read_all_data_types,
                     PostgreMessages.dialog_setting_connection_read_all_data_types_tip,
@@ -127,6 +135,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);

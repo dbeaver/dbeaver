@@ -81,7 +81,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private int connectionLimit;
     private long tablespaceId;
     private String description;
-    private long dbTotalSize;
+    private long dbTotalSize = -1;
     private Boolean supportTypColumn;
 
     public final RoleCache roleCache = new RoleCache();
