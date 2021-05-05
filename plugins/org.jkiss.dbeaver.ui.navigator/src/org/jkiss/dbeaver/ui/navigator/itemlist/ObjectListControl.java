@@ -38,7 +38,10 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -297,10 +300,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     public void loadData() {
-        loadData(true);
+        loadData(true, false);
     }
 
     public void loadData(boolean lazy) {
+        loadData(lazy, false);
+    }
+
+    protected void loadData(boolean lazy, boolean forUpdate) {
         if (this.loadingJob != null) {
             int dataLoadUpdatePeriod = 200;
             int dataLoadTimes = getDataLoadTimeout() / dataLoadUpdatePeriod;
@@ -328,7 +335,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (lazy) {
             // start loading service
             synchronized (this) {
-                this.loadingJob = createLoadService();
+                this.loadingJob = createLoadService(forUpdate);
                 if (this.loadingJob != null) {
                     this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
                         @Override
@@ -341,7 +348,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         } else {
             // Load data synchronously
-            final LoadingJob<Collection<OBJECT_TYPE>> loadService = createLoadService();
+            final LoadingJob<Collection<OBJECT_TYPE>> loadService = createLoadService(forUpdate);
             if (loadService != null) {
                 loadService.syncRun();
             }
@@ -352,7 +359,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return 4000;
     }
 
-    protected void setListData(Collection<OBJECT_TYPE> items, boolean append) {
+    protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate) {
         final Control itemsControl = itemsViewer.getControl();
         if (itemsControl.isDisposed()) {
             return;
@@ -525,7 +532,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     public void appendListData(Collection<OBJECT_TYPE> items) {
-        setListData(items, true);
+        setListData(items, true, false);
     }
 
     public void repackColumns() {
@@ -821,7 +828,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Overridable functions
 
-    protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();
+    /**
+     * Creates service for object loading.
+     * @param forUpdate true if it is update/merge operation. I.e. existing object modifications should remain.
+     */
+    protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService(boolean forUpdate);
 
     protected ObjectViewerRenderer createRenderer() {
         return new ViewerRenderer();
@@ -1092,13 +1103,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
+        private final boolean forUpdate;
+
+        public ObjectsLoadVisualizer(boolean forUpdate) {
+            this.forUpdate = forUpdate;
+        }
+
         public ObjectsLoadVisualizer() {
+            this(false);
         }
 
         @Override
         public void completeLoading(Collection<OBJECT_TYPE> items) {
             super.completeLoading(items);
-            setListData(items, false);
+            setListData(items, false, forUpdate);
         }
 
     }

@@ -321,11 +321,14 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             return;
         }
         if (event.getNode().isChildOf(getRootNode())) {
-            if (event.getAction() != DBNEvent.Action.UPDATE) {
-                // Add or remove - just reload list content
-                loadData(false);
-            } else {
-                getItemsViewer().update(event.getNode(), null);
+            switch (event.getAction()) {
+                case ADD:
+                case REMOVE:
+                    loadData(false, true);
+                    break;
+                case UPDATE:
+                    getItemsViewer().update(event.getNode(), null);
+                    break;
             }
         }
     }

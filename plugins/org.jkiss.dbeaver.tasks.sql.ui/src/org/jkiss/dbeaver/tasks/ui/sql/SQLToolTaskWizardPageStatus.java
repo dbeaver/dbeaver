@@ -105,7 +105,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
             }
 
             @Override
-            protected LoadingJob<Collection<SQLToolStatistics>> createLoadService() {
+            protected LoadingJob<Collection<SQLToolStatistics>> createLoadService(boolean forUpdate) {
                 return LoadingJob.createService(
                     new DummyLoadService(),
                     new ObjectsLoadVisualizer());

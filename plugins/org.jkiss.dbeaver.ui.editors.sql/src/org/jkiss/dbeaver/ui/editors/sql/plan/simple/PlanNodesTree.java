@@ -64,7 +64,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     }
 
     @Override
-    protected LoadingJob<Collection<DBCPlanNode>> createLoadService()
+    protected LoadingJob<Collection<DBCPlanNode>> createLoadService(boolean forUpdate)
     {
         return null;
     }
@@ -79,7 +79,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         itemsViewer.getControl().setRedraw(false);
         try {
             clearListData();
-            setListData(nodes, false);
+            setListData(nodes, false, false);
             itemsViewer.expandToLevel(10);
         } finally {
             itemsViewer.getControl().setRedraw(true);

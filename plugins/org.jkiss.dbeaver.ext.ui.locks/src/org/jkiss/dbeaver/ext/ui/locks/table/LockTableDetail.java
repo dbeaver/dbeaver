@@ -68,7 +68,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
     }
 
     @Override
-    protected LoadingJob<Collection<DBAServerLockItem>> createLoadService()
+    protected LoadingJob<Collection<DBAServerLockItem>> createLoadService(boolean forUpdate)
     {
         return LoadingJob.createService(
             new LoadLockDetailService(),

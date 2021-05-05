@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
@@ -53,12 +54,10 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.ui.properties.PropertyEditorUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * ItemListControl
@@ -67,11 +66,17 @@ public class ItemListControl extends NodeListControl
 {
     private static final Log log = Log.getLog(ItemListControl.class);
 
+    // FIXME: copied from editors.data constants. Need to move it in general colors configuration
+    private static final String COLOR_NEW = "org.jkiss.dbeaver.sql.resultset.color.cell.new.background";
+    private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.sql.resultset.color.cell.modified.background";
+
     private ISearchExecutor searcher;
     private Color searchHighlightColor;
     //private Color disabledCellColor;
     private Font normalFont;
     private Font boldFont;
+
+    private Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
 
     public ItemListControl(
         Composite parent,
@@ -211,17 +216,25 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
+    protected void setListData(Collection<DBNNode> items, boolean append, boolean forUpdate) {
+        if (!append && !forUpdate) {
+            changedProperties.clear();
+        }
+        super.setListData(items, append, forUpdate);
+    }
+
+    @Override
     protected ISearchExecutor getSearchRunner()
     {
         return searcher;
     }
 
     @Override
-    protected LoadingJob<Collection<DBNNode>> createLoadService()
+    protected LoadingJob<Collection<DBNNode>> createLoadService(boolean forUpdate)
     {
         return LoadingJob.createService(
             new ItemLoadService(getNodeMeta()),
-            new ObjectsLoadVisualizer());
+            new ObjectsLoadVisualizer(forUpdate));
     }
 
     @Override
@@ -240,7 +253,7 @@ public class ItemListControl extends NodeListControl
 
         private DBXTreeNode metaNode;
 
-        protected ItemLoadService(DBXTreeNode metaNode)
+        ItemLoadService(DBXTreeNode metaNode)
         {
             super("Loading items", getRootNode() instanceof DBSWrapper ? (DBSWrapper)getRootNode() : null);
             this.metaNode = metaNode;
@@ -352,9 +365,10 @@ public class ItemListControl extends NodeListControl
         protected Object getValue(Object element)
         {
             DBNNode object = (DBNNode) element;
-            final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
+            Object objectValue = getObjectValue(object);
+            final ObjectPropertyDescriptor property = objectColumn.getProperty(objectValue);
             if (property != null) {
-                return getListPropertySource().getPropertyValue(null, getObjectValue(object), property, true);
+                return getListPropertySource().getPropertyValue(null, objectValue, property, true);
             }
             return null;
         }
@@ -363,13 +377,26 @@ public class ItemListControl extends NodeListControl
         protected void setValue(Object element, Object value)
         {
             DBNNode object = (DBNNode) element;
-            final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
+            Object objectValue = getObjectValue(object);
+            final ObjectPropertyDescriptor property = objectColumn.getProperty(objectValue);
             try {
                 if (property != null) {
-                    getListPropertySource().setPropertyValue(null, getObjectValue(object), property, UIUtils.normalizePropertyValue(value));
+                    Object oldValue = getListPropertySource().getPropertyValue(null, objectValue, property, false);
+                    getListPropertySource().setPropertyValue(null, objectValue, property, UIUtils.normalizePropertyValue(value));
                     if (value instanceof Boolean) {
                         // Redraw control to let it repaint checkbox
                         getItemsViewer().getControl().redraw();
+                    }
+                    if (!CommonUtils.equalObjects(oldValue, value)) {
+                        Map<String, Object> propMap = changedProperties.computeIfAbsent(object, dbnNode -> new HashMap<>());
+                        Object savedValue = propMap.get(property.getId());
+                        if (CommonUtils.equalObjects(savedValue, value)) {
+                            // Reset to original value
+                            propMap.remove(property.getId());
+                        } else if (!propMap.containsKey(property.getId())) {
+                            // Save change
+                            propMap.put(property.getId(), oldValue);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -406,16 +433,33 @@ public class ItemListControl extends NodeListControl
             if (node.isDisposed()) {
                 return null;
             }
+
+            if (isNewObject(node)) {
+                if (!isNewObject(getRootNode())) {
+                    return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_NEW);
+                }
+            } else {
+                Map<String, Object> propMap = changedProperties.get(node);
+                if (propMap != null) {
+                    final Object objectValue = getObjectValue(node);
+                    final ObjectPropertyDescriptor prop = objectColumn.getProperty(objectValue);
+                    if (prop != null && propMap.containsKey(prop.getId())) {
+                        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_MODIFIED);
+                    }
+                }
+            }
 //            if (searcher instanceof SearcherHighligther && ((SearcherHighligther) searcher).hasObject(node)) {
 //                return searchHighlightColor;
 //            }
+/*
             if (isNewObject(node)) {
                 final Object objectValue = getObjectValue(node);
-                final ObjectPropertyDescriptor prop = objectColumn.getProperty(getObjectValue(node));
+                final ObjectPropertyDescriptor prop = objectColumn.getProperty(objectValue);
                 if (prop != null && !prop.isEditable(objectValue)) {
                     return null;//disabledCellColor;
                 }
             }
+*/
             return null;
         }
     }

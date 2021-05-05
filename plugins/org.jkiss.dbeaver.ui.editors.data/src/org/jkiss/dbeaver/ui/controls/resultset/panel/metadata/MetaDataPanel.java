@@ -238,7 +238,7 @@ public class MetaDataPanel implements IResultSetPanel {
         }
 
         @Override
-        protected LoadingJob<Collection<DBDAttributeBinding>> createLoadService() {
+        protected LoadingJob<Collection<DBDAttributeBinding>> createLoadService(boolean forUpdate) {
             return LoadingJob.createService(
                 new LoadAttributesService(),
                 new ObjectsLoadVisualizer()

@@ -187,7 +187,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         }
 
         @Override
-        protected void setListData(Collection<DBNNode> items, boolean append) {
+        protected void setListData(Collection<DBNNode> items, boolean append, boolean forUpdate) {
             if (!append) {
                 // Add parent node reference (we actually add DBNRoot to avoid unneeded parent properties columns loading)
                 final DBNNode rootNode = getRootNode();
@@ -198,7 +198,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     items = nodesWithParent;
                 }
             }
-            super.setListData(items, append);
+            super.setListData(items, append, forUpdate);
         }
 
         @Nullable

@@ -155,7 +155,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                 }
 
                 @Override
-                protected LoadingJob<Collection<DBAPrivilege>> createLoadService() {
+                protected LoadingJob<Collection<DBAPrivilege>> createLoadService(boolean forUpdate) {
                     return null;
                 }
             };
