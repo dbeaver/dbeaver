@@ -331,7 +331,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
                             matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
                         }
-                    } else if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
+                    }
+                    if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
                         // Shift offset because we need space after *
                         wordDetector.shiftOffset(1);
                     }
@@ -919,6 +920,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         return new Pair<>(matchedTableName, matchedTableAlias);
                     }
                 }
+            }
+            if (!CommonUtils.isEmpty(matchedTableName)) {
+                return new Pair<>(matchedTableName, matchedTableAlias);
             }
         } catch (BadLocationException e) {
             log.debug(e);
