@@ -50,7 +50,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 {
     private static final Log log = Log.getLog(VerticaMetaModel.class);
 
-    Boolean childObjectColumnAvailable;
+    private Boolean childObjectColumnAvailable;
 
     public VerticaMetaModel() {
         super();
