@@ -50,7 +50,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 {
     private static final Log log = Log.getLog(VerticaMetaModel.class);
 
-    Boolean available;
+    Boolean childObjectColumnAvailable;
 
     public VerticaMetaModel() {
         super();
@@ -125,24 +125,23 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     private boolean isChildCommentColumnAvailable(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource) {
-        // child_object is very helpful column in v_catalog.comments table, but it's not available in Vertica versions < 9.3 and in some other cases
-        if (available == null) {
+        // child_object is very helpful column in v_catalog.comments table, but it's not childObjectColumnAvailable in Vertica versions < 9.3 and in some other cases
+        if (childObjectColumnAvailable == null) {
             try {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Check child comment column existence")) {
                     try (final JDBCPreparedStatement dbStat = session.prepareStatement(
-                            "SELECT 1 FROM v_catalog.comments c " +
-                                    "WHERE c.child_object = 'testDBeaver'"))
+                            "SELECT child_object FROM v_catalog.comments"))
                     {
                         dbStat.setFetchSize(1);
                         dbStat.execute();
-                        available = true;
+                        childObjectColumnAvailable = true;
                     }
                 }
             } catch (Exception e) {
-                available = false;
+                childObjectColumnAvailable = false;
             }
         }
-        return available;
+        return childObjectColumnAvailable;
     }
 
     @Override
