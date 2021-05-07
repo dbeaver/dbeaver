@@ -36,6 +36,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     private String prevKeyWord = "";
     private String prevDelimiter = null;
     private List<String> prevWords = null;
+    private String nextWord;
     private String wordPart;
     private String fullWord;
     private int cursorOffset;
@@ -155,6 +156,31 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
                 prevOffset--;
             }
+
+            // Get next keyword
+            {
+                int nextOffset = documentOffset;
+                // Skip whitespaces
+                while (nextOffset < documentLength) {
+                    char ch = document.getChar(nextOffset);
+                    if (!isWordPart(ch)) {
+                        nextOffset++;
+                    } else {
+                        break;
+                    }
+                }
+                int wordPos = nextOffset;
+                while (nextOffset < documentLength) {
+                    char ch = document.getChar(nextOffset);
+                    if (!isWordPart(ch)) {
+                        break;
+                    }
+                    nextOffset++;
+                }
+                if (nextOffset > wordPos) {
+                    nextWord = document.get(wordPos, nextOffset - wordPos);
+                }
+            }
         } catch (BadLocationException e) {
             // do nothing
         }
@@ -212,6 +238,10 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     public String getPrevKeyWord()
     {
         return prevKeyWord;
+    }
+
+    public String getNextWord() {
+        return nextWord;
     }
 
     public String[] splitWordPart()

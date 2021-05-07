@@ -326,10 +326,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // last expression ends with space or with ")"
                     allowedKeywords = new HashSet<>();
                     if (proposals.isEmpty() && CommonUtils.isEmpty(wordDetector.getPrevWords())) {
-                        // No proposals for *. Probably it is a query start
-                        allowedKeywords.add(SQLConstants.KEYWORD_FROM);
-                        if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
-                            matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                        if (!SQLConstants.KEYWORD_FROM.equalsIgnoreCase(wordDetector.getNextWord())) {
+                            // No proposals for *. Probably it is a query start
+                            allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                            if (CommonUtils.isEmpty(request.getWordPart()) || request.getWordPart().equals(ALL_COLUMNS_PATTERN)) {
+                                matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                            }
                         }
                     }
                     if (delimiter.equals(ALL_COLUMNS_PATTERN)) {
@@ -826,6 +828,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         return null;
     }
 
+    private enum InlineState {
+        UNMATCHED,
+        TABLE_NAME,
+        TABLE_DOT,
+        ALIAS_AS,
+        ALIAS_NAME,
+        MATCHED
+    };
+
     @Nullable
     private Pair<String, String> extractTableName(@Nullable String tableAlias, boolean allowPartialMatch) {
         final IDocument document = request.getDocument();
@@ -853,18 +864,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
          */
 
         try {
-            final int STATE_UNMATCHED   = 0;
-            final int STATE_TABLE_NAME  = 1;
-            final int STATE_TABLE_DOT   = 2;
-            final int STATE_ALIAS_AS    = 3;
-            final int STATE_ALIAS_NAME  = 4;
-            final int STATE_MATCHED     = 5;
-
-            int state = STATE_UNMATCHED;
+            InlineState state = InlineState.UNMATCHED;
             String matchedTableName = null;
             String matchedTableAlias = null;
 
             final char structSeparator = request.getContext().getSyntaxManager().getStructSeparator();
+            boolean prevTokenWasMatchAttempt = false;
 
             while (true) {
                 final TPToken tok = scanner.nextToken();
@@ -874,54 +879,68 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (!(tok instanceof TPTokenAbstract) || tok.isWhitespace()) {
                     continue;
                 }
+
                 final String value = document.get(scanner.getTokenOffset(), scanner.getTokenLength());
-                if (state == STATE_UNMATCHED && (isTableQueryToken(tok, value) || ",".equals(value))) {
-                    state = STATE_TABLE_NAME;
+                if (state == InlineState.UNMATCHED && (isTableQueryToken(tok, value) || (prevTokenWasMatchAttempt && ",".equals(value)))) {
+                    state = InlineState.TABLE_NAME;
                     continue;
                 }
-                if (state == STATE_TABLE_NAME && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
+                if ((state == InlineState.TABLE_DOT || state == InlineState.ALIAS_AS) && (/*tok.getData() == SQLTokenType.T_KEYWORD || */",".equals(value))) {
+                    // Coma after table name
+                    // Possible partial match
+                    if (!CommonUtils.isEmpty(matchedTableName) && (CommonUtils.isEmpty(tableAlias) || CommonUtils.equalObjects(tableAlias, matchedTableAlias))) {
+                        return new Pair<>(matchedTableName, matchedTableAlias);
+                    }
+                    matchedTableName = null;
+                    state = InlineState.TABLE_NAME;
+                    continue;
+                }
+                if (state == InlineState.TABLE_NAME && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
                     matchedTableName = CommonUtils.notEmpty(matchedTableName) + value;
-                    state = STATE_TABLE_DOT;
+                    state = InlineState.TABLE_DOT;
                     continue;
                 }
-                if (state == STATE_TABLE_DOT && value.indexOf(structSeparator) >= 0) {
+                if (state == InlineState.TABLE_DOT && value.indexOf(structSeparator) >= 0) {
                     matchedTableName += value;
-                    state = STATE_TABLE_NAME;
+                    state = InlineState.TABLE_NAME;
                     continue;
                 }
-                if (state == STATE_TABLE_DOT) {
+                if (state == InlineState.TABLE_DOT) {
                     if (CommonUtils.isEmpty(tableAlias)) {
-                        state = STATE_MATCHED;
+                        state = InlineState.MATCHED;
                     } else {
-                        state = STATE_ALIAS_AS;
+                        state = InlineState.ALIAS_AS;
                     }
                 }
-                if (state == STATE_ALIAS_AS && tok.getData() == SQLTokenType.T_KEYWORD && "AS".equalsIgnoreCase(value)) {
-                    state = STATE_ALIAS_NAME;
+                if (state == InlineState.ALIAS_AS && tok.getData() == SQLTokenType.T_KEYWORD && "AS".equalsIgnoreCase(value)) {
+                    state = InlineState.ALIAS_NAME;
                     continue;
                 }
                 if (tok.getData() == SQLTokenType.T_KEYWORD) {
                     // Any keyword but AS resets state to
-                    state = CommonUtils.isEmpty(matchedTableName) ? STATE_UNMATCHED : STATE_MATCHED;
+                    state = CommonUtils.isEmpty(matchedTableName) ? InlineState.UNMATCHED : InlineState.MATCHED;
                 }
-                if ((state == STATE_ALIAS_AS || state == STATE_ALIAS_NAME) && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
+                if ((state == InlineState.ALIAS_AS || state == InlineState.ALIAS_NAME) && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
                     matchedTableAlias = value;
-                    state = STATE_MATCHED;
+                    state = InlineState.MATCHED;
                 }
-                if (state == STATE_MATCHED) {
+                if (state == InlineState.MATCHED) {
+                    prevTokenWasMatchAttempt = true;
                     final boolean fullMatch = CommonUtils.isEmpty(tableAlias) || tableAlias.equals(matchedTableAlias);
                     final boolean partialMatch = fullMatch || (allowPartialMatch && CommonUtils.startsWithIgnoreCase(matchedTableAlias, tableAlias));
                     if (!fullMatch && !partialMatch) {
                         // The presented alias does not fully or partially match the matched token, reset
-                        state = STATE_UNMATCHED;
+                        state = InlineState.UNMATCHED;
                         matchedTableName = null;
                         matchedTableAlias = null;
                     } else {
                         return new Pair<>(matchedTableName, matchedTableAlias);
                     }
+                } else {
+                    prevTokenWasMatchAttempt = false;
                 }
             }
-            if (!CommonUtils.isEmpty(matchedTableName)) {
+            if (!CommonUtils.isEmpty(matchedTableName) && (CommonUtils.isEmpty(tableAlias) || CommonUtils.equalObjects(tableAlias, matchedTableAlias))) {
                 return new Pair<>(matchedTableName, matchedTableAlias);
             }
         } catch (BadLocationException e) {
