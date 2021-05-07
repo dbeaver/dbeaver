@@ -187,7 +187,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
 
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
 
-        if (!instanceLoc.isReadOnly()) {
+        if (!isExclusiveMode()) {
             // Lock the workspace
             try {
                 if (!instanceLoc.isSet()) {
