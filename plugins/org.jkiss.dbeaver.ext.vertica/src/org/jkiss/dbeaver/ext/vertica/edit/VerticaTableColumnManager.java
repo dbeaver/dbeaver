@@ -118,7 +118,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager impleme
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename column",
-                        "ALTER TABLE " + DBUtils.getQuotedIdentifier(column.getTable()) + " RENAME COLUMN " +
+                        "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
                                 DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
                                 " TO " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
