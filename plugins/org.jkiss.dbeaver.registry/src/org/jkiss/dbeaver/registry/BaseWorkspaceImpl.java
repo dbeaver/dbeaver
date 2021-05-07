@@ -377,6 +377,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     @Override
     public DBPResourceHandler getResourceHandler(IResource resource) {
+        if (DBWorkbench.getPlatform().getApplication().isExclusiveMode()) {
+            // Resource handlers are disabled in exclusive mode
+            return null;
+        }
         if (resource == null || resource.isHidden() || resource.isPhantom()) {
             // Skip not accessible hidden and phantom resources
             return null;

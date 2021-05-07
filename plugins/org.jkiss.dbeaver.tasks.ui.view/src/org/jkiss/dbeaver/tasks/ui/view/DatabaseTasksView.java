@@ -23,13 +23,16 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -47,6 +50,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -177,6 +181,22 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     CommandContributionItem.STYLE_CHECK,
                     null, null, null, true, Collections.singletonMap("group", gb.name())));
             }
+            manager.add(new Separator());
+            manager.add(new Action(WorkbenchMessages.Workbench_copy) {
+                @Override
+                public void run()
+                {
+                    ClipboardData clipboardData = new ClipboardData();
+                    StringBuilder buf = new StringBuilder();
+                    for (TreeItem item : getTasksTree().getViewer().getTree().getSelection()) {
+                        if (buf.length() > 0) buf.append(GeneralUtils.getDefaultLineSeparator());
+                        buf.append(item.getText(0));
+                    }
+                    clipboardData.addTransfer(TextTransfer.getInstance(), buf.toString());
+                    clipboardData.pushToClipboard(getTasksTree().getViewer().getTree().getDisplay());
+                }
+            });
+
             manager.add(new Separator());
             tasksTree.getColumnController().fillConfigMenu(manager);
         });

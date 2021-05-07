@@ -95,6 +95,8 @@ public interface DBPPlatform
     @NotNull
     File getCustomDriversHome();
 
+    boolean isReadOnly();
+
     boolean isShuttingDown();
 
 }
