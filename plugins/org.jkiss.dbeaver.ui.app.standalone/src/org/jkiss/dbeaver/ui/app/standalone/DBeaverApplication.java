@@ -60,6 +60,7 @@ import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Version;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Properties;
 
@@ -170,7 +171,6 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
-        boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
         {
@@ -179,27 +179,35 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
                 return IApplication.EXIT_OK;
             }
+
+            if (isExclusiveMode()) {
+                markLocationReadOnly(instanceLoc);
+            }
         }
 
-        // Lock the workspace
-        try {
-            if (!instanceLoc.isSet()) {
-                if (!setDefaultWorkspacePath(instanceLoc)) {
-                    return IApplication.EXIT_OK;
-                }
-            } else if (instanceLoc.isLocked() && !ideWorkspaceSet) {
-                // Check for locked workspace
-                if (!setDefaultWorkspacePath(instanceLoc)) {
-                    return IApplication.EXIT_OK;
-                }
-            }
+        boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
 
+        if (!instanceLoc.isReadOnly()) {
             // Lock the workspace
-            if (!instanceLoc.isLocked()) {
-                instanceLoc.lock();
+            try {
+                if (!instanceLoc.isSet()) {
+                    if (!setDefaultWorkspacePath(instanceLoc)) {
+                        return IApplication.EXIT_OK;
+                    }
+                } else if (instanceLoc.isLocked() && !ideWorkspaceSet) {
+                    // Check for locked workspace
+                    if (!setDefaultWorkspacePath(instanceLoc)) {
+                        return IApplication.EXIT_OK;
+                    }
+                }
+
+                // Lock the workspace
+                if (!instanceLoc.isLocked()) {
+                    instanceLoc.lock();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         // Custom parameters
@@ -210,6 +218,11 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
             }
         } finally {
             headlessMode = false;
+        }
+
+        if (isExclusiveMode()) {
+            // In shared mode we mustn't run UI
+            return IApplication.EXIT_OK;
         }
 
         initDebugWriter();
@@ -284,8 +297,19 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         }
     }
 
+    private void markLocationReadOnly(Location instanceLoc) {
+        try {
+            Field isReadOnlyField = instanceLoc.getClass().getDeclaredField("isReadOnly");
+            isReadOnlyField.setAccessible(true);
+            isReadOnlyField.set(instanceLoc, true);
+        } catch (Throwable e) {
+            // ignore
+            e.printStackTrace();
+        }
+    }
+
     private boolean setIDEWorkspace(Location instanceLoc) {
-        if (instanceLoc.isSet()) {
+        if (reuseWorkspace || instanceLoc.isSet()) {
             return false;
         }
         ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
@@ -611,6 +635,11 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     @Override
     public boolean isHeadlessMode() {
         return headlessMode;
+    }
+
+    @Override
+    public boolean isExclusiveMode() {
+        return reuseWorkspace;
     }
 
     @Override

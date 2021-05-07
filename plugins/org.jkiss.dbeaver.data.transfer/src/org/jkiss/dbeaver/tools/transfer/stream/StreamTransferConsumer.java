@@ -403,7 +403,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 outputBuffer = null;
             }
         } else {
-            if (settings.isOpenFolderOnFinish()) {
+            if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 // Last one
                 DBWorkbench.getPlatformUI().executeShellProgram(settings.getOutputFolder());
             }

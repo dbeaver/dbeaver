@@ -151,16 +151,6 @@ public class DBeaverCommandLine
             }
         }
 
-        // Reuse workspace if custom parameters are specified
-        for (ParameterDescriptor param : customParameters.values()) {
-            if (param.reuseWorkspace && commandLine.hasOption(param.name)) {
-                if (DBeaverApplication.instance != null) {
-                    DBeaverApplication.instance.reuseWorkspace = true;
-                }
-                break;
-            }
-        }
-
         if (controller == null) {
             return false;
         }
@@ -244,6 +234,17 @@ public class DBeaverCommandLine
             helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2020-2021 DBeaver Corp", true);
             return true;
         }
+
+        // Reuse workspace if custom parameters are specified
+        for (ParameterDescriptor param : customParameters.values()) {
+            if (param.reuseWorkspace && (commandLine.hasOption(param.name) || commandLine.hasOption(param.longName))) {
+                if (DBeaverApplication.instance != null) {
+                    DBeaverApplication.instance.reuseWorkspace = true;
+                }
+                break;
+            }
+        }
+
         if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
             // Do not try to execute commands in running instance
             return false;
@@ -302,4 +303,5 @@ public class DBeaverCommandLine
 
         return exit;
     }
+
 }

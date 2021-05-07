@@ -38,6 +38,13 @@ public interface DBPApplication
      */
     boolean isHeadlessMode();
 
+    /**
+     * Shared mode is enabled when dbeaver called thru CLI interface. It is a headless mode.
+     * Shared sessions are usually short-term, they launched to execute some particular command and quit.
+     * Many UI-specific functions are disabled
+     */
+    boolean isExclusiveMode();
+
     @NotNull
     DBASecureStorage getSecureStorage();
 
