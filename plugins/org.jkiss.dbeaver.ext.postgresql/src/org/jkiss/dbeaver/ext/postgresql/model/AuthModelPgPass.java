@@ -67,10 +67,12 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     }
 
     private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) throws DBException {
+        // Take database name from original config. Because it may change when user switch between databases.
+        DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
         String conHostName = configuration.getHostName();
-        String conHostPort = configuration.getHostPort();
-        String conDatabaseName = configuration.getDatabaseName();
-        String conUserName = configuration.getUserName();
+        String conHostPort = originalConfiguration.getHostPort();
+        String conDatabaseName = originalConfiguration.getDatabaseName();
+        String conUserName = originalConfiguration.getUserName();
 
         if (CommonUtils.isEmpty(conHostPort)) {
             conHostPort = dataSource.getDriver().getDefaultPort();
@@ -114,14 +116,21 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
 
                 if (matchParam(conHostName, host) &&
                     matchParam(conHostPort, port) &&
-                    matchParam(conDatabaseName, database) &&
-                    matchParam(conUserName, user))
-                {
-                    if (!user.equals("*")) {
-                        configuration.setUserName(user);
+                    matchParam(conDatabaseName, database)) {
+                    if (CommonUtils.isEmpty(conUserName)) {
+                        // No user name specified. Get the first matched params
+                        //configuration.setUserName(user);
+                        //configuration.setUserPassword(password);
+                        credentials.setUserName(user);
+                        credentials.setUserPassword(password);
+                        return;
+                    } else if (matchParam(conUserName, user)) {
+                        if (!user.equals("*")) {
+                            configuration.setUserName(user);
+                        }
+                        credentials.setUserPassword(password);
+                        return;
                     }
-                    credentials.setUserPassword(password);
-                    return;
                 }
             }
         } catch (IOException e) {
