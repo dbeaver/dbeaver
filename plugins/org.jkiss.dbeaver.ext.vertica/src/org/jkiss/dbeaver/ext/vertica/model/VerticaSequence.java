@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,6 +32,7 @@ public class VerticaSequence extends GenericSequence {
 
     private static final Log log = Log.getLog(VerticaSequence.class);
 
+    private String name;
     private String identityTableName;
     private long cacheCount;
     private boolean isCycle;
@@ -39,6 +41,7 @@ public class VerticaSequence extends GenericSequence {
 
     public VerticaSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy, String identityTableName, long cacheCount, boolean isCycle) {
         super(container, name, description, lastValue, minValue, maxValue, incrementBy);
+        this.name = name;
         this.identityTableName = identityTableName;
         this.cacheCount = cacheCount;
         this.isCycle = isCycle;
@@ -49,6 +52,18 @@ public class VerticaSequence extends GenericSequence {
     public VerticaSequence(GenericStructContainer container, String name) {
         super(container, name, null, 0, 1, 9223372036854775807L, 1);
         this.schema = (VerticaSchema) container.getSchema();
+        this.cacheCount = 25000;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Property(viewable = true, order = 11)
@@ -93,5 +108,7 @@ public class VerticaSequence extends GenericSequence {
     public void setDescription(String description) {
         this.description = description;
     }
+
+
 
 }
