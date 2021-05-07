@@ -22,4 +22,10 @@
         </view>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <configurator class="org.jkiss.dbeaver.ext.vertica.ui.config.VerticaSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.vertica.model.VerticaSequence"/>
+        </configurator>
+    </extension>
+
 </plugin>
