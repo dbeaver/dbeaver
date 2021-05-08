@@ -23,6 +23,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+                class="org.jkiss.dbeaver.ext.vertica.ui.editors.VerticaSourceViewEditor"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+                description="%editor.vertica.source.view.description"
+                icon="#sql_text"
+                id="vertica.source.view"
+                label="%editor.vertica.source.view.label"
+                position="additions_middle"
+                type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.vertica.model.VerticaSequence"/>
+        </editor>
+
         <configurator class="org.jkiss.dbeaver.ext.vertica.ui.config.VerticaSequenceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.vertica.model.VerticaSequence"/>
         </configurator>
