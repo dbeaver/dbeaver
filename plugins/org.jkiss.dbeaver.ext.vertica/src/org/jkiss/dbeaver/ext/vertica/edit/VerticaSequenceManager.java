@@ -74,7 +74,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_EDITOR_ON_CREATE;
+        return FEATURE_SAVE_IMMEDIATELY;
     }
 
     @Nullable
