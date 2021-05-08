@@ -77,6 +77,7 @@ public class MySQLSessionEditor extends AbstractSessionEditor
                     new Action("Hide sleeping", Action.AS_CHECK_BOX) {
                         {
                             setToolTipText("Show only active connections");
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.HIDE_ALL_DETAILS));
                             setChecked(hideSleeping);
                         }
                         @Override

@@ -94,7 +94,7 @@ public class DB2Utils {
     private static final String SEL_XMLSTRINGS = "SELECT * FROM SYSCAT.XMLSTRINGS ORDER BY STRINGID WITH UR";
 
     // APPLICATIONS
-    private static final String SEL_APP        = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+    public static final String SEL_APP        = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
 
     private static final String GET_MSG        = "VALUES (SYSPROC.SQLERRM(?))";
 

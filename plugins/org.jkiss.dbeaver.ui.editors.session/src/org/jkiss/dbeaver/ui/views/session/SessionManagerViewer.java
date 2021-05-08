@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.views.session;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -43,10 +43,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionDetails;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionDetailsProvider;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.admin.sessions.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -66,6 +63,8 @@ import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -85,23 +84,23 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 {
     private static final Log log = Log.getLog(SessionManagerViewer.class);
 
-    private IWorkbenchPart workbenchPart;
+    private final IWorkbenchPart workbenchPart;
     private final DBAServerSessionManager<SESSION_TYPE> sessionManager;
-    private SessionListControl sessionTable;
+    private final SessionListControl sessionTable;
     //private Text sessionInfo;
-    private IEditorSite subSite;
-    private SQLEditorBase sqlViewer;
+    private final IEditorSite subSite;
+    private final SQLEditorBase sqlViewer;
 
-    private Font boldFont;
-    private PropertyTreeViewer sessionProps;
+    private final Font boldFont;
+    private final PropertyTreeViewer sessionProps;
     private DBAServerSession curSession;
-    private AutoRefreshControl refreshControl;
+    private final AutoRefreshControl refreshControl;
     private final SashForm sashMain;
     private final SashForm sashDetails;
 
     private IDialogSettings settings;
 
-    private CTabFolder previewFolder;
+    private final CTabFolder previewFolder;
     private final CTabItem detailsItem;
 
     private final DBCQueryPlanner planner;
@@ -465,6 +464,42 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         @Override
         public void fillCustomActions(IContributionManager contributionManager) {
             contributeToToolbar(getSessionManager(), contributionManager);
+
+            if (sessionManager instanceof DBAServerSessionManagerSQL &&
+                ((DBAServerSessionManagerSQL) sessionManager).canGenerateSessionReadQuery())
+            {
+                contributionManager.add(ActionUtils.makeActionContribution(new Action("SQL", IAction.AS_PUSH_BUTTON) {
+                    {
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT));
+                        setToolTipText("Open SQL editor and execute session read SQL query");
+                    }
+                    @Override
+                    public void run()
+                    {
+                        String sqlScript = ((DBAServerSessionManagerSQL) sessionManager).generateSessionReadQuery(getSessionOptions());
+                        if (!CommonUtils.isEmpty(sqlScript)) {
+                            SQLNavigatorContext navContext = new SQLNavigatorContext(
+                                sessionManager.getDataSource().getContainer(),
+                                DBUtils.getDefaultContext(sessionManager.getDataSource(), false)
+                            );
+                            try {
+                                SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScript(
+                                    UIUtils.getActiveWorkbenchWindow(),
+                                    navContext,
+                                    "Session manager SQL",
+                                    true,
+                                    new StructuredSelection(),
+                                    sqlScript
+                                );
+                            } catch (CoreException e) {
+                                DBWorkbench.getPlatformUI().showError("Can not open editor", "Error opening SQL editor", e);
+                            }
+                        }
+                    }
+                }, true));
+                contributionManager.add(new Separator());
+            }
+
             refreshControl.populateRefreshButton(contributionManager);
             contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
