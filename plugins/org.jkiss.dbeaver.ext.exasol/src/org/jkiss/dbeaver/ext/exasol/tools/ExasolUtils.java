@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.exasol.tools;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.*;
-import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolTableObjectType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -49,11 +48,7 @@ public class ExasolUtils {
     // select columns of tables
     private static final String TABLE_QUERY_COLUMNS = "/*snapshot execution*/ SELECT * FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA='%s' AND COLUMN_TABLE='%s' ORDER BY COLUMN_ORDINAL_POSITION";
 
-    // list sessions
-    private static final String SESS_DBA_QUERY = "/*snapshot execution*/ select * from exa_dba_sessions";
-    private static final String SESS_ALL_QUERY = "/*snapshot execution*/ select * from exa_ALL_sessions";
-
-    private static final Log LOG = Log.getLog(ExasolUtils.class);
+    private static final Log log = Log.getLog(ExasolUtils.class);
 
     // double single quotes for sql literals  
     public static String quoteString(String input) {
@@ -246,38 +241,6 @@ public class ExasolUtils {
     }
 
 
-    public static Collection<ExasolServerSession> readSessions(
-            DBRProgressMonitor progressMonitor,
-            JDBCSession session) throws SQLException {
-        LOG.debug("read sessions");
-
-        List<ExasolServerSession> listSessions = new ArrayList<>();
-
-        //check dba view
-        try {
-            try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery(SESS_DBA_QUERY)) {
-                    while (dbResult.next()) {
-                        listSessions.add(new ExasolServerSession(dbResult));
-                    }
-                }
-            }
-
-            //now try all view
-        } catch (SQLException e) {
-            try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery(SESS_ALL_QUERY)) {
-                    while (dbResult.next()) {
-                        listSessions.add(new ExasolServerSession(dbResult));
-                    }
-                }
-            }
-        }
-
-        return listSessions;
-    }
-
-
     public static String generateDDLforSchema(DBRProgressMonitor monitor,
                                               ExasolSchema exasolSchema) {
         return "CREATE SCHEMA " + exasolSchema.getName() + ";\n"
@@ -288,7 +251,7 @@ public class ExasolUtils {
         try {
             return ExasolTableObjectType.valueOf(objectType);
         } catch (Exception e) {
-            LOG.error("Unsupported object table type: " + objectType);
+            log.error("Unsupported object table type: " + objectType);
             return ExasolTableObjectType.TABLE;
         }
     }

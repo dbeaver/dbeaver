@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -99,6 +100,17 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         UIUtils.runInUI(workbenchWindow, generator);
         String sql = CommonUtils.notEmpty(generator.getResult());
 
+        openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, doRun, currentSelection, sql);
+    }
+
+    public static void openAndExecuteSQLScript(
+        IWorkbenchWindow workbenchWindow,
+        SQLNavigatorContext navigatorContext,
+        String title,
+        boolean doRun,
+        ISelection currentSelection,
+        String sql) throws CoreException
+    {
         SQLEditor editor;
         if (OPEN_FILE_EDITOR) {
             DBPProject project = navigatorContext.getProject();

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManagerSQL;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,7 +38,7 @@ import java.util.Map;
 /**
  * SQLServer session manager
  */
-public class SQLServerSessionManager implements DBAServerSessionManager<SQLServerSession> {
+public class SQLServerSessionManager implements DBAServerSessionManager<SQLServerSession>, DBAServerSessionManagerSQL {
 
     public static final String OPTION_SHOW_ONLY_CONNECTIONS = "showOnlyConnections";
 
@@ -58,29 +59,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
     public Collection<SQLServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            boolean onlyConnections = CommonUtils.getOption(options, OPTION_SHOW_ONLY_CONNECTIONS);
-            boolean supportsDatabaseInfo = ((SQLServerDataSource) session.getDataSource()).isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2012_VERSION_MAJOR, 0);
-
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT s.*,");
-            if (supportsDatabaseInfo) {
-                sql.append("db.name as database_name,");
-            } else {
-                sql.append("NULL as database_name,");
-            }
-            sql.append("c.connection_id,(select text from sys.dm_exec_sql_text(c.most_recent_sql_handle)) as sql_text\n")
-                .append("FROM sys.dm_exec_sessions s\n");
-            if (onlyConnections) {
-                sql.append("LEFT OUTER ");
-            }
-            sql.append("JOIN sys.dm_exec_connections c ON c.session_id=s.session_id\n");
-            if (supportsDatabaseInfo) {
-                sql.append("LEFT OUTER JOIN sys.sysdatabases db on db.dbid=s.database_id\n");
-            }
-            sql.append("ORDER BY s.session_id DESC");
-
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                sql.toString())) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<SQLServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
@@ -107,4 +86,33 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
         }
     }
 
+    @Override
+    public boolean canGenerateSessionReadQuery() {
+        return true;
+    }
+
+    @Override
+    public String generateSessionReadQuery(Map<String, Object> options) {
+        boolean onlyConnections = CommonUtils.getOption(options, OPTION_SHOW_ONLY_CONNECTIONS);
+        boolean supportsDatabaseInfo = dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2012_VERSION_MAJOR, 0);
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT s.*,");
+        if (supportsDatabaseInfo) {
+            sql.append("db.name as database_name,");
+        } else {
+            sql.append("NULL as database_name,");
+        }
+        sql.append("c.connection_id,(select text from sys.dm_exec_sql_text(c.most_recent_sql_handle)) as sql_text\n")
+            .append("FROM sys.dm_exec_sessions s\n");
+        if (onlyConnections) {
+            sql.append("LEFT OUTER ");
+        }
+        sql.append("JOIN sys.dm_exec_connections c ON c.session_id=s.session_id\n");
+        if (supportsDatabaseInfo) {
+            sql.append("LEFT OUTER JOIN sys.sysdatabases db on db.dbid=s.database_id\n");
+        }
+        sql.append("ORDER BY s.session_id DESC");
+        return sql.toString();
+    }
 }

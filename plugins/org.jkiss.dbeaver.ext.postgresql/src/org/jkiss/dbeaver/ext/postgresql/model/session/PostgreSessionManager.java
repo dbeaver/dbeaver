@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManagerSQL;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -35,7 +36,7 @@ import java.util.Map;
 /**
  * Postgre session manager
  */
-public class PostgreSessionManager implements DBAServerSessionManager<PostgreSession> {
+public class PostgreSessionManager implements DBAServerSessionManager<PostgreSession>, DBAServerSessionManagerSQL {
 
     public static final String PROP_KILL_QUERY = "killQuery";
 
@@ -56,7 +57,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
     public Collection<PostgreSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement("SELECT sa.* FROM pg_catalog.pg_stat_activity sa")) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<PostgreSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
@@ -83,4 +84,13 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
         }
     }
 
+    @Override
+    public boolean canGenerateSessionReadQuery() {
+        return true;
+    }
+
+    @Override
+    public String generateSessionReadQuery(Map<String, Object> options) {
+        return "SELECT sa.* FROM pg_catalog.pg_stat_activity sa";
+    }
 }
