@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface IDatabaseModellerEditor extends IEditorPart
 {
+    boolean isModelEditEnabled();
 
     boolean containsModelObject(DBSObject object);
 
