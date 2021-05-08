@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model;
 
-import com.sun.istack.NotNull;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
