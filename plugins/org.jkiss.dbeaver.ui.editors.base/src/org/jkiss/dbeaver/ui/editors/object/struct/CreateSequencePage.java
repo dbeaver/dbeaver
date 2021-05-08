@@ -37,7 +37,7 @@ public class CreateSequencePage extends BaseObjectEditPage {
     private DBSProcedureType type;
 
     public CreateSequencePage(DBSSequence sequence) {
-        super(EditorsMessages.dialog_struct_create_procedure_title);
+        super(EditorsMessages.dialog_struct_create_sequence_title);
         this.sequence = sequence;
     }
 
