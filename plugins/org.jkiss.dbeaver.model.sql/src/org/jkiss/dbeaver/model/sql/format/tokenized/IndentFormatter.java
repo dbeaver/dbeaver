@@ -59,7 +59,9 @@ class IndentFormatter {
             delimiterRedefiner = delimiterRedefiner.toUpperCase(Locale.ENGLISH);
         }
         for (String delim : formatterCfg.getSyntaxManager().getStatementDelimiters()) {
-            statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
+            if (!CommonUtils.isEmptyTrimmed(delim)) {
+                statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
+            }
         }
         this.isCompact = isCompact;
         dialect = formatterCfg.getSyntaxManager().getDialect();

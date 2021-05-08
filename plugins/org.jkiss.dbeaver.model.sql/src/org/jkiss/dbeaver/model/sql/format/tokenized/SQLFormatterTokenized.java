@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
         formatterCfg = configuration;
 
         for (String delim : formatterCfg.getSyntaxManager().getStatementDelimiters()) {
-            statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
+            if (!CommonUtils.isEmptyTrimmed(delim)) {
+                statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
+            }
         }
 
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
