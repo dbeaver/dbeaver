@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.navigator.actions;
 
-import com.sun.istack.NotNull;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
