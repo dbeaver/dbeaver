@@ -40,6 +40,10 @@ public class TrayIconHandler {
     // AWT tray icon. SWT TrayItem do not support displayMessage function
     private TrayIcon trayItem;
 
+    public static boolean isSupported() {
+        return SystemTray.isSupported();
+    }
+
     public void show()
     {
         if (trayItem != null) {

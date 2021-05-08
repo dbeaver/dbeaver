@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
@@ -158,7 +160,17 @@ public class DBeaverUI implements DBPPlatformUI {
             // Notifications disabled
             return;
         }
-        getInstance().trayItem.notify(message, status);
+        if (TrayIconHandler.isSupported()) {
+            getInstance().trayItem.notify(message, status);
+        } else {
+            DBeaverNotifications.showNotification(
+                "agentNotify",
+                "Agent Notification",
+                message,
+                status == IStatus.INFO ? DBPMessageType.INFORMATION :
+                    (status == IStatus.ERROR ? DBPMessageType.ERROR : DBPMessageType.WARNING),
+                null);
+        }
     }
 
     @Override
