@@ -129,8 +129,7 @@ public class VerticaSequence extends GenericSequence implements VerticaSourceObj
                     .append("\n\tINCREMENT BY ").append(getIncrementBy())
                     .append("\n\tMINVALUE ").append(getMinValue())
                     .append("\n\tMAXVALUE ").append(getMaxValue())
-                    .append("\n\tSTART WITH ").append(getLastValue())
-                    .append("\n\tMINVALUE ").append(getMinValue());
+                    .append("\n\tSTART WITH ").append(getLastValue());
 
             if (cacheCount <= 1) {
                 ddl.append("\n\tNO CACHE");
