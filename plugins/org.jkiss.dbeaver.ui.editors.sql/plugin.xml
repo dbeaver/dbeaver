@@ -1053,10 +1053,12 @@
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.sqlexecute"/>
         </page>
 <!--
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.dialects" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLDialects" name="%pref.page.name.sql.dialects">
@@ -1067,14 +1069,17 @@
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.codeeditor" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing" name="%pref.page.name.sql.codeeditor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.codeeditor"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion" name="%pref.page.name.sql.completion">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.completion"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat" name="%pref.page.name.sql.format">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.format"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.resources" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLResources" name="%pref.page.name.sql.resources">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
@@ -1084,6 +1089,14 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.format" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.format.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.completion" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.completion.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.codeeditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.codeeditor.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqlexecute" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqlexecute.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqleditor.label"/>
     </extension>
 
 <!--
