@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,7 +42,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -127,6 +131,16 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 }
             }
 
+            DBNDatabaseNode editorNode = null;
+            IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (workbenchWindow.getActivePage().getActivePart() == activeEditor &&
+                activeEditor.getAdapter(IDatabaseModellerEditor.class) != null &&
+                activeEditor.getAdapter(IDatabaseModellerEditor.class).isModelEditEnabled() &&
+                activeEditor.getEditorInput() instanceof IDatabaseEditorInput)
+            {
+                // We are in model editor.
+                editorNode = ((IDatabaseEditorInput) activeEditor.getEditorInput()).getNavigatorNode();
+            }
 
             DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(newObjectType);
             if (objectManager == null) {
@@ -141,14 +155,15 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
                 container,
-                null, newObjectType,
+                editorNode,
+                newObjectType,
                 openEditor);
 
             // Parent is model object - not node
             Map<String, Object> options = new HashMap<>();
             options.put(DBEObjectMaker.OPTION_CONTAINER, container);
             options.put(DBEObjectMaker.OPTION_OBJECT_TYPE, newObjectType);
-            options.put(DBEObjectMaker.OPTION_ACTIVE_EDITOR, workbenchWindow.getActivePage().getActiveEditor());
+            options.put(DBEObjectMaker.OPTION_ACTIVE_EDITOR, activeEditor);
             createDatabaseObject(commandTarget, objectMaker, parentObject instanceof DBPObject ? (DBPObject) parentObject : null, sourceObject, options);
         }
         catch (Throwable e) {
@@ -281,6 +296,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(
                             newChild,
                             commandTarget.getContext());
+                        // New object editors must open main editor
+                        editorInput.setDefaultPageId(EntityEditorDescriptor.DEFAULT_OBJECT_EDITOR_ID);
                         workbenchWindow.getActivePage().openEditor(
                             editorInput,
                             EntityEditor.class.getName());

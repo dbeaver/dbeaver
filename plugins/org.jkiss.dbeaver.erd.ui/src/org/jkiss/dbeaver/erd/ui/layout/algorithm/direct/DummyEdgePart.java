@@ -27,27 +27,20 @@ import org.eclipse.draw2d.PolylineConnection;
 
 /**
  * Used to represent a dummy edge node with NodeJoiningDirectedGraphLayout
+ *
  * @author Serge Rider
  */
-public class DummyEdgePart
-{
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#createEditPolicies()
-	 */
-	protected void createEditPolicies()
-	{
-	}
+public class DummyEdgePart {
 
-	
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractConnectionEditPart#createFigure()
-	 */
-	protected IFigure createFigure()
-	{
-		PolylineConnection conn = new PolylineConnection();
-		conn.setConnectionRouter(new BendpointConnectionRouter());
+    protected void createEditPolicies() {
+    }
+
+
+    protected IFigure createFigure() {
+        PolylineConnection conn = new PolylineConnection();
+        conn.setConnectionRouter(new BendpointConnectionRouter());
         conn.setVisible(true);
-		return conn;
-	}
-	
+        return conn;
+    }
+
 }

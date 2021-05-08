@@ -247,12 +247,10 @@ public class DBVModel extends DBVContainer {
             if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && object instanceof DBSEntity) {
                 // Handle table renames
                 Map<String, Object> options = event.getOptions();
-                if (options != null) {
-                    String oldName = (String)options.get(DBEObjectRenamer.PROP_OLD_NAME);
-                    String newName = (String)options.get(DBEObjectRenamer.PROP_NEW_NAME);
-                    if (oldName != null && newName != null) {
-                        handleEntityRename((DBSEntity) object, oldName, newName);
-                    }
+                String oldName = (String)options.get(DBEObjectRenamer.PROP_OLD_NAME);
+                String newName = (String)options.get(DBEObjectRenamer.PROP_NEW_NAME);
+                if (oldName != null && newName != null) {
+                    handleEntityRename((DBSEntity) object, oldName, newName);
                 }
             }
         }

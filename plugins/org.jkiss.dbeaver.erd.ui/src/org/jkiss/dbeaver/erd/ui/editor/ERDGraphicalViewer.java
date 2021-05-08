@@ -19,6 +19,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.palette.PaletteContainer;
 import org.eclipse.gef.palette.PaletteDrawer;
@@ -33,8 +35,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
@@ -44,10 +50,13 @@ import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -363,7 +372,16 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                     // New entity. Add it if it has the same object container
                     // or if this entity was created from the same editor
                     DBSObject diagramContainer = diagram.getObject();
-                    if (diagramContainer == entity.getParentObject()) {
+                    IEditorPart entityOwnerEditor = (IEditorPart) event.getOptions().get(DBEObjectMaker.OPTION_ACTIVE_EDITOR);
+                    IEditorPart erdOwnerEditor = getEditor();
+                    if (erdOwnerEditor.getSite() instanceof MultiPageEditorSite) {
+                        erdOwnerEditor = ((MultiPageEditorSite) erdOwnerEditor.getSite()).getMultiPageEditor();
+                    }
+                    boolean ownsObject =
+                        getEditor().getDiagram().isEditEnabled() &&
+                        entityOwnerEditor != null &&
+                        entityOwnerEditor == erdOwnerEditor;
+                    if (ownsObject || diagramContainer == entity.getParentObject()) {
 
                         ERDEntity erdEntity = ERDUtils.makeEntityFromObject(
                             new VoidProgressMonitor(),
@@ -371,7 +389,31 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                             Collections.emptyList(),
                             entity,
                             null);
-                        diagram.addEntity(erdEntity, true);
+                        UIUtils.asyncExec(() -> {
+                            diagram.addEntity(erdEntity, true);
+
+                            // Set proper entity location
+                            EntityPart entityPart = getEditor().getDiagramPart().getEntityPart(erdEntity);
+                            if (entityPart != null) {
+                                // Layout entity on diagram
+
+                                // Get cursor location on diagram
+                                Display display = Display.getCurrent();
+                                Point loc = display.getCursorLocation();
+                                Point diagramLoc = getControl().toDisplay(0, 0);
+                                loc.x -= diagramLoc.x;
+                                loc.y -= diagramLoc.y;
+
+                                Dimension size = entityPart.getFigure().getPreferredSize();
+                                Rectangle curBounds = new Rectangle();
+                                curBounds.width = size.width;
+                                curBounds.height = size.height;
+                                curBounds.x = loc.x;
+                                curBounds.y = loc.y;
+                                entityPart.modifyBounds(curBounds);
+                                //autoLayoutEntity(entityPart);
+                            }
+                        });
                     }
                 }
                 break;
@@ -414,6 +456,17 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 break;
             }
         }
+    }
+
+    // TODO: implement
+    private void autoLayoutEntity(EntityPart entityPart) {
+        Rectangle figureBounds = entityPart.getFigure().getBounds();
+
+        DBPPreferenceStore prefStore = ERDUIActivator.getDefault().getPreferences();
+        int hMargin = prefStore.getInt(ERDUIConstants.PREF_GRID_WIDTH);
+        int vMargin = prefStore.getInt(ERDUIConstants.PREF_GRID_HEIGHT);
+
+        //getEditor().getDiagramPart().getE
     }
 
     private void handleDataSourceContainerChange(DBPEvent event, DBPDataSourceContainer object) {

@@ -116,8 +116,8 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
                 dataSourceContainerMap.putIfAbsent(dataSource, new LinkedHashMap<>());
                 Map<DBSObjectContainer, Integer> containerMap = dataSourceContainerMap.get(dataSource);
                 containerMap.putIfAbsent(container, containerMap.size());
-                }
             }
+        }
 
 
         if (reflect) {

@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.navigator.actions;
 
+import com.sun.istack.NotNull;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -82,10 +84,10 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     }
 
     protected static CommandTarget getCommandTarget(
-        IWorkbenchWindow workbenchWindow,
-        DBNNode container,
-        DBNDatabaseNode objectNode,
-        Class<?> childType,
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull DBNNode container,
+        @Nullable DBNDatabaseNode editorNode,
+        @NotNull Class<?> childType,
         boolean openEditor)
         throws DBException
     {
@@ -96,8 +98,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             final DBEStructEditor parentStructEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
             if (parentStructEditor != null && RuntimeUtils.isTypeSupported(childType, parentStructEditor.getChildTypes())) {
                 objectToSeek = (DBSObject) parentObject;
-            } else if (objectNode != null) {
-                objectToSeek = objectNode.getObject();
+            } else if (editorNode != null) {
+                objectToSeek = editorNode.getObject();
             }
         }
         if (objectToSeek != null) {
@@ -105,7 +107,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             IEditorPart activeEditor = activePage.getActiveEditor();
             if (activeEditor instanceof IDatabaseEditor) {
                 IDatabaseModellerEditor modellerEditor = activeEditor.getAdapter(IDatabaseModellerEditor.class);
-                if (modellerEditor != null && modellerEditor.containsModelObject(objectToSeek)) {
+                if (modellerEditor != null && modellerEditor.isModelEditEnabled() && modellerEditor.containsModelObject(objectToSeek)) {
                     return new CommandTarget((IDatabaseEditor) activeEditor);
                 }
             }

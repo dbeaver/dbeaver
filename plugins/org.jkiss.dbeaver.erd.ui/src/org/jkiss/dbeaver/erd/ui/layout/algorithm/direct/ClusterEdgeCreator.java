@@ -36,15 +36,15 @@ public class ClusterEdgeCreator {
     //sets up maximum depth of recursion to set up initial cluster list
     private static final int INITIAL_RECURSION_DEPTH = 3;
 
-    NodeList nodeList;
-    EdgeList edgeList;
-    DirectedGraph graph;
+    private NodeList nodeList;
+    private EdgeList edgeList;
+    private DirectedGraph graph;
 
     //List edgesAdded;
-    List<Node> encountered = new ArrayList<>();
-    List<Cluster> clusters = new ArrayList<>();
+    private List<Node> encountered = new ArrayList<>();
+    private List<Cluster> clusters = new ArrayList<>();
 
-    Cluster currentCluster = null;
+    private Cluster currentCluster = null;
 
     public ClusterEdgeCreator() {
         super();

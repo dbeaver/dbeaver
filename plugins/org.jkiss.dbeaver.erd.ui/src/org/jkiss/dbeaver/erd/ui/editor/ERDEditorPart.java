@@ -976,6 +976,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @Override
+    public boolean isModelEditEnabled() {
+        return getDiagram().isEditEnabled();
+    }
+
+    @Override
     public boolean containsModelObject(DBSObject object) {
         return object instanceof DBSEntity && getDiagram().getEntity((DBSEntity) object) != null;
     }
