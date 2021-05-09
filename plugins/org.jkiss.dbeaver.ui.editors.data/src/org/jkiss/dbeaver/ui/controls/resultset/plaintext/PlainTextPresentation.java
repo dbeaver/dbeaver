@@ -213,10 +213,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                         horOffsetEnd - horOffsetBegin - 1,
                         null,
                         curLineColor);
-                    UIUtils.asyncExec(() -> {
-                        text.setStyleRanges(new StyleRange[]{curLineRange});
-                        text.redraw();
-                    });
+                    text.setStyleRanges(new StyleRange[]{curLineRange});
+                    text.redraw();
                 }
             }
 
