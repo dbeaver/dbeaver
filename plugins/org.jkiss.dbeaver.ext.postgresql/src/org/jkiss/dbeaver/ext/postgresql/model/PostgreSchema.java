@@ -50,10 +50,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -519,6 +516,8 @@ public class PostgreSchema implements
             if (!monitor.isCanceled()) {
                 Collection<PostgreTableBase> tablesOrViews = getTableCache().getAllObjects(monitor, this);
 
+                Map<String, Object> tableFQNOptions = new HashMap<>(options);
+                tableFQNOptions.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true);
                 List<PostgreTableBase> allTables = new ArrayList<>();
                 for (PostgreTableBase tableOrView : tablesOrViews) {
                     monitor.subTask(tableOrView.getName());
@@ -528,7 +527,7 @@ public class PostgreSchema implements
                         allTables.add(tableOrView);
                     }
                 }
-                DBStructUtils.generateTableListDDL(new SubTaskProgressMonitor(monitor), sql, allTables, options, false);
+                DBStructUtils.generateTableListDDL(new SubTaskProgressMonitor(monitor), sql, allTables, tableFQNOptions, false);
                 monitor.done();
             }
             if (!monitor.isCanceled()) {

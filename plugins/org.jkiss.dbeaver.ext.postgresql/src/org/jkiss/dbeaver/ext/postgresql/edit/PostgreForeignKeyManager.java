@@ -80,7 +80,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     @Override
     public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableForeignKey> command, Map<String, Object> options) {
         PostgreTableForeignKey fk = command.getObject();
-        if (fk.isPersisted()) {
+        if (fk.isPersisted() && !Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES))) { // pg_get_constraintdef returns reference name without schema for initialized default schemas
             try {
                 String constrDDL = fk.getObjectDefinitionText(
                     monitor,
