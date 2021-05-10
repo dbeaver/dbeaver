@@ -165,7 +165,9 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
             }
 
-            defaultSearchPath = new ArrayList<>(searchPath);
+            if (defaultSearchPath.isEmpty()) {
+                defaultSearchPath = new ArrayList<>(searchPath);
+            }
 
             if (useBootstrapSettings) {
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
