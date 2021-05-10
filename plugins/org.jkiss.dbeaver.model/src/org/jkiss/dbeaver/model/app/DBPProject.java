@@ -96,4 +96,5 @@ public interface DBPProject extends DBPObject, DBAAuthSpace
 
     void setResourceProperty(IResource resource, String propName, Object propValue);
 
+    void setResourceProperties(IResource resource, Map<String, Object> props);
 }

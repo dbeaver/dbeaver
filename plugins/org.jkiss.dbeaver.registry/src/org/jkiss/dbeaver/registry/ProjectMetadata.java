@@ -378,6 +378,41 @@ public class ProjectMetadata implements DBPProject {
         flushMetadata();
     }
 
+    @Override
+    public void setResourceProperties(IResource resource, Map<String, Object> props) {
+        loadMetadata();
+        synchronized (metadataSync) {
+            String filePath = resource.getProjectRelativePath().toString();
+            Map<String, Object> resProps = resourceProperties.get(filePath);
+            if (resProps == null) {
+                if (props.isEmpty()) {
+                    // No props + no new value - ignore
+                    return;
+                }
+                resProps = new LinkedHashMap<>();
+                resourceProperties.put(filePath, resProps);
+            }
+            boolean hasChanges = false;
+            for (Map.Entry<String, Object> pe : props.entrySet()) {
+                if (pe.getValue() == null) {
+                    if (resProps.remove(pe.getKey()) != null) {
+                        hasChanges = true;
+                    }
+                } else {
+                    Object oldValue = resProps.get(pe.getKey());
+                    if (!CommonUtils.equalObjects(oldValue, pe.getValue())) {
+                        resProps.put(pe.getKey(), pe.getValue());
+                        hasChanges = true;
+                    }
+                }
+            }
+            if (!hasChanges) {
+                return;
+            }
+        }
+        flushMetadata();
+    }
+
     public void dispose() {
         if (dataSourceRegistry != null) {
             dataSourceRegistry.dispose();
@@ -531,24 +566,31 @@ public class ProjectMetadata implements DBPProject {
     }
 
     void removeResourceFromCache(IPath path) {
+        boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                resourceProperties.remove(path.toString());
+                cacheChanged = (resourceProperties.remove(path.toString()) != null);
             }
         }
-        flushMetadata();
+        if (cacheChanged) {
+            flushMetadata();
+        }
     }
 
     void updateResourceCache(IPath oldPath, IPath newPath) {
+        boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
                 Map<String, Object> props = resourceProperties.remove(oldPath.toString());
                 if (props != null) {
                     resourceProperties.put(newPath.toString(), props);
+                    cacheChanged = true;
                 }
             }
         }
-        flushMetadata();
+        if (cacheChanged) {
+            flushMetadata();
+        }
     }
 
     @Override
@@ -565,7 +607,7 @@ public class ProjectMetadata implements DBPProject {
         protected IStatus run(DBRProgressMonitor monitor) {
             setName("Project '" + ProjectMetadata.this.getName() + "' sync job");
 
-            ContentUtils.makeFileBackup(new File(getMetadataFolder(true), METADATA_STORAGE_FILE));
+            ContentUtils.makeFileBackup(new File(getMetadataFolder(false), METADATA_STORAGE_FILE));
 
             synchronized (metadataSync) {
                 File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
