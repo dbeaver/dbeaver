@@ -181,7 +181,18 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     @Override
     public boolean isLanguageChangeEnabled() {
         File iniFile = getApplicationConfiguration();
-        return iniFile.exists() && iniFile.canWrite();
+        if (iniFile.exists() && iniFile.canWrite()) {
+            // Try to create temp file in the same folder
+            File testFile = new File(iniFile.getParentFile(), ".test-dbeaver-" + System.currentTimeMillis() + ".ini");
+            try {
+                testFile.createNewFile();
+                testFile.delete();
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     @Override
