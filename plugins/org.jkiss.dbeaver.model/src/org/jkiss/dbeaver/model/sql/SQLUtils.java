@@ -636,9 +636,6 @@ public final class SQLUtils {
         } else {
             strValue = valueHandler.getValueDisplayString(attribute, value, displayFormat);
         }
-        if (value instanceof Number) {
-            return strValue;
-        }
         SQLDialect sqlDialect = dataSource.getSQLDialect();
 
         DBPDataKind dataKind = attribute.getDataKind();
