@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
@@ -380,6 +381,17 @@ public class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         return MultiValueInsertMode.INSERT_ALL;
+    }
+
+    @NotNull
+    @Override
+    public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
+        if (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value)) {
+            // These special values should be quoted, as shown in the example below
+            // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions090.htm
+            return '\'' + String.valueOf(value) + '\'';
+        }
+        return super.escapeScriptValue(attribute, value, strValue);
     }
 
     @Override
