@@ -58,7 +58,6 @@ public final class SQLUtils {
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-    private static final Pattern PATTERN_WHITESPACE_OR_LINEBREAK = Pattern.compile("\\s|\\R");
 
     private static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
     private static final int MAX_SQL_DESCRIPTION_LENGTH = 500;
@@ -367,13 +366,12 @@ public final class SQLUtils {
                         int endIndex = test.lastIndexOf(blocks[1]);
                         if (endIndex > 0) {
                             // This is a block query if it ends with 'END' or with 'END id'
-                            String[] words = PATTERN_WHITESPACE_OR_LINEBREAK.split(test);
-                            if (words.length >= 2 && (blocks[1].equals(words[words.length - 1])) || blocks[1].equals(words[words.length - 2])) {
+                            if (test.endsWith(blocks[1])) {
                                 isBlockQuery = true;
                                 break;
                             } else {
                                 String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
-                                if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                                if (CommonUtils.isJavaIdentifier(afterEnd) || containsWhitespaces(afterEnd)) {
                                     isBlockQuery = true;
                                     break;
                                 }
@@ -388,6 +386,16 @@ public final class SQLUtils {
             break;
         }
         return sql + trailingSpaces;
+    }
+
+    private static boolean containsWhitespaces(@NotNull CharSequence charSequence) {
+        for (int i = 0; i < charSequence.length(); i++) {
+            char c = charSequence.charAt(i);
+            if (Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean isBlockStartKeyword(SQLDialect dialect, String keyword) {
