@@ -383,14 +383,15 @@ public class ItemListControl extends NodeListControl
                 if (property != null) {
                     Object oldValue = getListPropertySource().getPropertyValue(null, objectValue, property, false);
                     getListPropertySource().setPropertyValue(null, objectValue, property, UIUtils.normalizePropertyValue(value));
+                    Object newValue = getListPropertySource().getPropertyValue(null, objectValue, property, false);
                     if (value instanceof Boolean) {
                         // Redraw control to let it repaint checkbox
                         getItemsViewer().getControl().redraw();
                     }
-                    if (!CommonUtils.equalObjects(oldValue, value)) {
+                    if (!CommonUtils.equalObjects(oldValue, newValue)) {
                         Map<String, Object> propMap = changedProperties.computeIfAbsent(object, dbnNode -> new HashMap<>());
                         Object savedValue = propMap.get(property.getId());
-                        if (CommonUtils.equalObjects(savedValue, value)) {
+                        if (CommonUtils.equalObjects(savedValue, newValue)) {
                             // Reset to original value
                             propMap.remove(property.getId());
                         } else if (!propMap.containsKey(property.getId())) {
