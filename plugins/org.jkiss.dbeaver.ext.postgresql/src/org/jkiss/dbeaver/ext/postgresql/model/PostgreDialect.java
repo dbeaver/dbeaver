@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
 import java.util.Arrays;
@@ -816,9 +817,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';
         }
-        if ((value instanceof Float && (((Float) value).isNaN() || ((Float) value).isInfinite()))
-            || (value instanceof Double && (((Double) value).isNaN() || ((Double) value).isInfinite()))) {
-            // PostgreSQL doesn't like special values such as NaN and +-Infinity without quotes
+        if (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value)) {
+            // These special values should be quoted
             // https://www.postgresql.org/docs/current/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL
             return '\'' + String.valueOf(value) + '\'';
         }
