@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -31,12 +32,18 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,14 +52,11 @@ import java.util.Set;
  * @author Denis Forveille
  * 
  */
-public class DB2SQLDialect extends JDBCSQLDialect {
+public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     private static final Log log = Log.getLog(DB2SQLDialect.class);
 
     public static final String[] EXEC_KEYWORDS = new String[]{"CALL"};
-
-    private static final String[][] DB2_BEGIN_END_BLOCK = new String[][]{
-    };
 
     private static final boolean LOAD_ROUTINES_FROM_SYSCAT = false;
 
@@ -147,12 +151,16 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     }
 
     @Override
-    public String[][] getBlockBoundStrings() {
-        return DB2_BEGIN_END_BLOCK;
-    }
-    
-    @Override
     public String getScriptDelimiterRedefiner() {
     	return "DELIMITER";
+    }
+
+    @Override
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+        if (position == RulePosition.KEYWORDS) {
+            final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
+            rules.add(new SQLMultiWordRule(new String[]{"ROW", "BEGIN"}, keywordToken));
+            rules.add(new SQLMultiWordRule(new String[]{"ROW", "END"}, keywordToken));
+        }
     }
 }
