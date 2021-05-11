@@ -816,6 +816,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';
         }
+        if ((value instanceof Float && (((Float) value).isNaN() || ((Float) value).isInfinite()))
+            || (value instanceof Double && (((Double) value).isNaN() || ((Double) value).isInfinite()))) {
+            // PostgreSQL doesn't like special values such as NaN and +-Infinity without quotes
+            // https://www.postgresql.org/docs/current/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL
+            return '\'' + String.valueOf(value) + '\'';
+        }
         return super.escapeScriptValue(attribute, value, strValue);
     }
 
