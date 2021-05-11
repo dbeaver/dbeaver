@@ -58,6 +58,7 @@ public final class SQLUtils {
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static final Pattern PATTERN_WHITESPACE_OR_LINEBREAK = Pattern.compile("\\s|\\R");
 
     private static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
     private static final int MAX_SQL_DESCRIPTION_LENGTH = 500;
@@ -363,10 +364,11 @@ public final class SQLUtils {
                 String[][] blockBoundStrings = syntaxManager.getDialect().getBlockBoundStrings();
                 if (blockBoundStrings != null) {
                     for (String[] blocks : blockBoundStrings) {
-                        int endIndex = test.indexOf(blocks[1]);
+                        int endIndex = test.lastIndexOf(blocks[1]);
                         if (endIndex > 0) {
                             // This is a block query if it ends with 'END' or with 'END id'
-                            if (test.endsWith(blocks[1])) {
+                            String[] words = PATTERN_WHITESPACE_OR_LINEBREAK.split(test);
+                            if (words.length >= 2 && (blocks[1].equals(words[words.length - 1])) || blocks[1].equals(words[words.length - 2])) {
                                 isBlockQuery = true;
                                 break;
                             } else {
