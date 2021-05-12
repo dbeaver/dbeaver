@@ -47,6 +47,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     public boolean canCreateObject(Object container) {
         return true;
     }
+
     @Override
     protected VerticaSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         GenericStructContainer structContainer = (GenericStructContainer) container;
@@ -55,14 +56,20 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
         setNewObjectName(monitor, schema, sequence);
         return sequence;
     }
+
     protected String getBaseObjectName() {
         return "new_sequence";
     }
+
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+        final StringBuilder sequenceOptions = new StringBuilder();
+        VerticaSequence sequence = command.getObject();
+        sequenceOptions.append("CREATE SEQUENCE ").append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        addSequenceOptions(sequence, sequenceOptions, command.getProperties());
         actions.add(new SQLDatabasePersistAction(
             "Create sequence",
-            "CREATE SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
+            sequenceOptions.toString()
         ));
     }
 
@@ -75,7 +82,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
+        return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Nullable
@@ -105,7 +112,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         VerticaSequence sequence = command.getObject();
         final StringBuilder sequenceOptions = new StringBuilder();
-        addSequenceOptions(sequenceOptions, command.getProperties());
+        addSequenceOptions(sequence, sequenceOptions, command.getProperties());
 
         if (sequenceOptions.length() > 0) {
             actionList.add(new SQLDatabasePersistAction(
@@ -115,7 +122,23 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
         }
     }
 
-    private void addSequenceOptions(StringBuilder ddl, Map<Object, Object> options) {
+    private void addSequenceOptions(VerticaSequence sequence, StringBuilder ddl, Map<Object, Object> options) {
+        if (options.containsKey("incrementBy")) {
+            ddl.append("\n\tINCREMENT BY ").append(options.get("incrementBy"));
+        }
+        if (options.containsKey("minValue")) {
+            ddl.append("\n\tMINVALUE ").append(options.get("minValue"));
+        }
+        if (options.containsKey("maxValue")) {
+            ddl.append("\n\tMAXVALUE ").append(options.get("maxValue"));
+        }
+        if (options.containsKey("lastValue")) {
+            if (!sequence.isPersisted()) {
+                ddl.append("\n\tSTART WITH ").append(options.get("lastValue"));
+            } else {
+                ddl.append("\n\tRESTART WITH ").append(options.get("lastValue"));
+            }
+        }
         if (options.containsKey("cacheCount")) {
             ddl.append("\n\tCACHE ").append(options.get("cacheCount"));
         }
@@ -131,11 +154,11 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<VerticaSequence, PropertyHandler> command, Map<String, Object> options) {
         VerticaSequence sequence = command.getObject();
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment sequence",
                 "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(sequence, sequence.getDescription())));
+                    " IS " + SQLUtils.quoteString(sequence, CommonUtils.notEmpty(command.getObject().getDescription()))));
         }
     }
 }
