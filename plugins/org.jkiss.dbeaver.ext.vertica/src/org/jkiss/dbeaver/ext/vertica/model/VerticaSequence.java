@@ -44,6 +44,7 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
     private VerticaSchema schema;
     private String description;
     private String source;
+    private boolean isPersisted;
 
     public VerticaSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy, String identityTableName, long cacheCount, boolean isCycle) {
         super(container, name, description, lastValue, minValue, maxValue, incrementBy);
@@ -53,12 +54,14 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
         this.isCycle = isCycle;
         this.schema = (VerticaSchema) container.getSchema();
         this.description = description;
+        this.isPersisted = true;
     }
 
     public VerticaSequence(GenericStructContainer container, String name) {
         super(container, name, null, 0, 1, 9223372036854775807L, 1);
         this.schema = (VerticaSchema) container.getSchema();
         this.cacheCount = 25000;
+        this.isPersisted = false;
     }
 
     @NotNull
@@ -84,6 +87,30 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
             log.debug("Can't find identity table", e);
         }
         return table;
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 2)
+    public Long getLastValue() {
+        return super.getLastValue().longValue();
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
+    public Long getMinValue() {
+        return super.getMinValue().longValue();
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 4)
+    public Long getMaxValue() {
+        return super.getMaxValue().longValue();
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
+    public Long getIncrementBy() {
+        return super.getIncrementBy().longValue();
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 7)
@@ -115,30 +142,38 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
         this.description = description;
     }
 
+    @Override
+    public boolean isPersisted() {
+        return isPersisted;
+    }
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {
-            StringBuilder ddl = new StringBuilder();
-            ddl.append("CREATE SEQUENCE ")
-                .append(getFullyQualifiedName(DBPEvaluationContext.DML))
-                .append("\n\tINCREMENT BY ").append(getIncrementBy())
-                .append("\n\tMINVALUE ").append(getMinValue())
-                .append("\n\tMAXVALUE ").append(getMaxValue())
-                .append("\n\tSTART WITH ").append(getLastValue());
-
-            if (cacheCount <= 1) {
-                ddl.append("\n\tNO CACHE");
+            if (!isPersisted) {
+                source = "CREATE SEQUENCE " + getFullyQualifiedName(DBPEvaluationContext.DML);
             } else {
-                ddl.append("\n\tCACHE ").append(cacheCount);
-            }
-            ddl.append("\n\t").append(isCycle ? "" : "NO ").append("CYCLE;");
+                StringBuilder ddl = new StringBuilder();
+                ddl.append("CREATE SEQUENCE ")
+                    .append(getFullyQualifiedName(DBPEvaluationContext.DML))
+                    .append("\n\tINCREMENT BY ").append(getIncrementBy())
+                    .append("\n\tMINVALUE ").append(getMinValue())
+                    .append("\n\tMAXVALUE ").append(getMaxValue())
+                    .append("\n\tSTART WITH ").append(getLastValue());
 
-            if (!CommonUtils.isEmpty(description)) {
-                ddl.append("\n\nCOMMENT ON SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DML)).append(" IS ")
-                    .append(SQLUtils.quoteString(this, description)).append(";");
+                if (cacheCount <= 1) {
+                    ddl.append("\n\tNO CACHE");
+                } else {
+                    ddl.append("\n\tCACHE ").append(cacheCount);
+                }
+                ddl.append("\n\t").append(isCycle ? "" : "NO ").append("CYCLE;");
+
+                if (!CommonUtils.isEmpty(description)) {
+                    ddl.append("\n\nCOMMENT ON SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DML)).append(" IS ")
+                        .append(SQLUtils.quoteString(this, description)).append(";");
+                }
+                source = ddl.toString();
             }
-            source = ddl.toString();
         }
         return source;
     }
