@@ -1,18 +1,18 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
- * All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * NOTICE:  All information contained herein is, and remains
- * the property of DBeaver Corp and its suppliers, if any.
- * The intellectual and technical concepts contained
- * herein are proprietary to DBeaver Corp and its suppliers
- * and may be covered by U.S. and Foreign Patents,
- * patents in process, and are protected by trade secret or copyright law.
- * Dissemination of this information or reproduction of this material
- * is strictly forbidden unless prior written permission is obtained
- * from DBeaver Corp.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
@@ -20,15 +20,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class VerticaSequence extends GenericSequence {
+import java.util.Map;
+
+public class VerticaSequence extends GenericSequence implements GenericScriptObject {
 
     private static final Log log = Log.getLog(VerticaSequence.class);
 
@@ -38,6 +43,7 @@ public class VerticaSequence extends GenericSequence {
     private boolean isCycle;
     private VerticaSchema schema;
     private String description;
+    private String source;
 
     public VerticaSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy, String identityTableName, long cacheCount, boolean isCycle) {
         super(container, name, description, lastValue, minValue, maxValue, incrementBy);
@@ -110,5 +116,30 @@ public class VerticaSequence extends GenericSequence {
     }
 
 
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (source == null) {
+            StringBuilder ddl = new StringBuilder();
+            ddl.append("CREATE SEQUENCE ")
+                .append(getFullyQualifiedName(DBPEvaluationContext.DML))
+                .append("\n\tINCREMENT BY ").append(getIncrementBy())
+                .append("\n\tMINVALUE ").append(getMinValue())
+                .append("\n\tMAXVALUE ").append(getMaxValue())
+                .append("\n\tSTART WITH ").append(getLastValue());
 
+            if (cacheCount <= 1) {
+                ddl.append("\n\tNO CACHE");
+            } else {
+                ddl.append("\n\tCACHE ").append(cacheCount);
+            }
+            ddl.append("\n\t").append(isCycle ? "" : "NO ").append("CYCLE;");
+
+            if (!CommonUtils.isEmpty(description)) {
+                ddl.append("\n\nCOMMENT ON SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DML)).append(" IS ")
+                    .append(SQLUtils.quoteString(this, description)).append(";");
+            }
+            source = ddl.toString();
+        }
+        return source;
+    }
 }

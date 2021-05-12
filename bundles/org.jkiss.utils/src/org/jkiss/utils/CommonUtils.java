@@ -476,6 +476,16 @@ public class CommonUtils {
         }
     }
 
+    public static boolean isNaN(@Nullable Object value) {
+        return (value instanceof Float && ((Float) value).isNaN())
+            || (value instanceof Double && ((Double) value).isNaN());
+    }
+
+    public static boolean isInfinite(@Nullable Object value) {
+        return (value instanceof Float && ((Float) value).isInfinite())
+            || (value instanceof Double && ((Double) value).isInfinite());
+    }
+
     @NotNull
     public static String toHexString(@Nullable byte[] bytes) {
         return bytes == null ? "" : toHexString(bytes, 0, bytes.length);

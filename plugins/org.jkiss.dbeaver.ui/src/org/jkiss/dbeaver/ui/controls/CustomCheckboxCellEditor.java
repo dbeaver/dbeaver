@@ -20,10 +20,9 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -48,21 +47,59 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Control createControl(Composite parent) {
-        //Composite ph = UIUtils.createPlaceholder(parent, 1);
-        checkBox = new Label(parent, SWT.NONE);
-        //setCheckIcon();
-        checkBox.setFont(parent.getFont());
-        checkBox.setBackground(null);
+        Composite ph = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginWidth = 0;
+        gl.marginHeight = 0;
+        ph.setLayout(gl);
 
-        checkBox.addFocusListener(new FocusAdapter() {
+        ph.setBackground(parent.getBackground());
+        checkBox = new Label(ph, SWT.NONE);
+        GridData gd = new GridData(SWT.CENTER, SWT.FILL, true, true);
+        checkBox.setLayoutData(gd);
+        checkBox.setBackground(ph.getBackground());
+
+        ph.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 CustomCheckboxCellEditor.this.focusLost();
             }
         });
-        addMouseListener();
+        ph.addKeyListener(new KeyListener() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.character) {
+                    case SWT.ESC:
+                        dispose();
+                        break;
+                    case SWT.SPACE:
+                        checked = !checked;
+                        setCheckIcon();
+                        applyEditorValue();
+                        break;
+                    case SWT.CR:
+                        applyEditorValue();
+                        fireApplyEditorValue();
+                        break;
+                }
+            }
 
-        return checkBox;
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+        checkBox.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                checked = !checked;
+                setCheckIcon();
+                applyEditorValue();
+                //fireApplyEditorValue();
+            }
+        });
+
+        return ph;
     }
 
     private void setCheckIcon() {
@@ -81,7 +118,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected void doSetFocus() {
-        checkBox.setFocus();
+        checkBox.getParent().setFocus();
     }
 
     @Override
@@ -98,7 +135,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
             layoutData.grabHorizontal = true;
             layoutData.horizontalAlignment = SWT.LEFT;
         } else {
-            layoutData.grabHorizontal = false;
+            layoutData.grabHorizontal = true;
             layoutData.horizontalAlignment = SWT.CENTER;
         }
         return layoutData;
@@ -135,21 +172,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
         }
     }
 
-    private void addMouseListener() {
-        checkBox.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                checked = !checked;
-                setCheckIcon();
-                applyEditorValue();
-                fireApplyEditorValue();
-            }
-        });
-    }
-
     @Override
     public void activate(ColumnViewerEditorActivationEvent activationEvent) {
-        if (activationEvent.eventType != ColumnViewerEditorActivationEvent.TRAVERSAL) {
+        /*if (activationEvent.eventType != ColumnViewerEditorActivationEvent.TRAVERSAL) */{
             super.activate(activationEvent);
         }
     }

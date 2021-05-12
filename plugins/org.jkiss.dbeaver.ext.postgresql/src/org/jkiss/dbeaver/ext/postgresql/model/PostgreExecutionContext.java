@@ -207,10 +207,11 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
         List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
         int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
+        /*if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
             // Already default schema
             return;
-        } else {
+        } else*/
+        {
             if (schemaIndex > 0) {
                 // Remove from previous position
                 newSearchPath.remove(schemaIndex);
