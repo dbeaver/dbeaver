@@ -52,6 +52,10 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     private MySQLDataSource dataSource;
     private String userName;
     private String host;
+    @Nullable
+    private String persistedUserName;
+    @Nullable
+    private String persistedHost;
     private String passwordHash;
 
     private String sslType;
@@ -72,7 +76,9 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         if (resultSet != null) {
             this.persisted = true;
             this.userName = JDBCUtils.safeGetString(resultSet, "user");
+            persistedUserName = userName;
             this.host = JDBCUtils.safeGetString(resultSet, "host");
+            persistedHost = host;
             this.passwordHash = JDBCUtils.safeGetString(resultSet, "password");
 
             this.sslType = JDBCUtils.safeGetString(resultSet, "ssl_type");
@@ -108,7 +114,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     }
 
     public String getFullName() {
-        return "'" + userName + "'@'" + host + "'";
+        return getFullName(userName, host);
     }
 
     @Nullable
@@ -302,5 +308,31 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     {
         grants = null;
         return this;
+    }
+
+    @Nullable
+    public String getPersistedUserName() {
+        return persistedUserName;
+    }
+
+    public void setPersistedUserName(@Nullable String persistedUserName) {
+        this.persistedUserName = persistedUserName;
+    }
+
+    @Nullable
+    public String getPersistedHost() {
+        return persistedHost;
+    }
+
+    public void setPersistedHost(@Nullable String persistedHost) {
+        this.persistedHost = persistedHost;
+    }
+
+    public String getPersistedFullName() {
+        return getFullName(persistedUserName, persistedHost);
+    }
+
+    private static String getFullName(@Nullable String userName, @Nullable String host) {
+        return "'" + userName + "'@'" + host + "'";
     }
 }

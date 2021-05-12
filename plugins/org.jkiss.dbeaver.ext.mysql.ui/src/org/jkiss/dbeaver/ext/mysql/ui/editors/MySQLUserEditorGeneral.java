@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ext.mysql.ui.config.UserPropertyHandler;
 import org.jkiss.dbeaver.ext.mysql.ui.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -53,10 +52,6 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     private PageControl pageControl;
     private boolean isLoaded;
     private PrivilegeTableControl privTable;
-    private boolean newUser;
-    private Text userNameText;
-    private Text hostText;
-    private CommandListener commandlistener;
 
     @Override
     public void createPartControl(Composite parent)
@@ -67,23 +62,16 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         GridData gd = new GridData(GridData.FILL_BOTH);
         container.setLayoutData(gd);
 
-        newUser = !getDatabaseObject().isPersisted();
         {
             Composite loginGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
 
-            userNameText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getUserName());
-            userNameText.setEditable(newUser);
-            if (newUser) {
-                ControlPropertyCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
-            }
+            Text userName = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getUserName());
+            ControlPropertyCommandListener.create(this, userName, UserPropertyHandler.NAME);
 
-            hostText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_host, getDatabaseObject().getHost());
-            hostText.setEditable(newUser);
-            if (newUser) {
-                ControlPropertyCommandListener.create(this, hostText, UserPropertyHandler.HOST);
-            }
+            Text host = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_host, getDatabaseObject().getHost());
+            ControlPropertyCommandListener.create(this, host, UserPropertyHandler.HOST);
 
-            String password = newUser ? "" : DEF_PASSWORD_VALUE; //$NON-NLS-1$
+            String password = getDatabaseObject().isPersisted() ? DEF_PASSWORD_VALUE : ""; //$NON-NLS-1$
             Text passwordText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_password, password, SWT.BORDER | SWT.PASSWORD);
             ControlPropertyCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
@@ -144,18 +132,6 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
         }
         pageControl.createProgressPanel();
-
-        commandlistener = new CommandListener();
-        getEditorInput().getCommandContext().addCommandListener(commandlistener);
-    }
-
-    @Override
-    public void dispose()
-    {
-        if (commandlistener != null) {
-            getEditorInput().getCommandContext().removeCommandListener(commandlistener);
-        }
-        super.dispose();
     }
 
     @Override
@@ -221,22 +197,5 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             };
         }
 
-    }
-
-    private class CommandListener extends DBECommandAdapter {
-        @Override
-        public void onSave()
-        {
-            if (newUser && getDatabaseObject().isPersisted()) {
-                newUser = false;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        userNameText.setEditable(false);
-                        hostText.setEditable(false);
-                    }
-                });
-            }
-        }
     }
 }

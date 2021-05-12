@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -31,9 +33,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Grant/Revoke privilege command
@@ -46,14 +47,28 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
-    public void updateModel()
-    {
+    public void updateModel() {
+        MySQLUser mySQLUser = getObject();
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
             switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
-                case MAX_QUERIES: getObject().setMaxQuestions(CommonUtils.toInt(entry.getValue())); break;
-                case MAX_UPDATES: getObject().setMaxUpdates(CommonUtils.toInt(entry.getValue())); break;
-                case MAX_CONNECTIONS: getObject().setMaxConnections(CommonUtils.toInt(entry.getValue())); break;
-                case MAX_USER_CONNECTIONS: getObject().setMaxUserConnections(CommonUtils.toInt(entry.getValue())); break;
+                case NAME:
+                    mySQLUser.setPersistedUserName(mySQLUser.getUserName());
+                    break;
+                case HOST:
+                    mySQLUser.setPersistedHost(mySQLUser.getHost());
+                    break;
+                case MAX_QUERIES:
+                    mySQLUser.setMaxQuestions(CommonUtils.toInt(entry.getValue()));
+                    break;
+                case MAX_UPDATES:
+                    mySQLUser.setMaxUpdates(CommonUtils.toInt(entry.getValue()));
+                    break;
+                case MAX_CONNECTIONS:
+                    mySQLUser.setMaxConnections(CommonUtils.toInt(entry.getValue()));
+                    break;
+                case MAX_USER_CONNECTIONS:
+                    mySQLUser.setMaxUserConnections(CommonUtils.toInt(entry.getValue()));
+                    break;
                 default:
                     break;
             }
@@ -86,27 +101,36 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                         }
                     }
                 });
+        } else {
+            addAction(actions, this::generateRenameScript);
         }
-        boolean hasSet;
         final MySQLDataSource dataSource = getObject().getDataSource();
         if (MySQLUtils.isAlterUSerSupported(dataSource)) {
-            StringBuilder script = new StringBuilder();
-            if (generateAlterScript(script)) {
-                actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, script.toString()));
-            }
+            addAction(actions, this::generateAlterScript);
         } else {
-            String updateSQL = generateUpdateScript();
-            if (updateSQL != null) {
-                actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, updateSQL));
-            }
-            updateSQL = generatePasswordSet();
-            if (updateSQL != null) {
-                actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, updateSQL));
-            }
+            addAction(actions, this::generateUpdateScript);
+            addAction(actions, this::generatePasswordSet);
         }
         return actions.toArray(new DBEPersistAction[0]);
     }
 
+    private static void addAction(@NotNull Collection<? super DBEPersistAction> actions, @NotNull Supplier<String> sqlGenerator) {
+        String sql = sqlGenerator.get();
+        if (sql != null) {
+            actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, sql));
+        }
+    }
+
+    @Nullable
+    private String generateRenameScript() {
+        MySQLUser mySQLUser = getObject();
+        if (mySQLUser.isPersisted() && (!Objects.equals(mySQLUser.getUserName(), mySQLUser.getPersistedUserName()) || !Objects.equals(mySQLUser.getHost(), mySQLUser.getPersistedHost()))) {
+            return "RENAME USER " + mySQLUser.getPersistedFullName() + " TO " + getObject().getFullName() + ";"; //$NON-NLS-1$ //$NON-NLS-3$
+        }
+        return null;
+    }
+
+    @Nullable
     private String generateUpdateScript() {
         StringBuilder script = new StringBuilder();
         script.append("UPDATE mysql.user SET "); //$NON-NLS-1$
@@ -128,6 +152,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         return script.toString();
     }
 
+    @Nullable
     private String generatePasswordSet() {
         Object passwordValue = getProperties().get(UserPropertyHandler.PASSWORD.toString());
         if (passwordValue == null) {
@@ -137,27 +162,28 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             "' = PASSWORD('" + passwordValue + "')";
     }
 
-    private boolean generateAlterScript(StringBuilder script) {
-        boolean hasSet = false, hasResOptions = false;
-
-        script.append("ALTER USER ").append(getObject().getFullName()); //$NON-NLS-1$
+    @Nullable
+    private String generateAlterScript() {
+        StringBuilder script = new StringBuilder();
         if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
             script.append("\nIDENTIFIED BY ").append(SQLUtils.quoteString(getObject(), CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append(" ");
-            hasSet = true;
         }
         StringBuilder resOptions = new StringBuilder();
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
             switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
-                case MAX_QUERIES: resOptions.append("\n\tMAX_QUERIES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
-                case MAX_UPDATES: resOptions.append("\n\tMAX_UPDATES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
-                case MAX_CONNECTIONS: resOptions.append("\n\tMAX_CONNECTIONS_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
-                case MAX_USER_CONNECTIONS: resOptions.append("\n\tMAX_USER_CONNECTIONS ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_QUERIES: resOptions.append("\n\tMAX_QUERIES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); break; //$NON-NLS-1$
+                case MAX_UPDATES: resOptions.append("\n\tMAX_UPDATES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); break; //$NON-NLS-1$
+                case MAX_CONNECTIONS: resOptions.append("\n\tMAX_CONNECTIONS_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); break; //$NON-NLS-1$
+                case MAX_USER_CONNECTIONS: resOptions.append("\n\tMAX_USER_CONNECTIONS ").append(CommonUtils.toInt(entry.getValue())); break; //$NON-NLS-1$
             }
         }
         if (resOptions.length() > 0) {
             script.append("\nWITH").append(resOptions);
         }
-        return hasSet || hasResOptions;
-    }
 
+        if (script.length() == 0) {
+            return null;
+        }
+        return "ALTER USER " + getObject().getFullName() + script; //$NON-NLS-1$
+    }
 }
