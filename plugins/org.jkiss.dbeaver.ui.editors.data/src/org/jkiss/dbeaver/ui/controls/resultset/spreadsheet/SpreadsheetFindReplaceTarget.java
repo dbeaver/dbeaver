@@ -312,7 +312,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
-                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, true, true));
+                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, false));
                 } else {
                     continue;
                 }
