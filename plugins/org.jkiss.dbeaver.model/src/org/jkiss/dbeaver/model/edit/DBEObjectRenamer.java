@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Map;
 
 /**
  * Object describer.
@@ -35,10 +38,11 @@ public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObje
      *
      * @param commandContext command context. Implementation should add new command to it.
      * @param object object
+     * @param options
      * @param newName new name. Not null only if UI somehow determine possible new name
      * @throws DBException on any error
      */
-    void renameObject(DBECommandContext commandContext, OBJECT_TYPE object, String newName)
+    void renameObject(@NotNull DBECommandContext commandContext, @NotNull OBJECT_TYPE object, @NotNull Map<String, Object> options, @NotNull String newName)
         throws DBException;
 
     default boolean canRenameObject(OBJECT_TYPE object) {

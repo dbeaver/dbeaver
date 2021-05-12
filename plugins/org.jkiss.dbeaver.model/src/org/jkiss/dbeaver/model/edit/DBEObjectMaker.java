@@ -37,19 +37,6 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     long FEATURE_SUPPORTS_COPY              = 1 << 4;
     long FEATURE_CLOSE_EXISTING_CONNECTIONS = 1 << 5;
 
-    /**
-     * New object container.
-     * Usually it is a navigator node (DBNNode).
-     */
-    String OPTION_CONTAINER = "container";
-    /**
-     * Object type (class)
-     */
-    String OPTION_OBJECT_TYPE = "objectType";
-    String OPTION_DELETE_CASCADE = "deleteCascade";
-    String OPTION_CLOSE_EXISTING_CONNECTIONS = "closeExistingConnections";
-    String OPTION_ACTIVE_EDITOR = "activeEditor";
-
     long getMakerOptions(DBPDataSource dataSource);
 
     /**

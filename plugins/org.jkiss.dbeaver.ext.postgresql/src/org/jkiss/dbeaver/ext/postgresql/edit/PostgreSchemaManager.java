@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -102,9 +103,9 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, PostgreSchema schema, String newName) throws DBException
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreSchema schema, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
-        processObjectRename(commandContext, schema, newName);
+        processObjectRename(commandContext, schema, options, newName);
     }
 
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreSchema, PropertyHandler> command, Map<String, Object> options)

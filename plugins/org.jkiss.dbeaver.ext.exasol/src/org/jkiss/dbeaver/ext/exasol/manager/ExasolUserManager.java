@@ -1,6 +1,8 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 //import org.eclipse.jface.dialogs.IDialogConstants;
+
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
@@ -9,7 +11,6 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-//import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -21,8 +22,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-//import org.jkiss.dbeaver.ui.UITask;
-//import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -84,15 +83,15 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext,
-                             ExasolUser object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext,
+                             @NotNull ExasolUser object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
     protected void processObjectRename(DBECommandContext commandContext,
-                                       ExasolUser object, String newName) throws DBException {
-        ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, newName);
+                                       ExasolUser object, Map<String, Object> options, String newName) throws DBException {
+        ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, options, newName);
         commandContext.addCommand(command, new RenameObjectReflector(), true);
     }
 

@@ -656,7 +656,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                             UIUtils.getActiveWorkbenchWindow(),
                             treeViewer.getControl().getShell(),
                             node,
-                            newName);
+                            newName,
+                            this);
                     }
                 } else if (e.keyCode == SWT.ESC) {
                     disposeOldEditor();

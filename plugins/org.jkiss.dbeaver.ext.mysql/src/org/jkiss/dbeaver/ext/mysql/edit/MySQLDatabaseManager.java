@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -94,7 +95,7 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, MySQLCatalog catalog, String newName) throws DBException
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLCatalog catalog, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
         throw new DBException("Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");
     }

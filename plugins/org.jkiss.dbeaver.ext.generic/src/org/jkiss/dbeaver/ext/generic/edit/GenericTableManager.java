@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -82,7 +82,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
         GenericStructContainer structContainer = (GenericStructContainer) container;
 
         boolean isView = false;
-        Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
+        Object navContainer = options.get(DBEObjectManager.OPTION_CONTAINER);
         if (navContainer instanceof DBNDatabaseFolder) {
             List<DBXTreeNode> folderChildren = ((DBNDatabaseFolder) navContainer).getMeta().getChildren((DBNNode) navContainer);
             if (folderChildren.size() == 1 && folderChildren.get(0) instanceof DBXTreeItem && ((DBXTreeItem) folderChildren.get(0)).getPropertyName().equals("views")) {

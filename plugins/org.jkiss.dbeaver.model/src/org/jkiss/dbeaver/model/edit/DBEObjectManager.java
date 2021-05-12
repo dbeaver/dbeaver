@@ -26,6 +26,20 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
  */
 public interface DBEObjectManager<OBJECT_TYPE extends DBPObject> {
 
+    /**
+     * New object container.
+     * Usually it is a navigator node (DBNNode).
+     */
+    String OPTION_CONTAINER = "container";
+    /**
+     * Object type (class)
+     */
+    String OPTION_OBJECT_TYPE = "objectType";
+    String OPTION_DELETE_CASCADE = "deleteCascade";
+    String OPTION_CLOSE_EXISTING_CONNECTIONS = "closeExistingConnections";
+    String OPTION_UI_SOURCE = "uiSource";
+    String OPTION_ACTIVE_EDITOR = "activeEditor";
+
     void executePersistAction(
         DBCSession session,
         DBECommand<OBJECT_TYPE> command,

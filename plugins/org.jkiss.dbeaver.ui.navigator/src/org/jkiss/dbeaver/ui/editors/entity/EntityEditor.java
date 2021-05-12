@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -60,6 +61,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
+import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
@@ -67,6 +69,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -892,9 +895,22 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
 
-        if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
-            // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
-            //force = true;
+        boolean isRename = false;
+        if (source instanceof DBNEvent) {
+            if (((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
+                // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
+                //force = true;
+            }
+            Object source2 = ((DBNEvent) source).getSource();
+            if (source2 instanceof DBPEvent) {
+                if (((DBPEvent) source2).getData() == DBPEvent.RENAME) {
+                    Map<String, Object> options = ((DBPEvent) source2).getOptions();
+                    Object uiSource = options.get(DBEObjectManager.OPTION_UI_SOURCE);
+                    if (uiSource != null && !(uiSource instanceof CustomFormEditor)) {
+                        isRename = true;
+                    }
+                }
+            }
         }
 
         if (force && getDatabaseObject().isPersisted()) {
@@ -912,7 +928,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Refresh visual content in parts
             for (IEditorPart editor : editorMap.values()) {
                 if (editor instanceof IRefreshablePart) {
-                    ((IRefreshablePart)editor).refreshPart(source, force);
+                    // If it is a rename event then force refresh
+                    boolean refreshNestedPart = force;
+                    if (!refreshNestedPart && editor instanceof ObjectPropertiesEditor && isRename) {
+                        refreshNestedPart = true;
+                    }
+                    ((IRefreshablePart)editor).refreshPart(source, refreshNestedPart);
                 }
             }
         }

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
@@ -103,8 +104,8 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, PostgreTrigger object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTrigger object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
     @Override

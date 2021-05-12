@@ -55,7 +55,7 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -372,7 +372,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                     // New entity. Add it if it has the same object container
                     // or if this entity was created from the same editor
                     DBSObject diagramContainer = diagram.getObject();
-                    IEditorPart entityOwnerEditor = (IEditorPart) event.getOptions().get(DBEObjectMaker.OPTION_ACTIVE_EDITOR);
+                    IEditorPart entityOwnerEditor = (IEditorPart) event.getOptions().get(DBEObjectManager.OPTION_ACTIVE_EDITOR);
                     IEditorPart erdOwnerEditor = getEditor();
                     if (erdOwnerEditor.getSite() instanceof MultiPageEditorSite) {
                         erdOwnerEditor = ((MultiPageEditorSite) erdOwnerEditor.getSite()).getMultiPageEditor();
