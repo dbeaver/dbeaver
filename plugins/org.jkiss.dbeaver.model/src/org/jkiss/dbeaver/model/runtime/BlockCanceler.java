@@ -35,6 +35,9 @@ public class BlockCanceler
         try {
             block.cancelBlock(monitor, blockActiveThread);
         } catch (Throwable e) {
+            if (e instanceof RuntimeException) {
+                throw e;
+            }
             throw new DBException("Cancel error", e);
         } finally {
             thread.setName(threadOldName);

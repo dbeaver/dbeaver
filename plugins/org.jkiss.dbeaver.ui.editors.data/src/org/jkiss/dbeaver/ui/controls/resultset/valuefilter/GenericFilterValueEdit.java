@@ -241,7 +241,9 @@ class GenericFilterValueEdit {
     void loadValues(Runnable onFinish) {
         KeyLoadJob curLoadJob = this.loadJob;
         if (curLoadJob != null) {
-            curLoadJob.cancel();
+            if (!curLoadJob.isCanceled()) {
+                curLoadJob.cancel();
+            }
             curLoadJob.schedule(200);
             return;
         }

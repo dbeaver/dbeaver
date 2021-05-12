@@ -133,7 +133,12 @@ class GridCellRenderer extends AbstractRenderer {
                 case IGridContentProvider.ALIGN_RIGHT: {
                     // Right (numbers, datetimes)
                     Point textSize = gc.textExtent(text);
-                    boolean useClipping = textSize.x + INSIDE_MARGIN > bounds.width;
+                    int valueWidth = textSize.x + INSIDE_MARGIN;
+                    if (imageBounds != null) {
+                        valueWidth += imageBounds.width + INSIDE_MARGIN;
+                    }
+                    valueWidth += RIGHT_MARGIN;
+                    boolean useClipping = valueWidth > bounds.width;
 
                     int imageMargin = 0;
                     if (image != null) {

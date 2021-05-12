@@ -4054,6 +4054,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void run() {
             getActivePreferenceStore().setValue(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, isChecked());
+            try {
+                getActivePreferenceStore().save();
+            } catch (IOException e) {
+                log.error(e);
+            }
         }
 
     }
