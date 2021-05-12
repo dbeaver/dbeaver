@@ -371,7 +371,7 @@ public final class SQLUtils {
                                 break;
                             } else {
                                 String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
-                                if (CommonUtils.isJavaIdentifier(afterEnd) || containsWhitespaces(afterEnd)) {
+                                if (afterEnd.chars().noneMatch(Character::isWhitespace)) {
                                     isBlockQuery = true;
                                     break;
                                 }
@@ -386,16 +386,6 @@ public final class SQLUtils {
             break;
         }
         return sql + trailingSpaces;
-    }
-
-    private static boolean containsWhitespaces(@NotNull CharSequence charSequence) {
-        for (int i = 0; i < charSequence.length(); i++) {
-            char c = charSequence.charAt(i);
-            if (Character.isWhitespace(c)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public static boolean isBlockStartKeyword(SQLDialect dialect, String keyword) {
