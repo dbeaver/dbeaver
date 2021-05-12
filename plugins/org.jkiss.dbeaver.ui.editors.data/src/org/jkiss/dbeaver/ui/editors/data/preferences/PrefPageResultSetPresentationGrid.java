@@ -53,6 +53,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     private Button gridShowAttrOrder;
     private Button useSmoothScrolling;
     private Button showBooleanAsCheckbox;
+    private Button toggleBooleanOnClick;
     private Combo gridDoubleClickBehavior;
     private Text gridRowBatchSize;
     private Text maxDefColumnWidth;
@@ -75,6 +76,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX) ||
+            store.contains(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN) ||
             store.contains(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK) ||
             store.contains(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
@@ -103,6 +105,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
             useSmoothScrolling = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
             showBooleanAsCheckbox = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
+            toggleBooleanOnClick = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_toggle_boolean_on_click, DataEditorsMessages.pref_page_database_resultsets_label_toggle_boolean_on_click_tip, false, 2);
             PreferenceLinkArea editorsLink = new PreferenceLinkArea(uiGroup, SWT.NONE,
                 "org.jkiss.dbeaver.preferences.editors",
                 "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
@@ -140,6 +143,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             gridShowAttrOrder.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
             useSmoothScrolling.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
             showBooleanAsCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
+            toggleBooleanOnClick.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN));
             gridDoubleClickBehavior.select(
                 CommonUtils.valueOf(
                     Spreadsheet.DoubleClickBehavior.class,
@@ -166,6 +170,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, gridShowAttrOrder.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING, useSmoothScrolling.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX, showBooleanAsCheckbox.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN, toggleBooleanOnClick.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, CommonUtils.toInt(gridRowBatchSize.getText()));
@@ -190,6 +195,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN);
         store.setToDefault(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
