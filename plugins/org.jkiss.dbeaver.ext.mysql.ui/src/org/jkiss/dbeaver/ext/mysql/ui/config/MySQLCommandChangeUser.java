@@ -125,7 +125,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     private String generateRenameScript() {
         MySQLUser mySQLUser = getObject();
         if (mySQLUser.isPersisted() && (!Objects.equals(mySQLUser.getUserName(), mySQLUser.getPersistedUserName()) || !Objects.equals(mySQLUser.getHost(), mySQLUser.getPersistedHost()))) {
-            return "RENAME USER " + mySQLUser.getPersistedFullName() + " TO " + getObject().getFullName() + ";"; //$NON-NLS-1$ //$NON-NLS-3$
+            return "RENAME USER " + mySQLUser.getPersistedFullName() + " TO " + getObject().getFullName() + ";"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
         return null;
     }
