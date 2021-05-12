@@ -147,11 +147,11 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
 
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment sequence",
                 "COMMENT ON SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
+                    " IS " + SQLUtils.quoteString(command.getObject(), CommonUtils.notEmpty(command.getObject().getDescription()))));
         }
     }
 
