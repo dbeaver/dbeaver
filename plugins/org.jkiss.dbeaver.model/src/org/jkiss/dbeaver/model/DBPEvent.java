@@ -38,6 +38,7 @@ public class DBPEvent
     }
 
     public static final Object REORDER = new Object();
+    public static final Object RENAME = new Object();
 
     private Action action;
 

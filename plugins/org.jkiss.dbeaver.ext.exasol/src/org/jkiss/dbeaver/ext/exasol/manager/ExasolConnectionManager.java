@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConnection;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -164,10 +165,10 @@ public class ExasolConnectionManager
 
 
     @Override
-    public void renameObject(DBECommandContext commandContext,
-            ExasolConnection object, String newName) throws DBException
+    public void renameObject(@NotNull DBECommandContext commandContext,
+                             @NotNull ExasolConnection object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
-        processObjectRename(commandContext, object, newName);
+        processObjectRename(commandContext, object, options, newName);
     }
     
     

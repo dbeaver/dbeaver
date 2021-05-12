@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -96,8 +97,8 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, MySQLTableIndex object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLTableIndex object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
     @Override

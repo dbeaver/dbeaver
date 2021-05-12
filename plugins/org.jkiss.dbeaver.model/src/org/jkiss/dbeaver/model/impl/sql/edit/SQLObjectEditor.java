@@ -206,8 +206,8 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     }
 
-    protected void processObjectRename(DBECommandContext commandContext, OBJECT_TYPE object, String newName) throws DBException {
-        ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, newName);
+    protected void processObjectRename(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options, String newName) throws DBException {
+        ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, options, newName);
         commandContext.addCommand(command, new RenameObjectReflector(), true);
     }
 
@@ -418,13 +418,19 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected class ObjectRenameCommand extends DBECommandAbstract<OBJECT_TYPE> implements DBECommandRename {
+        private Map<String, Object> options;
         private String oldName;
         private String newName;
 
-        public ObjectRenameCommand(OBJECT_TYPE object, String title, String newName) {
+        public ObjectRenameCommand(OBJECT_TYPE object, String title, Map<String, Object> options, String newName) {
             super(object, title);
+            this.options = options;
             this.oldName = object.getName();
             this.newName = newName;
+        }
+
+        public Map<String, Object> getOptions() {
+            return options;
         }
 
         public String getOldName() {
@@ -451,7 +457,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             final String mergeId = "rename" + getObject().hashCode();
             ObjectRenameCommand renameCmd = (ObjectRenameCommand) userParams.get(mergeId);
             if (renameCmd == null) {
-                renameCmd = new ObjectRenameCommand(getObject(), getTitle(), newName);
+                renameCmd = new ObjectRenameCommand(getObject(), getTitle(), options, newName);
                 userParams.put(mergeId, renameCmd);
             } else {
                 renameCmd.newName = newName;
@@ -479,11 +485,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                     cache.renameObject(command.getObject(), command.getOldName(), command.getNewName());
                 }
 
-                Map<String, Object> options = new LinkedHashMap<>();
+                Map<String, Object> options = new LinkedHashMap<>(command.getOptions());
                 options.put(DBEObjectRenamer.PROP_OLD_NAME, command.getOldName());
                 options.put(DBEObjectRenamer.PROP_NEW_NAME, command.getNewName());
 
-                DBUtils.fireObjectUpdate(command.getObject(), options, null);
+                DBUtils.fireObjectUpdate(command.getObject(), options, DBPEvent.RENAME);
             }
         }
 
@@ -498,7 +504,8 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                     cache.renameObject(command.getObject(), command.getNewName(), command.getOldName());
                 }
 
-                DBUtils.fireObjectUpdate(command.getObject());
+                Map<String, Object> options = new LinkedHashMap<>(command.getOptions());
+                DBUtils.fireObjectUpdate(command.getObject(), options, DBPEvent.RENAME);
             }
         }
 

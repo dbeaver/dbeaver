@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -113,9 +114,9 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, ExasolPriorityGroup object, String newName)
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull ExasolPriorityGroup object, @NotNull Map<String, Object> options, @NotNull String newName)
         throws DBException {
-        processObjectRename(commandContext, object, newName);
+        processObjectRename(commandContext, object, options, newName);
     }
 
     @Override

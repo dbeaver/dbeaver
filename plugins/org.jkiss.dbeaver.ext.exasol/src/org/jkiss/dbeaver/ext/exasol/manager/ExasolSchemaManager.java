@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -27,7 +28,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -71,7 +72,7 @@ public class ExasolSchemaManager
     protected ExasolSchema createDatabaseObject(
         DBRProgressMonitor monitor,
         DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBCException {
-        Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
+        Object navContainer = options.get(DBEObjectManager.OPTION_CONTAINER);
         boolean virtSchema = navContainer instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) navContainer).getChildrenClass() == ExasolVirtualSchema.class;
         if (virtSchema) {
             throw new DBCFeatureNotSupportedException();
@@ -164,9 +165,9 @@ public class ExasolSchemaManager
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext,
-                             ExasolSchema object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext,
+                             @NotNull ExasolSchema object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
 

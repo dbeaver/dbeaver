@@ -185,9 +185,9 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, DB2Table object, String newName) throws DBException
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull DB2Table object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
-        processObjectRename(commandContext, object, newName);
+        processObjectRename(commandContext, object, options, newName);
     }
 
     // -------

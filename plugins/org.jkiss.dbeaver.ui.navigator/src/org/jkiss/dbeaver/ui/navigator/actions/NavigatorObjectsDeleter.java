@@ -32,10 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -411,14 +408,14 @@ public class NavigatorObjectsDeleter {
     public enum Option {
         DELETE_CASCADE(
             DBEObjectMaker.FEATURE_DELETE_CASCADE,
-            DBEObjectMaker.OPTION_DELETE_CASCADE,
+            DBEObjectManager.OPTION_DELETE_CASCADE,
             UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_label,
             UINavigatorMessages.confirm_deleting_delete_cascade_checkbox_tooltip
         ),
 
         CLOSE_EXISTING_CONNECTIONS(
                 DBEObjectMaker.FEATURE_CLOSE_EXISTING_CONNECTIONS,
-                DBEObjectMaker.OPTION_CLOSE_EXISTING_CONNECTIONS,
+                DBEObjectManager.OPTION_CLOSE_EXISTING_CONNECTIONS,
                 UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_label,
                 UINavigatorMessages.confirm_deleting_close_existing_connections_checkbox_tooltip
         );

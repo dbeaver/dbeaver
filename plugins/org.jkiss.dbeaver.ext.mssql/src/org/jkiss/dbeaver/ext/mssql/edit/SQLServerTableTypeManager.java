@@ -20,7 +20,7 @@ public class SQLServerTableTypeManager extends SQLServerBaseTableManager<SQLServ
     };
 
     @Override
-    public void renameObject(DBECommandContext commandContext, SQLServerTableType object, String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull SQLServerTableType object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         throw new DBException("SQL Server data table types rename not supported");
     }
 

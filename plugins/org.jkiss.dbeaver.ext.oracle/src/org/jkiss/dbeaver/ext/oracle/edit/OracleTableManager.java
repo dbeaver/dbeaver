@@ -147,9 +147,9 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, OracleTable object, String newName) throws DBException
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull OracleTable object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
-        processObjectRename(commandContext, object, newName);
+        processObjectRename(commandContext, object, options, newName);
     }
 
 }

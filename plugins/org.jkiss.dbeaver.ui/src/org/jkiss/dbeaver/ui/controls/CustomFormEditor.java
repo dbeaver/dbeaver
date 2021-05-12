@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -203,7 +204,9 @@ public class CustomFormEditor {
                 DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(propertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (commandContext != null && renamer != null) {
                     try {
-                        renamer.renameObject(commandContext, databaseObject, CommonUtils.toString(UIUtils.normalizePropertyValue(value)));
+                        Map<String, Object> options = new LinkedHashMap<>();
+                        options.put(DBEObjectManager.OPTION_UI_SOURCE, this);
+                        renamer.renameObject(commandContext, databaseObject, options, CommonUtils.toString(UIUtils.normalizePropertyValue(value)));
                     } catch (Throwable e) {
                         log.error("Error renaming object", e);
                     }

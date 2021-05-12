@@ -91,7 +91,7 @@ public class HiveTableManager extends GenericTableManager implements DBEObjectRe
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableBase object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableBase object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 }

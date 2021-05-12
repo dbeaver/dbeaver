@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -84,8 +85,8 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, VerticaSequence object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull VerticaSequence object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
     @Override

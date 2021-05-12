@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.vertica.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -124,7 +125,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager impleme
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableColumn object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableColumn object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 }

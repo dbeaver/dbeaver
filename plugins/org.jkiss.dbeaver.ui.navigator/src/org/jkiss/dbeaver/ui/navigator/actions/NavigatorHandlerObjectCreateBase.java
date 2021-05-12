@@ -161,9 +161,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
             // Parent is model object - not node
             Map<String, Object> options = new HashMap<>();
-            options.put(DBEObjectMaker.OPTION_CONTAINER, container);
-            options.put(DBEObjectMaker.OPTION_OBJECT_TYPE, newObjectType);
-            options.put(DBEObjectMaker.OPTION_ACTIVE_EDITOR, activeEditor);
+            options.put(DBEObjectManager.OPTION_CONTAINER, container);
+            options.put(DBEObjectManager.OPTION_OBJECT_TYPE, newObjectType);
+            options.put(DBEObjectManager.OPTION_ACTIVE_EDITOR, activeEditor);
             createDatabaseObject(commandTarget, objectMaker, parentObject instanceof DBPObject ? (DBPObject) parentObject : null, sourceObject, options);
         }
         catch (Throwable e) {

@@ -152,8 +152,8 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, ExasolTable object, String newName) throws DBException {
-        processObjectRename(commandContext, object, newName);
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull ExasolTable object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
     // -------
