@@ -80,7 +80,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     @Override
     public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableForeignKey> command, Map<String, Object> options) {
         PostgreTableForeignKey fk = command.getObject();
-        if (fk.isPersisted()) {
+        /*if (fk.isPersisted()) {
             try {
                 String constrDDL = fk.getObjectDefinitionText(
                     monitor,
@@ -91,8 +91,13 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
             } catch (DBException e) {
                 log.warn("Can't extract FK DDL", e);
             }
-        }
+        }*/
         StringBuilder sql = super.getNestedDeclaration(monitor, owner, command, options);
+
+        if (fk.getMatchType().equals(PostgreTableForeignKey.MatchType.f)) {
+            //Foreign key match types: f = full, p = partial (not implemented yet), s = simple (u == s in old PG versions - default value)
+            sql.append(" MATCH FULL");
+        }
 
         if (fk.isDeferrable()) {
             sql.append(" DEFERRABLE");

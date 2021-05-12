@@ -1986,7 +1986,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!hasScope || inScope) {
                     java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
                     if (searchPattern != null) {
-                        String cellText = getCellText(colElement, rowElement);
+                        String cellText = CommonUtils.toString(getCellValue(colElement, rowElement, false, false));
                         if (searchPattern.matcher(cellText).find()) {
                             return backgroundMatched;
                         }

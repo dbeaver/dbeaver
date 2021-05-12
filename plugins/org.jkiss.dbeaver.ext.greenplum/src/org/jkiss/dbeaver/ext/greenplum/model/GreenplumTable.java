@@ -97,7 +97,7 @@ public class GreenplumTable extends PostgreTableRegular {
     private List<PostgreTableColumn> getDistributionTableColumns(DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns) throws DBException {
         // Get primary key
         PostgreTableConstraint pk = null;
-        for (PostgreTableConstraint tc : getConstraints(monitor)) {
+        for (PostgreTableConstraint tc : CommonUtils.safeCollection(getConstraints(monitor))) {
             if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                 pk = tc;
                 break;
@@ -167,15 +167,17 @@ public class GreenplumTable extends PostgreTableRegular {
             }
 
             ddl.append("\nDISTRIBUTED ");
-            if (CommonUtils.isEmpty(distributionColumns)) {
-                ddl.append((supportsReplicatedDistribution && isPersisted() && isDistributedByReplicated(monitor)) ? "REPLICATED" : "RANDOMLY");
-            } else {
+            if (supportsReplicatedDistribution && isPersisted() && isDistributedByReplicated(monitor)) {
+                ddl.append("REPLICATED");
+            } else if (!CommonUtils.isEmpty(distributionColumns)) {
                 ddl.append("BY (");
                 for (int i = 0; i < distributionColumns.size(); i++) {
                     if (i > 0) ddl.append(", ");
                     ddl.append(DBUtils.getQuotedIdentifier(distributionColumns.get(i)));
                 }
                 ddl.append(")");
+            } else {
+                ddl.append("RANDOMLY");
             }
 
             String partitionData = isPersisted() ? getPartitionData(monitor) : null;
