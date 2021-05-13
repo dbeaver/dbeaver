@@ -655,7 +655,7 @@ public class MySQLCatalog implements
             if (forTable != null) {
                 sql.append(" AND ").append(MySQLConstants.COL_TABLE_NAME).append("=?");
             }
-            sql.append(" ORDER BY ").append(MySQLConstants.COL_INDEX_NAME).append(",").append(MySQLConstants.COL_SEQ_IN_INDEX);
+            sql.append(" ORDER BY ").append(MySQLConstants.COL_TABLE_NAME).append(",").append(MySQLConstants.COL_INDEX_NAME).append(",").append(MySQLConstants.COL_SEQ_IN_INDEX);
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, owner.getName());
