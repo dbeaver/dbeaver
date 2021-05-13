@@ -70,8 +70,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private static final FKType FK_TYPE_PHYSICAL = new FKType("Physical", true);
     public static final FKType FK_TYPE_LOGICAL = new FKType("Logical", false);
 
-    private DBSForeignKeyModifyRule[] supportedModifyRules;
-    private DBSEntityAssociation foreignKey;
+    private final DBSForeignKeyModifyRule[] supportedModifyRules;
+    private final DBSEntityAssociation foreignKey;
     private DBSEntity curRefTable;
     private List<DBSEntityConstraint> curConstraints;
     private DBNDatabaseNode ownerTableNode, ownerContainerNode;
@@ -85,7 +85,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     private DBSEntityConstraint curConstraint;
     private List<? extends DBSEntityAttribute> ownColumns;
-    private List<FKColumnInfo> fkColumns = new ArrayList<>();
+    private final List<FKColumnInfo> fkColumns = new ArrayList<>();
     private DBSForeignKeyModifyRule onDeleteRule;
     private DBSForeignKeyModifyRule onUpdateRule;
 
@@ -177,6 +177,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (ownerTableNode != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
             setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
+        }
+
+        if (!(foreignKey.getParentObject() instanceof DBVEntity)) {
+            DBSEntityConstraint refConstraint = foreignKey.getReferencedConstraint();
+            if (refConstraint != null) {
+                curRefTable = refConstraint.getParentObject();
+                curConstraint = refConstraint;
+            }
         }
     }
 

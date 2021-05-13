@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -35,11 +36,12 @@ import java.util.List;
 public class AssociationCreateCommand extends Command {
 
     protected ERDAssociation association;
-    protected ERDElement sourceEntity;
-    protected ERDElement targetEntity;
+    protected ERDElement<?> sourceEntity;
+    protected ERDElement<?> targetEntity;
 
-    private List<ERDEntityAttribute> sourceAttributes;
-    private List<ERDEntityAttribute> targetAttributes;
+    protected List<ERDEntityAttribute> sourceAttributes;
+    protected List<ERDEntityAttribute> targetAttributes;
+    private ERDEditorPart editor;
 
     public AssociationCreateCommand() {
     }
@@ -64,72 +66,47 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public boolean canExecute() {
-
-        boolean returnValue = true;
         if (sourceEntity.equals(targetEntity)) {
-            returnValue = false;
+            return false;
         } else {
 
             if (targetEntity == null) {
                 return false;
             } else {
-                // Check for existence of relationship already
-                List<ERDAssociation> relationships = targetEntity.getReferences();
-                for (ERDAssociation currentRelationship : relationships) {
-                    if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
-                        returnValue = false;
-                        break;
-                    }
-                }
+                return !isAssociationExists();
             }
-
         }
+    }
 
-        return returnValue;
-
+    protected boolean isAssociationExists() {
+        // Check for existence of relationship already
+        List<ERDAssociation> relationships = targetEntity.getReferences();
+        for (ERDAssociation currentRelationship : relationships) {
+            if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void execute() {
-        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
-            DBSEntity srcEntityObject = ((ERDEntity)sourceEntity).getObject();
-            DBSEntity targetEntityObject = ((ERDEntity)targetEntity).getObject();
-
-            List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
-            List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
-
-            DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
-            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(
-                vEntity,
-                targetEntityObject,
-                new EditForeignKeyPage.FKType[] {
-                    EditForeignKeyPage.FK_TYPE_LOGICAL
-                },
-                srcAttrs,
-                refAttrs);
-            if (vfk == null) {
-                return;
-            }
-            vEntity.persistConfiguration();
-            association = new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
-        } else {
-            association = createAssociation(sourceEntity, targetEntity, true);
-        }
+        association = createAssociation(sourceEntity, targetEntity, true);
     }
 
-    public ERDElement getSourceEntity() {
+    public ERDElement<?> getSourceEntity() {
         return sourceEntity;
     }
 
-    public void setSourceEntity(ERDElement sourceEntity) {
+    public void setSourceEntity(ERDElement<?> sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 
-    public ERDElement getTargetEntity() {
+    public ERDElement<?> getTargetEntity() {
         return targetEntity;
     }
 
-    public void setTargetEntity(ERDElement targetEntity) {
+    public void setTargetEntity(ERDElement<?> targetEntity) {
         this.targetEntity = targetEntity;
     }
 
@@ -157,9 +134,41 @@ public class AssociationCreateCommand extends Command {
         }
     }
 
-    protected ERDAssociation createAssociation(ERDElement sourceEntity, ERDElement targetEntity, boolean reflect) {
-        return new ERDAssociation(sourceEntity, targetEntity, true);
+    protected ERDAssociation createAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect) {
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
+            DBSEntity srcEntityObject = ((ERDEntity)sourceEntity).getObject();
+            DBSEntity targetEntityObject = ((ERDEntity)targetEntity).getObject();
+
+            List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
+            List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
+
+            DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
+            assert vEntity != null;
+
+            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(
+                vEntity,
+                targetEntityObject,
+                new EditForeignKeyPage.FKType[] {
+                    EditForeignKeyPage.FK_TYPE_LOGICAL
+                },
+                srcAttrs,
+                refAttrs);
+            if (vfk == null) {
+                return null;
+            }
+            vEntity.persistConfiguration();
+            return new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
+        } else {
+            return new ERDAssociation(sourceEntity, targetEntity, true);
+        }
     }
 
+    public ERDEditorPart getEditor() {
+        return editor;
+    }
+
+    public void setEditor(ERDEditorPart editor) {
+        this.editor = editor;
+    }
 }
 

@@ -49,6 +49,10 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
+    public static final String OPTION_REF_TABLE = "refTable";
+    public static final String OPTION_REF_CONSTRAINT = "refConstraint";
+    public static final String OPTION_REF_ATTRIBUTES = "refAttributes";
+
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
     {
@@ -183,6 +187,31 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
                 return constrName;
             }
         }
+    }
+
+    protected <T extends DBSEntityConstraint> T getReferencedKey(DBRProgressMonitor monitor, TABLE_TYPE table, Class<T> refKeyClass, Map<String, Object> options) {
+        Object refConstraint = options.get(OPTION_REF_CONSTRAINT);
+        if (refKeyClass.isInstance(refConstraint)) {
+            return refKeyClass.cast(refConstraint);
+        }
+        Object refTable = options.get(OPTION_REF_TABLE);
+        if (refTable instanceof DBSEntity) {
+            Object refAttrs = options.get(OPTION_REF_ATTRIBUTES);
+            if (refAttrs instanceof Collection) {
+                try {
+                    DBSEntityConstraint entityConstraint = DBUtils.findEntityConstraint(
+                        monitor,
+                        (DBSEntity) refTable,
+                        (Collection<? extends DBSEntityAttribute>) refAttrs);
+                    if (refKeyClass.isInstance(entityConstraint)) {
+                        return refKeyClass.cast(entityConstraint);
+                    }
+                } catch (DBException e) {
+                    log.debug("Error searchign constraint by attributes", e);
+                }
+            }
+        }
+        return null;
     }
 
     protected boolean isLegacyForeignKeySyntax(TABLE_TYPE owner) {
