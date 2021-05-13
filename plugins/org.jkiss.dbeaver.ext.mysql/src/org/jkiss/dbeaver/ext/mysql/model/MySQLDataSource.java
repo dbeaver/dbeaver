@@ -198,11 +198,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 securityManager.deleteCertificate(getContainer(), "ssl");
             }
             final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), "ssl"));
+            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), "ssl");
             if (isMariaDB()) {
                 props.put("trustStore", ksPath);
+                props.put("trustStorePassword", String.valueOf(ksPass));
             } else {
                 props.put("clientCertificateKeyStoreUrl", ksPath);
                 props.put("trustCertificateKeyStoreUrl", ksPath);
+                props.put("clientCertificateKeyStorePassword", String.valueOf(ksPass));
+                props.put("trustCertificateKeyStorePassword", String.valueOf(ksPass));
             }
         }
         final String cipherSuites = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CIPHER_SUITES);

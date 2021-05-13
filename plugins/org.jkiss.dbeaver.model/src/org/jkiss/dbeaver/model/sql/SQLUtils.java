@@ -363,7 +363,7 @@ public final class SQLUtils {
                 String[][] blockBoundStrings = syntaxManager.getDialect().getBlockBoundStrings();
                 if (blockBoundStrings != null) {
                     for (String[] blocks : blockBoundStrings) {
-                        int endIndex = test.indexOf(blocks[1]);
+                        int endIndex = test.lastIndexOf(blocks[1]);
                         if (endIndex > 0) {
                             // This is a block query if it ends with 'END' or with 'END id'
                             if (test.endsWith(blocks[1])) {
@@ -371,7 +371,7 @@ public final class SQLUtils {
                                 break;
                             } else {
                                 String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
-                                if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                                if (afterEnd.chars().noneMatch(Character::isWhitespace)) {
                                     isBlockQuery = true;
                                     break;
                                 }

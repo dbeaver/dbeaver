@@ -103,6 +103,8 @@ public class PostgreConstants {
     public static final String TYPE_INTERVAL = "interval";
     public static final String TYPE_TIME = "time";
     public static final String TYPE_TIMESTAMP = "timestamp";
+    public static final String TYPE_TIMETZ = "timetz";
+    public static final String TYPE_TIMESTAMPTZ = "timestamptz";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 
