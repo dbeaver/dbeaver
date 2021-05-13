@@ -338,5 +338,10 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsBackslashStringEscape() {
         return true;
     }
+
+    @Override
+    public boolean supportsDatabaseSize() {
+        return true;
+    }
 }
 
