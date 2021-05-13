@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
@@ -41,7 +42,7 @@ class MySQLDialect extends JDBCSQLDialect {
         new String[]{
             "USE", "SHOW",
             "CREATE", "ALTER", "DROP",
-            "EXPLAIN", "DESCRIBE", "DESC" }
+            SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC" }
     );
 
     private static final String[] ADVANCED_KEYWORDS = {
@@ -120,7 +121,7 @@ class MySQLDialect extends JDBCSQLDialect {
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
 
         //addSQLKeyword("STATISTICS");
-        Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
+        Collections.addAll(tableQueryWords, SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
 
         for (String kw : ADVANCED_KEYWORDS) {
