@@ -52,9 +52,18 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
             SQLConstants.BLOCK_END
         }
     };
-    protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
+
+    protected static final String[] NON_TRANSACTIONAL_KEYWORDS = {
         SQLConstants.KEYWORD_SELECT,
-        "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET", "COMMIT", "ROLLBACK"};
+        SQLConstants.KEYWORD_EXPLAIN,
+        "DESCRIBE",
+        "DESC",
+        "USE",
+        "SET",
+        SQLConstants.KEYWORD_COMMIT,
+        SQLConstants.KEYWORD_ROLLBACK
+    };
+
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };

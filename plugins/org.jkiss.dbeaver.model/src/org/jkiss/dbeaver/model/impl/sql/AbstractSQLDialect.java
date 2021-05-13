@@ -48,6 +48,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private static final String[] QUERY_KEYWORDS = new String[] { SQLConstants.KEYWORD_SELECT };
     private static final String[] EXEC_KEYWORDS = new String[0];
     private static final String[] DDL_KEYWORDS = new String[0];
+    private static final Collection<String> TRANSACTION_NON_MODIFYING_KEYWORDS =
+        CommonUtils.unmodifiableSet(SQLConstants.KEYWORD_SELECT, "SHOW", "USE", "SET", SQLConstants.KEYWORD_EXPLAIN);
 
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
@@ -598,14 +600,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (getKeywordType(firstKeyword) != DBPKeywordType.KEYWORD) {
             return false;
         }
-        if (SQLConstants.KEYWORD_SELECT.equals(firstKeyword) ||
-            "SHOW".equals(firstKeyword) ||
-            "USE".equals(firstKeyword) ||
-            "SET".equals(firstKeyword))
-        {
-            return false;
-        }
-        return true;
+        return !TRANSACTION_NON_MODIFYING_KEYWORDS.contains(firstKeyword);
     }
 
     private static boolean containsKeyword(String[] keywords, String keyword) {

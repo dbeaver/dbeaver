@@ -875,4 +875,10 @@ public class CommonUtils {
             return radix > ch - 'A' + 10;
         return false;
     }
+
+    @NotNull
+    @SafeVarargs
+    public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
+        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
+    }
 }
