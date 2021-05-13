@@ -254,6 +254,10 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         Map<String, String> aliasMap = new LinkedHashMap<>(super.getDataTypeAliases());
         aliasMap.put("character", PostgreConstants.TYPE_BPCHAR);
         aliasMap.put("character varying", PostgreConstants.TYPE_VARCHAR);
+        aliasMap.put("time with time zone", PostgreConstants.TYPE_TIMETZ);
+        aliasMap.put("time without time zone", PostgreConstants.TYPE_TIME);
+        aliasMap.put("timestamp with time zone", PostgreConstants.TYPE_TIMESTAMPTZ);
+        aliasMap.put("timestamp without time zone", PostgreConstants.TYPE_TIMESTAMP);        
         return aliasMap;
     }
 
