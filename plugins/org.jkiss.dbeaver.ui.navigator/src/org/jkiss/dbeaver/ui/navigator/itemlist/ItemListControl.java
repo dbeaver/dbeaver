@@ -70,13 +70,13 @@ public class ItemListControl extends NodeListControl
     private static final String COLOR_NEW = "org.jkiss.dbeaver.sql.resultset.color.cell.new.background";
     private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.sql.resultset.color.cell.modified.background";
 
-    private ISearchExecutor searcher;
-    private Color searchHighlightColor;
+    private final ISearchExecutor searcher;
+    private final Color searchHighlightColor;
     //private Color disabledCellColor;
-    private Font normalFont;
-    private Font boldFont;
+    private final Font normalFont;
+    private final Font boldFont;
 
-    private Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
+    private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
 
     public ItemListControl(
         Composite parent,

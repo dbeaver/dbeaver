@@ -48,9 +48,9 @@ import java.util.Collection;
 class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextProvider, IRefreshablePart, INavigatorModelView, IAdaptable
 {
 
-    private IDatabaseEditor mainEditor;
-    private DBNNode node;
-    private DBXTreeNode metaNode;
+    private final IDatabaseEditor mainEditor;
+    private final DBNNode node;
+    private final DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
 
@@ -168,6 +168,7 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         if (!force && source instanceof DBNEvent) {
             DBNEvent event = (DBNEvent) source;
             DBNEvent.NodeChange nodeChange = event.getNodeChange();
+
             if (event.getAction() == DBNEvent.Action.UPDATE && nodeChange == DBNEvent.NodeChange.REFRESH) {
                 // Do not refresh if refreshed object is not in the list
                 loadNewData = isRefreshingEvent(event);
@@ -181,6 +182,9 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
     }
 
     private boolean isRefreshingEvent(DBNEvent event) {
+        if (event.getSource() == DBNEvent.UPDATE_ON_SAVE) {
+            return true;
+        }
         if (!(event.getSource() instanceof DBPEvent)) {
             return false;
         }
