@@ -179,7 +179,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             });
         }
         if (descReferrer == null) {
-            columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
+            columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, true, null, new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
                     if (element instanceof DBDLabelValuePairExt) {
@@ -188,7 +188,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                         return CommonUtils.notEmpty(((DBDLabelValuePair) element).getLabel());
                     }
                 }
-            });
+            }, null);
         }
         columnController.createColumns(true);
 
