@@ -40,8 +40,8 @@ public interface DBACertificateStorage
     void addCertificate(
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull String certType,
-        @NotNull byte[] keyStoreStream,
-        @Nullable char[] keyStorePassword) throws DBException;
+        @NotNull String keyStorePath,
+        @NotNull char[] keyStorePassword) throws DBException;
 
     void addSelfSignedCertificate(
         @NotNull DBPDataSourceContainer dataSource,
@@ -55,6 +55,9 @@ public interface DBACertificateStorage
     KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException;
 
     File getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
+
+    @NotNull
+    char[] getKeyStorePassword(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType);
 
     String getKeyStoreType(DBPDataSourceContainer dataSource);
 }

@@ -70,9 +70,8 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         {
             if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
                 monitor.subTask("Load keystore");
-                byte[] keyStoreData = IOUtils.readFileToBuffer(new File(keyStore));
-                char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? null : password.toCharArray();
-                securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStoreData, keyStorePasswordData);
+                char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
+                securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
             } else if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
                 monitor.subTask("Load certificates");
                 byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
@@ -93,21 +92,23 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
         String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath();
         String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
+        char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
 
         System.setProperty("javax.net.ssl.trustStore", keyStorePath);
         System.setProperty("javax.net.ssl.trustStoreType", keyStoreType);
-        System.setProperty("javax.net.ssl.trustStorePassword", String.valueOf(DefaultCertificateStorage.DEFAULT_PASSWORD));
+        System.setProperty("javax.net.ssl.trustStorePassword", String.valueOf(keyStorePass));
         System.setProperty("javax.net.ssl.keyStore", keyStorePath);
         System.setProperty("javax.net.ssl.keyStoreType", keyStoreType);
-        System.setProperty("javax.net.ssl.keyStorePassword", String.valueOf(DefaultCertificateStorage.DEFAULT_PASSWORD));
+        System.setProperty("javax.net.ssl.keyStorePassword", String.valueOf(keyStorePass));
     }
 
     public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {
         final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
         KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), CERT_TYPE);
+        char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
 
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(trustStore, DefaultCertificateStorage.DEFAULT_PASSWORD);
+        keyManagerFactory.init(trustStore, keyStorePass);
         KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
 
         TrustManager[] trustManagers;

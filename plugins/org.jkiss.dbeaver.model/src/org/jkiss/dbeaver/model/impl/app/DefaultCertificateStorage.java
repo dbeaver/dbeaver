@@ -29,9 +29,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 /**
  * DefaultCertificateStorage
@@ -39,7 +37,7 @@ import java.util.List;
 public class DefaultCertificateStorage implements DBACertificateStorage {
 
     private static final Log log = Log.getLog(DefaultCertificateStorage.class);
-    public static final char[] DEFAULT_PASSWORD = "".toCharArray();
+    private static final char[] DEFAULT_PASSWORD = "".toCharArray();
     public static final String JKS_EXTENSION = ".jks";
 
     public static final String CA_CERT_ALIAS = "ca-cert";
@@ -47,9 +45,11 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     public static final String KEY_CERT_ALIAS = "key-cert";
 
     private final File localPath;
+    private final Map<String, UserDefinedKeystore> userDefinedKeystores;
 
     public DefaultCertificateStorage(File localPath) {
         this.localPath = localPath;
+        this.userDefinedKeystores = new HashMap<>();
         if (localPath.exists()) {
             // Cleanup old keystores
             final File[] ksFiles = localPath.listFiles();
@@ -72,7 +72,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             if (ksFile.exists()) {
                 try (InputStream is = new FileInputStream(ksFile)) {
-                    ks.load(is, DEFAULT_PASSWORD);
+                    ks.load(is, getKeyStorePassword(container, certType));
                 }
             } else {
                 ks.load(null, DEFAULT_PASSWORD);
@@ -114,6 +114,9 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
     @Override
     public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, byte[] caCertData, byte[] clientCertData, byte[] keyData) throws DBException {
+        if (userDefinedKeystores.containsKey(getKeyStoreName(dataSource, certType))) {
+            throw new DBException("Adding new certificates would override user-specified keystore");
+        }
         final KeyStore keyStore = getKeyStore(dataSource, certType);
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -141,28 +144,18 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
-    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull byte[] keyStoreStream, @Nullable char[] keyStorePassword) throws DBException {
-        final KeyStore keyStore = getKeyStore(dataSource, certType);
-        try {
-            keyStore.load(new ByteArrayInputStream(keyStoreStream), keyStorePassword);
-
-            for (Enumeration<String> aliases = keyStore.aliases(); aliases.hasMoreElements(); ) {
-                String alias = aliases.nextElement();
-                if (keyStore.isKeyEntry(alias)) {
-                    Key key = keyStore.getKey(alias, keyStorePassword);
-                    keyStore.setKeyEntry(alias, key, DEFAULT_PASSWORD, keyStore.getCertificateChain(alias));
-                    break;
-                }
-            }
-
-            saveKeyStore(dataSource, certType, keyStore);
-        } catch (Throwable e) {
-            throw new DBException("Error loading keystore", e);
-        }
+    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull String keyStorePath, @NotNull char[] keyStorePassword) throws DBException {
+        userDefinedKeystores.put(
+            getKeyStoreName(dataSource, certType),
+            new UserDefinedKeystore(new File(keyStorePath), keyStorePassword)
+        );
     }
 
     @Override
     public void addSelfSignedCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull String certDN) throws DBException {
+        if (userDefinedKeystores.containsKey(getKeyStoreName(dataSource, certType))) {
+            throw new DBException("Adding new certificates would override user-specified keystore");
+        }
         final KeyStore keyStore = getKeyStore(dataSource, certType);
         try {
             List<Certificate> certChain = new ArrayList<>();
@@ -185,6 +178,10 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
     @Override
     public void deleteCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) throws DBException {
+        if (userDefinedKeystores.remove(getKeyStoreName(dataSource, certType)) != null) {
+            // We don't want to erase anything from user-defined keystore
+            return;
+        }
         final KeyStore keyStore = getKeyStore(dataSource, certType);
         try {
             keyStore.deleteEntry(CA_CERT_ALIAS);
@@ -198,7 +195,23 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
     @Override
     public File getKeyStorePath(DBPDataSourceContainer dataSource, String certType) {
-        return new File(localPath, dataSource.getId() + "-" + certType + JKS_EXTENSION);
+        final UserDefinedKeystore userDefinedKeystore = getUserDefinedKeystore(dataSource, certType);
+        if (userDefinedKeystore != null) {
+            return userDefinedKeystore.file;
+        } else {
+            return new File(localPath, getKeyStoreName(dataSource, certType) + JKS_EXTENSION);
+        }
+    }
+
+    @NotNull
+    @Override
+    public char[] getKeyStorePassword(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) {
+        final UserDefinedKeystore userDefinedKeystore = getUserDefinedKeystore(dataSource, certType);
+        if (userDefinedKeystore != null) {
+            return userDefinedKeystore.password;
+        } else {
+            return DEFAULT_PASSWORD;
+        }
     }
 
     @Override
@@ -242,4 +255,23 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         }
     }
 
+    @Nullable
+    private UserDefinedKeystore getUserDefinedKeystore(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) {
+        return userDefinedKeystores.get(getKeyStoreName(dataSource, certType));
+    }
+
+    @NotNull
+    private String getKeyStoreName(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) {
+        return dataSource.getId() + '-' + certType;
+    }
+
+    private static class UserDefinedKeystore {
+        private final File file;
+        private final char[] password;
+
+        public UserDefinedKeystore(@NotNull File file, @NotNull char[] password) {
+            this.file = file;
+            this.password = password;
+        }
+    }
 }
