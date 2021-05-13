@@ -3,8 +3,7 @@
       id="org.jkiss.dbeaver.db.ui.feature"
       label="%featureName"
       version="1.0.48.qualifier"
-      provider-name="%providerName"
-      license-feature="org.jkiss.dbeaver.rcp.feature">
+      provider-name="%providerName">
 
    <description>
       %description
