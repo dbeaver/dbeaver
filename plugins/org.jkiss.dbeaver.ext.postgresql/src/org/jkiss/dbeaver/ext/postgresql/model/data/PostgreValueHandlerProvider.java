@@ -67,6 +67,7 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
                     case PostgreConstants.TYPE_HSTORE:
                         return PostgreHStoreValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_BIT:
+                    case PostgreConstants.TYPE_VARBIT:
                         return PostgreBitStringValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_REFCURSOR:
                         return PostgreRefCursorValueHandler.INSTANCE;
