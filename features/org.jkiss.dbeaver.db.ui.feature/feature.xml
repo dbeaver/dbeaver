@@ -13,9 +13,7 @@
         %copyright
     </copyright>
 
-    <license url="%licenseURL">
-        %license
-    </license>
+    <license url="%licenseURL"/>
 
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
 

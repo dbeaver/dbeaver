@@ -13,9 +13,7 @@
         %copyright
     </copyright>
 
-    <license url="%licenseURL">
-        %license
-    </license>
+    <license url="%licenseURL"/>
 
     <requires>
         <import plugin="org.eclipse.core.expressions" version="0.0.0" match="greaterOrEqual"/>
