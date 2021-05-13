@@ -64,19 +64,17 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     @Override
     protected void dispose(boolean reflect)
     {
-        if (this.handler != null) {
-            if (children != null) {
-                for (DBNNode child : children) {
-                    child.dispose(reflect);
-                }
-                children = null;
+        if (children != null) {
+            for (DBNNode child : children) {
+                child.dispose(reflect);
             }
-            if (reflect) {
-                getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
-            }
-            this.resource = null;
-            this.handler = null;
+            children = null;
         }
+        if (reflect) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
+        }
+        this.resource = null;
+        this.handler = null;
         super.dispose(reflect);
     }
 
