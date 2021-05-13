@@ -879,8 +879,6 @@ public class CommonUtils {
     @NotNull
     @SafeVarargs
     public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
-        Set<T> set = new HashSet<>(vararg.length * 4 / 3 + 1); //Adjusting to account for the default load factor
-        set.addAll(Arrays.asList(vararg));
-        return Collections.unmodifiableSet(set);
+        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
     }
 }
