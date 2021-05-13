@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEngine;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -62,7 +63,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
             table,
             "",
             null,
-            null,
+            getReferencedKey(monitor, table, MySQLTableConstraint.class, options),
             DBSForeignKeyModifyRule.NO_ACTION,
             DBSForeignKeyModifyRule.NO_ACTION,
             false);

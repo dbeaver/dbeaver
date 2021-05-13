@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -183,7 +184,7 @@ public class DatabaseTransferUtils {
                     throw new DBException("Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
                 }
                 Class<?>[] childTypes = ((DBEStructEditor<?>) tableManager).getChildTypes();
-                attrClass = getChildType(childTypes, DBSEntityAttribute.class);
+                attrClass = BeanUtils.findAssignableType(childTypes, DBSEntityAttribute.class);
                 if (attrClass == null) {
                     throw new DBException("Column manager not found for '" + tableClass.getName() + "'");
                 }
@@ -276,15 +277,6 @@ public class DatabaseTransferUtils {
             log.debug(e);
             return null;
         }
-    }
-
-    private static <T> Class<? extends T> getChildType(Class<?>[] types, Class<T> type) {
-        for (Class<?> childType : types) {
-            if (type.isAssignableFrom(childType)) {
-                return (Class<? extends T>) childType;
-            }
-        }
-        return null;
     }
 
     @NotNull

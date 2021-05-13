@@ -45,6 +45,7 @@ public class EntityConnectionEditPolicy extends GraphicalNodeEditPolicy {
         AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
         NodePart part = (NodePart) request.getTargetEditPart();
         cmd.setTargetEntity(part.getElement());
+        cmd.setEditor(part.getEditor());
         return cmd;
     }
 

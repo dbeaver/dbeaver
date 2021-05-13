@@ -20,6 +20,7 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.ui.command.AssociationCreateCommand;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 
@@ -30,7 +31,7 @@ import java.util.List;
  */
 public class AttributeConnectionEditPolicy extends AttributeContainerEditPolicy {
 
-    private final AttributePart part;
+    protected final AttributePart part;
 
     public AttributeConnectionEditPolicy(AttributePart part) {
         this.part = part;
@@ -53,12 +54,17 @@ public class AttributeConnectionEditPolicy extends AttributeContainerEditPolicy 
             return null;
         }
 
-        AssociationCreateCommand command = new AssociationCreateCommand();
+        AssociationCreateCommand command = makeAssociationCreateCommand();
 
         command.setSourceEntity(srcPart.getEntity());
         command.setTargetEntity(part.getEntity());
         command.setAttributes(srcPart.getAttribute(), part.getAttribute());
         return command;
+    }
+
+    @NotNull
+    protected AssociationCreateCommand makeAssociationCreateCommand() {
+        return new AssociationCreateCommand();
     }
 
     @Override

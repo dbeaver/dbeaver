@@ -393,4 +393,13 @@ public class BeanUtils {
             throw e.getTargetException();
         }
     }
+
+    public static <T> Class<? extends T> findAssignableType(Class<?>[] types, Class<T> type) {
+        for (Class<?> childType : types) {
+            if (type.isAssignableFrom(childType)) {
+                return (Class<? extends T>) childType;
+            }
+        }
+        return null;
+    }
 }
