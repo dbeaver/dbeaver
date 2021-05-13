@@ -72,8 +72,12 @@ public class PostgreScriptExecuteHandler extends PostgreNativeToolHandler<Postgr
 
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreScriptExecuteSettings settings, PostgreDatabase arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+        final File inputFile = new File(settings.getInputFile());
+        if (!inputFile.exists()) {
+            throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+        }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        new BinaryFileTransformerJob(monitor, task, new File(settings.getInputFile()), process.getOutputStream(), log).start();
+        new BinaryFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), log).start();
     }
 
 }
