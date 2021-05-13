@@ -65,6 +65,8 @@ public class SQLConstants {
     public static final String KEYWORD_COMMIT = "COMMIT";
     public static final String KEYWORD_ROLLBACK = "ROLLBACK";
 
+    public static final String KEYWORD_EXPLAIN = "EXPLAIN";
+
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_UPDATE,
