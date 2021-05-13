@@ -13,9 +13,7 @@
         %copyright
     </copyright>
 
-    <license url="%licenseURL">
-        %license
-    </license>
+    <license url="%licenseURL"/>
 
     <plugin id="org.jkiss.dbeaver.ext.db2" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
     <plugin id="org.jkiss.dbeaver.ext.mysql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
