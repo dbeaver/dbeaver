@@ -194,6 +194,17 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             previewController.setCurRow(row);
             previewController.setBinding(attr);
         }
+        if (!force && (valueManager == null || valueEditor == null)) {
+            force = true;
+        }
+        if (!force && valueManager instanceof ContentValueManager) {
+            final Object value = previewController.getValue();
+            if (value instanceof DBDContent && !ContentUtils.isTextContent((DBDContent) value)) {
+                // Always perform refresh for non-textual data
+                force = true;
+                updateActions = true;
+            }
+        }
         viewValue(force);
         if (updateActions) {
             presentation.getController().updatePanelActions();
@@ -204,16 +215,6 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     {
         if (valueSaving) {
             return;
-        }
-        if (valueManager == null || valueEditor == null) {
-            forceRefresh = true;
-        }
-        if (!forceRefresh && valueManager instanceof ContentValueManager) {
-            final Object value = previewController.getValue();
-            if (value instanceof DBDContent && !ContentUtils.isTextContent((DBDContent) value)) {
-                // Always perform refresh for non-textual data
-                forceRefresh = true;
-            }
         }
         if (forceRefresh) {
             cleanupPanel();
