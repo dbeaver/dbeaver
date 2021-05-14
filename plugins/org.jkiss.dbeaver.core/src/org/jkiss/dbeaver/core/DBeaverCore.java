@@ -192,7 +192,7 @@ public class DBeaverCore extends BasePlatformImpl {
         }
         DataSourceProviderRegistry.getInstance().dispose();
 
-        if (isStandalone() && workspace != null) {
+        if (isStandalone() && workspace != null && !application.isExclusiveMode()) {
             try {
                 workspace.save(new VoidProgressMonitor());
             } catch (DBException ex) {
