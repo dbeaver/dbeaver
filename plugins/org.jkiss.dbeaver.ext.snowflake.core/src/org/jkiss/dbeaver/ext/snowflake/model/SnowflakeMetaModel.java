@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
@@ -49,6 +49,31 @@ public class SnowflakeMetaModel extends GenericMetaModel
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SnowflakeDataSource(monitor, container, this);
+    }
+
+    @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        return schema.getName().equals("INFORMATION_SCHEMA");
+    }
+
+    @Override
+    public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase table, @Nullable String objectName) throws SQLException {
+        String parentObjectName = owner.getParentObject().getName();
+        String sql = "SELECT TABLE_CATALOG AS TABLE_CAT, TABLE_SCHEMA AS TABLE_SCHEM, COMMENT AS REMARKS, t.* FROM " + parentObjectName + ".INFORMATION_SCHEMA.\"TABLES\" t\n" +
+                "WHERE TABLE_CATALOG = ?\n" +
+                "AND TABLE_SCHEMA  = ?" + (table != null ? " AND TABLE_NAME=?" : "");
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, parentObjectName);
+        dbStat.setString(2, owner.getName());
+        if (table != null || objectName != null) {
+            dbStat.setString(3, (table != null ? table.getName() : objectName));
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+        return new SnowflakeTable(container, tableName, tableType, dbResult);
     }
 
     @Override

@@ -14,35 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.vertica.model;
+package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
-import java.sql.SQLException;
+public class SnowflakeTable extends GenericTable implements DBPObjectStatistics {
 
-/**
- * VerticaTable
- */
-public class VerticaTable extends GenericTable implements DBPObjectStatistics
-{
-    public static final String TABLE_TYPE_FLEX = "FLEXTABLE";
     private long tableSize = -1;
 
-    public VerticaTable(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public SnowflakeTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
-    }
-
-    @Override
-    public boolean isPhysicalTable() {
-        return !isView() && !isFlexTable();
-    }
-
-    public boolean isFlexTable() {
-        return ((VerticaSchema)getContainer()).isFlexTableName(getName());
+        if (dbResult != null) {
+            this.tableSize = JDBCUtils.safeGetLong(dbResult, "BYTES");
+        }
     }
 
     @Override
@@ -53,10 +43,6 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics
     @Override
     public long getStatObjectSize() {
         return tableSize;
-    }
-
-    void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
-        tableSize = dbResult.getLong("used_bytes");
     }
 
     @Nullable
