@@ -55,7 +55,16 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
         ph.setBackground(parent.getBackground());
         checkBox = new Label(ph, SWT.NONE);
-        GridData gd = new GridData(SWT.CENTER, SWT.FILL, true, true);
+        GridData gd;
+        if ((getStyle() & SWT.LEFT) == SWT.LEFT) {
+            gd = new GridData(SWT.LEFT, SWT.FILL, true, true);
+            if (BooleanRenderer.getDefaultStyle().isText()) {
+                gd.horizontalIndent = 5;
+            }
+        } else {
+            gd = new GridData(SWT.CENTER, SWT.FILL, true, true);
+        }
+
         checkBox.setLayoutData(gd);
         checkBox.setBackground(ph.getBackground());
 
