@@ -2046,5 +2046,11 @@ public class HexEditControl extends Composite {
 		this.defWidth = defValue ;
 	}
 
+    public boolean isReadOnly() {
+        return readOnly;
+    }
 
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
 }

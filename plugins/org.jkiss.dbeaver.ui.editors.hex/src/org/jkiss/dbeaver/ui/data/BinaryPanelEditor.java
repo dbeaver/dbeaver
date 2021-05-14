@@ -56,7 +56,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     @Override
     public HexEditControl createControl(IValueController valueController){
     	
-    	HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER);
+    	HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY);
 		DBPPreferenceListener preferencesChangeListener = new DBPPreferenceListener() {
 			@Override
 			public void preferenceChange(PreferenceChangeEvent event) {
@@ -101,6 +101,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
             }
             UIUtils.syncExec(() -> {
                 control.setContent(byteData, finalCharset, false);
+                control.setReadOnly(false);
             });
         } catch (IOException e) {
             throw new DBException("Error reading stream value", e);
