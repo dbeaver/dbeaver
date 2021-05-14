@@ -1203,6 +1203,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 if (zoomCombo != null) {
                     zoomCombo.setZoomManager(rootPart.getZoomManager());
                 }
+
+                if (progressControl != null) {
+                    progressControl.refreshActions();
+                }
                 //toolBarManager.getControl().setEnabled(true);
             }
         }
