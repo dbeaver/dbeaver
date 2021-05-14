@@ -52,6 +52,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     public static final String OPTION_REF_TABLE = "refTable";
     public static final String OPTION_REF_CONSTRAINT = "refConstraint";
     public static final String OPTION_REF_ATTRIBUTES = "refAttributes";
+    public static final String OPTION_OWN_ATTRIBUTES = "ownAttributes";
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)

@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -344,22 +345,44 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             return;
         }
         DBSEntity entity;
-        DBSEntityAttribute entityAttribute;
+        DBSEntityAttribute entityAttribute = null;
+        DBSEntityAssociation entityAssociation = null;
         if (object instanceof DBSEntityAttribute) {
             entityAttribute = (DBSEntityAttribute) object;
             entity = entityAttribute.getParentObject();
         } else if (object instanceof DBSEntity) {
-            entityAttribute = null;
             entity = (DBSEntity) object;
+        } else if (object instanceof DBSEntityAssociation) {
+            entityAssociation = (DBSEntityAssociation) object;
+            entity = entityAssociation.getParentObject();
+            return;
         } else {
             return;
         }
 
         EntityDiagram diagram = editor.getDiagram();
+
+        /*if (entityAssociation != null) {
+            // For association just refresh both entities
+            ERDEntity erdEntity1 = diagram.getEntity(entityAssociation.getParentObject());
+            ERDEntity erdEntity2 = diagram.getEntity(entityAssociation.getAssociatedEntity());
+            if (erdEntity1 != null || erdEntity2 != null) {
+                UIUtils.asyncExec(() -> {
+                    if (erdEntity1 != null) {
+                        erdEntity1.firePropertyChange(ERDEntity.PROP_INPUT, null, null);
+                    }
+                    if (erdEntity2 != null) {
+                        erdEntity2.firePropertyChange(ERDEntity.PROP_OUTPUT, null, null);
+                    }
+                });
+            }
+            return;
+        }*/
+
         switch (action) {
             case OBJECT_ADD: {
                 if (entityAttribute != null) {
-                    // New attribute
+                    // New attribute or association
                     ERDEntity erdEntity = diagram.getEntity(entity);
                     if (erdEntity != null) {
                         UIUtils.asyncExec(() -> {
@@ -421,12 +444,13 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             case OBJECT_REMOVE: {
                 ERDEntity erdEntity = diagram.getEntity(entity);
                 if (erdEntity != null) {
+                    DBSEntityAttribute removedAttribute = entityAttribute;
                     UIUtils.asyncExec(() -> {
-                        if (entityAttribute == null) {
+                        if (removedAttribute == null) {
                             // Entity delete
                             diagram.removeEntity(erdEntity, true);
                         } else {
-                            ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
+                            ERDEntityAttribute erdAttribute = erdEntity.getAttribute(removedAttribute);
                             if (erdAttribute != null) {
                                 erdEntity.removeAttribute(erdAttribute, false);
                                 erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
@@ -439,14 +463,15 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             case OBJECT_UPDATE: {
                 ERDEntity erdEntity = diagram.getEntity(entity);
                 if (erdEntity != null) {
+                    DBSEntityAttribute updatedAttribute = entityAttribute;
                     UIUtils.asyncExec(() -> {
-                        if (entityAttribute == null) {
+                        if (updatedAttribute == null) {
                             erdEntity.reloadAttributes(diagram);
                             erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
                         } else {
-                            ERDEntityAttribute erdAttribute = erdEntity.getAttribute(entityAttribute);
+                            ERDEntityAttribute erdAttribute = erdEntity.getAttribute(updatedAttribute);
                             if (erdAttribute != null) {
-                                erdAttribute.firePropertyChange(ERDEntityAttribute.PROP_NAME, null, entityAttribute.getName());
+                                erdAttribute.firePropertyChange(ERDEntityAttribute.PROP_NAME, null, updatedAttribute.getName());
                                 // Resize entity
                                 erdEntity.firePropertyChange(ERDObject.PROP_SIZE, null, null);
                             }

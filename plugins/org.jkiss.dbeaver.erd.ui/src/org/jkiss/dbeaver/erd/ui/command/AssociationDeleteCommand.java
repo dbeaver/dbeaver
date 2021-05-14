@@ -65,6 +65,10 @@ public class AssociationDeleteCommand extends Command {
             }
             vEntity.removeForeignKey((DBVEntityForeignKey) entityAssociation);
         }
+        removeAssociationFromDiagram();
+    }
+
+    protected void removeAssociationFromDiagram() {
         part.markAssociatedAttributes(EditPart.SELECTED_NONE);
 
         targetEntity.removeReferenceAssociation(association, true);
