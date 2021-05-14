@@ -24,8 +24,11 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -43,9 +46,11 @@ import java.util.*;
 /**
  * VerticaSchema
  */
-public class VerticaSchema extends GenericSchema implements DBPSystemObject
+public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBPObjectStatisticsCollector
 {
     private static final Log log = Log.getLog(VerticaSchema.class);
+
+    private boolean hasStatistics;
 
     private static final String SYSTEM_SCHEMAS[] = {
         "v_catalog",
@@ -151,6 +156,40 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
 
     public void cacheFlexTableName(String tableName) {
         flexTablNames.add(tableName);
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                "SELECT anchor_table_name as table_name,\n" +
+                    "SUM(used_bytes) as used_bytes\n" +
+                    "FROM v_monitor.column_storage cs\n" +
+                    "WHERE cs.anchor_table_schema = ?\n" +
+                    "GROUP BY anchor_table_id, anchor_table_name\n" +
+                    "ORDER BY anchor_table_name"))
+            {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = dbResult.getString("table_name");
+                        GenericTableBase table = getTable(monitor, tableName);
+                        if (table instanceof VerticaTable) {
+                            ((VerticaTable) table).fetchStatistics(dbResult);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException("Error reading schema relation statistics", e);
+            }
+        } finally {
+            hasStatistics = true;
+        }
     }
 
     public class ProjectionCache extends JDBCStructLookupCache<VerticaSchema, VerticaProjection, VerticaProjectionColumn> {

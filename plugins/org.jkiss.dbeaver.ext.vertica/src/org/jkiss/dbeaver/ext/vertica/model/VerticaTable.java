@@ -16,15 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+
+import java.sql.SQLException;
 
 /**
  * VerticaTable
  */
-public class VerticaTable extends GenericTable
+public class VerticaTable extends GenericTable implements DBPObjectStatistics
 {
     public static final String TABLE_TYPE_FLEX = "FLEXTABLE";
+    private long tableSize = -1;
 
     public VerticaTable(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -39,4 +45,23 @@ public class VerticaTable extends GenericTable
         return ((VerticaSchema)getContainer()).isFlexTableName(getName());
     }
 
+    @Override
+    public boolean hasStatistics() {
+        return tableSize != -1;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return tableSize;
+    }
+
+    void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
+        tableSize = dbResult.getLong("used_bytes");
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
 }
