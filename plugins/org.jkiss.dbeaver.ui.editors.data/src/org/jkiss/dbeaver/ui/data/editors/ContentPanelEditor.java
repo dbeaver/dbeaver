@@ -497,6 +497,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 streamEditor.primeEditorValue(monitor, control, content);
             } catch (Exception e) {
                 valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+                DBWorkbench.getPlatformUI().showError("Value panel", "Error loading contents", e);
             } finally {
                 monitor.done();
             }
