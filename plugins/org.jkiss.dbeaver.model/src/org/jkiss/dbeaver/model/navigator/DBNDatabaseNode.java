@@ -106,8 +106,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return showDefaults ? DBConstants.NULL_VALUE_LABEL : null;
         }
         String objectName;
-        if (!useSimpleName && object instanceof DBPOverloadedObject) {
-            objectName = ((DBPOverloadedObject) object).getOverloadedName();
+        if (!useSimpleName) {
+            if (object instanceof DBPOverloadedObject) {
+                objectName = ((DBPOverloadedObject) object).getOverloadedName();
+            } else if (isVirtual() &&
+                getParentNode() instanceof DBNDatabaseNode &&
+                object.getParentObject() != null &&
+                object.getParentObject() != ((DBNDatabaseNode) getParentNode()).getValueObject())
+            {
+                objectName = object.getParentObject().getName() + "." + object.getName();
+            } else {
+                objectName = object.getName();
+            }
         } else {
             objectName = object.getName();
         }

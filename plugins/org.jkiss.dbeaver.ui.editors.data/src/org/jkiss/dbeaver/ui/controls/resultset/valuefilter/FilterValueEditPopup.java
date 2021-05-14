@@ -48,6 +48,8 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.NumberFormat;
+
 public class FilterValueEditPopup extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.FilterValueEditMenu";//$NON-NLS-1$
@@ -179,16 +181,18 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             });
         }
         if (descReferrer == null) {
-            columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
+            columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, true, null, new ColumnLabelProvider() {
+                private final NumberFormat numberFormat = NumberFormat.getInstance();
+
                 @Override
                 public String getText(Object element) {
                     if (element instanceof DBDLabelValuePairExt) {
-                        return String.valueOf(((DBDLabelValuePairExt) element).getCount());
+                        return numberFormat.format(((DBDLabelValuePairExt) element).getCount());
                     } else {
                         return CommonUtils.notEmpty(((DBDLabelValuePair) element).getLabel());
                     }
                 }
-            });
+            }, null);
         }
         columnController.createColumns(true);
 
