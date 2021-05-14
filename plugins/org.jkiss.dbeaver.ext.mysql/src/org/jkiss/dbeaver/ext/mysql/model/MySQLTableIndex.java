@@ -177,7 +177,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
 
     @Override
     public String toString() {
-        return getFullyQualifiedName(DBPEvaluationContext.UI);
+        return DBUtils.getQuotedIdentifier(getTable()) + "." + DBUtils.getQuotedIdentifier(this);
     }
 
     public boolean isUniqueKeyIndex(DBRProgressMonitor monitor) throws DBException {
