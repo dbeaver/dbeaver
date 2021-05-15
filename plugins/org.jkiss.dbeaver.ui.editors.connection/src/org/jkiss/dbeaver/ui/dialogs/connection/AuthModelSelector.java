@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.registry.DataSourceOriginLocal;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
@@ -56,6 +57,7 @@ public class AuthModelSelector extends Composite {
     private Composite modelConfigPlaceholder;
     private IObjectPropertyConfigurator<DBPDataSourceContainer> authModelConfigurator;
     private Runnable changeListener;
+    private Combo authModelCombo;
 
     public AuthModelSelector(Composite parent, Runnable changeListener) {
         super(parent, SWT.NONE);
@@ -114,6 +116,9 @@ public class AuthModelSelector extends Composite {
         }
 
         changeAuthModel();
+
+        boolean isExternallyProvided = !DataSourceOriginLocal.ORIGIN_ID.equals(activeDataSource.getOrigin().getType());
+        authModelCombo.setEnabled(!isExternallyProvided);
     }
 
     private void changeAuthModel() {
@@ -132,7 +137,7 @@ public class AuthModelSelector extends Composite {
         Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, UIConnectionMessages.dialog_connection_auth_group);
         Composite authModelComp = UIUtils.createComposite(modelConfigPlaceholder, 2);
         authModelComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Combo authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
+        authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         authModelCombo.addSelectionListener(new SelectionAdapter() {
             @Override
