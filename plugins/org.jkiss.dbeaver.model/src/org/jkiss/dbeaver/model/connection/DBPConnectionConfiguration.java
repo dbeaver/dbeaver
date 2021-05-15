@@ -67,6 +67,8 @@ public class DBPConnectionConfiguration implements DBPObject {
     @NotNull
     private final Map<String, String> providerProperties;
     @NotNull
+    private final Map<String, Object> runtimeAttributes;
+    @NotNull
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     @NotNull
     private final List<DBWHandlerConfiguration> handlers;
@@ -83,6 +85,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.properties = new LinkedHashMap<>();
         this.providerProperties = new LinkedHashMap<>();
         this.events = new LinkedHashMap<>();
+        this.runtimeAttributes = new HashMap<>();
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
@@ -103,6 +106,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.connectionType = info.connectionType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
+        this.runtimeAttributes = new HashMap<>(info.runtimeAttributes);
         this.events = new LinkedHashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
@@ -232,6 +236,22 @@ public class DBPConnectionConfiguration implements DBPObject {
     public void setProviderProperties(@NotNull Map<String, String> properties) {
         this.providerProperties.clear();
         this.providerProperties.putAll(properties);
+    }
+
+    ////////////////////////////////////////////////////
+    // Runtime attributes
+
+    public Object getRuntimeAttribute(String name) {
+        return runtimeAttributes.get(name);
+    }
+
+    public void setRuntimeAttribute(String name, Object value) {
+        runtimeAttributes.put(name, value);
+    }
+
+    @NotNull
+    public Map<String, Object> getRuntimeAttribute() {
+        return runtimeAttributes;
     }
 
     ////////////////////////////////////////////////////
