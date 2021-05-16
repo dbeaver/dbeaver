@@ -69,4 +69,5 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
 
     void cleanRunStatistics();
 
+    void refreshRunStatistics();
 }
