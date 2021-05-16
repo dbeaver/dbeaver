@@ -22,7 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskEvent;
@@ -41,8 +40,7 @@ import java.util.*;
 /**
  * TaskImpl
  */
-public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescription {
-
+public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private static final Log log = Log.getLog(TaskImpl.class);
 
     private static final String META_FILE_NAME = "meta.json";
@@ -146,14 +144,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
     @Override
     public DBTTaskRun getLastRun() {
         if (lastRun == null) {
-            try {
-                synchronized (this) {
-                    List<TaskRunImpl> runs = loadRunStatistics().runs;
-                    lastRun = runs.isEmpty() ? VOID_RUN : runs.get(runs.size() - 1);
-                }
-            } catch (Throwable e) {
-                log.debug("Error loading task runs", e);
-            }
+            refreshRunStatistics();
         }
         return lastRun == VOID_RUN ? null : lastRun;
     }
@@ -203,6 +194,18 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         flushRunStatistics(runStatistics);
         lastRun = null;
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
+    }
+
+    @Override
+    public void refreshRunStatistics() {
+        try {
+            synchronized (this) {
+                List<TaskRunImpl> runs = loadRunStatistics().runs;
+                lastRun = runs.isEmpty() ? VOID_RUN : runs.get(runs.size() - 1);
+            }
+        } catch (Throwable e) {
+            log.debug("Error loading task runs", e); //$NON-NLS-1$
+        }
     }
 
     @Override
@@ -290,5 +293,4 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
     public String toString() {
         return id + " " + label + " (" + type.getName() + ")";
     }
-
 }
