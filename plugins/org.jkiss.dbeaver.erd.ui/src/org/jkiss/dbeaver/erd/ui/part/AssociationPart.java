@@ -181,6 +181,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
         }
 
+        conn.setLineWidth(2);
         if (!identifying || constraintType.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
             conn.setLineDash(
