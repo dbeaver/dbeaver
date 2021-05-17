@@ -73,7 +73,7 @@ class KeepAlivePingJob extends AbstractJob {
                 () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
             synchronized (failedAttempts) {
                 String dsId = dataSource.getContainer().getId();
-                if (isSuccess(results)) {
+                if (isSuccess(results) || disconnectOnError) {
                     log.debug("Datasource " + dataSource.getName() + " invalidated: " + results);
                     failedAttempts.remove(dsId);
                 } else {
