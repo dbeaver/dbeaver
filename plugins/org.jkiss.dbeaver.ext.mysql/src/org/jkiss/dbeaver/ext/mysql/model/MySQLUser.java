@@ -49,6 +49,8 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
 {
     private static final Log log = Log.getLog(MySQLUser.class);
 
+    private static final String ANY_HOST = "%";
+
     private MySQLDataSource dataSource;
     private String userName;
     private String host;
@@ -87,7 +89,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         } else {
             this.persisted = false;
             this.userName = "";
-            this.host = "%";
+            this.host = ANY_HOST;
         }
     }
 
@@ -147,6 +149,9 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     }
 
     public void setHost(String host) {
+        if (host.isEmpty()) {
+            host = ANY_HOST;
+        }
         this.host = host;
     }
 
