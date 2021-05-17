@@ -172,6 +172,7 @@ public final class SQLUtils {
             else if (c == '?' || c == '_') result.append(".");
             else if (c == '%') result.append(".*");
             else if (Character.isLetterOrDigit(c)) result.append(c);
+            else if (c == '(' || c == ')' || c == '[' || c == ']') result.append('\\').append(c);
             else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
