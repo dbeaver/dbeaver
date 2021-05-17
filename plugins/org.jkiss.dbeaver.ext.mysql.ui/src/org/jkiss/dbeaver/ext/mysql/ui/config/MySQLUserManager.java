@@ -131,11 +131,6 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         commandContext.addCommand(command, new ReflectorRenameUser(), true);
     }
 
-    @Override
-    public boolean canRenameObject(MySQLUser user) {
-        return user.isPersisted(); //FIXME O' RLY
-    }
-
     private static class CommandCreateUser extends DBECommandAbstract<MySQLUser> {
         protected CommandCreateUser(MySQLUser user)
         {
