@@ -235,6 +235,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         Boolean prevAutocommit = autoCommit;
         Integer txnLevel = transactionIsolationLevel;
         closeContext(false);
+        // Try to connect again.
+        // If connect will fail then context will remain in the list but with null connection.
+        // On next invalidate it will try to reopen
         connect(monitor, prevAutocommit, txnLevel, this, false);
 
         return InvalidateResult.RECONNECTED;
