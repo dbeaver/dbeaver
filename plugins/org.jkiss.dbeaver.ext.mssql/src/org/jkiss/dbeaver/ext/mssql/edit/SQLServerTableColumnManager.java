@@ -100,7 +100,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
-        if (CommonUtils.isNotEmpty(column.getComputedDefinition())) {
+        if (column.getComputedDefinition() != null) {
             return new ColumnModifier[]{ComputedModifier, NotNullModifier};
         }
         return new ColumnModifier[] {DataTypeModifier, IdentityModifier, CollateModifier, SQLServerDefaultModifier, NullNotNullModifier};
