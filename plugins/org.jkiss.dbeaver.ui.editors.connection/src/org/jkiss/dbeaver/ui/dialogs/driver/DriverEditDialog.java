@@ -476,7 +476,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     UIUtils.runInProgressDialog(classFinder);
 
                     if (classListCombo != null && !classListCombo.isDisposed()) {
-                        classListCombo.setItems(classFinder.getDriverClassNames().toArray(new String[0]));
+                        List<String> classNames = classFinder.getDriverClassNames();
+                        classListCombo.setItems(classNames.toArray(new String[0]));
+                        if (!RuntimeUtils.isMacOS()) {
+                            classListCombo.setListVisible(true);
+                        } else if (!classNames.isEmpty()) {
+                            classListCombo.setText(classNames.get(0));
+                        }
                     }
 
                 } catch (InvocationTargetException e) {
