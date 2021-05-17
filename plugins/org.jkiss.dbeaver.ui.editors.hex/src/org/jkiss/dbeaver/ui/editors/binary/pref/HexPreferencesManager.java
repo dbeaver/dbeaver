@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.internal.BinaryEditorMessages;
@@ -69,7 +70,7 @@ public class HexPreferencesManager {
     private Text sampleText = null;
     private Combo cmbByteWidth = null;
     private String defWidthValue; 
-	private static String[] arrDefValuetoIndex = new String[] { "4", "8", "16" };
+    private static String[] arrDefValuetoIndex = new String[] { "4", "8", "16" };
     
     private static int fontStyleToInt(String styleString)
     {
@@ -216,9 +217,9 @@ public class HexPreferencesManager {
         }
     }
     
-	String getDefWidth() {
-		return cmbByteWidth.getText();
-	}
+    String getDefWidth() {
+        return cmbByteWidth.getText();
+    }
 
 
     /**
@@ -317,18 +318,7 @@ public class HexPreferencesManager {
         FontData fontData = getNextFontData();
         if (!fontsRejected.contains(fontData.getName())) {
             boolean isScalable = fontsListCurrent == fontsScalable;
-            int height = 10;
-            if (!isScalable) height = fontData.getHeight();
-            Font font = new Font(Display.getCurrent(), fontData.getName(), height, SWT.NORMAL);
-            fontsGc.setFont(font);
-            int width = fontsGc.getAdvanceWidth((char) 0x020);
-            boolean isFixedWidth = true;
-            for (int j = 0x021; j < 0x0100 && isFixedWidth; ++j) {
-                if (((char)j) == '.' && j != '.') continue;
-                if (width != fontsGc.getAdvanceWidth((char) j)) isFixedWidth = false;
-            }
-            font.dispose();
-            if (isFixedWidth) {
+            if (isMonospacedFont(fontData, isScalable)) {
                 if (isScalable) {
                     fontsSorted.put(fontData.getName(), scalableSizes);
                 } else {
@@ -356,6 +346,24 @@ public class HexPreferencesManager {
         }
     }
 
+    private boolean isMonospacedFont(@NotNull FontData fontData, boolean isScalable) {
+        int height = 10;
+        if (!isScalable) {
+            height = fontData.getHeight();
+        }
+        Font font = new Font(Display.getCurrent(), fontData.getName(), height, SWT.NORMAL);
+        fontsGc.setFont(font);
+        char ch = ' ';
+        int width = fontsGc.getAdvanceWidth(ch);
+        boolean isMonospaced = true;
+        for (ch++; ch < '\u007F' && isMonospaced; ch++) {
+            if (width != fontsGc.getAdvanceWidth(ch)) {
+                isMonospaced = false;
+            }
+        }
+        font.dispose();
+        return isMonospaced;
+    }
 
     private void refreshSample()
     {
