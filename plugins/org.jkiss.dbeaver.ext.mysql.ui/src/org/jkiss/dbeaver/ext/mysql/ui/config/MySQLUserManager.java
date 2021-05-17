@@ -226,17 +226,13 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         private void setNewName(String newName) {
             this.newName = newName;
             int atPosition = newName.indexOf('@');
-            if (atPosition == -1) {
+            if (atPosition == -1 || atPosition == newName.length() - 1) {
                 newUserName = newName;
                 newHost = "";
                 return;
             }
             newUserName = newName.substring(0, atPosition);
-            if (atPosition == newName.length() - 1) {
-                newHost = "";
-            } else {
-                newHost = newName.substring(atPosition + 1);
-            }
+            newHost = newName.substring(atPosition + 1);
         }
 
         @Override
@@ -287,7 +283,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         public void redoCommand(CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getNewUserName());
-            user.setHost(command.getNewHost());
+            setHost(user, command.getNewHost());
 
             // Update cache
             DBSObjectCache<? extends DBSObject, MySQLUser> cache = getObjectsCache(command.getObject());
@@ -306,7 +302,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         public void undoCommand(CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getOldUserName());
-            user.setHost(command.getOldHost());
+            setHost(user, command.getOldHost());
 
             // Update cache
             DBSObjectCache<? extends DBSObject, MySQLUser> cache = getObjectsCache(command.getObject());
@@ -316,6 +312,13 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
             Map<String, Object> options = new LinkedHashMap<>(command.getOptions());
             DBUtils.fireObjectUpdate(command.getObject(), options, DBPEvent.RENAME);
+        }
+
+        private void setHost(@NotNull MySQLUser user, @NotNull String host) {
+            if (host.isEmpty()) {
+                host =  "%";
+            }
+            user.setHost(host);
         }
     }
 }
