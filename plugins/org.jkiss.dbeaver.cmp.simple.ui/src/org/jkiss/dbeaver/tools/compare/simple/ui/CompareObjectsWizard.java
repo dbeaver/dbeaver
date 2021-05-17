@@ -144,38 +144,39 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
         return report;
     }
 
-    private void renderReport(DBRProgressMonitor monitor, CompareReport report)
-    {
-        try {
-            File reportFile;
-            switch (settings.getOutputType()) {
-                case BROWSER:
-                    reportFile = File.createTempFile("compare-report", ".html");
-                    break;
-                default:
-                {
-                    StringBuilder fileName = new StringBuilder("compare");//"compare-report.html";
-                    for (DBNDatabaseNode node : report.getNodes()) {
-                        fileName.append("-").append(CommonUtils.escapeIdentifier(node.getName()));
-                    }
-                    fileName.append("-report.html");
-                    reportFile = new File(settings.getOutputFolder(), fileName.toString());
-                    break;
-                }
-            }
+	private void renderReport(DBRProgressMonitor monitor, CompareReport report) {
+		try {
+			File reportFile;
+			switch (settings.getOutputType()) {
+			case BROWSER:
+				reportFile = File.createTempFile("compare-report", ".html");
+				break;
+			default: {
+				StringBuilder fileName = new StringBuilder("compare");// "compare-report.html";
+				for (DBNDatabaseNode node : report.getNodes()) {
+					fileName.append("-").append(CommonUtils.escapeIdentifier(node.getName()));
+				}
+				fileName.append("-report.html");
+				reportFile = new File(settings.getOutputFolder(), fileName.toString());
+				break;
+			}
+			}
 
-            reportFile.deleteOnExit();
-            try (OutputStream outputStream = new FileOutputStream(reportFile)) {
-                monitor.beginTask("Render report", report.getReportLines().size());
-                CompareReportRenderer reportRenderer = new CompareReportRenderer();
-                reportRenderer.renderReport(monitor, report, getSettings(), outputStream);
-                monitor.done();
-            }
-            UIUtils.launchProgram(reportFile.getAbsolutePath());
-        } catch (IOException e) {
-            showError(e.getMessage());
-            log.error(e);
-        }
-    }
+			reportFile.deleteOnExit();
+			try (OutputStream outputStream = new FileOutputStream(reportFile)) {
+				monitor.beginTask("Render report", report.getReportLines().size());
+				CompareReportRenderer reportRenderer = new CompareReportRenderer();
+				reportRenderer.renderReport(monitor, report, getSettings(), outputStream);
+				monitor.done();
+			}
+
+			if (settings.getOutputType().getTitle().equals("Open in browser")) {
+				UIUtils.launchProgram(reportFile.getAbsolutePath());
+			}
+		} catch (IOException e) {
+			showError(e.getMessage());
+			log.error(e);
+		}
+	}
 
 }
