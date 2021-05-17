@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -27,7 +26,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * KeepAlivePingJob
@@ -35,35 +36,55 @@ import java.util.List;
 class KeepAlivePingJob extends AbstractJob {
     private static final Log log = Log.getLog(KeepAlivePingJob.class);
 
-    private final DBPDataSource dataSource;
+    private static final Map<String, Integer> failedAttempts = new HashMap<>();
 
-    KeepAlivePingJob(DBPDataSource dataSource) {
+    private final DBPDataSource dataSource;
+    private final boolean disconnectOnError;
+
+    KeepAlivePingJob(DBPDataSource dataSource, boolean disconnectOnError) {
         super("Connection ping (" + dataSource.getContainer().getName() + ")");
         setUser(false);
         setSystem(true);
         this.dataSource = dataSource;
+        this.disconnectOnError = disconnectOnError;
     }
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
+        boolean hasDeadContexts = false;
         for (final DBSInstance instance : dataSource.getAvailableInstances()) {
             for (final DBCExecutionContext context : instance.getAllContexts()) {
                 try {
                     context.checkContextAlive(monitor);
                 } catch (Exception e) {
                     log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
-                    // Invalidate. Do not log errors (as it can spam tons of logs)
-                    if (e instanceof DBException) {
-                        final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(
-                            monitor,
-                            dataSource,
-                            false,
-                            false,
-                            () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
-                        if (isSuccess(results)) {
-                            log.debug("Connection invalidated: " + results);
-                        }
+                    hasDeadContexts = true;
+                    break;
+                }
+            }
+        }
+        if (hasDeadContexts) {
+            // Invalidate whole datasource. Do not log errors (as it can spam tons of logs)
+            final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(
+                monitor,
+                dataSource,
+                disconnectOnError,
+                false,
+                () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+            synchronized (failedAttempts) {
+                String dsId = dataSource.getContainer().getId();
+                if (isSuccess(results)) {
+                    log.debug("Datasource " + dataSource.getName() + " invalidated: " + results);
+                    failedAttempts.remove(dsId);
+                } else {
+                    log.debug("Datasource " + dataSource.getName() + " invalidate failed: " + results);
+                    Integer curAttempts = failedAttempts.get(dsId);
+                    if (curAttempts == null) {
+                        curAttempts = 1;
+                    } else {
+                        curAttempts++;
                     }
+                    failedAttempts.put(dsId, curAttempts);
                 }
             }
         }
@@ -82,5 +103,11 @@ class KeepAlivePingJob extends AbstractJob {
         return false;
     }
 
+    public static int getFailedAttemptCount(DBPDataSource dataSource) {
+        synchronized (failedAttempts) {
+            Integer attempts = failedAttempts.get(dataSource.getContainer().getId());
+            return attempts == null ? 0 : attempts;
+        }
+    }
 
 }

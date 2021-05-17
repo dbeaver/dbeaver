@@ -50,6 +50,9 @@ public class DataSourceMonitorJob extends AbstractJob {
 
     private static final Log log = Log.getLog(DataSourceMonitorJob.class);
 
+    private static final int MAX_FAILED_ATTEMPTS_BEFORE_DISCONNECT = 5;
+    private static final int MAX_FAILED_ATTEMPTS_BEFORE_IGNORE = 10;
+
     private final DBPPlatform platform;
     private final Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();
@@ -132,7 +135,15 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
         long curTime = System.currentTimeMillis();
         if ((curTime - lastCheckTime) / 1000 > keepAliveInterval) {
-            final KeepAlivePingJob pingJob = new KeepAlivePingJob(dataSource);
+            boolean disconnectOnError = false;
+            int failedAttemptCount = KeepAlivePingJob.getFailedAttemptCount(dataSource);
+            if (failedAttemptCount >= MAX_FAILED_ATTEMPTS_BEFORE_IGNORE) {
+                return;
+            }
+            if (failedAttemptCount > MAX_FAILED_ATTEMPTS_BEFORE_DISCONNECT) {
+                disconnectOnError = true;
+            }
+            final KeepAlivePingJob pingJob = new KeepAlivePingJob(dataSource, disconnectOnError);
             pingJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
