@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -23,6 +24,8 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -35,12 +38,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * MySQLUserManager
  */
-public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser, MySQLDataSource>, DBECommandFilter<MySQLUser> {
+public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser, MySQLDataSource>,
+    DBECommandFilter<MySQLUser>, DBEObjectRenamer<MySQLUser> {
 
     // Perhaps we should set it in UI? For now it is always disabled
     private static final String OPTION_SUPPRESS_FLUSH_PRIVILEGES = "suppress.flushPrivileges";
@@ -120,6 +124,18 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         }
     }
 
+    @Override
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLUser object, @NotNull Map<String, Object> options,
+                             @NotNull String newName) {
+        DBECommand<MySQLUser> command = new CommandRenameUser(object, MySQLUIMessages.edit_user_manager_command_rename_user, options, newName);
+        commandContext.addCommand(command, new ReflectorRenameUser(), true);
+    }
+
+    @Override
+    public boolean canRenameObject(MySQLUser user) {
+        return user.isPersisted(); //FIXME O' RLY
+    }
+
     private static class CommandCreateUser extends DBECommandAbstract<MySQLUser> {
         protected CommandCreateUser(MySQLUser user)
         {
@@ -137,7 +153,6 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             super.validateCommand(monitor, options);
         }
     }
-
 
     private static class CommandDropUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
         protected CommandDropUser(MySQLUser user)
@@ -160,5 +175,150 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         }
     }
 
-}
+    //---- Rename command and rename reflector. For the most part, it is copy-pasted from SQLObjectEditor.
 
+    private static final class CommandRenameUser extends DBECommandAbstract<MySQLUser> implements DBECommandRename {
+        private final Map<String, Object> options;
+        private final String oldName;
+        private final String oldUserName;
+        private final String oldHost;
+        private String newName;
+        private String newUserName;
+        private String newHost;
+
+        private CommandRenameUser(MySQLUser user, String title, Map<String, Object> options, String newName) {
+            super(user, title);
+            this.options = options;
+            oldName = user.getName();
+            oldUserName = user.getUserName();
+            oldHost = user.getHost();
+            setNewName(newName);
+        }
+
+        Map<String, Object> getOptions() {
+            return Collections.unmodifiableMap(options);
+        }
+
+        String getOldName() {
+            return oldName;
+        }
+
+        String getNewName() {
+            return newName;
+        }
+
+        String getOldUserName() {
+            return oldUserName;
+        }
+
+        String getOldHost() {
+            return oldHost;
+        }
+
+        String getNewUserName() {
+            return newUserName;
+        }
+
+        String getNewHost() {
+            return newHost;
+        }
+
+        private void setNewName(String newName) {
+            this.newName = newName;
+            int atPosition = newName.indexOf('@');
+            if (atPosition == -1 || atPosition == newName.length() - 1) {
+                newUserName = newName;
+                newHost = "";
+                return;
+            }
+            newUserName = newName.substring(0, atPosition);
+            newHost = newName.substring(atPosition + 1);
+        }
+
+        @Override
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+            if (CommonUtils.equalObjects(oldName, newName)) {
+                return new DBEPersistAction[0];
+            }
+            List<DBEPersistAction> actions = new ArrayList<>();
+            DBPDataSource dataSource = executionContext.getDataSource();
+            actions.add(new SQLDatabasePersistAction(
+               "Rename user", //$NON-NLS-1$
+               "RENAME USER " + getQuotedName(oldUserName, oldHost, dataSource) + " TO " + getQuotedName(newUserName, newHost, dataSource) //$NON-NLS-1$ //$NON-NLS-2$
+            ));
+            return actions.toArray(new DBEPersistAction[0]);
+        }
+
+        @NotNull
+        private static String getQuotedName(@NotNull String userName, @NotNull String host, @NotNull DBPDataSource dataSource) {
+            if (host.isEmpty()) {
+                return DBUtils.getQuotedIdentifier(dataSource, userName);
+            }
+            return DBUtils.getQuotedIdentifier(dataSource, userName) + "@" + DBUtils.getQuotedIdentifier(dataSource, host);
+        }
+
+        @Override
+        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+            // We need very first and very last rename commands. They produce final rename
+            final String mergeId = "rename" + getObject().hashCode();
+            CommandRenameUser renameCmd = (CommandRenameUser) userParams.get(mergeId);
+            if (renameCmd == null) {
+                renameCmd = new CommandRenameUser(getObject(), getTitle(), options, newName);
+                userParams.put(mergeId, renameCmd);
+            } else {
+                renameCmd.setNewName(newName);
+                return renameCmd;
+            }
+            return super.merge(prevCommand, userParams);
+        }
+
+        @Override
+        public String toString() {
+            return "CMD:RenameObject:" + getObject();
+        }
+    }
+
+    private class ReflectorRenameUser implements DBECommandReflector<MySQLUser, CommandRenameUser> {
+        @Override
+        public void redoCommand(CommandRenameUser command) {
+            MySQLUser user = command.getObject();
+            user.setUserName(command.getNewUserName());
+            setHost(user, command.getNewHost());
+
+            // Update cache
+            DBSObjectCache<? extends DBSObject, MySQLUser> cache = getObjectsCache(command.getObject());
+            if (cache != null) {
+                cache.renameObject(command.getObject(), command.getOldName(), command.getNewName());
+            }
+
+            Map<String, Object> options = new LinkedHashMap<>(command.getOptions());
+            options.put(DBEObjectRenamer.PROP_OLD_NAME, command.getOldName());
+            options.put(DBEObjectRenamer.PROP_NEW_NAME, command.getNewName());
+
+            DBUtils.fireObjectUpdate(command.getObject(), options, DBPEvent.RENAME);
+        }
+
+        @Override
+        public void undoCommand(CommandRenameUser command) {
+            MySQLUser user = command.getObject();
+            user.setUserName(command.getOldUserName());
+            setHost(user, command.getOldHost());
+
+            // Update cache
+            DBSObjectCache<? extends DBSObject, MySQLUser> cache = getObjectsCache(command.getObject());
+            if (cache != null) {
+                cache.renameObject(command.getObject(), command.getNewName(), command.getOldName());
+            }
+
+            Map<String, Object> options = new LinkedHashMap<>(command.getOptions());
+            DBUtils.fireObjectUpdate(command.getObject(), options, DBPEvent.RENAME);
+        }
+
+        private void setHost(@NotNull MySQLUser user, @NotNull String host) {
+            if (host.isEmpty()) {
+                host =  "%";
+            }
+            user.setHost(host);
+        }
+    }
+}
