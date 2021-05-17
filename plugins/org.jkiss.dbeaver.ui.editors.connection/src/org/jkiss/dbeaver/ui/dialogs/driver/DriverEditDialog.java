@@ -476,9 +476,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     UIUtils.runInProgressDialog(classFinder);
 
                     if (classListCombo != null && !classListCombo.isDisposed()) {
-                        List<String> classNames = classFinder.getDriverClassNames();
-                        classListCombo.setItems(classNames.toArray(new String[classNames.size()]));
-                        classListCombo.setListVisible(true);
+                        classListCombo.setItems(classFinder.getDriverClassNames().toArray(new String[0]));
                     }
 
                 } catch (InvocationTargetException e) {
