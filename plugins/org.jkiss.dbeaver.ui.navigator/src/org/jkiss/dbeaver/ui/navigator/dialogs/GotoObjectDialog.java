@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -75,7 +76,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         this.context = context;
         this.container = container;
 
-        setTitle(UINavigatorMessages.dialog_project_goto_object_title + " '" + context.getDataSource().getContainer().getName() + "'");
+        setTitle(NLS.bind(UINavigatorMessages.dialog_project_goto_object_title, context.getDataSource().getContainer().getName()));
         setListLabelProvider(new ObjectLabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
     }
