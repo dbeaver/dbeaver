@@ -171,7 +171,9 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                 reportRenderer.renderReport(monitor, report, getSettings(), outputStream);
                 monitor.done();
             }
-            UIUtils.launchProgram(reportFile.getAbsolutePath());
+            if (settings.getOutputType() == CompareObjectsSettings.OutputType.BROWSER) {
+                UIUtils.launchProgram(reportFile.getAbsolutePath());
+            }
         } catch (IOException e) {
             showError(e.getMessage());
             log.error(e);
