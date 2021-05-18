@@ -118,8 +118,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         while (dbResult.nextRow()) {
                             String typeName = JDBCUtils.safeGetString(dbResult, "type_name");
                             DBSProcedureType procedureType = DBSProcedureType.PROCEDURE;
+                            GenericFunctionResultType functionResultType = null;
                             if ("SF".equals(typeName)) {
                                 procedureType = DBSProcedureType.FUNCTION;
+                                functionResultType = GenericFunctionResultType.UNKNOWN;
                             }
                             final GenericProcedure procedure = createProcedureImpl(
                                 container,
@@ -127,7 +129,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                                 null,
                                 null,
                                 procedureType,
-                                null);
+                                functionResultType);
                             procedure.setSource(JDBCUtils.safeGetString(dbResult, "definition"));
                             container.addProcedure(procedure);
                         }
