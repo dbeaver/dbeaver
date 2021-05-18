@@ -227,7 +227,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public void markAssociatedAttributes(int value) {
         //Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
-        boolean isSelected = value != EditPart.SELECTED_NONE;
+        //boolean isSelected = value != EditPart.SELECTED_NONE;
         if (getSource() instanceof EntityPart) {
             for (AttributePart attrPart : getEntityAttributes((EntityPart) getSource(), getAssociation().getSourceAttributes())) {
                 //attrPart.getFigure().setForegroundColor(columnColor);
