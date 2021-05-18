@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.internal.BinaryEditorMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.*;
 
@@ -347,6 +348,10 @@ public class HexPreferencesManager {
     }
 
     private boolean isMonospacedFont(@NotNull FontData fontData, boolean isScalable) {
+        if (RuntimeUtils.isWindows() && fontData.getName().startsWith("@")) {
+            // Discard vertical versions of fonts.
+            return false;
+        }
         int height = 10;
         if (!isScalable) {
             height = fontData.getHeight();
