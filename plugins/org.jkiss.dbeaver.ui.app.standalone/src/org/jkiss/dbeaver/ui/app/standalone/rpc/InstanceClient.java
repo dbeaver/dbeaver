@@ -50,7 +50,7 @@ public class InstanceClient {
                 Integer.parseInt(rmiPort));
             return (IInstanceController) registry.lookup(IInstanceController.CONTROLLER_ID);
         } catch (Exception e) {
-            log.error("Error reading RMI config", e);
+            log.debug("Error instantiating RMI client: " + e.getMessage());
         }
         return null;
     }

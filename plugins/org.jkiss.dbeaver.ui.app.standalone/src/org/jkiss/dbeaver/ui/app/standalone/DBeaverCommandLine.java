@@ -90,7 +90,7 @@ public class DBeaverCommandLine
         String description;
         boolean hasArg;
         boolean exitAfterExecute;
-        boolean reuseWorkspace;
+        boolean exclusiveMode;
         CommandLineParameterHandler handler;
 
         public ParameterDescriptor(IConfigurationElement config) throws Exception {
@@ -99,14 +99,14 @@ public class DBeaverCommandLine
             this.description = config.getAttribute("description");
             this.hasArg = CommonUtils.toBoolean(config.getAttribute("hasArg"));
             this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
-            this.reuseWorkspace = CommonUtils.toBoolean(config.getAttribute("reuseWorkspace"));
+            this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
             handler = (CommandLineParameterHandler) implClass.newInstance();
         }
     }
 
-    private static Map<String, ParameterDescriptor> customParameters = new LinkedHashMap<>();
+    private static final Map<String, ParameterDescriptor> customParameters = new LinkedHashMap<>();
 
     static {
         IExtensionRegistry er = Platform.getExtensionRegistry();
@@ -147,7 +147,7 @@ public class DBeaverCommandLine
 
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
             if (DBeaverApplication.instance != null) {
-                DBeaverApplication.instance.reuseWorkspace = true;
+                DBeaverApplication.instance.setReuseWorkspace(true);
             }
         }
 
@@ -237,9 +237,9 @@ public class DBeaverCommandLine
 
         // Reuse workspace if custom parameters are specified
         for (ParameterDescriptor param : customParameters.values()) {
-            if (param.reuseWorkspace && (commandLine.hasOption(param.name) || commandLine.hasOption(param.longName))) {
+            if (param.exclusiveMode && (commandLine.hasOption(param.name) || commandLine.hasOption(param.longName))) {
                 if (DBeaverApplication.instance != null) {
-                    DBeaverApplication.instance.reuseWorkspace = true;
+                    DBeaverApplication.instance.setExclusiveMode(true);
                 }
                 break;
             }
@@ -278,7 +278,7 @@ public class DBeaverCommandLine
                 param = customParameters.get(cliOption.getLongOpt());
             }
             if (param == null) {
-                log.error("Wrong command line parameter " + cliOption);
+                //log.error("Wrong command line parameter " + cliOption);
                 continue;
             }
             try {

@@ -94,7 +94,9 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     static boolean WORKSPACE_MIGRATED = false;
 
     static DBeaverApplication instance;
-    boolean reuseWorkspace = false;
+
+    private boolean exclusiveMode = false;
+    private boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
     private boolean headlessMode = false;
 
@@ -488,7 +490,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
             boolean keepTrying = true;
             while (keepTrying) {
                 if (instanceLoc.isLocked() || !instanceLoc.set(defaultHomeURL, true)) {
-                    if (reuseWorkspace) {
+                    if (exclusiveMode || reuseWorkspace) {
                         instanceLoc.set(defaultHomeURL, false);
                         keepTrying = false;
                         primaryInstance = false;
@@ -639,7 +641,19 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
 
     @Override
     public boolean isExclusiveMode() {
+        return exclusiveMode;
+    }
+
+    public void setExclusiveMode(boolean exclusiveMode) {
+        this.exclusiveMode = exclusiveMode;
+    }
+
+    public boolean isReuseWorkspace() {
         return reuseWorkspace;
+    }
+
+    public void setReuseWorkspace(boolean reuseWorkspace) {
+        this.reuseWorkspace = reuseWorkspace;
     }
 
     @Override
