@@ -120,7 +120,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
                             dialog.setValidator(selection -> {
                                 if (selection instanceof IPath) {
                                     IPath path = (IPath) selection;
-                                    if (convertToString(path).trim().isEmpty()) {
+                                    if (CommonUtils.isEmptyTrimmed(convertToString(path))) {
                                         return UINavigatorMessages.pref_page_projects_settings_label_not_use_project_root;
                                     }
                                     final File file = path.toFile();
