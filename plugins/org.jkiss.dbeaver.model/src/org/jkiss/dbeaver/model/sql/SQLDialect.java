@@ -279,12 +279,12 @@ public interface SQLDialect {
 
     /**
      * Enables to call particular cast operator or function for special data types.
-     * @param attribute   attribute data to help decide whether cast and how to cast
+     * @param attribute   value attribute to help decide whether cast and how to cast
      * @param expression      string representation for cast
      * @return            casted string
      */
     @NotNull
-    String getTypeCastClause(DBSAttributeBase attribute, String expression);
+    String getTypeCastClause(DBSTypedObject attribute, String expression);
 
     /**
      * Quoting functions
@@ -316,12 +316,12 @@ public interface SQLDialect {
 
     /**
      * Encode value to string format (to use it in scripts, e.g. in INSERT/UPDATE statements)
-     * @param attribute
+     * @param attribute   value attribute to help decide whether value should be escaped or not
      * @param value       original value
      * @param strValue    string representation (default result)
      */
     @NotNull
-    String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue);
+    String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue);
 
     /**
      * Default multi-value insertion mode
