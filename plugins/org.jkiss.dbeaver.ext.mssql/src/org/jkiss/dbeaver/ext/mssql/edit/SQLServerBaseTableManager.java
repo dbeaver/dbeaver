@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -27,11 +26,14 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +48,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, NestedObjectCommand<OBJECT, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, NestedObjectCommand<OBJECT, PropertyHandler> command, Map<String, Object> options) throws DBException {
         final OBJECT table = command.getObject();
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             boolean isUpdate = SQLServerUtils.isCommentSet(
@@ -62,6 +64,21 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
                         " 'MS_Description', " + SQLUtils.quoteString(table, table.getDescription()) + "," +
                         " 'schema', " + SQLUtils.quoteString(table, table.getSchema().getName()) + "," +
                         " '" + (table.isView() ? "view" : "table") + "', " + SQLUtils.quoteString(table, table.getName())));
+        }
+
+        final Collection<SQLServerExtendedProperty> extendedProperties = table.getExtendedProperties(monitor);
+        if (!extendedProperties.isEmpty()) {
+            actionList.add(new SQLDatabasePersistActionComment(
+                table.getDataSource(),
+                "Add extended properties"
+            ));
+
+            for (SQLServerExtendedProperty extendedProperty : extendedProperties) {
+                actionList.add(new SQLDatabasePersistAction(
+                    "Add extended property",
+                    extendedProperty.getObjectDefinitionText(monitor, Collections.emptyMap())
+                ));
+            }
         }
     }
 

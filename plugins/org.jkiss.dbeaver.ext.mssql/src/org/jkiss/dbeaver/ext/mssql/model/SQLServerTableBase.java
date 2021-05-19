@@ -25,9 +25,13 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -59,6 +63,8 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     private String type;
     private String description;
     protected Long rowCount;
+
+    private final ExtendedPropertyCache extendedPropertyCache = new ExtendedPropertyCache();
 
     protected SQLServerTableBase(SQLServerSchema schema)
     {
@@ -268,6 +274,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         if (supportsTriggers()) {
             getContainer().getTriggerCache().clearChildrenOf(this);
         }
+        extendedPropertyCache.clearCache();
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
@@ -302,5 +309,39 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
             }
         }
         return triggers;
+    }
+
+    //////////////////////////////////////////////////
+    // Extended Properties
+
+    @Association
+    @NotNull
+    public Collection<SQLServerExtendedProperty> getExtendedProperties(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return extendedPropertyCache.getAllObjects(monitor, this);
+    }
+
+    @NotNull
+    public ExtendedPropertyCache getExtendedPropertyCache() {
+        return extendedPropertyCache;
+    }
+
+    static class ExtendedPropertyCache extends JDBCObjectLookupCache<SQLServerTableBase, SQLServerExtendedProperty> {
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerTableBase table, @Nullable SQLServerExtendedProperty object2, @Nullable String objectName) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT *, TYPE_ID(CAST(SQL_VARIANT_PROPERTY(value, 'BaseType') as nvarchar)) AS value_type" +
+                " FROM " + SQLServerUtils.getExtendedPropsTableName(table.getDatabase()) +
+                " WHERE major_id=? ORDER BY minor_id"
+            );
+            dbStat.setLong(1, table.getObjectId());
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerExtendedProperty fetchObject(@NotNull JDBCSession session, @NotNull SQLServerTableBase table, @NotNull JDBCResultSet resultSet) throws DBException {
+            return new SQLServerExtendedProperty(session.getProgressMonitor(), table, resultSet);
+        }
     }
 }
