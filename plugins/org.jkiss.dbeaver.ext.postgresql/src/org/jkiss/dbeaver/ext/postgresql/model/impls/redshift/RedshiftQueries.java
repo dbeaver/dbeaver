@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 /**
  * RedshiftConstants
  */
-public class RedshiftConstants {
+public class RedshiftQueries {
 
     /**
      * Slightly modified official AWS script for DDL:

@@ -183,7 +183,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load Redshift table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                RedshiftConstants.DDL_EXTRACT_VIEW + "\n" +
+                RedshiftQueries.DDL_EXTRACT_VIEW + "\n" +
                     "WHERE schemaname=? AND tablename=?")) {
                 dbStat.setString(1, table.getSchema().getName());
                 dbStat.setString(2, table.getName());

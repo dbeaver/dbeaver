@@ -181,6 +181,8 @@ public class AuthModelSelector extends Composite {
                 } catch (DBException e) {
                     log.error(e);
                 }
+            } else {
+                log.debug("No UI configurator for auth model " + selectedAuthModel.getId());
             }
         }
 
