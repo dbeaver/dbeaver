@@ -51,6 +51,11 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
     @Override
     public CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
         CREDENTIALS credentials = createCredentials();
+        loadCredentials(dataSource, configuration, credentials);
+        return credentials;
+    }
+
+    protected void loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, CREDENTIALS credentials) {
         DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
         if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
             credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
@@ -63,7 +68,6 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         if (credentials.getUserPassword() == null && allowsEmptyPassword) {
             credentials.setUserPassword("");
         }
-        return credentials;
     }
 
     @Override

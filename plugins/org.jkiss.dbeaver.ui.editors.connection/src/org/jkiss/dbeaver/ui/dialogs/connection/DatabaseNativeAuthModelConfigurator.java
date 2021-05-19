@@ -94,15 +94,21 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         if (this.usernameText != null) {
             dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
         }
-        if (this.passwordText != null) {
+        if (this.passwordText != null && isPasswordApplicable()) {
             dataSource.getConnectionConfiguration().setUserPassword(this.passwordText.getText());
-            dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+        } else {
+            dataSource.getConnectionConfiguration().setUserPassword(null);
         }
+        dataSource.setSavePassword(this.savePasswordCheck.getSelection());
     }
 
     @Override
     public void resetSettings(DBPDataSourceContainer dataSource) {
         loadSettings(dataSource);
+    }
+
+    protected boolean isPasswordApplicable() {
+        return this.passwordText != null;
     }
 
     @Override
