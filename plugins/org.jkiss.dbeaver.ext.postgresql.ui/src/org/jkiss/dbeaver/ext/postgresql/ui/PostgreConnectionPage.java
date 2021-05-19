@@ -119,20 +119,29 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createAuthPanel(mainGroup, 1);
 
+        if (isUserRoleSupported() || serverType.supportsClient()) {
+            Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-        Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            if (isUserRoleSupported()) {
+                roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
+                roleText.setLayoutData(gd);
+            }
 
-        roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
-        roleText.setLayoutData(gd);
-
-        homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
-        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-        homesSelector.getPanel().setLayoutData(gd);
+            if (serverType.supportsClient()) {
+                homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+                homesSelector.getPanel().setLayoutData(gd);
+            }
+        }
 
         createDriverPanel(mainGroup);
         setControl(mainGroup);
+    }
+
+    protected boolean isUserRoleSupported() {
+        return true;
     }
 
     @Override
@@ -183,7 +192,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (roleText != null) {
             roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
         }
-        homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
+        if (homesSelector != null) {
+            homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
+        }
 
         activated = true;
     }
