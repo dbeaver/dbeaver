@@ -89,11 +89,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         Group addrGroup = UIUtils.createControlGroup(mainGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
 
-        if (serverType.hostIsCloudInstance()) {
-        	hostText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_cloud_instance, null, SWT.BORDER);
-        } else {
-        	hostText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_host, null, SWT.BORDER);
-        }
+        hostText = UIUtils.createLabelText(
+            addrGroup,
+            serverType.isCloudServer() ? PostgreMessages.dialog_setting_connection_cloud_instance : PostgreMessages.dialog_setting_connection_host,
+            null,
+            SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
