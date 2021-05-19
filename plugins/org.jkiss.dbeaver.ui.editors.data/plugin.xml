@@ -853,9 +853,10 @@
                 parentId="org.eclipse.ui.contexts.window"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
+        <!-- Focused context extends SQL editor context because it conflicts with text editor in several shortcuts #10809 -->
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset.focused"
-                parentId="org.jkiss.dbeaver.ui.context.resultset"
+                parentId="org.jkiss.dbeaver.ui.editors.sql"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name focused"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
