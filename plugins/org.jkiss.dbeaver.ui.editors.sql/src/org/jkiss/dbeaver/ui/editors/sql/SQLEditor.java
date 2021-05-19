@@ -1242,7 +1242,12 @@ public class SQLEditor extends SQLEditorBase implements
                     CommonUtils.toInt(weightsStr[0]),
                     CommonUtils.toInt(weightsStr[1]),
                 };
-                sash.setWeights(weights);
+                // If weight of one of controls less than 5% of weight of another - restore default wqeights
+                if (weights[1] < weights[0] / 15 || weights[0] < weights[1] / 15) {
+                    log.debug("Restore default sash weights");
+                } else {
+                    sash.setWeights(weights);
+                }
             }
         }
     }
