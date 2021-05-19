@@ -358,10 +358,10 @@ public class HexPreferencesManager {
         }
         Font font = new Font(Display.getCurrent(), fontData.getName(), height, SWT.NORMAL);
         fontsGc.setFont(font);
-        char ch = ' ';
+        char ch = SWT.SPACE;
         int width = fontsGc.getAdvanceWidth(ch);
         boolean isMonospaced = true;
-        for (ch++; ch < '\u007F' && isMonospaced; ch++) {
+        for (ch++; ch < SWT.DEL && isMonospaced; ch++) {
             if (width != fontsGc.getAdvanceWidth(ch)) {
                 isMonospaced = false;
             }
