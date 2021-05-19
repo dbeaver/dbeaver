@@ -37,8 +37,13 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBPDataSourceContainer> {
 
+    protected Label usernameLabel;
     protected Text usernameText;
+
+    protected Label passwordLabel;
+    protected Composite passPlaceholder;
     protected Text passwordText;
+
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
 
@@ -46,7 +51,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     @Override
     public void createControl(Composite authPanel, Runnable propertyChangeListener) {
-        Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
+        usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         createUserNameControls(authPanel, propertyChangeListener);
@@ -117,20 +122,20 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     protected void createPasswordControls(Composite parent, Runnable propertyChangeListener) {
-        Label passwordLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_password);
+        passwordLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        Composite passPH = UIUtils.createComposite(parent, 2);
-        passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        passPlaceholder = UIUtils.createComposite(parent, 2);
+        passPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        createPasswordText(passPH, null);
+        createPasswordText(passPlaceholder, null);
         passwordText.addModifyListener(e -> propertyChangeListener.run());
 
         // We don't support password preview in standard project secure storage (as we need password encryption)
         UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
         boolean supportsPasswordView = serviceSecurity != null;
 
-        Composite panel = UIUtils.createComposite(passPH, supportsPasswordView ? 2 : 1);
+        Composite panel = UIUtils.createComposite(passPlaceholder, supportsPasswordView ? 2 : 1);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
 

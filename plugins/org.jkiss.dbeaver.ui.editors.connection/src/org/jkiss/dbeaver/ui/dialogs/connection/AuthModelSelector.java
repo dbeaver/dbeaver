@@ -142,18 +142,22 @@ public class AuthModelSelector extends Composite {
         authModelCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DBPAuthModelDescriptor newAuthModel = allAuthModels.get(authModelCombo.getSelectionIndex());
-                if (selectedAuthModel != newAuthModel) {
-                    if (modelChangeFilter != null && !modelChangeFilter.isValidElement(newAuthModel)) {
-                        authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
-                        return;
+                try {
+                    DBPAuthModelDescriptor newAuthModel = allAuthModels.get(authModelCombo.getSelectionIndex());
+                    if (selectedAuthModel != newAuthModel) {
+                        if (modelChangeFilter != null && !modelChangeFilter.isValidElement(newAuthModel)) {
+                            authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
+                            return;
+                        }
+                        selectedAuthModel = newAuthModel;
+                        activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
+                        showAuthModelSettings();
                     }
-                    selectedAuthModel = newAuthModel;
-                    activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
-                    showAuthModelSettings();
+                    modelConfigPlaceholder.setFocus();
+                    changeListener.run();
+                } finally {
+                    authModelCombo.setToolTipText(selectedAuthModel == null ? "" : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
-                modelConfigPlaceholder.setFocus();
-                changeListener.run();
             }
         });
         Label authModelDescLabel = new Label(authModelComp, SWT.NONE);
@@ -166,6 +170,7 @@ public class AuthModelSelector extends Composite {
         }
         if (selectedAuthModel != null) {
             authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
+            authModelCombo.setToolTipText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
         }
         boolean authSelectorVisible = allAuthModels.size() >= 2;
         UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
