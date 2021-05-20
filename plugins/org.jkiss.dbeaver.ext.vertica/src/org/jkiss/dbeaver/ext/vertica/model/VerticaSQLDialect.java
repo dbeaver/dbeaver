@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.vertica.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -94,5 +95,11 @@ public class VerticaSQLDialect extends GenericSQLDialect {
             return (left, right) -> left + " ILIKE " + right;
         }
         return super.getCaseInsensitiveExpressionFormatter(operator);
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase getDataTypesCase() {
+        return DBPIdentifierCase.MIXED;
     }
 }

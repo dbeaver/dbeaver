@@ -209,6 +209,12 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
     @NotNull
     @Override
+    public DBPIdentifierCase getDataTypesCase() {
+        return DBPIdentifierCase.UPPER;
+    }
+
+    @NotNull
+    @Override
     public String escapeString(String string) {
         return string.replace("'", "''");
     }

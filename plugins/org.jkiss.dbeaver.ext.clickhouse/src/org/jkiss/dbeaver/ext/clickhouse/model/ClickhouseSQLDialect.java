@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -52,5 +53,11 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
             return null;
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase getDataTypesCase() {
+        return DBPIdentifierCase.MIXED;
     }
 }

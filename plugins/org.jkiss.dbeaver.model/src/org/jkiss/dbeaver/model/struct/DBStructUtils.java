@@ -274,7 +274,24 @@ public final class DBStructUtils {
         DBPDataKind dataKind = typedObject.getDataKind();
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
         if (dataTypeProvider != null) {
-            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
+            DBSDataType dataType = findDataTypeByName(dataTypeProvider, typeName);
+            if (dataType == null) {
+                SQLDialect sqlDialect = objectContainer.getDataSource().getSQLDialect();
+                if (sqlDialect.getDataTypesCase() == DBPIdentifierCase.UPPER) {
+                    // Try to find type in upper case. Most databases use it for data types
+                    String typeNameUpper = typeName.toUpperCase(Locale.ENGLISH);
+                    dataType = findDataTypeByName(dataTypeProvider, typeNameUpper);
+                    if (dataType != null && !typeName.equals(typeNameUpper)) {
+                        typeName = typeNameUpper;
+                    }
+                } else if (sqlDialect.getDataTypesCase() == DBPIdentifierCase.LOWER) {
+                    // Let's try to find type in lower case
+                    dataType = findDataTypeByName(dataTypeProvider, typeNameLower);
+                    if (dataType != null && !typeName.equals(typeNameLower)) {
+                        typeName = typeNameLower;
+                    }
+                }
+            }
             if (dataType == null && typeNameLower.equals("double")) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
                 if (dataType != null) {
@@ -367,5 +384,14 @@ public final class DBStructUtils {
             }
         }
         return typeName;
+    }
+
+    private static DBSDataType findDataTypeByName(DBPDataTypeProvider dataTypeProvider, String typeName) {
+        DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
+        if (dataType == null && typeName.contains("(")) {
+            // It seems this data type has modifiers. Try to find without modifiers
+            dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
+        }
+        return dataType;
     }
 }
