@@ -430,7 +430,9 @@ public class PostgreSchema implements
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        return database.schemaCache.refreshObject(monitor, database, this);
+        PostgreSchema schema = database.schemaCache.refreshObject(monitor, database, this);
+        database.cacheDataTypes(monitor, true);
+        return schema;
     }
 
     @Override

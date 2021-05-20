@@ -119,7 +119,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             final JDBCResultSet dbResult;
-            if (functionResultType == null) {
+            if (DBSProcedureType.PROCEDURE == procedureType) {
                 dbResult = session.getMetaData().getProcedureColumns(
                     getCatalog() == null ?
                         this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
@@ -153,7 +153,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     String remarks = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.REMARKS);
                     int position = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.ORDINAL_POSITION);
                     DBSProcedureParameterKind parameterType;
-                    if (functionResultType == null) {
+                    if (DBSProcedureType.PROCEDURE == procedureType) {
                         switch (columnTypeNum) {
                             case DatabaseMetaData.procedureColumnIn:
                                 parameterType = DBSProcedureParameterKind.IN;

@@ -36,6 +36,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -118,7 +119,11 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
                             dialog.showClosedProjects(false);
                             dialog.setValidator(selection -> {
                                 if (selection instanceof IPath) {
-                                    final File file = ((IPath) selection).toFile();
+                                    IPath path = (IPath) selection;
+                                    if (CommonUtils.isEmptyTrimmed(convertToString(path))) {
+                                        return UINavigatorMessages.pref_page_projects_settings_label_not_use_project_root;
+                                    }
+                                    final File file = path.toFile();
                                     if (file.isHidden() || file.getName().startsWith(".")) {
                                         return UINavigatorMessages.pref_page_projects_settings_label_not_use_hidden_folders;
                                     }
@@ -132,8 +137,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
                             if (dialog.open() == IDialogConstants.OK_ID) {
                                 final Object[] result = dialog.getResult();
                                 if (result.length == 1 && result[0] instanceof IPath) {
-                                    final IPath plainPath = ((IPath) result[0]).removeFirstSegments(1).removeTrailingSeparator();
-                                    item.setText(1, plainPath.toString());
+                                    item.setText(1, convertToString((IPath) result[0]));
                                 }
                             }
                         } else {
@@ -159,6 +163,11 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
         performDefaults();
 
         return composite;
+    }
+
+    @NotNull
+    private static String convertToString(@NotNull IPath path) {
+        return path.removeFirstSegments(1).removeTrailingSeparator().toString();
     }
 
     private void disposeOldEditor() {
