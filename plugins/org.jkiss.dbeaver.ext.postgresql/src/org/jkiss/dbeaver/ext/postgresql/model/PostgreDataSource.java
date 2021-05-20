@@ -67,6 +67,20 @@ import java.util.regex.Pattern;
 public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
+    private static final PostgrePrivilegeType[] SUPPORTED_PRIVILEGE_TYPES = new PostgrePrivilegeType[]{
+        PostgrePrivilegeType.SELECT,
+        PostgrePrivilegeType.INSERT,
+        PostgrePrivilegeType.UPDATE,
+        PostgrePrivilegeType.DELETE,
+        PostgrePrivilegeType.TRUNCATE,
+        PostgrePrivilegeType.REFERENCES,
+        PostgrePrivilegeType.TRIGGER,
+        PostgrePrivilegeType.CREATE,
+        PostgrePrivilegeType.CONNECT,
+        PostgrePrivilegeType.TEMPORARY,
+        PostgrePrivilegeType.EXECUTE,
+        PostgrePrivilegeType.USAGE
+    };
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
@@ -591,6 +605,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean supportsRoles() {
         return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities() && !getContainer().getNavigatorSettings().isHideFolders();
+    }
+
+    @NotNull
+    public PostgrePrivilegeType[] getSupportedPrivilegeTypes() {
+        return SUPPORTED_PRIVILEGE_TYPES;
     }
 
     @Override
