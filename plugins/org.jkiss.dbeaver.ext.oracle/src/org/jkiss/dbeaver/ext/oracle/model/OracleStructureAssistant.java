@@ -98,6 +98,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             OracleObjectType.TABLE,
             OracleObjectType.PACKAGE,
             OracleObjectType.PROCEDURE,
+            OracleObjectType.SYNONYM
             };
     }
 
