@@ -277,14 +277,14 @@ public final class DBStructUtils {
             DBSDataType dataType = findDataTypeByName(dataTypeProvider, typeName);
             if (dataType == null) {
                 SQLDialect sqlDialect = objectContainer.getDataSource().getSQLDialect();
-                if (sqlDialect.getDataTypesCase() == DBPIdentifierCase.UPPER) {
+                if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
                     // Try to find type in upper case. Most databases use it for data types
                     String typeNameUpper = typeName.toUpperCase(Locale.ENGLISH);
                     dataType = findDataTypeByName(dataTypeProvider, typeNameUpper);
                     if (dataType != null && !typeName.equals(typeNameUpper)) {
                         typeName = typeNameUpper;
                     }
-                } else if (sqlDialect.getDataTypesCase() == DBPIdentifierCase.LOWER) {
+                } else if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
                     // Let's try to find type in lower case
                     dataType = findDataTypeByName(dataTypeProvider, typeNameLower);
                     if (dataType != null && !typeName.equals(typeNameLower)) {

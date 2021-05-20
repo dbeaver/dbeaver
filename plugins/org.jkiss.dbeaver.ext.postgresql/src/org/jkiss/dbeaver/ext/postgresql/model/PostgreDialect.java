@@ -899,7 +899,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @NotNull
     @Override
-    public DBPIdentifierCase getDataTypesCase() {
+    public DBPIdentifierCase storesUnquotedCase() {
         return DBPIdentifierCase.LOWER;
     }
 }

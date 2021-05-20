@@ -300,7 +300,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public DBPIdentifierCase getDataTypesCase() {
+    public DBPIdentifierCase storesUnquotedCase() {
         return DBPIdentifierCase.LOWER;
     }
 }

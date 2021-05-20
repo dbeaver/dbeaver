@@ -99,7 +99,7 @@ public class VerticaSQLDialect extends GenericSQLDialect {
 
     @NotNull
     @Override
-    public DBPIdentifierCase getDataTypesCase() {
+    public DBPIdentifierCase storesUnquotedCase() {
         return DBPIdentifierCase.MIXED;
     }
 }

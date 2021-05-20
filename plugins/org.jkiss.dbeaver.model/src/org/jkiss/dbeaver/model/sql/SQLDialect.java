@@ -277,9 +277,6 @@ public interface SQLDialect {
     @NotNull
     DBPIdentifierCase storesQuotedCase();
 
-    @NotNull
-    DBPIdentifierCase getDataTypesCase();
-
     /**
      * Enables to call particular cast operator or function for special data types.
      * @param attribute   attribute data to help decide whether cast and how to cast
