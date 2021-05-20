@@ -522,7 +522,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
             case CMD_TOGGLE_ORDER: {
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (attr != null) {
-                    rsv.toggleSortOrder(attr, false, false);
+                    rsv.toggleSortOrder(attr, null);
                 }
                 break;
             }

@@ -54,6 +54,12 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String MENU_GROUP_EXPORT = "results_export";
     String MENU_GROUP_ADDITIONS = "results_additions";//IWorkbenchActionConstants.MB_ADDITIONS;
 
+    enum ColumnOrder {
+        ASC,
+        DESC,
+        NONE
+    }
+
     @NotNull
     IResultSetContainer getContainer();
 
@@ -101,7 +107,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     
     void showDistinctFilter(DBDAttributeBinding curAttribute);
 
-    void toggleSortOrder(DBDAttributeBinding columnElement, boolean forceAscending, boolean forceDescending);
+    void toggleSortOrder(@NotNull DBDAttributeBinding columnElement, @Nullable ColumnOrder forceOrder);
 
     boolean checkForChanges();
 

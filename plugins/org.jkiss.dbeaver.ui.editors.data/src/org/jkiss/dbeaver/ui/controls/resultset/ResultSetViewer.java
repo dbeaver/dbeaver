@@ -2037,19 +2037,18 @@ public class ResultSetViewer extends Viewer
     // Ordering
 
     @Override
-    public void toggleSortOrder(DBDAttributeBinding columnElement, boolean forceAscending, boolean forceDescending) {
+    public void toggleSortOrder(@NotNull DBDAttributeBinding columnElement, @Nullable ColumnOrder forceOrder) {
         DBDDataFilter dataFilter = getModel().getDataFilter();
-        if (forceAscending) {
+        if (forceOrder == ColumnOrder.ASC) {
             dataFilter.resetOrderBy();
         }
-        DBDAttributeBinding metaColumn = columnElement;
-        DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
+        DBDAttributeConstraint constraint = dataFilter.getConstraint(columnElement);
         assert constraint != null;
         ResultSetUtils.OrderingMode orderingMode = ResultSetUtils.getOrderingMode(this);
         if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
             orderingMode = ResultSetUtils.OrderingMode.SERVER_SIDE;
         }
-        if (constraint.getOrderPosition() == 0) {
+        if (constraint.getOrderPosition() == 0 && forceOrder != ColumnOrder.NONE) {
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
                     ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
@@ -2057,14 +2056,14 @@ public class ResultSetViewer extends Viewer
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
                     ConfirmationDialog.WARNING,
-                    metaColumn.getName()) != IDialogConstants.YES_ID)
+                    columnElement.getName()) != IDialogConstants.YES_ID)
                 {
                     return;
                 }
             }
             constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-            constraint.setOrderDescending(forceDescending);
-        } else if (!constraint.isOrderDescending()) {
+            constraint.setOrderDescending(forceOrder == ColumnOrder.DESC);
+        } else if (!constraint.isOrderDescending() && forceOrder != ColumnOrder.NONE) {
             constraint.setOrderDescending(true);
         } else {
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
@@ -3059,9 +3058,12 @@ public class ResultSetViewer extends Viewer
     {
         if (attribute != null) {
             filtersMenu.add(new Separator());
-            filtersMenu.add(new OrderByAttributeAction(attribute, true));
-            filtersMenu.add(new OrderByAttributeAction(attribute, false));
-            filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_ORDER));
+            filtersMenu.add(new OrderByAttributeAction(attribute, ColumnOrder.ASC));
+            filtersMenu.add(new OrderByAttributeAction(attribute, ColumnOrder.DESC));
+            DBDAttributeConstraint constraint = getModel().getDataFilter().getConstraint(attribute);
+            if (constraint != null && constraint.getOrderPosition() > 0) {
+                filtersMenu.add(new OrderByAttributeAction(attribute, ColumnOrder.NONE));
+            }
         }
     }
 
@@ -4406,24 +4408,34 @@ public class ResultSetViewer extends Viewer
 
     private class OrderByAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
-        private final boolean ascending;
+        private final ColumnOrder order;
 
-        OrderByAttributeAction(DBDAttributeBinding attribute, boolean ascending) {
-            super("Order by " + attribute.getName() + " " + (ascending ? "ASC" : "DESC"), AS_CHECK_BOX);
+        OrderByAttributeAction(DBDAttributeBinding attribute, ColumnOrder order) {
+            super(
+                order == ColumnOrder.NONE ?
+                    "Disable order by " + attribute.getName() :
+                    "Order by " + attribute.getName() + " " + order.name(), AS_CHECK_BOX);
             this.attribute = attribute;
-            this.ascending = ascending;
+            this.order = order;
         }
 
         @Override
         public boolean isChecked() {
+            if (order == ColumnOrder.NONE) {
+                return false;
+            }
             DBDDataFilter dataFilter = getModel().getDataFilter();
             DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
-            return constraint != null && constraint.getOrderPosition() > 0 && constraint.isOrderDescending() != ascending;
+            if (constraint == null || constraint.getOrderPosition() <= 0) {
+                return false;
+            }
+            boolean forceAsc = order == ColumnOrder.ASC;
+            return constraint.isOrderDescending() != forceAsc;
         }
 
         @Override
         public void run() {
-            toggleSortOrder(attribute, ascending, !ascending);
+            toggleSortOrder(attribute, order);
         }
     }
 
