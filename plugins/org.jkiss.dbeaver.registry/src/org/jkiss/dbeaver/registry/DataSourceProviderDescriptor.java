@@ -424,6 +424,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 log.error("Can't update folder type to " + changeFolderType);
             }
         } else {
+            if (CommonUtils.getBoolean(config.getAttribute("replaceChildren"))) {
+                baseItem.clearChildren();
+            }
+
             String afterPath = config.getAttribute(RegistryConstants.ATTR_AFTER);
             DBXTreeItem afterItem = null;
             if (afterPath != null) {
