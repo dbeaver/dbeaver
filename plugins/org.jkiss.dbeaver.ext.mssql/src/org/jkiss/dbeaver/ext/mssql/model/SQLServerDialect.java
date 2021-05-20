@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -295,5 +296,11 @@ public class SQLServerDialect extends JDBCSQLDialect {
         } else {
             return super.getSingleLineComments();
         }
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase getDataTypesCase() {
+        return DBPIdentifierCase.LOWER;
     }
 }
