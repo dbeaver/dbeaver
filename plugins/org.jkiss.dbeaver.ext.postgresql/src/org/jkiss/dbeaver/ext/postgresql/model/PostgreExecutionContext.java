@@ -47,6 +47,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     private final List<String> searchPath = new ArrayList<>();
     private List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
+    private boolean isolatedContext;
 
     public PostgreExecutionContext(@NotNull PostgreDatabase database, String purpose) {
         super(database, purpose);
@@ -60,7 +61,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @Nullable
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public PostgreExecutionContext getContextDefaults() {
         return this;
     }
 
@@ -87,12 +88,20 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
         try {
+            catalog.checkInstanceConnection(monitor);
+
             JDBCRemoteInstance oldInstance = getOwnerInstance();
             boolean changed = false;
             if (oldInstance != catalog) {
-                disconnect();
-                setOwnerInstance(catalog);
-                connect(monitor, null, null, null, false);
+                // Changing catalog means reconnect
+                // Change it only for isolated editor contexts
+                if (this.isIsolatedContext()) {
+                    disconnect();
+                    setOwnerInstance(catalog);
+                    connect(monitor, null, null, null, false);
+                } else {
+                    getDataSource().setActiveDatabase(catalog);
+                }
                 changed = true;
             }
             if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
@@ -257,5 +266,17 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
+    }
+
+    public boolean isIsolatedContext() {
+        return isolatedContext;
+    }
+
+    public void setIsolatedContext(boolean isolatedContext) {
+        this.isolatedContext = isolatedContext;
+    }
+
+    public boolean getIsolatedContext() {
+        return isolatedContext;
     }
 }

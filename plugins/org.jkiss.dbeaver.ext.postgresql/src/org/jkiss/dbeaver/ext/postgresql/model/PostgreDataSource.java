@@ -519,6 +519,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObjects();
     }
 
+    void setActiveDatabase(PostgreDatabase newDatabase) {
+        final PostgreDatabase oldDatabase = getDefaultInstance();
+        if (oldDatabase == newDatabase) {
+            return;
+        }
+
+        activeDatabaseName = newDatabase.getName();
+
+        // Notify UI
+        DBUtils.fireObjectSelect(oldDatabase, false);
+        DBUtils.fireObjectSelect(newDatabase, true);
+    }
+
     /**
      * Deprecated. Database change is not supported (as it is ambiguous)
      */
