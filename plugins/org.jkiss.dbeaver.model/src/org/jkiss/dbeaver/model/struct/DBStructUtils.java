@@ -275,6 +275,10 @@ public final class DBStructUtils {
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
         if (dataTypeProvider != null) {
             DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
+            if (dataType == null && typeName.contains("(")) {
+                // It seems this data type has modifiers. Try to find without modifiers
+                dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
+            }
             if (dataType == null && typeNameLower.equals("double")) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
                 if (dataType != null) {
