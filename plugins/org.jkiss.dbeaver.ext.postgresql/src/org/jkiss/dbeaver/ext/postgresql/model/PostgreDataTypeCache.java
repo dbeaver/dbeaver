@@ -48,6 +48,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
     PostgreDataTypeCache() {
         setListOrderComparator(DBUtils.nameComparator());
+        setCaseSensitive(false);
     }
 
     @Override
