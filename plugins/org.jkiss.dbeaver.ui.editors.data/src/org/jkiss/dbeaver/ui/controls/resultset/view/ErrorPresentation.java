@@ -29,7 +29,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.internal.part.StatusPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -62,7 +61,7 @@ public class ErrorPresentation extends AbstractPresentation {
     private final String sqlText;
     private final IStatus status;
     private Composite errorComposite;
-    private StatusPart statusPart;
+    private ErrorDetailsPart statusPart;
     private Composite sqlPanel;
     private StyledText textWidget;
     private Object editorPanel;
@@ -81,7 +80,7 @@ public class ErrorPresentation extends AbstractPresentation {
 
         errorComposite = UIUtils.createComposite(partDivider, 1);
         errorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        statusPart = new StatusPart(errorComposite, status);
+        statusPart = new ErrorDetailsPart(errorComposite, status);
 
         for (Control child : errorComposite.getChildren()) {
             if (child instanceof Text) {

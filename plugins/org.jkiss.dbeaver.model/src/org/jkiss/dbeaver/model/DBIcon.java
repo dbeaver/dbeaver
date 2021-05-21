@@ -150,6 +150,8 @@ public class DBIcon implements DBPImage
     public static final DBIcon JAR = new DBIcon("jar", "misc/jar.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LIBRARY = new DBIcon("library", "misc/library.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon STATUS_ERROR = new DBIcon("status_error", "status/error.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     private static Map<String, DBPImage> iconMap = new HashMap<>();
 
 
