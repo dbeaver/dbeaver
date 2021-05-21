@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -50,6 +51,8 @@ import java.util.Map;
  */
 public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase>
         implements DBEObjectRenamer<PostgreTableColumn>, DBPScriptObjectExt2 {
+
+    String OPTION_NON_STRUCT_CREATE_ACTION = "non.struct.create.action";
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(' ');
@@ -187,7 +190,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected final ColumnModifier<PostgreTableColumn> PostgreCommentModifier = (monitor, column, sql, command) -> {
         String comment = column.getDescription();
-        if (!CommonUtils.isEmpty(comment)) {
+        boolean createNonStructAction = command instanceof DBECommandWithOptions && ((DBECommandWithOptions) command).getOptions().containsKey(OPTION_NON_STRUCT_CREATE_ACTION); // Column already has comment in this action
+        if (!createNonStructAction && !CommonUtils.isEmpty(comment)) {
             sql.append(" -- ").append(CommonUtils.getSingleLineString(comment));
         }
     };
@@ -242,6 +246,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        options.put(OPTION_NON_STRUCT_CREATE_ACTION, true);
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject());
