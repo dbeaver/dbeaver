@@ -1310,7 +1310,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
         boolean altPressed = (state & SWT.ALT) == SWT.ALT;
-        controller.toggleSortOrder((DBDAttributeBinding) columnElement, ctrlPressed, altPressed);
+        controller.toggleSortOrder((DBDAttributeBinding) columnElement,
+            ctrlPressed ? IResultSetController.ColumnOrder.ASC :
+                (altPressed ? IResultSetController.ColumnOrder.DESC : null));
     }
     
 

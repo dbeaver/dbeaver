@@ -135,6 +135,13 @@
             category="org.eclipse.ui"
             class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
         <view
+            name="%view.errorLog.name"
+            icon="icons/error_view.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.internal.views.log.LogView"
+            id="org.eclipse.pde.runtime.LogView">
+        </view>
+        <view
             allowMultiple="true"
             category="org.eclipse.ui"
             class="org.eclipse.ui.views.properties.PropertySheet"

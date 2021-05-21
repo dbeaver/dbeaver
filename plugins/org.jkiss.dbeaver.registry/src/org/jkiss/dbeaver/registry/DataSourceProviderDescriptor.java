@@ -415,6 +415,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
 
+        if (CommonUtils.getBoolean(config.getAttribute("replaceChildren"))) {
+            baseItem.clearChildren();
+        }
+
         String changeFolderType = config.getAttribute("changeFolderType");
         if (changeFolderType != null) {
             DBXTreeNode parentNode = baseItem.getParent();

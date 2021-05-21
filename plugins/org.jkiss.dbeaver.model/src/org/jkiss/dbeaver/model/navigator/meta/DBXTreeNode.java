@@ -238,6 +238,10 @@ public abstract class DBXTreeNode
         return children;
     }
 
+    public void clearChildren() {
+        children.clear();
+    }
+
     protected boolean isVisible(DBNNode context)
     {
         try {
