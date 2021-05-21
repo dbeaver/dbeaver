@@ -536,41 +536,29 @@ public class PostgreUtils {
         return serverType;
     }
 
-    public static List<PostgrePrivilege> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePrivilegeOwner owner, @Nullable Object acl) throws DBException {
-        if (!(acl instanceof java.sql.Array)) {
-            if (acl == null) {
-                // Special case. Means ALL permissions are granted to table owner
-                PostgreRole objectOwner = owner.getOwner(monitor);
-                String granteeName = objectOwner == null ? null : objectOwner.getName();
-
-                List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
-                privileges.add(
-                        new PostgrePrivilegeGrant(
-                                granteeName,
-                                granteeName,
-                                owner.getDatabase().getName(),
-                                owner.getSchema().getName(),
-                                owner.getName(),
-                                PostgrePrivilegeType.ALL,
-                                false,
-                                false));
-                PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
-                return Collections.singletonList(permission);
+    public static String[] extractGranteesFromACL(@NotNull String[] acl) {
+        final List<String> grantees = new ArrayList<>();
+        for (String aclValue : acl) {
+            if (CommonUtils.isEmpty(aclValue)) {
+                continue;
             }
-            return Collections.emptyList();
+            int divPos = aclValue.indexOf('=');
+            if (divPos == -1) {
+                log.warn("Bad ACL item: " + aclValue);
+                continue;
+            }
+            String grantee = aclValue.substring(0, divPos);
+            if (grantee.isEmpty()) {
+                grantee = "public";
+            }
+            grantees.add(grantee);
         }
-        Object itemArray;
-        try {
-            itemArray = ((java.sql.Array) acl).getArray();
-        } catch (SQLException e) {
-            log.error(e);
-            return Collections.emptyList();
-        }
+        return grantees.toArray(new String[0]);
+    }
+
+    public static List<PostgrePrivilege> extractPermissionsFromACL(@NotNull PostgrePrivilegeOwner owner, @NotNull String[] acl) {
         List<PostgrePrivilege> permissions = new ArrayList<>();
-        int itemCount = Array.getLength(itemArray);
-        for (int i = 0; i < itemCount; i++) {
-            Object aclItem = Array.get(itemArray, i);
-            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem));
+        for (String aclValue : acl) {
             if (CommonUtils.isEmpty(aclValue)) {
                 continue;
             }
@@ -601,19 +589,58 @@ public class PostgreUtils {
                     k++;
                 }
                 privileges.add(new PostgrePrivilegeGrant(
-                        grantor, grantee,
-                        owner.getDatabase().getName(),
-                        owner.getSchema().getName(),
-                        owner.getName(),
-                        PostgrePrivilegeType.getByCode(pCode),
-                        withGrantOption,
-                        false
+                    grantor, grantee,
+                    owner.getDatabase().getName(),
+                    owner.getSchema().getName(),
+                    owner.getName(),
+                    PostgrePrivilegeType.getByCode(pCode),
+                    withGrantOption,
+                    false
                 ));
             }
             permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
         }
-
         return permissions;
+    }
+
+    public static List<PostgrePrivilege> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePrivilegeOwner owner, @Nullable Object acl) throws DBException {
+        if (!(acl instanceof java.sql.Array)) {
+            if (acl == null) {
+                // Special case. Means ALL permissions are granted to table owner
+                PostgreRole objectOwner = owner.getOwner(monitor);
+                String granteeName = objectOwner == null ? null : objectOwner.getName();
+
+                List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
+                privileges.add(
+                        new PostgrePrivilegeGrant(
+                                granteeName,
+                                granteeName,
+                                owner.getDatabase().getName(),
+                                owner.getSchema().getName(),
+                                owner.getName(),
+                                PostgrePrivilegeType.ALL,
+                                false,
+                                false));
+                PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
+                return Collections.singletonList(permission);
+            }
+            return Collections.emptyList();
+        }
+        Object itemArray;
+        try {
+            itemArray = ((java.sql.Array) acl).getArray();
+        } catch (SQLException e) {
+            log.error(e);
+            return Collections.emptyList();
+        }
+        int aclValuesCount = Array.getLength(itemArray);
+        String[] aclValues = new String[aclValuesCount];
+        for (int i = 0; i < aclValuesCount; i++) {
+            Object aclItem = Array.get(itemArray, i);
+            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem));
+            aclValues[i] = aclValue;
+        }
+        return extractPermissionsFromACL(owner, aclValues);
     }
 
     public static String getOptionsString(String[] options) {

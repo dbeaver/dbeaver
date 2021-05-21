@@ -51,20 +51,20 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
 
     private static final Log log = Log.getLog(PostgreRole.class);
 
-    private final PostgreDatabase database;
-    private long oid;
-    private String name;
-    private boolean superUser;
-    private boolean inherit;
-    private boolean createRole;
-    private boolean createDatabase;
-    private boolean canLogin;
-    private boolean replication;
-    private boolean bypassRls;
-    private int connLimit;
-    private String password;
-    private Date validUntil;
-    private boolean persisted;
+    protected final PostgreDatabase database;
+    protected long oid;
+    protected String name;
+    protected boolean superUser;
+    protected boolean inherit;
+    protected boolean createRole;
+    protected boolean createDatabase;
+    protected boolean canLogin;
+    protected boolean replication;
+    protected boolean bypassRls;
+    protected int connLimit;
+    protected String password;
+    protected Date validUntil;
+    protected boolean persisted;
     private MembersCache membersCache = new MembersCache(true);
     private MembersCache belongsCache = new MembersCache(false);
 
@@ -111,7 +111,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
         this.loadInfo(dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult) {
+    protected void loadInfo(ResultSet dbResult) {
         this.persisted = true;
 
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
@@ -315,7 +315,10 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
         addOptionToDDL(ddl, isBypassRls(), "BYPASSRLS");
         if (getConnLimit() > 0) {
             ddl.append(lineBreak);
-            ddl.append("\tCONNECTION LIMIT ").append(getClass());
+            ddl.append("\tCONNECTION LIMIT ").append(getConnLimit());
+        } else {
+            ddl.append(lineBreak);
+            ddl.append("\tCONNECTION LIMIT UNLIMITED");
         }
         if (getValidUntil() != null) {
             ddl.append(lineBreak);
@@ -438,7 +441,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
         return null;
     }
 
-    private static Collection<PostgrePrivilege> getRolePermissions(PostgreRole role, PostgrePrivilegeGrant.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
+    protected static Collection<PostgrePrivilege> getRolePermissions(PostgreRole role, PostgrePrivilegeGrant.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
             Map<String, List<PostgrePrivilegeGrant>> privs = new LinkedHashMap<>();
             while (dbResult.next()) {

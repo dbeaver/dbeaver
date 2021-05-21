@@ -151,7 +151,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     @Override
     public boolean supportsRoles() {
-        return false;
+        return true;
     }
 
     @Override

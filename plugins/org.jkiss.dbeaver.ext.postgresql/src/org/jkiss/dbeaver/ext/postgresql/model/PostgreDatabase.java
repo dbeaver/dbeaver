@@ -85,7 +85,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private long dbTotalSize = -1;
     private Boolean supportTypColumn;
 
-    public final RoleCache roleCache = new RoleCache();
+    public final PostgreDatabaseJDBCObjectCache<? extends PostgreRole> roleCache = createRoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
     public final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
     public final ForeignServerCache foreignServerCache = new ForeignServerCache();
@@ -425,7 +425,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     // Infos
 
     @Association
-    public Collection<PostgreRole> getAuthIds(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends PostgreRole> getAuthIds(DBRProgressMonitor monitor) throws DBException {
         if (!getDataSource().supportsRoles()) {
             return Collections.emptyList();
         }
@@ -769,7 +769,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return this;
     }
 
-    public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
         if (!getDataSource().getServerType().supportsRoles()) {
             return Collections.emptyList();
         }
@@ -915,6 +915,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     /////////////////////////////////////////////////////////////////////////////////////
     // Caches
+
+    @NotNull
+    protected PostgreDatabaseJDBCObjectCache<? extends PostgreRole> createRoleCache() {
+        return new RoleCache();
+    }
 
     protected static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
         boolean handlePermissionDeniedError(Exception e) {
@@ -1216,7 +1221,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         public Object[] getPossibleValues(PostgreDatabase object)
         {
             try {
-                Collection<PostgreRole> roles = object.getAuthIds(new VoidProgressMonitor());
+                Collection<? extends PostgreRole> roles = object.getAuthIds(new VoidProgressMonitor());
                 return roles.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
