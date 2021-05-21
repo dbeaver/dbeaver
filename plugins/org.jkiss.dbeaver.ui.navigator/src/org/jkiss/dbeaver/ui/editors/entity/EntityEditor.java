@@ -331,10 +331,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options)
-    {
+    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options) {
         monitor.beginTask("Save entity", 1);
-        Throwable error = null;
+        Throwable[] error = {null};
         final DBECommandContext commandContext = getCommandContext();
         if (commandContext == null) {
             log.warn("Null command context");
@@ -364,7 +363,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 }
             });
         } catch (DBException e) {
-            error = e;
+            error[0] = e;
         }
         if (getDatabaseObject() instanceof DBPStatefulObject) {
             try {
@@ -375,34 +374,32 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
 
-        if (error == null) {
+        if (error[0] == null) {
             // Refresh underlying node
             // It'll refresh database object and all it's descendants
             // So we'll get actual data from database
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
-            try {
-                boolean doRefresh = isNewObject;
-                UIUtils.runInProgressService(monitor1 -> {
+            boolean doRefresh = isNewObject;
+            new AbstractJob("Database node refresh") { //$NON-NLS-1$
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
                     try {
-                        treeNode.refreshNode(monitor1,
-                            doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
+                        treeNode.refreshNode(monitor, doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+                        error[0] = e;
+                        return GeneralUtils.makeExceptionStatus(e);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                error = e.getTargetException();
-            } catch (InterruptedException e) {
-                // ok
-            }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
         }
         monitor.done();
 
-        if (error == null) {
+        if (error[0] == null) {
             return true;
         } else {
             // Try to handle error in nested editors
-            final Throwable vError = error;
+            final Throwable vError = error[0];
             UIUtils.syncExec(() -> {
                 final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
                 if (errorVisualizer != null) {
