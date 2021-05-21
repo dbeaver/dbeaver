@@ -333,7 +333,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options) {
         monitor.beginTask("Save entity", 1);
-        Throwable[] error = {null};
+        Throwable error = null;
         final DBECommandContext commandContext = getCommandContext();
         if (commandContext == null) {
             log.warn("Null command context");
@@ -363,7 +363,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 }
             });
         } catch (DBException e) {
-            error[0] = e;
+            error = e;
         }
         if (getDatabaseObject() instanceof DBPStatefulObject) {
             try {
@@ -374,7 +374,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
 
-        if (error[0] == null) {
+        if (error == null) {
             // Refresh underlying node
             // It'll refresh database object and all it's descendants
             // So we'll get actual data from database
@@ -386,7 +386,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     try {
                         treeNode.refreshNode(monitor, doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
-                        error[0] = e;
                         return GeneralUtils.makeExceptionStatus(e);
                     }
                     return Status.OK_STATUS;
@@ -395,11 +394,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         monitor.done();
 
-        if (error[0] == null) {
+        if (error == null) {
             return true;
         } else {
             // Try to handle error in nested editors
-            final Throwable vError = error[0];
+            final Throwable vError = error;
             UIUtils.syncExec(() -> {
                 final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
                 if (errorVisualizer != null) {
