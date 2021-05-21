@@ -46,8 +46,6 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
 
     private final OracleDataSource dataSource;
 
-    public static final boolean SEARCH_IN_SYNONYMS = false;
-
     public OracleStructureAssistant(OracleDataSource dataSource)
     {
         this.dataSource = dataSource;
@@ -241,7 +239,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             .append(" WHERE ").append("OBJECT_TYPE IN (").append(objectTypeClause).append(") AND ")
             .append(!params.isCaseSensitive() ? "UPPER(OBJECT_NAME)" : "OBJECT_NAME").append(" LIKE ? ")
             .append(schema == null ? "" : " AND OWNER=?");
-        if (SEARCH_IN_SYNONYMS) {
+        if (searchInSynonyms()) {
             query.append("UNION ALL\nSELECT ").append(OracleUtils.getSysCatalogHint(dataSource)).append(" O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n")
                 .append("FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS")).append(" S,").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS")).append(" O\n")
                 .append("WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.OBJECT_TYPE<>'JAVA CLASS' AND ").append(!params.isCaseSensitive() ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME").append("  LIKE ?");
@@ -255,7 +253,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }
-            if (SEARCH_IN_SYNONYMS) {
+            if (searchInSynonyms()) {
                 dbStat.setString(schema != null ? 3 : 2, objectNameMask);
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -355,5 +353,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             }
         }
         return true;
+    }
+
+    private boolean searchInSynonyms() {
+        String prop = dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
+        return CommonUtils.getBoolean(prop);
     }
 }
