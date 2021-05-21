@@ -120,7 +120,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         createAuthPanel(mainGroup, 1);
 
         if (isUserRoleSupported() || serverType.supportsClient()) {
-            Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             if (isUserRoleSupported()) {
                 roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
