@@ -331,8 +331,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options)
-    {
+    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options) {
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
         final DBECommandContext commandContext = getCommandContext();
@@ -380,21 +379,18 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // It'll refresh database object and all it's descendants
             // So we'll get actual data from database
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
-            try {
-                boolean doRefresh = isNewObject;
-                UIUtils.runInProgressService(monitor1 -> {
+            boolean doRefresh = isNewObject;
+            new AbstractJob("Database node refresh") { //$NON-NLS-1$
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
                     try {
-                        treeNode.refreshNode(monitor1,
-                            doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
+                        treeNode.refreshNode(monitor, doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+                        return GeneralUtils.makeExceptionStatus(e);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                error = e.getTargetException();
-            } catch (InterruptedException e) {
-                // ok
-            }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
         }
         monitor.done();
 
