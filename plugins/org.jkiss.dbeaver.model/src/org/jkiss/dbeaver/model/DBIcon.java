@@ -152,6 +152,8 @@ public class DBIcon implements DBPImage
 
     public static final DBIcon STATUS_ERROR = new DBIcon("status_error", "status/error.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    private static final boolean VALIDATE_ICON_FILE = false;
+
     private static Map<String, DBPImage> iconMap = new HashMap<>();
 
 
@@ -177,18 +179,20 @@ public class DBIcon implements DBPImage
                 if (!icon.path.startsWith("platform:")) {
                     icon.path = "platform:/plugin/" + iconBundle.getSymbolicName() + "/icons/" + icon.path;
                 }
-                URL fileURL = FileLocator.toFileURL(new URL(icon.path));
-                try {
-                    URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
-                    File file = new File(filePath);
-                    if (!file.exists()) {
-                        log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
-                        continue;
+                if (VALIDATE_ICON_FILE) {
+                    URL fileURL = FileLocator.toFileURL(new URL(icon.path));
+                    try {
+                        URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
+                        File file = new File(filePath);
+                        if (!file.exists()) {
+                            log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
+                            continue;
+                        }
+                    } catch (URISyntaxException e) {
+                        throw new IOException("Bad local file path: " + fileURL, e);
                     }
-                    DBIcon.iconMap.put(icon.getToken(), icon);
-                } catch (URISyntaxException e) {
-                    throw new IOException("Bad local file path: " + fileURL, e);
                 }
+                DBIcon.iconMap.put(icon.getToken(), icon);
             } catch (Exception e) {
                 log.error(e);
             }
