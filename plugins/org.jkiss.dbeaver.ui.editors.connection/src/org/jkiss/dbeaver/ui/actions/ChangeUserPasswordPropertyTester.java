@@ -31,11 +31,10 @@ public class ChangeUserPasswordPropertyTester extends PropertyTester {
         }
 
         if (property.equals("canChangePassword")) {
-            DBNDataSource dataSource = (DBNDataSource) element;
-            DBPDataSource dbpDataSource = dataSource.getDataSourceContainer().getDataSource();
-            if (dbpDataSource instanceof IAdaptable) {
-                DBAUserChangePassword changePassword = ((IAdaptable) dbpDataSource).getAdapter(DBAUserChangePassword.class);
-                return changePassword != null;
+            DBNDataSource dsNode = (DBNDataSource) element;
+            DBPDataSource dataSource = dsNode.getDataSourceContainer().getDataSource();
+            if (dataSource instanceof IAdaptable) {
+                return ((IAdaptable) dataSource).getAdapter(DBAUserChangePassword.class) != null;
             }
         }
         return false;
