@@ -133,9 +133,9 @@ public class ErrorDetailsPart {
 		case IStatus.ERROR:
 			return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
 		case IStatus.WARNING:
-			return d.getSystemImage(SWT.ICON_WARNING);
+			return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
 		default:
-			return d.getSystemImage(SWT.ICON_INFORMATION);
+			return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
 		}
 	}
 

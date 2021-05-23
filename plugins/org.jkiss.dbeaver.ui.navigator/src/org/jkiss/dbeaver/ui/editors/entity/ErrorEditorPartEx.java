@@ -123,9 +123,15 @@ public class ErrorEditorPartEx extends EditorPart {
         imageLabel.setBackground(bgColor);
         Image image;
         switch (error.getSeverity()) {
-            case IStatus.ERROR: image = DBeaverIcons.getImage(DBIcon.STATUS_ERROR); break;
-            case IStatus.WARNING: image = d.getSystemImage(SWT.ICON_WARNING); break;
-            default: image = d.getSystemImage(SWT.ICON_INFORMATION); break;
+            case IStatus.ERROR:
+                image = DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+                break;
+            case IStatus.WARNING:
+                image = DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
+                break;
+            default:
+                image = DBeaverIcons.getImage(DBIcon.STATUS_INFO);
+                break;
         }
 
         image.setBackground(bgColor);
