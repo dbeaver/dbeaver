@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -53,6 +55,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useOptimizerHint;
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
+    private Button searchInSynonyms;
 
     public OracleConnectionExtraPage()
     {
@@ -104,18 +107,6 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_content, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_hide_empty_schemas, false);
-            hideEmptySchemasCheckbox.setToolTipText(
-            		OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
-
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_description, false, 1);
-            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_description, false, 1);
-            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
-        }
-
-        {
             final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             useRuleHint = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
@@ -128,6 +119,30 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             useAlternativeTableMetadataQuery = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query, false);
             useAlternativeTableMetadataQuery.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query_description);
+
+            searchInSynonyms = UIUtils.createCheckbox(
+                contentGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms,
+                false
+            );
+            searchInSynonyms.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip);
+        }
+
+        {
+            final Group contentGroup = UIUtils.createControlGroup(
+                cfgGroup,
+                OracleUIMessages.dialog_controlgroup_content,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+
+            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_hide_empty_schemas, false);
+            hideEmptySchemasCheckbox.setToolTipText(OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
+
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_description, false, 1);
+            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_description, false, 1);
+            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
         setControl(cfgGroup);
@@ -147,6 +162,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
+        DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
@@ -174,10 +190,27 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
         useDBAViewsCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS), false));
         useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
-        useSimpleConstraints.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS), false));
-        useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
-        useOptimizerHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER), false));
-        useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY), false));
+
+        useSimpleConstraints.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS),
+            globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS)
+        ));
+        useRuleHint.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_USE_RULE_HINT),
+            globalPreferences.getBoolean(OracleConstants.PROP_USE_RULE_HINT)
+        ));
+        useOptimizerHint.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER),
+            globalPreferences.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER)
+        ));
+        useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY),
+            globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
+        ));
+        searchInSynonyms.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS),
+            globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
+        ));
     }
 
     @Override
@@ -217,9 +250,6 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 OracleConstants.PROP_METADATA_USE_SYS_SCHEMA,
                 String.valueOf(useSysSchemaCheckbox.getSelection()));
             providerProperties.put(
-                    OracleConstants.PROP_METADATA_USE_SYS_SCHEMA,
-                    String.valueOf(useSysSchemaCheckbox.getSelection()));
-            providerProperties.put(
                     OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS,
                     String.valueOf(useSimpleConstraints.getSelection()));
 
@@ -232,7 +262,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
-
+            providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, String.valueOf(searchInSynonyms.getSelection()));
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }
