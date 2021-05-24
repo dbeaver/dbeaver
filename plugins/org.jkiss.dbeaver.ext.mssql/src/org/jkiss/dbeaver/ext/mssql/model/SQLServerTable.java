@@ -176,7 +176,9 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
 
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
-        return OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option);
+        return OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option)
+            || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)
+            || OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }
 
     @Override
