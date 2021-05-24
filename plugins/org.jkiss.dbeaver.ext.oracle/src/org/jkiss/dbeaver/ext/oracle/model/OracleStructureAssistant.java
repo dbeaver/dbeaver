@@ -356,7 +356,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
     }
 
     private boolean searchInSynonyms() {
-        String prop = dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
-        return CommonUtils.getBoolean(prop);
+        String property = dataSource.getContainer().getConnectionConfiguration().getProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
+        return CommonUtils.getBoolean(property);
     }
 }
