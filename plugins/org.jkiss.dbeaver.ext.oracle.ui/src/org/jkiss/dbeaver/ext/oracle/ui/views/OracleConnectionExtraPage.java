@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -160,6 +162,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
+        DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
@@ -187,11 +190,27 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
         useDBAViewsCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS), false));
         useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
-        useSimpleConstraints.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS), false));
-        useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
-        useOptimizerHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER), false));
-        useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY), false));
-        searchInSynonyms.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS), false));
+
+        useSimpleConstraints.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS),
+            globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS)
+        ));
+        useRuleHint.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_USE_RULE_HINT),
+            globalPreferences.getBoolean(OracleConstants.PROP_USE_RULE_HINT)
+        ));
+        useOptimizerHint.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER),
+            globalPreferences.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER)
+        ));
+        useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY),
+            globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
+        ));
+        searchInSynonyms.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS),
+            globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
+        ));
     }
 
     @Override
