@@ -12,7 +12,7 @@
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.core.driver.manager" name="%command.org.jkiss.dbeaver.core.driver.manager.name" description="%command.org.jkiss.dbeaver.core.driver.manager.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.connection.changeCurrentPassword" name="Change user password" description="Security" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.connection.changeCurrentPassword" name="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.name" description="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -38,7 +38,7 @@
     <extension point="org.eclipse.ui.menus">
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-            <menu label="Security">
+            <menu label="%command.org.jkiss.dbeaver.connection.security.name">
                 <command commandId="org.jkiss.dbeaver.connection.changeCurrentPassword">
                     <visibleWhen checkEnabled="true"/>
                 </command>

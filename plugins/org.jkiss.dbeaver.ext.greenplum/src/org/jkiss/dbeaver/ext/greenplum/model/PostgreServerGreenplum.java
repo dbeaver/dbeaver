@@ -134,4 +134,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return true;
     }
 
+    @Override
+    public boolean supportsAlterUserChangePassword() {
+        return true;
+    }
+
 }
