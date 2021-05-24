@@ -35,9 +35,9 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
  * Connection test results dialog
  */
 public class ConnectionTestDialog extends BaseDialog {
-    private String serverVersion;
-    private String clientVersion;
-    private long elapsedTime;
+    private final String serverVersion;
+    private final String clientVersion;
+    private final long elapsedTime;
 
     public ConnectionTestDialog(Shell parentShell, String serverVersion, String clientVersion, long elapsedTime) {
         super(parentShell, "Connection Test", DBIcon.TREE_DATABASE);
