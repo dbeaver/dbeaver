@@ -84,8 +84,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             showNonDefault.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    showTemplates.setEnabled(showNonDefault.getSelection());
-                    showUnavailable.setEnabled(showNonDefault.getSelection());
+                    setCheckboxesState();
                 }
             });
             showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
@@ -125,6 +124,16 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         loadSettings();
     }
 
+    private void setCheckboxesState() {
+        boolean enable = showNonDefault.getSelection();
+        if (!enable) {
+            showUnavailable.setSelection(false);
+            showTemplates.setSelection(false);
+        }
+        showUnavailable.setEnabled(enable);
+        showTemplates.setEnabled(enable);
+    }
+
     @Override
     public boolean isComplete()
     {
@@ -145,11 +154,10 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         showTemplates.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)));
-        showTemplates.setEnabled(showNonDefault.getSelection());
         showUnavailable.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
-        showUnavailable.setEnabled(showNonDefault.getSelection());
+        setCheckboxesState();
         showDatabaseStatistics.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS),
                 globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS)));
