@@ -337,7 +337,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+    public String getTypeCastClause(DBSTypedObject attribute, String expression) {
         return expression;
     }
 
@@ -462,7 +462,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
+    public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
         if (value instanceof UUID) {
             return '\'' + escapeString(strValue) + '\'';
         }
