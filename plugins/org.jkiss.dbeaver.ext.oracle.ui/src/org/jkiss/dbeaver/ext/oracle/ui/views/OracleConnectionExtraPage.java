@@ -105,17 +105,6 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_content, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_hide_empty_schemas, false);
-            hideEmptySchemasCheckbox.setToolTipText(OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
-
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_description, false, 1);
-            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_description, false, 1);
-            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
-        }
-
-        {
             final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             useRuleHint = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
@@ -134,6 +123,24 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms,
                 false
             );
+            searchInSynonyms.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip);
+        }
+
+        {
+            final Group contentGroup = UIUtils.createControlGroup(
+                cfgGroup,
+                OracleUIMessages.dialog_controlgroup_content,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+
+            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_hide_empty_schemas, false);
+            hideEmptySchemasCheckbox.setToolTipText(OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
+
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_description, false, 1);
+            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_description, false, 1);
+            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
         setControl(cfgGroup);
