@@ -21,54 +21,74 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObject, DBPRefreshableObject, DBPScriptObject {
+public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObject, DBPRefreshableObject, DBPScriptObject, DBPNamedObject2 {
 
     private static final Log log = Log.getLog(SQLServerExtendedProperty.class);
 
-    private final SQLServerTableBase table;
-    private final SQLServerObjectClass clazz;
-    private final long majorId;
-    private final long minorId;
-    private final String name;
-    private final Object value;
-    private final SQLServerDataType type;
+    private final SQLServerExtendedPropertyOwner owner;
+    private String name;
+    private String value;
+    private SQLServerDataType type;
     private final boolean persisted;
 
-    public SQLServerExtendedProperty(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableBase table, @NotNull ResultSet dbResult) throws DBException {
-        this.table = table;
-        this.clazz = SQLServerObjectClass.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "class_desc"));
-        this.majorId = JDBCUtils.safeGetLong(dbResult, "major_id");
-        this.minorId = JDBCUtils.safeGetLong(dbResult, "minor_id");
+    public SQLServerExtendedProperty(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerExtendedPropertyOwner owner, @NotNull ResultSet dbResult) throws DBException {
+        final SQLServerObjectClass objectClass = CommonUtils.valueOf(SQLServerObjectClass.class, JDBCUtils.safeGetStringTrimmed(dbResult, "class_desc"));
+        final long majorId = JDBCUtils.safeGetLong(dbResult, "major_id");
+        final long minorId = JDBCUtils.safeGetLong(dbResult, "minor_id");
+
+        if (objectClass != owner.getExtendedPropertyObjectClass() || majorId != owner.getMajorObjectId() || minorId != owner.getMinorObjectId()) {
+            throw new DBException("Extended property parent mismatch");
+        }
+
+        this.owner = owner;
         this.name = JDBCUtils.safeGetString(dbResult, "name");
-        this.value = JDBCUtils.safeGetObject(dbResult, "value");
+        this.value = JDBCUtils.safeGetString(dbResult, "value");
         this.persisted = true;
 
-        SQLServerDataType type = table.getDatabase().getDataTypeByUserTypeId(monitor, JDBCUtils.safeGetInt(dbResult, "value_type"));
+        SQLServerDataType type = owner.getDatabase().getDataTypeByUserTypeId(monitor, JDBCUtils.safeGetInt(dbResult, "value_type"));
         if (type == null) {
             type = getDataSource().getLocalDataType(SQLServerConstants.TYPE_NVARCHAR);
         }
         this.type = type;
     }
 
+    public SQLServerExtendedProperty(@NotNull SQLServerExtendedPropertyOwner owner, @NotNull SQLServerDataType type, @NotNull String name, @NotNull String value) {
+        this.owner = owner;
+        this.name = name;
+        this.value = value;
+        this.type = type;
+        this.persisted = false;
+    }
+
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Nullable
@@ -79,56 +99,70 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
 
     @NotNull
     @Property(order = 2)
-    public String getClazz() {
-        return clazz.getClassName();
+    public SQLServerObjectClass getObjectClass() {
+        return owner.getExtendedPropertyObjectClass();
     }
 
     @Property(order = 3)
     public long getMajorId() {
-        return majorId;
+        return owner.getMajorObjectId();
     }
 
     @NotNull
     @Property(viewable = true, order = 4)
-    public SQLServerObject getMajorIdObject() {
-        return table;
+    public SQLServerObject getMajorObject() {
+        return owner;
     }
 
     @Property(order = 5)
     public long getMinorId() {
-        return minorId;
+        return owner.getMinorObjectId();
     }
 
     @Nullable
     @Property(viewable = true, order = 6)
-    public SQLServerObject getMinorIdObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (clazz == SQLServerObjectClass.OBJECT_OR_COLUMN) {
-            return minorId > 0 ? table.getAttribute(monitor, minorId) : table;
+    public SQLServerObject getMinorObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (getObjectClass() == SQLServerObjectClass.OBJECT_OR_COLUMN && owner instanceof SQLServerTableBase) {
+            return getMinorId() > 0 ? ((SQLServerTableBase) owner).getAttribute(monitor, getMinorId()) : owner;
         }
         return null;
     }
 
     @Nullable
-    @Property(viewable = true, order = 7)
-    public Object getValue() {
-        return value;
+    @Property(viewable = true, editable = true, updatable = true, order = 7)
+    public String getValue() {
+        return CommonUtils.toString(value, null);
+    }
+
+    public void setValue(@Nullable String value) {
+        this.value = value;
+    }
+
+    @NotNull
+    @Property(viewable = true, editable = true, updatable = true, order = 8, listProvider = DataTypeListProvider.class)
+    public SQLServerDataType getValueType() {
+        return type;
+    }
+
+    public void setValueType(@NotNull SQLServerDataType type) {
+        this.type = type;
     }
 
     @NotNull
     @Override
     public SQLServerDataSource getDataSource() {
-        return table.getDataSource();
+        return owner.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBSObject getParentObject() {
-        return table;
+    public SQLServerExtendedPropertyOwner getParentObject() {
+        return owner;
     }
 
     @Override
     public long getObjectId() {
-        return minorId;
+        return getMinorId();
     }
 
     @Override
@@ -139,69 +173,97 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
     @NotNull
     @Override
     public String getUniqueName() {
-        return name + ':' + majorId + ':' + minorId;
+        return name + ':' + getMajorId() + ':' + getMinorId();
     }
 
     @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return table.getExtendedPropertyCache().refreshObject(monitor, table, this);
+        return owner.getExtendedPropertyCache().refreshObject(monitor, owner, this);
+    }
+
+    @Nullable
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, boolean update, boolean delete) throws DBException {
+        if (update && delete) {
+            throw new DBException("Can't get object definition text for both 'update' and 'delete'");
+        }
+
+        final Pair<String, SQLServerObject> level0 = owner.getExtendedPropertyObject(monitor, 0);
+        final Pair<String, SQLServerObject> level1 = owner.getExtendedPropertyObject(monitor, 1);
+        final Pair<String, SQLServerObject> level2 = owner.getExtendedPropertyObject(monitor, 2);
+
+        if (level0 == null || (level1 == null && level2 == null)) {
+            log.debug("Can't get definition for extended property of class '" + getObjectClass().getClassName() + "'");
+            return null;
+        }
+
+        final SQLDialect dialect = SQLUtils.getDialectFromObject(this);
+        final StringBuilder ddl = new StringBuilder("EXEC ");
+
+        if (update) {
+            ddl.append("sp_updateextendedproperty");
+        } else if (delete) {
+            ddl.append("sp_dropextendedproperty");
+        } else {
+            ddl.append("sp_addextendedproperty");
+        }
+
+        ddl.append(" @name=").append(dialect.getQuotedString(name));
+
+        if (!delete) {
+            ddl.append(", @value=").append(SQLUtils.convertValueToSQL(getDataSource(), type, value));
+        }
+
+        appendLevelDefinitionText(ddl, dialect, level0, 0);
+
+        if (level1 != null) {
+            appendLevelDefinitionText(ddl, dialect, level1, 1);
+        }
+
+        if (level2 != null) {
+            appendLevelDefinitionText(ddl, dialect, level2, 2);
+        }
+
+        return ddl.toString();
     }
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        final SQLDialect dialect = SQLUtils.getDialectFromObject(this);
-
-        final Pair<String, SQLServerObject> level0 = getLevel1Object();
-        final Pair<String, SQLServerObject> level1 = getLevel2Object();
-        final Pair<String, SQLServerObject> level2 = getLevel3Object(monitor);
-
-        if (level0 == null || (level1 == null && level2 == null)) {
-            log.debug("Can't get definition for extended property of class '" + clazz.getClassName() + "'");
-            return null;
-        }
-
-        final StringBuilder sql = new StringBuilder()
-            .append("EXEC sp_addextendedproperty")
-            .append(" @name=").append(dialect.getQuotedString(name))
-            .append(", @value=").append(SQLUtils.convertValueToSQL(getDataSource(), type, value))
-            .append(", @level0type=").append(dialect.getQuotedString(level0.getFirst()))
-            .append(", @level0name=").append(dialect.getQuotedString(level0.getSecond().getName()));
-
-        if (level1 != null) {
-            sql.append(", @level1type=").append(dialect.getQuotedString(level1.getFirst()))
-                .append(", @level1name=").append(dialect.getQuotedString(level1.getSecond().getName()));
-        }
-
-        if (level2 != null) {
-            sql.append(", @level2type=").append(dialect.getQuotedString(level2.getFirst()))
-                .append(", @level2name=").append(dialect.getQuotedString(level2.getSecond().getName()));
-        }
-
-        return sql.toString();
+        return getObjectDefinitionText(monitor, false, false);
     }
 
-    @Nullable
-    private Pair<String, SQLServerObject> getLevel1Object() {
-        if (clazz == SQLServerObjectClass.OBJECT_OR_COLUMN) {
-            return new Pair<>("Schema", table.getSchema());
-        }
-        return null;
+    private static void appendLevelDefinitionText(@NotNull StringBuilder ddl, @NotNull SQLDialect dialect, @NotNull Pair<String, SQLServerObject> level, int index) {
+        ddl.append(", @level").append(index).append("type=").append(dialect.getQuotedString(level.getFirst()));
+        ddl.append(", @level").append(index).append("name=").append(dialect.getQuotedString(level.getSecond().getName()));
     }
 
-    @Nullable
-    private Pair<String, SQLServerObject> getLevel2Object() {
-        if (clazz == SQLServerObjectClass.OBJECT_OR_COLUMN) {
-            return new Pair<>("Table", table);
-        }
-        return null;
-    }
+    public static class DataTypeListProvider implements IPropertyValueListProvider<SQLServerExtendedProperty> {
+        private static final Set<String> RESTRICTED_TYPE_NAMES;
 
-    @Nullable
-    private Pair<String, SQLServerObject> getLevel3Object(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (clazz == SQLServerObjectClass.OBJECT_OR_COLUMN && minorId > 0) {
-            return new Pair<>("Column", table.getAttribute(monitor, minorId));
+        static {
+            // https://docs.microsoft.com/en-us/sql/t-sql/data-types/sql-variant-transact-sql#restrictions
+            RESTRICTED_TYPE_NAMES = new HashSet<>();
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_DATETIMEOFFSET);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_GEOGRAPHY);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_GEOMETRY);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_HIERARCHYID);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_IMAGE);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_NTEXT);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_TEXT);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_SQL_VARIANT);
+            RESTRICTED_TYPE_NAMES.add(SQLServerConstants.TYPE_XML);
         }
-        return null;
+
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(SQLServerExtendedProperty object) {
+            return object.getDataSource().getLocalDataTypes().stream()
+                .filter(type -> !RESTRICTED_TYPE_NAMES.contains(type.getName()))
+                .toArray();
+        }
     }
 }

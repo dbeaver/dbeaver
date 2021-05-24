@@ -26,14 +26,11 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -66,20 +63,20 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
                         " '" + (table.isView() ? "view" : "table") + "', " + SQLUtils.quoteString(table, table.getName())));
         }
 
-        final Collection<SQLServerExtendedProperty> extendedProperties = table.getExtendedProperties(monitor);
-        if (!extendedProperties.isEmpty()) {
-            actionList.add(new SQLDatabasePersistActionComment(
-                table.getDataSource(),
-                "Add extended properties"
-            ));
-
-            for (SQLServerExtendedProperty extendedProperty : extendedProperties) {
-                actionList.add(new SQLDatabasePersistAction(
-                    "Add extended property",
-                    extendedProperty.getObjectDefinitionText(monitor, Collections.emptyMap())
-                ));
-            }
-        }
+//        final Collection<SQLServerExtendedProperty> extendedProperties = table.getExtendedProperties(monitor);
+//        if (!extendedProperties.isEmpty()) {
+//            actionList.add(new SQLDatabasePersistActionComment(
+//                table.getDataSource(),
+//                "Add extended properties"
+//            ));
+//
+//            for (SQLServerExtendedProperty extendedProperty : extendedProperties) {
+//                actionList.add(new SQLDatabasePersistAction(
+//                    "Add extended property",
+//                    extendedProperty.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS)
+//                ));
+//            }
+//        }
     }
 
     @Override
