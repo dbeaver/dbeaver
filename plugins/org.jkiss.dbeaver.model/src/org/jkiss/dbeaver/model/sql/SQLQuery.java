@@ -134,10 +134,19 @@ public class SQLQuery implements SQLScriptElement {
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
                     PlainSelect plainSelect = (PlainSelect) selectBody;
-                    if (plainSelect.getFromItem() instanceof Table &&
-                        CommonUtils.isEmpty(plainSelect.getJoins()) &&
-                        (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
-                        CommonUtils.isEmpty(plainSelect.getIntoTables()))
+                    FromItem fromItem = plainSelect.getFromItem();
+
+                    if (fromItem instanceof SubSelect &&
+                        isPotentiallySingleSourceSelect(plainSelect) &&
+                        ((SubSelect) fromItem).getSelectBody() instanceof PlainSelect &&
+                        isPotentiallySingleSourceSelect((PlainSelect) ((SubSelect) fromItem).getSelectBody()))
+                    {
+                        // Real select is in sub-select
+                        plainSelect = (PlainSelect) ((SubSelect) fromItem).getSelectBody();
+                        fromItem = plainSelect.getFromItem();
+                    }
+                    if (fromItem instanceof Table &&
+                        isPotentiallySingleSourceSelect(plainSelect))
                     {
                         boolean hasSubSelects = false;
                         for (SelectItem si : plainSelect.getSelectItems()) {
@@ -147,7 +156,7 @@ public class SQLQuery implements SQLScriptElement {
                             }
                         }
                         if (!hasSubSelects) {
-                            fillSingleSource((Table) plainSelect.getFromItem());
+                            fillSingleSource((Table) fromItem);
                         }
                     }
                     // Extract select items info
@@ -194,6 +203,12 @@ public class SQLQuery implements SQLScriptElement {
             this.parseError = e;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
+    }
+
+    private boolean isPotentiallySingleSourceSelect(PlainSelect plainSelect) {
+        return CommonUtils.isEmpty(plainSelect.getJoins()) &&
+            (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
+            CommonUtils.isEmpty(plainSelect.getIntoTables());
     }
 
     private void fillSingleSource(Table fromItem) {
