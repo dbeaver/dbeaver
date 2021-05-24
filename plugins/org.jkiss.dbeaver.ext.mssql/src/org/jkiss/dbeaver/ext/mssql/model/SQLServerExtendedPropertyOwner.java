@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.Pair;
 
