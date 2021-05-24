@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -39,9 +38,8 @@ public class PostgresUserChangePassword implements DBAUserChangePassword {
     @Override
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
-            boolean isRedshift = dataSource.getServerType() instanceof PostgreServerRedshift;
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + userName + (isRedshift? "" : " WITH") + " PASSWORD " + SQLUtils.quoteString(dataSource, newPassword));
+            JDBCUtils.executeSQL(session, "ALTER USER " + userName + " WITH PASSWORD " + SQLUtils.quoteString(dataSource, newPassword));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }

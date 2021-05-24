@@ -343,10 +343,5 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsDatabaseSize() {
         return true;
     }
-
-    @Override
-    public boolean supportsAlterUserChangePassword() {
-        return true;
-    }
 }
 
