@@ -31,6 +31,8 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintWriter;
@@ -121,9 +123,15 @@ public class ErrorEditorPartEx extends EditorPart {
         imageLabel.setBackground(bgColor);
         Image image;
         switch (error.getSeverity()) {
-            case IStatus.ERROR: image = d.getSystemImage(SWT.ICON_ERROR); break;
-            case IStatus.WARNING: image = d.getSystemImage(SWT.ICON_WARNING); break;
-            default: image = d.getSystemImage(SWT.ICON_INFORMATION); break;
+            case IStatus.ERROR:
+                image = DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+                break;
+            case IStatus.WARNING:
+                image = DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
+                break;
+            default:
+                image = DBeaverIcons.getImage(DBIcon.STATUS_INFO);
+                break;
         }
 
         image.setBackground(bgColor);

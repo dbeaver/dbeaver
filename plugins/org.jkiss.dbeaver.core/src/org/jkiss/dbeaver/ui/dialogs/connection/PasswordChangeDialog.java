@@ -37,11 +37,15 @@ public class PasswordChangeDialog extends BaseDialog
 {
     private DBAPasswordChangeInfo passwordInfo;
     private String verifyText;
+    private boolean userEditable;
+    private boolean oldPasswordVisible;
 
-    public PasswordChangeDialog(Shell parentShell, String title, String userName, String oldPassword)
+    public PasswordChangeDialog(Shell parentShell, String title, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible)
     {
         super(parentShell, title, DBIcon.TREE_USER);
         this.passwordInfo = new DBAPasswordChangeInfo(userName, oldPassword);
+        this.userEditable = userEditable;
+        this.oldPasswordVisible = oldPasswordVisible;
     }
 
     public DBAPasswordChangeInfo getPasswordInfo()
@@ -58,12 +62,16 @@ public class PasswordChangeDialog extends BaseDialog
         CLabel infoLabel = UIUtils.createInfoLabel(credGroup, getTitle());
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
+        gd.widthHint = 300;
         infoLabel.setLayoutData(gd);
 
         Text userNameText = UIUtils.createLabelText(credGroup, "User Name", passwordInfo.getUserName(), SWT.BORDER);
         userNameText.addModifyListener(e -> passwordInfo.setUserName(userNameText.getText()));
-        Text oldPasswordText = UIUtils.createLabelText(credGroup, "Old Password", passwordInfo.getOldPassword(), SWT.BORDER | SWT.PASSWORD);
-        oldPasswordText.addModifyListener(e -> passwordInfo.setOldPassword(oldPasswordText.getText()));
+        userNameText.setEditable(userEditable);
+        if (oldPasswordVisible) {
+            Text oldPasswordText = UIUtils.createLabelText(credGroup, "Old Password", passwordInfo.getOldPassword(), SWT.BORDER | SWT.PASSWORD);
+            oldPasswordText.addModifyListener(e -> passwordInfo.setOldPassword(oldPasswordText.getText()));
+        }
         Text newPasswordText = UIUtils.createLabelText(credGroup, "New Password", "", SWT.BORDER | SWT.PASSWORD);
         newPasswordText.addModifyListener(e -> {
             passwordInfo.setNewPassword(newPasswordText.getText());

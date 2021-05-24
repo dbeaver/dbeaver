@@ -174,7 +174,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             });
 
             if (!isRoleEditor()) {
-                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                for (PostgrePrivilegeType pt : getDatabaseObject().getDataSource().getSupportedPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(getDatabaseObject().getClass())) {
                         continue;
                     }
@@ -351,7 +351,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
             if (!CommonUtils.isEmpty(objects)) {
                 Class<?> objectType = objects.get(0).getClass();
-                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                for (PostgrePrivilegeType pt : getDatabaseObject().getDataSource().getSupportedPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(objectType)) {
                         continue;
                     }

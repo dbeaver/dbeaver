@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.notifications;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.util.Date;
 
@@ -79,13 +79,14 @@ public class GeneralNotification extends AbstractUiNotification {
         if (messageType == null) {
             return null;
         }
-        int iconType;
         switch (messageType) {
-            case ERROR: iconType = SWT.ICON_ERROR; break;
-            case WARNING: iconType = SWT.ICON_WARNING; break;
-            default: iconType = SWT.ICON_INFORMATION; break;
+            case ERROR:
+                return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+            case WARNING:
+                return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
+            default:
+                return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
         }
-        return Display.getDefault().getSystemImage(iconType);
     }
 
     @Override

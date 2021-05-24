@@ -328,13 +328,13 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword) {
+    public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible) {
         // Ask user
         return new UITask<DBAPasswordChangeInfo>() {
             @Override
             public DBAPasswordChangeInfo runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
-                final PasswordChangeDialog passwordChangeDialog = new PasswordChangeDialog(shell, prompt, userName, oldPassword);
+                final PasswordChangeDialog passwordChangeDialog = new PasswordChangeDialog(shell, prompt, userName, oldPassword, userEditable, oldPasswordVisible);
                 if (passwordChangeDialog.open() == IDialogConstants.OK_ID) {
                     return passwordChangeDialog.getPasswordInfo();
                 } else {
