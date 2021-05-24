@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net.ssh;
+package org.jkiss.dbeaver.model.access;
 
-public class SSHAgentIdentity {
-    private byte[] blob;
-    private byte[] comment;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-    public byte[] getBlob() {
-        return blob;
-    }
+public interface DBAUserChangePassword {
 
-    public void setBlob(byte[] blob) {
-        this.blob = blob;
-    }
-
-    public byte[] getComment() {
-        return comment;
-    }
-
-    public void setComment(byte[] comment) {
-        this.comment = comment;
-    }
-
+    void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword) throws DBException;
 
 }

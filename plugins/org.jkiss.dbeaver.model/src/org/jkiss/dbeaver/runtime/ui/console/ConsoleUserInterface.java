@@ -117,7 +117,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword) {
+    public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordEditable) {
         throw new IllegalStateException("Can not prompt user password change in non-interactive mode");
     }
 

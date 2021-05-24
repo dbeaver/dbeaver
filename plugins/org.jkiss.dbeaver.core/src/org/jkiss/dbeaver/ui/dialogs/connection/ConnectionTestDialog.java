@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -53,7 +54,7 @@ public class ConnectionTestDialog extends BaseDialog {
 
         {
             Label imageLabel = new Label(composite, SWT.NULL);
-            imageLabel.setImage(parent.getDisplay().getSystemImage(SWT.ICON_INFORMATION));
+            imageLabel.setImage(DBeaverIcons.getImage(DBIcon.STATUS_INFO));
 
             Label messageLabel = new Label(composite, SWT.NONE);
             messageLabel.setText(NLS.bind(ModelMessages.dialog_connection_wizard_start_connection_monitor_connected, elapsedTime));

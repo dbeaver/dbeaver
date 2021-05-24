@@ -253,13 +253,29 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         AdditionalInfo info = getAdditionalInfo(monitor);
         StringBuilder sql = new StringBuilder()
             .append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n")
-            .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL))
-            .append("\n\tINCREMENT BY ").append(info.getIncrementBy())
-            .append("\n\tMINVALUE ").append(info.getMinValue())
-            .append("\n\tMAXVALUE ").append(info.getMaxValue())
-            .append("\n\tSTART ").append(info.getStartValue())
-            .append("\n\tCACHE ").append(info.getCacheValue())
-            .append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE;");
+            .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+
+        if (info.getIncrementBy() > 0) {
+            sql.append("\n\tINCREMENT BY ").append(info.getIncrementBy());
+        }
+        if (info.getMinValue() > 0) {
+            sql.append("\n\tMINVALUE ").append(info.getMinValue());
+        } else {
+            sql.append("\n\tNO MINVALUE");
+        }
+        if (info.getMaxValue() > 0) {
+            sql.append("\n\tMAXVALUE ").append(info.getMaxValue());
+        } else {
+            sql.append("\n\tNO MAXVALUE");
+        }
+        if (info.getStartValue() > 0) {
+            sql.append("\n\tSTART ").append(info.getStartValue());
+        }
+        if (info.getCacheValue() > 0) {
+            sql.append("\n\tCACHE ").append(info.getCacheValue());
+            sql.append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE");
+        }
+        sql.append(';');
 
 		if (!CommonUtils.isEmpty(getDescription())) {
 			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")

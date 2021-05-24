@@ -696,6 +696,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
+                    if (CommonUtils.isEmpty(((QMMStatementExecuteInfo) object).getQueryString())) {
+                        // Ignore empty statements
+                        continue;
+                    }
                     itemIndex = createOrUpdateItem(event, itemIndex);
                 } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
                     itemIndex = createOrUpdateItem(event, itemIndex);

@@ -49,10 +49,15 @@ public class NotificationPopupMessage extends DatabaseNotificationPopup {
     @Override
     protected Image getPopupShellImage(int maximumHeight) {
         boolean hasIcon = iconType == SWT.ICON_ERROR || iconType == SWT.ICON_WARNING || iconType == SWT.ICON_QUESTION;
-        if (hasIcon && iconType == SWT.ICON_ERROR) {
-            return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+        if (hasIcon) {
+            switch (iconType) {
+                case SWT.ICON_ERROR: return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+                case SWT.ICON_WARNING: return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
+                default:
+                    return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
+            }
         }
-        return hasIcon ? getShell().getDisplay().getSystemImage(iconType) : null;
+        return null;
     }
 
     @Override

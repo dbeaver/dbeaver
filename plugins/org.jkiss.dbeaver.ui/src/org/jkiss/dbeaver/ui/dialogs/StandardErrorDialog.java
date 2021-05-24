@@ -30,6 +30,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -159,6 +161,18 @@ public class StandardErrorDialog extends ErrorDialog implements BlockingPopupDia
             dropDownList.remove(itemCount - 1);
         }
         return dropDownList;
+    }
+
+    public Image getErrorImage() {
+        return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+    }
+
+    public Image getWarningImage() {
+        return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
+    }
+
+    public Image getInfoImage() {
+        return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
     }
 
     @Override
