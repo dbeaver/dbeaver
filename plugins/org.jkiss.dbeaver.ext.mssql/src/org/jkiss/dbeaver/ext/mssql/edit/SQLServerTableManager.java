@@ -47,6 +47,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         SQLServerTableForeignKey.class,
         SQLServerTableIndex.class,
         SQLServerTableCheckConstraint.class,
+        SQLServerExtendedProperty.class,
     };
 
     @Override

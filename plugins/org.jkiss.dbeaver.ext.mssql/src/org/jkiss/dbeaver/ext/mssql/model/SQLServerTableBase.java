@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,7 +52,7 @@ import java.util.List;
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2, DBPRefreshableObject, DBSObjectWithScript, DBPScriptObjectExt2, DBPSystemObject, DBSDataManipulatorExt
+    implements SQLServerObject, SQLServerExtendedPropertyOwner, DBPNamedObject2, DBPRefreshableObject, DBSObjectWithScript, DBPScriptObjectExt2, DBPSystemObject, DBSDataManipulatorExt
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
@@ -59,6 +60,8 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     private String type;
     private String description;
     protected Long rowCount;
+
+    private final SQLServerExtendedPropertyCache extendedPropertyCache = new SQLServerExtendedPropertyCache();
 
     protected SQLServerTableBase(SQLServerSchema schema)
     {
@@ -81,6 +84,8 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         this.type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
     }
 
+    @Override
+    @NotNull
     public SQLServerDatabase getDatabase() {
         return getSchema().getDatabase();
     }
@@ -268,6 +273,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         if (supportsTriggers()) {
             getContainer().getTriggerCache().clearChildrenOf(this);
         }
+        extendedPropertyCache.clearCache();
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
@@ -302,5 +308,48 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
             }
         }
         return triggers;
+    }
+
+    //////////////////////////////////////////////////
+    // Extended Properties
+
+    @Association
+    @NotNull
+    public Collection<SQLServerExtendedProperty> getExtendedProperties(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return extendedPropertyCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public long getMajorObjectId() {
+        return getObjectId();
+    }
+
+    @Override
+    public long getMinorObjectId() {
+        return 0;
+    }
+
+    @Override
+    public Pair<String, SQLServerObject> getExtendedPropertyObject(@NotNull DBRProgressMonitor monitor, int level) {
+        switch (level) {
+            case 0:
+                return new Pair<>("Schema", getSchema());
+            case 1:
+                return new Pair<>("Table", this);
+            default:
+                return null;
+        }
+    }
+
+    @NotNull
+    @Override
+    public SQLServerObjectClass getExtendedPropertyObjectClass() {
+        return SQLServerObjectClass.OBJECT_OR_COLUMN;
+    }
+
+    @NotNull
+    @Override
+    public SQLServerExtendedPropertyCache getExtendedPropertyCache() {
+        return extendedPropertyCache;
     }
 }

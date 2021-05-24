@@ -35,16 +35,15 @@ import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,8 @@ import java.util.stream.Collectors;
  */
 public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements
     DBSTableColumn, DBSTypedObjectEx, DBPNamedObject2, DBPOrderedObject, DBPHiddenObject,
-    SQLServerObject, JDBCColumnKeyType, DBSTypedObjectExt4<SQLServerDataType> {
+    SQLServerObject, JDBCColumnKeyType, DBSTypedObjectExt4<SQLServerDataType>, DBPRefreshableObject,
+    SQLServerExtendedPropertyOwner {
     private static final Log log = Log.getLog(SQLServerTableColumn.class);
 
     private long objectId;
@@ -66,6 +66,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private boolean computedPersisted;
     private String computedDefinition;
     private IdentityInfo identityInfo = new IdentityInfo();
+
+    private final SQLServerExtendedPropertyCache extendedPropertyCache = new SQLServerExtendedPropertyCache();
 
     public static class IdentityInfo {
         private long seedValue;
@@ -321,6 +323,64 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     @Override
     public boolean isInReferenceKey() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        extendedPropertyCache.clearCache();
+        return this;
+    }
+
+    //////////////////////////////////////////////////
+    // Extended Properties
+
+    @Association
+    @NotNull
+    public Collection<SQLServerExtendedProperty> getExtendedProperties(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return extendedPropertyCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public long getMajorObjectId() {
+        return getTable().getObjectId();
+    }
+
+    @Override
+    public long getMinorObjectId() {
+        return getObjectId();
+    }
+
+    @Override
+    public Pair<String, SQLServerObject> getExtendedPropertyObject(@NotNull DBRProgressMonitor monitor, int level) {
+        switch (level) {
+            case 0:
+                return new Pair<>("Schema", getTable().getSchema());
+            case 1:
+                return new Pair<>("Table", getTable());
+            case 2:
+                return new Pair<>("Column", this);
+            default:
+                return null;
+        }
+    }
+
+    @NotNull
+    @Override
+    public SQLServerObjectClass getExtendedPropertyObjectClass() {
+        return SQLServerObjectClass.OBJECT_OR_COLUMN;
+    }
+
+    @NotNull
+    @Override
+    public SQLServerExtendedPropertyCache getExtendedPropertyCache() {
+        return extendedPropertyCache;
+    }
+
+    @NotNull
+    @Override
+    public SQLServerDatabase getDatabase() {
+        return getTable().getDatabase();
     }
 
     @PropertyGroup()

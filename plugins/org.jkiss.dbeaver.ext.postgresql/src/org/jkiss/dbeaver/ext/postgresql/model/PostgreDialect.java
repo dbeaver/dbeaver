@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
@@ -800,7 +799,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @NotNull
     @Override
-    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+    public String getTypeCastClause(DBSTypedObject attribute, String expression) {
         String typeName = attribute.getTypeName();
         if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
             return expression + "::" + typeName;
@@ -810,7 +809,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @NotNull
     @Override
-    public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
+    public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
         if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS) || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
         || attribute.getTypeID() == Types.OTHER) {
             // TODO: we need to add value handlers for all PG data types.

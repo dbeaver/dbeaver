@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     }
 
     @Override
-    public String escapeScriptValue(DBSAttributeBase attribute, Object value, String strValue) {
+    public String escapeScriptValue(DBSTypedObject attribute, Object value, String strValue) {
 		return super.escapeScriptValue(attribute, value, strValue);
     }
 

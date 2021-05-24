@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -40,13 +37,14 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 /**
  * SQLServer table column manager
  */
-public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServerTableColumn, SQLServerTableBase> implements DBEObjectRenamer<SQLServerTableColumn> {
+public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServerTableColumn, SQLServerTableBase> implements DBEStructEditor<SQLServerTableColumn>, DBEObjectRenamer<SQLServerTableColumn> {
 
     protected final ColumnModifier<SQLServerTableColumn> IdentityModifier = (monitor, column, sql, command) -> {
         if (column.isIdentity()) {
@@ -90,6 +88,22 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             sql.append(" PERSISTED");
         }
     };
+
+    private static final Class<?>[] CHILD_TYPES = {
+        SQLServerExtendedProperty.class,
+    };
+
+    @NotNull
+    @Override
+    public Class<?>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
+
+    @Nullable
+    @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, SQLServerTableColumn object, Class<? extends DBSObject> childType) throws DBException {
+        return null;
+    }
 
     @Nullable
     @Override
