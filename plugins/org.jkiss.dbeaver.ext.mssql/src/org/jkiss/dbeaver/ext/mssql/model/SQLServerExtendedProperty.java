@@ -56,7 +56,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
         final long minorId = JDBCUtils.safeGetLong(dbResult, "minor_id");
 
         if (objectClass != owner.getExtendedPropertyObjectClass() || majorId != owner.getMajorObjectId() || minorId != owner.getMinorObjectId()) {
-            throw new DBException("Extended property parent mismatch");
+            throw new DBException("Extended property owner mismatch");
         }
 
         this.owner = owner;
@@ -97,39 +97,8 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
         return null;
     }
 
-    @NotNull
-    @Property(order = 2)
-    public SQLServerObjectClass getObjectClass() {
-        return owner.getExtendedPropertyObjectClass();
-    }
-
-    @Property(order = 3)
-    public long getMajorId() {
-        return owner.getMajorObjectId();
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 4)
-    public SQLServerObject getMajorObject() {
-        return owner;
-    }
-
-    @Property(order = 5)
-    public long getMinorId() {
-        return owner.getMinorObjectId();
-    }
-
     @Nullable
-    @Property(viewable = true, order = 6)
-    public SQLServerObject getMinorObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (getObjectClass() == SQLServerObjectClass.OBJECT_OR_COLUMN && owner instanceof SQLServerTableBase) {
-            return getMinorId() > 0 ? ((SQLServerTableBase) owner).getAttribute(monitor, getMinorId()) : owner;
-        }
-        return null;
-    }
-
-    @Nullable
-    @Property(viewable = true, editable = true, updatable = true, order = 7)
+    @Property(viewable = true, editable = true, updatable = true, order = 2)
     public String getValue() {
         return CommonUtils.toString(value, null);
     }
@@ -139,7 +108,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
     }
 
     @NotNull
-    @Property(viewable = true, editable = true, updatable = true, order = 8, listProvider = DataTypeListProvider.class)
+    @Property(viewable = true, editable = true, updatable = true, order = 3, listProvider = DataTypeListProvider.class)
     public SQLServerDataType getValueType() {
         return type;
     }
@@ -162,7 +131,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
 
     @Override
     public long getObjectId() {
-        return getMinorId();
+        return owner.getMinorObjectId();
     }
 
     @Override
@@ -173,7 +142,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
     @NotNull
     @Override
     public String getUniqueName() {
-        return name + ':' + getMajorId() + ':' + getMinorId();
+        return name + ':' + owner.getMajorObjectId() + ':' + owner.getMinorObjectId();
     }
 
     @Nullable
@@ -193,7 +162,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
         final Pair<String, SQLServerObject> level2 = owner.getExtendedPropertyObject(monitor, 2);
 
         if (level0 == null || (level1 == null && level2 == null)) {
-            log.debug("Can't get definition for extended property of class '" + getObjectClass().getClassName() + "'");
+            log.debug("Can't get definition for extended property of class '" + owner.getExtendedPropertyObjectClass().getClassName() + "'");
             return null;
         }
 
