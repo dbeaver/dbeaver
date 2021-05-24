@@ -75,4 +75,9 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsKeyAndIndexRename() {
         return dataSource.isServerVersionAtLeast(9, 2);
     }
+
+    @Override
+    public boolean supportsAlterUserChangePassword() {
+        return true;
+    }
 }

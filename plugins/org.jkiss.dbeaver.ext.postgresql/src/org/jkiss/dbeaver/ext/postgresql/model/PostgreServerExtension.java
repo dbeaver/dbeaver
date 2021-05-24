@@ -146,4 +146,6 @@ public interface PostgreServerExtension {
     boolean supportsGeneratedColumns();
 
     boolean supportsKeyAndIndexRename();
+
+    boolean supportsAlterUserChangePassword();
 }

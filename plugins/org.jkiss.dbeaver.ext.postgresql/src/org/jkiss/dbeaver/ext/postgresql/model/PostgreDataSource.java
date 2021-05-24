@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -477,6 +478,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             return adapter.cast(new PostgreSessionManager(this));
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new PostgreQueryPlaner(this));
+        } else if (getServerType().supportsAlterUserChangePassword() && adapter == DBAUserChangePassword.class) {
+            return adapter.cast(new PostgresUserChangePassword(this));
         }
         return super.getAdapter(adapter);
     }

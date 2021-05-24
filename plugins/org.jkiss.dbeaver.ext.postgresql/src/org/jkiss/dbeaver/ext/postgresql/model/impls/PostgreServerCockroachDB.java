@@ -246,4 +246,9 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     public boolean supportsKeyAndIndexRename() {
         return true;
     }
+
+    @Override
+    public boolean supportsAlterUserChangePassword() {
+        return true;
+    }
 }
