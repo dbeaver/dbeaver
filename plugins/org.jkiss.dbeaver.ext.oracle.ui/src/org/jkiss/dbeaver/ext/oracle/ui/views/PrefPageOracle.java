@@ -42,6 +42,11 @@ public class PrefPageOracle extends TargetPrefPage
     private Button enableDbmsOuputCheck;
     private Button readAllSynonymsCheck;
     private Button disableScriptEscapeProcessingCheck;
+    private Button useRuleHint;
+    private Button useOptimizerHint;
+    private Button useSimpleConstraints;
+    private Button useAlternativeTableMetadataQuery;
+    private Button searchInSynonyms;
 
     public PrefPageOracle()
     {
@@ -58,7 +63,12 @@ public class PrefPageOracle extends TargetPrefPage
             store.contains(OracleConstants.PREF_SUPPORT_ROWID) ||
             store.contains(OracleConstants.PREF_DBMS_OUTPUT) ||
             store.contains(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ||
-            store.contains(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING)
+            store.contains(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING) ||
+            store.contains(OracleConstants.PROP_USE_RULE_HINT) ||
+            store.contains(OracleConstants.PROP_USE_META_OPTIMIZER) ||
+            store.contains(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS) ||
+            store.contains(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY) ||
+            store.contains(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
             ;
     }
 
@@ -93,6 +103,54 @@ public class PrefPageOracle extends TargetPrefPage
             disableScriptEscapeProcessingCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_disable_escape_processing, OracleUIMessages.pref_page_oracle_label_disable_client_side_parser, true, 1);
         }
 
+        DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
+
+        {
+            Composite performanceGroup = UIUtils.createControlGroup(
+                composite,
+                OracleUIMessages.pref_page_oracle_legend_performance,
+                1,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
+
+            useRuleHint = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_group_use_rule,
+                globalPreferences.getBoolean(OracleConstants.PROP_USE_RULE_HINT)
+            );
+            useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
+
+            useOptimizerHint = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer,
+                globalPreferences.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER)
+            );
+            useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
+
+            useSimpleConstraints = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints,
+                OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints_description,
+                globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS),
+                1
+            );
+
+            useAlternativeTableMetadataQuery = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query,
+                globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
+            );
+            useAlternativeTableMetadataQuery.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query_description);
+
+            searchInSynonyms = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms,
+                globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
+            );
+            searchInSynonyms.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip);
+        }
+
         return composite;
     }
 
@@ -104,6 +162,12 @@ public class PrefPageOracle extends TargetPrefPage
         enableDbmsOuputCheck.setSelection(store.getBoolean(OracleConstants.PREF_DBMS_OUTPUT));
         readAllSynonymsCheck.setSelection(store.getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS));
         disableScriptEscapeProcessingCheck.setSelection(store.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING));
+
+        useRuleHint.setSelection(store.getBoolean(OracleConstants.PROP_USE_RULE_HINT));
+        useOptimizerHint.setSelection(store.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER));
+        useSimpleConstraints.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
+        useAlternativeTableMetadataQuery.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
+        searchInSynonyms.setSelection(store.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
     }
 
     @Override
@@ -114,6 +178,13 @@ public class PrefPageOracle extends TargetPrefPage
         store.setValue(OracleConstants.PREF_DBMS_OUTPUT, enableDbmsOuputCheck.getSelection());
         store.setValue(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, readAllSynonymsCheck.getSelection());
         store.setValue(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, disableScriptEscapeProcessingCheck.getSelection());
+
+        store.setValue(OracleConstants.PROP_USE_RULE_HINT, useRuleHint.getSelection());
+        store.setValue(OracleConstants.PROP_USE_META_OPTIMIZER, useOptimizerHint.getSelection());
+        store.setValue(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS, useSimpleConstraints.getSelection());
+        store.setValue(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, useAlternativeTableMetadataQuery.getSelection());
+        store.setValue(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, searchInSynonyms.getSelection());
+
         PrefUtils.savePreferenceStore(store);
     }
 
@@ -125,6 +196,12 @@ public class PrefPageOracle extends TargetPrefPage
         store.setToDefault(OracleConstants.PREF_DBMS_OUTPUT);
         store.setToDefault(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS);
         store.setToDefault(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
+
+        store.setToDefault(OracleConstants.PROP_USE_RULE_HINT);
+        store.setToDefault(OracleConstants.PROP_USE_META_OPTIMIZER);
+        store.setToDefault(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS);
+        store.setToDefault(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY);
+        store.setToDefault(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
     }
 
     @Override

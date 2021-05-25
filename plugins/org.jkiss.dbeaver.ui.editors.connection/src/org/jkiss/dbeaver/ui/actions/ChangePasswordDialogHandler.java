@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -57,7 +58,7 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
                     DBPConnectionConfiguration connectionInfo = dataSourceContainer.getConnectionConfiguration();
                     String oldPassword = connectionInfo.getUserPassword();
                     String userName = connectionInfo.getUserName();
-                    DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange("Change user password", userName, oldPassword, false, false);
+                    DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange(UIConnectionMessages.dialog_user_password_change_label, userName, oldPassword, false, false);
                     if (userPassword != null) {
                         String newPassword = userPassword.getNewPassword();
                         if (CommonUtils.isNotEmpty(newPassword)) {
@@ -65,6 +66,13 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
                                 UIUtils.runInProgressService(monitor -> {
                                     try {
                                         changePassword.changeUserPassword(monitor, userName, newPassword);
+
+                                        if (DBWorkbench.getPlatformUI().confirmAction(
+                                            UIConnectionMessages.dialog_user_password_change_question_label,
+                                            UIConnectionMessages.dialog_user_password_change_question_message)) {
+                                            connectionInfo.setUserPassword(newPassword);
+                                            dataSourceContainer.getRegistry().flushConfig();
+                                        }
                                     } catch (DBException e) {
                                         DBWorkbench.getPlatformUI().showError("Change user password", "User password change error for user: " + userName, e);
                                     }

@@ -257,6 +257,10 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_connection_driver_project;
 
+    public static String dialog_user_password_change_label;
+    public static String dialog_user_password_change_question_label;
+    public static String dialog_user_password_change_question_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIConnectionMessages.class);

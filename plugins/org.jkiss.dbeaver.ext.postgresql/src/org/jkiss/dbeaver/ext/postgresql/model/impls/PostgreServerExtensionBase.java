@@ -477,4 +477,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsKeyAndIndexRename() {
         return false;
     }
+
+    @Override
+    public boolean supportsAlterUserChangePassword() {
+        return false;
+    }
 }

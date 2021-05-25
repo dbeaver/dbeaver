@@ -79,8 +79,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
             showNonDefault.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    showTemplates.setEnabled(showNonDefault.getSelection());
-                    showUnavailable.setEnabled(showNonDefault.getSelection());
+                    setCheckboxesState();
                 }
             });
             showTemplates = UIUtils.createCheckbox(secureGroup,
@@ -95,6 +94,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                     globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
                     2
             );
+            setCheckboxesState();
             showDatabaseStatistics = UIUtils.createCheckbox(
                 secureGroup,
                 PostgreMessages.dialog_setting_connection_database_statistics,
@@ -127,6 +127,16 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         }
 
         return cfgGroup;
+    }
+
+    private void setCheckboxesState() {
+        boolean enable = showNonDefault.getSelection();
+        if (!enable) {
+            showUnavailable.setSelection(false);
+            showTemplates.setSelection(false);
+        }
+        showUnavailable.setEnabled(enable);
+        showTemplates.setEnabled(enable);
     }
 
     @Override
