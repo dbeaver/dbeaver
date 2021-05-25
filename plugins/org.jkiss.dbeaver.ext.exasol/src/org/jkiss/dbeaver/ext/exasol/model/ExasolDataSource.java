@@ -468,12 +468,19 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		this.dataTypeCache.clearCache();
 		this.connectionCache.clearCache();
 		this.userCache.clearCache();
-		this.roleCache.clearCache();
-		this.baseTableGrantCache.clearCache();
-		this.systemGrantCache.clearCache();
-		this.connectionGrantCache.clearCache();
-		this.initialize(monitor);
-
+		//caches for security
+		if (this.roleCache != null) {
+			this.roleCache.clearCache();
+		}
+		if (this.baseTableGrantCache != null) {
+			this.baseTableGrantCache.clearCache();
+		}
+		if (this.systemGrantCache != null) {
+			this.systemGrantCache.clearCache();
+		}
+		if (this.connectionGrantCache != null) {
+			this.connectionGrantCache.clearCache();
+		}
 		return this;
 	}
 	
