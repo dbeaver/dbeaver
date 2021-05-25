@@ -70,8 +70,11 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
 
     @Override
     public boolean supportsType(Class<?> objectType) {
-        for (int i = 0; i < targetType.length; i++) {
-            if (targetType[i].isAssignableFrom(objectType)) {
+        if (PostgreRole.class.isAssignableFrom(objectType)) {
+            return true;
+        }
+        for (Class<?> aClass : targetType) {
+            if (aClass.isAssignableFrom(objectType)) {
                 return true;
             }
         }
