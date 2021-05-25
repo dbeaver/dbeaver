@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -34,7 +35,9 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.sql.ResultSet;
@@ -44,7 +47,18 @@ import java.util.*;
 /**
  * PostgreRole
  */
-public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPersistedObject, DBPSaveableObject, DBPRefreshableObject, DBPNamedObject2, DBARole, DBAUser, PostgreScriptObject {
+public class PostgreRole implements
+    PostgreObject,
+    PostgrePrivilegeOwner,
+    DBPPersistedObject,
+    DBPSaveableObject,
+    DBPRefreshableObject,
+    DBPNamedObject2,
+    DBARole,
+    DBAUser,
+    PostgreScriptObject,
+    DBPScriptObjectExt2
+{
 
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
@@ -296,6 +310,11 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
     }
 
     @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
+    }
+
+    @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
 
     }
@@ -325,6 +344,14 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
             ddl.append("\tVALID UNTIL '").append(getValidUntil().toString()).append("'");
         }
         ddl.append(";");
+
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
+            ddl.append("\n");
+            List<DBEPersistAction> actions = new ArrayList<>();
+            PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+            ddl.append("\n").append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
+        }
+
         return ddl.toString();
     }
 
