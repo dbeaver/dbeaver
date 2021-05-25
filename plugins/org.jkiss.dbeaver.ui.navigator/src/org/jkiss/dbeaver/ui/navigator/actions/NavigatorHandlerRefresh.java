@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -57,12 +58,17 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         //final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart workbenchPart = HandlerUtil.getActivePart(event);
+
+        // Try to refresh as refreshable part
+        if (workbenchPart instanceof IRefreshablePart) {
+            ((IRefreshablePart) workbenchPart).refreshPart(this, true);
+            return null;
+        }
+
+        // Try to get navigator view and refresh node
         INavigatorModelView navigatorView = GeneralUtils.adapt(workbenchPart, INavigatorModelView.class);
         if (navigatorView == null) {
-            // Try to refresh as refreshable part
-            if (workbenchPart instanceof IRefreshablePart) {
-                ((IRefreshablePart) workbenchPart).refreshPart(this, true);
-            }
+            // Nothing to refresh
             return null;
         }
         final List<DBNNode> refreshObjects = new ArrayList<>();
@@ -81,10 +87,24 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         } else if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
 
-            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ){
-                Object object = iter.next();
+            for (Object object : structSelection) {
                 if (object instanceof DBNNode) {
                     refreshObjects.add((DBNNode) object);
+                }
+            }
+        }
+
+        // Check for open editors with selected objects
+        if (!refreshObjects.isEmpty()) {
+            final IEditorPart editorPart = HandlerUtil.getActiveEditor(event);
+            if (editorPart instanceof IRefreshablePart && editorPart.getEditorInput() instanceof DatabaseEditorInput && editorPart.isDirty()) {
+                DBNDatabaseNode editorNode = ((DatabaseEditorInput<?>) editorPart.getEditorInput()).getNavigatorNode();
+                for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
+                    DBNNode nextNode = iter.next();
+                    if (nextNode == editorNode || editorNode.isChildOf(nextNode)) {
+                        ((IRefreshablePart) editorPart).refreshPart(this, true);
+                        iter.remove();
+                    }
                 }
             }
         }
