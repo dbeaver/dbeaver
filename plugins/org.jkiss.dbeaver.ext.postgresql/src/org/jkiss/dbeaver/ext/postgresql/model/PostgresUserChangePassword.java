@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -37,9 +38,13 @@ public class PostgresUserChangePassword implements DBAUserChangePassword {
 
     @Override
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword) throws DBException {
+        if (CommonUtils.isEmpty(newPassword)) {
+            // User can set new empty password, but then we will get an error when connecting with an empty password
+            throw new DBException("Password change error for user: " + userName + ". New password can not be empty.");
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + userName + " WITH PASSWORD " + SQLUtils.quoteString(dataSource, newPassword));
+            JDBCUtils.executeSQL(session, "ALTER USER " + userName + " WITH PASSWORD " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }
