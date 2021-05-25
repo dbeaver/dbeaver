@@ -60,7 +60,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         @NotNull EditType editType,
         @Nullable Composite inlinePlaceholder)
     {
-        this.controller = (ResultSetViewer) controller;
+        this.controller = controller;
         this.binding = binding;
         this.curRow = row;
         this.editType = editType;
