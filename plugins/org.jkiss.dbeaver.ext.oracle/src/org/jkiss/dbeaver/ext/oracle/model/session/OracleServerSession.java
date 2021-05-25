@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * Session
@@ -35,7 +36,7 @@ public class OracleServerSession extends AbstractServerSession {
     public static final String CAT_WAIT = "Wait";
 
     private long instId;
-    private long sid;
+    private final long sid;
     private long serial;
     private long sqlChildNumber; // SergDzh: to show in list
     private String user;
@@ -45,7 +46,7 @@ public class OracleServerSession extends AbstractServerSession {
     private String state;
     private String sqlId;
     private String sql;
-    private String event;
+    private final String event;
     private long secondsInWait;
     private long elapsedTime;
     private Timestamp logonTime;
@@ -272,4 +273,16 @@ public class OracleServerSession extends AbstractServerSession {
         return sid + " - " + event;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OracleServerSession that = (OracleServerSession) o;
+        return sid == that.sid && Objects.equals(event, that.event);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sid, event);
+    }
 }

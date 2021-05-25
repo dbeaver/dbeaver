@@ -23,6 +23,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * PostgreSQL session
@@ -31,11 +32,11 @@ public class PostgreSession extends AbstractServerSession {
     private static final String CAT_CLIENT = "Client";
     private static final String CAT_TIMING = "Timings";
 
-    private int pid;
+    private final int pid;
     private String user;
     private String clientHost;
     private String clientPort;
-    private String db;
+    private final String db;
     private String query;
     private Date backendStart;
     private Date xactStart;
@@ -147,5 +148,18 @@ public class PostgreSession extends AbstractServerSession {
         } else {
             return String.valueOf(pid);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostgreSession that = (PostgreSession) o;
+        return pid == that.pid && Objects.equals(db, that.db);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pid, db);
     }
 }

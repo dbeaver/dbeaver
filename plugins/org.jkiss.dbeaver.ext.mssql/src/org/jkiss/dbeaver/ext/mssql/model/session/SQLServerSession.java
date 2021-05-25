@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * SQL Server session
@@ -31,7 +32,7 @@ public class SQLServerSession extends AbstractServerSession {
     private static final String CAT_CLIENT = "Client";
     private static final String CAT_TIMING = "Timings";
 
-    private long id;
+    private final long id;
 
     private Date loginTime;
     private Date lastRequestStart;
@@ -58,7 +59,7 @@ public class SQLServerSession extends AbstractServerSession {
 
     private String language;
     private long rowCount;
-    private String databaseName;
+    private final String databaseName;
 
     private String sqlText;
 
@@ -225,5 +226,18 @@ public class SQLServerSession extends AbstractServerSession {
         } else {
             return String.valueOf(id);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SQLServerSession that = (SQLServerSession) o;
+        return id == that.id && Objects.equals(databaseName, that.databaseName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, databaseName);
     }
 }

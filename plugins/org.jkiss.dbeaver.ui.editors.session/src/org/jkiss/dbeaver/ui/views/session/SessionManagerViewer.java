@@ -384,11 +384,8 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
     }
 
-    public void refreshSessions()
-    {
+    public void refreshSessions() {
         sessionTable.loadData();
-        onSessionSelect(null);
-
         refreshControl.scheduleAutoRefresh(false);
     }
 
@@ -543,6 +540,11 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             }
         }
 
+        @Override
+        protected LoadingJob<Collection<SESSION_TYPE>> createLoadService(boolean forUpdate) {
+            return LoadingJob.createService(new LoadSessionsService(), new SessionLoadVisualizer(getSelectedSessions()));
+        }
+
         private class SearchFilter extends ViewerFilter {
             final Pattern pattern;
 
@@ -570,6 +572,26 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 } catch (Exception e) {
                     log.error(e);
                     return false;
+                }
+            }
+        }
+
+        private final class SessionLoadVisualizer extends ObjectsLoadVisualizer {
+            private final Collection<? extends DBAServerSession> previouslySelectedSessions;
+
+            private SessionLoadVisualizer(Collection<? extends DBAServerSession> previouslySelectedSessions) {
+                this.previouslySelectedSessions = previouslySelectedSessions;
+            }
+
+            @Override
+            public void completeLoading(@NotNull Collection<SESSION_TYPE> items) {
+                super.completeLoading(items);
+                Object[] sessionsToSelect = previouslySelectedSessions.stream().filter(items::contains).toArray();
+                sessionTable.getItemsViewer().setSelection(new StructuredSelection(sessionsToSelect));
+                if (items.contains(curSession)) {
+                    onSessionSelect(curSession);
+                } else {
+                    onSessionSelect(null);
                 }
             }
         }
@@ -635,5 +657,4 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
     }
-
 }
