@@ -26,9 +26,9 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
                             <test property="org.jkiss.dbeaver.ui.connection.canChangePassword" forcePluginActivation="true"/>
-                        </instanceof>
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>
