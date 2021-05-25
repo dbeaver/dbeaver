@@ -365,4 +365,8 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         return supportsBatchUpdates;
     }
 
+    public boolean supportsSetArray() {
+        return false;
+    }
+
 }

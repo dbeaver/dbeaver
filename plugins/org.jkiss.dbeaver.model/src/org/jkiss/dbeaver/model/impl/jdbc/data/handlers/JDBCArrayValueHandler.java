@@ -139,7 +139,6 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     protected boolean useSetArray(@NotNull JDBCSession session) {
-        // See GenericConstants.PARAM_SUPPORTS_SET_ARRAY
-        return CommonUtils.getBoolean(session.getDataSource().getContainer().getDriver().getDriverParameter("supports-set-array"), false);
+        return session.getDataSource().getInfo().supportsSetArray();
     }
 }

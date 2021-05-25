@@ -31,6 +31,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     private final boolean supportsLimits;
     private boolean supportsMultipleResults;
     private boolean supportsNullableUniqueConstraints;
+    private boolean supportsSetArray;
 
     public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
@@ -38,6 +39,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
         setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
         supportsMultipleResults = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTIPLE_RESULTS), false);
+        supportsSetArray = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SET_ARRAY), false);
 
         supportsNullableUniqueConstraints = false;
     }
@@ -59,6 +61,11 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     @Override
     public boolean supportsMultipleResults() {
         return supportsMultipleResults;
+    }
+
+    @Override
+    public boolean supportsSetArray() {
+        return supportsSetArray;
     }
 
 }
