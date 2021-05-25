@@ -41,10 +41,10 @@ import java.util.Map;
  */
 public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContainer, DBPContextProvider, DBPImageProvider {
 
-    private DBPContextProvider contextProvider;
-    private SQLQuery query;
-    private SQLScriptContext scriptContext;
-    private Log log;
+    private final DBPContextProvider contextProvider;
+    private final SQLQuery query;
+    private final SQLScriptContext scriptContext;
+    private final Log log;
 
     public SQLQueryDataContainer(DBPContextProvider contextProvider, SQLQuery query, SQLScriptContext scriptContext, Log log) {
         this.contextProvider = contextProvider;

@@ -553,7 +553,14 @@ public final class SQLUtils {
                         conString.append(" AND");
                     }
                     String strValue;
-                    if (inlineCriteria) {
+                    if (constraint.getAttribute() == null) {
+                        // We have only attribute name
+                        if (value instanceof CharSequence) {
+                            strValue = dataSource.getSQLDialect().getQuotedString(value.toString());
+                        } else {
+                            strValue = CommonUtils.toString(value);
+                        }
+                    } else if (inlineCriteria) {
                         strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
                     } else {
                         strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?");
