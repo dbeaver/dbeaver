@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -119,13 +121,27 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
             if (collection.isNull()) {
                 statement.setNull(paramIndex, Types.ARRAY);
             } else if (collection instanceof JDBCCollection) {
-                statement.setObject(paramIndex, ((JDBCCollection) collection).getArrayValue(), Types.ARRAY);
+                final Array arrayValue = ((JDBCCollection) collection).getArrayValue();
+                if (useSetArray(session)) {
+                    statement.setArray(paramIndex, arrayValue);
+                } else {
+                    statement.setObject(paramIndex, arrayValue, Types.ARRAY);
+                }
             } else {
-                statement.setObject(paramIndex, collection.getRawValue());
+                final Object arrayValue = collection.getRawValue();
+                if (useSetArray(session) && arrayValue instanceof Array) {
+                    statement.setArray(paramIndex, (Array) arrayValue);
+                } else {
+                    statement.setObject(paramIndex, arrayValue);
+                }
             }
         } else {
             throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
         }
     }
 
+    protected boolean useSetArray(@NotNull JDBCSession session) {
+        final DBPDataSourceInfo info = session.getDataSource().getInfo();
+        return info instanceof JDBCDataSourceInfo && ((JDBCDataSourceInfo) info).supportsSetArray();
+    }
 }

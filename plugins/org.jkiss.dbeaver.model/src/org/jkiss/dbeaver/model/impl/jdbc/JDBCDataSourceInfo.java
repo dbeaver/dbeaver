@@ -365,4 +365,12 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         return supportsBatchUpdates;
     }
 
+    /**
+     * Checks whether this data source supports using {@link java.sql.PreparedStatement#setArray(int, java.sql.Array)}
+     * for binding array values or not. Some data sources may use {@link java.sql.PreparedStatement#setObject(int, Object)} instead.
+     */
+    public boolean supportsSetArray() {
+        return false;
+    }
+
 }

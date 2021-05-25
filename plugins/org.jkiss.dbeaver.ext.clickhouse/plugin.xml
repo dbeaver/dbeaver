@@ -35,6 +35,7 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-set-array" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
                 </driver>
