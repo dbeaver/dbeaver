@@ -109,7 +109,7 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
 
     };
 
-    private class LoadSessionsService extends DatabaseLoadService<Collection<SESSION_TYPE>> {
+    class LoadSessionsService extends DatabaseLoadService<Collection<SESSION_TYPE>> {
 
         LoadSessionsService()
         {
@@ -171,5 +171,4 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
         }
 
     }
-
 }

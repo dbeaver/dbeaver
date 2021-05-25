@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.app;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -24,13 +25,13 @@ import org.jkiss.dbeaver.model.meta.Property;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * @author Karl Griesser
  */
 public class ExasolServerSession extends AbstractServerSession {
-
-    private BigDecimal sessionID;
+    private final BigDecimal sessionID;
     private String userName;
     private String status;
     private String commandName;
@@ -82,15 +83,13 @@ public class ExasolServerSession extends AbstractServerSession {
         return this.sessionID.toString();
     }
 
+    @Nullable
     @Override
     public String getActiveQuery() {
-        if ( (! this.status.equals("IDLE") )  )
-        {
-        	return this.sqlText;
-        } else
-        {
-        	return null;
+        if ("IDLE".equals(status)) { //$NON-NLS-1$
+            return null;
         }
+        return sqlText;
     }
 
     @Property(viewable = true, editable = false, order = 1)
@@ -198,5 +197,16 @@ public class ExasolServerSession extends AbstractServerSession {
         return sqlText;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ExasolServerSession that = (ExasolServerSession) o;
+        return sessionID != null && sessionID.compareTo(that.sessionID) == 0;
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(sessionID);
+    }
 }

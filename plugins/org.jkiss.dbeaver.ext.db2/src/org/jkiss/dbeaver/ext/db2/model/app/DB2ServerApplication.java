@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
+import java.util.Objects;
 
 /**
  * DB2 Application
@@ -32,11 +33,11 @@ import java.sql.ResultSet;
 public class DB2ServerApplication extends AbstractServerSession {
 
     private String databaseName;
-    private Long agentId;
+    private final Long agentId;
     private String authorisationId;
 
     private String applicationName;
-    private String applicationId;
+    private final String applicationId;
     private String applicationStatus;
     private String statusChangeTime;
     private String sequenceNo;
@@ -229,4 +230,16 @@ public class DB2ServerApplication extends AbstractServerSession {
         return tpmonClientApplicationName;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DB2ServerApplication that = (DB2ServerApplication) o;
+        return Objects.equals(agentId, that.agentId) && Objects.equals(applicationId, that.applicationId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(agentId, applicationId);
+    }
 }
