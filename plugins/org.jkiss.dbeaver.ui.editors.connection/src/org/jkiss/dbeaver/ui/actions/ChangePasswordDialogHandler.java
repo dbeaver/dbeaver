@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -61,27 +60,25 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
                     DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange(UIConnectionMessages.dialog_user_password_change_label, userName, oldPassword, false, false);
                     if (userPassword != null) {
                         String newPassword = userPassword.getNewPassword();
-                        if (CommonUtils.isNotEmpty(newPassword)) {
-                            try {
-                                UIUtils.runInProgressService(monitor -> {
-                                    try {
-                                        changePassword.changeUserPassword(monitor, userName, newPassword);
+                        try {
+                            UIUtils.runInProgressService(monitor -> {
+                                try {
+                                    changePassword.changeUserPassword(monitor, userName, newPassword);
 
-                                        if (DBWorkbench.getPlatformUI().confirmAction(
-                                            UIConnectionMessages.dialog_user_password_change_question_label,
-                                            UIConnectionMessages.dialog_user_password_change_question_message)) {
-                                            connectionInfo.setUserPassword(newPassword);
-                                            dataSourceContainer.getRegistry().flushConfig();
-                                        }
-                                    } catch (DBException e) {
-                                        DBWorkbench.getPlatformUI().showError("Change user password", "User password change error for user: " + userName, e);
+                                    if (DBWorkbench.getPlatformUI().confirmAction(
+                                        UIConnectionMessages.dialog_user_password_change_question_label,
+                                        UIConnectionMessages.dialog_user_password_change_question_message)) {
+                                        connectionInfo.setUserPassword(newPassword);
+                                        dataSourceContainer.getRegistry().flushConfig();
                                     }
-                                });
-                            } catch (InvocationTargetException e) {
-                                // skip
-                            } catch (InterruptedException e) {
-                                DBWorkbench.getPlatformUI().showError("Change user password", "User password change error", e);
-                            }
+                                } catch (DBException e) {
+                                    DBWorkbench.getPlatformUI().showError("Change user password", "Password change error for user: " + userName, e);
+                                }
+                            });
+                        } catch (InvocationTargetException e) {
+                            // skip
+                        } catch (InterruptedException e) {
+                            DBWorkbench.getPlatformUI().showError("Change user password", "User password change error", e);
                         }
                     }
                 }
