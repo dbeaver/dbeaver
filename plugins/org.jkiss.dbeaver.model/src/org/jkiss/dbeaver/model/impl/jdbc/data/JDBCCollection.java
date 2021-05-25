@@ -115,22 +115,16 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         if (isNull()) {
             return SQLConstants.NULL_VALUE;
         }
-        if (contents.length == 0) {
-            return "";
-        } else if (contents.length == 1) {
-            return valueHandler.getValueDisplayString(type, contents[0], format);
-        } else {
-            StringBuilder str = new StringBuilder(contents.length * 32);
-            str.append("[");
-            for (int i = 0; i < contents.length; i++) {
-                Object item = contents[i];
-                if (i > 0) str.append(','); //$NON-NLS-1$
-                String itemString = valueHandler.getValueDisplayString(type, item, format);
-                SQLUtils.appendValue(str, type, itemString);
-            }
-            str.append("]");
-            return str.toString();
+        StringBuilder str = new StringBuilder(contents.length * 32);
+        str.append("[");
+        for (int i = 0; i < contents.length; i++) {
+            Object item = contents[i];
+            if (i > 0) str.append(','); //$NON-NLS-1$
+            String itemString = valueHandler.getValueDisplayString(type, item, format);
+            SQLUtils.appendValue(str, type, itemString);
         }
+        str.append("]");
+        return str.toString();
     }
 
     @Override
