@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -169,13 +170,10 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
         final SQLDialect dialect = SQLUtils.getDialectFromObject(this);
         final StringBuilder ddl = new StringBuilder("EXEC ");
 
-        if (update) {
-            ddl.append("sp_updateextendedproperty");
-        } else if (delete) {
-            ddl.append("sp_dropextendedproperty");
-        } else {
-            ddl.append("sp_addextendedproperty");
-        }
+        ddl.append(SQLServerUtils.getSystemTableName(
+            owner.getDatabase(),
+            update ? "sp_updateextendedproperty" : delete ? "sp_dropextendedproperty" : "sp_addextendedproperty"
+        ));
 
         ddl.append(" @name=").append(dialect.getQuotedString(name));
 
