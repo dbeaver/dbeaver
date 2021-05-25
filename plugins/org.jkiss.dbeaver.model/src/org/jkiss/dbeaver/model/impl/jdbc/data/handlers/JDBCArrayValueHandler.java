@@ -119,13 +119,27 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
             if (collection.isNull()) {
                 statement.setNull(paramIndex, Types.ARRAY);
             } else if (collection instanceof JDBCCollection) {
-                statement.setObject(paramIndex, ((JDBCCollection) collection).getArrayValue(), Types.ARRAY);
+                final Array arrayValue = ((JDBCCollection) collection).getArrayValue();
+                if (useSetArray(session)) {
+                    statement.setArray(paramIndex, arrayValue);
+                } else {
+                    statement.setObject(paramIndex, arrayValue, Types.ARRAY);
+                }
             } else {
-                statement.setObject(paramIndex, collection.getRawValue());
+                final Object arrayValue = collection.getRawValue();
+                if (useSetArray(session) && arrayValue instanceof Array) {
+                    statement.setArray(paramIndex, (Array) arrayValue);
+                } else {
+                    statement.setObject(paramIndex, arrayValue);
+                }
             }
         } else {
             throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
         }
     }
 
+    protected boolean useSetArray(@NotNull JDBCSession session) {
+        // See GenericConstants.PARAM_SUPPORTS_SET_ARRAY
+        return CommonUtils.getBoolean(session.getDataSource().getContainer().getDriver().getDriverParameter("supports-set-array"), false);
+    }
 }
