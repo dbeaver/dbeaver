@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -40,7 +42,7 @@ import java.util.Map;
 /**
  * PostgreRoleManager
  */
-public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreDatabase> {
+public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreDatabase> implements DBEObjectRenamer<PostgreRole> {
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
@@ -87,6 +89,22 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         actions.add(
             new SQLDatabasePersistAction("Drop role", "DROP ROLE " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
         );
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+        final PostgreRole role = command.getObject();
+        final DBPDataSource dataSource = role.getDataSource();
+
+        actions.add(new SQLDatabasePersistAction(
+            "Rename role",
+            "ALTER ROLE " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())
+        ));
+    }
+
+    @Override
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreRole object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
     }
 
     private void addRoleOptions(StringBuilder script, PostgreRole role, boolean create) {
