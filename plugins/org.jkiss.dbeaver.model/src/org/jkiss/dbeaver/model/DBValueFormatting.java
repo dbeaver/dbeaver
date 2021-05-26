@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -146,13 +147,19 @@ public final class DBValueFormatting {
             }
             if (image == null && useDefault) {
                 if (object instanceof DBSEntity) {
-                    image = DBIcon.TREE_TABLE;
+                    if (DBUtils.isView((DBSEntity) object)) {
+                        image = DBIcon.TREE_VIEW;
+                    } else {
+                        image = DBIcon.TREE_TABLE;
+                    }
                 } else if (object instanceof DBSEntityAssociation) {
                     image = DBIcon.TREE_ASSOCIATION;
                 } else if (object instanceof DBSProcedure) {
                     image = DBIcon.TREE_PROCEDURE;
                 } else if (object instanceof DBSPackage) {
                     image = DBIcon.TREE_PACKAGE;
+                } else if (object instanceof DBSTrigger) {
+                    image = DBIcon.TREE_TRIGGER;
                 } else {
                     image = DBIcon.TYPE_OBJECT;
                 }
