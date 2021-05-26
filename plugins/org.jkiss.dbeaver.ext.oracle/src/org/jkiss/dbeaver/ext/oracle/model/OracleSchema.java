@@ -100,6 +100,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             this.name = "? " + super.hashCode();
         }
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
+        SYNONYMS_AS_CHILDREN = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
     }
 
     public boolean isPublic()
