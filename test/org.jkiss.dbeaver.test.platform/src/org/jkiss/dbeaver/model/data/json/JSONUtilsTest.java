@@ -36,8 +36,6 @@ public class JSONUtilsTest {
 	private Map<String, Object> nestedMap1;
 	private Map<String, Object> nestedMap2;
 	private Map<String, Object> map3;
-	private Map<String, Object> nestedMap3;
-	private Map<String, Object> nestedMap4;
 	private List<Map<String, Object>> list;
 
 	@Before
@@ -58,9 +56,9 @@ public class JSONUtilsTest {
 		map2.put("Time", null);
 
 		map3 = new HashMap<>();
-		nestedMap3 = new HashMap<>();
+		Map<String, Object> nestedMap3 = new HashMap<>();
 		nestedMap3.put("UK", "London");
-		nestedMap4 = new HashMap<>();
+		Map<String, Object> nestedMap4 = new HashMap<>();
 		nestedMap4.put("FR", "Paris");
 		list = new ArrayList<>();
 		list.add(nestedMap1);
