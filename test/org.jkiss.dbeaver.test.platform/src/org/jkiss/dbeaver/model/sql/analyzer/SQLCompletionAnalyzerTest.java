@@ -84,6 +84,24 @@ public class SQLCompletionAnalyzerTest {
     }
 
     @Test
+    public void testExpandAllColumnsTableAlias() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A")
+                .addAttribute("col1")
+                .addAttribute("col1_b")
+                .build()
+            .addTable("B")
+                .addAttribute("col2")
+                .addAttribute("col2_b")
+                .build()
+            .request("SELECT b.| FROM A a JOIN B b ON a.col1 = b.col2");
+
+        Assert.assertEquals(2, proposals.size());
+        Assert.assertEquals("col2", proposals.get(0).getReplacementString());
+        Assert.assertEquals("col2_b", proposals.get(1).getReplacementString());
+    }
+
+    @Test
     public void testExpandAllColumnsTable() throws DBException {
         final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
             .addTable("A")
