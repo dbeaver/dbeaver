@@ -20,12 +20,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SQLCompletionAnalyzerTest {
     @Test
     public void testCompletionKeywordSelect() throws DBException {
