@@ -147,7 +147,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
             DBCTransactionManager txnManager = null;
             boolean autoCommit = true;
             boolean needToSetAutocommit = false;
-            try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
+            try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
                 if (dataSource.isSelectedEntityFromAPI()) {
                     // Use JDBC API to change entity
                     if (context.supportsCatalogChange()) {
