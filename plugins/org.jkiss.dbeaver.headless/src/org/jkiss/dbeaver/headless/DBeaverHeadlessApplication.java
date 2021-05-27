@@ -31,10 +31,10 @@ public class DBeaverHeadlessApplication extends BaseApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
-        System.out.println("Starting headless test application");
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        System.out.println("Starting headless test application " + application.getClass().getName());
 
-        return EXIT_OK;
+        return null;
     }
 
     @Override
