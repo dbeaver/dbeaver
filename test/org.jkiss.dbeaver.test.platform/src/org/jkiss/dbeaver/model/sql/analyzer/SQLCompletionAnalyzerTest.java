@@ -48,7 +48,23 @@ public class SQLCompletionAnalyzerTest {
         Assert.assertEquals("A", proposals.get(0).getReplacementString());
         Assert.assertEquals("B", proposals.get(1).getReplacementString());
         Assert.assertEquals("C", proposals.get(2).getReplacementString());
+
+        // TODO: Is 'WHERE' even supposed to be here?
         Assert.assertEquals("WHERE", proposals.get(3).getReplacementString());
+    }
+
+    @Test
+    public void testCompletionTablePartialAfterSelect() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A1").build()
+            .addTable("A2").build()
+            .addTable("B1").build()
+            .addTable("B2").build()
+            .request("SELECT * FROM A|");
+
+        Assert.assertEquals(2, proposals.size());
+        Assert.assertEquals("A1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("A2", proposals.get(1).getReplacementString());
     }
 
     @Test
@@ -65,5 +81,19 @@ public class SQLCompletionAnalyzerTest {
         Assert.assertEquals("col1", proposals.get(0).getReplacementString());
         Assert.assertEquals("col2", proposals.get(1).getReplacementString());
         Assert.assertEquals("col3", proposals.get(2).getReplacementString());
+    }
+
+    @Test
+    public void testExpandAllColumnsTable() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A")
+                .addAttribute("col1")
+                .addAttribute("col2")
+                .addAttribute("col3")
+                .build()
+            .request("SELECT *| FROM A");
+
+        Assert.assertEquals(1, proposals.size());
+        Assert.assertEquals("col1, col2, col3", proposals.get(0).getReplacementString());
     }
 }

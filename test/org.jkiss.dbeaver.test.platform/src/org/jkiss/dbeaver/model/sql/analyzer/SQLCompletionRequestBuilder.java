@@ -87,6 +87,7 @@ public class SQLCompletionRequestBuilder {
         when(dataSource.getChildren(any())).then(x -> entities);
 
         final DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
 
         final SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource);
