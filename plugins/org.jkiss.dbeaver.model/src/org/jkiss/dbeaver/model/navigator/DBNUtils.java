@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
@@ -57,7 +58,12 @@ public class DBNUtils {
     public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
         try {
             for (DBNDatabaseNode childNode : node.getChildren(monitor)) {
-                if (childNode instanceof DBNDatabaseFolder && folderType.getName().equals(((DBNDatabaseFolder) childNode).getMeta().getType())) {
+                if (!(childNode instanceof DBNDatabaseFolder)) {
+                    continue;
+                }
+                final DBXTreeFolder meta = ((DBNDatabaseFolder) childNode).getMeta();
+                final Class<?> objectClass = meta.getSource().getObjectClass(meta.getType());
+                if (objectClass != null && folderType.isAssignableFrom(objectClass)) {
                     return childNode;
                 }
             }
