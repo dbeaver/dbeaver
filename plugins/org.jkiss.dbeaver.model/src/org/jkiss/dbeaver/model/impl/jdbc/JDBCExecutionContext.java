@@ -47,6 +47,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public static final String TYPE_MAIN = "Main";
     public static final String TYPE_METADATA = "Metadata";
 
+    protected static final String TASK_TITLE_SET_SCHEMA = "Set active schema"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(JDBCExecutionContext.class);
 
     // Time to wait for txn level/auto-commit detection

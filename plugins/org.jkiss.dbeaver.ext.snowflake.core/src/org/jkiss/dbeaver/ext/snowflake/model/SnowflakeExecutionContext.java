@@ -185,7 +185,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     }
 
     private void setActiveSchema(DBRProgressMonitor monitor, @NotNull String schemaName) throws DBCException {
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
             try (JDBCStatement dbStat = session.createStatement()) {
                 dbStat.executeUpdate("USE SCHEMA " + DBUtils.getQuotedIdentifier(getDataSource(), schemaName));
             }
