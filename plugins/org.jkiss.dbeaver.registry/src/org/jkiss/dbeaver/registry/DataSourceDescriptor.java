@@ -289,8 +289,20 @@ public class DataSourceDescriptor
     @Override
     public DBPDataSourceOrigin getOrigin() {
         if (origin instanceof DataSourceOriginLazy) {
-            origin = ((DataSourceOriginLazy) origin).resolveRealOrigin();
+            DBPDataSourceOrigin realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            if (realOrigin != null) {
+                this.origin = realOrigin;
+            } else {
+                // Do not replace source origin config.
+                // Possibly different product/config and origin is not available for now.
+                return DataSourceOriginLocal.INSTANCE;
+            }
         }
+        return origin;
+    }
+
+    @NotNull
+    DBPDataSourceOrigin getOriginSource() {
         return origin;
     }
 
