@@ -30,7 +30,7 @@ public class SQLCompletionAnalyzerTest {
     @Test
     public void testCompletionKeywordSelect() throws DBException {
         final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
-            .request("SEL", 3);
+            .request("SEL|");
 
         Assert.assertEquals(1, proposals.size());
         Assert.assertEquals("SELECT", proposals.get(0).getReplacementString());
@@ -42,7 +42,7 @@ public class SQLCompletionAnalyzerTest {
             .addTable("A").build()
             .addTable("B").build()
             .addTable("C").build()
-            .request("SELECT * FROM ", 14);
+            .request("SELECT * FROM |");
 
         Assert.assertEquals(4, proposals.size());
         Assert.assertEquals("A", proposals.get(0).getReplacementString());
@@ -59,7 +59,7 @@ public class SQLCompletionAnalyzerTest {
                 .addAttribute("col2")
                 .addAttribute("col3")
                 .build()
-            .request("SELECT * FROM A.", 16);
+            .request("SELECT * FROM A.|");
 
         Assert.assertEquals(3, proposals.size());
         Assert.assertEquals("col1", proposals.get(0).getReplacementString());

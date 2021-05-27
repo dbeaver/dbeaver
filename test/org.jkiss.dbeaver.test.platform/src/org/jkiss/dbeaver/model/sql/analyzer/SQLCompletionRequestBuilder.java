@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class SQLCompletionRequestBuilder {
     }
 
     @NotNull
-    public List<SQLCompletionProposalBase> request(@NotNull String sql, int offset) throws DBException {
+    public List<SQLCompletionProposalBase> request(@NotNull String sql) throws DBException {
         final DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         final SQLDialectRegistry dialectRegistry = SQLDialectRegistry.getInstance();
@@ -93,8 +94,10 @@ public class SQLCompletionRequestBuilder {
         final SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
 
+        final Pair<String, Integer> cursor = extractCursorFromQuery(sql);
+
         final Document document = new Document();
-        document.set(sql);
+        document.set(cursor.getFirst());
 
         final SQLCompletionContext context = new SQLCompletionContextImpl(
             dataSource,
@@ -106,8 +109,8 @@ public class SQLCompletionRequestBuilder {
         final SQLCompletionRequest request = new SQLCompletionRequest(
             context,
             document,
-            offset,
-            new SQLQuery(context.getDataSource(), sql),
+            cursor.getSecond(),
+            new SQLQuery(context.getDataSource(), cursor.getFirst()),
             false
         );
 
@@ -118,6 +121,12 @@ public class SQLCompletionRequestBuilder {
         final SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
         analyzer.runAnalyzer(new VoidProgressMonitor());
         return analyzer.getProposals();
+    }
+
+    @NotNull
+    private static Pair<String, Integer> extractCursorFromQuery(@NotNull String sql) {
+        final int cursor = sql.indexOf('|');
+        return new Pair<>(sql.substring(0, cursor) + sql.substring(cursor + 1), cursor);
     }
 
     public static class TableBuilder {
