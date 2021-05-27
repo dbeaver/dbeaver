@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -130,18 +131,14 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     return false;
                 }
                 if (element instanceof DBNDatabaseFolder) {
-                    try {
-                        String elementTypeName = ((DBNDatabaseFolder) element).getMeta().getType();
-                        if (elementTypeName == null) {
-                            return false;
-                        }
-                        Class<?> childType = Class.forName(elementTypeName);
-                        return PostgreTableReal.class.isAssignableFrom(childType) ||
-                            PostgreSequence.class.isAssignableFrom(childType) ||
-                            PostgreProcedure.class.isAssignableFrom(childType);
-                    } catch (ClassNotFoundException e) {
+                    final DBXTreeFolder meta = ((DBNDatabaseFolder) element).getMeta();
+                    final Class<?> childType = meta.getSource().getObjectClass(meta.getType());
+                    if (childType == null) {
                         return false;
                     }
+                    return PostgreTableReal.class.isAssignableFrom(childType) ||
+                        PostgreSequence.class.isAssignableFrom(childType) ||
+                        PostgreProcedure.class.isAssignableFrom(childType);
                 }
                 return true;
             }

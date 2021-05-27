@@ -176,7 +176,7 @@ public class PostgreRole implements
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName() {
         return name;
     }
