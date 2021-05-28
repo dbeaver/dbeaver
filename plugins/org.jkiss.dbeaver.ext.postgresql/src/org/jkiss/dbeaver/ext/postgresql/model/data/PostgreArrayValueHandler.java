@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
@@ -63,6 +64,10 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     throw new DBCException("Can't resolve data type " + type.getFullTypeName());
                 }
                 PostgreDataType itemType = arrayType.getElementType(session.getProgressMonitor());
+                if (itemType == null && arrayType.getTypeType() == PostgreTypeType.d) {
+                    // Domains store component type information in another field
+                    itemType = arrayType.getBaseType(session.getProgressMonitor());
+                }
                 if (itemType == null) {
                     throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
                 }
