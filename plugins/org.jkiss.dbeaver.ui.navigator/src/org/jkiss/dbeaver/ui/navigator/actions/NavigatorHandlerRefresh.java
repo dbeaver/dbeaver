@@ -101,7 +101,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                 DBNDatabaseNode editorNode = ((DatabaseEditorInput<?>) editorPart.getEditorInput()).getNavigatorNode();
                 for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
                     DBNNode nextNode = iter.next();
-                    if (nextNode == editorNode || editorNode.isChildOf(nextNode)) {
+                    if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
                         ((IRefreshablePart) editorPart).refreshPart(this, true);
                         iter.remove();
                     }
