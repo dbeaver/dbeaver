@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -47,7 +46,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
  */
 public class PostgreTriggerConfigurator implements DBEObjectConfigurator<PostgreTrigger> {
 
-    protected static final Log log = Log.getLog(PostgreTriggerConfigurator.class);
+    //protected static final Log log = Log.getLog(PostgreTriggerConfigurator.class);
 
     @Override
     public PostgreTrigger configureObject(DBRProgressMonitor monitor, Object parent, PostgreTrigger trigger) {
@@ -69,10 +68,10 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
     public class TriggerEditPage extends EntityEditPage {
 
         PostgreTrigger trigger;
-        CSmartSelector functionCombo;
+        CSmartSelector<PostgreProcedure> functionCombo;
         PostgreProcedure selectedFunction;
 
-        public TriggerEditPage(PostgreTrigger trigger) {
+        TriggerEditPage(PostgreTrigger trigger) {
             super(trigger.getDataSource(), DBSEntityType.TRIGGER);
             this.trigger = trigger;
         }
@@ -96,7 +95,7 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
         private class PostgreProcedureSelector extends CSmartSelector<PostgreProcedure> {
             private final Composite parent;
 
-            public PostgreProcedureSelector(Composite pageContents, Composite parent) {
+            PostgreProcedureSelector(Composite pageContents, Composite parent) {
                 super(pageContents, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new LabelProvider() {
                     @Override
                     public Image getImage(Object element) {

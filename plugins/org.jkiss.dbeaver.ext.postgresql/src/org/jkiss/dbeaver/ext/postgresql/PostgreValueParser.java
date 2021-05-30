@@ -20,6 +20,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -55,7 +56,8 @@ public class PostgreValueParser {
                     return string;
                 }
             } else {
-                log.error("Unsupported array string: '" + string + "'");
+                //log.error("Unsupported array string: '" + string + "'");
+                // It can be already a string object as an element of parsed array
                 return string;
             }
         }
@@ -92,7 +94,15 @@ public class PostgreValueParser {
     private static Object prepareToParseArray(DBCSession session, DBSTypedObject arrayType, String string) throws DBCException {
         DBSDataType arrayDataType = arrayType instanceof DBSDataType ? (DBSDataType) arrayType : ((DBSTypedObjectEx) arrayType).getDataType();
         try {
+            if (arrayDataType == null) {
+                log.error("Can't get array type '" + arrayType.getFullTypeName() + "'");
+                return string;
+            }
             DBSDataType componentType = arrayDataType.getComponentType(session.getProgressMonitor());
+            if (componentType == null && arrayType instanceof PostgreDataType && ((PostgreDataType) arrayType).getTypeType() == PostgreTypeType.d) {
+                // Domains store component type information in another field
+                componentType = ((PostgreDataType) arrayType).getBaseType(session.getProgressMonitor());
+            }
             if (componentType == null) {
                 log.error("Can't get component type from array '" + arrayType.getFullTypeName() + "'");
                 return string;
