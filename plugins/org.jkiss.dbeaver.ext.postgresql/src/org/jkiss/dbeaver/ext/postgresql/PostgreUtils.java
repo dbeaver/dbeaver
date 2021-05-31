@@ -416,17 +416,8 @@ public class PostgreUtils {
         }
     }
 
-    public static int getScale(long oid, int typmod) {
-        //oid = convertArrayToBaseOid(oid);
+    public static int getTimeTypePrecision(long oid, int typmod) {
         switch ((int) oid) {
-            case PostgreOid.FLOAT4:
-                return 8;
-            case PostgreOid.FLOAT8:
-                return 17;
-            case PostgreOid.NUMERIC:
-                if (typmod == -1)
-                    return 0;
-                return (typmod - 4) & 0xFFFF;
             case PostgreOid.TIME:
             case PostgreOid.TIMETZ:
             case PostgreOid.TIMESTAMP:
@@ -440,6 +431,22 @@ public class PostgreUtils {
                 int intervalPrecision = typmod & 0xFFFF;
                 if (intervalPrecision == 65535) return UNKNOWN_LENGTH;
                 return intervalPrecision;
+            default:
+                return 0;
+        }
+    }
+
+    public static int getScale(long oid, int typmod) {
+        //oid = convertArrayToBaseOid(oid);
+        switch ((int) oid) {
+            case PostgreOid.FLOAT4:
+                return 8;
+            case PostgreOid.FLOAT8:
+                return 17;
+            case PostgreOid.NUMERIC:
+                if (typmod == -1)
+                    return 0;
+                return (typmod - 4) & 0xFFFF;
             default:
                 return 0;
         }
