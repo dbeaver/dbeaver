@@ -77,6 +77,9 @@ public class PasswordChangeDialog extends BaseDialog
             passwordInfo.setNewPassword(newPasswordText.getText());
             updateButtons();
         });
+        if (!userEditable) {
+            newPasswordText.setFocus();
+        }
         Text verifyPasswordText = UIUtils.createLabelText(credGroup, "Verify Password", "", SWT.BORDER | SWT.PASSWORD);
         verifyPasswordText.addModifyListener(e -> {
             verifyText = verifyPasswordText.getText();
