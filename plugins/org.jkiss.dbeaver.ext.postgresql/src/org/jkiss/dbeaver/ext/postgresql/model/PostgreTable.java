@@ -236,13 +236,13 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSEntityAssociation> refs = new ArrayList<>(
             CommonUtils.safeList(getSubInheritance(monitor)));
-        // This is dummy implementation
-        // Get references from this schema only
-        final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().getSchema().getConstraintCache().getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
-        for (PostgreTableForeignKey constraint : allForeignKeys) {
-            if (constraint.getAssociatedEntity() == this) {
-                refs.add(constraint);
+        for (PostgreSchema schema : getContainer().getDatabase().getSchemas(monitor)) {
+            final Collection<PostgreTableForeignKey> allForeignKeys =
+                schema.getConstraintCache().getTypedObjects(monitor, schema, PostgreTableForeignKey.class);
+            for (PostgreTableForeignKey constraint : allForeignKeys) {
+                if (constraint.getAssociatedEntity() == this) {
+                    refs.add(constraint);
+                }
             }
         }
         return refs;
