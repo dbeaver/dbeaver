@@ -34,6 +34,24 @@ public class SQLCompletionAnalyzerTest {
     }
 
     @Test
+    public void testCompletionKeywordFrom() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .request("SELECT * F|");
+
+        Assert.assertEquals(1, proposals.size());
+        Assert.assertEquals("FROM", proposals.get(0).getReplacementString());
+    }
+
+    @Test
+    public void testCompletionKeywordWhere() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .request("SELECT * FROM Table |");
+
+        Assert.assertEquals(1, proposals.size());
+        Assert.assertEquals("WHERE", proposals.get(0).getReplacementString());
+    }
+
+    @Test
     public void testCompletionTableAfterSelect() throws DBException {
         final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
             .addTable("A").build()
@@ -47,7 +65,7 @@ public class SQLCompletionAnalyzerTest {
         Assert.assertEquals("C", proposals.get(2).getReplacementString());
 
         // TODO: Is 'WHERE' even supposed to be here?
-        Assert.assertEquals("WHERE", proposals.get(3).getReplacementString());
+        // Assert.assertEquals("WHERE", proposals.get(3).getReplacementString());
     }
 
     @Test
@@ -96,6 +114,90 @@ public class SQLCompletionAnalyzerTest {
         Assert.assertEquals(2, proposals.size());
         Assert.assertEquals("col2", proposals.get(0).getReplacementString());
         Assert.assertEquals("col2_b", proposals.get(1).getReplacementString());
+    }
+
+    @Test
+    public void testExpandAllColumnsMultiTableAliasPrimary() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A")
+                .addAttribute("col1")
+                .addAttribute("col2")
+                .addAttribute("col3")
+                .build()
+            .addTable("B")
+                .addAttribute("col4")
+                .addAttribute("col5")
+                .addAttribute("col6")
+                .build()
+            .request("SELECT a.| FROM A a, B b");
+
+        Assert.assertEquals(3, proposals.size());
+        Assert.assertEquals("col1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("col2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("col3", proposals.get(2).getReplacementString());
+    }
+
+    @Test
+    public void testExpandAllColumnsMultiTableAliasSecondary() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A")
+                .addAttribute("col1")
+                .addAttribute("col2")
+                .addAttribute("col3")
+                .build()
+            .addTable("B")
+                .addAttribute("col4")
+                .addAttribute("col5")
+                .addAttribute("col6")
+                .build()
+            .request("SELECT b.| FROM A a, B b");
+
+        Assert.assertEquals(3, proposals.size());
+        Assert.assertEquals("col4", proposals.get(0).getReplacementString());
+        Assert.assertEquals("col5", proposals.get(1).getReplacementString());
+        Assert.assertEquals("col6", proposals.get(2).getReplacementString());
+    }
+
+    @Test
+    public void testExpandAllColumnsAfterWhere() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A")
+                .addAttribute("col1")
+                .addAttribute("col2")
+                .addAttribute("col3")
+                .build()
+            .addTable("B")
+                .addAttribute("col4")
+                .addAttribute("col5")
+                .addAttribute("col6")
+                .build()
+            .request("SELECT * FROM A WHERE |");
+
+        Assert.assertEquals(3, proposals.size());
+        Assert.assertEquals("col1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("col2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("col3", proposals.get(2).getReplacementString());
+    }
+
+    @Test
+    public void testExpandAllColumnsAfterWhereAlias() throws DBException {
+        final List<SQLCompletionProposalBase> proposals = new SQLCompletionRequestBuilder()
+            .addTable("A")
+                .addAttribute("col1")
+                .addAttribute("col2")
+                .addAttribute("col3")
+                .build()
+            .addTable("B")
+                .addAttribute("col4")
+                .addAttribute("col5")
+                .addAttribute("col6")
+                .build()
+            .request("SELECT * FROM B b WHERE b.|");
+
+        Assert.assertEquals(3, proposals.size());
+        Assert.assertEquals("col4", proposals.get(0).getReplacementString());
+        Assert.assertEquals("col5", proposals.get(1).getReplacementString());
+        Assert.assertEquals("col6", proposals.get(2).getReplacementString());
     }
 
     @Test
