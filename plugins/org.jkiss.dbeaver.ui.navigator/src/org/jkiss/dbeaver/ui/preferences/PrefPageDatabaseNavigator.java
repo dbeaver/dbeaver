@@ -240,7 +240,18 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             }
             return false;
         });
-        editors.sort(Comparator.comparing(EntityEditorDescriptor::getName));
+        editors.sort(Comparator.comparing(editor -> {
+            switch (editor.getPosition()) {
+                case EntityEditorDescriptor.POSITION_PROPS:
+                    return -2;
+                case EntityEditorDescriptor.POSITION_START:
+                    return -1;
+                case EntityEditorDescriptor.POSITION_END:
+                    return 1;
+                default:
+                    return 0;
+            }
+        }));
         editors.add(0, editorsRegistry.getDefaultEditor());
         return editors;
     }
