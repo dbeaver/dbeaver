@@ -148,7 +148,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             if (postgreColumn.getTable() instanceof PostgreTableForeign) {
                 String[] foreignTableColumnOptions = postgreColumn.getForeignTableColumnOptions();
                 if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
-                    sql.append(" OPTIONS(").append(String.join("," , Arrays.asList(foreignTableColumnOptions))).append(")");
+                    sql.append(" OPTIONS").append(PostgreUtils.getOptionsString(foreignTableColumnOptions));
                 }
             }
             if (rawType != null) {
