@@ -34,10 +34,14 @@ import java.sql.Types;
  * PostgreDateTimeValueHandler.
  */
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
-    private static final String POSITIVE_INFINITY_STRING_REPRESENTATION = "+Infinity";
-    private static final String NEGATIVE_INFINITY_STRING_REPRESENTATION = "-Infinity";
-    private static final long POSITIVE_INFINITY = 9223372036825200000L;
+    private static final String POSITIVE_INFINITY_STRING_REPRESENTATION = "infinity";
+    private static final String NEGATIVE_INFINITY_STRING_REPRESENTATION = "-infinity";
+
+    // https://jdbc.postgresql.org/documentation/publicapi/constant-values.html
     private static final long NEGATIVE_INFINITY = -9223372036832400000L;
+    private static final long NEGATIVE_SMALLER_INFINITY = -185543533774800000L;
+    private static final long POSITIVE_INFINITY = 9223372036825200000L;
+    private static final long POSITIVE_SMALLER_INFINITY = 185543533774800000L;
 
     public PostgreDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
@@ -48,12 +52,11 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         if (!(object instanceof Timestamp)) {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
-        Timestamp timestamp = (Timestamp) object;
-        long time = timestamp.getTime();
-        if (time == POSITIVE_INFINITY) {
+        final long time = ((Timestamp) object).getTime();
+        if (time == NEGATIVE_INFINITY || time == NEGATIVE_SMALLER_INFINITY) {
             return POSITIVE_INFINITY_STRING_REPRESENTATION;
         }
-        if (time == NEGATIVE_INFINITY) {
+        if (time == POSITIVE_INFINITY || time == POSITIVE_SMALLER_INFINITY) {
             return NEGATIVE_INFINITY_STRING_REPRESENTATION;
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
