@@ -105,7 +105,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 changed = true;
             }
             if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
-                changeDefaultSchema(monitor, schema, true);
+                changeDefaultSchema(monitor, schema, true, false);
                 changed = true;
             }
             if (changed) {
@@ -121,9 +121,9 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         setDefaultCatalog(monitor, schema.getDatabase(), schema);
     }
 
-    void changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect) throws DBCException {
+    void changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect, boolean force) throws DBCException {
         PostgreSchema oldActiveSchema = this.activeSchema;
-        if (oldActiveSchema == schema) {
+        if (oldActiveSchema == schema && !force) {
             return;
         }
 
