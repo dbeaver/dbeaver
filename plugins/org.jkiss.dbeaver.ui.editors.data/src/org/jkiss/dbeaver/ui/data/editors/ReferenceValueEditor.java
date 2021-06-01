@@ -26,6 +26,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -41,9 +42,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -67,8 +70,7 @@ import java.util.Objects;
 public class ReferenceValueEditor {
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
-    private static final char BLACK_RIGHTWARDS_ARROWHEAD = '➤';
-
+    private final Color selectionColor = UIUtils.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
     private IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
@@ -79,6 +81,8 @@ public class ReferenceValueEditor {
     private Object lastPattern;
     @Nullable
     private String previousTextValue;
+    @Nullable
+    private Color defaultBackgroundColor;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -271,7 +275,7 @@ public class ReferenceValueEditor {
         );
 
         TableItem curItem = null;
-        Item prevItem = null;
+        TableItem prevItem = null;
         int curItemIndex = -1;
         TableItem[] items = editorSelector.getItems();
         for (int i = 0; i < items.length; i++) {
@@ -289,14 +293,17 @@ public class ReferenceValueEditor {
             }
         }
 
-        if (prevItem != null && previousTextValue != null) {
-            prevItem.setText(previousTextValue.substring(1));
+        if (prevItem != null && defaultBackgroundColor != null) {
+            prevItem.setBackground(defaultBackgroundColor);
         }
 
         if (curItem != null) {
+            editorSelector.deselectAll();
+            if (defaultBackgroundColor == null) {
+                defaultBackgroundColor = curItem.getBackground();
+            }
+            curItem.setBackground(selectionColor);
             editorSelector.showItem(curItem);
-            curTextValue = BLACK_RIGHTWARDS_ARROWHEAD + curTextValue;
-            curItem.setText(curTextValue);
             if (!reloadIfNotFound) {
                 editorSelector.setTopIndex(curItemIndex);
             }
