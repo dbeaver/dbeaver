@@ -1280,7 +1280,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Color headerSelectionBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND);
             RGB cellSel = UIUtils.blend(
                     headerSelectionBackground.getRGB(),
-                    new RGB(255, 255, 255),
+                    UIStyles.isDarkTheme() ? new RGB(0, 0, 0) : new RGB(255, 255, 255),
                     50);
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
