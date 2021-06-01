@@ -133,6 +133,16 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     }
 
     @Override
+    public boolean isTableCommentEditable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableColumnCommentEditable() {
+        return true;
+    }
+
+    @Override
     public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return true;
     }
