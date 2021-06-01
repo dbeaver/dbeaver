@@ -22,14 +22,17 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.config.MySQLCommandGrantPrivilege;
+import org.jkiss.dbeaver.ext.mysql.ui.config.MySQLUserManager;
 import org.jkiss.dbeaver.ext.mysql.ui.config.UserPropertyHandler;
 import org.jkiss.dbeaver.ext.mysql.ui.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -237,6 +240,27 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                     }
                 });
             }
+        }
+
+        @Override
+        public void onCommandChange(DBECommand<?> command) {
+            if (command instanceof MySQLUserManager.CommandRenameUser) {
+                MySQLUserManager.CommandRenameUser mysqlCommand = (MySQLUserManager.CommandRenameUser) command;
+                setUsernameAndHost(mysqlCommand.getNewUserName(), mysqlCommand.getNewHost());
+            }
+        }
+
+        @Override
+        public void onReset() {
+            MySQLUser user = getDatabaseObject();
+            setUsernameAndHost(user.getUserName(), user.getHost());
+        }
+
+        private void setUsernameAndHost(@NotNull String username, @NotNull String host) {
+            UIUtils.asyncExec(() -> {
+                userNameText.setText(username);
+                hostText.setText(host);
+            });
         }
     }
 }

@@ -281,6 +281,10 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             }
             if (emptyButton) {
                 onDuplicateKeyInsertMethods.setText(DBSDataManipulator.INSERT_NONE_METHOD);
+                if (!CommonUtils.isEmpty(settings.getOnDuplicateKeyInsertMethodId())) {
+                    // May be this setting was used for another database
+                    settings.setOnDuplicateKeyInsertMethodId(null);
+                }
             }
         } else {
             onDuplicateKeyInsertMethods.setText(DBSDataManipulator.INSERT_NONE_METHOD);
@@ -288,6 +292,10 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             Label descLabel = new Label(loadSettings, SWT.NONE);
             descLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
             descLabel.setText("Replace method not supported by target database");
+            if (!CommonUtils.isEmpty(settings.getOnDuplicateKeyInsertMethodId())) {
+                // May be this setting was used for another database
+                settings.setOnDuplicateKeyInsertMethodId(null);
+            }
         }
 
         List<SQLInsertReplaceMethodDescriptor> finalInsertMethodsDescriptors = insertMethodsDescriptors;

@@ -133,7 +133,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
     }
 
     private void setCurrentSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
             JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, schemaName));
             this.activeSchemaName = schemaName;
         } catch (SQLException e) {

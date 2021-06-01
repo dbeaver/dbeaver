@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
@@ -79,6 +80,20 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     public List<MySQLTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
+    public DBSForeignKeyModifyRule getDeleteRule() {
+        return super.getDeleteRule();
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 6)
+    public DBSForeignKeyModifyRule getUpdateRule() {
+        return super.getUpdateRule();
     }
 
     public void addColumn(MySQLTableForeignKeyColumn column)

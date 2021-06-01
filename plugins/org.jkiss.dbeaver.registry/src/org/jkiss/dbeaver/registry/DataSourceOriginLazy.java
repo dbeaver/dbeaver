@@ -76,7 +76,8 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
     @Nullable
     @Override
     public DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
-        return resolveRealOrigin().getObjectDetails(monitor, sessionContext, dataSource);
+        DBPDataSourceOrigin realOrigin = resolveRealOrigin();
+        return realOrigin == null ? null : realOrigin.getObjectDetails(monitor, sessionContext, dataSource);
     }
 
     @Override
@@ -84,19 +85,15 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
         return getType();
     }
 
-    @NotNull
+    @Nullable
     DBPDataSourceOrigin resolveRealOrigin() {
         // Loaded from configuration
         // Instantiate in lazy mode
-        DBPDataSourceOrigin origin = null;
         DBPDataSourceOriginProvider originProvider = DataSourceProviderRegistry.getInstance().getDataSourceOriginProvider(originId);
         if (originProvider != null) {
-            origin = originProvider.getOrigin(originProperties);
+            return originProvider.getOrigin(originProperties);
         }
-        if (origin == null) {
-            origin = DataSourceOriginLocal.INSTANCE;
-        }
-        return origin;
+        return null;
     }
 
 }

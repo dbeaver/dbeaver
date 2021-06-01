@@ -748,7 +748,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
-        DBPDataSourceOrigin origin = dataSource.getOrigin();
+        DBPDataSourceOrigin origin = dataSource.getOriginSource();
         if (origin != DataSourceOriginLocal.INSTANCE) {
             Map<String, Object> originProps = new LinkedHashMap<>();
             originProps.put(ATTR_ORIGIN_TYPE, origin.getType());

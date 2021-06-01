@@ -303,7 +303,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
 
     private void setDefaultSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
         GenericDataSource dataSource = getDataSource();
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
             if (dataSource.isSelectedEntityFromAPI()) {
                 session.setSchema(schemaName);
             } else {

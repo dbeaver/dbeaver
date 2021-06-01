@@ -986,10 +986,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                             case "int1":
                             case "uint1":
                             case "uint2":
+                                valueType = Types.SMALLINT;
+                                break;
                             case "uint4":
+                                valueType = Types.INTEGER;
+                                break;
                             case "uint8":
-                                // All this types are custom, from pguint extension. Pguint is popular and we know that these types are numeric
-                                valueType = Types.NUMERIC;
+                                // All (u)int+number types are custom, from pguint extension. Pguint is popular and we know that these types are numeric
+                                valueType = Types.BIGINT;
                                 break;
                             default:
                                 valueType = Types.OTHER;
