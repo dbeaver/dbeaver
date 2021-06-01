@@ -324,13 +324,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
-        ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
+                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+        PostgreExecutionContext postgreContext = (PostgreExecutionContext) context;
+        PostgreSchema activeSchema = null;
         if (initFrom != null) {
-            final PostgreSchema activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
-            if (activeSchema != null && activeSchema != ((PostgreExecutionContext) context).getDefaultSchema()) {
-                ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
-            }
+            activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
+        }
+        postgreContext.refreshDefaults(monitor, true);
+        if (activeSchema != null) {
+            postgreContext.setDefaultCatalog(monitor, activeSchema.getDatabase(), activeSchema, true);
         }
     }
 
@@ -565,7 +568,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgreSchema oldDefaultSchema = null;
         if (schema != null) {
             oldDefaultSchema = newDatabase.getMetaContext().getDefaultSchema();
-            newDatabase.getMetaContext().changeDefaultSchema(monitor, schema, false);
+            newDatabase.getMetaContext().changeDefaultSchema(monitor, schema, false, false);
         }
 
         activeDatabaseName = newDatabase.getName();
