@@ -57,6 +57,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * ReferenceValueEditor
@@ -64,8 +65,9 @@ import java.util.List;
  * @author Serge Rider
  */
 public class ReferenceValueEditor {
-
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
+
+    private static final char BLACK_RIGHTWARDS_ARROWHEAD = '➤';
 
     private IValueController valueController;
     private IValueEditor valueEditor;
@@ -75,6 +77,8 @@ public class ReferenceValueEditor {
     private volatile boolean sortAsc = true;
     private volatile boolean dictLoaded = false;
     private Object lastPattern;
+    @Nullable
+    private String previousTextValue;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -198,40 +202,8 @@ public class ReferenceValueEditor {
             this.editorSelector.addDisposeListener(e -> menuMgr.dispose());
         }
 
+        ModifyListener modifyListener = e -> selectCurrentValue(true);
         Control control = valueEditor.getControl();
-        ModifyListener modifyListener = e -> {
-            Object curEditorValue;
-            try {
-                curEditorValue = valueEditor.extractEditorValue();
-            } catch (DBException e1) {
-                log.error(e1);
-                return;
-            }
-            // Try to select current value in the table
-            final String curTextValue = valueController.getValueHandler().getValueDisplayString(
-                ((IAttributeController) valueController).getBinding(),
-                curEditorValue,
-                DBDDisplayFormat.EDIT);
-            boolean valueFound = false;
-            if (curTextValue != null) {
-                TableItem[] items = editorSelector.getItems();
-                for (int i = 0; i < items.length; i++) {
-                    TableItem item = items[i];
-                    if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
-                        editorSelector.select(i);
-                        editorSelector.showItem(item);
-                        //editorSelector.setTopIndex(i);
-                        valueFound = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!valueFound) {
-                // Read dictionary
-                reloadSelectorValues(curEditorValue, false);
-            }
-        };
         if (control instanceof Text) {
             ((Text)control).addModifyListener(modifyListener);
         } else if (control instanceof StyledText) {
@@ -263,7 +235,7 @@ public class ReferenceValueEditor {
 
     private void reloadSelectorValues(Object pattern, boolean force) {
         if (!force && dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
-            selectCurrentValue();
+            selectCurrentValue(false);
             return;
         }
         lastPattern = pattern;
@@ -278,64 +250,59 @@ public class ReferenceValueEditor {
             .schedule();
     }
 
-    private void updateDictionarySelector(EnumValuesData valuesData) {
-        if (editorSelector == null || editorSelector.isDisposed()) {
+    private void selectCurrentValue(boolean reloadIfNotFound) {
+        Widget editorControl = valueEditor.getControl();
+        if (editorControl == null || editorControl.isDisposed()) {
             return;
         }
-        editorSelector.setRedraw(false);
+
+        Object curEditorValue;
         try {
-            editorSelector.removeAll();
-            for (DBDLabelValuePair entry : valuesData.keyValues) {
-                TableItem discItem = new TableItem(editorSelector, SWT.NONE);
-                discItem.setText(0,
-                    valuesData.keyHandler.getValueDisplayString(
-                        valuesData.keyColumn.getAttribute(),
-                        entry.getValue(),
-                        DBDDisplayFormat.EDIT));
-                discItem.setText(1, entry.getLabel());
-                discItem.setData(entry.getValue());
-            }
-
-            selectCurrentValue();
-
-            UIUtils.packColumns(editorSelector, false);
-        } finally {
-            editorSelector.setRedraw(true);
+            curEditorValue = valueEditor.extractEditorValue();
+        } catch (DBException exception) {
+            log.error(exception);
+            return;
         }
-    }
 
-    private void selectCurrentValue() {
-        Control editorControl = valueEditor.getControl();
-        if (editorControl != null && !editorControl.isDisposed()) {
-            try {
-                Object curValue = valueEditor.extractEditorValue();
-                final String curTextValue = valueController.getValueHandler().getValueDisplayString(
-                        ((IAttributeController) valueController).getBinding(),
-                        curValue,
-                        DBDDisplayFormat.EDIT);
+        String curTextValue = valueController.getValueHandler().getValueDisplayString(
+            ((IAttributeController) valueController).getBinding(),
+            curEditorValue,
+            DBDDisplayFormat.EDIT
+        );
 
-                TableItem curItem = null;
-                int curItemIndex = -1;
-                TableItem[] items = editorSelector.getItems();
-                for (int i = 0; i < items.length; i++) {
-                    TableItem item = items[i];
-                    if (item.getText(0).equals(curTextValue)) {
-                        curItem = item;
-                        curItemIndex = i;
-                        break;
-                    }
-                }
-                if (curItem != null) {
-                    editorSelector.setSelection(curItem);
-                    editorSelector.showItem(curItem);
-                    // Show cur item on top
-                    editorSelector.setTopIndex(curItemIndex);
-                } else {
-                    editorSelector.deselectAll();
-                }
-            } catch (DBException e) {
-                log.error(e);
+        TableItem curItem = null;
+        Item prevItem = null;
+        int curItemIndex = -1;
+        TableItem[] items = editorSelector.getItems();
+        for (int i = 0; i < items.length; i++) {
+            TableItem item = items[i];
+            String itemText = item.getText(0);
+            if (Objects.equals(itemText, curTextValue)) {
+                curItem = item;
+                curItemIndex = i;
             }
+            if (previousTextValue != null && Objects.equals(itemText, previousTextValue)) {
+                prevItem = item;
+            }
+            if (curItem != null && (previousTextValue == null || prevItem != null)) {
+                break;
+            }
+        }
+
+        if (prevItem != null && previousTextValue != null) {
+            prevItem.setText(previousTextValue.substring(1));
+        }
+
+        if (curItem != null) {
+            editorSelector.showItem(curItem);
+            curTextValue = BLACK_RIGHTWARDS_ARROWHEAD + curTextValue;
+            curItem.setText(curTextValue);
+            if (!reloadIfNotFound) {
+                editorSelector.setTopIndex(curItemIndex);
+            }
+            previousTextValue = curTextValue;
+        } else if (reloadIfNotFound) {
+            reloadSelectorValues(curEditorValue, false);
         }
     }
 
@@ -536,6 +503,31 @@ public class ReferenceValueEditor {
                 updateDictionarySelector(result);
             }
         }
-    }
 
+        private void updateDictionarySelector(EnumValuesData valuesData) {
+            if (editorSelector == null || editorSelector.isDisposed()) {
+                return;
+            }
+            editorSelector.setRedraw(false);
+            try {
+                editorSelector.removeAll();
+                for (DBDLabelValuePair entry : valuesData.keyValues) {
+                    TableItem discItem = new TableItem(editorSelector, SWT.NONE);
+                    discItem.setText(0,
+                        valuesData.keyHandler.getValueDisplayString(
+                            valuesData.keyColumn.getAttribute(),
+                            entry.getValue(),
+                            DBDDisplayFormat.EDIT));
+                    discItem.setText(1, entry.getLabel());
+                    discItem.setData(entry.getValue());
+                }
+
+                selectCurrentValue(false);
+
+                UIUtils.packColumns(editorSelector, false);
+            } finally {
+                editorSelector.setRedraw(true);
+            }
+        }
+    }
 }
