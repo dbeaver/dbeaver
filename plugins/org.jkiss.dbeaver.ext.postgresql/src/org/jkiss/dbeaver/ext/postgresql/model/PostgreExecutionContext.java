@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -87,15 +87,20 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
+        setDefaultCatalog(monitor, catalog, schema, false);
+    }
+
+    void setDefaultCatalog(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase catalog, @Nullable PostgreSchema schema, boolean force)
+            throws DBCException {
         try {
             catalog.checkInstanceConnection(monitor);
 
-            JDBCRemoteInstance oldInstance = getOwnerInstance();
+            DBSObject oldInstance = getOwnerInstance();
             boolean changed = false;
             if (oldInstance != catalog) {
                 // Changing catalog means reconnect
                 // Change it only for isolated editor contexts
-                if (this.isIsolatedContext()) {
+                if (isolatedContext) {
                     disconnect();
                     setOwnerInstance(catalog);
                     connect(monitor, null, null, null, false);
@@ -104,9 +109,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 }
                 changed = true;
             }
-            if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
-                changeDefaultSchema(monitor, schema, true);
-                changed = true;
+            if (schema != null) {
+                changed = changeDefaultSchema(monitor, schema, true, force);
             }
             if (changed) {
                 DBUtils.fireObjectSelectionChange(oldInstance, catalog);
@@ -118,13 +122,13 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
-        setDefaultCatalog(monitor, schema.getDatabase(), schema);
+        setDefaultCatalog(monitor, schema.getDatabase(), schema, false);
     }
 
-    void changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect) throws DBCException {
+    boolean changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect, boolean force) throws DBCException {
         PostgreSchema oldActiveSchema = this.activeSchema;
-        if (oldActiveSchema == schema) {
-            return;
+        if (oldActiveSchema == schema && !force) {
+            return false;
         }
 
         setSearchPath(monitor, schema);
@@ -134,6 +138,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         if (reflect) {
             DBUtils.fireObjectSelectionChange(oldActiveSchema, activeSchema);
         }
+
+        return true;
     }
 
     @Override
@@ -268,15 +274,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    public boolean isIsolatedContext() {
-        return isolatedContext;
-    }
-
     public void setIsolatedContext(boolean isolatedContext) {
         this.isolatedContext = isolatedContext;
-    }
-
-    public boolean getIsolatedContext() {
-        return isolatedContext;
     }
 }
