@@ -333,8 +333,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         postgreContext.refreshDefaults(monitor, true);
         if (activeSchema != null) {
-            postgreContext.setDefaultSchema(monitor, activeSchema);
-            postgreContext.changeDefaultSchema(monitor, activeSchema, true, true);
+            postgreContext.setDefaultCatalog(monitor, activeSchema.getDatabase(), activeSchema, true);
         }
     }
 
