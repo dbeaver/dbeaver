@@ -172,7 +172,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
     //---- Rename command and rename reflector. For the most part, it is copy-pasted from SQLObjectEditor.
 
-    private static final class CommandRenameUser extends DBECommandAbstract<MySQLUser> implements DBECommandRename {
+    public static final class CommandRenameUser extends DBECommandAbstract<MySQLUser> implements DBECommandRename {
         private final Map<String, Object> options;
         private final String oldName;
         private final String oldUserName;
@@ -210,11 +210,11 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             return oldHost;
         }
 
-        String getNewUserName() {
+        public String getNewUserName() {
             return newUserName;
         }
 
-        String getNewHost() {
+        public String getNewHost() {
             return newHost;
         }
 
