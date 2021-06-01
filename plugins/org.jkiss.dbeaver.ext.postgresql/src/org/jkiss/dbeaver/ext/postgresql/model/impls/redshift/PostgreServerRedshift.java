@@ -151,7 +151,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     @Override
     public boolean supportsRoles() {
-        return true;
+        // Redshift has support for roles only as a part of the EE extension.
+        // That's a silly workaround (see #11912, #12691)
+        return dataSource.getClass() != PostgreDataSource.class;
     }
 
     @Override
