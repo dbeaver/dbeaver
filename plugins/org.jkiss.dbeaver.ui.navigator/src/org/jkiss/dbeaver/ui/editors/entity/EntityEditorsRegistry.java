@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -122,5 +123,10 @@ public class EntityEditorsRegistry {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public EntityEditorDescriptor getDefaultEditor() {
+        return defaultEditor;
     }
 }

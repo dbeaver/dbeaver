@@ -178,7 +178,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         String defEditorPage = store.getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
         List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
         defaultEditorPageCombo.removeAll();
-        defaultEditorPageCombo.add("Default");
+        defaultEditorPageCombo.add(UINavigatorMessages.pref_page_navigator_default_editor_page_last);
+        defaultEditorPageCombo.select(0);
         for (EntityEditorDescriptor eed : entityEditors) {
             defaultEditorPageCombo.add(eed.getName());
             if (eed.getId().equals(defEditorPage)) {
@@ -224,7 +225,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     }
 
     private List<EntityEditorDescriptor> getAvailableEditorPages() {
-        List<EntityEditorDescriptor> editors = new ArrayList<>(EntityEditorsRegistry.getInstance().getEntityEditors());
+        final EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
+        final List<EntityEditorDescriptor> editors = new ArrayList<>(editorsRegistry.getEntityEditors());
         editors.removeIf(editor -> {
             if (editor.getType() != EntityEditorDescriptor.Type.editor) return true;
             for (AbstractDescriptor.ObjectType ot : editor.getObjectTypes()) {
@@ -238,7 +240,19 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             }
             return false;
         });
-        editors.sort(Comparator.comparing(EntityEditorDescriptor::getName));
+        editors.sort(Comparator.comparing(editor -> {
+            switch (editor.getPosition()) {
+                case EntityEditorDescriptor.POSITION_PROPS:
+                    return -2;
+                case EntityEditorDescriptor.POSITION_START:
+                    return -1;
+                case EntityEditorDescriptor.POSITION_END:
+                    return 1;
+                default:
+                    return 0;
+            }
+        }));
+        editors.add(0, editorsRegistry.getDefaultEditor());
         return editors;
     }
 

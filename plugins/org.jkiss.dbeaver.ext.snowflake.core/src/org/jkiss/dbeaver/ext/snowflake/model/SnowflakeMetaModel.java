@@ -111,13 +111,4 @@ public class SnowflakeMetaModel extends GenericMetaModel
         return true;
     }
 
-    @Override
-    public boolean isTableCommentEditable() {
-        return true;
-    }
-
-    @Override
-    public boolean isTableColumnCommentEditable() {
-        return true;
-    }
 }

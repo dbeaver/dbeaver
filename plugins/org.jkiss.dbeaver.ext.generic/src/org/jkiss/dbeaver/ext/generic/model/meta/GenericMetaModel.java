@@ -796,14 +796,6 @@ public class GenericMetaModel {
 
     // Comments
 
-    public boolean isTableCommentEditable() {
-        return false;
-    }
-
-    public boolean isTableColumnCommentEditable() {
-        return false;
-    }
-
     public boolean isColumnNotNullByDefault() {
         return false;
     }

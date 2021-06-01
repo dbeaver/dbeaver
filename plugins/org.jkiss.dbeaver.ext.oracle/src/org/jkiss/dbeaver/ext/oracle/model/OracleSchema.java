@@ -1083,7 +1083,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                     ", " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "IND_COLUMNS") + " ic, " +
                     OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "IND_EXPRESSIONS") + " iex " +
                     "WHERE ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME \n" +
-                    "AND iex.INDEX_OWNER(+)=i.OWNER AND iex.INDEX_NAME(+)=i.INDEX_NAME\n" +
+                    "AND iex.INDEX_OWNER(+)=i.OWNER AND iex.INDEX_NAME(+)=i.INDEX_NAME AND iex.COLUMN_POSITION(+)=ic.COLUMN_POSITION\n" +
                     "AND ");
             if (forTable == null) {
                 sql.append("i.OWNER=?");

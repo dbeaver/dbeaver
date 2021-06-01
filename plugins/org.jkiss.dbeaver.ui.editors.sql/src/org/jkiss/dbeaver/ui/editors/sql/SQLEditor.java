@@ -233,7 +233,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (resultTabs.getItemCount() == 0) {
                 if (resultsSash.getMaximizedControl() == null) {
                     // Hide results
-                    toggleResultPanel();
+                    toggleResultPanel(false);
                 }
             }
         }
@@ -1521,7 +1521,7 @@ public class SQLEditor extends SQLEditorBase implements
         return presentationStack.getChildren()[EXTRA_CONTROL_INDEX];
     }
 
-    public void toggleResultPanel() {
+    public void toggleResultPanel(boolean switchFocus) {
         UIUtils.syncExec(() -> {
             if (resultsSash.getMaximizedControl() == null) {
                 resultsSash.setMaximizedControl(sqlEditorPanel);
@@ -1535,7 +1535,9 @@ public class SQLEditor extends SQLEditorBase implements
 
                 resultsSash.setMaximizedControl(null);
 
-                switchFocus(true);
+                if (switchFocus) {
+                    switchFocus(true);
+                }
             }
         });
     }
@@ -1874,7 +1876,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void showResultsPanel() {
         if (resultsSash.getMaximizedControl() != null) {
-            toggleResultPanel();
+            toggleResultPanel(false);
         }
         UIUtils.syncExec(() -> {
             if (resultsSash.isDownHidden()) {
