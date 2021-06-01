@@ -236,13 +236,28 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSEntityAssociation> refs = new ArrayList<>(
             CommonUtils.safeList(getSubInheritance(monitor)));
-        // This is dummy implementation
-        // Get references from this schema only
-        final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().getSchema().getConstraintCache().getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
-        for (PostgreTableForeignKey constraint : allForeignKeys) {
-            if (constraint.getAssociatedEntity() == this) {
-                refs.add(constraint);
+        // Obtain a list of schemas containing references to this table to avoid fetching everything
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read referencing schemas")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT connamespace FROM pg_catalog.pg_constraint WHERE confrelid=?")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        final long schemaId = JDBCUtils.safeGetLong(dbResult, 1);
+                        final PostgreSchema schema = getContainer().getDatabase().getSchema(monitor, schemaId);
+                        if (schema == null) {
+                            continue;
+                        }
+                        final Collection<PostgreTableForeignKey> allForeignKeys =
+                            schema.getConstraintCache().getTypedObjects(monitor, schema, PostgreTableForeignKey.class);
+                        for (PostgreTableForeignKey constraint : allForeignKeys) {
+                            if (constraint.getAssociatedEntity() == this) {
+                                refs.add(constraint);
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
             }
         }
         return refs;
