@@ -44,13 +44,13 @@ public abstract class Builder<T, C> {
     }
 
     public interface Consumer<T extends Builder<?, ?>> {
+        Consumer<?> EMPTY = t -> {};
+
         void apply(@NotNull T builder) throws DBException;
 
         @SuppressWarnings("unchecked")
         static <T extends Builder<?, ?>> Consumer<T> empty() {
             return (Consumer<T>) EMPTY;
         }
-
-        Consumer<?> EMPTY = t -> {};
     }
 }

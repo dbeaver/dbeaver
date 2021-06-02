@@ -105,6 +105,11 @@ public class RequestBuilder {
     }
 
     @NotNull
+    public DBSObject getObject() {
+        return object;
+    }
+
+    @NotNull
     private static DataSource createDataSource() {
         return mock(DataSource.class);
     }
