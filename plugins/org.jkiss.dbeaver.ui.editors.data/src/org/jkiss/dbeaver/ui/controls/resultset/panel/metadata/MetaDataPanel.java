@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
@@ -100,7 +101,7 @@ public class MetaDataPanel implements IResultSetPanel {
             attributeList.getControl().addDisposeListener(e ->
                 ((ISelectionProvider) presentation).removeSelectionChangedListener(listener));
         }
-
+        ResultSetPanelRefresher.installOn(this, presentation);
         return this.attributeList;
     }
 

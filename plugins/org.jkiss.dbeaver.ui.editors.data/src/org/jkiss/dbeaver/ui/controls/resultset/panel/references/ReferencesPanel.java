@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -61,15 +62,7 @@ public class ReferencesPanel implements IResultSetPanel {
         this.referencesPlaceholder = new Composite(parent, SWT.NONE);
         this.referencesPlaceholder.setLayout(new FillLayout());
 
-        // Data listener
-        ResultSetListenerAdapter dataListener = new ResultSetListenerAdapter() {
-            @Override
-            public void handleResultSetLoad() {
-                refresh(true);
-            }
-        };
-        presentation.getController().addListener(dataListener);
-        presentation.getControl().addDisposeListener(e -> presentation.getController().removeListener(dataListener));
+        ResultSetPanelRefresher.installOn(this, presentation);
 
         if (presentation instanceof ISelectionProvider) {
             ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
