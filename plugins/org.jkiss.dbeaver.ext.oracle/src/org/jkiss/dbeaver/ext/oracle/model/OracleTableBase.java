@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
@@ -43,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -160,6 +162,16 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Association
     public Collection<OracleDependencyGroup> getDependencies(DBRProgressMonitor monitor) {
         return OracleDependencyGroup.of(this);
+    }
+
+    @Association
+    public List<? extends OracleTableColumn> getCachedAttributes()
+    {
+        final DBSObjectCache<OracleTableBase, OracleTableColumn> childrenCache = getContainer().getTableCache().getChildrenCache(this);
+        if (childrenCache != null) {
+            return childrenCache.getCachedObjects();
+        }
+        return Collections.emptyList();
     }
 
     protected String queryTableComment(JDBCSession session) throws SQLException {
