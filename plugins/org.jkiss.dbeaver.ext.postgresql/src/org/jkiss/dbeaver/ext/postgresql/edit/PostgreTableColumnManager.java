@@ -99,11 +99,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                     break;
                 case DATETIME:
-                    final int scale = CommonUtils.toInt(postgreColumn.getScale());
+                    final int timePrecision = CommonUtils.toInt(postgreColumn.getPrecision());
                     String typeName = column.getTypeName();
                     if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                        if (scale < 6) {
-                            sql.append('(').append(scale).append(')');
+                        if (timePrecision < 6) {
+                            sql.append('(').append(timePrecision).append(')');
                         }
                     }
                     if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
@@ -111,8 +111,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                         if (!CommonUtils.isEmpty(precision)) {
                             sql.append(' ').append(precision);
                         }
-                        if (scale >= 0 && scale < 7) {
-                            sql.append('(').append(scale).append(')');
+                        if (timePrecision >= 0 && timePrecision < 7) {
+                            sql.append('(').append(timePrecision).append(')');
                         }
                     }
             }
