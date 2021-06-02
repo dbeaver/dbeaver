@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.analyzer;
+package org.jkiss.dbeaver.model.sql.analyzer.builder.request;
 
 import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -32,62 +33,25 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
-import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SQLCompletionRequestBuilder {
-    private final DataSource dataSource = Mockito.mock(DataSource.class);
-    private final List<DBSObject> entities = new ArrayList<>();
-    private String dialect = "generic";
-    private String contentType = null;
+public class RequestResult {
+    private final DBPDataSource dataSource;
 
-    @NotNull
-    public TableBuilder addTable(@NotNull String name) throws DBException {
-        return new TableBuilder(this, name);
-    }
-
-    @NotNull
-    public SQLCompletionRequestBuilder setDialect(@NotNull String dialect) {
-        this.dialect = dialect;
-        return this;
-    }
-
-    @NotNull
-    public SQLCompletionRequestBuilder setContentType(@NotNull String contentType) {
-        this.contentType = contentType;
-        return this;
+    public RequestResult(@NotNull DBPDataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @NotNull
     public List<SQLCompletionProposalBase> request(@NotNull String sql) throws DBException {
-        final DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
-        final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final SQLDialectRegistry dialectRegistry = SQLDialectRegistry.getInstance();
-
-        final DBPDataSourceContainer dataSourceContainer = Mockito.mock(DBPDataSourceContainer.class);
-        when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
-        when(dataSourceContainer.getActualConnectionConfiguration()).thenReturn(connectionConfiguration);
-        when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
-
-        when(dataSource.getSQLDialect()).thenReturn(dialectRegistry.getDialect(dialect).createInstance());
-        when(dataSource.getContainer()).thenReturn(dataSourceContainer);
-        when(dataSource.getChild(any(), any())).then(x -> DBUtils.findObject(entities, x.getArgumentAt(1, String.class)));
-        when(dataSource.getChildren(any())).then(x -> entities);
-
-        final DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
-        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
+        final DBCExecutionContext executionContext = mock(DBCExecutionContext.class);
+        when(executionContext.getDataSource()).thenReturn(dataSource);
 
         final SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource);
@@ -95,12 +59,12 @@ public class SQLCompletionRequestBuilder {
         final SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
 
-        final Pair<String, Integer> cursor = extractCursorFromQuery(sql);
+        final Pair<String, Integer> cursor = getCursorFromQuery(sql);
 
         final Document document = new Document();
         document.set(cursor.getFirst());
 
-        final SQLCompletionContext context = new SQLCompletionContextImpl(
+        final SQLCompletionContext context = new CompletionContext(
             dataSource,
             syntaxManager,
             ruleManager,
@@ -115,71 +79,27 @@ public class SQLCompletionRequestBuilder {
             false
         );
 
-        if (CommonUtils.isNotEmpty(contentType)) {
-            request.setContentType(contentType);
-        }
-
         final SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
         analyzer.runAnalyzer(new VoidProgressMonitor());
         return analyzer.getProposals();
     }
 
     @NotNull
-    private static Pair<String, Integer> extractCursorFromQuery(@NotNull String sql) {
+    private static Pair<String, Integer> getCursorFromQuery(@NotNull String sql) {
         final int cursor = sql.indexOf('|');
+        if (cursor < 0) {
+            throw new IllegalArgumentException("Can't locate cursor in query");
+        }
         return new Pair<>(sql.substring(0, cursor) + sql.substring(cursor + 1), cursor);
     }
 
-    public static class TableBuilder {
-        private final SQLCompletionRequestBuilder builder;
-        private final DBSEntity entity;
-        private final List<DBSEntityAttribute> attributes;
-
-        private TableBuilder(@NotNull SQLCompletionRequestBuilder builder, @NotNull String name) throws DBException {
-            this.builder = builder;
-            this.entity = mock(DBSEntity.class);
-            this.attributes = new ArrayList<>();
-
-            when(entity.getEntityType()).thenReturn(DBSEntityType.TABLE);
-            when(entity.getName()).thenReturn(name);
-            when(entity.getDataSource()).thenReturn(builder.dataSource);
-            when(entity.getParentObject()).thenReturn(builder.dataSource);
-
-            when(entity.getAttributes(any())).then(x -> attributes);
-            when(entity.getAttribute(any(), any())).then(x -> DBUtils.findObject(attributes, x.getArgumentAt(1, String.class)));
-        }
-
-        @NotNull
-        public TableBuilder addAttribute(@NotNull String name) {
-            final DBSEntityAttribute attribute = Mockito.mock(DBSEntityAttribute.class);
-            when(attribute.getParentObject()).thenReturn(entity);
-            when(attribute.getDataSource()).thenReturn(builder.dataSource);
-            when(attribute.getName()).thenReturn(name);
-            when(attribute.getTypeName()).thenReturn("Unknown");
-            when(attribute.getDataKind()).thenReturn(DBPDataKind.UNKNOWN);
-            attributes.add(attribute);
-            return this;
-        }
-
-        @NotNull
-        public SQLCompletionRequestBuilder build() {
-            if (!builder.entities.contains(entity)) {
-                builder.entities.add(entity);
-            }
-            return builder;
-        }
-    }
-
-    public static abstract class DataSource implements DBPDataSource, DBSObjectContainer {
-    }
-
-    private static class SQLCompletionContextImpl implements SQLCompletionContext {
+    private static class CompletionContext implements SQLCompletionContext {
         private final DBPDataSource dataSource;
         private final SQLSyntaxManager syntaxManager;
         private final SQLRuleManager ruleManager;
         private final DBCExecutionContext executionContext;
 
-        private SQLCompletionContextImpl(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, DBCExecutionContext executionContext) {
+        private CompletionContext(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, DBCExecutionContext executionContext) {
             this.dataSource = dataSource;
             this.syntaxManager = syntaxManager;
             this.ruleManager = ruleManager;
