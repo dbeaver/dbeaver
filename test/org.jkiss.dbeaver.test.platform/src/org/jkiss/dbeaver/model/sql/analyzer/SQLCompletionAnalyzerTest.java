@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -274,6 +275,92 @@ public class SQLCompletionAnalyzerTest {
             Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
             Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
             Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+        }
+    }
+
+    @Test
+    @Ignore("See #12159")
+    public void testQuotedNamesCompletion() throws DBException {
+        final RequestResult request = RequestBuilder
+            .databases(x -> {
+                x.database("Database1", d -> {
+                    d.schema("Schema1", s -> {
+                        s.table("Table1", t -> {
+                            t.attribute("Col1");
+                            t.attribute("Col2");
+                            t.attribute("Col3");
+                        });
+                    });
+                });
+            })
+            .prepare();
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Dat|\"");
+            Assert.assertEquals(1, proposals.size());
+            Assert.assertEquals("Database1", proposals.get(0).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Database1\".\"Sch|\"");
+            Assert.assertEquals(1, proposals.size());
+            Assert.assertEquals("Schema1", proposals.get(0).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Database1\".\"Schema1\".\"Tab|\"");
+            Assert.assertEquals(1, proposals.size());
+            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Database1\".\"Schema1\".\"Table1\".\"Col|\"");
+            Assert.assertEquals(3, proposals.size());
+            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+        }
+    }
+
+    @Test
+    @Ignore("See #12159")
+    public void testColumnsQuotedNamesCompletion() throws DBException {
+        final RequestResult request = RequestBuilder
+            .databases(x -> {
+                x.database("Database1", d -> {
+                    d.schema("Schema1", s -> {
+                        s.table("Table1", t -> {
+                            t.attribute("Col1");
+                            t.attribute("Col2");
+                            t.attribute("Col3");
+                        });
+                    });
+                });
+            })
+            .prepare();
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT | FROM Database1.Schema1.Table1");
+            Assert.assertEquals(3, proposals.size());
+            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT | FROM \"Database1\".Schema1.\"Table1\"");
+            Assert.assertEquals(3, proposals.size());
+            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT | FROM \"Database1\".\"Schema1\".\"Table1\"");
+            Assert.assertEquals(3, proposals.size());
+            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
     }
 }
