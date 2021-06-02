@@ -27,6 +27,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
@@ -4623,9 +4625,10 @@ public abstract class LightGrid extends Canvas {
             x + width,
             y + height - 1);
 
-//        if (getContentProvider().isGridReadOnly()) {
-//
-//        }
+        if (getContentProvider().isGridReadOnly()) {
+            Image roIcon = DBeaverIcons.getImage(UIIcon.BUTTON_READ_ONLY);
+            gc.drawImage(roIcon, x + 3, y + 3);
+        }
 
         if (sortOrder != SWT.NONE) {
             int arrowWidth = GridColumnRenderer.SORT_WIDTH;
