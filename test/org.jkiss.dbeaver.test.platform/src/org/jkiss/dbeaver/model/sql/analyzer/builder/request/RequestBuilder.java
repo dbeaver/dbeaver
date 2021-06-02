@@ -92,15 +92,6 @@ public class RequestBuilder {
         when(dataSource.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgumentAt(1, String.class)));
         when(dataSource.getChildren(any())).then(x -> children);
 
-        final DBCExecutionContext executionContext = mock(DBCExecutionContext.class);
-        when(executionContext.getDataSource()).thenReturn(dataSource);
-
-        final SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dataSource);
-
-        final SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
-
         return new RequestResult(dataSource);
     }
 
