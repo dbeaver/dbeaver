@@ -101,4 +101,13 @@ public class DataVirtualityMetaModel extends GenericMetaModel
         }
     }
 
+    @Override
+    public boolean isTableCommentEditable() {
+        return false;
+    }
+
+    @Override
+    public boolean isTableColumnCommentEditable() {
+        return false;
+    }
 }

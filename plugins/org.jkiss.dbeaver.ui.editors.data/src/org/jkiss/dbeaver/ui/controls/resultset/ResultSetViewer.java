@@ -1776,6 +1776,19 @@ public class ResultSetViewer extends Viewer
         return recordMode;
     }
 
+    @Override
+    public boolean isAllAttributesReadOnly() {
+        if (model.getAttributes().length == 0) {
+            return false;
+        }
+        for (DBDAttributeBinding attr : model.getAttributes()) {
+            if (!DBExecUtils.isAttributeReadOnly(attr)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void toggleMode()
     {
         changeMode(!recordMode);

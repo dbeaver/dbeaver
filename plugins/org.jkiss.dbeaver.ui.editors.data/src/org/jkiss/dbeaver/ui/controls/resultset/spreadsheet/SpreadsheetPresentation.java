@@ -1280,7 +1280,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Color headerSelectionBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_SELECTED_BACKGROUND);
             RGB cellSel = UIUtils.blend(
                     headerSelectionBackground.getRGB(),
-                    new RGB(255, 255, 255),
+                    UIStyles.isDarkTheme() ? new RGB(100, 100, 100) : new RGB(255, 255, 255),
                     50);
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
@@ -1800,7 +1800,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Override
         public boolean isGridReadOnly() {
-            return controller.getReadOnlyStatus() != null;
+            return controller.isAllAttributesReadOnly();
         }
 
         @Override
@@ -2130,7 +2130,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     DBPImage objectImage = DBValueFormatting.getObjectImage(attr.getAttribute());
                     if (!controller.getModel().isUpdateInProgress() &&
                         (controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) != 0 &&
-                        controller.getAttributeReadOnlyStatus(attr) != null)
+                        controller.getAttributeReadOnlyStatus(attr) != null &&
+                        !controller.isAllAttributesReadOnly())
                     {
                         objectImage = new DBIconComposite(objectImage, false, null, null, null, DBIcon.OVER_LOCK);
                     }
