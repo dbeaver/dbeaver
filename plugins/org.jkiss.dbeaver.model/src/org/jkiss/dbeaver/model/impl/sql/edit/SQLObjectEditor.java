@@ -611,7 +611,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Override
         public void redoCommand(DBECommandAbstract<OBJECT_TYPE> command) {
-            DBUtils.fireObjectRefresh(command.getObject());
+            DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 
         @Override
