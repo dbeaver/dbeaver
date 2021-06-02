@@ -26,9 +26,11 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -64,9 +67,9 @@ import java.util.List;
  * @author Serge Rider
  */
 public class ReferenceValueEditor {
-
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
+    private final Color selectionColor = UIUtils.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
     private IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
@@ -75,6 +78,12 @@ public class ReferenceValueEditor {
     private volatile boolean sortAsc = true;
     private volatile boolean dictLoaded = false;
     private Object lastPattern;
+    @Nullable
+    private String previousTextValue;
+    @Nullable
+    private Color defaultBackgroundColor;
+    @Nullable
+    private ItemMatcher previousComparisonMethod;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -212,22 +221,34 @@ public class ReferenceValueEditor {
                 ((IAttributeController) valueController).getBinding(),
                 curEditorValue,
                 DBDDisplayFormat.EDIT);
-            boolean valueFound = false;
-            if (curTextValue != null) {
-                TableItem[] items = editorSelector.getItems();
-                for (int i = 0; i < items.length; i++) {
-                    TableItem item = items[i];
-                    if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
-                        editorSelector.select(i);
-                        editorSelector.showItem(item);
-                        //editorSelector.setTopIndex(i);
-                        valueFound = true;
-                        break;
+            boolean newValueFound = false;
+            boolean oldValueFound = false;
+            TableItem[] items = editorSelector.getItems();
+            for (TableItem item : items) {
+                if (previousTextValue != null && previousComparisonMethod != null && previousComparisonMethod.matches(item, previousTextValue)) {
+                    oldValueFound = true;
+                    if (defaultBackgroundColor != null) {
+                        item.setBackground(defaultBackgroundColor);
                     }
+                }
+                if (ItemMatcher.BOTH_COLUMNS_MATCHER.matches(item, curTextValue)) {
+                    editorSelector.deselectAll();
+                    if (defaultBackgroundColor == null) {
+                        defaultBackgroundColor = item.getBackground();
+                    }
+                    item.setBackground(selectionColor);
+                    editorSelector.showItem(item);
+                    newValueFound = true;
+                }
+                if (newValueFound && (previousTextValue == null || oldValueFound)) {
+                    break;
                 }
             }
 
-            if (!valueFound) {
+            if (newValueFound) {
+                previousTextValue = curTextValue;
+                previousComparisonMethod = ItemMatcher.BOTH_COLUMNS_MATCHER;
+            } else {
                 // Read dictionary
                 reloadSelectorValues(curEditorValue, false);
             }
@@ -314,24 +335,37 @@ public class ReferenceValueEditor {
                         curValue,
                         DBDDisplayFormat.EDIT);
 
+                TableItem prevItem = null;
                 TableItem curItem = null;
                 int curItemIndex = -1;
                 TableItem[] items = editorSelector.getItems();
                 for (int i = 0; i < items.length; i++) {
                     TableItem item = items[i];
-                    if (item.getText(0).equals(curTextValue)) {
+                    if (ItemMatcher.FIRST_COLUMN_MATCHER.matches(item, curTextValue)) {
                         curItem = item;
                         curItemIndex = i;
+                    }
+                    if (previousTextValue != null && previousComparisonMethod != null && previousComparisonMethod.matches(item, previousTextValue)) {
+                        prevItem = item;
+                    }
+                    if (curItem != null && (previousTextValue == null || prevItem != null)) {
                         break;
                     }
                 }
+                if (prevItem != null && defaultBackgroundColor != null) {
+                    prevItem.setBackground(defaultBackgroundColor);
+                }
+                editorSelector.deselectAll();
                 if (curItem != null) {
-                    editorSelector.setSelection(curItem);
+                    if (defaultBackgroundColor == null) {
+                        defaultBackgroundColor = curItem.getBackground();
+                    }
+                    curItem.setBackground(selectionColor);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
                     editorSelector.setTopIndex(curItemIndex);
-                } else {
-                    editorSelector.deselectAll();
+                    previousComparisonMethod = ItemMatcher.FIRST_COLUMN_MATCHER;
+                    previousTextValue = curTextValue;
                 }
             } catch (DBException e) {
                 log.error(e);
@@ -538,4 +572,20 @@ public class ReferenceValueEditor {
         }
     }
 
+    private enum ItemMatcher {
+        FIRST_COLUMN_MATCHER {
+            @Override
+            boolean matches(@NotNull TableItem item, @NotNull String value) {
+                return item.getText(0).equals(value);
+            }
+        },
+        BOTH_COLUMNS_MATCHER {
+            @Override
+            boolean matches(@NotNull TableItem item, @NotNull String value) {
+                return value.equalsIgnoreCase(item.getText(0)) || value.equalsIgnoreCase(item.getText(1));
+            }
+        };
+
+        abstract boolean matches(@NotNull TableItem tableItem, @NotNull String value);
+    }
 }
