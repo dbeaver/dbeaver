@@ -26,6 +26,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -64,9 +66,9 @@ import java.util.List;
  * @author Serge Rider
  */
 public class ReferenceValueEditor {
-
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
+    private final Color selectionColor = UIUtils.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
     private IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
@@ -212,23 +214,20 @@ public class ReferenceValueEditor {
                 ((IAttributeController) valueController).getBinding(),
                 curEditorValue,
                 DBDDisplayFormat.EDIT);
-            boolean valueFound = false;
-            if (curTextValue != null) {
-                TableItem[] items = editorSelector.getItems();
-                for (int i = 0; i < items.length; i++) {
-                    TableItem item = items[i];
-                    if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
-                        editorSelector.select(i);
-                        editorSelector.showItem(item);
-                        //editorSelector.setTopIndex(i);
-                        valueFound = true;
-                        break;
-                    }
+            boolean newValueFound = false;
+            TableItem[] items = editorSelector.getItems();
+            for (TableItem item : items) {
+                if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
+                    editorSelector.deselectAll();
+                    item.setBackground(selectionColor);
+                    editorSelector.showItem(item);
+                    newValueFound = true;
+                } else {
+                    item.setBackground(null);
                 }
             }
 
-            if (!valueFound) {
-                // Read dictionary
+            if (!newValueFound) {
                 reloadSelectorValues(curEditorValue, false);
             }
         };
@@ -312,8 +311,8 @@ public class ReferenceValueEditor {
                 final String curTextValue = valueController.getValueHandler().getValueDisplayString(
                         ((IAttributeController) valueController).getBinding(),
                         curValue,
-                        DBDDisplayFormat.EDIT);
-
+                        DBDDisplayFormat.EDIT
+                );
                 TableItem curItem = null;
                 int curItemIndex = -1;
                 TableItem[] items = editorSelector.getItems();
@@ -322,16 +321,16 @@ public class ReferenceValueEditor {
                     if (item.getText(0).equals(curTextValue)) {
                         curItem = item;
                         curItemIndex = i;
-                        break;
+                    } else {
+                        item.setBackground(null);
                     }
                 }
+                editorSelector.deselectAll();
                 if (curItem != null) {
-                    editorSelector.setSelection(curItem);
+                    curItem.setBackground(selectionColor);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
                     editorSelector.setTopIndex(curItemIndex);
-                } else {
-                    editorSelector.deselectAll();
                 }
             } catch (DBException e) {
                 log.error(e);
@@ -537,5 +536,4 @@ public class ReferenceValueEditor {
             }
         }
     }
-
 }
