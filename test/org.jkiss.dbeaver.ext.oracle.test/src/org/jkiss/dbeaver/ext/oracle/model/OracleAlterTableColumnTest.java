@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,20 +37,20 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OracleAlterTableColumnTest {
 
-    private static final Log log = Log.getLog(OracleAlterTableColumnTest.class);
-
     @Mock
     private DBRProgressMonitor monitor;
 
     private OracleDataSource testDataSource;
-    private OracleSchema testSchema;
+    private OracleTableBase oracleTableBase;
+    private OracleTableColumn testColumnVarchar;
+    private OracleTableColumn testColumnNumber;
+    private OracleTableColumn testColumnChar;
     private OracleExecutionContext executionContext;
     private DBEObjectMaker<OracleTableColumn, OracleTableBase> objectMaker;
 
@@ -71,61 +71,191 @@ public class OracleAlterTableColumnTest {
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(testDataSource);
 
         executionContext = new OracleExecutionContext(mockRemoteInstance, "Test");
-
-        testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
+        OracleSchema testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
 
         Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
         objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(OracleTableColumn.class, DBEObjectMaker.class);
-    }
 
-    @Test
-    public void generateAlterColumnStatementAddOneComment() {
-        OracleTableBase oracleTableBase = new OracleTable(testSchema, "TEST_TABLE");
-
-        OracleTableColumn column1 = addColumn(oracleTableBase, "COLUMN1", "NUMERIC", 1);
-        column1.setComment("Test comment");
-        List<DBEPersistAction> actions = new ArrayList<>();
-
-        OracleTableColumnManager.addColumnCommentAction(monitor, actions, column1);
-
-        String expectedDDL =
-                "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS 'Test comment'";
-
-        Assert.assertEquals(actions.get(0).getScript(), expectedDDL);
-    }
-
-    @Test
-    public void generateAlterTableDropColumnStatement() throws Exception {
-        OracleTableBase oracleTableBase = new OracleTable(testSchema, "TEST_TABLE");
-
-        OracleTableColumn column1 = addColumn(oracleTableBase, "COLUMN1", "VARCHAR", 1);
-
-        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
-
-        objectMaker.deleteObject(commandContext, column1, Collections.emptyMap());
-
-        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
-
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE DROP COLUMN COLUMN1;" + lineBreak;
-
-        Assert.assertEquals(script, expectedDDL);
+        oracleTableBase = new OracleTable(testSchema, "TEST_TABLE");
+        testColumnVarchar = addColumn(oracleTableBase, "COLUMN1", "VARCHAR", 1);
+        testColumnVarchar.setMaxLength(100);
+        testColumnNumber = addColumn(oracleTableBase, "COLUMN2", "NUMBER", 2);
+        testColumnNumber.setPrecision(38);
+        testColumnNumber.setScale(0);
+        testColumnChar = addColumn(oracleTableBase, "COLUMN3", "CHAR", 3);
     }
 
     @Test
     public void generateAlterTableAddColumnStatement() throws Exception {
-        OracleTableBase oracleTableBase = new OracleTable(testSchema, "TEST_TABLE");
-
-        addColumn(oracleTableBase, "COLUMN1", "VARCHAR", 1);
-
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         objectMaker.createNewObject(monitor, commandContext, oracleTableBase, null, Collections.emptyMap());
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD Column2 INTEGER;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD Column4 INTEGER;" + lineBreak;
+
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableSetColumnCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "comment", "Test comment");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS 'Test comment';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableSetNotNullConditionStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "required", true);
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NOT NULL;" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableSetStringDefaultValueStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "defaultValue", "'Test value'");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableSetNumericDefaultValueStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnNumber, testColumnNumber);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "defaultValue", "42");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42;" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableChangeMaxLengthByColumnWithDefaultValueStatement() throws Exception {
+        testColumnVarchar.setDefaultValue("'Test value'");
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "maxLength", 50);
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableChangeMaxLengthByColumnWithoutDefaultValueStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnChar, testColumnChar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "maxLength", 33);
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33);" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    // These two tests do not work. Fix them.
+    /*@Test
+    public void generateAlterTableAlterNumericColumnChangePrecisionStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnNumber, testColumnNumber);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "precision", "22");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }*/
+
+    /*@Test
+    public void generateAlterTableAlterNumericColumnWithDefaultValueChangeScaleStatement() throws Exception {
+        testColumnNumber.setDefaultValue("42");
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnNumber, testColumnNumber);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "scale", "17");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,17) DEFAULT 42;" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }*/
+
+    @Test
+    public void generateAlterTableRenameColumnStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        if (objectMaker instanceof OracleTableColumnManager) {
+            ((OracleTableColumnManager) objectMaker).renameObject(commandContext, testColumnChar, Collections.emptyMap(), "COLUMN33");
+        }
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE RENAME COLUMN COLUMN3 TO COLUMN33;" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableDropColumnStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        objectMaker.deleteObject(commandContext, testColumnVarchar, Collections.emptyMap());
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE DROP COLUMN COLUMN1;" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }
