@@ -42,4 +42,10 @@ public class TeradataSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean isCRLFBroken() {
+        // #11985 Teradata returns DDL of views/procedures/triggers with extra break lines, when they are created in the SQL Editor
+        return true;
+    }
+
 }
