@@ -344,34 +344,35 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     @NotNull
     private static Collection<String> getRecentWorkspaces(@NotNull Location instanceLoc) {
         ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
-        List<String> recentWorkspaces = Arrays.asList(launchData.getRecentWorkspaces());
-        Collection<String> backedUpWorkspaces = getBackedUpWorkspaces();
-        //The following code seems to be quadratic. This possibly needs to be addressed, but I'm not convinced right now.
-        if (!recentWorkspaces.containsAll(backedUpWorkspaces)
-            || !backedUpWorkspaces.containsAll(recentWorkspaces)
-            || !recentWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
-            int maxSize = recentWorkspaces.size();
-            Stream<String> workspaces = Stream.concat(
-                recentWorkspaces.stream().sequential().filter(Objects::nonNull),
-                backedUpWorkspaces.stream().sequential()
-            );
-            recentWorkspaces = workspaces
-                .sequential()
-                .distinct()
-                .limit(maxSize)
-                .collect(Collectors.toList());
-            if (!recentWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
-                if (recentWorkspaces.size() < maxSize) {
-                    recentWorkspaces.add(WORKSPACE_DIR_CURRENT);
-                } else if (maxSize != 0) {
-                    recentWorkspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
-                }
-            }
-            launchData.setRecentWorkspaces(recentWorkspaces.toArray(new String[0]));
-            launchData.writePersistedData();
-            saveWorkspacesToBackup(recentWorkspaces);
+        String[] arrayOfRecentWorkspaces = launchData.getRecentWorkspaces();
+        Collection<String> recentWorkspaces;
+        if (arrayOfRecentWorkspaces == null) {
+            recentWorkspaces = new ArrayList<>();
+        } else {
+            recentWorkspaces = Arrays.asList(arrayOfRecentWorkspaces);
         }
-        return recentWorkspaces;
+        int maxSize = recentWorkspaces.size();
+        recentWorkspaces.removeIf(Objects::isNull);
+        Collection<String> backedUpWorkspaces = getBackedUpWorkspaces();
+        if (recentWorkspaces.equals(backedUpWorkspaces)) {
+            return backedUpWorkspaces;
+        }
+
+        List<String> workspaces = Stream.concat(recentWorkspaces.stream(), backedUpWorkspaces.stream())
+            .distinct()
+            .limit(maxSize)
+            .collect(Collectors.toList());
+        if (!recentWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
+            if (recentWorkspaces.size() < maxSize) {
+                recentWorkspaces.add(WORKSPACE_DIR_CURRENT);
+            } else if (maxSize > 1) {
+                workspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
+            }
+        }
+        launchData.setRecentWorkspaces(workspaces.toArray(new String[0]));
+        launchData.writePersistedData();
+        saveWorkspacesToBackup(workspaces);
+        return workspaces;
     }
 
     @NotNull
