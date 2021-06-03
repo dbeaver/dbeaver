@@ -26,6 +26,10 @@
         <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
         <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
         <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
+        <import plugin="org.apache.commons.compress" match="greaterOrEqual"/>
+        <!--<import plugin="org.brotli.dec" match="greaterOrEqual"/>
+        <import plugin="com.github.luben.zstd" match="greaterOrEqual"/> -->
+        <import plugin="org.tukaani.xz" match="greaterOrEqual"/>
     </requires>
 
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
