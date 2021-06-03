@@ -133,12 +133,10 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         GenericCatalog defaultCatalog = context.getDefaultCatalog();
         String entityName = null;
         if (defaultCatalog != null && context.supportsCatalogChange()) {
-            if (this.getDefaultCatalog() != defaultCatalog) {
-                entityName = defaultCatalog.getName();
-            }
+            entityName = defaultCatalog.getName();
         } else if (context.supportsSchemaChange()) {
             GenericSchema defaultSchema = context.getDefaultSchema();
-            if (defaultSchema != null && this.getDefaultSchema() != defaultSchema) {
+            if (defaultSchema != null) {
                 entityName = defaultSchema.getName();
             }
         }

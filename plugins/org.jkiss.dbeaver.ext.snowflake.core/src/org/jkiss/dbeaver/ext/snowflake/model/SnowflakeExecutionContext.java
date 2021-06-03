@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -89,32 +90,41 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable GenericSchema schema)
+    public void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable GenericSchema schema) throws DBCException {
+        setDefaultCatalog(monitor, catalog, schema, false);
+    }
+
+    void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable DBSObject schema, boolean force)
             throws DBCException {
-        if (activeDatabaseName != null && activeDatabaseName.equals(catalog.getName())) {
+        String catalogName = catalog.getName();
+        if (!force && catalogName.equals(activeDatabaseName)) {
             return;
         }
-        GenericCatalog oldActiveDatabase = getDefaultCatalog();
-        setActiveDatabase(monitor, catalog.getName());
+        DBSObject oldActiveDatabase = getDefaultCatalog();
+        setActiveDatabase(monitor, catalogName);
 
         try {
             catalog.getSchemas(monitor);
         } catch (DBException e) {
             log.debug("Error caching database schemas", e);
         }
-        activeDatabaseName = catalog.getName();
+        activeDatabaseName = catalogName;
 
         DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
 
         if (schema != null) {
-            setDefaultSchema(monitor, schema);
+            setDefaultSchema(monitor, schema, force);
         }
     }
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, @NotNull GenericSchema newActiveSchema) throws DBCException {
+        setDefaultSchema(monitor, newActiveSchema, false);
+    }
+
+    void setDefaultSchema(DBRProgressMonitor monitor, @NotNull DBSObject newActiveSchema, boolean force) throws DBCException {
         String newSchemaName = newActiveSchema.getName();
-        if (activeSchemaName != null && activeSchemaName.equals(newSchemaName)) {
+        if (!force && newSchemaName.equals(activeSchemaName)) {
             return;
         }
         setActiveSchema(monitor, newSchemaName);
