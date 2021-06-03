@@ -81,8 +81,6 @@ public class ReferenceValueEditor {
     @Nullable
     private String previousTextValue;
     @Nullable
-    private Color defaultBackgroundColor;
-    @Nullable
     private ItemMatcher previousComparisonMethod;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
@@ -227,15 +225,9 @@ public class ReferenceValueEditor {
             for (TableItem item : items) {
                 if (previousTextValue != null && previousComparisonMethod != null && previousComparisonMethod.matches(item, previousTextValue)) {
                     oldValueFound = true;
-                    if (defaultBackgroundColor != null) {
-                        item.setBackground(defaultBackgroundColor);
-                    }
-                }
+                    item.setBackground(null); }
                 if (ItemMatcher.BOTH_COLUMNS_MATCHER.matches(item, curTextValue)) {
                     editorSelector.deselectAll();
-                    if (defaultBackgroundColor == null) {
-                        defaultBackgroundColor = item.getBackground();
-                    }
                     item.setBackground(selectionColor);
                     editorSelector.showItem(item);
                     newValueFound = true;
@@ -352,14 +344,11 @@ public class ReferenceValueEditor {
                         break;
                     }
                 }
-                if (prevItem != null && defaultBackgroundColor != null) {
-                    prevItem.setBackground(defaultBackgroundColor);
+                if (prevItem != null) {
+                    prevItem.setBackground(null);
                 }
                 editorSelector.deselectAll();
                 if (curItem != null) {
-                    if (defaultBackgroundColor == null) {
-                        defaultBackgroundColor = curItem.getBackground();
-                    }
                     curItem.setBackground(selectionColor);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
