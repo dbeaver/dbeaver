@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreDollarQuoteRule;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -754,6 +751,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
             serverExtension = ((PostgreDataSource) dataSource).getServerType();
             serverExtension.configureDialect(this);
         }
+
+        // #12723 Redshift driver returns wrong infor about unquoted case
+        setUnquotedIdentCase(DBPIdentifierCase.LOWER);
     }
 
     @NotNull

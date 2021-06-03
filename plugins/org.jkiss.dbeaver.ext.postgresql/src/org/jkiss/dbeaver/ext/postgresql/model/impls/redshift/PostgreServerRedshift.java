@@ -209,6 +209,18 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
             throw new DBException(e, table.getDataSource());
         }
     }
+
+    @Override
+    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
+        if (kind == PostgreClass.RelKind.r) {
+            return new RedshiftTable(schema);
+        } else if (kind == PostgreClass.RelKind.v) {
+            return new RedshiftView(schema);
+        }
+        return super.createNewRelation(monitor, schema, kind, copyFrom);
+    }
+
+
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema, dbResult);

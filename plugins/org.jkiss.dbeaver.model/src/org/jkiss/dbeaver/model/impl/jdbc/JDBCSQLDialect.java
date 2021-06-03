@@ -290,10 +290,18 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return supportsQuotedMixedCase;
     }
 
+    protected void setSupportsQuotedMixedCase(boolean supportsQuotedMixedCase) {
+        this.supportsQuotedMixedCase = supportsQuotedMixedCase;
+    }
+
     @NotNull
     @Override
     public DBPIdentifierCase storesUnquotedCase() {
         return unquotedIdentCase;
+    }
+
+    protected void setUnquotedIdentCase(@NotNull DBPIdentifierCase unquotedIdentCase) {
+        this.unquotedIdentCase = unquotedIdentCase;
     }
 
     @NotNull
