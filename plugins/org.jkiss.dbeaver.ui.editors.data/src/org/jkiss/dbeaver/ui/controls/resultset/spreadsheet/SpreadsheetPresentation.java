@@ -2018,7 +2018,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 RGB mixRGB = UIUtils.blend(
                     selectedCellColor.getRGB(),
                     normalColor.getRGB(),
-                    40
+                    25
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
