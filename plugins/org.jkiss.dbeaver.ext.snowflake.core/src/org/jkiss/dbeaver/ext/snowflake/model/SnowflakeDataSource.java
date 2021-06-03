@@ -76,9 +76,9 @@ public class SnowflakeDataSource extends GenericDataSource {
         GenericCatalog defaultCatalog = executionMetaContext.getDefaultCatalog();
         GenericSchema defaultSchema = executionMetaContext.getDefaultSchema();
         if (defaultCatalog != null) {
-            executionContext.setDefaultCatalog(monitor, defaultCatalog, defaultSchema);
+            executionContext.setDefaultCatalog(monitor, defaultCatalog, defaultSchema, true);
         } else if (defaultSchema != null) {
-            executionContext.setDefaultSchema(monitor, defaultSchema);
+            executionContext.setDefaultSchema(monitor, defaultSchema, true);
         }
     }
 }

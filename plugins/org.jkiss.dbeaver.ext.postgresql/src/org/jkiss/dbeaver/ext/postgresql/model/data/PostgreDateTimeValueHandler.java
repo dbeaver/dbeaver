@@ -54,10 +54,10 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         final long time = ((Timestamp) object).getTime();
         if (time == NEGATIVE_INFINITY || time == NEGATIVE_SMALLER_INFINITY) {
-            return POSITIVE_INFINITY_STRING_REPRESENTATION;
+            return NEGATIVE_INFINITY_STRING_REPRESENTATION;
         }
         if (time == POSITIVE_INFINITY || time == POSITIVE_SMALLER_INFINITY) {
-            return NEGATIVE_INFINITY_STRING_REPRESENTATION;
+            return POSITIVE_INFINITY_STRING_REPRESENTATION;
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
     }

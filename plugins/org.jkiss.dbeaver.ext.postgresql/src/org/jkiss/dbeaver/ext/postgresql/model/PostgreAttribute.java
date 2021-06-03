@@ -188,7 +188,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
         DBPDataKind dataKind = dataType.getDataKind();
-        if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
+        if (dataKind == DBPDataKind.NUMERIC) {
             setMaxLength(0);
         } else {
             if (maxLength <= 0) {
@@ -202,7 +202,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 //setMaxLength(typeMod);
             }
         }
-        setPrecision(maxLength);
+        if (dataKind == DBPDataKind.DATETIME) {
+            setPrecision(PostgreUtils.getTimeTypePrecision(typeId, typeMod));
+        } else {
+            setPrecision(maxLength);
+        }
         setScale(PostgreUtils.getScale(typeId, typeMod));
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
