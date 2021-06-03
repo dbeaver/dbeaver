@@ -50,6 +50,11 @@ public class RequestResult {
 
     @NotNull
     public List<SQLCompletionProposalBase> request(@NotNull String sql) throws DBException {
+        return request(sql, true);
+    }
+
+    @NotNull
+    public List<SQLCompletionProposalBase> request(@NotNull String sql, boolean simpleMode) throws DBException {
         final DBCExecutionContext executionContext = mock(DBCExecutionContext.class);
         when(executionContext.getDataSource()).thenReturn(dataSource);
 
@@ -76,7 +81,7 @@ public class RequestResult {
             document,
             cursor.getSecond(),
             new SQLQuery(context.getDataSource(), cursor.getFirst()),
-            false
+            simpleMode
         );
 
         final SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);

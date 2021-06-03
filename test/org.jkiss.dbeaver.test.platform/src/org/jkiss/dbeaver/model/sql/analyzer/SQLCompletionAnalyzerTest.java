@@ -146,7 +146,7 @@ public class SQLCompletionAnalyzerTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request
-                .request("SELECT *| FROM Table1");
+                .request("SELECT *| FROM Table1", false);
 
             Assert.assertEquals(1, proposals.size());
             Assert.assertEquals("Col1, Col2, Col3", proposals.get(0).getReplacementString());
@@ -154,7 +154,7 @@ public class SQLCompletionAnalyzerTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request
-                .request("SELECT t.*| FROM Table1 t");
+                .request("SELECT t.*| FROM Table1 t", false);
 
             Assert.assertEquals(1, proposals.size());
             Assert.assertEquals("Col1, t.Col2, t.Col3", proposals.get(0).getReplacementString());
@@ -162,7 +162,7 @@ public class SQLCompletionAnalyzerTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request
-                .request("SELECT Table1.*| FROM Table1");
+                .request("SELECT Table1.*| FROM Table1", false);
 
             Assert.assertEquals(1, proposals.size());
             Assert.assertEquals("Col1, Table1.Col2, Table1.Col3", proposals.get(0).getReplacementString());
