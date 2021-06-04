@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -90,7 +90,7 @@ public class NavigatorObjectsDeleter {
     static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) {
         boolean supportsShowViewScript = false;
         boolean supportsDeleteContents = false;
-        boolean selectedFromNavigator = window.getPartService().getActivePart().getClass() == DatabaseNavigatorView.class;
+        boolean selectedFromNavigator = window.getPartService().getActivePart() instanceof NavigatorViewBase;
         Set<Option> supportedOptions = new HashSet<>();
 
         for (Object obj: selection) {
@@ -239,6 +239,7 @@ public class NavigatorObjectsDeleter {
                 tasksToExecute.add(deleter);
             }
             if (commandTarget.getEditor() != null && selectedFromNavigator) {
+                UIUtils.getActiveWorkbenchWindow().getActivePage().activate(commandTarget.getEditor());
                 DBWorkbench.getPlatformUI().showMessageBox(
                     UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_title,
                     NLS.bind(UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_message, commandTarget.getEditor().getTitle()),
