@@ -196,14 +196,13 @@ public class OracleAlterTableColumnTest {
         Assert.assertEquals(script, expectedDDL);
     }
 
-    // These two tests do not work. Fix them.
-    /*@Test
+    @Test
     public void generateAlterTableAlterNumericColumnChangePrecisionStatement() throws Exception {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnNumber, testColumnNumber);
         pse.collectProperties();
-        pse.setPropertyValue(monitor, "precision", "22");
+        pse.setPropertyValue(monitor, "precision", 22);
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
@@ -211,24 +210,24 @@ public class OracleAlterTableColumnTest {
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
-    }*/
+    }
 
-    /*@Test
+    @Test
     public void generateAlterTableAlterNumericColumnWithDefaultValueChangeScaleStatement() throws Exception {
         testColumnNumber.setDefaultValue("42");
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnNumber, testColumnNumber);
         pse.collectProperties();
-        pse.setPropertyValue(monitor, "scale", "17");
+        pse.setPropertyValue(monitor, "scale", 17);
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,17) DEFAULT 42;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
-    }*/
+    }
 
     @Test
     public void generateAlterTableRenameColumnStatement() throws Exception {
