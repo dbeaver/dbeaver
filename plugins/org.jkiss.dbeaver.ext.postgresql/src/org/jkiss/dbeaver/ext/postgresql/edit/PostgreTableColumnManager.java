@@ -42,7 +42,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -106,12 +105,14 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                             sql.append('(').append(timePrecision).append(')');
                         }
                     }
-                    if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
-                        final String precision = postgreColumn.getIntervalTypeField();
-                        if (!CommonUtils.isEmpty(precision)) {
-                            sql.append(' ').append(precision);
+                    if (postgreColumn.getTypeId() == PostgreOid.INTERVAL) {
+                        if (PostgreUtils.isPrecisionInterval(postgreColumn.getTypeMod())) {
+                            final String precision = postgreColumn.getIntervalTypeField();
+                            if (!CommonUtils.isEmpty(precision)) {
+                                sql.append(' ').append(precision);
+                            }
                         }
-                        if (timePrecision >= 0 && timePrecision < 7) {
+                        if (timePrecision > 0 && timePrecision <= 6) {
                             sql.append('(').append(timePrecision).append(')');
                         }
                     }
