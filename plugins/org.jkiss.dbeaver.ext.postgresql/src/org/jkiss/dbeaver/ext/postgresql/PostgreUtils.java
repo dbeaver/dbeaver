@@ -332,6 +332,7 @@ public class PostgreUtils {
             case INTERVAL_TYPE_SECOND:
                 return "second";
             default:
+                log.debug("Error obtaining interval field from given typemod: " + Integer.toHexString(typeMod));
                 return null;
         }
     }
