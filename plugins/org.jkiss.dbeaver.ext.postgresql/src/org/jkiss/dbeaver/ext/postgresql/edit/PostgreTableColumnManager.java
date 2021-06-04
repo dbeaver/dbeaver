@@ -101,18 +101,16 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     final int timePrecision = CommonUtils.toInt(postgreColumn.getPrecision());
                     String typeName = column.getTypeName();
                     if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                        if (timePrecision < 6) {
+                        if (timePrecision >= 0 && timePrecision < 6) {
                             sql.append('(').append(timePrecision).append(')');
                         }
                     }
                     if (postgreColumn.getTypeId() == PostgreOid.INTERVAL) {
-                        if (PostgreUtils.isPrecisionInterval(postgreColumn.getTypeMod())) {
-                            final String precision = postgreColumn.getIntervalTypeField();
-                            if (!CommonUtils.isEmpty(precision)) {
-                                sql.append(' ').append(precision);
-                            }
+                        final String precision = postgreColumn.getIntervalTypeField();
+                        if (!CommonUtils.isEmpty(precision)) {
+                            sql.append(' ').append(precision);
                         }
-                        if (timePrecision > 0 && timePrecision <= 6) {
+                        if (PostgreUtils.isPrecisionInterval(postgreColumn.getTypeMod()) && timePrecision >= 0 && timePrecision <= 6) {
                             sql.append('(').append(timePrecision).append(')');
                         }
                     }
