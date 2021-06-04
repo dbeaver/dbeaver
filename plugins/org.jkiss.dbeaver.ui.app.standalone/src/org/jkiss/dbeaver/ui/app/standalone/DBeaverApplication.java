@@ -62,7 +62,10 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Properties;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class controls all aspects of the application's execution
@@ -76,6 +79,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     public static final String WORKSPACE_DIR_LEGACY = "${user.home}/.dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = "${user.home}/.dbeaver4"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_6; //$NON-NLS-1$
+
+    private static final Path FILE_WITH_WORKSPACES;
 
     public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
@@ -149,8 +154,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
 
         // Workspace dir
         WORKSPACE_DIR_6 = new File(workingDirectory, "workspace6").getAbsolutePath();
-
         WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
+        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, ".workspaces"); //$NON-NLS-1$
     }
 
 
@@ -310,48 +315,89 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         }
     }
 
-    private boolean setIDEWorkspace(Location instanceLoc) {
+    private static boolean setIDEWorkspace(@NotNull Location instanceLoc) {
         if (instanceLoc.isSet()) {
             return false;
         }
-        ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
-        String[] recentWorkspaces = launchData.getRecentWorkspaces();
-
-        if (recentWorkspaces != null && recentWorkspaces.length > 1 && !ArrayUtils.contains(recentWorkspaces, WORKSPACE_DIR_CURRENT)) {
-            // Add default workspace in the recent list
-            boolean added = false;
-            for (int i = 0; i < recentWorkspaces.length; i++) {
-                if (recentWorkspaces[i] == null) {
-                    recentWorkspaces[i] = WORKSPACE_DIR_CURRENT;
-                    added = true;
-                    break;
-                }
-            }
-            if (!added) {
-                recentWorkspaces[recentWorkspaces.length - 1] = WORKSPACE_DIR_CURRENT;
-            }
-            launchData.setRecentWorkspaces(recentWorkspaces);
-            launchData.writePersistedData();
+        Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
+        if (recentWorkspaces.isEmpty()) {
+            return false;
         }
+        String lastWorkspace = recentWorkspaces.iterator().next();
+        if (!CommonUtils.isEmpty(lastWorkspace) && !WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
+            try {
+                final URL selectedWorkspaceURL = new URL(
+                    "file",  //$NON-NLS-1$
+                    null,
+                    lastWorkspace);
+                instanceLoc.set(selectedWorkspaceURL, true);
 
-        if (!ArrayUtils.isEmpty(recentWorkspaces)) {
-            String lastWorkspace = recentWorkspaces[0];
-            if (!CommonUtils.isEmpty(lastWorkspace) && !WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
-                try {
-                    final URL selectedWorkspaceURL = new URL(
-                        "file",  //$NON-NLS-1$
-                        null,
-                        lastWorkspace);
-                    instanceLoc.set(selectedWorkspaceURL, true);
-
-                    return true;
-                } catch (Exception e) {
-                    System.err.println("Can't set IDE workspace to '" + lastWorkspace + "'");
-                    e.printStackTrace();
-                }
+                return true;
+            } catch (Exception e) {
+                System.err.println("Can't set IDE workspace to '" + lastWorkspace + "'");
+                e.printStackTrace();
             }
         }
         return false;
+    }
+
+    @NotNull
+    private static Collection<String> getRecentWorkspaces(@NotNull Location instanceLoc) {
+        ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
+        String[] arrayOfRecentWorkspaces = launchData.getRecentWorkspaces();
+        Collection<String> recentWorkspaces;
+        int maxSize;
+        if (arrayOfRecentWorkspaces == null) {
+            maxSize = 0;
+            recentWorkspaces = new ArrayList<>();
+        } else {
+            maxSize = arrayOfRecentWorkspaces.length;
+            recentWorkspaces = new ArrayList<>(Arrays.asList(arrayOfRecentWorkspaces));
+        }
+        recentWorkspaces.removeIf(Objects::isNull);
+        Collection<String> backedUpWorkspaces = getBackedUpWorkspaces();
+        if (recentWorkspaces.equals(backedUpWorkspaces) && backedUpWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
+            return backedUpWorkspaces;
+        }
+
+        List<String> workspaces = Stream.concat(recentWorkspaces.stream(), backedUpWorkspaces.stream())
+            .distinct()
+            .limit(maxSize)
+            .collect(Collectors.toList());
+        if (!recentWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
+            if (recentWorkspaces.size() < maxSize) {
+                recentWorkspaces.add(WORKSPACE_DIR_CURRENT);
+            } else if (maxSize > 1) {
+                workspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
+            }
+        }
+        launchData.setRecentWorkspaces(Arrays.copyOf(workspaces.toArray(new String[0]), maxSize));
+        launchData.writePersistedData();
+        saveWorkspacesToBackup(workspaces);
+        return workspaces;
+    }
+
+    @NotNull
+    private static Collection<String> getBackedUpWorkspaces() {
+        if (!Files.exists(FILE_WITH_WORKSPACES)) {
+            return Collections.emptyList();
+        }
+        try {
+            return Files.readAllLines(FILE_WITH_WORKSPACES);
+        } catch (IOException e) {
+            System.err.println("Unable to read backed up workspaces"); //$NON-NLS-1$
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    private static void saveWorkspacesToBackup(@NotNull Iterable<? extends CharSequence> workspaces) {
+        try {
+            Files.write(FILE_WITH_WORKSPACES, workspaces, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            System.err.println("Unable to save backed up workspaces"); //$NON-NLS-1$
+            e.printStackTrace();
+        }
     }
 
     private String getDefaultInstanceLocation() {
