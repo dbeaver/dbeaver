@@ -346,15 +346,17 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
         String[] arrayOfRecentWorkspaces = launchData.getRecentWorkspaces();
         Collection<String> recentWorkspaces;
+        int maxSize;
         if (arrayOfRecentWorkspaces == null) {
+            maxSize = 0;
             recentWorkspaces = new ArrayList<>();
         } else {
-            recentWorkspaces = Arrays.asList(arrayOfRecentWorkspaces);
+            maxSize = arrayOfRecentWorkspaces.length;
+            recentWorkspaces = new ArrayList<>(Arrays.asList(arrayOfRecentWorkspaces));
         }
-        int maxSize = recentWorkspaces.size();
         recentWorkspaces.removeIf(Objects::isNull);
         Collection<String> backedUpWorkspaces = getBackedUpWorkspaces();
-        if (recentWorkspaces.equals(backedUpWorkspaces)) {
+        if (recentWorkspaces.equals(backedUpWorkspaces) && backedUpWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
             return backedUpWorkspaces;
         }
 
@@ -369,7 +371,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
                 workspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
             }
         }
-        launchData.setRecentWorkspaces(workspaces.toArray(new String[0]));
+        launchData.setRecentWorkspaces(Arrays.copyOf(workspaces.toArray(new String[0]), maxSize));
         launchData.writePersistedData();
         saveWorkspacesToBackup(workspaces);
         return workspaces;
