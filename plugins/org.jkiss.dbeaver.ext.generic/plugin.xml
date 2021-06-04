@@ -896,7 +896,7 @@
                     defaultPort="8080"
                     description="Facebook Presto (prestodb) JDBC driver"
                     webURL="https://prestodb.io/"
-                    categories="sql,analytic,bigdata,hadoop">
+                    categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -913,7 +913,7 @@
                         defaultPort="8080"
                         description="Community Presto (prestosql) JDBC driver, use Trino for newer releases"
                         webURL="https://prestosql.io/"
-                        categories="sql,analytic,bigdata,hadoop">
+                        categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -932,7 +932,7 @@
                     defaultPort="8080"
                     description="Trino JDBC driver, newer replacement for PrestoSQL"
                     webURL="https://trino.io/"
-                    categories="sql,analytic,bigdata,hadoop">
+                    categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
                     <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
 
