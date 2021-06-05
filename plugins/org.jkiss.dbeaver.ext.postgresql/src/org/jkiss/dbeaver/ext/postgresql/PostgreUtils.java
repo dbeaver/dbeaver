@@ -436,8 +436,6 @@ public class PostgreUtils {
                     return 6;
                 return typmod;
             case PostgreOid.INTERVAL:
-                if (typmod == -1)
-                    return 6;
                 return (short) (typmod & INTERVAL_MASK_PRECISION);
             default:
                 return 0;
