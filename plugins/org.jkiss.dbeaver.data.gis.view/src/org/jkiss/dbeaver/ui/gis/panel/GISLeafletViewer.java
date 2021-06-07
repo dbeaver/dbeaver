@@ -23,8 +23,10 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -110,10 +112,20 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         browser = new Browser(composite, SWT.NONE);
+        browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        final BrowserFunction setClipboardContents = new BrowserFunction(browser, "setClipboardContents") {
+            @Override
+            public Object function(Object[] arguments) {
+                UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
+                return null;
+            }
+        };
+
         browser.addDisposeListener(e -> {
             cleanupFiles();
+            setClipboardContents.dispose();
         });
-        browser.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             Composite bottomPanel = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);

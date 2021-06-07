@@ -48,6 +48,12 @@
             L.tileLayer(${defaultTiles}).addTo(geoMap);
         }
 
+        geoMap.on('contextmenu', function (event) {
+            L.popup()
+                .setLatLng(event.latlng)
+                .setContent('<a href="javascript:setClipboardContents(\'' + event.latlng.lat + ', ' + event.latlng.lng + '\');geoMap.closePopup();undefined;">Copy coordinates</a>')
+                .openOn(geoMap);
+        });
 
         const geojsonMarkerOptions = {
             radius: 4,
