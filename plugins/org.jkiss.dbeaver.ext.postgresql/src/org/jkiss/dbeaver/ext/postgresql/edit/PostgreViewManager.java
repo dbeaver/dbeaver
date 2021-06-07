@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -133,7 +134,10 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {
-
+        String[] relOptions = view.getRelOptions();
+        if (!ArrayUtils.isEmpty(relOptions)) {
+            sqlBuf.append("\nWITH(").append(String.join("," , relOptions)).append(")");
+        }
     }
 
     public void appendViewDeclarationPostfix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) {
