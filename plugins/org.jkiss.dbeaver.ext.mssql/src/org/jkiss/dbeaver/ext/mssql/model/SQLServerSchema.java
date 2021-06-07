@@ -216,8 +216,20 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return tableCache.getTypedObjects(monitor, this, SQLServerTable.class);
     }
 
+    @Nullable
     public SQLServerTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
         return tableCache.getObject(monitor, this, name);
+    }
+
+    @Nullable
+    public SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
+        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
+            if (table.getObjectId() == tableId && table instanceof SQLServerTable) {
+                return (SQLServerTable) table;
+            }
+        }
+        log.debug("Table '" + tableId + "' not found in schema " + getName());
+        return null;
     }
 
     @Association
@@ -659,7 +671,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             }
             long refTableId = JDBCUtils.safeGetLong(dbResult, "referenced_object_id");
-            SQLServerTable refTable = getTable(monitor, refTableId);
+            SQLServerTable refTable = refSchema.getTable(monitor, refTableId);
             if (refTable == null) {
                 log.debug("Ref table " + refTableId + " not found in schema " + refSchema.getName());
                 return null;
@@ -682,17 +694,6 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             DBSForeignKeyModifyRule deleteRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "delete_referential_action"));
             DBSForeignKeyModifyRule updateRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "update_referential_action"));
             return new SQLServerTableForeignKey(parent, fkName, null, refConstraint, deleteRule, updateRule, true);
-        }
-
-        @Nullable
-        private SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
-            for (SQLServerTableBase table: tableCache.getAllObjects(monitor, SQLServerSchema.this)) {
-                if (table.getObjectId() == tableId && table instanceof SQLServerTable) {
-                    return (SQLServerTable) table;
-                }
-            }
-            log.debug("Table '" + tableId + "' not found in schema " + getName());
-            return null;
         }
 
         @Nullable
