@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,11 @@ public class PostgreMViewManager extends PostgreViewManager {
 
     @Override
     public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {
-        PostgreMaterializedView mview = (PostgreMaterializedView)view;
+        PostgreMaterializedView mview = (PostgreMaterializedView) view;
+        String[] relOptions = mview.getRelOptions();
+        if (!ArrayUtils.isEmpty(relOptions)) {
+            sqlBuf.append("\nWITH(").append(String.join("," , relOptions)).append(")");
+        }
         PostgreTablespace tablespace = mview.getTablespace(monitor);
         if (tablespace  != null) {
             sqlBuf.append("\nTABLESPACE ").append(DBUtils.getQuotedIdentifier(tablespace));

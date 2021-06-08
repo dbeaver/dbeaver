@@ -538,6 +538,7 @@ public class PostgreUtils {
         if (entityEditor != null) {
             entityEditor.appendViewDeclarationPostfix(monitor, sql, view);
         }
+        view.appendTableModifiers(monitor, sql);
         sql.append(";");
         return sql.toString();
     }

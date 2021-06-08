@@ -840,8 +840,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     @Nullable
     private Pair<String, String> extractTableName(@Nullable String tableAlias, boolean allowPartialMatch) {
-        final IDocument document = request.getDocument();
         final SQLScriptElement activeQuery = request.getActiveQuery();
+        if (activeQuery == null) {
+            return null;
+        }
+        final IDocument document = request.getDocument();
         final SQLRuleManager ruleManager = request.getContext().getRuleManager();
         final TPRuleBasedScanner scanner = new TPRuleBasedScanner();
         scanner.setRules(ruleManager.getAllRules());
@@ -1168,7 +1171,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
-                if (dialect.supportsAliasInSelect()) {
+                if (dialect.supportsAliasInSelect() && request.getActiveQuery() != null) {
                     String firstKeyword = SQLUtils.getFirstKeyword(dialect, request.getActiveQuery().getText());
                     if (dialect.supportsAliasInUpdate() || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
                         String queryText = request.getActiveQuery().getText();
