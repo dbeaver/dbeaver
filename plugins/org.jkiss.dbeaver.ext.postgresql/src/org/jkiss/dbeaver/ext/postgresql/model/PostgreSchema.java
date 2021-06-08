@@ -50,10 +50,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -459,7 +456,11 @@ public class PostgreSchema implements
     //@Property
     @Association
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
-        return dataTypeCache.getAllObjects(monitor, this);
+        return dataTypeCache.getAllObjects(monitor, this).stream()
+            .sorted(Comparator
+                .comparing((DBSTypedObject type) -> type.getTypeName().startsWith("_")) // Sort the array data types at the end of the list
+                .thenComparing(DBSTypedObject::getTypeName))
+            .collect(Collectors.toList());
     }
 
     @Override
