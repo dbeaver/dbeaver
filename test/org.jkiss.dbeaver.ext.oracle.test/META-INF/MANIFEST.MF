@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver PostgreSQL Tests
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Vendor: DBeaver Corp
+Bundle-ClassPath: .
+Fragment-Host: org.jkiss.dbeaver.ext.oracle
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.junit,
+ org.mockito.mockito-all,
+ org.apache.felix.scr,
+ org.jkiss.dbeaver.headless,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.registry

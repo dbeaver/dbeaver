@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
@@ -853,6 +855,19 @@ public class DBExecUtils {
             return "Underlying entity doesn't support data update";
         }
         return null;
+    }
+
+    public static List<DBEPersistAction> getActionsListFromCommandContext(@NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, DBCExecutionContext executionContext, Map<String, Object> options, @Nullable List<DBEPersistAction> actions) throws DBException {
+        if (actions == null) {
+            actions = new ArrayList<>();
+        }
+        for (DBECommand cmd : commandContext.getFinalCommands()) {
+            DBEPersistAction[] persistActions = cmd.getPersistActions(monitor, executionContext, options);
+            if (persistActions != null) {
+                Collections.addAll(actions, persistActions);
+            }
+        }
+        return actions;
     }
 
 }

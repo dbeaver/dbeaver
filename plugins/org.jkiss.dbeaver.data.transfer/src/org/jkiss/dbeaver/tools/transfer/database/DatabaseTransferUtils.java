@@ -265,13 +265,7 @@ public class DatabaseTransferUtils {
 
             containerMapping.setTargetName(tableFinalName);
 
-            List<DBEPersistAction> actions = new ArrayList<>();
-            for (DBECommand cmd : commandContext.getFinalCommands()) {
-                DBEPersistAction[] persistActions = cmd.getPersistActions(monitor, executionContext, options);
-                if (persistActions != null) {
-                    Collections.addAll(actions, persistActions);
-                }
-            }
+            List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, options, null);
             return actions.toArray(new DBEPersistAction[0]);
         } catch (DBException e) {
             log.debug(e);

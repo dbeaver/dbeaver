@@ -201,6 +201,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return tableCache.getObject(monitor, this, name, OracleMaterializedView.class);
     }
 
+    public TableCache getTableCache() {
+        return tableCache;
+    }
+
     @Association
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
