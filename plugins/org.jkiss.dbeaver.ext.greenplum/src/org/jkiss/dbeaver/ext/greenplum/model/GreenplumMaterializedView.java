@@ -1,10 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2021 DBeaver Corp and others
- * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
- * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
- * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
- * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +18,9 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -32,27 +28,24 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * GreenplumTable
- */
-public class GreenplumTable extends PostgreTableRegular {
+public class GreenplumMaterializedView extends PostgreMaterializedView {
 
-    private static final Log log = Log.getLog(GreenplumTable.class);
+    private static final Log log = Log.getLog(GreenplumMaterializedView.class);
 
     private int[] distributionColumns;
 
-    private boolean supportsReplicatedDistribution = false;
+    private boolean supportsReplicatedDistribution;
 
-    public GreenplumTable(PostgreSchema catalog) {
-        super(catalog);
-    }
-
-    public GreenplumTable(PostgreSchema catalog, ResultSet dbResult) {
+    public GreenplumMaterializedView(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
 
         if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
             supportsReplicatedDistribution = true;
         }
+    }
+
+    public GreenplumMaterializedView(PostgreSchema catalog) {
+        super(catalog);
     }
 
     private List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
@@ -95,5 +88,4 @@ public class GreenplumTable extends PostgreTableRegular {
             log.error("Error reading Greenplum table properties", e);
         }
     }
-
 }
