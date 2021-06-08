@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMController;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
@@ -130,6 +131,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
         this.workspace = new DBeaverTestWorkspace(this, ResourcesPlugin.getWorkspace());
         this.workspace.initializeProjects();
 
+        QMUtils.initApplication(this);
         this.qmController = new QMControllerImpl();
 
         super.initialize();
