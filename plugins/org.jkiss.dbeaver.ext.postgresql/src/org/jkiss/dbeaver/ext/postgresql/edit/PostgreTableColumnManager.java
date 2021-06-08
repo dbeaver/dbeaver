@@ -98,10 +98,10 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                     break;
                 case DATETIME:
-                    final int timePrecision = CommonUtils.toInt(postgreColumn.getPrecision());
+                    final Integer timePrecision = postgreColumn.getPrecision();
                     String typeName = column.getTypeName();
                     if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                        if (timePrecision >= 0 && timePrecision <= 6) {
+                        if (timePrecision != null && timePrecision >= 0 && timePrecision <= 6) {
                             sql.append('(').append(timePrecision).append(')');
                         }
                     }
@@ -110,10 +110,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                         if (!CommonUtils.isEmpty(precision)) {
                             sql.append(' ').append(precision);
                         }
-                        if (PostgreUtils.isPrecisionInterval(postgreColumn.getTypeMod()) && timePrecision >= 0 && timePrecision <= 6) {
+                        if (PostgreUtils.isPrecisionInterval(postgreColumn.getTypeMod()) && timePrecision != null && timePrecision >= 0 && timePrecision <= 6) {
                             sql.append('(').append(timePrecision).append(')');
                         }
                     }
+                    break;
             }
             if (PostgreUtils.isGISDataType(postgreColumn.getTypeName())) {
                 try {

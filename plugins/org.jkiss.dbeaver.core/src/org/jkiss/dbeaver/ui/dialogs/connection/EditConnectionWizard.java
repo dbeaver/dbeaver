@@ -42,8 +42,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.editors.data.preferences.*;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat;
 import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -171,6 +173,8 @@ public class EditConnectionWizard extends ConnectionWizard
         pagePresentation.addSubPage(PrefPageResultSetPresentationGrid.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationGrid());
         pagePresentation.addSubPage(PrefPageResultSetPresentationPlainText.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationPlainText());
         WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), CoreMessages.dialog_connection_edit_wizard_sql_editor, CoreMessages.dialog_connection_edit_wizard_sql_editor_description);
+        sqlPage.addSubPage(new PrefPageSQLCompletion(), CoreMessages.dialog_connection_edit_wizard_sql_code_completion, CoreMessages.dialog_connection_edit_wizard_sql_code_completion_description);
+        sqlPage.addSubPage(new PrefPageSQLFormat(), CoreMessages.dialog_connection_edit_wizard_sql_formatting, CoreMessages.dialog_connection_edit_wizard_sql_formatting_description);
         sqlPage.addSubPage(new PrefPageSQLExecute(), CoreMessages.dialog_connection_edit_wizard_sql_processing, CoreMessages.dialog_connection_edit_wizard_sql_processing_description);
     }
 

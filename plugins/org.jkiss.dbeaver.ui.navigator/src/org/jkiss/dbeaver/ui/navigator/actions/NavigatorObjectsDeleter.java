@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -68,18 +69,19 @@ public class NavigatorObjectsDeleter {
      */
     private final List<?> selection;
 
+    private final boolean selectedFromNavigator;
     private final boolean supportsShowViewScript;
-
     private final boolean supportsDeleteContents;
     private boolean deleteContent;
 
     private final Set<Option> supportedOptions;
     private final Set<Option> enabledOptions = new HashSet<>();
 
-    private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean supportsShowViewScript,
+    private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean selectedFromNavigator, boolean supportsShowViewScript,
                                     boolean supportsDeleteContents, Set<Option> supportedOptions) {
         this.window = window;
         this.selection = selection;
+        this.selectedFromNavigator = selectedFromNavigator;
         this.supportsShowViewScript = supportsShowViewScript;
         this.supportsDeleteContents = supportsDeleteContents;
         this.supportedOptions = supportedOptions;
@@ -88,6 +90,7 @@ public class NavigatorObjectsDeleter {
     static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) {
         boolean supportsShowViewScript = false;
         boolean supportsDeleteContents = false;
+        boolean selectedFromNavigator = window.getPartService().getActivePart() instanceof NavigatorViewBase;
         Set<Option> supportedOptions = new HashSet<>();
 
         for (Object obj: selection) {
@@ -135,6 +138,7 @@ public class NavigatorObjectsDeleter {
         return new NavigatorObjectsDeleter(
             window,
             selection,
+            selectedFromNavigator,
             supportsShowViewScript,
             supportsDeleteContents,
             supportedOptions
@@ -233,6 +237,14 @@ public class NavigatorObjectsDeleter {
                 // Persist object deletion - only if there is no host editor and we have a command context
                 final NavigatorHandlerObjectBase.ObjectSaver deleter = new NavigatorHandlerObjectBase.ObjectSaver(commandTarget.getContext(), deleteOptions);
                 tasksToExecute.add(deleter);
+            }
+            if (commandTarget.getEditor() != null && selectedFromNavigator) {
+                UIUtils.getActiveWorkbenchWindow().getActivePage().activate(commandTarget.getEditor());
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_title,
+                    NLS.bind(UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_message, commandTarget.getEditor().getTitle()),
+                    false
+                );
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError(

@@ -63,6 +63,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_delete_;
     public static String actions_navigator_delete_script;
     public static String actions_navigator_edit;
+    public static String actions_navigator_persist_delete_in_the_editor_title;
+    public static String actions_navigator_persist_delete_in_the_editor_message;
     public static String actions_navigator_error_dialog_delete_object_title;
     public static String actions_navigator_error_dialog_delete_object_message;
     public static String actions_navigator_error_dialog_open_entity_title;
@@ -201,16 +203,16 @@ public class UINavigatorMessages extends NLS {
 
     public static String label_configure_columns;
 
-	public static String label_description;
+    public static String label_description;
 
-	public static String label_name;
+    public static String label_name;
 
-	public static String label_select_columns;
+    public static String label_select_columns;
 
-	public static String label_show_all_projects;
-	public static String label_show_connected;
+    public static String label_show_all_projects;
+    public static String label_show_connected;
 
-	public static String pref_page_target_button_use_datasource_settings;
+    public static String pref_page_target_button_use_datasource_settings;
     public static String pref_page_target_link_show_datasource_settings;
     public static String pref_page_target_link_show_global_settings;
 
