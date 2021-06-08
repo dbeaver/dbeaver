@@ -1248,7 +1248,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " OBJECT_NAME, STATUS FROM " +
                 OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
                 " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
                 " ORDER BY OBJECT_NAME");
