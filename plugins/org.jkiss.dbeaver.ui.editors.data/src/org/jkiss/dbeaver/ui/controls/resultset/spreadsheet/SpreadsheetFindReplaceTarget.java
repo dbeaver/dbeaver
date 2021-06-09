@@ -61,7 +61,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private Color scopeHighlightColor;
     private boolean replaceAll;
     private boolean sessionActive = false;
-    private List<GridPos> originalSelection = null;
+    private List<GridPos> originalSelection = new ArrayList<>();
 
     public static synchronized SpreadsheetFindReplaceTarget getInstance() {
         if (instance == null) {
