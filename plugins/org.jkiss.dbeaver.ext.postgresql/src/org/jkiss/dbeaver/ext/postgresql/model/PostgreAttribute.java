@@ -442,7 +442,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             }
             return types.stream()
                     .sorted(Comparator
-                            .comparing((DBSTypedObject type) -> type.getTypeID() == Types.ARRAY) // Sort the arrays data types at the end of the list
+                            .comparing((DBSTypedObject type) -> type.getTypeName().startsWith("_")) // Sort the arrays data types at the end of the list
                             .thenComparing(DBSTypedObject::getTypeName))
                     .toArray(PostgreDataType[]::new);
         }

@@ -629,11 +629,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         sql.append(" AND (et.typcategory IS NULL OR et.typcategory <> 'C')");
                     }
                 }
-                if (supportsSysTypColumn) {
-                    sql.append(" ORDER BY CASE WHEN t.typcategory <> 'A' THEN 0 ELSE 1 END, t.typname");
-                } else {
-                    sql.append(" ORDER BY t.typname");
-                }
 
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
