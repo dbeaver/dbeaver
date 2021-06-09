@@ -94,7 +94,7 @@ public class OracleAlterTableColumnTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD Column4 INTEGER;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER;" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }

@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.data.OracleBinaryFormatter;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -114,6 +111,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
 
     public OracleSQLDialect() {
         super("Oracle", "oracle");
+        setUnquotedIdentCase(DBPIdentifierCase.UPPER);
     }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
