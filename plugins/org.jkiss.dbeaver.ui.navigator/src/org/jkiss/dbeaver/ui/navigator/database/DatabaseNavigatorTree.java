@@ -686,6 +686,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class TreeFilter extends PatternFilter {
         private final INavigatorFilter filter;
         private boolean hasPattern = false;
+        private String patternString;
 
         TreeFilter(INavigatorFilter filter) {
             setIncludeLeadingWildcard(true);
@@ -707,6 +708,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         public void setPattern(String patternString) {
             this.hasPattern = !CommonUtils.isEmpty(patternString);
             super.setPattern(patternString);
+        }
+
+        void setPatternString(String patternString) {
+            this.patternString = patternString;
         }
 
         public boolean isElementVisible(Viewer viewer, Object element){
@@ -756,6 +761,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
             if (!needToMatch) {
                 return true;
+            }
+
+            if (!CommonUtils.isEmpty(patternString) && (patternString.contains("|") || patternString.contains(","))) {
+                String[] patternStringArray;
+                if (patternString.contains("|")) {
+                    patternStringArray = patternString.split("\\|");
+                } else {
+                    patternStringArray = patternString.split(",");
+                }
+                for (String pattern : patternStringArray) {
+                    setPattern(pattern);
+                    if (isLeafMatch(viewer, element)) {
+                        return true;
+                    }
+                }
             }
 
             return super.isLeafMatch(viewer, element);
@@ -851,7 +871,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     if (initial) {
                         getPatternFilter().setPattern(null);
                     } else {
+                        PatternFilter patternFilter = getPatternFilter();
                         getPatternFilter().setPattern(text);
+                        if (patternFilter instanceof TreeFilter) {
+                            ((TreeFilter) patternFilter).setPatternString(text);
+                        }
                     }
 
                     final Control redrawFalseControl = treeComposite != null ? treeComposite
