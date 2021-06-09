@@ -184,6 +184,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
 
                 new ConnectionTestDialog(
                     getShell(),
+                    dataSource,
                     op.getServerVersion(),
                     op.getClientVersion(),
                     op.getConnectTime()).open();
