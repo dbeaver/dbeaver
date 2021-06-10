@@ -72,8 +72,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     @Nullable
     @Override
     public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
-        if ((typmod & INTERVAL_TYPE_SECOND) > 0) {
-            // Only intervals with 'second' have precision
+        if (isPreciseInterval(typmod)) {
             return typmod & INTERVAL_MASK_PRECISION;
         }
         return null;
@@ -114,6 +113,11 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
             default:
                 throw new IllegalArgumentException("Error obtaining interval type from typmod: " + Integer.toHexString(typmod));
         }
+    }
+
+    private static boolean isPreciseInterval(int typmod) {
+        // Only intervals with 'second' have precision
+        return (typmod & INTERVAL_TYPE_SECOND) > 0;
     }
 
     private static int getIntervalModifiers(@NotNull String name, int precision) throws DBException {
@@ -161,8 +165,13 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
             case "interval second":
                 typmod |= INTERVAL_TYPE_SECOND;
                 break;
+            case "interval":
+                break;
             default:
                 throw new DBException("Unsupported interval type: '" + name + "'");
+        }
+        if (!isPreciseInterval(typmod) && precision != 0) {
+            throw new DBException("Interval without second may not have precision");
         }
         return typmod;
     }
