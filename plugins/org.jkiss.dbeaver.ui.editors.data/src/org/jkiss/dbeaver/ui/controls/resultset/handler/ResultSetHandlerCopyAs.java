@@ -104,18 +104,23 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         IResultSetSelection rsSelection = resultSet.getSelection();
         List<ResultSetRow> rsSelectedRows = rsSelection.getSelectedRows();
         List<DBDAttributeBinding> rsSelectedAttributes = rsSelection.getSelectedAttributes();
+
         if (rsSelectedRows.size() > 1 || rsSelectedAttributes.size() > 1) {
             List<Long> selectedRows = new ArrayList<>();
             for (ResultSetRow selectedRow : rsSelectedRows) {
                 selectedRows.add((long) selectedRow.getRowNumber());
             }
             List<String> selectedAttributes = new ArrayList<>();
+            // this list stores the ordinal positions of the selected columns
+            List<Integer> selectedAttributesOrdinalPositions = new ArrayList<>();
             for (DBDAttributeBinding attributeBinding : rsSelectedAttributes) {
                 selectedAttributes.add(attributeBinding.getName());
+                selectedAttributesOrdinalPositions.add(attributeBinding.getOrdinalPosition());
             }
 
             options.setSelectedRows(selectedRows);
             options.setSelectedColumns(selectedAttributes);
+            options.setSelectedColumnsOrdinalPositions(selectedAttributesOrdinalPositions);
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {

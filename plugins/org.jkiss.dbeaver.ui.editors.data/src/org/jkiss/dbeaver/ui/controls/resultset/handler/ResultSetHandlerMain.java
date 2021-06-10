@@ -486,13 +486,18 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
                 }
                 List<String> selectedAttributes = new ArrayList<>();
+                // this list stores the ordinal positions of the selected columns
+                List<Integer> selectedAttributesOrdinalPositions = new ArrayList<>();
+                
                 for (DBDAttributeBinding attributeBinding : rsv.getSelection().getSelectedAttributes()) {
                     selectedAttributes.add(attributeBinding.getName());
+                    selectedAttributesOrdinalPositions.add(attributeBinding.getOrdinalPosition());
                 }
 
                 ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
                 options.setSelectedRows(selectedRows);
                 options.setSelectedColumns(selectedAttributes);
+                options.setSelectedColumnsOrdinalPositions(selectedAttributesOrdinalPositions);
 
                 ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
                 DataTransferWizard.openWizard(
