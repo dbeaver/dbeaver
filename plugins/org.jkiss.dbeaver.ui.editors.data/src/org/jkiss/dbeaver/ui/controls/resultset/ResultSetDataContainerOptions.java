@@ -23,7 +23,7 @@ public class ResultSetDataContainerOptions {
     private List<Long> selectedRows;
     private List<String> selectedColumns;
     // this keeps track of what are the indices of the columns selected. 
-    // This is needed to arbitrate in case two columns with same exist in a ResultSet but only one is selected
+    // This is needed to arbitrate in case two columns with same name exist in a ResultSet but only one is selected
     private List<Integer> selectedColumnsOrdinalPositions;
 
     public List<Long> getSelectedRows() {
