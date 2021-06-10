@@ -20,10 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.Arrays;
 
@@ -55,16 +53,15 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
         // disallow constructing singleton class
     }
 
-    @NotNull
     @Override
-    public Pair<PostgreDataType, Integer> getTypeFromString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
+    public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
         switch (typmod.length) {
             case 0:
-                return new Pair<>(type, -1);
+                return -1;
             case 1:
-                return new Pair<>(type, getGeometryModifiers(typmod[0].toLowerCase(), 0));
+                return getGeometryModifiers(typmod[0].toLowerCase(), 0);
             case 2:
-                return new Pair<>(type, getGeometryModifiers(typmod[0].toLowerCase(), CommonUtils.toInt(typmod[1])));
+                return getGeometryModifiers(typmod[0].toLowerCase(), CommonUtils.toInt(typmod[1]));
             default:
                 throw new DBException("Invalid modifiers for geometry type: " + Arrays.toString(typmod));
         }
@@ -72,7 +69,7 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
 
     @NotNull
     @Override
-    public String getTypeModifiersString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, int typmod) {
+    public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
         if (typmod > 0) {
             sb.append('(').append(getGeometryType(typmod));

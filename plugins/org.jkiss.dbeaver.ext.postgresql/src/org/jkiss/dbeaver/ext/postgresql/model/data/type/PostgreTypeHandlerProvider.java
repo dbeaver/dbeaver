@@ -24,14 +24,12 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
 
 public class PostgreTypeHandlerProvider {
 
-    public static final PostgreTypeHandlerProvider INSTANCE = new PostgreTypeHandlerProvider();
-
     private PostgreTypeHandlerProvider() {
         // disallow constructing singleton class
     }
 
     @Nullable
-    public PostgreTypeHandler getTypeHandler(@NotNull PostgreDataType type) {
+    public static PostgreTypeHandler getTypeHandler(@NotNull PostgreDataType type) {
         if (PostgreUtils.isGISDataType(type.getTypeName().toLowerCase())) {
             return PostgreGeometryTypeHandler.INSTANCE;
         }

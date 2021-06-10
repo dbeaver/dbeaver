@@ -20,9 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.Arrays;
 
@@ -45,14 +43,13 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
         // disallow constructing singleton class
     }
 
-    @NotNull
     @Override
-    public Pair<PostgreDataType, Integer> getTypeFromString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
+    public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
         switch (typmod.length) {
             case 0:
-                return new Pair<>(type, getIntervalModifiers(typeName, 0));
+                return getIntervalModifiers(typeName, 0);
             case 1:
-                return new Pair<>(type, getIntervalModifiers(typeName, CommonUtils.toInt(typmod[0])));
+                return getIntervalModifiers(typeName, CommonUtils.toInt(typmod[0]));
             default:
                 throw new DBException("Invalid modifiers for interval type: " + Arrays.toString(typmod));
         }
@@ -60,16 +57,26 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
 
     @NotNull
     @Override
-    public String getTypeModifiersString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, int typmod) {
+    public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
         if (typmod > 0) {
             sb.append(' ').append(getIntervalType(typmod));
-            final int precision = getIntervalPrecision(typmod);
-            if (precision > 0) {
+            final Integer precision = getTypePrecision(type, typmod);
+            if (precision != null && precision > 0) {
                 sb.append('(').append(precision).append(')');
             }
         }
         return sb.toString();
+    }
+
+    @Nullable
+    @Override
+    public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
+        if ((typmod & INTERVAL_TYPE_SECOND) > 0) {
+            // Only intervals with 'second' have precision
+            return typmod & INTERVAL_MASK_PRECISION;
+        }
+        return null;
     }
 
     @Nullable
@@ -107,15 +114,6 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
             default:
                 throw new IllegalArgumentException("Error obtaining interval type from typmod: " + Integer.toHexString(typmod));
         }
-    }
-
-    public static int getIntervalPrecision(int typmod) {
-        return (short) (typmod & INTERVAL_MASK_PRECISION);
-    }
-
-    public static boolean isPrecisionInterval(int typmod) {
-        // Any second-containing interval have precision
-        return (typmod & INTERVAL_TYPE_SECOND) > 0;
     }
 
     private static int getIntervalModifiers(@NotNull String name, int precision) throws DBException {

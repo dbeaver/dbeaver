@@ -53,7 +53,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
-    @Nullable
     private PostgreDataType dataType;
     private String comment;
     private long charLength;
@@ -205,12 +204,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 //setMaxLength(typeMod);
             }
         }
-        if (dataKind == DBPDataKind.DATETIME) {
-            setPrecision(PostgreUtils.getTimeTypePrecision(typeId, typeMod));
-        } else {
-            setPrecision(maxLength);
-        }
-        setScale(PostgreUtils.getScale(typeId, typeMod));
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
@@ -282,17 +275,27 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 26)
-    public Integer getPrecision()
-    {
-        return super.getPrecision();
+    public Integer getPrecision() {
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        if (handler != null) {
+            // TODO: Still dumb and inefficient
+            return handler.getTypePrecision(dataType, typeMod);
+        }
+        if (getDataKind() == DBPDataKind.DATETIME) {
+            return PostgreUtils.getTimeTypePrecision(typeId, typeMod);
+        } else {
+            return (int) maxLength;
+        }
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 27)
-    public Integer getScale()
-    {
-        return super.getScale();
+    public Integer getScale() {
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        if (handler != null) {
+            // TODO: Still dumb and inefficient
+            return handler.getTypeScale(dataType, typeMod);
+        }
+        return PostgreUtils.getScale(typeId, typeMod);
     }
 
     @Nullable
@@ -350,13 +353,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     {
         if (isGeneratedColumn) {
             return defaultValue;
-        }
-        return null;
-    }
-
-    public String getIntervalTypeField() {
-        if (typeId == PostgreOid.INTERVAL) {
-            return PostgreUtils.getIntervalField(typeMod);
         }
         return null;
     }
@@ -433,20 +429,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             }
         }
 
-        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.INSTANCE.getTypeHandler(dataType);
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
-            final Pair<PostgreDataType, Integer> typeInfo = handler.getTypeFromString(getDatabase(), dataType, typeName, typeMods);
-            this.dataType = typeInfo.getFirst();
-            this.typeId = typeInfo.getFirst().getTypeID();
-            this.typeMod = typeInfo.getSecond();
-
-            // TODO: Need to update these for numerics. Looks ugly, they should obtain value from typmod instead
-            if (getDataKind() == DBPDataKind.DATETIME) {
-                setPrecision(PostgreUtils.getTimeTypePrecision(typeId, typeMod));
-            } else {
-                setPrecision((int) getMaxLength());
-            }
-            setScale(PostgreUtils.getScale(typeId, typeMod));
+            this.typeMod = handler.getTypeModifiers(dataType, typeName, typeMods);
+            this.typeId = dataType.getTypeID();
+            this.dataType = dataType;
         } else {
             super.setFullTypeName(fullTypeName);
         }

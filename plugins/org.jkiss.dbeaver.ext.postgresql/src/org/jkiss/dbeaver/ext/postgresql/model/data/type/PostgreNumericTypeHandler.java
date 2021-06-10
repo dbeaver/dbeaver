@@ -17,11 +17,10 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data.type;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.Arrays;
 
@@ -36,16 +35,15 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
         // disallow constructing singleton class
     }
 
-    @NotNull
     @Override
-    public Pair<PostgreDataType, Integer> getTypeFromString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
+    public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
         switch (typmod.length) {
             case 0:
-                return new Pair<>(type, -1);
+                return -1;
             case 1:
-                return new Pair<>(type, getNumberModifiers(CommonUtils.toInt(typmod[0]), 0));
+                return getNumberModifiers(CommonUtils.toInt(typmod[0]), 0);
             case 2:
-                return new Pair<>(type, getNumberModifiers(CommonUtils.toInt(typmod[0]), CommonUtils.toInt(typmod[1])));
+                return getNumberModifiers(CommonUtils.toInt(typmod[0]), CommonUtils.toInt(typmod[1]));
             default:
                 throw new DBException("Invalid modifiers for numeric type: " + Arrays.toString(typmod));
         }
@@ -53,29 +51,36 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
 
     @NotNull
     @Override
-    public String getTypeModifiersString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, int typmod) {
+    public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
         if (typmod > 0) {
-            sb.append('(').append(getNumberPrecision(typmod));
-            final int scale = getNumberScale(typmod);
-            if (scale > 0) {
-                sb.append(", ").append(scale);
+            final Integer precision = getTypePrecision(type, typmod);
+            final Integer scale = getTypeScale(type, typmod);
+            if (precision != null && precision > 0) {
+                sb.append('(').append(precision);
+                if (scale != null && scale > 0) {
+                    sb.append(", ").append(scale);
+                }
+                sb.append(')');
             }
-            sb.append(')');
         }
         return sb.toString();
     }
 
-    public static int getNumberPrecision(int typmod) {
+    @Nullable
+    @Override
+    public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
         if (typmod < 0) {
-            return -1;
+            return 0;
         }
         return (typmod & NUMERIC_MASK_PRECISION) >> 16;
     }
 
-    public static int getNumberScale(int typmod) {
+    @Nullable
+    @Override
+    public Integer getTypeScale(@NotNull PostgreDataType type, int typmod) {
         if (typmod < 0) {
-            return -1;
+            return 0;
         }
         return (typmod & NUMERIC_MASK_SCALE) - 4;
     }

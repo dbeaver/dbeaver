@@ -17,15 +17,23 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data.type;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.utils.Pair;
 
 public abstract class PostgreTypeHandler {
     @NotNull
-    public abstract Pair<PostgreDataType, Integer> getTypeFromString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException;
+    public abstract String getTypeModifiersString(@NotNull PostgreDataType type, int typmod);
 
-    @NotNull
-    public abstract String getTypeModifiersString(@NotNull PostgreDatabase database, @NotNull PostgreDataType type, int typmod);
+    public abstract int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException;
+
+    @Nullable
+    public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
+        return null;
+    }
+
+    @Nullable
+    public Integer getTypeScale(@NotNull PostgreDataType type, int typmod) {
+        return null;
+    }
 }
