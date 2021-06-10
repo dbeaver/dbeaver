@@ -52,7 +52,7 @@ public class NavigatorHandlerFilterInclude extends AbstractHandler implements IE
                 } else {
                     DBNNode node = NavigatorUtils.getSelectedNode(selection);
                     if (node != null) {
-                        element.setText("Show only '" + node.getName() + "'");
+                        element.setText("Show only " + node.getName());
                     }
                 }
             }

@@ -4412,7 +4412,7 @@ public class ResultSetViewer extends Viewer
             return operator.getExpression();
         } else {
             if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
-                strValue = "'" + strValue + "'";
+                //strValue = "'" + strValue + "'";
             }
             return operator.getExpression() + " " + strValue;
         }
