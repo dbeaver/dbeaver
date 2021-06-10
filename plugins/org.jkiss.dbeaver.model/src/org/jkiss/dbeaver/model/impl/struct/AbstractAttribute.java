@@ -245,7 +245,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
 
     @Override
     public String getObjectToolTip() {
-        return DBUtils.getFullTypeName(this);
+        return getFullTypeName();
     }
 
     @Override

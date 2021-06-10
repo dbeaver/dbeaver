@@ -62,17 +62,6 @@ public class PostgreUtils {
 
     private static final int UNKNOWN_LENGTH = -1;
 
-    // These bits in combination make intervals.
-    // For example: 'day to second' => DAY | HOUR | MINUTE | SECOND
-    private static final int INTERVAL_TYPE_YEAR       = 0x0004_0000;
-    private static final int INTERVAL_TYPE_MONTH      = 0x0002_0000;
-    private static final int INTERVAL_TYPE_DAY        = 0x0008_0000;
-    private static final int INTERVAL_TYPE_HOUR       = 0x0400_0000;
-    private static final int INTERVAL_TYPE_MINUTE     = 0x0800_0000;
-    private static final int INTERVAL_TYPE_SECOND     = 0x1000_0000;
-    private static final int INTERVAL_MASK_TYPE       = 0xffff_0000;
-    private static final int INTERVAL_MASK_PRECISION  = 0x0000_ffff;
-
     public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
             throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
@@ -302,41 +291,6 @@ public class PostgreUtils {
         }
     }
 
-    @Nullable
-    public static String getIntervalField(int typeMod) {
-        switch (typeMod & INTERVAL_MASK_TYPE) {
-            case INTERVAL_TYPE_YEAR:
-                return "year";
-            case INTERVAL_TYPE_YEAR | INTERVAL_TYPE_MONTH:
-                return "year to month";
-            case INTERVAL_TYPE_MONTH:
-                return "month";
-            case INTERVAL_TYPE_DAY:
-                return "day";
-            case INTERVAL_TYPE_DAY | INTERVAL_TYPE_HOUR:
-                return "day to hour";
-            case INTERVAL_TYPE_DAY | INTERVAL_TYPE_HOUR | INTERVAL_TYPE_MINUTE:
-                return "day to minute";
-            case INTERVAL_TYPE_DAY | INTERVAL_TYPE_HOUR | INTERVAL_TYPE_MINUTE | INTERVAL_TYPE_SECOND:
-                return "day to second";
-            case INTERVAL_TYPE_HOUR:
-                return "hour";
-            case INTERVAL_TYPE_HOUR | INTERVAL_TYPE_MINUTE:
-                return "hour to minute";
-            case INTERVAL_TYPE_HOUR | INTERVAL_TYPE_MINUTE | INTERVAL_TYPE_SECOND:
-                return "hour to second";
-            case INTERVAL_TYPE_MINUTE:
-                return "minute";
-            case INTERVAL_TYPE_MINUTE | INTERVAL_TYPE_SECOND:
-                return "minute to second";
-            case INTERVAL_TYPE_SECOND:
-                return "second";
-            default:
-                log.debug("Error obtaining interval field from given typemod: " + Integer.toHexString(typeMod));
-                return null;
-        }
-    }
-
     public static int getDisplaySize(long oid, int typmod) {
         //oid = convertArrayToBaseOid(oid);
         switch ((int) oid) {
@@ -436,15 +390,10 @@ public class PostgreUtils {
                     return 6;
                 return typmod;
             case PostgreOid.INTERVAL:
-                return (short) (typmod & INTERVAL_MASK_PRECISION);
+                return (short) (typmod & 0xffff);
             default:
                 return 0;
         }
-    }
-
-    public static boolean isPrecisionInterval(int typmod) {
-        // Any second-containing interval have precision
-        return (typmod & INTERVAL_TYPE_SECOND) > 0;
     }
 
     public static int getScale(long oid, int typmod) {
