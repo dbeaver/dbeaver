@@ -167,7 +167,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
         if (value == null) {
             out.write("&nbsp;");
         } else {
-            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
+            value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
             out.write(value);
         }
         out.write("</th>");
@@ -179,7 +179,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
         if (value == null) {
             out.write("&nbsp;");
         } else {
-            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
+            value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
             out.write(value);
         }
         out.write(header ? "</th>" : "</td>");
