@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandler;
+import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandlerProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
@@ -35,12 +37,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * PostgreAttribute
@@ -249,7 +252,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class, valueTransformer = DataTypeValueTransformer.class)
     public PostgreDataType getDataType() {
         return dataType;
     }
@@ -352,7 +354,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return null;
     }
 
-    @Property(viewable = true, order = 31, visibleIf = PostgreTableHasIntervalTypeValidator.class)
     public String getIntervalTypeField() {
         if (typeId == PostgreOid.INTERVAL) {
             return PostgreUtils.getIntervalField(typeMod);
@@ -366,6 +367,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     public int getTypeMod() {
         return typeMod;
+    }
+
+    public void setTypeMod(int typeMod) {
+        this.typeMod = typeMod;
     }
 
     @Nullable
@@ -402,15 +407,49 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return !isLocal;
     }
 
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
         if (dataType == null) {
             return super.getFullTypeName();
         }
-        String fqtn = dataType.getTypeName();
         if (dataType.getDataKind() != DBPDataKind.CONTENT) {
             return DBUtils.getFullTypeName(this);
         }
-        return fqtn;
+        return dataType.getTypeName();
+    }
+
+    @Override
+    public void setFullTypeName(String fullTypeName) throws DBException {
+        final Pair<String, String[]> type = DBUtils.getTypeModifiers(fullTypeName);
+        final String typeName = type.getFirst();
+        final String[] typeMods = type.getSecond();
+
+        PostgreDataType dataType = getDatabase().getDataSource().getLocalDataType(typeName);
+        if (dataType == null) {
+            dataType = getDatabase().getDataType(null, typeName);
+            if (dataType == null) {
+                throw new DBException("Bad data type name specified: '" + fullTypeName + "'");
+            }
+        }
+
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.INSTANCE.getTypeHandler(dataType);
+        if (handler != null) {
+            final Pair<PostgreDataType, Integer> typeInfo = handler.getTypeFromString(getDatabase(), dataType, typeName, typeMods);
+            this.dataType = typeInfo.getFirst();
+            this.typeId = typeInfo.getFirst().getTypeID();
+            this.typeMod = typeInfo.getSecond();
+
+            // TODO: Need to update these for numerics. Looks ugly, they should obtain value from typmod instead
+            if (getDataKind() == DBPDataKind.DATETIME) {
+                setPrecision(PostgreUtils.getTimeTypePrecision(typeId, typeMod));
+            } else {
+                setPrecision((int) getMaxLength());
+            }
+            setScale(PostgreUtils.getScale(typeId, typeMod));
+        } else {
+            super.setFullTypeName(fullTypeName);
+        }
     }
 
     @Nullable
@@ -418,17 +457,15 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return foreignTableColumnOptions;
     }
 
-    public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute> {
+    public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute<?>> {
 
         @Override
-        public boolean allowCustomValue()
-        {
+        public boolean allowCustomValue() {
             return true;
         }
 
         @Override
-        public Object[] getPossibleValues(PostgreAttribute column)
-        {
+        public Object[] getPossibleValues(PostgreAttribute<?> column) {
             List<PostgreDataType> types = new ArrayList<>();
             try {
                 Collection<PostgreSchema> schemas = column.getDatabase().getSchemas(new VoidProgressMonitor());
@@ -441,30 +478,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 types.addAll(column.getDatabase().getLocalDataTypes());
             }
             return types.stream()
-                    .sorted(Comparator
-                            .comparing((DBSTypedObject type) -> type.getTypeName().startsWith("_")) // Sort the arrays data types at the end of the list
-                            .thenComparing(DBSTypedObject::getTypeName))
-                    .toArray(PostgreDataType[]::new);
-        }
-    }
-
-    public static class DataTypeValueTransformer implements IPropertyValueTransformer<PostgreAttribute, Object> {
-        @Override
-        public PostgreDataType transform(PostgreAttribute object, Object value) {
-            if (value instanceof String) {
-                PostgreDataType dataType = object.getDataSource().getLocalDataType((String)value);
-                if (dataType == null) {
-                    dataType = object.getDatabase().getDataType(null, (String)value);
-                    if (dataType == null) {
-                        throw new IllegalArgumentException("Bad data type name specified: " + value);
-                    }
-                }
-                return dataType;
-            } else if (value instanceof PostgreDataType) {
-                return (PostgreDataType) value;
-            } else {
-                throw new IllegalArgumentException("Invalid type value: " + value);
-            }
+                .map(DBSTypedObject::getTypeName)
+                .sorted(Comparator
+                    .comparing((String name) -> name.startsWith("_")) // Sort the arrays data types at the end of the list
+                    .thenComparing(Function.identity()))
+                .toArray(String[]::new);
         }
     }
 
@@ -482,14 +500,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 log.error(e);
                 return new Object[0];
             }
-        }
-    }
-
-    public static class PostgreTableHasIntervalTypeValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
-
-        @Override
-        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
-            return object.getTypeId() == PostgreOid.INTERVAL;
         }
     }
 }

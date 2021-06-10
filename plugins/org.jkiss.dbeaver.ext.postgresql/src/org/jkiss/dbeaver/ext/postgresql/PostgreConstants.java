@@ -149,6 +149,26 @@ public class PostgreConstants {
         DATA_TYPE_ALIASES.put("real", TYPE_FLOAT4);
         DATA_TYPE_ALIASES.put("void", "void");
 
+        DATA_TYPE_ALIASES.put("time with time zone", TYPE_TIMETZ);
+        DATA_TYPE_ALIASES.put("time without time zone", TYPE_TIME);
+        DATA_TYPE_ALIASES.put("timestamp with time zone", TYPE_TIMESTAMPTZ);
+        DATA_TYPE_ALIASES.put("timestamp without time zone", TYPE_TIMESTAMP);
+
+        DATA_TYPE_ALIASES.put("interval", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval year", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval month", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval day", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval hour", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval minute", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval second", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval year to month", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval day to hour", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval day to minute", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval day to second", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval hour to minute", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval hour to second", TYPE_INTERVAL);
+        DATA_TYPE_ALIASES.put("interval minute to second", TYPE_INTERVAL);
+
         SERIAL_TYPES.put("serial", TYPE_INT4);
         SERIAL_TYPES.put("serial8", TYPE_INT8);
         SERIAL_TYPES.put("serial2", TYPE_INT2);

@@ -52,7 +52,7 @@ public class Pair<T1, T2> {
             return false;
         }
         Pair<?, ?> p = (Pair<?, ?>) o;
-        return Objects.equals(p.first, first) && Objects.equals(p.second, second);
+        return Objects.deepEquals(p.first, first) && Objects.deepEquals(p.second, second);
     }
 
     /**

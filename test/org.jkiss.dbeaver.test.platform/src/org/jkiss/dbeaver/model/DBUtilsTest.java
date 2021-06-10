@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.utils.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,6 +66,19 @@ public class DBUtilsTest {
         Assert.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "TableName"), "\"TableName\"");
     }
 
+    @Test
+    public void testExtractTypeModifiers() throws DBException {
+        Assert.assertEquals(new Pair<>("NUMBER", new String[0]), DBUtils.getTypeModifiers("NUMBER"));
+        Assert.assertEquals(new Pair<>("NUMBER", new String[]{"5"}), DBUtils.getTypeModifiers("NUMBER(5)"));
+        Assert.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5"}), DBUtils.getTypeModifiers("NUMBER(10,   5)"));
+        Assert.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5", "TEST"}), DBUtils.getTypeModifiers("NUMBER (10, 5, TEST)"));
+        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER()"));
+        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER("));
+        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER)"));
+        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER(5, 10"));
+        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("(5, 10)"));
+        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("()"));
+    }
 
     @Test
     public void testMainServices() {
