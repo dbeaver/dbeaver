@@ -24,13 +24,17 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -125,6 +129,39 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
         }
 */
         return super.getNativeValueFormat(type);
+    }
+
+    @Override
+    public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, @Nullable Object value) throws DBCException {
+        try {
+            JDBCPreparedStatement dbStat = (JDBCPreparedStatement) statement;
+            if (value == null) {
+                dbStat.setNull(index + 1, type.getTypeID());
+            }
+            if (value instanceof String) {
+                // It can be date/timestamp column. Check it and try to set date/timestamp value. Oracle driver doesn't want to receive a string as an argument #11685
+                int typeID = type.getTypeID();
+                if (typeID == Types.DATE) {
+                    try {
+                        dbStat.setDate(index + 1, java.sql.Date.valueOf(value.toString()));
+                    } catch (IllegalArgumentException e) {
+                        dbStat.setString(index + 1, (String) value);
+                    }
+                } else if (typeID == Types.TIMESTAMP) {
+                    try {
+                        dbStat.setTimestamp(index + 1, java.sql.Timestamp.valueOf(value.toString()));
+                    } catch (IllegalArgumentException e) {
+                        dbStat.setString(index + 1, (String) value);
+                    }
+                } else {
+                    dbStat.setString(index + 1, (String) value);
+                }
+            } else {
+                super.bindValueObject(session, statement, type, index, value);
+            }
+        } catch (SQLException e) {
+            throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
+        }
     }
 
     protected String getFormatterId(DBSTypedObject column)
