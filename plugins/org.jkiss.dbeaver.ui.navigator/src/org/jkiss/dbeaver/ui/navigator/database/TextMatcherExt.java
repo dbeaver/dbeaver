@@ -24,6 +24,7 @@ import org.eclipse.core.text.StringMatcher;
 /**
  *
  * Cropped and little bit changed copy of org.eclipse.ui.internal.misc.TextMatcher class
+ * This TextMatcherExt can split pattern string on commas, pipes and spaces and can filter by the list of this separated words
  *
  */
 
