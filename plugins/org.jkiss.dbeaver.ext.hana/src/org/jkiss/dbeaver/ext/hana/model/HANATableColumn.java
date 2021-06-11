@@ -75,7 +75,7 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
             readGeometryInfo(monitor);
         }
         if (geometryInfo != null) {
-            // TODO: Not safe, there should be a better solution
+            // TODO: This does not cover XYM dimension, need to find a better solution
             switch (geometryInfo.dimension) {
                 case 3:
                     return DBGeometryDimension.XYZ;
