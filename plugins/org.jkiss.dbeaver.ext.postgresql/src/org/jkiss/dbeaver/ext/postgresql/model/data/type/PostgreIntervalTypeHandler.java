@@ -73,7 +73,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     @Override
     public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
         if (isPreciseInterval(typmod)) {
-            return typmod & INTERVAL_MASK_PRECISION;
+            return (int) (short) (typmod & INTERVAL_MASK_PRECISION);
         }
         return null;
     }
