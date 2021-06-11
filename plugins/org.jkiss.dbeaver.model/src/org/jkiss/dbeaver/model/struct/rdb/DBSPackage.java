@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBSPackage
  */
-public interface DBSPackage extends DBPQualifiedObject
+public interface DBSPackage extends DBPQualifiedObject, DBSObject
 {
 
 }
