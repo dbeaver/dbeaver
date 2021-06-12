@@ -57,9 +57,13 @@ public class GeometryPresentation extends AbstractPresentation {
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
+        final DBDAttributeBinding[] bindings = GeometryDataUtils.extractGeometryAttributes(getController()).stream()
+            .map(GeometryDataUtils.GeomAttrs::getGeomAttr)
+            .toArray(DBDAttributeBinding[]::new);
+
         leafletViewer = new GISLeafletViewer(
             parent,
-            null,
+            bindings,
             GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()));
         leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
     }

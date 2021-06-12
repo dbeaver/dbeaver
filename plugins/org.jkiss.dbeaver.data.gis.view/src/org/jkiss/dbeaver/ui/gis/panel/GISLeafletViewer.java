@@ -52,8 +52,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
-import org.jkiss.dbeaver.ui.data.IAttributeController;
-import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -70,10 +68,8 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class GISLeafletViewer implements IGeometryValueEditor {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
@@ -88,7 +84,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private static final Gson gson = new GsonBuilder()
             .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
-    private final IValueController valueController;
+    private final DBDAttributeBinding[] bindings;
     private final Browser browser;
     private DBGeometry[] lastValue;
     private int sourceSRID; // Explicitly set SRID
@@ -101,8 +97,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private boolean flipCoordinates = false;
     private final Composite composite;
 
-    public GISLeafletViewer(Composite parent, IValueController valueController, SpatialDataProvider spatialDataProvider) {
-        this.valueController = valueController;
+    public GISLeafletViewer(Composite parent, @NotNull DBDAttributeBinding[] bindings, SpatialDataProvider spatialDataProvider) {
+        this.bindings = bindings;
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
@@ -139,17 +135,20 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         }
 
         {
+            // TODO:
+            //  Following code uses properties from very first attribute
+            //  and ignores other attributes, if present. There's no clear
+            //  vision of what we should do here instead.
+
             // Check for save settings
-            if (valueController instanceof IAttributeController) {
-                DBDAttributeBinding binding = ((IAttributeController) valueController).getBinding();
-                if (binding.getEntityAttribute() != null) {
-                    DBVEntity vEntity = DBVUtils.getVirtualEntity(binding, false);
-                    if (vEntity != null) {
-                        DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
-                        if (vAttr != null) {
-                            this.flipCoordinates = CommonUtils.getBoolean(vAttr.getProperty(PROP_FLIP_COORDINATES), this.flipCoordinates);
-                            this.sourceSRID = CommonUtils.toInt(vAttr.getProperty(PROP_SRID), this.sourceSRID);
-                        }
+            DBDAttributeBinding binding = bindings[0];
+            if (binding.getEntityAttribute() != null) {
+                DBVEntity vEntity = DBVUtils.getVirtualEntity(binding, false);
+                if (vEntity != null) {
+                    DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
+                    if (vAttr != null) {
+                        this.flipCoordinates = CommonUtils.getBoolean(vAttr.getProperty(PROP_FLIP_COORDINATES), this.flipCoordinates);
+                        this.sourceSRID = CommonUtils.toInt(vAttr.getProperty(PROP_SRID), this.sourceSRID);
                     }
                 }
             }
@@ -248,9 +247,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         }
 
         int attributeSrid = GisConstants.SRID_SIMPLE;
-        if (valueController != null && valueController.getValueType() instanceof GisAttribute) {
+        if (bindings[0].getAttribute() instanceof GisAttribute) {
             try {
-                attributeSrid = ((GisAttribute) valueController.getValueType())
+                attributeSrid = ((GisAttribute) bindings[0].getAttribute())
                         .getAttributeGeometrySRID(new VoidProgressMonitor());
             } catch (DBCException e) {
                 log.error(e);
@@ -511,6 +510,12 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         Action crsSelectorAction = new SelectCRSAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
 
+        if (Arrays.stream(lastValue).map(DBGeometry::getSRID).distinct().count() > 1) {
+            // Disallow changing srid if geometries have different srid
+            // Maybe we should transform them into source srid first and then transmute into a desired one?
+            crsSelectorAction.setEnabled(false);
+        }
+
         Action tilesSelectorAction = new SelectTilesAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(tilesSelectorAction, true));
 
@@ -562,8 +567,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     }
 
     private void saveAttributeSettings() {
-        if (valueController instanceof IAttributeController) {
-            DBDAttributeBinding binding = ((IAttributeController) valueController).getBinding();
+        for (DBDAttributeBinding binding : bindings) {
             if (binding.getEntityAttribute() != null) {
                 DBVEntity vEntity = DBVUtils.getVirtualEntity(binding, true);
                 DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, true);
@@ -571,9 +575,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     vAttr.setProperty(PROP_FLIP_COORDINATES, String.valueOf(flipCoordinates));
                     vAttr.setProperty(PROP_SRID, String.valueOf(getValueSRID()));
                 }
-                valueController.getExecutionContext().getDataSource().getContainer().getRegistry().flushConfig();
             }
         }
+        bindings[0].getDataSource().getContainer().getRegistry().flushConfig();
     }
 
     private void updateControlsVisibility() {
