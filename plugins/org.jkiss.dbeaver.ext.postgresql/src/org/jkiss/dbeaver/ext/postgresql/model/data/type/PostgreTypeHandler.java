@@ -21,11 +21,18 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 
+import java.util.Arrays;
+
 public abstract class PostgreTypeHandler {
+
+    protected static final int EMPTY_MODIFIERS = -1;
+
     @NotNull
     public abstract String getTypeModifiersString(@NotNull PostgreDataType type, int typmod);
 
-    public abstract int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException;
+    public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
+        throw new DBException("Invalid modifiers for '" + type.getName() + "': " + Arrays.toString(typmod));
+    }
 
     @Nullable
     public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {

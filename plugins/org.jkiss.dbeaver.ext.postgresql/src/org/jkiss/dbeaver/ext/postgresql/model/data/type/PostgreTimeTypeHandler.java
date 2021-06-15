@@ -22,15 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.utils.CommonUtils;
 
+public class PostgreTimeTypeHandler extends PostgreTypeHandler {
 
-public class PostgreNumericTypeHandler extends PostgreTypeHandler {
+    public static final PostgreTimeTypeHandler INSTANCE = new PostgreTimeTypeHandler();
 
-    public static final PostgreNumericTypeHandler INSTANCE = new PostgreNumericTypeHandler();
-
-    private static final int NUMERIC_MASK_PRECISION  = 0xffff_0000;
-    private static final int NUMERIC_MASK_SCALE      = 0x0000_ffff;
-
-    private PostgreNumericTypeHandler() {
+    private PostgreTimeTypeHandler() {
         // disallow constructing singleton class
     }
 
@@ -40,9 +36,7 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
             case 0:
                 return EMPTY_MODIFIERS;
             case 1:
-                return getNumberModifiers(CommonUtils.toInt(typmod[0]), 0);
-            case 2:
-                return getNumberModifiers(CommonUtils.toInt(typmod[0]), CommonUtils.toInt(typmod[1]));
+                return getTimeModifiers(CommonUtils.toInt(typmod[0]));
             default:
                 return super.getTypeModifiers(type, typeName, typmod);
         }
@@ -52,15 +46,10 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
     @Override
     public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
-        if (typmod > 0) {
+        if (typmod >= 0) {
             final Integer precision = getTypePrecision(type, typmod);
-            final Integer scale = getTypeScale(type, typmod);
-            if (precision != null && precision > 0) {
-                sb.append('(').append(precision);
-                if (scale != null && scale > 0) {
-                    sb.append(", ").append(scale);
-                }
-                sb.append(')');
+            if (precision != null) {
+                sb.append('(').append(precision).append(')');
             }
         }
         return sb.toString();
@@ -72,25 +61,13 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
         if (typmod < 0) {
             return null;
         }
-        return (typmod & NUMERIC_MASK_PRECISION) >> 16;
+        return typmod;
     }
 
-    @Nullable
-    @Override
-    public Integer getTypeScale(@NotNull PostgreDataType type, int typmod) {
-        if (typmod < 0) {
-            return null;
+    private static int getTimeModifiers(int precision) throws DBException {
+        if (precision < 0 || precision > 6) {
+            throw new DBException("Time precision " + precision + " must be between 0 and 6");
         }
-        return (typmod & NUMERIC_MASK_SCALE) - 4;
-    }
-
-    private static int getNumberModifiers(int precision, int scale) throws DBException {
-        if (precision < 1 || precision > 1000) {
-            throw new DBException("Numeric precision " + +precision + " must be between 1 and 1000");
-        }
-        if (scale < 0 || scale > precision) {
-            throw new DBException("Numeric scale " + +scale + " must be between 0 and " + precision);
-        }
-        return (precision << 16) | (scale + 4);
+        return precision;
     }
 }

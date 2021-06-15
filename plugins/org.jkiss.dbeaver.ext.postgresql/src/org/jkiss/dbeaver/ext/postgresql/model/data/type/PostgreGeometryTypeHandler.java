@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
-
 public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
 
     public static final PostgreGeometryTypeHandler INSTANCE = new PostgreGeometryTypeHandler();
@@ -57,13 +55,13 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
         switch (typmod.length) {
             case 0:
-                return -1;
+                return EMPTY_MODIFIERS;
             case 1:
                 return getGeometryModifiers(typmod[0].toLowerCase(), 0);
             case 2:
                 return getGeometryModifiers(typmod[0].toLowerCase(), CommonUtils.toInt(typmod[1]));
             default:
-                throw new DBException("Invalid modifiers for geometry type: " + Arrays.toString(typmod));
+                return super.getTypeModifiers(type, typeName, typmod);
         }
     }
 

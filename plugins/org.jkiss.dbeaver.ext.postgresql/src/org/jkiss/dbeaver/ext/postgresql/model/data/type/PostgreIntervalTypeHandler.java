@@ -19,10 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.model.data.type;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Arrays;
 
 public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
 
@@ -51,7 +50,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
             case 1:
                 return getIntervalModifiers(typeName, CommonUtils.toInt(typmod[0]));
             default:
-                throw new DBException("Invalid modifiers for interval type: " + Arrays.toString(typmod));
+                return super.getTypeModifiers(type, typeName, typmod);
         }
     }
 
@@ -60,7 +59,9 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
         if (typmod > 0) {
-            sb.append(' ').append(getIntervalType(typmod));
+            if (type.getName().endsWith(PostgreConstants.TYPE_INTERVAL)) {
+                sb.append(' ').append(getIntervalType(typmod));
+            }
             final Integer precision = getTypePrecision(type, typmod);
             if (precision != null && precision > 0) {
                 sb.append('(').append(precision).append(')');

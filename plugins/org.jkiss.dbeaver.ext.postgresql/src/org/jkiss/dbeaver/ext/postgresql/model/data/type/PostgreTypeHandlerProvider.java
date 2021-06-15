@@ -38,6 +38,16 @@ public class PostgreTypeHandlerProvider {
                 return PostgreNumericTypeHandler.INSTANCE;
             case PostgreOid.INTERVAL:
                 return PostgreIntervalTypeHandler.INSTANCE;
+            case PostgreOid.BPCHAR:
+            case PostgreOid.VARCHAR:
+            case PostgreOid.BIT:
+            case PostgreOid.VARBIT:
+                return PostgreStringTypeHandler.INSTANCE;
+            case PostgreOid.TIME:
+            case PostgreOid.TIMETZ:
+            case PostgreOid.TIMESTAMP:
+            case PostgreOid.TIMESTAMPTZ:
+                return PostgreTimeTypeHandler.INSTANCE;
             default:
                 return null;
         }

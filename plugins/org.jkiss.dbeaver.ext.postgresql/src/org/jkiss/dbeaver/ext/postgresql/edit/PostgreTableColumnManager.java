@@ -77,43 +77,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         final PostgreTableColumn postgreColumn = (PostgreTableColumn) column;
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(postgreColumn.getDataType());
         if (handler != null) {
-            return sql.append(handler.getTypeModifiersString(postgreColumn.getDataType(), postgreColumn.getTypeMod()));
-        }
-        switch (postgreColumn.getDataKind()) {
-            case STRING:
-                final long length = postgreColumn.getMaxLength();
-                if (length > 0 && length < Integer.MAX_VALUE) {
-                    sql.append('(').append(length).append(')');
-                }
-                break;
-            case NUMERIC:
-                if (column.getTypeID() == Types.NUMERIC) {
-                    final int precision = CommonUtils.toInt(postgreColumn.getPrecision());
-                    final int scale = CommonUtils.toInt(postgreColumn.getScale());
-                    if (scale > 0 || precision > 0) {
-                        sql.append('(');
-                        if (precision > 0) {
-                            sql.append(precision);
-                        }
-                        if (scale > 0) {
-                            if (precision > 0) {
-                                sql.append(',');
-                            }
-                            sql.append(scale);
-                        }
-                        sql.append(')');
-                    }
-                }
-                break;
-            case DATETIME:
-                final Integer timePrecision = postgreColumn.getPrecision();
-                String typeName = column.getTypeName();
-                if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                    if (timePrecision != null && timePrecision >= 0 && timePrecision <= 6) {
-                        sql.append('(').append(timePrecision).append(')');
-                    }
-                }
-                break;
+            sql.append(handler.getTypeModifiersString(postgreColumn.getDataType(), postgreColumn.getTypeMod()));
         }
         if (postgreColumn.getTable() instanceof PostgreTableForeign) {
             String[] foreignTableColumnOptions = postgreColumn.getForeignTableColumnOptions();
