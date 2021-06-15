@@ -686,6 +686,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class TreeFilter extends PatternFilter {
         private final INavigatorFilter filter;
         private boolean hasPattern = false;
+        private TextMatcherExt matcher;
 
         TreeFilter(INavigatorFilter filter) {
             setIncludeLeadingWildcard(true);
@@ -706,10 +707,31 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         @Override
         public void setPattern(String patternString) {
             this.hasPattern = !CommonUtils.isEmpty(patternString);
-            super.setPattern(patternString);
+            if (patternString != null) {
+                String pattern = patternString;
+                if (!patternString.endsWith(" ")) {
+                    pattern = patternString + "*";
+                }
+                pattern = "*" + pattern;
+                this.matcher = new TextMatcherExt(pattern, true, false);
+            }
+        }
+
+        @Override
+        protected boolean wordMatches(String text) {
+            if (text == null) {
+                return false;
+            }
+            if (matcher != null) {
+                return matcher.match(text);
+            }
+            return false;
         }
 
         public boolean isElementVisible(Viewer viewer, Object element){
+            if (matcher == null) {
+                return true;
+            }
             if (filterShowConnected && element instanceof DBNDataSource && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
                 return false;
             }

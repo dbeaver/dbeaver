@@ -2343,6 +2343,28 @@ public class ResultSetViewer extends Viewer
     }
 
     public void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
+
+        boolean isExpensiveFilter = true;
+        {
+            DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(curAttribute);
+            if (descReferrer instanceof DBSEntityAssociation) {
+                // FK to disctionary - simple query
+                isExpensiveFilter = false;
+            } else {
+                // Column enumeration is expensive
+            }
+        }
+        if (isExpensiveFilter && ConfirmationDialog.showConfirmDialogNoToggle(
+            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+            viewerPanel.getShell(),
+            ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+            ConfirmationDialog.QUESTION,
+            ConfirmationDialog.WARNING,
+            curAttribute.getName()) != IDialogConstants.YES_ID)
+        {
+            return;
+        }
+
         Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
         ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[0]);
 

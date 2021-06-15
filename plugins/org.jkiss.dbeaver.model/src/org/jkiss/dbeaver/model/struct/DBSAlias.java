@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * DBSAlias - refers to some other metadata object
  */
-public interface DBSAlias extends DBPObject
+public interface DBSAlias extends DBPObject, DBSObject
 {
 
     /**

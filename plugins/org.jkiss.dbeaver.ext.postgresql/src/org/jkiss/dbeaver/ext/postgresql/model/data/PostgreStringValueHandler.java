@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -33,7 +35,7 @@ public class PostgreStringValueHandler extends JDBCStringValueHandler {
 
     @Override
     public void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
-        if (paramType.getTypeID() == Types.OTHER) {
+        if (paramType.getTypeID() == Types.OTHER || ArrayUtils.contains(PostgreDataType.getOidTypes(), paramType.getTypeName())) {
             if (value == null) {
                 statement.setNull(paramIndex, paramType.getTypeID());
             } else {
