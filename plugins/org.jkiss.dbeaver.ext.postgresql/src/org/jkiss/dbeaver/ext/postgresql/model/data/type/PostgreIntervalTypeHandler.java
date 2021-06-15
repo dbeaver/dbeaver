@@ -35,6 +35,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     private static final int INTERVAL_TYPE_HOUR         = 0x0400_0000;
     private static final int INTERVAL_TYPE_MINUTE       = 0x0800_0000;
     private static final int INTERVAL_TYPE_SECOND       = 0x1000_0000;
+    private static final int INTERVAL_TYPE_NONE         = 0x7fff_0000;
     private static final int INTERVAL_MASK_TYPE         = 0xffff_0000;
     private static final int INTERVAL_MASK_PRECISION    = 0x0000_ffff;
 
@@ -59,7 +60,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
         if (typmod > 0) {
-            if (type.getName().endsWith(PostgreConstants.TYPE_INTERVAL)) {
+            if (type.getName().endsWith(PostgreConstants.TYPE_INTERVAL) && isTypedInterval(typmod)) {
                 sb.append(' ').append(getIntervalType(typmod));
             }
             final Integer precision = getTypePrecision(type, typmod);
@@ -121,6 +122,11 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
         return (typmod & INTERVAL_TYPE_SECOND) > 0;
     }
 
+    private static boolean isTypedInterval(int typmod) {
+        // Intervals may be untyped (-1)
+        return (typmod & INTERVAL_TYPE_NONE) != INTERVAL_TYPE_NONE;
+    }
+
     private static int getIntervalModifiers(@NotNull String name, int precision) throws DBException {
         if (precision < 0 || precision > 6) {
             throw new DBException("Interval precision " + precision + " must be between 0 and 6");
@@ -167,12 +173,13 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
                 typmod |= INTERVAL_TYPE_SECOND;
                 break;
             case "interval":
+                typmod |= INTERVAL_TYPE_NONE;
                 break;
             default:
                 throw new DBException("Unsupported interval type: '" + name + "'");
         }
         if (!isPreciseInterval(typmod) && precision != 0) {
-            throw new DBException("Interval without second may not have precision");
+            throw new DBException("Interval '" + name + "' may not have precision");
         }
         return typmod;
     }
