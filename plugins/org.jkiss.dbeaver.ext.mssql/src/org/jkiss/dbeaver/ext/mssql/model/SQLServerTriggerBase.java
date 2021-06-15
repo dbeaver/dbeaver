@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -49,8 +50,17 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     private String type;
     private String body;
     private long objectId;
+    private String typeDescription;
+    private String triggerTypeDescription;
+    private String eventGroup;
+    private Date createDate;
+    private Date modifyDate;
     private boolean insteadOfTrigger;
     private volatile int disabled;
+    private boolean isMsShipped;
+    private boolean isNotForReplication;
+    private boolean isFirst;
+    private boolean isLast;
     private volatile boolean persisted;
 
     public SQLServerTriggerBase(
@@ -64,6 +74,15 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.insteadOfTrigger = JDBCUtils.safeGetInt(dbResult, "is_instead_of_trigger") != 0;
         this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled");
+        this.typeDescription = JDBCUtils.safeGetString(dbResult, "type_desc");
+        this.triggerTypeDescription = JDBCUtils.safeGetString(dbResult, "trigger_type");
+        this.eventGroup = JDBCUtils.safeGetString(dbResult, "event_group_type_desc");
+        this.createDate = JDBCUtils.safeGetDate(dbResult, "create_date");
+        this.modifyDate = JDBCUtils.safeGetDate(dbResult, "modify_date");
+        this.isMsShipped = JDBCUtils.safeGetInt(dbResult, "is_ms_shipped") != 0;
+        this.isNotForReplication = JDBCUtils.safeGetInt(dbResult, "is_not_for_replication") != 0;
+        this.isFirst = JDBCUtils.safeGetInt(dbResult, "is_first") != 0;
+        this.isLast = JDBCUtils.safeGetInt(dbResult, "is_last") != 0;
         this.persisted = true;
     }
 
@@ -104,6 +123,31 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     }
 
     @Property(viewable = true, order = 11)
+    public String getTypeDescription() {
+        return typeDescription;
+    }
+
+    @Property(viewable = true, order = 12)
+    public String getTriggerTypeDescription() {
+        return triggerTypeDescription;
+    }
+
+    @Property(viewable = true, order = 13)
+    public String getEventGroup() {
+        return eventGroup;
+    }
+
+    @Property(viewable = true, order = 14)
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    @Property(viewable = true, order = 15)
+    public Date getModifyDate() {
+        return modifyDate;
+    }
+
+    @Property(viewable = true, order = 16)
     public boolean isInsteadOfTrigger() {
         return insteadOfTrigger;
     }
@@ -112,9 +156,29 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.insteadOfTrigger = insteadOfTrigger;
     }
 
-    @Property(viewable = false, order = 20)
+    @Property(viewable = false, order = 17)
     public boolean isDisabled() {
         return disabled != 0;
+    }
+
+    @Property(viewable = false, order = 18)
+    public boolean isMsShipped() {
+        return isMsShipped;
+    }
+
+    @Property(viewable = false, order = 19)
+    public boolean isNotForReplication() {
+        return isNotForReplication;
+    }
+
+    @Property(viewable = true, order = 20)
+    public boolean isFirst() {
+        return isFirst;
+    }
+
+    @Property(viewable = true, order = 21)
+    public boolean isLast() {
+        return isLast;
     }
 
     public void setDisabled(boolean disabled) {
