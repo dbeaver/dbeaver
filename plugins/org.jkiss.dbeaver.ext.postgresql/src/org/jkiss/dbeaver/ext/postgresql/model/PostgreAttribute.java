@@ -406,11 +406,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
-        if (dataType == null) {
-            return super.getFullTypeName();
-        }
-        if (dataType.getDataKind() != DBPDataKind.CONTENT) {
-            return DBUtils.getFullTypeName(this);
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        if (handler != null) {
+            return dataType.getTypeName() + handler.getTypeModifiersString(dataType, typeMod);
         }
         return dataType.getTypeName();
     }

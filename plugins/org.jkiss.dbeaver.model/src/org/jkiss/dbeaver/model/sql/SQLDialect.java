@@ -393,6 +393,9 @@ public interface SQLDialect {
     @Nullable
     String[] getTransactionRollbackKeywords();
 
+    /**
+     * Generates full type name for drivers which don't implement {@link DBSTypedObject#getFullTypeName()}
+     */
     @Nullable
     String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
 
