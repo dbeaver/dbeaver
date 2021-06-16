@@ -114,7 +114,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (command.getProperty("comment") != null) {
-            addColumnCommentAction(new VoidProgressMonitor(), actions, command.getObject());
+            addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());
         }
     }
 
@@ -130,15 +130,8 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
                 " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
-            addColumnCommentAction(new VoidProgressMonitor(), actionList, column);
+            addColumnCommentAction(actionList, column, column.getTable());
         }
-    }
-
-    public static void addColumnCommentAction(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, OracleTableColumn column) {
-        actionList.add(new SQLDatabasePersistAction(
-            "Comment column",
-            "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS " + SQLUtils.quoteString(column.getDataSource(), column.getComment(monitor))));
     }
 
     @Override

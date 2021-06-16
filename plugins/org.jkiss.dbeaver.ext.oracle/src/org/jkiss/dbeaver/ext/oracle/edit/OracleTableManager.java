@@ -90,10 +90,12 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
                     " IS " + SQLUtils.quoteString(table, table.getComment())));
         }
 
-        // Column comments
-        for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-            if (!CommonUtils.isEmpty(column.getDescription())) {
-                OracleTableColumnManager.addColumnCommentAction(new VoidProgressMonitor(), actions, column);
+        if (!table.isPersisted()) {
+            // Column comments for the newly created table
+            for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                if (!CommonUtils.isEmpty(column.getDescription())) {
+                    OracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
+                }
             }
         }
     }

@@ -195,7 +195,7 @@ public class OracleUtils {
                 for (OracleTableColumn column : CommonUtils.safeCollection(attributes)) {
                     String columnComment = column.getComment(monitor);
                     if (!CommonUtils.isEmpty(columnComment)) {
-                        OracleTableColumnManager.addColumnCommentAction(monitor, actions, column);
+                        OracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
                     }
                 }
                 if (!CommonUtils.isEmpty(actions)) {
