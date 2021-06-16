@@ -94,7 +94,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
             // Column comments for the newly created table
             for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
-                    OracleTableColumnManager.addColumnCommentAction(monitor, actions, column);
+                    OracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
                 }
             }
         }

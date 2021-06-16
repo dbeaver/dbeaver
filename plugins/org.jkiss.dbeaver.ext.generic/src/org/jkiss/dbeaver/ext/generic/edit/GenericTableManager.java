@@ -129,7 +129,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
             // Column comments for the newly created table
             for (GenericTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
-                    GenericTableColumnManager.addColumnCommentAction(actions, column);
+                    GenericTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
                 }
             }
         }
