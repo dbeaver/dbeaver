@@ -62,7 +62,7 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
         DBPConnectionConfiguration conInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
         String url;
         if ("TNS".equals(conInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
-            url = conInfo.getServerName();
+            url = conInfo.getServerName() != null ? conInfo.getServerName() : conInfo.getDatabaseName();
         }
         else {
             boolean isSID = OracleConnectionType.SID.name().equals(conInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE));
