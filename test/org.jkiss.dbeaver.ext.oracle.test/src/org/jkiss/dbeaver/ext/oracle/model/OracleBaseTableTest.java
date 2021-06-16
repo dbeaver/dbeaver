@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
@@ -131,6 +132,30 @@ public class OracleBaseTableTest {
     }
 
     @Test
+    public void generateCreateTableWithTwoColumnsWithCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        OracleTable newObject = objectMaker.createNewObject(monitor, commandContext, testSchema, null, Collections.emptyMap());
+        DBEObjectMaker<OracleTableColumn, OracleTableBase> objectManager = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
+        OracleTableColumn column1 = objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        column1.setComment("Test comment 1");
+        OracleTableColumn column2 = objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        column2.setComment("Test comment 2");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
+                "\tCOLUMN1 INTEGER," + lineBreak +
+                "\tCOLUMN2 INTEGER" + lineBreak +
+                ");" + lineBreak +
+                "COMMENT ON COLUMN TEST_SCHEMA.\"NewTable\".COLUMN1 IS 'Test comment 1';" + lineBreak +
+                "COMMENT ON COLUMN TEST_SCHEMA.\"NewTable\".COLUMN2 IS 'Test comment 2';" + lineBreak;
+
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
     public void generateAlterTableRenameStatement() throws Exception {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
@@ -143,6 +168,22 @@ public class OracleBaseTableTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE RENAME TO NEW_TEST_TABLE;" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateTableCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, oracleTable, oracleTable);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "comment", "Test comment");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "COMMENT ON TABLE TEST_SCHEMA.TEST_TABLE IS 'Test comment';" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
