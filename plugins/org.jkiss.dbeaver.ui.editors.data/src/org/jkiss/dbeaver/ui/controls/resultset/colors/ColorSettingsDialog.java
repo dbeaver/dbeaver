@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
@@ -119,7 +121,7 @@ public class ColorSettingsDialog extends BaseDialog {
         @NotNull final DBDAttributeBinding attr,
         @Nullable final ResultSetRow row)
     {
-        super(resultSetViewer.getControl().getShell(), "Customize colors for [" + attr.getName() + "]", UIIcon.PALETTE);
+        super(resultSetViewer.getControl().getShell(), NLS.bind(ResultSetMessages.dialog_row_colors_title, attr.getDataContainer().getName()), UIIcon.PALETTE);
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.row = row;
@@ -162,8 +164,8 @@ public class ColorSettingsDialog extends BaseDialog {
         attributeTable.setLayoutData(gd);
         UIUtils.executeOnResize(attributeTable, () -> UIUtils.packColumns(attributeTable, true));
 
-        UIUtils.createTableColumn(attributeTable, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(attributeTable, SWT.LEFT, "Colors");
+        UIUtils.createTableColumn(attributeTable, SWT.LEFT, ResultSetMessages.dialog_row_colors_table_attributes_name);
+        UIUtils.createTableColumn(attributeTable, SWT.LEFT, ResultSetMessages.dialog_row_colors_table_attributes_color);
 
         for (DBDAttributeBinding attr : resultSetViewer.getModel().getVisibleAttributes()) {
             TableItem attrItem = new TableItem(attributeTable, SWT.NONE);
@@ -340,9 +342,15 @@ public class ColorSettingsDialog extends BaseDialog {
             settingsGroup.setLayout(new GridLayout(3, false));
             GridData gd = new GridData();
             gd.horizontalSpan = 3;
-            UIUtils.createControlLabel(settingsGroup, "Settings").setLayoutData(gd);
+            UIUtils.createControlLabel(settingsGroup, ResultSetMessages.dialog_row_colors_group_settings_label).setLayoutData(gd);
 
-            rangeCheck = UIUtils.createCheckbox(settingsGroup, "Range / gradient", "Use value range / color gradient", false, 3);
+            rangeCheck = UIUtils.createCheckbox(
+                settingsGroup,
+                ResultSetMessages.dialog_row_colors_group_settings_range_label,
+                ResultSetMessages.dialog_row_colors_group_settings_range_tip,
+                false,
+                3
+            );
             rangeCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -352,7 +360,13 @@ public class ColorSettingsDialog extends BaseDialog {
                     updateControlsState();
                 }
             });
-            singleColumnCheck = UIUtils.createCheckbox(settingsGroup, "Apply colors to this column only", "Apply colors to this column only, otherwise color full row", false, 3);
+            singleColumnCheck = UIUtils.createCheckbox(
+                settingsGroup,
+                ResultSetMessages.dialog_row_colors_group_settings_single_column_label,
+                ResultSetMessages.dialog_row_colors_group_settings_single_column_tip,
+                false,
+                3
+            );
             singleColumnCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -362,7 +376,12 @@ public class ColorSettingsDialog extends BaseDialog {
                 }
             });
 
-            operatorCombo = UIUtils.createLabelCombo(settingsGroup, "Operator", "Which operator to use for matching values", SWT.DROP_DOWN | SWT.READ_ONLY);
+            operatorCombo = UIUtils.createLabelCombo(
+                settingsGroup,
+                ResultSetMessages.dialog_row_colors_group_settings_operator_label,
+                ResultSetMessages.dialog_row_colors_group_settings_operator_tip,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             operatorCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -378,7 +397,7 @@ public class ColorSettingsDialog extends BaseDialog {
                 operatorCombo.add(operator.getExpression());
             }
 
-            UIUtils.createControlLabel(settingsGroup, "Value(s)");
+            UIUtils.createControlLabel(settingsGroup, ResultSetMessages.dialog_row_colors_group_settings_value_label);
 
             editorPlaceholder1 = new Composite(settingsGroup, SWT.NONE);
             editorPlaceholder1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -390,7 +409,7 @@ public class ColorSettingsDialog extends BaseDialog {
             valueEditor1 = createValueEditor(editorPlaceholder1, 0);
             valueEditor2 = createValueEditor(editorPlaceholder2, 1);
 
-            UIUtils.createControlLabel(settingsGroup, "Background");
+            UIUtils.createControlLabel(settingsGroup, ResultSetMessages.dialog_row_colors_group_settings_background_color_label);
             bgColorSelector1 = new ColorSelector(settingsGroup);
             bgColorSelector1.addListener(event -> {
                 curOverride.setColorBackground(StringConverter.asString(bgColorSelector1.getColorValue()));
@@ -401,7 +420,7 @@ public class ColorSettingsDialog extends BaseDialog {
                 curOverride.setColorBackground2(StringConverter.asString(bgColorSelector2.getColorValue()));
                 updateCurrentTreeItem();
             });
-            UIUtils.createControlLabel(settingsGroup, "Foreground");
+            UIUtils.createControlLabel(settingsGroup, ResultSetMessages.dialog_row_colors_group_settings_foreground_color_label);
             fgColorSelector1 = new ColorSelector(settingsGroup);
             fgColorSelector1.addListener(event -> {
                 curOverride.setColorForeground(StringConverter.asString(fgColorSelector1.getColorValue()));
@@ -414,7 +433,7 @@ public class ColorSettingsDialog extends BaseDialog {
             });
 
             UIUtils.createInfoLabel(settingsGroup,
-                "To use gradient set minimum and maximum\ncolumn values and two\ncolors for gradient range. ",
+                ResultSetMessages.dialog_row_colors_group_settings_tip,
                 GridData.FILL_HORIZONTAL, 3);
         }
     }

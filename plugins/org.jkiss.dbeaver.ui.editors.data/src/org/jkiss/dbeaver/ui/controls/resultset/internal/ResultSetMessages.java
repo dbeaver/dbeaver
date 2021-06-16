@@ -144,6 +144,21 @@ public class ResultSetMessages extends NLS {
     public static String model_jdbc_set_to_current_time;
     public static String model_jdbc_unsupported_content_value_type_;
 
+    public static String dialog_row_colors_title;
+    public static String dialog_row_colors_table_attributes_name;
+    public static String dialog_row_colors_table_attributes_color;
+    public static String dialog_row_colors_group_settings_label;
+    public static String dialog_row_colors_group_settings_range_label;
+    public static String dialog_row_colors_group_settings_range_tip;
+    public static String dialog_row_colors_group_settings_single_column_label;
+    public static String dialog_row_colors_group_settings_single_column_tip;
+    public static String dialog_row_colors_group_settings_operator_label;
+    public static String dialog_row_colors_group_settings_operator_tip;
+    public static String dialog_row_colors_group_settings_value_label;
+    public static String dialog_row_colors_group_settings_background_color_label;
+    public static String dialog_row_colors_group_settings_foreground_color_label;
+    public static String dialog_row_colors_group_settings_tip;
+
     public static String dialog_value_view_button_cancel;
     public static String dialog_value_view_button_sat_null;
     public static String dialog_value_view_button_save;
