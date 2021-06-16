@@ -895,12 +895,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                "SELECT t.*, te.*, te.type_desc as trigger_type FROM \n")
+                "SELECT t.*, SUBSTRING((SELECT ',' + te.type_desc AS [text()] FROM ")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "trigger_events")).append(" te ")
+                .append("WHERE t.object_id = te.object_id FOR XML PATH ('')), 2, 1000) as trigger_type FROM ")
                 .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "triggers")).append(" t,")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" o,")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "trigger_events")).append(" te")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" o ")
                 .append("\n");
-            sql.append("WHERE o.object_id=t.object_id AND o.object_id = te.object_id AND o.schema_id=?");
+            sql.append("WHERE o.object_id=t.object_id AND o.schema_id=?");
             if (object != null || objectName != null) {
                 sql.append(" AND t.name=?");
             }
