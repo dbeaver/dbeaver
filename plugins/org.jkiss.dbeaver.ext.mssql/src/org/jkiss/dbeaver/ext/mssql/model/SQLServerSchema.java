@@ -892,13 +892,22 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
-            sql.append(
-                "SELECT t.* FROM \n")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "triggers")).append(" t,")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" o")
-                .append("\n");
+            sql.append("SELECT ");
+            if (schema.getDataSource().isServerVersionAtLeast(14, 0)) {
+                sql.append(" t.*, (SELECT STRING_AGG(te.type_desc, ', ') FROM ")
+                    .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "trigger_events")).append(" te ")
+                    .append("WHERE t.object_id = te.object_id)");
+            } else {
+                sql.append("t.*, SUBSTRING((SELECT ', ' + te.type_desc AS [text()] FROM ")
+                    .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "trigger_events")).append(" te ")
+                    .append("WHERE t.object_id = te.object_id FOR XML PATH ('')), 2, 1000)");
+            }
+            sql.append(" as trigger_type FROM ")
+                    .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "triggers")).append(" t,")
+                    .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" o")
+                    .append("\n");
             sql.append("WHERE o.object_id=t.object_id AND o.schema_id=?");
             if (object != null || objectName != null) {
                 sql.append(" AND t.name=?");
