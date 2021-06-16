@@ -29,9 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
@@ -39,12 +37,10 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -57,36 +53,20 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     String OPTION_NON_STRUCT_CREATE_ACTION = "non.struct.create.action";
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
-        sql.append(' ');
-        final PostgreDataType dataType = column.getDataType();
-        final PostgreDataType rawType = null;//dataType.getElementType(monitor);
-        if (rawType != null) {
-            sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        } else if (dataType != null) {
-            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        } else {
-            sql.append(column.getFullTypeName());
-        }
-        getColumnDataTypeModifiers(monitor, column, sql);
-    };
+        sql.append(' ').append(column.getDataType().getFullyQualifiedName(DBPEvaluationContext.DDL));
 
-    public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, DBSTypedObject column, StringBuilder sql) {
-        if (!(column instanceof PostgreTableColumn)) {
-            return sql;
-        }
-        final PostgreTableColumn postgreColumn = (PostgreTableColumn) column;
-        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(postgreColumn.getDataType());
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(column.getDataType());
         if (handler != null) {
-            sql.append(handler.getTypeModifiersString(postgreColumn.getDataType(), postgreColumn.getTypeMod()));
+            sql.append(handler.getTypeModifiersString(column.getDataType(), column.getTypeMod()));
         }
-        if (postgreColumn.getTable() instanceof PostgreTableForeign) {
-            String[] foreignTableColumnOptions = postgreColumn.getForeignTableColumnOptions();
+
+        if (column.getTable() instanceof PostgreTableForeign) {
+            String[] foreignTableColumnOptions = column.getForeignTableColumnOptions();
             if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
                 sql.append(" OPTIONS").append(PostgreUtils.getOptionsString(foreignTableColumnOptions));
             }
         }
-        return sql;
-    }
+    };
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
