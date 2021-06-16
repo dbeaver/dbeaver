@@ -16,20 +16,31 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+public enum DBGeometryDimension {
+    XY(2, false, false),
+    XYZ(3, true, false),
+    XYM(3, false, true),
+    XYZM(4, true, true);
 
-/**
- * GisAttribute.
-*/
-public interface GisAttribute {
-    int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException;
+    private final int coordinates;
+    private final boolean z;
+    private final boolean m;
 
-    @NotNull
-    DBGeometryDimension getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException;
+    DBGeometryDimension(int coordinates, boolean z, boolean m) {
+        this.coordinates = coordinates;
+        this.z = z;
+        this.m = m;
+    }
 
-    @Nullable
-    String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException;
+    public int getCoordinates() {
+        return coordinates;
+    }
+
+    public boolean hasZ() {
+        return z;
+    }
+
+    public boolean hasM() {
+        return m;
+    }
 }

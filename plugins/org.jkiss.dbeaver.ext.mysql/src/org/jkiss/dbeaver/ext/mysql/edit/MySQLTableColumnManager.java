@@ -143,7 +143,11 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
             column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
             column.setOrdinalPosition(table.getCachedAttributes().size() + 1);
-            column.setFullTypeName(DBUtils.getFullTypeName(column));
+            if (columnType != null && columnType.getDataKind() == DBPDataKind.STRING) {
+                column.setFullTypeName(typeName + "(" + column.getMaxLength() + ")");
+            } else {
+                column.setFullTypeName(typeName);
+            }
         }
         return column;
     }
