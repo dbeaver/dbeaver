@@ -896,7 +896,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             StringBuilder sql = new StringBuilder(500);
             sql.append("SELECT ");
             if (schema.getDataSource().isServerVersionAtLeast(14, 0)) {
-                sql.append("DISTINCT t.*, (SELECT STRING_AGG(te.type_desc, ', ') FROM ")
+                sql.append(" t.*, (SELECT STRING_AGG(te.type_desc, ', ') FROM ")
                     .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "trigger_events")).append(" te ")
                     .append("WHERE t.object_id = te.object_id)");
             } else {
