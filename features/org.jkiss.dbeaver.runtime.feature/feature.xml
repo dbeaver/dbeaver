@@ -45,5 +45,8 @@
     <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
-
+    <plugin id="org.apache.commons.compress" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.tukaani.xz" download-size="0" install-size="0" version="0.0.0"/>
+    <!--<plugin id="org.brotli.dec" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.github.luben.zstd" download-size="0" install-size="0" version="0.0.0"/>-->
 </feature>

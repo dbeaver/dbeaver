@@ -229,6 +229,19 @@
             </propertyGroup>
         </transformer>
 
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.AutoDecompressAttributeTransformer"
+                id="org.jkiss.dbeaver.core.AutoDecompressAttributeTransformer"
+                name="AUTO_DECOMPRESS"
+                description="%AutoDecompressTransformer.general.description"
+                applyByDefault="false"
+                custom="true">
+            <type kind="BINARY"/>
+            <type kind="BINARY"/>
+            <propertyGroup label="Properties">
+                <property id="algorithm" label="%AutoDecompressTransformer.property.algorithm.label" type="string" description="%AutoDecompressTransformer.property.algorithm.description" defaultValue="auto" required="true" validValues="auto,snappy-raw,lz4-block,deflate64"/>
+                <property id="max_size" label="%AutoDecompressTransformer.property.max_size.label" type="string" description="%AutoDecompressTransformer.property.max_size.description" defaultValue="10485760" required="true" validValues="1024,102400,1048576,10485760,104857600"/>
+            </propertyGroup>
+        </transformer>
     </extension>
-
 </plugin>
