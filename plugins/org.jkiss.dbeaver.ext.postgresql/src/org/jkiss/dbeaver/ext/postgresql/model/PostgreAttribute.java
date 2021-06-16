@@ -243,7 +243,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return acl;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public PostgreDataType getDataType() {
         return dataType;
@@ -406,6 +406,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
+        if (dataType == null) {
+            return getTypeName();
+        }
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
             return dataType.getTypeName() + handler.getTypeModifiersString(dataType, typeMod);
