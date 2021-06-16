@@ -53,11 +53,18 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     String OPTION_NON_STRUCT_CREATE_ACTION = "non.struct.create.action";
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
-        sql.append(' ').append(column.getDataType().getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sql.append(' ');
 
-        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(column.getDataType());
-        if (handler != null) {
-            sql.append(handler.getTypeModifiersString(column.getDataType(), column.getTypeMod()));
+        final PostgreDataType dataType = column.getDataType();
+        if (dataType != null) {
+            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+
+            final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+            if (handler != null) {
+                sql.append(handler.getTypeModifiersString(dataType, column.getTypeMod()));
+            }
+        } else {
+            sql.append(column.getTypeName());
         }
 
         if (column.getTable() instanceof PostgreTableForeign) {
