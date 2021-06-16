@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -181,7 +182,7 @@ public class OracleUtils {
                 objectTypeName = "MATERIALIZED VIEW";
             }
             ddlBuilder.append("\n\n").append("COMMENT ON ").append(objectTypeName).append(" ").append(objectFullName).append(" IS ").
-                    append(SQLUtils.quoteString(object.getDataSource(), objectComment)).append(";");
+                    append(SQLUtils.quoteString(object.getDataSource(), objectComment)).append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         }
 
         try {
@@ -199,7 +200,7 @@ public class OracleUtils {
                 }
                 if (!CommonUtils.isEmpty(actions)) {
                     for (DBEPersistAction action : actions) {
-                        ddlBuilder.append("\n").append(action.getScript());
+                        ddlBuilder.append("\n").append(action.getScript()).append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
                     }
                 }
             }
