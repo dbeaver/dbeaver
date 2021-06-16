@@ -65,6 +65,20 @@ public class ColorSettingsDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.ColorSettingsDialog2";//$NON-NLS-1$
 
+    /** List of supported <b>binary</b> operators the user can pick from. */
+    private static final DBCLogicalOperator[] SUPPORTED_OPERATORS = {
+        DBCLogicalOperator.EQUALS,
+        DBCLogicalOperator.NOT_EQUALS,
+        DBCLogicalOperator.GREATER,
+        DBCLogicalOperator.GREATER_EQUALS,
+        DBCLogicalOperator.LESS,
+        DBCLogicalOperator.LESS_EQUALS,
+        DBCLogicalOperator.ILIKE,
+        DBCLogicalOperator.LIKE,
+        DBCLogicalOperator.NOT_LIKE,
+        DBCLogicalOperator.REGEX
+    };
+
     private static RGB DEFAULT_RGB;
 
     @NotNull
@@ -78,6 +92,7 @@ public class ColorSettingsDialog extends BaseDialog {
     private final DBVEntity vEntity;
 
     private Table colorsTable;
+    private Combo operatorCombo;
     private Button rangeCheck;
     private ColorSelector bgColorSelector1;
     private ColorSelector bgColorSelector2;
@@ -347,6 +362,22 @@ public class ColorSettingsDialog extends BaseDialog {
                 }
             });
 
+            operatorCombo = UIUtils.createLabelCombo(settingsGroup, "Operator", "Which operator to use for matching values", SWT.DROP_DOWN | SWT.READ_ONLY);
+            operatorCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (curOverride != null) {
+                        curOverride.setOperator(SUPPORTED_OPERATORS[operatorCombo.getSelectionIndex()]);
+                    }
+                    updateControlsState();
+                }
+            });
+            UIUtils.createPlaceholder(settingsGroup, 1);
+
+            for (DBCLogicalOperator operator : SUPPORTED_OPERATORS) {
+                operatorCombo.add(operator.getExpression());
+            }
+
             UIUtils.createControlLabel(settingsGroup, "Value(s)");
 
             editorPlaceholder1 = new Composite(settingsGroup, SWT.NONE);
@@ -397,6 +428,7 @@ public class ColorSettingsDialog extends BaseDialog {
                 new Text(editorPlaceholder2, SWT.BORDER);
                 valueEditor1 = null;
                 valueEditor2 = null;
+                operatorCombo.select(0);
                 rangeCheck.setSelection(false);
                 singleColumnCheck.setSelection(false);
                 bgColorSelector1.setColorValue(DEFAULT_RGB);
@@ -404,6 +436,7 @@ public class ColorSettingsDialog extends BaseDialog {
                 bgColorSelector2.setColorValue(DEFAULT_RGB);
                 fgColorSelector2.setColorValue(DEFAULT_RGB);
             } else {
+                operatorCombo.select(Math.max(ArrayUtils.indexOf(SUPPORTED_OPERATORS, curOverride.getOperator()), 0));
                 rangeCheck.setSelection(curOverride.isRange());
                 singleColumnCheck.setSelection(curOverride.isSingleColumn());
 
@@ -465,6 +498,7 @@ public class ColorSettingsDialog extends BaseDialog {
         }
         bgColorSelector2.setEnabled(isRange);
         fgColorSelector2.setEnabled(isRange);
+        operatorCombo.setEnabled(!isRange);
 
         colorsTable.setEnabled(attribute != null);
         btnDelete.setEnabled(colorsTable.getSelectionIndex() >= 0);
@@ -513,10 +547,8 @@ public class ColorSettingsDialog extends BaseDialog {
                             int valueCount = index + 1;
                             if (attributeValues == null) {
                                 attributeValues = new Object[valueCount];
-                            } else if (attributeValues.length < valueCount) {
-                                Object[] newAttributeValues = new Object[valueCount];
-                                System.arraycopy(attributeValues, 0, newAttributeValues, 0, attributeValues.length);
-                                attributeValues = newAttributeValues;
+                            } else if (attributeValues.length != valueCount) {
+                                attributeValues = Arrays.copyOf(attributeValues, valueCount);
                             }
                             attributeValues[index] = value;
                             curOverride.setAttributeValues(attributeValues);
