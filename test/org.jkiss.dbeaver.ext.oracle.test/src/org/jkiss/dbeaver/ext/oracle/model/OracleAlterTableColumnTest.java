@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -63,8 +64,9 @@ public class OracleAlterTableColumnTest {
 
     @Before
     public void setUp() {
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("oracle"));
-        Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
+        DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
+        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
+        Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(dbpPlatform);
 
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 
@@ -73,17 +75,17 @@ public class OracleAlterTableColumnTest {
         executionContext = new OracleExecutionContext(mockRemoteInstance, "Test");
         OracleSchema testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
 
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
+        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(dbpPlatform.getPreferenceStore());
 
-        objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(OracleTableColumn.class, DBEObjectMaker.class);
+        objectMaker = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
 
         oracleTableBase = new OracleTable(testSchema, "TEST_TABLE");
-        testColumnVarchar = addColumn(oracleTableBase, "COLUMN1", "VARCHAR", 1);
+        testColumnVarchar = OracleTestUtils.addColumn(oracleTableBase, "COLUMN1", "VARCHAR", 1);
         testColumnVarchar.setMaxLength(100);
-        testColumnNumber = addColumn(oracleTableBase, "COLUMN2", "NUMBER", 2);
+        testColumnNumber = OracleTestUtils.addColumn(oracleTableBase, "COLUMN2", "NUMBER", 2);
         testColumnNumber.setPrecision(38);
         testColumnNumber.setScale(0);
-        testColumnChar = addColumn(oracleTableBase, "COLUMN3", "CHAR", 3);
+        testColumnChar = OracleTestUtils.addColumn(oracleTableBase, "COLUMN3", "CHAR", 3);
     }
 
     @Test
@@ -257,15 +259,5 @@ public class OracleAlterTableColumnTest {
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE DROP COLUMN COLUMN1;" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
-    }
-
-    private OracleTableColumn addColumn(OracleTableBase table, String columnName, String columnType, int ordinalPosition) {
-        OracleTableColumn column = new OracleTableColumn(table);
-        column.setName(columnName);
-        column.setTypeName(columnType);
-        column.setOrdinalPosition(ordinalPosition);
-        List<OracleTableColumn> cachedAttributes = (List<OracleTableColumn>) table.getCachedAttributes();
-        cachedAttributes.add(column);
-        return column;
     }
 }
