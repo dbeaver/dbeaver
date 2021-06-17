@@ -114,6 +114,15 @@ public interface DBPDataSourceInfo
     boolean supportsTransactions();
 
     /**
+     * Retrieves whether this database supports transactions for DDLs. If not, then
+     * DDL commands will use transaction mode from the session rather than using
+     * transactions on their own.
+     *
+     * @return {@code true} if the transactions inside DDLs are supported, {@code false} otherwise
+     */
+    boolean supportsTransactionsForDDL();
+
+    /**
      * Retrieves whether this database supports savepoints.
      *
      * @return <code>true</code> if savepoints are supported;

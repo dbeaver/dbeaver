@@ -900,6 +900,7 @@
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
+                    <parameter name="supports-ddl-transactions" value="false"/>
                 </driver>
 
                 <!-- PrestoSQL -->
