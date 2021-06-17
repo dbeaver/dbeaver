@@ -57,6 +57,7 @@ public class PostgreStringTypeHandler extends PostgreTypeHandler {
     }
 
     @Nullable
+    @Override
     public Integer getTypeLength(@NotNull PostgreDataType type, int typmod) {
         if (typmod < 0) {
             return null;

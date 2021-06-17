@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
 import org.jkiss.utils.CommonUtils;
 
 
@@ -36,23 +37,23 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
 
     @Override
     public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
-        switch (typmod.length) {
-            case 0:
-                return EMPTY_MODIFIERS;
-            case 1:
-                return getNumberModifiers(CommonUtils.toInt(typmod[0]), 0);
-            case 2:
-                return getNumberModifiers(CommonUtils.toInt(typmod[0]), CommonUtils.toInt(typmod[1]));
-            default:
-                return super.getTypeModifiers(type, typeName, typmod);
+        if (typmod.length == 0) {
+            return EMPTY_MODIFIERS;
         }
+        if (typmod.length == 1 && type.getObjectId() == PostgreOid.NUMERIC) {
+            return getNumberModifiers(CommonUtils.toInt(typmod[0]), 0);
+        }
+        if (typmod.length == 2 && type.getObjectId() == PostgreOid.NUMERIC) {
+            return getNumberModifiers(CommonUtils.toInt(typmod[0]), CommonUtils.toInt(typmod[1]));
+        }
+        return super.getTypeModifiers(type, typeName, typmod);
     }
 
     @NotNull
     @Override
     public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
-        if (typmod > 0) {
+        if (type.getObjectId() == PostgreOid.NUMERIC && typmod > 0) {
             final Integer precision = getTypePrecision(type, typmod);
             final Integer scale = getTypeScale(type, typmod);
             if (precision != null && precision > 0) {
@@ -69,10 +70,16 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
     @Nullable
     @Override
     public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
-        if (typmod < 0) {
-            return null;
+        if (type.getObjectId() == PostgreOid.FLOAT4) {
+            return 6;
         }
-        return (typmod & NUMERIC_MASK_PRECISION) >> 16;
+        if (type.getObjectId() == PostgreOid.FLOAT8) {
+            return 15;
+        }
+        if (type.getObjectId() == PostgreOid.NUMERIC && typmod >= 0) {
+            return (typmod & NUMERIC_MASK_PRECISION) >> 16;
+        }
+        return null;
     }
 
     @Nullable

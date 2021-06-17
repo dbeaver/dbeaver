@@ -123,22 +123,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getOrdinalPosition();
     }
 
-    @Override
-    public void setMaxLength(long maxLength) {
-        super.setMaxLength(maxLength);
-        if (getDataKind() == DBPDataKind.STRING && this.precision != -1) {
-            this.precision = (int)maxLength;
-        }
-    }
-
-    @Override
-    public void setPrecision(Integer precision) {
-        super.setPrecision(precision);
-        if (getDataKind() == DBPDataKind.STRING) {
-            this.maxLength = CommonUtils.toInt(precision);
-        }
-    }
-
     private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
         throws DBException
     {
@@ -262,10 +246,20 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 25)
-    public long getMaxLength()
-    {
-        return super.getMaxLength();
+    public long getMaxLength() {
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        if (handler != null) {
+            final Integer length = handler.getTypeLength(dataType, typeMod);
+            if (length != null) {
+                return length;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public void setMaxLength(long maxLength) {
+        log.warn("Attribute does not support updating its max length");
     }
 
     @Override
@@ -278,24 +272,28 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public Integer getPrecision() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
-            // TODO: Still dumb and inefficient
             return handler.getTypePrecision(dataType, typeMod);
         }
-        if (getDataKind() == DBPDataKind.DATETIME) {
-            return PostgreUtils.getTimeTypePrecision(typeId, typeMod);
-        } else {
-            return (int) maxLength;
-        }
+        return null;
+    }
+
+    @Override
+    public void setPrecision(Integer precision) {
+        log.warn("Attribute does not support updating its precision");
     }
 
     @Override
     public Integer getScale() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
-            // TODO: Still dumb and inefficient
             return handler.getTypeScale(dataType, typeMod);
         }
-        return PostgreUtils.getScale(typeId, typeMod);
+        return null;
+    }
+
+    @Override
+    public void setScale(Integer scale) {
+        log.warn("Attribute does not support updating its scale");
     }
 
     @Nullable
