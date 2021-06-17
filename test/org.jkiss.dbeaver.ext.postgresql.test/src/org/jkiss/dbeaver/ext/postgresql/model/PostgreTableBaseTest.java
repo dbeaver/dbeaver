@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -133,7 +134,7 @@ public class PostgreTableBaseTest {
         Assert.assertEquals(expectedDDL, actualDDL);
     }
 
-    private PostgreTableColumn addColumn(PostgreTableBase table, String columnName, String columnType, int ordinalPosition) {
+    private PostgreTableColumn addColumn(PostgreTableBase table, String columnName, String columnType, int ordinalPosition) throws DBException {
         PostgreTableColumn column = new PostgreTableColumn(table);
         column.setName(columnName);
         column.setTypeName(columnType);

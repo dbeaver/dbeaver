@@ -122,7 +122,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
     }
 
     @Override
-    public void setTypeName(String typeName)
+    public void setTypeName(String typeName) throws DBException
     {
         this.typeName = typeName;
     }

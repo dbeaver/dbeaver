@@ -269,12 +269,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public String getTypeName()
-    {
-        return dataType == null ? super.getTypeName() : dataType.getTypeName();
-    }
-
-    @Override
     public Integer getPrecision() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
@@ -404,6 +398,22 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
+    public String getTypeName() {
+        if (dataType != null) {
+            return dataType.getTypeName();
+        }
+        return typeName;
+    }
+
+    @Override
+    public void setTypeName(String typeName) throws DBException {
+        final PostgreDataType dataType = findDataType(getDatabase(), typeName);
+        this.typeName = typeName;
+        this.typeId = dataType.getTypeID();
+        this.dataType = dataType;
+    }
+
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
         if (dataType == null) {
@@ -422,14 +432,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();
 
-        PostgreDataType dataType = getDatabase().getDataSource().getLocalDataType(typeName);
-        if (dataType == null) {
-            dataType = getDatabase().getDataType(null, typeName);
-            if (dataType == null) {
-                throw new DBException("Bad data type name specified: '" + fullTypeName + "'");
-            }
-        }
-
+        final PostgreDataType dataType = findDataType(getDatabase(), typeName);
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
             this.typeMod = handler.getTypeModifiers(dataType, typeName, typeMods);
@@ -443,6 +446,18 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     public String[] getForeignTableColumnOptions() {
         return foreignTableColumnOptions;
+    }
+
+    @NotNull
+    private static PostgreDataType findDataType(@NotNull PostgreDatabase database, @NotNull String typeName) throws DBException {
+        PostgreDataType dataType = database.getDataSource().getLocalDataType(typeName);
+        if (dataType == null) {
+            dataType = database.getDataType(null, typeName);
+        }
+        if (dataType == null) {
+            throw new DBException("Can't find specified data type by name: '" + typeName + "'");
+        }
+        return dataType;
     }
 
     public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute<?>> {
