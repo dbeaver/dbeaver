@@ -398,7 +398,7 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.yugabytedb.description"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
