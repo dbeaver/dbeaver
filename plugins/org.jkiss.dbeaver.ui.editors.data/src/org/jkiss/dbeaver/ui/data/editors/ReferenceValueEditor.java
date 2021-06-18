@@ -220,10 +220,12 @@ public class ReferenceValueEditor {
                 if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                     editorSelector.deselectAll();
                     item.setBackground(selectionColor);
+                    item.setForeground(UIUtils.getContrastColor(selectionColor));
                     editorSelector.showItem(item);
                     newValueFound = true;
                 } else {
                     item.setBackground(null);
+                    item.setForeground(null);
                 }
             }
 
@@ -328,6 +330,7 @@ public class ReferenceValueEditor {
                 editorSelector.deselectAll();
                 if (curItem != null) {
                     curItem.setBackground(selectionColor);
+                    curItem.setForeground(UIUtils.getContrastColor(selectionColor));
                     editorSelector.showItem(curItem);
                     // Show cur item on top
                     editorSelector.setTopIndex(curItemIndex);
