@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -77,7 +78,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        return SQLiteUtils.readMasterDefinition(monitor, trigger, SQLiteObjectType.trigger, trigger.getName(), trigger.getTable());
+        return SQLiteUtils.readMasterDefinition(monitor, trigger, SQLiteObjectType.trigger, trigger.getName(), (GenericTableBase) trigger.getParentObject());
     }
 
     @Override
@@ -88,6 +89,23 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Override
     public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
         return false;
+    }
+
+    @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement("SELECT name as TRIGGER_NAME, tbl_name as OWNER FROM sqlite_master WHERE type='trigger'" + (forParent != null ? " AND tbl_name=?" : ""));
+        if (forParent != null) {
+            dbStat.setString(1, forParent.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetString(resultSet, 1);
+        }
+        return new GenericTableTrigger(genericTableBase, triggerName, null);
     }
 
     @Override
@@ -102,7 +120,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
-                        result.add(new GenericTrigger(container, table, name, null));
+                        result.add(new GenericTableTrigger(table, name, null));
                     }
                 }
                 return result;

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -174,36 +175,49 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
+        String schema = SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema());
+        StringBuilder query = new StringBuilder("SELECT triggers.name as TRIGGER_NAME, triggers.*, tables.name as OWNER FROM " + schema + ".sysobjects triggers");
+        GenericSchema tableSchema = table == null ? null : table.getSchema();
+        long schemaId = tableSchema instanceof SQLServerGenericSchema ? ((SQLServerGenericSchema) tableSchema).getSchemaId() : 0;
+        query.append(",").append(schema).append(".sysobjects tables").append("\nWHERE triggers.type = 'TR' AND triggers.deltrig = tables.id\n");
+        if (table != null) {
+            if (schemaId == 0) {
+                query.append("AND user_name(tables.uid) = ?");
+            } else {
+                query.append("AND tables.uid = ?");
+            }
+            query.append(" AND tables.name = ?");
+        }
+        JDBCPreparedStatement dbStat = session.prepareStatement(query.toString());
+        if (table != null) {
+            if (schemaId == 0) {
+                dbStat.setString(1, tableSchema.getName());
+            } else {
+                dbStat.setLong(1, schemaId);
+            }
+            dbStat.setString(2, table.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String name, @NotNull JDBCResultSet resultSet) throws DBException {
+        if (CommonUtils.isEmpty(name)) {
+            name = JDBCUtils.safeGetString(resultSet, 1);
+        }
+        if (name == null) {
+            return null;
+        }
+        name = name.trim();
+        return  new SQLServerGenericTrigger(genericTableBase, name, null);
+    }
+
+    @Override
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
-            String schema = SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema());
-            StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
-            GenericSchema tableSchema = table == null ? null : table.getSchema();
-            long schemaId = tableSchema instanceof SQLServerGenericSchema ? ((SQLServerGenericSchema) tableSchema).getSchemaId() : 0;
 
-            if (table != null) {
-                query.append(",").append(schema).append(".sysobjects tables");
-            }
-            query.append("\nWHERE triggers.type = 'TR'\n");
-            if (table != null) {
-                query.append("AND triggers.deltrig = tables.id\n");
-                if (schemaId == 0) {
-                    query.append("AND user_name(tables.uid) = ?");
-                } else {
-                    query.append("AND tables.uid = ?");
-                }
-                query.append(" AND tables.name = ?");
-            }
-
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
-                if (table != null) {
-                    if (schemaId == 0) {
-                        dbStat.setString(1, tableSchema.getName());
-                    } else {
-                        dbStat.setLong(1, schemaId);
-                    }
-                    dbStat.setString(2, table.getName());
-                }
+            try (JDBCPreparedStatement dbStat = (JDBCPreparedStatement) prepareTableTriggersLoadStatement(session, container, table)) {
                 List<GenericTrigger> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -213,7 +227,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                             continue;
                         }
                         name = name.trim();
-                        SQLServerGenericTrigger trigger = new SQLServerGenericTrigger(container, table, name, null);
+                        SQLServerGenericTrigger trigger = new SQLServerGenericTrigger(table, name, null);
                         result.add(trigger);
                     }
                 }
@@ -226,7 +240,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        GenericTableBase table = trigger.getTable();
+        GenericTableBase table = ((GenericTableTrigger) trigger).getTable();
         assert table != null;
         return extractSource(monitor, table.getDataSource(), table, table.getCatalog(), table.getSchema().getName(), trigger.getName());
     }

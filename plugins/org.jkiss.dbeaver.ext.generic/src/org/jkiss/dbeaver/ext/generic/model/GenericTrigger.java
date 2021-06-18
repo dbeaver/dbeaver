@@ -28,21 +28,18 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import java.util.Map;
 
 /**
- * GenericProcedure
+ * GenericTrigger
  */
-public class GenericTrigger implements DBSTrigger, GenericScriptObject
+public abstract class GenericTrigger<OWNER extends DBSObject> implements DBSTrigger, GenericScriptObject
 {
     @NotNull
-    private final GenericStructContainer container;
-    @Nullable
-    private final GenericTableBase table;
+    private final OWNER container;
     private String name;
     private String description;
     protected String source;
 
-    public GenericTrigger(@NotNull GenericStructContainer container, @Nullable GenericTableBase table, String name, String description) {
+    public GenericTrigger(@NotNull OWNER container, String name, String description) {
         this.container = container;
-        this.table = table;
         this.name = name;
         this.description = description;
     }
@@ -73,30 +70,22 @@ public class GenericTrigger implements DBSTrigger, GenericScriptObject
         return true;
     }
 
-    @Nullable
-    @Override
-    @Property(viewable = true, order = 4)
-    public GenericTableBase getTable()
-    {
-        return table;
-    }
-
     @NotNull
-    public GenericStructContainer getContainer() {
+    public OWNER getContainer() {
         return container;
     }
 
     @Override
-    public DBSObject getParentObject()
+    public OWNER getParentObject()
     {
-        return table == null ? container : table;
+        return container;
     }
 
     @NotNull
     @Override
     public GenericDataSource getDataSource()
     {
-        return container.getDataSource();
+        return (GenericDataSource) container.getDataSource();
     }
 
     @Override
