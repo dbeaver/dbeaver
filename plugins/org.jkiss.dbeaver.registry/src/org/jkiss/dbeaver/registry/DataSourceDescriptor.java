@@ -67,6 +67,9 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -104,8 +107,10 @@ public class DataSourceDescriptor
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
+    public static final String CATEGORY_CONNECTIONS = "Connections";
     public static final String CATEGORY_SERVER = "Server";
     public static final String CATEGORY_DRIVER = "Driver";
+    public static final String CATEGORY_DRIVER_FILES = "Driver Files";
 
     @NotNull
     private final DBPDataSourceRegistry registry;
@@ -1260,8 +1265,19 @@ public class DataSourceDescriptor
                 for (DBSInstance instance : dataSource.getAvailableInstances()) {
                     for (DBCExecutionContext context : instance.getAllContexts()) {
                         conIndex++;
-                        coll.addProperty("Connections", String.valueOf(conIndex), String.valueOf(conIndex), new ContextInfo(context));
+                        coll.addProperty(CATEGORY_CONNECTIONS, String.valueOf(conIndex), String.valueOf(conIndex), new ContextInfo(context));
                     }
+                }
+            }
+            if (driver.getClassLoader() instanceof URLClassLoader) {
+                final URL[] urls = ((URLClassLoader) driver.getClassLoader()).getURLs();
+                for (int urlIndex = 0; urlIndex < urls.length; urlIndex++) {
+                    Object path = urls[urlIndex];
+                    try {
+                        path = Paths.get(((URL) path).toURI());
+                    } catch (Exception ignored) {
+                    }
+                    coll.addProperty(CATEGORY_DRIVER_FILES, String.valueOf(urlIndex), String.valueOf(urlIndex), path);
                 }
             }
             return adapter.cast(coll);

@@ -52,11 +52,11 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]"
                           bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true"
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]"
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
                           ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
                           ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>

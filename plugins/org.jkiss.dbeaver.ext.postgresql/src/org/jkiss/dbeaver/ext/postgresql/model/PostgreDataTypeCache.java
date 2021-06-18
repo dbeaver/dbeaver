@@ -197,11 +197,6 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             }
         }
         sql.append("\nAND t.typnamespace=? ");
-        if (supportsSysTypColumn) {
-            sql.append(" ORDER BY CASE WHEN t.typcategory <> 'A' THEN 0 ELSE 1 END, t.typname");
-        } else {
-            sql.append(" ORDER BY t.typname");
-        }
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;

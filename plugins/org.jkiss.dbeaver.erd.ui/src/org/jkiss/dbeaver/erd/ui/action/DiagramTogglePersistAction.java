@@ -22,8 +22,7 @@ package org.jkiss.dbeaver.erd.ui.action;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -34,7 +33,7 @@ public class DiagramTogglePersistAction extends Action {
 
     public DiagramTogglePersistAction(ERDEditorEmbedded editor) {
         super("Keep layout", AS_CHECK_BOX);
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE_TO_DATABASE));
+        setImageDescriptor(ERDUIActivator.getImageDescriptor("icons/layout_save.png"));
         setDescription("Save diagram layout locally.\nOtherwise entities layout will be reverted on editor reopen.");
         setToolTipText(getDescription());
         this.editor = editor;

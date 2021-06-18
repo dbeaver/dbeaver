@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -66,16 +68,26 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
         }
     }
 
+    @NotNull
     @Override
-    public int getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException {
+    public DBGeometryDimension getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException {
         if (geometryInfo == null) {
             readGeometryInfo(monitor);
         }
         if (geometryInfo != null) {
-            return geometryInfo.dimension;
+            // TODO: This does not cover XYM dimension, need to find a better solution
+            switch (geometryInfo.dimension) {
+                case 3:
+                    return DBGeometryDimension.XYZ;
+                case 4:
+                    return DBGeometryDimension.XYZM;
+                default:
+                    return DBGeometryDimension.XY;
+            }
         } else {
-            return -1;
+            return DBGeometryDimension.XY;
         }
+
     }
 
     @Nullable

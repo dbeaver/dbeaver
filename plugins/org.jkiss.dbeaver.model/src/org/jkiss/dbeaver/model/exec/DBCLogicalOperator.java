@@ -113,7 +113,8 @@ public enum DBCLogicalOperator {
     REGEX("REGEX", 1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {
-            return false;
+            return srcValue != null && !ArrayUtils.isEmpty(arguments) &&
+                srcValue.toString().matches(arguments[0].toString());
         }
     },
     SOUNDS("SOUNDS", 1) {

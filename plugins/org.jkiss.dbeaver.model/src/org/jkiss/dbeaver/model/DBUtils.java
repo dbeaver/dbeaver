@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -2124,5 +2125,46 @@ public final class DBUtils {
             return ((DBSTypedObjectEx) typedObject).getDataType();
         }
         return null;
+    }
+
+    /**
+     * Extracts modifiers from a given type.
+     * <p>
+     * <h3>Example:</h3>
+     * <pre>{@code
+     * final Pair<String, String[]> modifiers = DBUtils.getTypeModifiers(NUMBER(5, 10)");
+     * Assert.assertEquals("NUMBER", modifiers.getFirst());
+     * Assert.assertArrayEquals(new String[]{"5", "10"}, modifiers.getSecond());
+     * }</pre>
+     *
+     * @param type string containing type with modifiers to retrieve them from
+     * @return pair of extracted type name and array of modifiers
+     * @throws DBException if value is malformed and cannot be parsed
+     */
+    @NotNull
+    public static Pair<String, String[]> getTypeModifiers(@NotNull String type) throws DBException {
+        final int modStartIndex = type.indexOf('(');
+        final int modEndIndex = type.indexOf(')');
+        if (modStartIndex < 0 ^ modEndIndex < 0) {
+            throw new DBException("Type '" + type + "' has malformed modifiers");
+        }
+        if (modStartIndex < 0) {
+            return new Pair<>(type, new String[0]);
+        }
+        final String name = (type.substring(0, modStartIndex) + type.substring(modEndIndex + 1)).trim();
+        if (name.isEmpty()) {
+            throw new DBException("Type name is missing");
+        }
+        final String mod = type.substring(modStartIndex + 1, modEndIndex).trim();
+        if (mod.isEmpty()) {
+            throw new DBException("Type with zero modifiers is not allowed");
+        }
+        final String[] mods = mod.split(",");
+        for (int i = 0; i < mods.length; i++) {
+            if ((mods[i] = mods[i].trim()).isEmpty()) {
+                throw new DBException("Type has empty modifiers");
+            }
+        }
+        return new Pair<>(name, mods);
     }
 }

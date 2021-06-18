@@ -22,12 +22,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandler;
+import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandlerProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -36,12 +37,10 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -55,109 +54,26 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(' ');
-        final PostgreDataType dataType = column.getDataType();
-        final PostgreDataType rawType = null;//dataType.getElementType(monitor);
-        if (rawType != null) {
-            sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        } else if (dataType != null) {
-            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        } else {
-            sql.append(column.getFullTypeName());
-        }
-        getColumnDataTypeModifiers(monitor, column, sql);
-    };
 
-    public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, DBSTypedObject column, StringBuilder sql) {
-        if (column instanceof PostgreTableColumn) {
-            PostgreTableColumn postgreColumn = (PostgreTableColumn) column;
-            final PostgreDataType rawType = null;//dataType.getElementType(monitor);
-            switch (postgreColumn.getDataKind()) {
-                case STRING:
-                    final long length = postgreColumn.getMaxLength();
-                    if (length > 0 && length < Integer.MAX_VALUE) {
-                        sql.append('(').append(length).append(')');
-                    }
-                    break;
-                case NUMERIC:
-                    if (column.getTypeID() == Types.NUMERIC) {
-                        final int precision = CommonUtils.toInt(postgreColumn.getPrecision());
-                        final int scale = CommonUtils.toInt(postgreColumn.getScale());
-                        if (scale > 0 || precision > 0) {
-                            sql.append('(');
-                            if (precision > 0) {
-                                sql.append(precision);
-                            }
-                            if (scale > 0) {
-                                if (precision > 0) {
-                                    sql.append(',');
-                                }
-                                sql.append(scale);
-                            }
-                            sql.append(')');
-                        }
-                    }
-                    break;
-                case DATETIME:
-                    final Integer timePrecision = postgreColumn.getPrecision();
-                    String typeName = column.getTypeName();
-                    if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                        if (timePrecision != null && timePrecision >= 0 && timePrecision <= 6) {
-                            sql.append('(').append(timePrecision).append(')');
-                        }
-                    }
-                    if (postgreColumn.getTypeId() == PostgreOid.INTERVAL) {
-                        final String precision = postgreColumn.getIntervalTypeField();
-                        if (!CommonUtils.isEmpty(precision)) {
-                            sql.append(' ').append(precision);
-                        }
-                        if (PostgreUtils.isPrecisionInterval(postgreColumn.getTypeMod()) && timePrecision != null && timePrecision >= 0 && timePrecision <= 6) {
-                            sql.append('(').append(timePrecision).append(')');
-                        }
-                    }
-                    break;
+        final PostgreDataType dataType = column.getDataType();
+        if (dataType != null) {
+            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+
+            final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+            if (handler != null) {
+                sql.append(handler.getTypeModifiersString(dataType, column.getTypeMod()));
             }
-            if (PostgreUtils.isGISDataType(postgreColumn.getTypeName())) {
-                try {
-                    String geometryType = postgreColumn.getAttributeGeometryType(monitor);
-                    int geometrySRID = postgreColumn.getAttributeGeometrySRID(monitor);
-                    int geometryDimension = postgreColumn.getAttributeGeometryDimension(monitor);
-                    if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
-                        // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
-                        sql.append("(").append(geometryType);
-                        if (!geometryType.endsWith("M")) {
-                            // PostGIS supports XYM geometries. Since it is also a 3-dimensional geometry,
-                            // we can distinguish between XYZ and XYM using this postfix (in fact, none of
-                            // supported geometries' names end with 'M', so we're free to add check as-is)
-                            // https://postgis.net/docs/using_postgis_dbmanagement.html#geometry_columns
-                            if (geometryDimension > 2) {
-                                sql.append('Z');
-                            }
-                            if (geometryDimension > 3) {
-                                sql.append('M');
-                            }
-                        }
-                        if (geometrySRID > 0) {
-                            sql.append(", ").append(geometrySRID);
-                        }
-                        sql.append(")");
-                    }
-                } catch (DBCException e) {
-                    log.debug(e);
-                }
-            }
-            if (postgreColumn.getTable() instanceof PostgreTableForeign) {
-                String[] foreignTableColumnOptions = postgreColumn.getForeignTableColumnOptions();
-                if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
-                    sql.append(" OPTIONS").append(PostgreUtils.getOptionsString(foreignTableColumnOptions));
-                }
-            }
-            if (rawType != null) {
-                sql.append("[]");
-            }
-            return sql;
+        } else {
+            sql.append(column.getTypeName());
         }
-        return sql;
-    }
+
+        if (column.getTable() instanceof PostgreTableForeign) {
+            String[] foreignTableColumnOptions = column.getForeignTableColumnOptions();
+            if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
+                sql.append(" OPTIONS").append(PostgreUtils.getOptionsString(foreignTableColumnOptions));
+            }
+        }
+    };
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
@@ -272,7 +188,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (column.getDataSource().isServerVersionAtLeast(8, 0) && column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
         }
-        if (command.hasProperty(DBConstants.PROP_ID_DATA_TYPE) || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
+        if (command.hasProperty("fullTypeName") || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
             actionList.add(new SQLDatabasePersistActionAtomic("Set column type", prefix + "TYPE " + typeClause, isAtomic));
         }
         if (command.hasProperty(DBConstants.PROP_ID_REQUIRED)) {

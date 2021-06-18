@@ -109,7 +109,6 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
             }
             transformSettings.setTransformOptions(JSONUtils.deserializeProperties(transformsCfg, "properties"));
         }
-        properties = JSONUtils.deserializeProperties(transformsCfg, "properties");
     }
 
     @NotNull

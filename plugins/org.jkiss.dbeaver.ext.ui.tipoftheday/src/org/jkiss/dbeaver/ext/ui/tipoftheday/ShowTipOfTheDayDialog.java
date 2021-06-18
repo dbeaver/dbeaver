@@ -204,7 +204,12 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, false);
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
 
-        UIUtils.asyncExec(() -> getButton(IDialogConstants.OK_ID).setFocus());
+        UIUtils.asyncExec(() -> {
+            Button okButton = getButton(IDialogConstants.OK_ID);
+            if (okButton != null) {
+                okButton.setFocus();
+            }
+        });
     }
 
     @Override

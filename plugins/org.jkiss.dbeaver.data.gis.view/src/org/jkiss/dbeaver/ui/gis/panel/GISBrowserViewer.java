@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
@@ -56,7 +57,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     {
         leafletViewer = new GISLeafletViewer(
             editPlaceholder,
-            valueController,
+            new DBDAttributeBinding[]{((IAttributeController) valueController).getBinding()},
             GisTransformUtils.getSpatialDataProvider(valueController.getExecutionContext().getDataSource()));
         return leafletViewer.getBrowser();
     }

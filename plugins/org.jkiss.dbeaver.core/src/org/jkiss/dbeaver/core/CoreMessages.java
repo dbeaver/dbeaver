@@ -381,6 +381,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_socksproxy_username;
 	public static String dialog_connection_wizard_socksproxy_password;
 
+	public static String dialog_connection_test_title;
+	public static String dialog_connection_test_label_server;
+	public static String dialog_connection_test_label_driver;
+	public static String dialog_connection_test_properties_title;
+
 
 	// Connections
 	public static String pref_page_database_client_name_group;

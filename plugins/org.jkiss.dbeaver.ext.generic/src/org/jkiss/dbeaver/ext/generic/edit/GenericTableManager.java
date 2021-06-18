@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -115,13 +116,22 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericTableBase, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericTableBase, PropertyHandler> command, Map<String, Object> options) throws DBException {
         GenericTableBase tableBase = command.getObject();
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment table",
                     "COMMENT ON TABLE " + tableBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                             " IS " + SQLUtils.quoteString(tableBase, CommonUtils.notEmpty(tableBase.getDescription()))));
+        }
+
+        if (!tableBase.isPersisted()) {
+            // Column comments for the newly created table
+            for (GenericTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
+                if (!CommonUtils.isEmpty(column.getDescription())) {
+                    GenericTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
+                }
+            }
         }
     }
 

@@ -322,5 +322,12 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             }
         }
     }
+
+    public static void addColumnCommentAction(List<DBEPersistAction> actionList, DBSEntityAttribute column, DBSEntity table) {
+        actionList.add(new SQLDatabasePersistAction(
+            "Comment column",
+            "COMMENT ON COLUMN " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+                " IS " + SQLUtils.quoteString(column.getDataSource(), column.getDescription())));
+    }
 }
 

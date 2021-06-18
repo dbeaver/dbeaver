@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreDollarQuoteRule;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -875,15 +873,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String[] getNonTransactionKeywords() {
         return POSTGRE_NON_TRANSACTIONAL_KEYWORDS;
-    }
-
-    @Override
-    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        StringBuilder columnModifier = PostgreTableColumnManager.getColumnDataTypeModifiers(new VoidProgressMonitor(), column, new StringBuilder());
-        if (columnModifier.length() != 0) {
-            return columnModifier.toString();
-        }
-        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
     @Override

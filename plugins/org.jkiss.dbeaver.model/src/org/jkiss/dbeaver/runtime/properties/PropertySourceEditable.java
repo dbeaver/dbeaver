@@ -184,8 +184,10 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();
             }
-            log.error("Can't write property '" + prop.getDisplayName() + "' value", e);
-            return false;
+            if (e instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException) e;
+            }
+            throw new IllegalArgumentException("Can't write property '" + prop.getDisplayName() + "' value", e);
         }
     }
 

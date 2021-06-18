@@ -1103,7 +1103,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     protected class ProgressControl extends ProgressPageControl {
 
-        private Searcher searcher;
+        private final Searcher searcher;
 
         private ProgressControl(Composite parent, int style)
         {

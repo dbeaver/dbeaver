@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -88,6 +89,22 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         if (configurator != null) {
             resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
         }
+    }
+
+    // Constructor for tests
+    @ForTest
+    public OracleDataSource(DBPDataSourceContainer container) {
+        super(container, new OracleSQLDialect());
+        this.outputReader = new OracleOutputReader();
+
+        OracleConfigurator configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
+        if (configurator != null) {
+            resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
+        }
+        this.hasStatistics = false;
+
+        OracleSchema defSchema = new OracleSchema(this, -1, "TEST_SCHEMA");
+        schemaCache.setCache(Collections.singletonList(defSchema));
     }
 
     @Override
