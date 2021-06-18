@@ -195,7 +195,6 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
 
     private class ObjectInfo {
         final OBJECT object;
-        public boolean broken;
 
         public ObjectInfo(OBJECT object)
         {
@@ -313,9 +312,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                         for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
                             if (objMap != null) {
                                 for (ObjectInfo info : objMap.values()) {
-                                    if (!info.broken) {
-                                        globalCache.add(info.object);
-                                    }
+                                    globalCache.add(info.object);
                                 }
                             }
                         }

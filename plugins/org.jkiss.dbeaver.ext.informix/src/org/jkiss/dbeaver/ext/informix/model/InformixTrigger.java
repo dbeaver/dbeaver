@@ -56,7 +56,7 @@ public class InformixTrigger extends GenericTableTrigger {
         super(container, name, null);
         String eventTypeLetter = JDBCUtils.safeGetString(resultSet, "event");
         if (CommonUtils.isNotEmpty(eventTypeLetter)) {
-            this.eventType = TriggerEventType.valueOf(eventTypeLetter);
+            this.eventType = CommonUtils.valueOf(TriggerEventType.class, eventTypeLetter);
         }
         this.beforeValue = JDBCUtils.safeGetString(resultSet, "old");
         this.afterValue = JDBCUtils.safeGetString(resultSet, "new");

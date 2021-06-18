@@ -151,10 +151,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
         int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
-        boolean isSystem = true;
-        if (systemFlag == 0) { // System flag value 0 - if user-defined and 1 or more if system
-            isSystem = false;
-        }
+        boolean isSystem = systemFlag > 0; // System flag value 0 - if user-defined and 1 or more if system
 
         return new FireBirdTableTrigger(
                 parent,
@@ -220,10 +217,7 @@ public class FireBirdMetaModel extends GenericMetaModel
                         int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
                         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
                         int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
-                        boolean isSystem = true;
-                        if (systemFlag == 0) { // System flag value 0 - if user-defined and 1 or more if system
-                            isSystem = false;
-                        }
+                        boolean isSystem = systemFlag > 0; // System flag value 0 - if user-defined and 1 or more if system
                         FireBirdTableTrigger trigger = new FireBirdTableTrigger(
                             table,
                             name,
