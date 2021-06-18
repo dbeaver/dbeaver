@@ -47,14 +47,19 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
 
     @Override
     public boolean canCreateObject(Object container) {
-        return container instanceof GenericTable &&
-            (!((GenericTable) container).isPersisted() ||
-            ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint());
+        return (container instanceof GenericTable)
+            && ((GenericTable) container).getDataSource().getInfo().supportsReferentialIntegrity()
+            && (!((GenericTable) container).isPersisted() || ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableStatement());
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableForeignKey object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
     }
 
     @Override
     public boolean canDeleteObject(GenericTableForeignKey object) {
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
     }
 
     @Override

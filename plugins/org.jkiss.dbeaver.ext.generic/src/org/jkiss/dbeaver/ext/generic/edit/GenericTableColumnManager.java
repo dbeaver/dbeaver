@@ -20,20 +20,17 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -52,6 +49,22 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     public DBSObjectCache<? extends DBSObject, GenericTableColumn> getObjectsCache(GenericTableColumn object) {
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
+    }
+
+    @Override
+    public boolean canCreateObject(Object container) {
+        return (container instanceof GenericTable)
+            && (!((GenericTable) container).isPersisted() || ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableStatement());
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableColumn object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableColumn object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
     }
 
     @Override

@@ -43,7 +43,19 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     public boolean canCreateObject(Object container) {
-        return container instanceof GenericTable && ((GenericTable) container).getDataSource().getInfo().supportsIndexes();
+        return (container instanceof GenericTable)
+            && ((GenericTable) container).getDataSource().getInfo().supportsIndexes()
+            && (!((GenericTable) container).isPersisted() || ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableStatement());
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableIndex object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableIndex object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
     }
 
     @Override
