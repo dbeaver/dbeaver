@@ -405,6 +405,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         this.indexCache.clearCache();
         this.constraintKeysCache.clearCache();
         this.foreignKeysCache.clearCache();
+        this.containerTriggerCache.clearCache();
+        this.tableTriggerCache.clearCache();
         this.packages = null;
         this.procedures = null;
         this.sequences = null;

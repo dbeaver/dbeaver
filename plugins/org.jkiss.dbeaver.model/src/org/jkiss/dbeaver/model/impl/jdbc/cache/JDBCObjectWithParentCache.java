@@ -193,15 +193,6 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
         }
     }
 
-    private class ObjectInfo {
-        final OBJECT object;
-
-        public ObjectInfo(OBJECT object)
-        {
-            this.object = object;
-        }
-    }
-
     protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
             throws DBException
     {
@@ -218,7 +209,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
             parentCache.loadObjects(monitor, owner);
         }
 
-        Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<>();
+        Map<PARENT, Map<String, OBJECT>> parentObjectMap = new LinkedHashMap<>();
 
         monitor.beginTask("Load parent and object cache", 1);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load parent and object objects")) {
@@ -263,9 +254,9 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                             }
                         }
                         // Add to map
-                        Map<String, ObjectInfo> objectMap = parentObjectMap.computeIfAbsent(parent, k -> new TreeMap<>());
+                        Map<String, OBJECT> objectMap = parentObjectMap.computeIfAbsent(parent, k -> new TreeMap<>());
 
-                        ObjectInfo objectInfo = objectMap.get(objectName);
+                        OBJECT objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
                             OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
                             if (object == null || !isValidObject(monitor, owner, object)) {
@@ -273,7 +264,7 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                                 continue;
                             }
                             objectName = object.getName();
-                            objectInfo = new ObjectInfo(object);
+                            objectInfo = object;
                             objectMap.put(objectName, objectInfo);
                         }
                     }
@@ -309,11 +300,9 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                     if (forParent == null) {
                         // Cache global object list
                         List<OBJECT> globalCache = new ArrayList<>();
-                        for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
+                        for (Map<String, OBJECT> objMap : parentObjectMap.values()) {
                             if (objMap != null) {
-                                for (ObjectInfo info : objMap.values()) {
-                                    globalCache.add(info.object);
-                                }
+                                globalCache.addAll(objMap.values());
                             }
                         }
                         // Save precached objects in global cache
@@ -330,16 +319,14 @@ public abstract class JDBCObjectWithParentCache<OWNER extends DBSObject, PARENT 
                 // Otherwise we assume that this function is not supported for mass data reading
 
                 // All objects are read. Now assign them to parents
-                for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                for (Map.Entry<PARENT, Map<String, OBJECT>> colEntry : parentObjectMap.entrySet()) {
                     if (colEntry.getValue() == null || objectCache.containsKey(colEntry.getKey())) {
                         // Do not overwrite this object's cache
                         continue;
                     }
-                    Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
+                    Collection<OBJECT> objectInfos = colEntry.getValue().values();
                     ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
-                    for (ObjectInfo objectInfo : objectInfos) {
-                        objects.add(objectInfo.object);
-                    }
+                    objects.addAll(objectInfos);
                     objectCache.put(colEntry.getKey(), objects);
                 }
                 // Now set empty object list for other parents
