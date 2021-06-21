@@ -249,7 +249,9 @@ public class EditorUtils {
                 String catalogName = getDefaultCatalogName(context);
                 if (catalogName != null) ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
                 String schemaName = getDefaultSchemaName(context);
-                if (catalogName != null || schemaName != null) ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, getDefaultCatalogName(context));
+                if (schemaName != null) {
+                    ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
+                }
             }
             return;
         }
