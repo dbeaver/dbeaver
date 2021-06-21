@@ -196,11 +196,10 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         }
         columnController.createColumns(true);
 
-        filter.getTableViewer().addSelectionChangedListener(event -> {
-            value = filter.getFilterValue();
-            //okPressed();
+        filter.getTableViewer().addDoubleClickListener(event -> {
+            value = filter.getSelectedFilterValue();
+            close();
         });
-        filter.getTableViewer().addDoubleClickListener(event -> applyFilterValue());
 
         Composite buttonsPanel = filter.getButtonsPanel();
         {
