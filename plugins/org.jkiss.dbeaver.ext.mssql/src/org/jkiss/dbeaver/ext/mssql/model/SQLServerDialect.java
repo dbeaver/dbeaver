@@ -17,18 +17,25 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,12 +44,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class SQLServerDialect extends JDBCSQLDialect {
+public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
-        /*{
-            "BEGIN^TRANSACTION", "END"
-        }*/
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
 
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
@@ -294,6 +299,18 @@ public class SQLServerDialect extends JDBCSQLDialect {
             return new String[]{SQLConstants.SL_COMMENT, "//"};
         } else {
             return super.getSingleLineComments();
+        }
+    }
+
+    @Override
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+        if (position == RulePosition.KEYWORDS) {
+            final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
+            // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/transactions-transact-sql
+            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "DISTRIBUTED", "TRANSACTION"}, keywordToken));
+            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "DISTRIBUTED", "TRAN"}, keywordToken));
+            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken));
+            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRAN"}, keywordToken));
         }
     }
 }
