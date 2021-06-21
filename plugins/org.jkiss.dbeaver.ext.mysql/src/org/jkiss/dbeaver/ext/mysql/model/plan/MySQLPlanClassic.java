@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,12 +38,6 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
 
     public MySQLPlanClassic(JDBCSession session, String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
-
-        SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
-        String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
-        if (!"SELECT".equalsIgnoreCase(SQLUtils.getFirstKeyword(dialect, plainQuery))) {
-            throw new DBCException("Only SELECT statements could produce execution plan");
-        }
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 List<MySQLPlanNodePlain> nodes = new ArrayList<>();
