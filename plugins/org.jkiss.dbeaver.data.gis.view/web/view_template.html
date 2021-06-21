@@ -48,6 +48,16 @@
             L.tileLayer(${defaultTiles}).addTo(geoMap);
         }
 
+        if (typeof setClipboardContents !== 'undefined') {
+            // This way we can tell whether we're running within DBeaver.
+            // If not, just don't bother overriding context menu behavior.
+            geoMap.on('contextmenu', function (event) {
+                L.popup()
+                    .setLatLng(event.latlng)
+                    .setContent('<a href="javascript:setClipboardContents(\'' + event.latlng.lat + ', ' + event.latlng.lng + '\');geoMap.closePopup();undefined;">Copy coordinates</a>')
+                    .openOn(geoMap);
+            });
+        }
 
         const geojsonMarkerOptions = {
             radius: 4,
