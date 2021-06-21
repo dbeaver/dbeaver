@@ -211,7 +211,26 @@ public class HANAMetaModel extends GenericMetaModel
     public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return true;
     }
-    
+
+    @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT T.SUBJECT_TABLE_NAME AS OWNER, T.* FROM SYS.TRIGGERS T WHERE SUBJECT_TABLE_SCHEMA=?" + (table != null ? " AND SUBJECT_TABLE_NAME=?" : ""));
+        dbStat.setString(1, container.getName());
+        if (table != null) {
+            dbStat.setString(2, table.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetString(resultSet, "TRIGGER_NAME");
+        }
+        return new HANATrigger(genericTableBase, triggerName, resultSet);
+    }
+
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
@@ -225,7 +244,7 @@ public class HANAMetaModel extends GenericMetaModel
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
-                        result.add(new GenericTrigger(container, table, name, null));
+                        result.add(new GenericTableTrigger(table, name, null));
                     }
                 }
                 return result;
@@ -236,7 +255,10 @@ public class HANAMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger sourceObject) throws DBException {
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger sourceObject) throws DBException {
+        if (sourceObject instanceof HANATrigger) {
+            return ((HANATrigger) sourceObject).getDefinition();
+        }
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HANA trigger source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

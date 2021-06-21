@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -148,6 +149,42 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     }
 
     @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
+        String sql = "SELECT TriggerName as TRIGGER_NAME, TableName as OWNER,\n" +
+                "ActionTime,\n" +
+                "Event,\n" +
+                "CASE EnabledFlag\n" +
+                "WHEN 'Y' THEN 'ENABLED'\n" +
+                "WHEN 'N' THEN 'DISABLED'\n" +
+                "END as status,\n" +
+                "CASE Kind\n" +
+                "WHEN 'R' THEN 'ROW'\n" +
+                "WHEN 'S' THEN 'STATEMENT'\n" +
+                "end as triggerKind,\n" +
+                "RequestText as definition,\n" +
+                "CreateTimeStamp as createDate,\n" +
+                "TriggerComment as description\n" +
+                "FROM DBC.TriggersV\n" +
+                "WHERE SubjectTableDataBaseName=?\n" +
+                (forParent != null ? "AND TableName=?" : "");
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, genericStructContainer.getName());
+        if (forParent != null) {
+            dbStat.setString(2, forParent.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet dbResult) throws DBException {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetString(dbResult, 1);
+        }
+        String description = JDBCUtils.safeGetString(dbResult, "description");
+        return new TeradataTrigger(genericTableBase, triggerName, description, dbResult);
+    }
+
+    @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             return Collections.emptyList();
@@ -178,7 +215,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
                         String description = JDBCUtils.safeGetString(dbResult, "description");
-                        result.add(new TeradataTrigger(container, table, name, description, dbResult));
+                        result.add(new TeradataTrigger(table, name, description, dbResult));
                     }
                 }
                 return result;

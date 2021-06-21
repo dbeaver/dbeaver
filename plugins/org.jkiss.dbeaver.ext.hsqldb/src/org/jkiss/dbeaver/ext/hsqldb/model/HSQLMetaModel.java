@@ -27,10 +27,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,7 +67,7 @@ public class HSQLMetaModel extends GenericMetaModel
                 dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
-                        return dbResult.getString(1);
+                        return "CREATE VIEW AS " + dbResult.getString(1);
                     }
                     return "-- HSQLDB view definition not found";
                 }
@@ -181,6 +183,33 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT EVENT_OBJECT_TABLE AS OWNER, T.* FROM INFORMATION_SCHEMA.TRIGGERS T\n" +
+                        "WHERE EVENT_OBJECT_SCHEMA=?" + (forParent != null ? " AND EVENT_OBJECT_TABLE=?" : ""));
+            dbStat.setString(1, genericStructContainer.getName());
+            if (forParent != null) {
+                dbStat.setString(2, forParent.getName());
+            }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetString(resultSet, "TRIGGER_NAME");
+        }
+        if (triggerName == null) {
+            return null;
+        }
+        triggerName = triggerName.trim();
+        return new HSQLTrigger(
+                genericTableBase,
+                triggerName,
+                resultSet);
+    }
+
+    @Override
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             throw new DBException("Database level triggers aren't supported for HSQLDB");
@@ -202,7 +231,6 @@ public class HSQLMetaModel extends GenericMetaModel
                         }
                         name = name.trim();
                         HSQLTrigger trigger = new HSQLTrigger(
-                                container,
                                 table,
                                 name,
                                 dbResult);

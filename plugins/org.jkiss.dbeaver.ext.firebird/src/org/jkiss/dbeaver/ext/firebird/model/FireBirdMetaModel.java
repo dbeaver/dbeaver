@@ -129,8 +129,71 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT RDB$TRIGGER_NAME AS TRIGGER_NAME, RDB$RELATION_NAME AS OWNER, T.* FROM RDB$TRIGGERS T\n" +
+                        "WHERE RDB$RELATION_NAME" + (table == null ? " IS NOT NULL" : "=?"));
+        if (table != null) {
+            dbStat.setString(1, table.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull GenericTableBase parent, String triggerName, @NotNull JDBCResultSet dbResult) throws DBException {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$TRIGGER_NAME");
+        }
+        if (triggerName == null) {
+            return null;
+        }
+        int sequence = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_SEQUENCE");
+        int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
+        String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
+        int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
+        boolean isSystem = systemFlag > 0; // System flag value 0 - if user-defined and 1 or more if system
+
+        return new FireBirdTableTrigger(
+                parent,
+                triggerName,
+                description,
+                FireBirdTriggerType.getByType(type),
+                sequence,
+                isSystem);
+    }
+
+    @Override
     public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
         return true;
+    }
+
+    @Override
+    public JDBCStatement prepareContainerTriggersLoadStatement(@NotNull JDBCSession session, @Nullable GenericStructContainer forParent) throws SQLException {
+        return session.prepareStatement("SELECT * FROM RDB$TRIGGERS WHERE RDB$RELATION_NAME IS NULL");
+    }
+
+    @Override
+    public GenericTrigger createContainerTriggerImpl(@NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$TRIGGER_NAME");
+        if (name == null) {
+            return null;
+        }
+        int sequence = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_SEQUENCE");
+        int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
+        String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
+        int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
+        boolean isSystem = true;
+        if (systemFlag == 0) { // System flag value 0 - if user-defined and 1 or more if system
+            isSystem = false;
+        }
+
+        return new FireBirdDatabaseTrigger(
+                    container,
+                    name,
+                    description,
+                    FireBirdTriggerType.getByType(type),
+                    sequence,
+                    isSystem);
     }
 
     @Override
@@ -154,12 +217,8 @@ public class FireBirdMetaModel extends GenericMetaModel
                         int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
                         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
                         int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
-                        boolean isSystem = true;
-                        if (systemFlag == 0) { // System flag value 0 - if user-defined and 1 or more if system
-                            isSystem = false;
-                        }
-                        FireBirdTrigger trigger = new FireBirdTrigger(
-                            container,
+                        boolean isSystem = systemFlag > 0; // System flag value 0 - if user-defined and 1 or more if system
+                        FireBirdTableTrigger trigger = new FireBirdTableTrigger(
                             table,
                             name,
                             description,
