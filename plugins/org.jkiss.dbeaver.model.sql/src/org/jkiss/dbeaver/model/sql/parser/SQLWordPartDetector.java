@@ -71,7 +71,10 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 char c = document.getChar(startOffset);
                 if (inQuote || inString) {
                     // Opening quote
-                    if (inQuote ? isQuote(c) : isStringQuote(c)) {
+                    if (isQuote(c)) {
+                        startOffset--;
+                        break;
+                    } else if (isStringQuote(c)) {
                         break;
                     }
                     startOffset--;
