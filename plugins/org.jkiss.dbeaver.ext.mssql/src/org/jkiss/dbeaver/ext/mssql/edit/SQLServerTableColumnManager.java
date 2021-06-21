@@ -135,7 +135,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
     {
         SQLServerTable table = (SQLServerTable) container;
 

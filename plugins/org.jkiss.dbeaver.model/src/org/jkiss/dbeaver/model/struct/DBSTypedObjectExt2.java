@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
@@ -23,9 +24,11 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBSTypedObjectExt2 extends DBPObject {
     /**
-     * Database specific type name
+     * Sets database-specific type name (without modifiers). E.g. {@code varchar}, {@code number}
+     *
+     * @throws DBException on any DB error or if the type could not be resolved
      */
-    void setTypeName(String typeName);
+    void setTypeName(String typeName) throws DBException;
 
     void setMaxLength(long maxLength);
 

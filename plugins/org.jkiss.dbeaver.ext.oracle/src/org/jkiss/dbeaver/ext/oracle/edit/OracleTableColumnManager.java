@@ -94,7 +94,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
     {
         OracleTableBase table = (OracleTableBase) container;
 

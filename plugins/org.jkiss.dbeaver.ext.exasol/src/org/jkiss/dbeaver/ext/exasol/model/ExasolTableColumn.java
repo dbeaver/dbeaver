@@ -88,7 +88,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
     }
 
-    public ExasolTableColumn(ExasolTableBase tableBase) {
+    public ExasolTableColumn(ExasolTableBase tableBase) throws DBException {
         super(tableBase, false);
 
         setMaxLength(50L);

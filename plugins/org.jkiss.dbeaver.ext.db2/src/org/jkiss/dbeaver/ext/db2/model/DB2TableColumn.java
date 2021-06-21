@@ -175,7 +175,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         }
     }
 
-    public DB2TableColumn(DB2TableBase tableBase)
+    public DB2TableColumn(DB2TableBase tableBase) throws DBException
     {
         super(tableBase, false);
 

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -237,7 +238,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     protected static class StructAttribute extends AbstractAttribute implements DBSEntityAttribute {
         final DBSDataType type;
         DBPDataKind dataKind;
-        public StructAttribute(DBSDataType type, int index, Object value)
+        public StructAttribute(DBSDataType type, int index, Object value) throws DBException
         {
             this.type = type;
             if (value instanceof CharSequence) {
