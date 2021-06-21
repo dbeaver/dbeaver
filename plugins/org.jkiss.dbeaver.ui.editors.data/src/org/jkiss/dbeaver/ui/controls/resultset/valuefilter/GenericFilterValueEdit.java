@@ -500,6 +500,23 @@ class GenericFilterValueEdit {
         return null;
     }
 
+    @Nullable
+    public Object getSelectedFilterValue() {
+        if (tableViewer != null) {
+            final Object selection = tableViewer.getStructuredSelection().getFirstElement();
+            if (selection instanceof DBDLabelValuePair) {
+                return new Object[]{((DBDLabelValuePair) selection).getValue()};
+            }
+        } else if (editor != null) {
+            try {
+                return editor.extractEditorValue();
+            } catch (DBException e) {
+                log.error("Can't get editor value", e);
+            }
+        }
+        return null;
+    }
+
     public Composite getButtonsPanel() {
         return buttonsPanel;
     }
