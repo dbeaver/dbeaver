@@ -434,7 +434,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 String updateSet = generateTableUpdateSet();
                 if (!CommonUtils.isEmpty(updateSet)) {
-                    query.append("\n\t").append(generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
+                    query.append("\n\t").append(updateSet); //$NON-NLS-1$ //$NON-NLS-2$
                 }
 
                 boolean hasKey = false;
