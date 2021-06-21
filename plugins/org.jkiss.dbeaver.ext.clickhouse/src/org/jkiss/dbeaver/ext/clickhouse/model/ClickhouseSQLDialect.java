@@ -53,4 +53,9 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
+
+    @Override
+    public boolean supportsNestedComments() {
+        return true;
+    }
 }
