@@ -923,12 +923,15 @@ public class MySQLCatalog implements
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
                     (object == null && objectName == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
-                    "\nAND ROUTINE_TYPE IN ('PROCEDURE','FUNCTION')" +
+                    " AND ROUTINE_TYPE" + (object == null ? " IN ('PROCEDURE','FUNCTION')" : "=?") +
                     "\nORDER BY " + MySQLConstants.COL_ROUTINE_NAME
             );
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) {
                 dbStat.setString(2, object != null ? object.getName() : objectName);
+                if (object != null) {
+                    dbStat.setString(3, String.valueOf(object.getProcedureType()));
+                }
             }
             return dbStat;
         }

@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -44,7 +41,7 @@ import java.util.Map;
 /**
  * MySQLProcedure
  */
-public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
+public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject, DBPUniqueObject
 {
     private static final Log log = Log.getLog(MySQLProcedure.class);
 
@@ -261,6 +258,15 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+    }
+
+    @NotNull
+    @Override
+    public String getUniqueName() {
+        if (getProcedureType() == DBSProcedureType.PROCEDURE) {
+            return getName() + ' ' + getResultType();
+        }
+        return getName();
     }
 
     @Override
