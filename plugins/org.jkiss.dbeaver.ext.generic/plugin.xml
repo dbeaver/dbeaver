@@ -145,6 +145,7 @@
                     <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-truncate" label="Driver supports TRUNCATE operation" description="Driver supports TRUNCATE command. It is much faster than DELETE without criteria." type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-set-array" label="Driver supports setArray JDBC API" description="Driver supports setArray JDBC API for binding array values. Some drivers may not support setArray in favor of setObject." type="boolean" required="false" defaultValue="false"/>
+                    <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -906,6 +907,7 @@
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-table-constraints" value="false"/>
+                    <parameter name="read-only-data" value="true"/>
                 </driver>
 
                 <!-- PrestoSQL -->
