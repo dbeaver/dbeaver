@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -610,17 +611,17 @@ public class NavigatorUtils {
 
         if (activeEditor instanceof DBPContextProvider) {
             DBSObject dbsObject = databaseNode.getObject();
-            if (!isCatalogOrSchema(dbsObject)) {
+            if (!(dbsObject instanceof DBSStructContainer)) {
                 DBSObject parent = DBUtils.getParentOfType(DBSSchema.class, dbsObject);
-                if (!isCatalogOrSchema(parent)) {
+                if (parent == null) {
                     parent = DBUtils.getParentOfType(DBSCatalog.class, dbsObject);
                 }
-                if (isCatalogOrSchema(parent)) {
+                if (parent != null) {
                     dbsObject = parent;
                 }
             }
 
-            if (isCatalogOrSchema(dbsObject)) {
+            if (dbsObject instanceof DBSStructContainer) {
                 DBCExecutionContext navExecutionContext = null;
                 try {
                     navExecutionContext = DBUtils.getOrOpenDefaultContext(dbsObject, false);
@@ -654,10 +655,6 @@ public class NavigatorUtils {
         }
 
         return true;
-    }
-
-    private static boolean isCatalogOrSchema(@Nullable DBSObject dbsObject) {
-        return dbsObject instanceof DBSCatalog || dbsObject instanceof DBSSchema;
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window) {
