@@ -602,27 +602,35 @@ public class NavigatorUtils {
         if (!(selectedNode instanceof DBNDatabaseNode)) {
             return false;
         }
-        final DBPDataSourceContainer ds = ((DBNDatabaseNode) selectedNode).getDataSourceContainer();
-        if (ds == null) {
-            return false;
-        }
+        DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
+        DBPDataSourceContainer ds = databaseNode.getDataSourceContainer();
         if (dsProvider.getDataSourceContainer() != ds) {
             dsProvider.setDataSourceContainer(ds);
         }
 
         if (activeEditor instanceof DBPContextProvider) {
-            // Now check if we can change default object
-            DBSObject dbObject = ((DBNDatabaseNode) selectedNode).getObject();
-            if (dbObject instanceof DBSCatalog || dbObject instanceof DBSSchema) {
+            DBSObject dbsObject = databaseNode.getObject();
+            if (!isCatalogOrSchema(dbsObject)) {
+                DBSObject parent = DBUtils.getParentOfType(DBSSchema.class, dbsObject);
+                if (!isCatalogOrSchema(parent)) {
+                    parent = DBUtils.getParentOfType(DBSCatalog.class, dbsObject);
+                }
+                if (isCatalogOrSchema(parent)) {
+                    dbsObject = parent;
+                }
+            }
+
+            if (isCatalogOrSchema(dbsObject)) {
                 DBCExecutionContext navExecutionContext = null;
                 try {
-                    navExecutionContext = DBUtils.getOrOpenDefaultContext(dbObject, false);
+                    navExecutionContext = DBUtils.getOrOpenDefaultContext(dbsObject, false);
                 } catch (DBCException ignored) {
                 }
                 DBCExecutionContext editorExecutionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
                 if (navExecutionContext != null && editorExecutionContext != null) {
                     DBCExecutionContextDefaults editorContextDefaults = editorExecutionContext.getContextDefaults();
                     if (editorContextDefaults != null) {
+                        DBSObject dbObject = dbsObject;
                         RuntimeUtils.runTask(monitor -> {
                                 try {
                                     monitor.beginTask("Change default object", 1);
@@ -646,6 +654,10 @@ public class NavigatorUtils {
         }
 
         return true;
+    }
+
+    private static boolean isCatalogOrSchema(@Nullable DBSObject dbsObject) {
+        return dbsObject instanceof DBSCatalog || dbsObject instanceof DBSSchema;
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window) {
