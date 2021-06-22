@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -32,8 +32,8 @@ public class SQLGeneratorDelete extends SQLGeneratorTable {
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
         String entityName = getEntityName(object);
-        if (object instanceof JDBCTable) {
-            sql.append(((JDBCTable) object).generateTableDeleteFrom(entityName));
+        if (object instanceof ChangeTableDataStatement) {
+            sql.append(((ChangeTableDataStatement) object).generateTableDeleteFrom(entityName));
         } else {
             sql.append("DELETE FROM ").append(entityName);
         }
