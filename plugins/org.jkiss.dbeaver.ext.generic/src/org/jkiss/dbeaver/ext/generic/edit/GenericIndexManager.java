@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,17 +46,17 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     public boolean canCreateObject(Object container) {
         return (container instanceof GenericTable)
             && ((GenericTable) container).getDataSource().getInfo().supportsIndexes()
-            && (!((GenericTable) container).isPersisted() || ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableStatement());
+            && GenericUtils.canAlterTable((GenericTable) container);
     }
 
     @Override
     public boolean canEditObject(GenericTableIndex object) {
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+        return GenericUtils.canAlterTable(object);
     }
 
     @Override
     public boolean canDeleteObject(GenericTableIndex object) {
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+        return GenericUtils.canAlterTable(object);
     }
 
     @Override

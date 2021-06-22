@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -53,18 +54,17 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
 
     @Override
     public boolean canCreateObject(Object container) {
-        return (container instanceof GenericTable)
-            && (!((GenericTable) container).isPersisted() || ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableStatement());
+        return container instanceof GenericTable && GenericUtils.canAlterTable((GenericTable) container);
     }
 
     @Override
     public boolean canEditObject(GenericTableColumn object) {
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+        return GenericUtils.canAlterTable(object);
     }
 
     @Override
     public boolean canDeleteObject(GenericTableColumn object) {
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+        return GenericUtils.canAlterTable(object);
     }
 
     @Override
