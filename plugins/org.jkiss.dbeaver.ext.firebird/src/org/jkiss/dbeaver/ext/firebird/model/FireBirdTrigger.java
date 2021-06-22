@@ -16,23 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * FireBirdDataSource
+ * FireBirdTrigger
  */
-public class FireBirdTrigger extends GenericTrigger implements DBPSystemObject {
+public abstract class FireBirdTrigger<OWNER extends DBSObject> extends GenericTrigger implements DBPSystemObject {
 
-    private FireBirdTriggerType type;
-    private int sequence;
-    private boolean isSystem;
+    private final FireBirdTriggerType type;
+    private final int sequence;
+    private final boolean isSystem;
 
-    public FireBirdTrigger(GenericStructContainer container, GenericTableBase table, String name, String description, FireBirdTriggerType type, int sequence, boolean isSystem) {
-        super(container, table, name, description);
+    public FireBirdTrigger(OWNER container, String name, String description, FireBirdTriggerType type, int sequence, boolean isSystem) {
+        super(container, name, description);
 
         this.type = type;
         this.sequence = sequence;

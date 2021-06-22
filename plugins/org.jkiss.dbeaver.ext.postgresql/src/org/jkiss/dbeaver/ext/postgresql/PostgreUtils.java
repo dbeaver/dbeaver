@@ -380,38 +380,6 @@ public class PostgreUtils {
         }
     }
 
-    public static int getTimeTypePrecision(long oid, int typmod) {
-        switch ((int) oid) {
-            case PostgreOid.TIME:
-            case PostgreOid.TIMETZ:
-            case PostgreOid.TIMESTAMP:
-            case PostgreOid.TIMESTAMPTZ:
-                if (typmod == -1)
-                    return 6;
-                return typmod;
-            case PostgreOid.INTERVAL:
-                return (short) (typmod & 0xffff);
-            default:
-                return 0;
-        }
-    }
-
-    public static int getScale(long oid, int typmod) {
-        //oid = convertArrayToBaseOid(oid);
-        switch ((int) oid) {
-            case PostgreOid.FLOAT4:
-                return 8;
-            case PostgreOid.FLOAT8:
-                return 17;
-            case PostgreOid.NUMERIC:
-                if (typmod == -1)
-                    return 0;
-                return (typmod - 4) & 0xFFFF;
-            default:
-                return 0;
-        }
-    }
-
     public static PostgreDataType findDataType(DBCSession session, PostgreDataSource dataSource, DBSTypedObject type) throws DBCException {
         if (type instanceof PostgreDataType) {
             return (PostgreDataType) type;

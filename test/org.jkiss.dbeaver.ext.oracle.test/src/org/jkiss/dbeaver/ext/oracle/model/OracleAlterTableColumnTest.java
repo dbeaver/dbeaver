@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -63,7 +64,7 @@ public class OracleAlterTableColumnTest {
     private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
     @Before
-    public void setUp() {
+    public void setUp() throws DBException {
         DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(dbpPlatform);

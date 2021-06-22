@@ -36,6 +36,16 @@ import java.util.Map;
 public class HiveIndexManager extends GenericIndexManager {
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return true;
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableIndex object) {
+        return true;
+    }
+
+    @Override
     protected GenericTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object from, Map<String, Object> options) {
         return new HiveIndex((HiveTable) container, "NewIndex",false, "", "Compact", null);
     }

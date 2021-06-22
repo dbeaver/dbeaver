@@ -34,6 +34,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsTransactionsForDDL() {
+        return supportsTransactions();
+    }
+
+    @Override
     public boolean supportsSavepoints() {
         return false;
     }

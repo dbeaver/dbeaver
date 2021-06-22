@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.teradata.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -33,7 +30,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Date;
 import java.util.Map;
 
-public class TeradataTrigger extends GenericTrigger {
+public class TeradataTrigger extends GenericTableTrigger {
 
     private DBSActionTiming actionTime;
     private DBSManipulationType eventType;
@@ -43,8 +40,8 @@ public class TeradataTrigger extends GenericTrigger {
 
     private String definition;
 
-    public TeradataTrigger(@NotNull GenericStructContainer container, @Nullable GenericTableBase table, String name, String description, JDBCResultSet dbResult) {
-        super(container, table, name, description);
+    public TeradataTrigger(GenericTableBase table, String name, String description, JDBCResultSet dbResult) {
+        super(table, name, description);
 
         String actTime = JDBCUtils.safeGetString(dbResult, "ActionTime");
         if (!CommonUtils.isEmpty(actTime)) {

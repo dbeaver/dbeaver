@@ -14,28 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
-/**
- * DBSTypedObjectExt2
- */
-public interface DBSTypedObjectExt2 extends DBPObject {
-    /**
-     * Sets database-specific type name (without modifiers). E.g. {@code varchar}, {@code number}
-     *
-     * @throws DBException on any DB error or if the type could not be resolved
-     */
-    void setTypeName(String typeName) throws DBException;
+public class GenericContainerTrigger extends GenericTrigger<GenericStructContainer> {
 
-    void setMaxLength(long maxLength);
+    public GenericContainerTrigger(@NotNull GenericStructContainer container, String name, String description) {
+        super(container, name, description);
+    }
 
-    void setScale(Integer scale);
-
-    void setPrecision(Integer precision);
-
-    void setRequired(boolean required);
-
+    @Override
+    public DBSTable getTable() {
+        return null;
+    }
 }

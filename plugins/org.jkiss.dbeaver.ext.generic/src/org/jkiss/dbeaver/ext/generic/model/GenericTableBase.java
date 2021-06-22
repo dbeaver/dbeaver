@@ -449,7 +449,15 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     @Association
     public List<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (triggers == null) {
-            loadTriggers(monitor);
+            GenericStructContainer parentObject = getParentObject();
+            if (parentObject != null) {
+                TableTriggerCache tableTriggerCache = parentObject.getTableTriggerCache();
+                if (tableTriggerCache != null) {
+                    triggers = tableTriggerCache.getObjects(monitor, parentObject, this);
+                }
+            } else {
+                loadTriggers(monitor);
+            }
         }
         return triggers;
     }

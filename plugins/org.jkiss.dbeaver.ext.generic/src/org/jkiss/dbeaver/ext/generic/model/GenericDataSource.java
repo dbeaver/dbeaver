@@ -363,6 +363,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return structureContainer.getForeignKeysCache();
     }
 
+    @Override
+    public TableTriggerCache getTableTriggerCache() {
+        return structureContainer.getTableTriggerCache();
+    }
 
     @Override
     public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {

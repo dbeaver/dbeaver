@@ -14,28 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
-/**
- * DBSTypedObjectExt2
- */
-public interface DBSTypedObjectExt2 extends DBPObject {
-    /**
-     * Sets database-specific type name (without modifiers). E.g. {@code varchar}, {@code number}
-     *
-     * @throws DBException on any DB error or if the type could not be resolved
-     */
-    void setTypeName(String typeName) throws DBException;
+public class FireBirdDatabaseTrigger extends FireBirdTrigger<GenericStructContainer> {
 
-    void setMaxLength(long maxLength);
+    public FireBirdDatabaseTrigger(GenericStructContainer container, String name, String description, FireBirdTriggerType type, int sequence, boolean isSystem) {
+        super(container, name, description, type, sequence, isSystem);
+    }
 
-    void setScale(Integer scale);
-
-    void setPrecision(Integer precision);
-
-    void setRequired(boolean required);
-
+    @Override
+    public DBSTable getTable() {
+        return null;
+    }
 }

@@ -27,9 +27,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -70,6 +72,31 @@ public class InformixMetaModel extends GenericMetaModel
     }
 
     @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
+        String query = "SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER FROM informix.systriggers AS T1, informix.systables AS T2 \n" +
+                        "WHERE T2.tabid = T1.tabid " + (table != null ? "AND T2.tabname = ?" : "");
+
+        JDBCPreparedStatement dbStat = session.prepareStatement(query);
+        if (table != null) {
+            dbStat.setString(1, table.getName());
+        }
+
+        return dbStat;
+    }
+
+    @Override
+    public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetString(resultSet, "TRIGGER_NAME");
+        }
+        if (triggerName == null) {
+            return null;
+        }
+        triggerName = triggerName.trim();
+        return new InformixTrigger(genericTableBase, triggerName, resultSet);
+    }
+
+    @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
@@ -89,7 +116,7 @@ public class InformixMetaModel extends GenericMetaModel
                             continue;
                         }
                         name = name.trim();
-                        GenericTrigger trigger = new GenericTrigger(container, table, name, null);
+                        InformixTrigger trigger = new InformixTrigger(table, name, dbResult);
                         result.add(trigger);
                     }
                 }
@@ -130,8 +157,6 @@ public class InformixMetaModel extends GenericMetaModel
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        GenericTableBase table = trigger.getTable();
-        assert table != null;
         return InformixUtils.getTriggerDDL(monitor, trigger);
     }
 

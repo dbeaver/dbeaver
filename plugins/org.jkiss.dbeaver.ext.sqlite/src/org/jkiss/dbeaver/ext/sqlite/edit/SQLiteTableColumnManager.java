@@ -46,6 +46,16 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
 {
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return true;
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableColumn object) {
+        return true;
+    }
+
+    @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
         final GenericTableColumn column = command.getObject();
         final GenericTableBase table = column.getTable();

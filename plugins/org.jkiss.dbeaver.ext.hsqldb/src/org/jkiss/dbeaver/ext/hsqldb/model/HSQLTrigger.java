@@ -16,18 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.hsqldb.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * HSQLTrigger
  */
-public class HSQLTrigger extends GenericTrigger {
+public class HSQLTrigger extends GenericTableTrigger {
 
     private String manipulation;
     private String orientation;
@@ -35,14 +38,28 @@ public class HSQLTrigger extends GenericTrigger {
 
     private String statement;
 
-    HSQLTrigger(GenericStructContainer container, GenericTableBase table, String name, JDBCResultSet dbResult) {
-        super(container, table, name, null);
+    HSQLTrigger(GenericTableBase table, String name, JDBCResultSet dbResult) {
+        super(table, name, null);
         manipulation = JDBCUtils.safeGetString(dbResult, "EVENT_MANIPULATION");
         orientation = JDBCUtils.safeGetString(dbResult, "ACTION_ORIENTATION");
         timing = JDBCUtils.safeGetString(dbResult, "ACTION_TIMING");
         statement = JDBCUtils.safeGetString(dbResult, "ACTION_STATEMENT");
+        String newReference = JDBCUtils.safeGetString(dbResult, "ACTION_REFERENCE_NEW_ROW");
+        if (CommonUtils.isEmpty(newReference)) {
+            newReference = JDBCUtils.safeGetString(dbResult, "ACTION_REFERENCE_NEW_TABLE");
+        }
+        String oldReference = null;
+        if (CommonUtils.isEmpty(newReference)) {
+            oldReference = JDBCUtils.safeGetString(dbResult, "ACTION_REFERENCE_OLD_ROW");
+            if (CommonUtils.isEmpty(oldReference)) {
+                oldReference = JDBCUtils.safeGetString(dbResult, "ACTION_REFERENCE_OLD_TABLE");
+            }
+        }
         if (statement != null) {
-            statement = SQLFormatUtils.formatSQL(getDataSource(), statement);
+            statement = "CREATE TRIGGER " + name + " " + timing + " " + manipulation + " ON " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DML) +
+                    (newReference != null ? "\nREFERENCING NEW AS " + newReference : oldReference != null ? "\nREFERENCING OLD AS " + oldReference : "") +
+                    " FOR EACH " + orientation + "\n" +
+                    SQLFormatUtils.formatSQL(getDataSource(), statement);
         }
     }
 
@@ -63,5 +80,11 @@ public class HSQLTrigger extends GenericTrigger {
 
     public String getStatement() {
         return statement;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return super.getDescription();
     }
 }

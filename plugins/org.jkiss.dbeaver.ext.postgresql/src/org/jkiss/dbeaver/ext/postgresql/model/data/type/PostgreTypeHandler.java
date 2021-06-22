@@ -35,6 +35,11 @@ public abstract class PostgreTypeHandler {
     }
 
     @Nullable
+    public Integer getTypeLength(@NotNull PostgreDataType type, int typmod) {
+        return null;
+    }
+
+    @Nullable
     public Integer getTypePrecision(@NotNull PostgreDataType type, int typmod) {
         return null;
     }

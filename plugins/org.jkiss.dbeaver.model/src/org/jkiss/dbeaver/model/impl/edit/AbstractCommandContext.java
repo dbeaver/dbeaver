@@ -101,6 +101,11 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             useAutoCommit = CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS);
         }
 
+        if (!executionContext.getDataSource().getInfo().supportsTransactionsForDDL()) {
+            // Use transaction mode of the session instead
+            txnManager = null;
+        }
+
         boolean oldAutoCommit = false;
         if (txnManager != null && txnManager.isSupportsTransactions()) {
             oldAutoCommit = txnManager.isAutoCommit();

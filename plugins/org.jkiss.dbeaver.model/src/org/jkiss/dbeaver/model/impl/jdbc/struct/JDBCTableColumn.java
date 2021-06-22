@@ -116,7 +116,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     }
 
     @Override
-    public void setTypeName(String typeName) {
+    public void setTypeName(String typeName) throws DBException {
         super.setTypeName(typeName);
         final DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, this);
         if (dataTypeProvider != null) {

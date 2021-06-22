@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
@@ -139,6 +140,48 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return true;
+    }
+
+    @Override
+    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase table) throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT trigger_name, event_object_table as OWNER, event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
+            "FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+            "WHERE ");
+        if (table == null) {
+            sql.append("trigger_schema=?");
+        } else {
+            sql.append("event_object_schema=? AND event_object_table=?");
+        }
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+        if (table == null) {
+            dbStat.setString(1, genericStructContainer.getName());
+        } else {
+            dbStat.setString(1, table.getSchema().getName());
+            dbStat.setString(2, table.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String name, @NotNull JDBCResultSet dbResult) throws DBException {
+        if (CommonUtils.isEmpty(name)) {
+            name = JDBCUtils.safeGetString(dbResult, "trigger_name");
+        }
+        if (CommonUtils.isEmpty(name)) {
+            return null;
+        }
+        String manipulation = JDBCUtils.safeGetString(dbResult, "event_manipulation");
+        String description = "";
+        return new PostgreGenericTrigger(
+            genericStructContainer,
+            genericTableBase,
+            name,
+            description,
+            manipulation,
+            JDBCUtils.safeGetString(dbResult, "action_orientation"),
+            JDBCUtils.safeGetString(dbResult, "action_timing"),
+            JDBCUtils.safeGetString(dbResult, "action_statement"));
     }
 
     @Override

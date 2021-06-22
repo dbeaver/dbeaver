@@ -35,6 +35,8 @@ public class PostgreTypeHandlerProvider {
         }
         switch ((int) type.getObjectId()) {
             case PostgreOid.NUMERIC:
+            case PostgreOid.FLOAT4:
+            case PostgreOid.FLOAT8:
                 return PostgreNumericTypeHandler.INSTANCE;
             case PostgreOid.INTERVAL:
                 return PostgreIntervalTypeHandler.INSTANCE;

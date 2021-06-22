@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -23,7 +24,7 @@ import java.util.List;
 
 class OracleTestUtils {
 
-    static OracleTableColumn addColumn(OracleTableBase table, String columnName, String columnType, int ordinalPosition) {
+    static OracleTableColumn addColumn(OracleTableBase table, String columnName, String columnType, int ordinalPosition) throws DBException {
         OracleTableColumn column = new OracleTableColumn(table);
         column.setName(columnName);
         column.setTypeName(columnType);

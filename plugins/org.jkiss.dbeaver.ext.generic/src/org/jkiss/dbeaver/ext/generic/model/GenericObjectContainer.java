@@ -17,11 +17,16 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -29,8 +34,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,11 +52,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     private final IndexCache indexCache;
     private final ForeignKeysCache foreignKeysCache;
     private final ConstraintKeysCache constraintKeysCache;
+    private final ContainerTriggerCache containerTriggerCache;
+    private final TableTriggerCache tableTriggerCache;
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
     protected List<? extends GenericSequence> sequences;
     protected List<? extends GenericSynonym> synonyms;
-    private List<? extends GenericTrigger> triggers;
 
     protected GenericObjectContainer(@NotNull GenericDataSource dataSource) {
         this.dataSource = dataSource;
@@ -57,6 +65,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         this.indexCache = new IndexCache(tableCache);
         this.constraintKeysCache = new ConstraintKeysCache(tableCache);
         this.foreignKeysCache = new ForeignKeysCache(tableCache);
+        this.containerTriggerCache = new ContainerTriggerCache();
+        this.tableTriggerCache = new TableTriggerCache(tableCache);
     }
 
     @Override
@@ -77,6 +87,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public final ForeignKeysCache getForeignKeysCache() {
         return foreignKeysCache;
+    }
+
+    @Override
+    public TableTriggerCache getTableTriggerCache() {
+        return tableTriggerCache;
     }
 
     @NotNull
@@ -354,22 +369,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
     @Override
     public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
-        if (triggers == null) {
-            triggers = loadTriggers(monitor);
-        }
-        return triggers;
+        return getDataSource().getMetaModel().supportsDatabaseTriggers(getDataSource()) ? containerTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 
     @Override
     public Collection<? extends GenericTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
-        List<GenericTrigger> tableTriggers = new ArrayList<>();
-        for (GenericTableBase table : getTables(monitor)) {
-            Collection<? extends GenericTrigger> tt = table.getTriggers(monitor);
-            if (!CommonUtils.isEmpty(tt)) {
-                tableTriggers.addAll(tt);
-            }
-        }
-        return tableTriggers;
+        return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ? tableTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 
     @Association
@@ -400,6 +405,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         this.indexCache.clearCache();
         this.constraintKeysCache.clearCache();
         this.foreignKeysCache.clearCache();
+        this.containerTriggerCache.clearCache();
+        this.tableTriggerCache.clearCache();
         this.packages = null;
         this.procedures = null;
         this.sequences = null;
@@ -475,17 +482,19 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         }
     }
 
-    private synchronized List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor)
-        throws DBException {
-        List<? extends GenericTrigger> triggers = dataSource.getMetaModel().loadTriggers(monitor, this, null);
+    public class ContainerTriggerCache extends JDBCObjectCache<GenericStructContainer, GenericTrigger> {
 
-        // Order procedures
-        if (this.triggers == null) {
-            this.triggers = new ArrayList<>();
-        } else {
-            DBUtils.orderObjects(this.triggers);
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+            return container.getDataSource().getMetaModel().prepareContainerTriggersLoadStatement(session, container);
         }
-        return triggers;
+
+        @Nullable
+        @Override
+        protected GenericTrigger fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return container.getDataSource().getMetaModel().createContainerTriggerImpl(container, resultSet);
+        }
     }
 
 }

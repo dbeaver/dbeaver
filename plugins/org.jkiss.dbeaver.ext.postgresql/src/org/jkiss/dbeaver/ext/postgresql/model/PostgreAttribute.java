@@ -123,22 +123,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getOrdinalPosition();
     }
 
-    @Override
-    public void setMaxLength(long maxLength) {
-        super.setMaxLength(maxLength);
-        if (getDataKind() == DBPDataKind.STRING && this.precision != -1) {
-            this.precision = (int)maxLength;
-        }
-    }
-
-    @Override
-    public void setPrecision(Integer precision) {
-        super.setPrecision(precision);
-        if (getDataKind() == DBPDataKind.STRING) {
-            this.maxLength = CommonUtils.toInt(precision);
-        }
-    }
-
     private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
         throws DBException
     {
@@ -262,40 +246,48 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 25)
-    public long getMaxLength()
-    {
-        return super.getMaxLength();
+    public long getMaxLength() {
+        final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        if (handler != null) {
+            final Integer length = handler.getTypeLength(dataType, typeMod);
+            if (length != null) {
+                return length;
+            }
+        }
+        return 0;
     }
 
     @Override
-    public String getTypeName()
-    {
-        return dataType == null ? super.getTypeName() : dataType.getTypeName();
+    public void setMaxLength(long maxLength) {
+        log.warn("Attribute does not support updating its max length");
     }
 
     @Override
     public Integer getPrecision() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
-            // TODO: Still dumb and inefficient
             return handler.getTypePrecision(dataType, typeMod);
         }
-        if (getDataKind() == DBPDataKind.DATETIME) {
-            return PostgreUtils.getTimeTypePrecision(typeId, typeMod);
-        } else {
-            return (int) maxLength;
-        }
+        return null;
+    }
+
+    @Override
+    public void setPrecision(Integer precision) {
+        log.warn("Attribute does not support updating its precision");
     }
 
     @Override
     public Integer getScale() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
-            // TODO: Still dumb and inefficient
             return handler.getTypeScale(dataType, typeMod);
         }
-        return PostgreUtils.getScale(typeId, typeMod);
+        return null;
+    }
+
+    @Override
+    public void setScale(Integer scale) {
+        log.warn("Attribute does not support updating its scale");
     }
 
     @Nullable
@@ -404,6 +396,22 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
+    public String getTypeName() {
+        if (dataType != null) {
+            return dataType.getTypeName();
+        }
+        return typeName;
+    }
+
+    @Override
+    public void setTypeName(String typeName) throws DBException {
+        final PostgreDataType dataType = findDataType(getDatabase(), typeName);
+        this.typeName = typeName;
+        this.typeId = dataType.getTypeID();
+        this.dataType = dataType;
+    }
+
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
         if (dataType == null) {
@@ -422,14 +430,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();
 
-        PostgreDataType dataType = getDatabase().getDataSource().getLocalDataType(typeName);
-        if (dataType == null) {
-            dataType = getDatabase().getDataType(null, typeName);
-            if (dataType == null) {
-                throw new DBException("Bad data type name specified: '" + fullTypeName + "'");
-            }
-        }
-
+        final PostgreDataType dataType = findDataType(getDatabase(), typeName);
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
             this.typeMod = handler.getTypeModifiers(dataType, typeName, typeMods);
@@ -443,6 +444,18 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     public String[] getForeignTableColumnOptions() {
         return foreignTableColumnOptions;
+    }
+
+    @NotNull
+    private static PostgreDataType findDataType(@NotNull PostgreDatabase database, @NotNull String typeName) throws DBException {
+        PostgreDataType dataType = database.getDataSource().getLocalDataType(typeName);
+        if (dataType == null) {
+            dataType = database.getDataType(null, typeName);
+        }
+        if (dataType == null) {
+            throw new DBException("Can't find specified data type by name: '" + typeName + "'");
+        }
+        return dataType;
     }
 
     public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute<?>> {
