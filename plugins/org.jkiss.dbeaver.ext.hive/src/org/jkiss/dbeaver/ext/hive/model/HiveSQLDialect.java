@@ -122,7 +122,7 @@ public class HiveSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean supportsAlterTableConstraint() {
+    public boolean supportsAlterTableStatement() {
         return false;
     }
 }

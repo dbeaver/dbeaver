@@ -33,6 +33,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     private boolean supportsNullableUniqueConstraints;
     private final boolean supportsSetArray;
     private final boolean supportsTransactionsForDDL;
+    private final boolean supportsConstraints;
 
     public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
@@ -44,6 +45,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsTransactionsForDDL = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL), true);
 
         supportsNullableUniqueConstraints = false;
+        supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
     }
 
     @Override
@@ -73,5 +75,9 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     @Override
     public boolean supportsTransactionsForDDL() {
         return super.supportsTransactionsForDDL() && supportsTransactionsForDDL;
+    }
+
+    public boolean supportsTableConstraints() {
+        return supportsConstraints;
     }
 }

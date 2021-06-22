@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,14 +42,19 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
 
     @Override
     public boolean canCreateObject(Object container) {
-        return container instanceof GenericTable &&
-            (!((GenericTable) container).isPersisted() ||
-            ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint());
+        return (container instanceof GenericTable)
+            && (!(((GenericTable) container).getDataSource().getInfo() instanceof GenericDataSourceInfo) || ((GenericDataSourceInfo) ((GenericTable) container).getDataSource().getInfo()).supportsTableConstraints())
+            && GenericUtils.canAlterTable((GenericTable) container);
+    }
+
+    @Override
+    public boolean canEditObject(GenericUniqueKey object) {
+        return GenericUtils.canAlterTable(object);
     }
 
     @Override
     public boolean canDeleteObject(GenericUniqueKey object) {
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+        return GenericUtils.canAlterTable(object);
     }
 
     @Override

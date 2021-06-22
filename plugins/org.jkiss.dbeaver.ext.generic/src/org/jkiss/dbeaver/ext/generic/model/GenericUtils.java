@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaColumn;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -159,4 +160,8 @@ public class GenericUtils {
 
     }
 
+    public static boolean canAlterTable(@NotNull DBSObject object) {
+        // Either object is not yet persisted (so no alter is required) or database supports table altering
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+    }
 }

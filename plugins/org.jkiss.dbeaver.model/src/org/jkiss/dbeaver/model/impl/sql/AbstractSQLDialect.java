@@ -803,7 +803,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean supportsAlterTableConstraint() {
+    public boolean supportsAlterTableStatement() {
         return true;
     }
 
