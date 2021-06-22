@@ -612,16 +612,9 @@ public class NavigatorUtils {
         if (activeEditor instanceof DBPContextProvider) {
             DBSObject dbsObject = databaseNode.getObject();
             if (!(dbsObject instanceof DBSStructContainer)) {
-                DBSObject parent = DBUtils.getParentOfType(DBSSchema.class, dbsObject);
-                if (parent == null) {
-                    parent = DBUtils.getParentOfType(DBSCatalog.class, dbsObject);
-                }
-                if (parent != null) {
-                    dbsObject = parent;
-                }
+                dbsObject = DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
             }
-
-            if (dbsObject instanceof DBSStructContainer) {
+            if (dbsObject != null) {
                 DBCExecutionContext navExecutionContext = null;
                 try {
                     navExecutionContext = DBUtils.getOrOpenDefaultContext(dbsObject, false);
