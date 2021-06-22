@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -32,8 +33,19 @@ public class SQLGeneratorUpdate extends SQLGeneratorTable {
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
         Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-        sql.append("UPDATE ").append(getEntityName(object))
-            .append(getLineSeparator()).append("SET ");
+        String entityName = getEntityName(object);
+        String separator = getLineSeparator();
+        if (object instanceof ChangeTableDataStatement) {
+            ChangeTableDataStatement tableDataStatement = (ChangeTableDataStatement) object;
+            sql.append(tableDataStatement.generateTableUpdateBegin(entityName));
+            String updateSet = tableDataStatement.generateTableUpdateSet();
+            if (CommonUtils.isNotEmpty(updateSet)) {
+                sql.append(separator).append(updateSet);
+            }
+        } else {
+            sql.append("UPDATE ").append(entityName);
+            sql.append(separator).append("SET ");
+        }
         boolean hasAttr = false;
         for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
             if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
