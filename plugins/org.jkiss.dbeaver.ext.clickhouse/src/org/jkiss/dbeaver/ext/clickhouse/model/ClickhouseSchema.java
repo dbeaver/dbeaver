@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -94,4 +95,9 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
         }
     }
 
+    @NotNull
+    @Override
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+        return ClickhouseTable.class;
+    }
 }
