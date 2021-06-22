@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
@@ -25,9 +26,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * SQL formatter
@@ -86,7 +85,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
         isCompact = compact;
     }
 
-    private List<FormatterToken> format(final List<FormatterToken> argList) {
+    private List<FormatterToken> format(@NotNull List<FormatterToken> argList) {
         if (argList.isEmpty()) {
             return argList;
         }
@@ -95,6 +94,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 isEmptyAfterSpaceRemoving(argList, argList.size() - 1)){
             return argList;
         }
+
+        argList = detachAsteriskFromSelect(argList);
 
         transformCase(argList);
 
@@ -287,8 +288,40 @@ public class SQLFormatterTokenized implements SQLFormatter {
         }
     }
 
+    /**
+     * Converts every occurrence of 'SELECT*' into 'SELECT *'.
+     *
+     * @param argList tokens
+     * @return list of tokens with properly converted 'SELECT*' symbols
+     */
+    private static List<FormatterToken> detachAsteriskFromSelect(@NotNull List<FormatterToken> argList) {
+        Collection<Integer> indexes = new HashSet<>();
+        for (int i = 0; i < argList.size(); i++) {
+            if ("SELECT*".equals(argList.get(i).getString().toUpperCase(Locale.ENGLISH))) { //$NON-NLS-1$
+                indexes.add(i);
+            }
+        }
+        if (indexes.isEmpty()) {
+            return argList;
+        }
 
+        List<FormatterToken> newArgList = new ArrayList<>(argList.size() + 2*indexes.size());
+        int offset = 0;
+        for (int i = 0; i < argList.size(); i++) {
+            if (indexes.contains(i)) {
+                FormatterToken token = argList.get(i);
+                int selectPosition = token.getPos() + offset;
+                newArgList.add(new FormatterToken(TokenType.KEYWORD, token.getString().substring(0, 6), selectPosition));
+                newArgList.add(new FormatterToken(TokenType.SPACE, " *", selectPosition + 6));
+                newArgList.add(new FormatterToken(TokenType.SYMBOL, "*", selectPosition + 7));
+                offset++;
+            } else {
+                newArgList.add(argList.get(i));
+            }
+        }
 
+        return newArgList;
+    }
 
     private static String getPrevDMLKeyword(List<FormatterToken> argList, int index) {
         for (int i = index - 1; i >= 0; i--) {
@@ -321,5 +354,4 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 return false;
         }
     }
-
 }
