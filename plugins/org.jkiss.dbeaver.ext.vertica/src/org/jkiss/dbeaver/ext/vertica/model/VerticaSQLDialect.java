@@ -24,11 +24,17 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 
 import java.util.Arrays;
 
 public class VerticaSQLDialect extends GenericSQLDialect {
+
+    public static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
+            {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+            {"CASE", SQLConstants.BLOCK_END},
+    };
 
     private static String[] VERTICA_KEYWORDS = new String[]{
             // SELECT * FROM keywords WHERE reserved = 'R'
@@ -94,5 +100,10 @@ public class VerticaSQLDialect extends GenericSQLDialect {
             return (left, right) -> left + " ILIKE " + right;
         }
         return super.getCaseInsensitiveExpressionFormatter(operator);
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return VERTICA_BEGIN_END_BLOCK;
     }
 }
