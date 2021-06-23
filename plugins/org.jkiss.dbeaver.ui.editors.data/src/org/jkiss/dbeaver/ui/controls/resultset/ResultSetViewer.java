@@ -194,6 +194,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetRow curRow;
     // Mode
     private boolean recordMode;
+    private int[] selectedRecords = new int[0];
 
     private Integer segmentFetchSize;
 
@@ -211,7 +212,8 @@ public class ResultSetViewer extends Viewer
     private boolean actionsDisabled;
     private volatile boolean isUIUpdateRunning;
 
-    private Color defaultBackground, defaultForeground;
+    private final Color defaultBackground;
+    private final Color defaultForeground;
     private GC sizingGC;
     private VerticalButton recordModeButton;
 
@@ -1782,6 +1784,11 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public int[] getSelectedRecords() {
+        return selectedRecords;
+    }
+
+    @Override
     public boolean isAllAttributesReadOnly() {
         if (model.getAttributes().length == 0) {
             return false;
@@ -1808,6 +1815,11 @@ public class ResultSetViewer extends Viewer
     {
         //Object state = savePresentationState();
         this.recordMode = recordMode;
+        List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        this.selectedRecords = new int[selectedRows.size()];
+        for (int i = 0; i < selectedRows.size(); i++) {
+            this.selectedRecords[i] = selectedRows.get(i).getRowNumber();
+        }
         //redrawData(false);
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);

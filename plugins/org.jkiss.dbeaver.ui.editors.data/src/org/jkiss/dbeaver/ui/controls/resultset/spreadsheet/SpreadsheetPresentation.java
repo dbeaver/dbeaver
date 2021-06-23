@@ -1528,6 +1528,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return ssSelection.iterator().next();
         }
 
+        @NotNull
         @Override
         public Iterator<GridPos> iterator()
         {
@@ -1547,7 +1548,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public List toList()
+        public List<GridPos> toList()
         {
             return new ArrayList<>(spreadsheet.getSelection());
         }
@@ -1651,8 +1652,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!recordMode) {
                     return model.getVisibleAttributes().toArray();
                 } else {
-                    Object curRow = controller.getCurrentRow();
-                    return curRow == null ? new Object[0] : new Object[] {curRow};
+                    int[] selectedRecords = controller.getSelectedRecords();
+                    Object[] rows = new Object[selectedRecords.length];
+                    for (int i = 0; i < selectedRecords.length; i++) {
+                        rows[i] = controller.getModel().getRow(selectedRecords[i]);
+                    }
+                    return rows;
                 }
             } else {
                 // rows
