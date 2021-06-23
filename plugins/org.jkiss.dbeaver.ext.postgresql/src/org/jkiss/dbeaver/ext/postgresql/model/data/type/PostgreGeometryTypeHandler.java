@@ -27,19 +27,21 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
 
     public static final PostgreGeometryTypeHandler INSTANCE = new PostgreGeometryTypeHandler();
 
+    private static final int GEOMETRY_TYPE_GEOMETRY             = 0x0000_0000;
     private static final int GEOMETRY_TYPE_POINT                = 0x0000_0004;
     private static final int GEOMETRY_TYPE_LINESTRING           = 0x0000_0008;
     private static final int GEOMETRY_TYPE_POLYGON              = 0x0000_000C;
     private static final int GEOMETRY_TYPE_MULTIPOINT           = 0x0000_0010;
     private static final int GEOMETRY_TYPE_MULTILINESTRING      = 0x0000_0014;
     private static final int GEOMETRY_TYPE_MULTIPOLYGON         = 0x0000_0018;
-    private static final int GEOMETRY_TYPE_DIMENSION_M          = 0x0000_0001;
-    private static final int GEOMETRY_TYPE_DIMENSION_Z          = 0x0000_0002;
-    private static final int GEOMETRY_TYPE_DIMENSION_ZM         = 0x0000_0003;
+    private static final int GEOMETRY_DIMENSION_M               = 0x0000_0001;
+    private static final int GEOMETRY_DIMENSION_Z               = 0x0000_0002;
+    private static final int GEOMETRY_DIMENSION_ZM              = 0x0000_0003;
     private static final int GEOMETRY_MASK_TYPE                 = 0x0000_00fc;
     private static final int GEOMETRY_MASK_SRID                 = 0x00ff_ff00;
     private static final int GEOMETRY_MASK_DIMENSION            = 0x0000_0003;
 
+    private static final String GEOMETRY_NAME_GEOMETRY          = "geometry";
     private static final String GEOMETRY_NAME_POINT             = "point";
     private static final String GEOMETRY_NAME_LINESTRING        = "linestring";
     private static final String GEOMETRY_NAME_POLYGON           = "polygon";
@@ -69,7 +71,7 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     @Override
     public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
-        if (typmod > 0) {
+        if (typmod >= 0) {
             sb.append('(').append(getGeometryType(typmod));
             final DBGeometryDimension dimension = getGeometryDimension(typmod);
             if (dimension.hasZ()) {
@@ -93,6 +95,8 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
             return null;
         }
         switch ((typmod & GEOMETRY_MASK_TYPE)) {
+            case GEOMETRY_TYPE_GEOMETRY:
+                return GEOMETRY_NAME_GEOMETRY;
             case GEOMETRY_TYPE_POINT:
                 return GEOMETRY_NAME_POINT;
             case GEOMETRY_TYPE_LINESTRING:
@@ -113,11 +117,11 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     @NotNull
     public static DBGeometryDimension getGeometryDimension(int typmod) {
         switch (typmod & GEOMETRY_MASK_DIMENSION) {
-            case GEOMETRY_TYPE_DIMENSION_M:
+            case GEOMETRY_DIMENSION_M:
                 return DBGeometryDimension.XYM;
-            case GEOMETRY_TYPE_DIMENSION_Z:
+            case GEOMETRY_DIMENSION_Z:
                 return DBGeometryDimension.XYZ;
-            case GEOMETRY_TYPE_DIMENSION_ZM:
+            case GEOMETRY_DIMENSION_ZM:
                 return DBGeometryDimension.XYZM;
             default:
                 return DBGeometryDimension.XY;
@@ -131,16 +135,19 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     private static int getGeometryModifiers(@NotNull String name, int srid) throws DBException {
         int typmod = (srid & 0xffff) << 8;
         if (name.endsWith("zm")) {
-            typmod |= GEOMETRY_TYPE_DIMENSION_ZM;
+            typmod |= GEOMETRY_DIMENSION_ZM;
             name = name.substring(0, name.length() - 2);
         } else if (name.endsWith("z")) {
-            typmod |= GEOMETRY_TYPE_DIMENSION_Z;
+            typmod |= GEOMETRY_DIMENSION_Z;
             name = name.substring(0, name.length() - 1);
         } else if (name.endsWith("m")) {
-            typmod |= GEOMETRY_TYPE_DIMENSION_M;
+            typmod |= GEOMETRY_DIMENSION_M;
             name = name.substring(0, name.length() - 1);
         }
         switch (name) {
+            case GEOMETRY_NAME_GEOMETRY:
+                typmod |= GEOMETRY_TYPE_GEOMETRY;
+                break;
             case GEOMETRY_NAME_POINT:
                 typmod |= GEOMETRY_TYPE_POINT;
                 break;
