@@ -22,5 +22,11 @@ package org.jkiss.dbeaver.ui;
  */
 public interface IRefreshablePart
 {
-    void refreshPart(Object source, boolean force);
+    enum RefreshResult {
+        REFRESHED,
+        IGNORED,
+        CANCELED,
+    }
+
+    RefreshResult refreshPart(Object source, boolean force);
 }

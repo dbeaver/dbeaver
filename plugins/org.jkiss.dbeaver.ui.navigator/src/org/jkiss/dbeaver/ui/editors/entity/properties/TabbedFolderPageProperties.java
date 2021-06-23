@@ -146,14 +146,16 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         if (force) {
             curPropertySource = input.getPropertySource();
             if (propertyTree != null) {
                 propertyTree.loadProperties(curPropertySource);
                 refreshProperties();
+                return RefreshResult.REFRESHED;
             }
         }
+        return RefreshResult.IGNORED;
     }
 
     @Override

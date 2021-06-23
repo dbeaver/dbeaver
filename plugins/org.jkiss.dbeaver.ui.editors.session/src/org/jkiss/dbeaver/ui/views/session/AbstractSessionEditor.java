@@ -64,9 +64,10 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IEd
     protected abstract SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent);
 
     @Override
-    public void refreshPart(Object source, boolean force)
+    public RefreshResult refreshPart(Object source, boolean force)
     {
         sessionsViewer.refreshSessions();
+        return RefreshResult.REFRESHED;
     }
 
     @Override

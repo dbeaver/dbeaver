@@ -204,9 +204,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
+    public RefreshResult refreshPart(Object source, boolean force)
     {
         // do nothing
+        return RefreshResult.IGNORED;
     }
 
     private class PageControl extends UserPageControl {

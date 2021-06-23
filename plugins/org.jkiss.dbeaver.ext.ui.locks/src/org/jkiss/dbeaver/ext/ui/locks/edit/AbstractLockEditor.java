@@ -56,8 +56,9 @@ public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IEdito
     protected abstract LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent);
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         lockViewer.refreshLocks(null);
+        return RefreshResult.REFRESHED;
     }
 
     @Override

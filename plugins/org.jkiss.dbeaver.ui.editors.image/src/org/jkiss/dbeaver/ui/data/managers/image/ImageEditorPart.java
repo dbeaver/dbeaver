@@ -125,18 +125,14 @@ public class ImageEditorPart extends EditorPart implements IRefreshablePart {
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         refreshImage();
+        return RefreshResult.REFRESHED;
     }
 
     private void refreshImage() {
         // Refresh editor
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                loadImage();
-            }
-        });
+        UIUtils.asyncExec(this::loadImage);
     }
 
 }

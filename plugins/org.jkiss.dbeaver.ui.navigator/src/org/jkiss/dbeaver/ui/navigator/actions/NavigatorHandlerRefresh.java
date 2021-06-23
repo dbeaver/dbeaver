@@ -61,8 +61,10 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // Try to refresh as refreshable part
         if (workbenchPart instanceof IRefreshablePart) {
-            ((IRefreshablePart) workbenchPart).refreshPart(this, true);
-            return null;
+            if (((IRefreshablePart) workbenchPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
+                return null;
+            }
+            //return null;
         }
 
         // Try to get navigator view and refresh node
@@ -102,7 +104,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                 for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
                     DBNNode nextNode = iter.next();
                     if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
-                        ((IRefreshablePart) editorPart).refreshPart(this, true);
+                        if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
+                            return null;
+                        }
                         iter.remove();
                     }
                 }

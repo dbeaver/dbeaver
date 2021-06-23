@@ -196,7 +196,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         // Check if we are in saving process
         // If so then no refresh needed (source text was updated during save)
         IEditorSite editorSite = getEditorSite();
@@ -204,7 +204,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
             ((MultiPageEditorSite) editorSite).getMultiPageEditor() instanceof EntityEditor &&
             ((EntityEditor) ((MultiPageEditorSite) editorSite).getMultiPageEditor()).isSaveInProgress())
         {
-            return;
+            return RefreshResult.IGNORED;
         }
 
         final IDocumentProvider documentProvider = getDocumentProvider();
@@ -220,6 +220,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
             }
         }
         reloadSyntaxRules();
+
+        return RefreshResult.REFRESHED;
     }
 
     protected String getCompileCommandId()

@@ -153,10 +153,10 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
+    public RefreshResult refreshPart(Object source, boolean force)
     {
         if (!activated || itemControl == null || itemControl.isDisposed()) {
-            return;
+            return RefreshResult.IGNORED;
         }
         // Check - do we need to load new content in editor
         // If this is DBM event then check node change type
@@ -178,7 +178,10 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         }
         if (loadNewData) {
             itemControl.loadData(false);
+            return RefreshResult.REFRESHED;
         }
+
+        return RefreshResult.IGNORED;
     }
 
     private boolean isRefreshingEvent(DBNEvent event) {

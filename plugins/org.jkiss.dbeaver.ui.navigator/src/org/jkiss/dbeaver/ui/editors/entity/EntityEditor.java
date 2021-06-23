@@ -873,10 +873,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public void refreshPart(final Object source, boolean force)
+    public RefreshResult refreshPart(final Object source, boolean force)
     {
         if (getContainer() == null || getContainer().isDisposed() || isSaveInProgress()) {
-            return;
+            return RefreshResult.IGNORED;
         }
 
         if (force && isDirty()) {
@@ -887,7 +887,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 ConfirmationDialog.QUESTION,
                 getTitle()) != IDialogConstants.YES_ID)
             {
-                return;
+                return RefreshResult.CANCELED;
             }
         }
 
@@ -941,6 +941,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Update main editor image
             setPageImage(0, DBeaverIcons.getImage(getEditorInput().getNavigatorNode().getNodeIconDefault()));
         }
+
+        return RefreshResult.REFRESHED;
     }
 
     @Override

@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
@@ -53,7 +52,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     private static final Log log = Log.getLog(FolderEditor.class);
 
     private FolderListControl itemControl;
-    private List<String> history = new ArrayList<>();
+    private final List<String> history = new ArrayList<>();
     private int historyPosition = 0;
 
     @Override
@@ -88,7 +87,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+    public void init(IEditorSite site, IEditorInput input) {
         setSite(site);
         setInput(input);
         if (input != null) {
@@ -121,16 +120,14 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
+    public RefreshResult refreshPart(Object source, boolean force)
     {
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!itemControl.isDisposed()) {
-                    itemControl.loadData(false);
-                }
+        UIUtils.asyncExec(() -> {
+            if (!itemControl.isDisposed()) {
+                itemControl.loadData(false);
             }
         });
+        return RefreshResult.REFRESHED;
     }
 
     @Override

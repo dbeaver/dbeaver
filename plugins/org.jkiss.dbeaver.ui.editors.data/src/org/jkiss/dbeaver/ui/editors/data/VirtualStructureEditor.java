@@ -82,7 +82,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         new AbstractJob(DataEditorsMessages.virtual_structure_editor_abstract_job_load_entity) {
 
             @Override
@@ -99,6 +99,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 return Status.OK_STATUS;
             }
         }.schedule();
+
+        return RefreshResult.REFRESHED;
     }
 
     private void refreshVisuals() {
