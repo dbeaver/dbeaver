@@ -223,17 +223,21 @@ public class SQLFormatterTokenized implements SQLFormatter {
         return false;
     }
 
-    private void removeSpacesAroundCommentToken(List<FormatterToken> argList) {
+    private static void removeSpacesAroundCommentToken(List<? extends FormatterToken> argList) {
         FormatterToken token;// Remove extra tokens (spaces, etc)
         for (int index = argList.size() - 1; index >= 1; index--) {
             token = argList.get(index);
             FormatterToken prevToken = argList.get(index - 1);
-            if (token.getType() == TokenType.SPACE && prevToken.getType() == TokenType.COMMENT) {
+            boolean isTokenNotContainsLineSeparator = !token.getString().contains(System.lineSeparator());
+            if (token.getType() == TokenType.SPACE && isTokenNotContainsLineSeparator && prevToken.getType() == TokenType.COMMENT) {
                 argList.remove(index);
-            } else if (token.getType() == TokenType.COMMENT && prevToken.getType() == TokenType.SPACE) {
-                argList.remove(index - 1);
-            } else if (token.getType() == TokenType.SPACE) {
-                token.setString(" "); //$NON-NLS-1$
+            } else {
+                boolean isPrevTokenNotContainsLineSeparator = !prevToken.getString().contains(System.lineSeparator());
+                if (token.getType() == TokenType.COMMENT && prevToken.getType() == TokenType.SPACE && isPrevTokenNotContainsLineSeparator) {
+                    argList.remove(index - 1);
+                } else if (token.getType() == TokenType.SPACE && isTokenNotContainsLineSeparator) {
+                    token.setString(" "); //$NON-NLS-1$
+                }
             }
         }
     }

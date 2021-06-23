@@ -46,7 +46,7 @@ public class SQLFormatterTokenizedTest {
     private SQLSyntaxManager syntaxManager;
 
     private SQLDialect dialect = BasicSQLDialect.INSTANCE;
-    private final String lineBreak = System.getProperty("line.separator");
+    private final String lineBreak = System.lineSeparator();
 
     private String format(String sql) {
         return formatter.format(sql, configuration);
@@ -393,5 +393,32 @@ public class SQLFormatterTokenizedTest {
             expected,
             format(sql)
         );
+    }
+
+    @Test
+    public void shouldDoDefaultFormatWhenThereAreCommentsInsideQuery() {
+        String sql = SQLConstants.KEYWORD_SELECT + lineBreak + //$NON-NLS-1$
+            "\t--comment" + lineBreak + //$NON-NLS-1$
+            "\t'x' AS x, 'y' AS y, 'z' AS z FROM dual;"; //$NON-NLS-1$
+        String expected = SQLConstants.KEYWORD_SELECT + lineBreak + //$NON-NLS-1$
+            "\t--comment" + lineBreak + //$NON-NLS-1$
+            "\t'x' AS x," + lineBreak + //$NON-NLS-1$
+            "\t'y' AS y," + lineBreak + //$NON-NLS-1$
+            "\t'z' AS z" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak + //$NON-NLS-1$
+            "\tdual;"; //$NON-NLS-1$
+        assertEquals("SQLFormatterTokenized does not properly format query with a comment between SELECT and FROM", expected, format(sql));
+
+        sql = "SELECT 'x' AS X FROM dual" + lineBreak + //$NON-NLS-1$
+            "--comment" + lineBreak + //$NON-NLS-1$
+            "WHERE 1 = 1;"; //$NON-NLS-1$
+        expected = SQLConstants.KEYWORD_SELECT + lineBreak + //$NON-NLS-1$
+            "\t'x' AS X" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak + //$NON-NLS-1$
+            "\tdual" + lineBreak + //$NON-NLS-1$
+            "\t--comment" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_WHERE + lineBreak + //$NON-NLS-1$
+            "\t1 = 1;"; //$NON-NLS-1$
+        assertEquals("SQLFormatterTokenized does not properly format query with a comment between FROM and WHERE", expected, format(sql));
     }
 }
