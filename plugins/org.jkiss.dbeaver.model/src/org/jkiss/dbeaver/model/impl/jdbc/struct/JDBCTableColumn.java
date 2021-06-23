@@ -215,7 +215,8 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                 } else {
                     query.append(identifier).append(" LIKE ?");
                 }
-
+            } else if (getDataKind() == DBPDataKind.NUMERIC) {
+                query.append(identifier).append(" >= ?");
             } else {
                 query.append(identifier).append(" = ?");
             }
