@@ -137,8 +137,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             if (txnManager != null && txnManager.isSupportsTransactions()) {
                 try {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
-                        session.enableLogging(false);
-                        txnManager.commit(session);
+                        if (!txnManager.isAutoCommit()) {
+                            session.enableLogging(false);
+                            txnManager.commit(session);
+                        }
                     } finally {
                         if (oldAutoCommit != useAutoCommit) {
                             txnManager.setAutoCommit(monitor, oldAutoCommit);
