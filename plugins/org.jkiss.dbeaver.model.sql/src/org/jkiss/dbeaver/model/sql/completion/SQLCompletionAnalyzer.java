@@ -899,7 +899,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     state = InlineState.TABLE_NAME;
                     continue;
                 }
-                if (state == InlineState.TABLE_NAME && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
+                if (state == InlineState.TABLE_NAME && isNamePartToken(tok)) {
                     matchedTableName = CommonUtils.notEmpty(matchedTableName) + value;
                     state = InlineState.TABLE_DOT;
                     continue;
@@ -924,7 +924,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Any keyword but AS resets state to
                     state = CommonUtils.isEmpty(matchedTableName) ? InlineState.UNMATCHED : InlineState.MATCHED;
                 }
-                if ((state == InlineState.ALIAS_AS || state == InlineState.ALIAS_NAME) && (tok.getData() == SQLTokenType.T_QUOTED || tok.getData() == SQLTokenType.T_OTHER)) {
+                if ((state == InlineState.ALIAS_AS || state == InlineState.ALIAS_NAME) && isNamePartToken(tok)) {
                     matchedTableAlias = value;
                     state = InlineState.MATCHED;
                 }
@@ -952,6 +952,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         return null;
+    }
+
+    private static boolean isNamePartToken(TPToken tok) {
+        return tok.getData() == SQLTokenType.T_QUOTED
+            || tok.getData() == SQLTokenType.T_KEYWORD
+            || tok.getData() == SQLTokenType.T_OTHER;
     }
 
     private static boolean isTableQueryToken(TPToken tok, String value) {
