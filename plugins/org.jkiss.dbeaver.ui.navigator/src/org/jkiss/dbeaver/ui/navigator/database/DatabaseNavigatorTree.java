@@ -714,6 +714,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
                 pattern = "*" + pattern;
                 this.matcher = new TextMatcherExt(pattern, true, false);
+            } else {
+                super.setPattern(null);
             }
         }
 
@@ -725,13 +727,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (matcher != null) {
                 return matcher.match(text);
             }
-            return false;
+            return super.wordMatches(text);
         }
 
         public boolean isElementVisible(Viewer viewer, Object element){
-            if (matcher == null) {
-                return true;
-            }
             if (filterShowConnected && element instanceof DBNDataSource && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
                 return false;
             }
