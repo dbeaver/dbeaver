@@ -123,10 +123,14 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                         return;
                     }
                 }
+                inQuote = false;
                 int prevStartOffset = prevOffset + 1;
                 while (prevOffset >= topIndex) {
                     char ch = document.getChar(prevOffset);
-                    if (isWordPart(ch)) {
+                    if (isQuote(ch)) {
+                        inQuote = !inQuote;
+                        prevOffset--;
+                    } else if (inQuote || isWordPart(ch)) {
                         prevOffset--;
                     } else {
                         prevOffset++;
