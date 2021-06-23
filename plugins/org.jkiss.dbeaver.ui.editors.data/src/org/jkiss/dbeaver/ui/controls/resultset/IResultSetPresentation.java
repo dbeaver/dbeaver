@@ -111,6 +111,8 @@ public interface IResultSetPresentation {
 
     void setCurrentAttribute(@NotNull DBDAttributeBinding attribute);
 
+    void showAttribute(@NotNull DBDAttributeBinding attribute);
+
     @Nullable
     Point getCursorLocation();
 

@@ -150,6 +150,11 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     }
 
     @Override
+    public void showAttribute(@NotNull DBDAttributeBinding attribute) {
+        // do nothing
+    }
+
+    @Override
     public Point getCursorLocation() {
         return null;
     }

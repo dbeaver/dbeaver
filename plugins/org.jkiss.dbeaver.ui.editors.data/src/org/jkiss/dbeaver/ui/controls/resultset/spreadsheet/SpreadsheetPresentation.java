@@ -362,6 +362,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
+    public void showAttribute(@NotNull DBDAttributeBinding attribute) {
+        this.spreadsheet.showColumn(attribute);
+    }
+
+    @Override
     public Point getCursorLocation() {
         GridPos focusPos = spreadsheet.getFocusPos();
         if (focusPos.col >= 0) {
