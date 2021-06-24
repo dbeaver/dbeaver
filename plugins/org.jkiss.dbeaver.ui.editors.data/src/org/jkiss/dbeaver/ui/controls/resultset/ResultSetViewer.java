@@ -1820,11 +1820,18 @@ public class ResultSetViewer extends Viewer
         for (int i = 0; i < selectedRows.size(); i++) {
             this.selectedRecords[i] = selectedRows.get(i).getRowNumber();
         }
+        if (selectedRecords.length > 0) {
+            curRow = model.getRow(selectedRecords[0]);
+        } else {
+            curRow = null;
+        }
+
         this.recordMode = recordMode;
         //redrawData(false);
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
         updateStatusMessage();
+
         //restorePresentationState(state);
     }
 
@@ -1945,7 +1952,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void setCurrentRow(@Nullable ResultSetRow newRow) {
-            int rowShift = 0;
+        int rowShift = 0;
         if (this.curRow != null && newRow != null) {
             rowShift = newRow.getVisualNumber() - curRow.getVisualNumber();
         }
