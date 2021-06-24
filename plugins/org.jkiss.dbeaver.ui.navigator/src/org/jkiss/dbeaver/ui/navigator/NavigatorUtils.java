@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -613,7 +614,7 @@ public class NavigatorUtils {
         DBPDataSourceContainer ds = databaseNode.getDataSourceContainer();
         if (dsProvider.getDataSourceContainer() != ds) {
             dsProvider.setDataSourceContainer(ds);
-            DatabaseEditorContext editorContext = new DatabaseEditorContextImpl(ds, dbsObject);
+            DatabaseEditorContext editorContext = new DatabaseEditorContextBase(ds, dbsObject);
             EditorUtils.setInputDataSource(activeEditor.getEditorInput(), editorContext);
         }
 
@@ -721,32 +722,5 @@ public class NavigatorUtils {
             activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         }
         return activeProject;
-    }
-
-    private static final class DatabaseEditorContextImpl implements DatabaseEditorContext {
-        private final DBPDataSourceContainer container;
-        private final DBSObject object;
-
-        private DatabaseEditorContextImpl(@NotNull DBPDataSourceContainer container, @Nullable DBSObject object) {
-            this.container = container;
-            this.object = object;
-        }
-
-        @Nullable
-        @Override
-        public DBCExecutionContext getExecutionContext() {
-            return null;
-        }
-
-        @Override
-        public DBPDataSourceContainer getDataSourceContainer() {
-            return container;
-        }
-
-        @Nullable
-        @Override
-        public DBSObject getSelectedObject() {
-            return object;
-        }
     }
 }
