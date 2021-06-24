@@ -68,6 +68,11 @@ public class SQLCompletionAnalyzerTest {
                     t.attribute("Col5");
                     t.attribute("Col6");
                 });
+                s.table("Table 3", t -> {
+                    t.attribute("Col7");
+                    t.attribute("Col8");
+                    t.attribute("Col9");
+                });
             })
             .prepare();
 
@@ -109,6 +114,16 @@ public class SQLCompletionAnalyzerTest {
             Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
             Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
             Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request
+                    .request("SELECT * FROM \"Table 3\" t WHERE t.|");
+
+            Assert.assertEquals(3, proposals.size());
+            Assert.assertEquals("Col7", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col8", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Col9", proposals.get(2).getReplacementString());
         }
 
         {
@@ -323,7 +338,6 @@ public class SQLCompletionAnalyzerTest {
     }
 
     @Test
-    @Ignore("See #12159")
     public void testColumnsQuotedNamesCompletion() throws DBException {
         final RequestResult request = RequestBuilder
             .databases(x -> {
