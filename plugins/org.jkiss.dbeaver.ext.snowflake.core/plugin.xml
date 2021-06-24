@@ -59,4 +59,8 @@
         </dialect>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.snowflake.internal.SnowflakePreferencesInitializer"/>
+    </extension>
+
 </plugin>

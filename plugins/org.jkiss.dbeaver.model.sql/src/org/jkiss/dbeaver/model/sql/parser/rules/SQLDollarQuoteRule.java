@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBlockToggleToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
@@ -24,10 +23,23 @@ import org.jkiss.dbeaver.model.text.parser.*;
 public class SQLDollarQuoteRule implements TPPredicateRule {
 
     private final boolean partitionRule;
+    private final boolean allowNamedQuotes;
+    private final boolean fullyConsumeNamed;
+    private final boolean fullyConsumeUnnamed;
     private final TPToken stringToken, delimiterToken;
 
-    public SQLDollarQuoteRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
+    /**
+     * @param partitionRule       whether this rule is a partition rule or not
+     * @param allowNamedQuotes    whether this rule supports named quotes ({@code $named$}) or not
+     * @param fullyConsumeNamed   whether this rule should stop after consuming named quote
+     *                            or continue until matching the closing one, treating everything between as a string
+     * @param fullyConsumeUnnamed same as {@code fullyConsumeNamed}, but for unnamed quotes
+     */
+    public SQLDollarQuoteRule(boolean partitionRule, boolean allowNamedQuotes, boolean fullyConsumeNamed, boolean fullyConsumeUnnamed) {
         this.partitionRule = partitionRule;
+        this.allowNamedQuotes = allowNamedQuotes;
+        this.fullyConsumeNamed = fullyConsumeNamed;
+        this.fullyConsumeUnnamed = fullyConsumeUnnamed;
 
         this.stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         this.delimiterToken = new SQLBlockToggleToken();
@@ -56,7 +68,7 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
                 totalRead++;
                 if (c == '$') {
 
-                    if (charsRead <= 1) {
+                    if (charsRead > 1 ? fullyConsumeNamed : fullyConsumeUnnamed) {
                         // Here is a trick - dollar quote without preceding AS or DO and without tag is a string.
                         // Quote with tag is just a block toggle.
                         // I'm afraid we can't do more (#6608, #7183)
@@ -111,7 +123,7 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
                         break;
                     }
                 }
-            } while (Character.isLetterOrDigit(c) || c == '_');
+            } while ((Character.isLetterOrDigit(c) || c == '_') && allowNamedQuotes);
         }
 
         unread(scanner, totalRead);
