@@ -1818,7 +1818,7 @@ public class ResultSetViewer extends Viewer
         List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
         this.selectedRecords = new int[selectedRows.size()];
         for (int i = 0; i < selectedRows.size(); i++) {
-            this.selectedRecords[i] = selectedRows.get(i).getRowNumber();
+            this.selectedRecords[i] = selectedRows.get(i).getVisualNumber();
         }
         if (selectedRecords.length > 0) {
             curRow = model.getRow(selectedRecords[0]);
@@ -1961,15 +1961,17 @@ public class ResultSetViewer extends Viewer
             curState.rowNumber = newRow.getVisualNumber();
         }
         if (this.recordMode && rowShift != 0 && selectedRecords.length > 0) {
-            // Shift selected records
-            int firstSelRecord = selectedRecords[0];
-            firstSelRecord += rowShift;
-            if (firstSelRecord < 0) firstSelRecord = 0;
-            if (firstSelRecord >= model.getRowCount() - selectedRecords.length) {
-                firstSelRecord = model.getRowCount() - selectedRecords.length - 1;
-            }
-            for (int i = 0; i < selectedRecords.length; i++) {
-                selectedRecords[i] = firstSelRecord + i;
+            if (!ArrayUtils.contains(selectedRecords, curRow.getVisualNumber())) {
+                // Shift selected records
+                int firstSelRecord = selectedRecords[0];
+                firstSelRecord += rowShift;
+                if (firstSelRecord < 0) firstSelRecord = 0;
+                if (firstSelRecord >= model.getRowCount() - selectedRecords.length) {
+                    firstSelRecord = model.getRowCount() - selectedRecords.length - 1;
+                }
+                for (int i = 0; i < selectedRecords.length; i++) {
+                    selectedRecords[i] = firstSelRecord + i;
+                }
             }
         } else {
             selectedRecords = new int[0];
