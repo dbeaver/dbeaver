@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLAtVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -304,6 +305,9 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+        if (position == RulePosition.INITIAL) {
+            rules.add(new SQLAtVariableRule());
+        }
         if (position == RulePosition.KEYWORDS) {
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
             // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/transactions-transact-sql
