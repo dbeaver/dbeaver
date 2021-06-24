@@ -55,6 +55,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
@@ -604,45 +607,45 @@ public class NavigatorUtils {
             return false;
         }
         DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
+        DBSObject dbsObject = databaseNode.getObject();
+        if (!(dbsObject instanceof DBSStructContainer)) {
+            dbsObject = DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
+        }
         DBPDataSourceContainer ds = databaseNode.getDataSourceContainer();
         if (dsProvider.getDataSourceContainer() != ds) {
             dsProvider.setDataSourceContainer(ds);
+            DatabaseEditorContext editorContext = new DatabaseEditorContextBase(ds, dbsObject);
+            EditorUtils.setInputDataSource(activeEditor.getEditorInput(), editorContext);
         }
 
-        if (activeEditor instanceof DBPContextProvider) {
-            DBSObject dbsObject = databaseNode.getObject();
-            if (!(dbsObject instanceof DBSStructContainer)) {
-                dbsObject = DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
+        if (activeEditor instanceof DBPContextProvider && dbsObject != null) {
+            DBCExecutionContext navExecutionContext = null;
+            try {
+                navExecutionContext = DBUtils.getOrOpenDefaultContext(dbsObject, false);
+            } catch (DBCException ignored) {
             }
-            if (dbsObject != null) {
-                DBCExecutionContext navExecutionContext = null;
-                try {
-                    navExecutionContext = DBUtils.getOrOpenDefaultContext(dbsObject, false);
-                } catch (DBCException ignored) {
-                }
-                DBCExecutionContext editorExecutionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
-                if (navExecutionContext != null && editorExecutionContext != null) {
-                    DBCExecutionContextDefaults editorContextDefaults = editorExecutionContext.getContextDefaults();
-                    if (editorContextDefaults != null) {
-                        DBSObject dbObject = dbsObject;
-                        RuntimeUtils.runTask(monitor -> {
-                                try {
-                                    monitor.beginTask("Change default object", 1);
-                                    if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
-                                        monitor.subTask("Change default catalog");
-                                        editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
-                                    } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
-                                        monitor.subTask("Change default schema");
-                                        editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
-                                    }
-                                    monitor.worked(1);
-                                    monitor.done();
-                                } catch (DBCException e) {
-                                    throw new InvocationTargetException(e);
+            DBCExecutionContext editorExecutionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
+            if (navExecutionContext != null && editorExecutionContext != null) {
+                DBCExecutionContextDefaults editorContextDefaults = editorExecutionContext.getContextDefaults();
+                if (editorContextDefaults != null) {
+                    final DBSObject dbObject = dbsObject;
+                    RuntimeUtils.runTask(monitor -> {
+                            try {
+                                monitor.beginTask("Change default object", 1);
+                                if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
+                                    monitor.subTask("Change default catalog");
+                                    editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
+                                } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
+                                    monitor.subTask("Change default schema");
+                                    editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
                                 }
-                            }, "Set active object",
-                            dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
-                    }
+                                monitor.worked(1);
+                                monitor.done();
+                            } catch (DBCException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }, "Set active object",
+                        dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
                 }
             }
         }
@@ -720,6 +723,4 @@ public class NavigatorUtils {
         }
         return activeProject;
     }
-
-
 }
