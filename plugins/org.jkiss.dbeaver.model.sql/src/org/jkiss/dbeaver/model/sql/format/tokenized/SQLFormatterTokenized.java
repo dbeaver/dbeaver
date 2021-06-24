@@ -95,8 +95,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
             return argList;
         }
 
-        argList = detachAsteriskFromSelect(argList);
-
         transformCase(argList);
 
         if (formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES)) {
@@ -290,41 +288,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 argList.remove(index + 1);
             }
         }
-    }
-
-    /**
-     * Converts every occurrence of 'SELECT*' into 'SELECT *'.
-     *
-     * @param argList tokens
-     * @return list of tokens with properly converted 'SELECT*' symbols
-     */
-    private static List<FormatterToken> detachAsteriskFromSelect(@NotNull List<FormatterToken> argList) {
-        Collection<Integer> indexes = new HashSet<>();
-        for (int i = 0; i < argList.size(); i++) {
-            if ("SELECT*".equals(argList.get(i).getString().toUpperCase(Locale.ENGLISH))) { //$NON-NLS-1$
-                indexes.add(i);
-            }
-        }
-        if (indexes.isEmpty()) {
-            return argList;
-        }
-
-        List<FormatterToken> newArgList = new ArrayList<>(argList.size() + 2*indexes.size());
-        int offset = 0;
-        for (int i = 0; i < argList.size(); i++) {
-            if (indexes.contains(i)) {
-                FormatterToken token = argList.get(i);
-                int selectPosition = token.getPos() + offset;
-                newArgList.add(new FormatterToken(TokenType.KEYWORD, token.getString().substring(0, 6), selectPosition));
-                newArgList.add(new FormatterToken(TokenType.SPACE, " *", selectPosition + 6));
-                newArgList.add(new FormatterToken(TokenType.SYMBOL, "*", selectPosition + 7));
-                offset++;
-            } else {
-                newArgList.add(argList.get(i));
-            }
-        }
-
-        return newArgList;
     }
 
     private static String getPrevDMLKeyword(List<FormatterToken> argList, int index) {

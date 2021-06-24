@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
 import org.jkiss.utils.ArrayUtils;
@@ -183,8 +184,10 @@ class SQLTokensParser {
                 if (fPos >= fBefore.length()) {
                     break;
                 }
-
                 fChar = fBefore.charAt(fPos);
+                if (SQLConstants.KEYWORD_SELECT.equals(s.toString())) {
+                    break;
+                }
             }
             String word = s.toString();
             if (commands.contains(word.toUpperCase(Locale.ENGLISH))) {
