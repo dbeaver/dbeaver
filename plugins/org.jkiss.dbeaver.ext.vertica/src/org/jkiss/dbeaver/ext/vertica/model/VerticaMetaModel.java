@@ -62,34 +62,46 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public GenericSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
+    public GenericSchema createSchemaImpl(@NotNull GenericDataSource dataSource, GenericCatalog catalog, @NotNull String schemaName) throws DBException {
         return new VerticaSchema(dataSource, catalog, schemaName);
     }
 
     @Override
-    public JDBCStatement prepareTableLoadStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase object, String objectName) throws SQLException {
-        // Read flex table names. Avoid complex queries and read just names (#3981)
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT table_name FROM v_catalog.tables WHERE is_flextable AND table_schema=?"))
-        {
-            dbStat.setString(1, owner.getName());
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                VerticaSchema schema = (VerticaSchema) owner;
-                while (dbResult.next()) {
-                    schema.cacheFlexTableName(JDBCUtils.safeGetString(dbResult, 1));
-                }
-            }
-        } catch (Throwable e) {
-            log.error("Can't read flex table list", e);
+    public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, GenericTableBase table, String objectName) throws SQLException {
+        String sql = "SELECT t.table_schema as table_schem, t.table_name, t.create_time, t.is_temp_table, t.is_system_table, t.has_aggregate_projection, " +
+            "t.partition_expression, case when is_flextable = true THEN 'FLEX TABLE' else 'TABLE' end as table_type, com.\"comment\" as remarks\n" +
+            "FROM v_catalog.tables t LEFT JOIN v_catalog.comments com ON com.object_type = 'TABLE'\n" +
+            "AND com.object_schema = t.table_schema\n" +
+            "AND com.object_name = t.table_name\n" +
+            "WHERE t.table_schema=?" + (table != null ? " and t.table_name = ?" : "") +
+            "\nUNION ALL\n" +
+            "SELECT v.table_schema as table_schem, v.table_name, v.create_time, v.is_local_temp_view as is_temp_table, v.is_system_view as is_system_table, false as has_aggregate_projection, " +
+            "null as partition_expression, 'VIEW' as table_type, com.\"comment\" as remarks\n" +
+            "FROM v_catalog.views v LEFT JOIN v_catalog.comments com ON com.object_type = 'VIEW'\n" +
+            "AND com.object_schema = v.table_schema\n" +
+            "AND com.object_name = v.table_name\n" +
+            "WHERE v.table_schema=?" + (table != null ? " and v.table_name = ?" : "");
+
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, owner.getName());
+        if (table != null) {
+            dbStat.setString(2, table.getName());
+            dbStat.setString(3, owner.getName());
+            dbStat.setString(4, table.getName());
+        } else {
+            dbStat.setString(2, owner.getName());
         }
 
-        return super.prepareTableLoadStatement(session, owner, object, objectName);
+        return dbStat;
     }
 
     @Override
     public GenericTableBase createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
-            return new VerticaView((VerticaSchema)container, tableName, tableType, dbResult);
+            return new VerticaView((VerticaSchema) container, tableName, tableType, dbResult);
+        }
+        if (tableType != null && tableType.equals("FLEX TABLE")) {
+            return new VerticaFlexTable((VerticaSchema)container, tableName, tableType, dbResult);
         } else {
             return new VerticaTable((VerticaSchema)container, tableName, tableType, dbResult);
         }
