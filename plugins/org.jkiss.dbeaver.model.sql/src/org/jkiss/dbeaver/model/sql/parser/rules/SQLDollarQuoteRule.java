@@ -33,7 +33,7 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
      * @param allowNamedQuotes    whether this rule supports named quotes ({@code $named$}) or not
      * @param fullyConsumeNamed   whether this rule should stop after consuming named quote
      *                            or continue until matching the closing one, treating everything between as a string
-     * @param fullyConsumeUnnamed same as {@code fullyConsumePlain}, but for unnamed quotes
+     * @param fullyConsumeUnnamed same as {@code fullyConsumeNamed}, but for unnamed quotes
      */
     public SQLDollarQuoteRule(boolean partitionRule, boolean allowNamedQuotes, boolean fullyConsumeNamed, boolean fullyConsumeUnnamed) {
         this.partitionRule = partitionRule;
