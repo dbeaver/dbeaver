@@ -108,6 +108,7 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Spreadsheet presentation.
@@ -920,6 +921,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 selectedColumns.add(attr);
             }
             if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
+                // Row mode
                 manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
                 {
                     // Pin/unpin
@@ -986,6 +988,31 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 }
                                 refreshData(true, false, true);
                             }
+                        }
+                    });
+                }
+            }
+        }
+
+        if (controller.isRecordMode() && row != null) {
+            // Record mode
+            List<Integer> selectedRowIndexes = new ArrayList<>();
+            for (Object sRow : spreadsheet.getColumnSelection()) {
+                if (sRow instanceof ResultSetRow) {
+                    selectedRowIndexes.add(((ResultSetRow) sRow).getVisualNumber());
+                }
+            }
+
+            if (!selectedRowIndexes.isEmpty() && selectedRowIndexes.size() < controller.getSelectedRecords().length) {
+                List<Integer> curRowIndexes = Arrays.stream(controller.getSelectedRecords())
+                    .boxed().collect(Collectors.toList());
+                curRowIndexes.removeAll(selectedRowIndexes);
+                if (!curRowIndexes.isEmpty()) {
+                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action("Hide row(s)") {
+                        @Override
+                        public void run() {
+                            controller.setSelectedRecords(curRowIndexes.stream().mapToInt(i->i).toArray());
+                            refreshData(true, false, true);
                         }
                     });
                 }

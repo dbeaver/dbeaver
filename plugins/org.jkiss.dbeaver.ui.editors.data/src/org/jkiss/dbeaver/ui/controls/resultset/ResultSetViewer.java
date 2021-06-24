@@ -1790,6 +1790,11 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public void setSelectedRecords(int[] indexes) {
+        selectedRecords = indexes;
+    }
+
+    @Override
     public boolean isAllAttributesReadOnly() {
         if (model.getAttributes().length == 0) {
             return false;

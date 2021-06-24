@@ -83,6 +83,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     int[] getSelectedRecords();
 
+    void setSelectedRecords(int[] indexes);
+
     boolean isAllAttributesReadOnly();
 
     String getReadOnlyStatus();
