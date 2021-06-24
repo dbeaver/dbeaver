@@ -60,7 +60,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(syntaxManager.getDialect()).thenReturn(dialect);
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
-
+        Mockito.when(syntaxManager.getStructSeparator()).thenReturn('.');
         Mockito.when(configuration.getIndentString()).thenReturn("\t");
         Mockito.doReturn(preferenceStore).when(configuration).getPreferenceStore();
 
