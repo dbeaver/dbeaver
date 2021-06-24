@@ -1945,7 +1945,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void setCurrentRow(@Nullable ResultSetRow newRow) {
-        int rowShift = 0;
+            int rowShift = 0;
         if (this.curRow != null && newRow != null) {
             rowShift = newRow.getVisualNumber() - curRow.getVisualNumber();
         }

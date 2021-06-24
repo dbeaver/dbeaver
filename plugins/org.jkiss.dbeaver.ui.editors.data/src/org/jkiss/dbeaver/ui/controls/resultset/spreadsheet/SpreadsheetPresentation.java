@@ -449,6 +449,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (newRow instanceof DBDAttributeBinding) {
                 curAttribute = (DBDAttributeBinding) newRow;
             }
+            if (newCol instanceof ResultSetRow && curRow != newCol) {
+                curRow = (ResultSetRow) newCol;
+                controller.setCurrentRow(curRow);
+            }
         }
         if (changed) {
             spreadsheet.cancelInlineEditor();
