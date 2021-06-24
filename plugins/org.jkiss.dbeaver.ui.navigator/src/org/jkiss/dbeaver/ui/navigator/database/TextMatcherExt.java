@@ -68,6 +68,7 @@ public class TextMatcherExt {
             if (s == null || s.isEmpty()) {
                 continue;
             }
+            s = "*" + s;
             StringMatcher m = new StringMatcher(s, ignoreCase, ignoreWildCards);
             m.usePrefixMatch();
             matchers.add(m);
