@@ -1971,7 +1971,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public Color getCellBackground(Object colElement, Object rowElement, boolean selected) {
-            return getCellBackground(colElement, rowElement, selected, false);
+            return getCellBackground(colElement, rowElement, selected, getController().isRecordMode());
         }
 
         private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
@@ -2205,10 +2205,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return attributeBinding.getLabel();
                 }
             } else {
+                String rowNumber = String.valueOf(((ResultSetRow) element).getVisualNumber() + 1);
                 if (!controller.isRecordMode()) {
-                    return String.valueOf(((ResultSetRow)element).getVisualNumber() + 1);
+                    return rowNumber;
                 } else {
-                    return ResultSetMessages.controls_resultset_viewer_value;
+                    return ResultSetMessages.controls_resultset_viewer_status_row + " #" + rowNumber;
                 }
             }
         }
