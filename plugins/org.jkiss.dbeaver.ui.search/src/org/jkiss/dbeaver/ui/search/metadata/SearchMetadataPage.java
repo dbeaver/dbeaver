@@ -68,6 +68,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private String nameMask;
     private boolean caseSensitive;
     private boolean searchInComments = true;
+    private boolean searchInDefinitions;
     private int maxResults;
     private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<>();
@@ -77,12 +78,12 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private DBPProject currentProject;
 
     public SearchMetadataPage() {
-		super("Database objects search");
+        super("Database objects search");
         currentProject = NavigatorUtils.getSelectedProject();
     }
 
-	@Override
-	public void createControl(Composite parent) {
+    @Override
+    public void createControl(Composite parent) {
         super.createControl(parent);
 
         initializeDialogUnits(parent);
@@ -221,6 +222,20 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         searchInComments = searchInCommentsCheckbox.getSelection();
+                    }
+                });
+
+                Button searchInDefinitionsCheckbox = UIUtils.createCheckbox(
+                    settingsGroup,
+                    UISearchMessages.dialog_search_objects_search_in_definitions,
+                    null,
+                    searchInDefinitions,
+                    2
+                );
+                searchInDefinitionsCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        searchInDefinitions = searchInDefinitionsCheckbox.getSelection();
                     }
                 });
             }
@@ -401,6 +416,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         params.setCaseSensitive(caseSensitive);
         params.setSearchInComments(searchInComments);
         params.setMaxResults(maxResults);
+        params.setSearchInDefinitions(searchInDefinitions);
 
         return new SearchMetadataQuery(dataSource, assistant, params);
     }

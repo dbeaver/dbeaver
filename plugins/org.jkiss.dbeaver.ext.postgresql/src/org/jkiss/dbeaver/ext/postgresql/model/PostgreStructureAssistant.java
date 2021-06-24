@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -152,12 +153,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "pc.relnamespace",
             "pc.relname",
-            params.getMaxResults() - objects.size()
+            params.getMaxResults() - objects.size(),
+            "pc.relkind = 'v' AND pg_get_viewdef(pc.\"oid\")",
+            params.isSearchInDefinitions()
         );
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schema, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
@@ -203,12 +206,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "pp.pronamespace",
             "pp.proname",
-            params.getMaxResults() - objects.size()
+            params.getMaxResults() - objects.size(),
+            "pp.prokind <> 'm' AND pp.prokind <> 'a' AND pg_get_functiondef(pp.\"oid\")",
+            params.isSearchInDefinitions()
         );
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schema, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
@@ -253,12 +258,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "pc.connamespace",
             "pc.conname",
-            params.getMaxResults() - objects.size()
+            params.getMaxResults() - objects.size(),
+            "pg_get_constraintdef(pc.\"oid\")",
+            params.isSearchInDefinitions()
         );
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schema, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
@@ -300,12 +307,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             schema,
             "c.relnamespace",
             "x.attname",
-            params.getMaxResults() - objects.size()
+            params.getMaxResults() - objects.size(),
+            null,
+            false
         );
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schema, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
@@ -331,20 +340,31 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
+    // FIXME
+    // It's painful for me to comprehend the fact that I'm the author of this method. I beg your forgiveness.
     private static String buildFindQuery(@NotNull String select, @NotNull String from, @Nullable String where, boolean searchInComments,
                                          @NotNull String name, boolean caseSensitive, @NotNull String descriptionClause,
-                                         @Nullable List<PostgreSchema> schema, @NotNull String namespace, @NotNull String orderBy, int maxResults) {
+                                         @Nullable Collection<PostgreSchema> schema, @NotNull String namespace, @NotNull String orderBy,
+                                         int maxResults, @Nullable String definitionClause, boolean searchInDefinitions) {
         StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
         if (where != null) {
             sql.append(where).append(" AND ");
         }
-        if (searchInComments) {
+        boolean addDefinitionClause = definitionClause != null && searchInDefinitions;
+        boolean addParentheses = searchInComments || addDefinitionClause;
+        if (addParentheses) {
             sql.append("(");
         }
         String likeClause = caseSensitive ? " LIKE ?" : " ILIKE ?";
         sql.append(name).append(likeClause).append(" ");
         if (searchInComments) {
-            sql.append("OR ").append(descriptionClause).append(likeClause).append(") ");
+            sql.append("OR ").append(descriptionClause).append(likeClause);
+        }
+        if (addDefinitionClause) {
+            sql.append(" OR (").append(definitionClause).append(likeClause).append(")");
+        }
+        if (addParentheses) {
+            sql.append(")");
         }
         if (!CommonUtils.isEmpty(schema)) {
             sql.append("AND ").append(namespace).append(" IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
@@ -354,15 +374,19 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
     }
 
     private static void fillParams(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
-                                   @Nullable List<PostgreSchema> schema) throws SQLException {
+                                   @Nullable List<? extends PostgreSchema> schema, boolean fillSearchInDefinitions) throws SQLException {
         statement.setString(1, params.getMask());
-        int arrayParamIdx = 2;
+        int idx = 2;
         if (params.isSearchInComments()) {
-            statement.setString(2, params.getMask());
-            arrayParamIdx++;
+            statement.setString(idx, params.getMask());
+            idx++;
+        }
+        if (fillSearchInDefinitions) {
+            statement.setString(idx, params.getMask());
+            idx++;
         }
         if (!CommonUtils.isEmpty(schema)) {
-            PostgreUtils.setArrayParameter(statement, arrayParamIdx, schema);
+            PostgreUtils.setArrayParameter(statement, idx, schema);
         }
     }
 }
