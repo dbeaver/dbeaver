@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
-import org.jkiss.dbeaver.ext.postgresql.sql.PostgreDollarQuoteRule;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -32,9 +31,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -883,7 +884,17 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new PostgreDollarQuoteRule(dataSource, position == RulePosition.PARTITION));
+            boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);
+            boolean ddTagIsString = dataSource == null
+                ? ddTagDefault
+                : CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_TAG_STRING), ddTagDefault);
+
+            boolean ddPlainDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_PLAIN_STRING);
+            boolean ddPlainIsString = dataSource == null
+                ? ddPlainDefault
+                : CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING), ddPlainDefault);
+
+            rules.add(new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString));
             rules.add(new PostgreEscapeStringRule());
         }
     }

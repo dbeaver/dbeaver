@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -820,6 +821,10 @@ public class GenericMetaModel {
 
     public boolean isTableColumnCommentEditable() {
         return false;
+    }
+
+    public boolean supportsNotNullColumnModifiers(DBSObject object) {
+        return true;
     }
 
     public boolean isColumnNotNullByDefault() {

@@ -320,6 +320,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
+            new SnowflakeConnectionPageAdvanced(),
             new DriverPropertiesDialogPage(this)
         };
     }

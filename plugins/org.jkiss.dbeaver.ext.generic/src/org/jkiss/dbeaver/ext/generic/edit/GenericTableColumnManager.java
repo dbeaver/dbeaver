@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -113,10 +114,19 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[]{
-            DataTypeModifier,
-            DefaultModifier,
-            column.getDataSource().getMetaModel().isColumnNotNullByDefault() ? NullNotNullModifier : NotNullModifier};
+        GenericMetaModel metaModel = column.getDataSource().getMetaModel();
+        if (!metaModel.supportsNotNullColumnModifiers(column)) {
+            return new ColumnModifier[]{
+                DataTypeModifier,
+                DefaultModifier
+            };
+        } else {
+            return new ColumnModifier[]{
+                DataTypeModifier,
+                DefaultModifier,
+                metaModel.isColumnNotNullByDefault() ? NullNotNullModifier : NotNullModifier
+            };
+        }
     }
 
     @Override

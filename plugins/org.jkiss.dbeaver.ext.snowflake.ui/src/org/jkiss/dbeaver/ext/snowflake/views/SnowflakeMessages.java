@@ -16,6 +16,12 @@ public class SnowflakeMessages extends NLS {
 	public static String label_security;
 	public static String label_user;
 	public static String label_warehouse;
+
+	public static String dialog_setting_sql;
+	public static String dialog_setting_sql_dd_label;
+	public static String dialog_setting_sql_dd_string;
+	public static String dialog_setting_sql_dd_code_block;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, SnowflakeMessages.class);

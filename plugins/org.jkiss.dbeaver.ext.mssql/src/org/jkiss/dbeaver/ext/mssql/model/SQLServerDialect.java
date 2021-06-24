@@ -196,7 +196,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
                     SQLServerConstants.TYPE_TIME.equalsIgnoreCase(typeName) ||
                     SQLServerConstants.TYPE_DATETIMEOFFSET.equalsIgnoreCase(typeName)) {
                 Integer scale = column.getScale();
-                if (scale != null && scale != 0) {
+                if (scale != null && scale >= 0 && scale < 7) {
                     return "(" + scale + ')';
                 }
             }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -122,4 +123,8 @@ public class ClickhouseMetaModel extends GenericMetaModel
         return getTableDDL(monitor, sourceObject, options);
     }
 
+    @Override
+    public boolean supportsNotNullColumnModifiers(DBSObject object) {
+        return false;
+    }
 }
