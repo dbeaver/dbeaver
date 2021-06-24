@@ -36,6 +36,11 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
     boolean isUndoable();
 
     /**
+     * Some scripts (like password change) should not be shown in Query Manager.
+     */
+    boolean isDisableSessionLogging();
+
+    /**
      * Validates command.
      * If command is fine then just returns, otherwise throws an exception
      * @throws DBException contains information about invalid command state

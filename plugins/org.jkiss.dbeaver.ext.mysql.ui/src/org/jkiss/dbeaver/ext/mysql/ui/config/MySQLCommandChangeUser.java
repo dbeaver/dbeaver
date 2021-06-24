@@ -46,6 +46,11 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
+    public boolean isDisableSessionLogging() {
+        return getProperties().containsKey(UserPropertyHandler.PASSWORD.name());
+    }
+
+    @Override
     public void updateModel()
     {
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
