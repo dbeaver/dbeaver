@@ -224,20 +224,20 @@ public class SQLFormatterTokenized implements SQLFormatter {
     }
 
     private static void removeSpacesAroundCommentToken(List<? extends FormatterToken> argList) {
-        FormatterToken token;// Remove extra tokens (spaces, etc)
+        // Remove extra tokens (spaces, etc)
+        // We do not, however, remove spaces between comments which occupy the entire string.
+        // That means, we do not delete spaces around comments if spaces contain line separator.
+        CharSequence separator = "\n";
         for (int index = argList.size() - 1; index >= 1; index--) {
-            token = argList.get(index);
+            FormatterToken token = argList.get(index);
             FormatterToken prevToken = argList.get(index - 1);
-            boolean isTokenNotContainsLineSeparator = !token.getString().contains(System.lineSeparator());
-            if (token.getType() == TokenType.SPACE && isTokenNotContainsLineSeparator && prevToken.getType() == TokenType.COMMENT) {
+            boolean isTokenNotContainsSeparator = !token.getString().contains(separator);
+            if (prevToken.getType() == TokenType.COMMENT && token.getType() == TokenType.SPACE && isTokenNotContainsSeparator) {
                 argList.remove(index);
-            } else {
-                boolean isPrevTokenNotContainsLineSeparator = !prevToken.getString().contains(System.lineSeparator());
-                if (token.getType() == TokenType.COMMENT && prevToken.getType() == TokenType.SPACE && isPrevTokenNotContainsLineSeparator) {
-                    argList.remove(index - 1);
-                } else if (token.getType() == TokenType.SPACE && isTokenNotContainsLineSeparator) {
-                    token.setString(" "); //$NON-NLS-1$
-                }
+            } else if (prevToken.getType() == TokenType.SPACE && !prevToken.getString().contains(separator) && token.getType() == TokenType.COMMENT) {
+                argList.remove(index - 1);
+            } else if (token.getType() == TokenType.SPACE && isTokenNotContainsSeparator) {
+                token.setString(" "); //$NON-NLS-1$
             }
         }
     }
