@@ -172,22 +172,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
-        int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
-        DBPDataKind dataKind = dataType.getDataKind();
-        if (dataKind == DBPDataKind.NUMERIC) {
-            setMaxLength(0);
-        } else {
-            if (maxLength <= 0) {
-                maxLength = PostgreUtils.getDisplaySize(typeId, typeMod);
-            }
-            if (maxLength >= 0) {
-                setMaxLength(maxLength);
-            } else {
-                // TypeMod can be anything.
-                // It is often used in packed format and has no numeric meaning at all
-                //setMaxLength(typeMod);
-            }
-        }
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
@@ -254,7 +238,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 return length;
             }
         }
-        return 0;
+        return PostgreUtils.getDisplaySize(typeId, typeMod);
     }
 
     @Override
