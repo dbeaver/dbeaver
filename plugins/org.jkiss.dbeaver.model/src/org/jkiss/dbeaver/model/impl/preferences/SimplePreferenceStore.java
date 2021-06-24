@@ -65,7 +65,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
 
     public void setProperties(Map<String, String> properties)
     {
-        this.properties = properties;
+        this.properties = new HashMap<>(properties);
     }
 
     public Map<String, String> getDefaultProperties()
@@ -75,7 +75,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
 
     public void setDefaultProperties(Map<String, String> defaultProperties)
     {
-        this.defaultProperties = defaultProperties;
+        this.defaultProperties = new HashMap<>(defaultProperties);
     }
 
     public void clear()
