@@ -178,10 +178,8 @@ class SQLTokensParser {
         }
         else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isLetter(fChar) || isDigit(fChar)
-                || (fChar == '*' && fPos > 0 && fBefore.charAt(fPos - 1) == structSeparator)
-                || structSeparator == fChar
-                || catalogSeparator.indexOf(fChar) != -1) {
+            while (isLetter(fChar) || isDigit(fChar) || (fChar == '*' && fPos > 0 && fBefore.charAt(fPos - 1) == structSeparator)
+                || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
                 s.append(fChar);
                 fPos++;
                 if (fPos >= fBefore.length()) {
