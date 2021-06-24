@@ -42,7 +42,7 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean supportsAlterTableConstraint() {
+    public boolean supportsAlterTableStatement() {
         return false;
     }
 }

@@ -1314,6 +1314,11 @@ public class ResultSetViewer extends Viewer
             if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePresentation.getControl())) {
                 activePanelTab.getControl().setFocus();
             }
+            // Make sure focus cell is visible
+            DBDAttributeBinding currentAttribute = getActivePresentation().getCurrentAttribute();
+            if (currentAttribute != null) {
+                getActivePresentation().showAttribute(currentAttribute);
+            }
         }
         getPresentationSettings().panelsVisible = show;
         if (saveSettings) {

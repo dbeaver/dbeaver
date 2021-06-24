@@ -420,6 +420,21 @@ public class CommonUtils {
         }
     }
 
+    public static boolean isNumber(@Nullable Object object) {
+        if (object == null) {
+            return false;
+        } else if (object instanceof Number) {
+            return true;
+        } else {
+            try {
+                Double.parseDouble(toString(object));
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+    }
+
     public static double toDouble(@Nullable Object object) {
         if (object == null) {
             return 0.0;

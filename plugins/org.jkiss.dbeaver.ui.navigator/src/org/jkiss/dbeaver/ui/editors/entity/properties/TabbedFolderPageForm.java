@@ -379,12 +379,14 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         // Refresh props only on force refresh (manual)
         if (force) {
             refreshProperties();
             updateEditButtonsState();
+            return RefreshResult.REFRESHED;
         }
+        return RefreshResult.IGNORED;
     }
 
     @Override

@@ -557,9 +557,10 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         getEditorInput().refreshContentParts(source);
         fireContentChanged();
+        return RefreshResult.REFRESHED;
     }
 
     public void fireContentChanged() {

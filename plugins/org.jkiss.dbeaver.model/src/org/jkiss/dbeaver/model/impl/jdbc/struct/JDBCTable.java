@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.sql.BaseInsertMethod;
+import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -56,7 +57,7 @@ import java.util.Map;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObject>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDictionary, DBSDataManipulator, DBPSaveableObject
+    implements DBSDictionary, DBSDataManipulator, DBPSaveableObject, ChangeTableDataStatement
 {
     private static final Log log = Log.getLog(JDBCTable.class);
 
@@ -434,7 +435,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 String updateSet = generateTableUpdateSet();
                 if (!CommonUtils.isEmpty(updateSet)) {
-                    query.append("\n\t").append(generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
+                    query.append("\n\t").append(updateSet); //$NON-NLS-1$ //$NON-NLS-2$
                 }
 
                 boolean hasKey = false;

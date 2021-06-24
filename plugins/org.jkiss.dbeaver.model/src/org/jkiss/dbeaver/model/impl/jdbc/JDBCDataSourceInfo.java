@@ -201,6 +201,10 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         return readOnly;
     }
 
+    protected void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     @Override
     public boolean isReadOnlyMetaData()
     {

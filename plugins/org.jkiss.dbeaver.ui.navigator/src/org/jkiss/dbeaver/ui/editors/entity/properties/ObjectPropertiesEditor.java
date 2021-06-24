@@ -500,17 +500,22 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         if (propertiesPanel != null) {
-            propertiesPanel.refreshPart(source, force);
+            if (propertiesPanel.refreshPart(source, force) == RefreshResult.CANCELED) {
+                return RefreshResult.CANCELED;
+            }
         }
         if (folderComposite != null && folderComposite.getFolders() != null) {
             for (TabbedFolderInfo folder : folderComposite.getFolders()) {
                 if (folder.getContents() instanceof IRefreshablePart) {
-                    ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
+                    if (((IRefreshablePart) folder.getContents()).refreshPart(source, force) == RefreshResult.CANCELED) {
+                        return RefreshResult.CANCELED;
+                    }
                 }
             }
         }
+        return RefreshResult.REFRESHED;
     }
 
     @Override

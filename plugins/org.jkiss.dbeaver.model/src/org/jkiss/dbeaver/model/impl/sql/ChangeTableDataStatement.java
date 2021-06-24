@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.impl.sql;
 
-package org.jkiss.dbeaver.ui;
+public interface ChangeTableDataStatement {
 
-/**
- * IRefreshablePart
- */
-public interface IRefreshablePart
-{
-    enum RefreshResult {
-        REFRESHED,
-        IGNORED,
-        CANCELED,
-    }
+    String generateTableUpdateBegin(String tableName);
 
-    RefreshResult refreshPart(Object source, boolean force);
+    String generateTableUpdateSet();
+
+    String generateTableDeleteFrom(String tableName);
 }

@@ -182,14 +182,11 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
     }
 
     @Override
-    public void refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(Object source, boolean force) {
         if (editor instanceof IRefreshablePart) {
-            ((IRefreshablePart) editor).refreshPart(source, force);
+            return ((IRefreshablePart) editor).refreshPart(source, force);
         }
-        // Reload sources
-//        if (editor instanceof IReusableEditor) {
-//            ((IReusableEditor) editor).setInput(editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
-//        }
+        return RefreshResult.IGNORED;
     }
 
     @Override

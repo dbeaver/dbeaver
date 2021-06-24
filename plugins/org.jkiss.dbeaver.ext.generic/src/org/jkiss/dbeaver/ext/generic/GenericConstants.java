@@ -29,6 +29,7 @@ public class GenericConstants {
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";
     public static final String PARAM_SUPPORTS_REFERENCES = "supports-references";
     public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
+    public static final String PARAM_SUPPORTS_CONSTRAINTS = "supports-table-constraints";
     public static final String PARAM_SUPPORTS_VIEWS = "supports-views";
     public static final String PARAM_SUPPORTS_STORED_CODE = "supports-stored-code";
     public static final String PARAM_SUPPORTS_SUBQUERIES = "supports-subqueries";
@@ -63,6 +64,7 @@ public class GenericConstants {
     public static final String PARAM_DRIVER_PROPERTIES = "driver-properties";
     public static final String PARAM_SUPPORTS_SET_ARRAY = "supports-set-array";
     public static final String PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL = "supports-ddl-transactions";
+    public static final String PARAM_READ_ONLY_DATA = "read-only-data";
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

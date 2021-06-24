@@ -472,7 +472,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
+    public RefreshResult refreshPart(Object source, boolean force)
     {
         if (force ||
             (source instanceof DBNEvent && ((DBNEvent) source).getSource() == DBNEvent.UPDATE_ON_SAVE) ||
@@ -481,7 +481,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             isLoaded = false;
             UIUtils.syncExec(() -> updateObjectPermissions(null));
             activatePart();
+            return RefreshResult.REFRESHED;
         }
+        return RefreshResult.IGNORED;
     }
 
     private static class DatabaseObjectFilter extends DatabaseNavigatorTreeFilter {
