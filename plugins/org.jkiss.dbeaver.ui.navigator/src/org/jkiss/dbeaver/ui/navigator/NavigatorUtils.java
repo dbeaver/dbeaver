@@ -608,7 +608,7 @@ public class NavigatorUtils {
         DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
         DBSObject dbsObject = databaseNode.getObject();
         if (!(dbsObject instanceof DBSStructContainer)) {
-            DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
+            dbsObject = DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
         }
         DBPDataSourceContainer ds = databaseNode.getDataSourceContainer();
         if (dsProvider.getDataSourceContainer() != ds) {
