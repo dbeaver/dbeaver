@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
 import org.jkiss.utils.ArrayUtils;
@@ -177,13 +178,13 @@ class SQLTokensParser {
         }
         else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isLetter(fChar) || isDigit(fChar) || fChar == '*' || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
+            while (isLetter(fChar) || isDigit(fChar) || (fChar == '*' && fPos > 0 && fBefore.charAt(fPos - 1) == structSeparator)
+                || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
                 s.append(fChar);
                 fPos++;
                 if (fPos >= fBefore.length()) {
                     break;
                 }
-
                 fChar = fBefore.charAt(fPos);
             }
             String word = s.toString();
