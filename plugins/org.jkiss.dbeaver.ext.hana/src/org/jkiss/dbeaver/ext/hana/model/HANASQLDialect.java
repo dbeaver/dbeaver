@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.parser.rules.SQLAtVariableRule;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
@@ -118,7 +118,7 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL) {
-            rules.add(new SQLAtVariableRule());
+            rules.add(new SQLVariableRule());
         }
     }
 }

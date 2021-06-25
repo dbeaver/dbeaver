@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 /**
  * Rule that matches {@code @variableName} supported by some dialects.
  */
-public class SQLAtVariableRule implements TPPredicateRule {
+public class SQLVariableRule implements TPPredicateRule {
 
     private final TPToken token = new SQLVariableToken();
 
