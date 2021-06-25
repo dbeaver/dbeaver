@@ -117,12 +117,13 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME,
             MySQLConstants.META_TABLE_TABLES,
             catalog,
-            objects
+            objects,
+            null
         );
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParameters(dbStat, params, catalog, true);
+            fillParameters(dbStat, params, catalog, true, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
@@ -158,12 +159,13 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME,
                 MySQLConstants.META_TABLE_ROUTINES,
                 catalog,
-                objects
+                objects,
+                MySQLConstants.COL_ROUTINE_DEFINITION
         );
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParameters(dbStat, params, catalog, true);
+            fillParameters(dbStat, params, catalog, true, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
@@ -199,12 +201,13 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE,
                 MySQLConstants.META_TABLE_TABLE_CONSTRAINTS,
                 catalog,
-                objects
+                objects,
+                null
         );
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParameters(dbStat, params, catalog, false);
+            fillParameters(dbStat, params, catalog, false, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
@@ -257,12 +260,13 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME,
                 MySQLConstants.META_TABLE_COLUMNS,
                 catalog,
-                objects
+                objects,
+                MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION
         );
 
         // Load columns
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParameters(dbStat, params, catalog, true);
+            fillParameters(dbStat, params, catalog, true, true);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
@@ -302,16 +306,28 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
+    // FIXME
+    // It's painful for me to comprehend the fact that I'm the author of this method. I beg your forgiveness.
     private static String generateQuery(@NotNull ObjectsSearchParams params, @NotNull String objectNameColumn, @Nullable String commentColumnName,
                                         @NotNull String schemaColumnName, @NotNull String select, @NotNull String from,
-                                        @Nullable MySQLCatalog catalog, @NotNull Collection<DBSObjectReference> references) {
+                                        @Nullable MySQLCatalog catalog, @NotNull Collection<DBSObjectReference> references,
+                                        @Nullable String definitionColumnName) {
         StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
-        if (params.isSearchInComments() && commentColumnName != null) {
+        boolean addSearchInCommentsClause = params.isSearchInComments() && commentColumnName != null;
+        boolean addSearchInDefinitionsClause = params.isSearchInDefinitions() && definitionColumnName != null;
+        boolean addParentheses = addSearchInCommentsClause || addSearchInDefinitionsClause;
+        if (addParentheses) {
             sql.append("(");
         }
         sql.append(objectNameColumn).append(" LIKE ? ");
-        if (params.isSearchInComments() && commentColumnName != null) {
-            sql.append("OR ").append(commentColumnName).append(" LIKE ?) ");
+        if (addSearchInCommentsClause) {
+            sql.append("OR ").append(commentColumnName).append(" LIKE ?");
+        }
+        if (addSearchInDefinitionsClause) {
+            sql.append(" OR ").append(definitionColumnName).append(" LIKE ?");
+        }
+        if (addParentheses) {
+            sql.append(") ");
         }
         if (catalog != null) {
             sql.append("AND ").append(schemaColumnName).append(" = ? ");
@@ -321,16 +337,20 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
     }
 
     private static void fillParameters(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
-                                       @Nullable MySQLCatalog catalog, boolean hasCommentColumn) throws SQLException {
+                                       @Nullable MySQLCatalog catalog, boolean hasCommentColumn, boolean hasDefinitionColumn) throws SQLException {
         String mask = params.getMask().toLowerCase(Locale.ENGLISH);
         statement.setString(1, mask);
-        int catalogNameIdx = 2;
+        int idx = 2;
         if (params.isSearchInComments() && hasCommentColumn) {
-            statement.setString(2, mask);
-            catalogNameIdx++;
+            statement.setString(idx, mask);
+            idx++;
+        }
+        if (params.isSearchInDefinitions() && hasDefinitionColumn) {
+            statement.setString(idx, mask);
+            idx++;
         }
         if (catalog != null) {
-            statement.setString(catalogNameIdx, catalog.getName());
+            statement.setString(idx, catalog.getName());
         }
     }
 }
