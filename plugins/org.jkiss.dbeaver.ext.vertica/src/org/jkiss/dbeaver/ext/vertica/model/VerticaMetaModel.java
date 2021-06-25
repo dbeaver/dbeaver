@@ -70,7 +70,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, GenericTableBase table, String objectName) throws SQLException {
         JDBCPreparedStatement dbStat;
         if (owner instanceof VerticaSchema && ((VerticaSchema) owner).isSystem()) {
-            String sql = "SELECT st.table_schema as table_schem, st.table_description as remarks, 'SYSTEM TABLE' as table_type, st.* from v_catalog.system_tables st where st.table_schema =?" + (table != null ? " st.table_name=?" : "");
+            String sql = "SELECT st.table_schema as table_schem, st.table_description as remarks, 'SYSTEM TABLE' as table_type, st.* from v_catalog.system_tables st where st.table_schema =?" + (table != null ? " and st.table_name=?" : "");
             dbStat = session.prepareStatement(sql);
             dbStat.setString(1, owner.getName());
             if (table != null) {
