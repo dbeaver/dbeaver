@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
 import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -110,9 +111,9 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         if (CommonUtils.isNotEmpty(tableType)) {
             if (isView(tableType)) {
                 return new VerticaView(schema, tableName, tableType, dbResult);
-            } else if (tableType.equals("FLEX TABLE")) {
+            } else if (tableType.equals(VerticaConstants.TYPE_FLEX_TABLE)) {
                 return new VerticaFlexTable(schema, tableName, tableType, dbResult);
-            } else if (tableType.equals("SYSTEM TABLE")) {
+            } else if (tableType.equals(VerticaConstants.TYPE_SYSTEM_TABLE)) {
                 return new VerticaSystemTable(schema, tableName, tableType, dbResult);
             } else {
                 return new VerticaTable(schema, tableName, tableType, dbResult);
