@@ -19,30 +19,66 @@ package org.jkiss.dbeaver.ext.vertica.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 import java.sql.SQLException;
+import java.util.Date;
 
 /**
  * VerticaTable
  */
-public class VerticaTable extends GenericTable implements DBPObjectStatistics
+public class VerticaTable extends GenericTable implements DBPObjectStatistics, DBPSystemObject
 {
-    public static final String TABLE_TYPE_FLEX = "FLEXTABLE";
     private long tableSize = -1;
+
+    private String partitionExpression;
+    private Date createTime;
+    private boolean isTempTable;
+    private boolean isSystemTable;
+    private boolean hasAggregateProjection;
 
     public VerticaTable(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+        if (dbResult != null) {
+            this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expression");
+            this.createTime = JDBCUtils.safeGetDate(dbResult, "create_time");
+            this.isTempTable = JDBCUtils.safeGetBoolean(dbResult, "is_temp_table");
+            this.isSystemTable = JDBCUtils.safeGetBoolean(dbResult, "is_system_table");
+            this.hasAggregateProjection = JDBCUtils.safeGetBoolean(dbResult, "has_aggregate_projection");
+        }
+    }
+
+    @Property(viewable = true, order = 5)
+    public String getPartitionExpression() {
+        return partitionExpression;
+    }
+
+    @Property(viewable = true, order = 6)
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    @Property(viewable = true, order = 7)
+    public boolean isTempTable() {
+        return isTempTable;
+    }
+
+    public boolean isSystem() {
+        return isSystemTable;
+    }
+
+    @Property(viewable = true, order = 8)
+    public boolean isHasAggregateProjection() {
+        return hasAggregateProjection;
     }
 
     @Override
     public boolean isPhysicalTable() {
-        return !isView() && !isFlexTable();
-    }
-
-    public boolean isFlexTable() {
-        return ((VerticaSchema)getContainer()).isFlexTableName(getName());
+        return !isView();
     }
 
     @Override

@@ -151,7 +151,7 @@ public class ResultSetViewer extends Viewer
     private final ResultSetLabelProviderDefault labelProviderDefault;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
-    private SashForm viewerSash;
+    private final SashForm viewerSash;
 
     private final VerticalFolder panelSwitchFolder;
     private CTabFolder panelFolder;
@@ -194,6 +194,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetRow curRow;
     // Mode
     private boolean recordMode;
+    private int[] selectedRecords = new int[0];
 
     private Integer segmentFetchSize;
 
@@ -207,12 +208,13 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
-    private AutoRefreshControl autoRefreshControl;
+    private final AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
     private volatile boolean isUIUpdateRunning;
 
-    private Color defaultBackground, defaultForeground;
-    private GC sizingGC;
+    private final Color defaultBackground;
+    private final Color defaultForeground;
+    private final GC sizingGC;
     private VerticalButton recordModeButton;
 
     // Theme listener
@@ -1558,6 +1560,7 @@ public class ResultSetViewer extends Viewer
             int rowCount = model.getRowCount();
             if (curRow == null || curRow.getVisualNumber() >= rowCount) {
                 curRow = rowCount == 0 ? null : model.getRow(rowCount - 1);
+                selectedRecords = curRow == null ? new int[0] : new int[] { curRow.getVisualNumber() };
             }
 
             // Set cursor on new row
@@ -1782,6 +1785,16 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public int[] getSelectedRecords() {
+        return selectedRecords;
+    }
+
+    @Override
+    public void setSelectedRecords(int[] indexes) {
+        selectedRecords = indexes;
+    }
+
+    @Override
     public boolean isAllAttributesReadOnly() {
         if (model.getAttributes().length == 0) {
             return false;
@@ -1807,11 +1820,23 @@ public class ResultSetViewer extends Viewer
     private void changeMode(boolean recordMode)
     {
         //Object state = savePresentationState();
+        List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        this.selectedRecords = new int[selectedRows.size()];
+        for (int i = 0; i < selectedRows.size(); i++) {
+            this.selectedRecords[i] = selectedRows.get(i).getVisualNumber();
+        }
+        if (selectedRecords.length > 0) {
+            curRow = model.getRow(selectedRecords[0]);
+        } else {
+            curRow = null;
+        }
+
         this.recordMode = recordMode;
         //redrawData(false);
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
         updateStatusMessage();
+
         //restorePresentationState(state);
     }
 
@@ -1931,14 +1956,31 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void setCurrentRow(@Nullable ResultSetRow curRow) {
-        this.curRow = curRow;
-        if (curState != null && curRow != null) {
-            curState.rowNumber = curRow.getVisualNumber();
+    public void setCurrentRow(@Nullable ResultSetRow newRow) {
+        int rowShift = 0;
+        if (this.curRow != null && newRow != null) {
+            rowShift = newRow.getVisualNumber() - curRow.getVisualNumber();
         }
-//        if (recordMode) {
-//            updateRecordMode();
-//        }
+        this.curRow = newRow;
+        if (curState != null && newRow != null) {
+            curState.rowNumber = newRow.getVisualNumber();
+        }
+        if (this.recordMode && rowShift != 0 && selectedRecords.length > 0) {
+            if (!ArrayUtils.contains(selectedRecords, curRow.getVisualNumber())) {
+                // Shift selected records
+                int firstSelRecord = selectedRecords[0];
+                firstSelRecord += rowShift;
+                if (firstSelRecord < 0) firstSelRecord = 0;
+                if (firstSelRecord >= model.getRowCount() - selectedRecords.length) {
+                    firstSelRecord = model.getRowCount() - selectedRecords.length - 1;
+                }
+                for (int i = 0; i < selectedRecords.length; i++) {
+                    selectedRecords[i] = firstSelRecord + i;
+                }
+            }
+        } else {
+            selectedRecords = new int[0];
+        }
     }
 
     ///////////////////////////////////////
@@ -2151,6 +2193,7 @@ public class ResultSetViewer extends Viewer
         if (focusRow > 0 && focusRow < model.getRowCount()) {
             this.curRow = model.getRow(focusRow);
         }
+        this.selectedRecords = this.curRow == null ? new int[0] : new int[] { curRow.getVisualNumber() };
 
         {
 
@@ -3859,6 +3902,7 @@ public class ResultSetViewer extends Viewer
         this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
+        this.selectedRecords = new int[0];
         this.activePresentation.clearMetaData();
     }
 
@@ -3934,6 +3978,7 @@ public class ResultSetViewer extends Viewer
             createDataPersister(true).rejectChanges();
             if (model.getAllRows().isEmpty()) {
                 curRow = null;
+                selectedRecords = new int[0];
             }
         } catch (DBException e) {
             log.debug(e);
@@ -4095,7 +4140,8 @@ public class ResultSetViewer extends Viewer
                         }
                     }
 
-                    curRow = model.addNewRow(newRowIndex, cells);
+                    this.curRow = model.addNewRow(newRowIndex, cells);
+                    this.selectedRecords = new int[] { curRow.getVisualNumber() };
 
                     newRowIndex++;
                     srcRowIndex++;

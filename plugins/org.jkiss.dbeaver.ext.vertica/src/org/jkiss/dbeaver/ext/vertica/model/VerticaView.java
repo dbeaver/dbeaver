@@ -17,15 +17,42 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+
+import java.util.Date;
 
 /**
  * VerticaView
  */
-public class VerticaView extends GenericView
-{
+public class VerticaView extends GenericView implements DBPSystemObject {
+
+    private Date createTime;
+    private boolean isTempTable;
+    private boolean isSystemTable;
+
     public VerticaView(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+        if (dbResult != null) {
+            this.createTime = JDBCUtils.safeGetDate(dbResult, "create_time");
+            this.isTempTable = JDBCUtils.safeGetBoolean(dbResult, "is_temp_table");
+            this.isSystemTable = JDBCUtils.safeGetBoolean(dbResult, "is_system_table");
+        }
     }
 
+    @Property(viewable = true, order = 3)
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    @Property(viewable = true, order = 4)
+    public boolean isTempTable() {
+        return isTempTable;
+    }
+
+    public boolean isSystem() {
+        return isSystemTable;
+    }
 }
