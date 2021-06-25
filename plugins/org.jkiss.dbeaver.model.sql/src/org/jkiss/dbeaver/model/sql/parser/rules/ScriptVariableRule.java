@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 * SQL variable rule.
 * ${varName}
 */
-public class SQLVariableRule implements TPRule {
+public class ScriptVariableRule implements TPRule {
 
     private final TPToken parameterToken;
 
-    public SQLVariableRule(TPToken parameterToken) {
+    public ScriptVariableRule(TPToken parameterToken) {
         this.parameterToken = parameterToken;
     }
 

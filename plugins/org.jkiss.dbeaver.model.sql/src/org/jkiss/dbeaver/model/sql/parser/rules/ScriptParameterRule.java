@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 /**
 * SQL parameter rule
 */
-public class SQLParameterRule implements TPRule {
+public class ScriptParameterRule implements TPRule {
     private final SQLSyntaxManager syntaxManager;
     private final SQLParameterToken parameterToken;
     private final StringBuilder buffer;
     private final char anonymousParameterMark;
     private final String namedParameterPrefix;
 
-    public SQLParameterRule(SQLSyntaxManager syntaxManager, SQLParameterToken parameterToken, String prefix) {
+    public ScriptParameterRule(SQLSyntaxManager syntaxManager, SQLParameterToken parameterToken, String prefix) {
         this.syntaxManager = syntaxManager;
         this.parameterToken = parameterToken;
         this.buffer = new StringBuilder();
