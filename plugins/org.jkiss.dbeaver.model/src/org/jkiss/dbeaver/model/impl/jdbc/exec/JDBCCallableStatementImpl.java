@@ -45,9 +45,8 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,16 +105,21 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
 
         if (procedure != null) {
+            ParameterMetaData paramsMeta = null;
             try {
-                Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
-                if (!CommonUtils.isEmpty(params)) {
-                    for (DBSProcedureParameter param : params) {
-                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT ||
-                            param.getParameterKind() == DBSProcedureParameterKind.INOUT ||
-                            param.getParameterKind() == DBSProcedureParameterKind.RETURN)
-                        {
-                            procResults.addColumn(param.getName(), param.getParameterType());
-                        }
+                paramsMeta = original.getParameterMetaData();
+            } catch (Throwable e) {
+                log.debug("Can't obtain parameters meta data", e);
+            }
+            try {
+                final List<DBSProcedureParameter> params = new ArrayList<>(procedure.getParameters(getConnection().getProgressMonitor()));
+                for (int localIndex = 0, originalIndex = 0; localIndex < params.size(); localIndex++, originalIndex++) {
+                    final DBSProcedureParameter param = params.get(localIndex);
+                    if (param.getParameterKind().isOutput() && !isParameterCursor(connection.getDataSource(), paramsMeta, originalIndex + 1)) {
+                        procResults.addColumn(param.getName(), param.getParameterType(), procResults.getColumnCount(), originalIndex + 1);
+                    }
+                    if (param.getParameterKind().isInput()) {
+                        originalIndex--;
                     }
                 }
             } catch (DBException e) {
@@ -128,24 +132,36 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 ParameterMetaData paramsMeta = original.getParameterMetaData();
                 int parameterCount = paramsMeta.getParameterCount();
                 if (parameterCount > 0) {
-                    for (int index = 0; index < parameterCount; index++) {
-                        int parameterMode = paramsMeta.getParameterMode(index + 1);
-                        if (parameterMode == ParameterMetaData.parameterModeOut || parameterMode == ParameterMetaData.parameterModeInOut) {
-                            DBSDataType dataType = dataSource.getLocalDataType(paramsMeta.getParameterTypeName(index + 1));
+                    for (int localIndex = 0, originalIndex = 0; localIndex < parameterCount; localIndex++, originalIndex++) {
+                        int parameterMode = paramsMeta.getParameterMode(localIndex + 1);
+                        if ((parameterMode == ParameterMetaData.parameterModeOut || parameterMode == ParameterMetaData.parameterModeInOut) && !isParameterCursor(dataSource, paramsMeta, localIndex + 1)) {
+                            DBSDataType dataType = dataSource.getLocalDataType(paramsMeta.getParameterTypeName(localIndex + 1));
                             if (dataType == null) {
-                                DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, paramsMeta.getParameterTypeName(index + 1), paramsMeta.getParameterType(index + 1));
-                                procResults.addColumn(String.valueOf(index + 1), dataKind);
+                                DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, paramsMeta.getParameterTypeName(localIndex + 1), paramsMeta.getParameterType(localIndex + 1));
+                                procResults.addColumn(String.valueOf(localIndex + 1), dataKind, procResults.getColumnCount(), originalIndex + 1);
                             } else {
-                                procResults.addColumn(String.valueOf(index + 1), dataType);
+                                procResults.addColumn(String.valueOf(localIndex + 1), dataType, procResults.getColumnCount(), originalIndex + 1);
                             }
+                        }
+                        if (parameterMode == ParameterMetaData.parameterModeIn || parameterMode == ParameterMetaData.parameterModeInOut) {
+                            originalIndex--;
                         }
                     }
                 }
             } catch (Throwable e) {
-                log.debug("Error extracting parameters meta data: " + e.getMessage());
+                log.debug("Error extracting parameters meta data", e);
             }
         }
         procResults.addRow();
+    }
+
+    private static boolean isParameterCursor(@NotNull DBPDataSource dataSource, @Nullable ParameterMetaData parameterMetaData, int parameterIndex) {
+        try {
+            // If database supports multiple results and parameter is cursor, then it will be in a separate result set
+            return dataSource.getInfo().supportsMultipleResults() && parameterMetaData != null && parameterMetaData.getParameterType(parameterIndex) == Types.REF_CURSOR;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     private static DBSProcedure findProcedure(DBCSession session, String queryString) throws DBException {
@@ -271,11 +287,12 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
 
     @Override
     public boolean executeStatement() throws DBCException {
-        boolean hasResults = super.executeStatement();
-        if (!hasResults && procResults.getColumnCount() > 0) {
-            return true;
-        }
-        return hasResults;
+        return super.executeStatement() || procResults.getColumnCount() > 0;
+    }
+
+    @Override
+    public boolean nextResults() throws DBCException {
+        return super.nextResults() || procResults.getColumnCount() > 0;
     }
 
     @Nullable
@@ -284,10 +301,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         JDBCResultSet resultSet = makeResultSet(getOriginal().getResultSet());
-        if (resultSet == null && procResults != null) {
-            return procResults;
-        }
-        return resultSet;
+        return resultSet != null ? resultSet : procResults;
     }
 
 
