@@ -31,7 +31,7 @@ import java.util.Arrays;
 
 public class VerticaSQLDialect extends GenericSQLDialect {
 
-    public static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
+    private static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
             {"CASE", SQLConstants.BLOCK_END},
     };
@@ -43,6 +43,7 @@ public class VerticaSQLDialect extends GenericSQLDialect {
             "COMMENT",
             "CORRELATION",
             "ENCODED",
+            "FLEX",
             "ILIKE",
             "ILIKEB",
             "INTERVALYM",
