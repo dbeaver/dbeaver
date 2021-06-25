@@ -169,12 +169,22 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             sql.append("LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
         sql.append("WHERE o.type IN (").append(objectTypeClause.toString()).append(") AND ");
-        if (params.isSearchInComments()) {
+        boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
+        if (addParentheses) {
             sql.append("(");
         }
         sql.append("o.name LIKE ? ");
         if (params.isSearchInComments()) {
-            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)) ");
+            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
+        }
+        if (params.isSearchInDefinitions()) {
+            if (params.isSearchInComments()) {
+                sql.append(" ");
+            }
+            sql.append("OR (OBJECT_DEFINITION(o.object_id) <> '[NULL]' AND OBJECT_DEFINITION(o.object_id) LIKE ?)");
+        }
+        if (addParentheses) {
+            sql.append(") ");
         }
         if (schema != null) {
             sql.append("AND o.schema_id = ? ");
@@ -184,13 +194,17 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         // Seek for objects (join with public synonyms)
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
             dbStat.setString(1, params.getMask());
-            int schemaIdIdx = 2;
+            int idx = 2;
             if (params.isSearchInComments()) {
-                dbStat.setString(2, params.getMask());
-                schemaIdIdx++;
+                dbStat.setString(idx, params.getMask());
+                idx++;
+            }
+            if (params.isSearchInDefinitions()) {
+                dbStat.setString(idx, params.getMask());
+                idx++;
             }
             if (schema != null) {
-                dbStat.setLong(schemaIdIdx, schema.getObjectId());
+                dbStat.setLong(idx, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
