@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,14 +42,15 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
+import org.jkiss.dbeaver.erd.ui.action.DiagramExportAction;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
-
 import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,6 +64,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
     private static final String PROP_DIAGRAM_STATE = "erd.diagram.state";
     private static final String PROPS_DIAGRAM_SERIALIZED = "serialized";
+    private static final String GROUP_SAVE = "save";
 
     private Composite parent;
 
@@ -93,7 +96,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
         super.fillDefaultEditorContributions(toolBarManager);
 
+        DiagramExportAction saveDiagram = new DiagramExportAction(this, parent.getShell());
+        toolBarManager.add(saveDiagram);
         toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
+        toolBarManager.add(new Separator(GROUP_SAVE));
+
+        DatabaseEditorUtils.contributeStandardEditorActions(getSite(), toolBarManager);
     }
 
     @Override
