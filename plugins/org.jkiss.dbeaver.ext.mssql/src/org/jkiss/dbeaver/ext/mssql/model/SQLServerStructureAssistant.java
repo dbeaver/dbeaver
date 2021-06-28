@@ -181,7 +181,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             if (params.isSearchInComments()) {
                 sql.append(" ");
             }
-            sql.append("OR (OBJECT_DEFINITION(o.object_id) <> '[NULL]' AND OBJECT_DEFINITION(o.object_id) LIKE ?)");
+            sql.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?)");
         }
         if (addParentheses) {
             sql.append(") ");
