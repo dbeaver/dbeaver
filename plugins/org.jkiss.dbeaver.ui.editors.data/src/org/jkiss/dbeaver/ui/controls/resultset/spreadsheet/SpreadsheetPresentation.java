@@ -1638,16 +1638,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public List<ResultSetRow> getSelectedRows()
         {
-            if (controller.isRecordMode()) {
-                ResultSetRow currentRow = controller.getCurrentRow();
-                if (currentRow == null) {
-                    return Collections.emptyList();
-                }
-                return Collections.singletonList(currentRow);
-            } else {
-                List<ResultSetRow> rows = new ArrayList<>();
-                for (Integer row : spreadsheet.getRowSelection()) {
-                    rows.add(controller.getModel().getRow(row));
+            {
+                    List<ResultSetRow> rows = new ArrayList<>();
+                if (controller.isRecordMode()) {
+                    for (Object col : spreadsheet.getColumnSelection()) {
+                        if (col instanceof ResultSetRow) {
+                            rows.add((ResultSetRow) col);
+                        }
+                    }
+                } else {
+                    for (Integer row : spreadsheet.getRowSelection()) {
+                        rows.add(controller.getModel().getRow(row));
+                    }
                 }
                 rows.sort(Comparator.comparingInt(ResultSetRow::getVisualNumber));
                 return rows;
