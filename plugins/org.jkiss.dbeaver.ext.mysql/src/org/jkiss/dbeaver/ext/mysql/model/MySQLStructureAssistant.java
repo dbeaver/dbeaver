@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -109,17 +108,19 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                   List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = generateQuery(
-            params,
+        QueryParams queryParams = new QueryParams(
             MySQLConstants.COL_TABLE_NAME,
-            "TABLE_COMMENT",
-            MySQLConstants.COL_TABLE_SCHEMA,
             MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME,
-            MySQLConstants.META_TABLE_TABLES,
-            catalog,
-            objects,
-            null
+            MySQLConstants.META_TABLE_TABLES
         );
+        if (params.isSearchInComments()) {
+            queryParams.setCommentColumnName("TABLE_COMMENT");
+        }
+        if (catalog != null) {
+            queryParams.setSchemaColumnName(MySQLConstants.COL_TABLE_SCHEMA);
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = generateQuery(queryParams);
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -151,17 +152,22 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                       List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = generateQuery(
-                params,
-                MySQLConstants.COL_ROUTINE_NAME,
-                "ROUTINE_COMMENT",
-                MySQLConstants.COL_ROUTINE_SCHEMA,
-                MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME,
-                MySQLConstants.META_TABLE_ROUTINES,
-                catalog,
-                objects,
-                MySQLConstants.COL_ROUTINE_DEFINITION
+        QueryParams queryParams = new QueryParams(
+            MySQLConstants.COL_ROUTINE_NAME,
+            MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME,
+            MySQLConstants.META_TABLE_ROUTINES
         );
+        if (params.isSearchInComments()) {
+            queryParams.setCommentColumnName("ROUTINE_COMMENT");
+        }
+        if (catalog != null) {
+            queryParams.setSchemaColumnName(MySQLConstants.COL_ROUTINE_SCHEMA);
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        if (params.isSearchInDefinitions()) {
+            queryParams.setDefinitionColumnName(MySQLConstants.COL_ROUTINE_DEFINITION);
+        }
+        String sql = generateQuery(queryParams);
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -193,17 +199,16 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                        List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = generateQuery(
-                params,
-                MySQLConstants.COL_CONSTRAINT_NAME,
-                null,
-                MySQLConstants.COL_TABLE_SCHEMA,
-                MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE,
-                MySQLConstants.META_TABLE_TABLE_CONSTRAINTS,
-                catalog,
-                objects,
-                null
+        QueryParams queryParams = new QueryParams(
+            MySQLConstants.COL_CONSTRAINT_NAME,
+            MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE,
+            MySQLConstants.META_TABLE_TABLE_CONSTRAINTS
         );
+        if (catalog != null) {
+            queryParams.setSchemaColumnName(MySQLConstants.COL_TABLE_SCHEMA);
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = generateQuery(queryParams);
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -252,17 +257,22 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                         List<DBSObjectReference> objects) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = generateQuery(
-                params,
-                MySQLConstants.COL_COLUMN_NAME,
-                "COLUMN_COMMENT",
-                MySQLConstants.COL_TABLE_SCHEMA,
-                MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME,
-                MySQLConstants.META_TABLE_COLUMNS,
-                catalog,
-                objects,
-                MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION
+        QueryParams queryParams = new QueryParams(
+            MySQLConstants.COL_COLUMN_NAME,
+            MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME,
+            MySQLConstants.META_TABLE_COLUMNS
         );
+        if (params.isSearchInComments()) {
+            queryParams.setCommentColumnName("COLUMN_COMMENT");
+        }
+        if (catalog != null) {
+            queryParams.setSchemaColumnName(MySQLConstants.COL_TABLE_SCHEMA);
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        if (params.isSearchInDefinitions()) {
+            queryParams.setDefinitionColumnName(MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION);
+        }
+        String sql = generateQuery(queryParams);
 
         // Load columns
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -306,33 +316,26 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
-    // FIXME
-    // It's painful for me to comprehend the fact that I'm the author of this method. I beg your forgiveness.
-    private static String generateQuery(@NotNull ObjectsSearchParams params, @NotNull String objectNameColumn, @Nullable String commentColumnName,
-                                        @NotNull String schemaColumnName, @NotNull String select, @NotNull String from,
-                                        @Nullable MySQLCatalog catalog, @NotNull Collection<DBSObjectReference> references,
-                                        @Nullable String definitionColumnName) {
-        StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
-        boolean addSearchInCommentsClause = params.isSearchInComments() && commentColumnName != null;
-        boolean addSearchInDefinitionsClause = params.isSearchInDefinitions() && definitionColumnName != null;
-        boolean addParentheses = addSearchInCommentsClause || addSearchInDefinitionsClause;
+    private static String generateQuery(@NotNull QueryParams params) {
+        StringBuilder sql = new StringBuilder("SELECT ").append(params.getSelect()).append(" FROM ").append(params.getFrom()).append(" WHERE ");
+        boolean addParentheses = params.getCommentColumnName() != null || params.getDefinitionColumnName() != null;
         if (addParentheses) {
             sql.append("(");
         }
-        sql.append(objectNameColumn).append(" LIKE ? ");
-        if (addSearchInCommentsClause) {
-            sql.append("OR ").append(commentColumnName).append(" LIKE ?");
+        sql.append(params.getObjectNameColumn()).append(" LIKE ? ");
+        if (params.getCommentColumnName() != null) {
+            sql.append("OR ").append(params.getCommentColumnName()).append(" LIKE ?");
         }
-        if (addSearchInDefinitionsClause) {
-            sql.append(" OR ").append(definitionColumnName).append(" LIKE ?");
+        if (params.getDefinitionColumnName() != null) {
+            sql.append(" OR ").append(params.getDefinitionColumnName()).append(" LIKE ?");
         }
         if (addParentheses) {
             sql.append(") ");
         }
-        if (catalog != null) {
-            sql.append("AND ").append(schemaColumnName).append(" = ? ");
+        if (params.getSchemaColumnName() != null) {
+            sql.append("AND ").append(params.getSchemaColumnName()).append(" = ? ");
         }
-        sql.append("ORDER BY ").append(objectNameColumn).append(" LIMIT ").append(params.getMaxResults() - references.size());
+        sql.append("ORDER BY ").append(params.getObjectNameColumn()).append(" LIMIT ").append(params.getMaxResults());
         return sql.toString();
     }
 
@@ -351,6 +354,84 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
         if (catalog != null) {
             statement.setString(idx, catalog.getName());
+        }
+    }
+
+    private static final class QueryParams {
+        @NotNull
+        private final String objectNameColumn;
+
+        @Nullable
+        private String commentColumnName;
+
+        @Nullable
+        private String schemaColumnName;
+
+        @NotNull
+        private final String select;
+
+        @NotNull
+        private final String from;
+
+        private int maxResults;
+
+        @Nullable
+        private String definitionColumnName;
+
+        private QueryParams(@NotNull String objectNameColumn, @NotNull String select, @NotNull String from) {
+            this.objectNameColumn = objectNameColumn;
+            this.select = select;
+            this.from = from;
+        }
+
+        @NotNull
+        private String getObjectNameColumn() {
+            return objectNameColumn;
+        }
+
+        @Nullable
+        private String getCommentColumnName() {
+            return commentColumnName;
+        }
+
+        private void setCommentColumnName(@Nullable String commentColumnName) {
+            this.commentColumnName = commentColumnName;
+        }
+
+        @Nullable
+        private String getSchemaColumnName() {
+            return schemaColumnName;
+        }
+
+        private void setSchemaColumnName(@Nullable String schemaColumnName) {
+            this.schemaColumnName = schemaColumnName;
+        }
+
+        @NotNull
+        public String getSelect() {
+            return select;
+        }
+
+        @NotNull
+        public String getFrom() {
+            return from;
+        }
+
+        @Nullable
+        private String getDefinitionColumnName() {
+            return definitionColumnName;
+        }
+
+        private void setDefinitionColumnName(@Nullable String definitionColumnName) {
+            this.definitionColumnName = definitionColumnName;
+        }
+
+        private int getMaxResults() {
+            return maxResults;
+        }
+
+        private void setMaxResults(int maxResults) {
+            this.maxResults = maxResults;
         }
     }
 }
