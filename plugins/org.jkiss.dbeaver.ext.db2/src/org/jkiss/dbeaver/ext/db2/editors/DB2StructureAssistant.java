@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -51,6 +50,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     private static final Log LOG = Log.getLog(DB2StructureAssistant.class);
 
     private static final String WITH_UR = "WITH UR";
+    private static final String LF = "\n";
 
     // TODO DF: Work in progess
 
@@ -192,7 +192,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             sql += buildTableSQL(query.toString(), db2ObjectTypes);
         }
 
-        sql += SWT.LF + WITH_UR;
+        sql += LF + WITH_UR;
 
         int n = 1;
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -248,8 +248,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                                 @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, Collection<? super DBSObjectReference> objects,
                                 int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
 
-        StringBuilder baseSQL = new StringBuilder("SELECT ROUTINESCHEMA, ROUTINENAME" + SWT.LF + "FROM SYSCAT.ROUTINES" + SWT.LF +
-            SQLConstants.KEYWORD_WHERE + SWT.LF);
+        StringBuilder baseSQL = new StringBuilder("SELECT ROUTINESCHEMA, ROUTINENAME" + LF + "FROM SYSCAT.ROUTINES" + LF +
+            SQLConstants.KEYWORD_WHERE + LF);
         if (schema != null) {
             baseSQL.append("ROUTINESCHEMA = ? AND ");
         }
@@ -260,7 +260,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         if (searchInDefinitions) {
             baseSQL.append(")");
         }
-        baseSQL.append(SWT.LF + WITH_UR);
+        baseSQL.append(LF + WITH_UR);
 
         String sql = buildTableSQL(baseSQL.toString(), db2ObjectTypes);
 
