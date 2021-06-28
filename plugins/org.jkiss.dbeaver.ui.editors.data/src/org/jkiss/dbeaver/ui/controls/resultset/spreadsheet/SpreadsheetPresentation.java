@@ -1639,7 +1639,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public List<ResultSetRow> getSelectedRows()
         {
             {
-                    List<ResultSetRow> rows = new ArrayList<>();
+                List<ResultSetRow> rows = new ArrayList<>();
                 if (controller.isRecordMode()) {
                     for (Object col : spreadsheet.getColumnSelection()) {
                         if (col instanceof ResultSetRow) {

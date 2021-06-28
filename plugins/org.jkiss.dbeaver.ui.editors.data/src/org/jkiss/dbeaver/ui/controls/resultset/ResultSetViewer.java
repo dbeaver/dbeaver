@@ -1028,6 +1028,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
+        if (selectedPresentation == activePresentationDescriptor) {
+            return;
+        }
         try {
             IResultSetPresentation instance = selectedPresentation.createInstance();
             activePresentationDescriptor = selectedPresentation;
