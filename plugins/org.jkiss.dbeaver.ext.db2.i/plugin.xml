@@ -41,7 +41,8 @@
 
                     <!-- Enable table/column descriptions -->
                     <property name="translate binary" value="true"/>
-                    <property name="metadata source" value="0"/>
+                    <!-- Metasource=0 enables metadata comments read but may break long catalog/schema names (#10302) -->
+<!--                    <property name="metadata source" value="0"/>-->
                 </driver>
 
             </drivers>
