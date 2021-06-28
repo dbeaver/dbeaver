@@ -1971,13 +1971,14 @@ public class ResultSetViewer extends Viewer
             curState.rowNumber = newRow.getVisualNumber();
         }
         if (this.recordMode && rowShift != 0 && selectedRecords.length > 0) {
-            if (!ArrayUtils.contains(selectedRecords, curRow.getVisualNumber())) {
+            int newRowNumber = curRow.getVisualNumber();
+            if (rowShift > 0 ? selectedRecords[0] != newRowNumber : selectedRecords[selectedRecords.length - 1] != newRowNumber) {
                 // Shift selected records
                 int firstSelRecord = selectedRecords[0];
                 firstSelRecord += rowShift;
                 if (firstSelRecord < 0) firstSelRecord = 0;
-                if (firstSelRecord >= model.getRowCount() - selectedRecords.length) {
-                    firstSelRecord = model.getRowCount() - selectedRecords.length - 1;
+                if (firstSelRecord > model.getRowCount() - selectedRecords.length) {
+                    firstSelRecord = model.getRowCount() - selectedRecords.length;
                 }
                 for (int i = 0; i < selectedRecords.length; i++) {
                     selectedRecords[i] = firstSelRecord + i;
