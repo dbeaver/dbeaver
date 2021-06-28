@@ -57,6 +57,11 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     }
 
     @Override
+    public boolean isDisableSessionLogging() {
+        return false;
+    }
+
+    @Override
     public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         // do nothing by default

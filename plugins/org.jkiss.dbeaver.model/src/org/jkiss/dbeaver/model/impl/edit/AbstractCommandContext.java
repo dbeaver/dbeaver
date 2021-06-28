@@ -198,7 +198,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                     }
                                     try {
                                         if (error == null || actionType == DBEPersistAction.ActionType.FINALIZER) {
+                                            boolean disableSessionLogging = session.isLoggingEnabled() && cmd.command.isDisableSessionLogging();
+                                            if (disableSessionLogging) {
+                                                session.enableLogging(false);
+                                            }
                                             queue.objectManager.executePersistAction(session, cmd.command, persistInfo.action);
+                                            if (disableSessionLogging) {
+                                                session.enableLogging(true);
+                                            }
                                         }
                                         persistInfo.executed = true;
                                     } catch (DBException e) {
