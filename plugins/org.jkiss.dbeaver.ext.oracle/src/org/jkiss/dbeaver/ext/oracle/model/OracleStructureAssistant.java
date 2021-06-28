@@ -207,6 +207,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
     private void searchAllObjects(final JDBCSession session, final OracleSchema schema, @NotNull ObjectsSearchParams params,
                                   List<DBSObjectReference> objects) throws SQLException, DBException {
         final List<OracleObjectType> oracleObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
+        boolean searchViewsByDefinition = false;
         for (DBSObjectType objectType : params.getObjectTypes()) {
             if (objectType instanceof OracleObjectType) {
                 oracleObjectTypes.add((OracleObjectType) objectType);
@@ -214,6 +215,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                     oracleObjectTypes.add(OracleObjectType.FUNCTION);
                 } else if (objectType == OracleObjectType.TABLE) {
                     oracleObjectTypes.add(OracleObjectType.VIEW);
+                    searchViewsByDefinition = params.isSearchInDefinitions();
                 }
             } else if (DBSProcedure.class.isAssignableFrom(objectType.getTypeClass())) {
                 oracleObjectTypes.add(OracleObjectType.FUNCTION);
@@ -230,32 +232,60 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
 
         // Seek for objects (join with public synonyms)
         OracleDataSource dataSource = (OracleDataSource) session.getDataSource();
-        String objectNameMask = params.getMask();
+        String mask = params.getMask();
         StringBuilder query = new StringBuilder();
+        String ownerClause = schema != null ? " AND OWNER = ?" : "";
         query.append("SELECT ")
             .append(OracleUtils.getSysCatalogHint(dataSource)).append(" DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (")
             .append("\nSELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ")
             .append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS"))
             .append(" WHERE ").append("OBJECT_TYPE IN (").append(objectTypeClause).append(") AND ")
             .append(!params.isCaseSensitive() ? "UPPER(OBJECT_NAME)" : "OBJECT_NAME").append(" LIKE ? ")
-            .append(schema == null ? "" : " AND OWNER=?");
+            .append(ownerClause);
         if (searchInSynonyms()) {
             query.append("UNION ALL\nSELECT ").append(OracleUtils.getSysCatalogHint(dataSource)).append(" O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n")
                 .append("FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS")).append(" S,").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS")).append(" O\n")
                 .append("WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.OBJECT_TYPE<>'JAVA CLASS' AND ").append(!params.isCaseSensitive() ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME").append("  LIKE ?");
         }
+        if (searchViewsByDefinition) {
+            query.append(" UNION ALL SELECT OWNER, VIEW_NAME, 'VIEW' AS OBJECT_TYPE FROM ");
+            query.append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "VIEWS"));
+            query.append(" v WHERE v.\"TEXT_VC\" LIKE ?");
+            query.append(ownerClause);
+        }
+        if (params.isSearchInDefinitions()) {
+            query.append(" UNION ALL SELECT DISTINCT owner, name, type FROM ");
+            query.append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SOURCE"));
+            query.append(" WHERE text LIKE ?");
+            query.append(ownerClause);
+        }
         query.append(")\nORDER BY OBJECT_NAME");
         try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
             if (!params.isCaseSensitive()) {
-                objectNameMask = objectNameMask.toUpperCase();
+                mask = mask.toUpperCase();
             }
-            dbStat.setString(1, objectNameMask);
+            dbStat.setString(1, mask);
+            int idx = 2;
             if (schema != null) {
-                dbStat.setString(2, schema.getName());
+                dbStat.setString(idx, schema.getName());
+                idx++;
             }
             if (searchInSynonyms()) {
-                dbStat.setString(schema != null ? 3 : 2, objectNameMask);
+                dbStat.setString(idx, mask);
+                idx++;
             }
+            if (searchViewsByDefinition) {
+                dbStat.setString(idx, mask);
+                idx++;
+                if (!ownerClause.isEmpty()) {
+                    dbStat.setString(idx, schema.getName());
+                    idx++;
+                }
+            }
+            if (params.isSearchInDefinitions()) {
+                dbStat.setString(idx, mask);
+            }
+
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults() && dbResult.next()) {
