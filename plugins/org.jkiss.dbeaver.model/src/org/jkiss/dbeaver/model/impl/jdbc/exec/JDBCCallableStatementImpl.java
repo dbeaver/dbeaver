@@ -111,7 +111,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             log.debug("Error extracting parameters meta data", e);
         }
 
-        final List<DBSProcedureParameter> metaOutputParameters = getOutputParametersFromMeta(procedure);
+        final List<DBSProcedureParameter> metaOutputParameters = getOutputParametersFromMeta();
         final List<Integer> jdbcOutputParameters = getOutputParametersFromJDBC(paramsMeta);
 
         if (metaOutputParameters == null && jdbcOutputParameters == null) {
@@ -278,7 +278,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     }
 
     @Nullable
-    private List<DBSProcedureParameter> getOutputParametersFromMeta(@Nullable DBSProcedure procedure) {
+    private List<DBSProcedureParameter> getOutputParametersFromMeta() {
         if (procedure == null) {
             return null;
         }
