@@ -4146,7 +4146,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = new int[] { curRow.getVisualNumber() };
+                    this.selectedRecords = ArrayUtils.add(this.selectedRecords, this.selectedRecords[this.selectedRecords.length - 1] + 1);
 
                     newRowIndex++;
                     srcRowIndex++;

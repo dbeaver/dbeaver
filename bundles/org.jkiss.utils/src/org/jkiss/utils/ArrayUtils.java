@@ -235,6 +235,13 @@ public class ArrayUtils {
         return elements;
     }
 
+    public static int[] add(int[] elements, int add) {
+        int[] newArray = new int[elements.length + 1];
+        System.arraycopy(elements, 0, newArray, 0, elements.length);
+        newArray[elements.length] = add;
+        return newArray;
+    }
+
     public static void main(String[] args) {
         String[] arr = new String[0];
 
