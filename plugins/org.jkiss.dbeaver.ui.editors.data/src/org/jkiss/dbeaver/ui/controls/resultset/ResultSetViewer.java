@@ -1821,6 +1821,11 @@ public class ResultSetViewer extends Viewer
     {
         //Object state = savePresentationState();
         List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        if (selectedRows.isEmpty()) {
+            if (model.getRowCount() > 0) {
+                selectedRows = Collections.singletonList(model.getRow(0));
+            }
+        }
         this.selectedRecords = new int[selectedRows.size()];
         for (int i = 0; i < selectedRows.size(); i++) {
             this.selectedRecords[i] = selectedRows.get(i).getVisualNumber();
