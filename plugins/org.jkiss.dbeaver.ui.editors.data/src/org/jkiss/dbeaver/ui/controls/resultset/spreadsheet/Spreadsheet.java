@@ -200,12 +200,12 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         GridCell newCell = posToCell(newPos);
         if (newCell != null) {
-            setCursor(newCell, keepSelection, true);
+            setCursor(newCell, keepSelection, true, true);
         }
         return true;
     }
 
-    void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn)
+    void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn, boolean notify)
     {
         Event selectionEvent = new Event();
         // Move row
@@ -229,9 +229,11 @@ public class Spreadsheet extends LightGrid implements Listener {
         }
         super.selectCell(pos);
 
-        // Change selection event
-        selectionEvent.data = cell;
-        notifyListeners(SWT.Selection, selectionEvent);
+        if (notify) {
+            // Change selection event
+            selectionEvent.data = cell;
+            notifyListeners(SWT.Selection, selectionEvent);
+        }
     }
 
     public void addCursorChangeListener(Listener listener)

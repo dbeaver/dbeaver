@@ -1971,9 +1971,8 @@ public class ResultSetViewer extends Viewer
             curState.rowNumber = newRow.getVisualNumber();
         }
         if (this.recordMode && rowShift != 0 && selectedRecords.length > 0) {
-            int newRowNumber = curRow.getVisualNumber();
-            if (rowShift > 0 ? selectedRecords[0] != newRowNumber : selectedRecords[selectedRecords.length - 1] != newRowNumber) {
-                // Shift selected records
+            if (!ArrayUtils.contains(selectedRecords, curRow.getVisualNumber())) {
+                // Shift     selected records
                 int firstSelRecord = selectedRecords[0];
                 firstSelRecord += rowShift;
                 if (firstSelRecord < 0) firstSelRecord = 0;

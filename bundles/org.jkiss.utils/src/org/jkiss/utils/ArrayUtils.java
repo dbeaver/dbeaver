@@ -169,6 +169,15 @@ public class ArrayUtils {
         return -1;
     }
 
+    public static int indexOf(int[] array, int offset, int element) {
+        for (int i = offset; i < array.length; i++) {
+            if (array[i] == element) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static int indexOf(byte[] array, int offset, byte element) {
         for (int i = offset; i < array.length; i++) {
             if (array[i] == element) {

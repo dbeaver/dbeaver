@@ -320,10 +320,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         GridPos curPos = spreadsheet.getCursorPosition();
                         GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
                         if (newCell != null) {
-                            spreadsheet.setCursor(newCell, false, true);
+                            spreadsheet.setCursor(newCell, false, true, true);
                         }
                     }
                     break;
+            }
+
+            if (recordMode && controller.getSelectedRecords().length > 1 && curRow != null) {
+                // Shift to new row in record mode
+                curRow = controller.getCurrentRow();
+                int newColumnIndex = ArrayUtils.indexOf(controller.getSelectedRecords(), 0, curRow.getVisualNumber());
+                if (newColumnIndex >= 0) {
+                    GridPos focusPos = spreadsheet.getCursorPosition();
+                    GridCell newPos = spreadsheet.posToCell(new GridPos(newColumnIndex, focusPos.row));
+                    if (newPos != null) {
+                        spreadsheet.setCursor(newPos, true, true, false);
+                    }
+                }
             }
 
             spreadsheet.getHorizontalScrollBarProxy().setSelection(hScrollPos);
@@ -358,7 +371,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);
-        this.spreadsheet.setCursor(cell, false, true);
+        this.spreadsheet.setCursor(cell, false, true, true);
         //this.spreadsheet.showColumn(this.curAttribute);
     }
 
@@ -901,9 +914,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.columnOrder = recordMode ? SWT.DEFAULT : SWT.NONE;
         if (oldRow != null && oldAttribute != null) {
             if (!recordMode) {
-                spreadsheet.setCursor(new GridCell(oldAttribute, oldRow), false, true);
+                spreadsheet.setCursor(new GridCell(oldAttribute, oldRow), false, true, true);
             } else {
-                spreadsheet.setCursor(new GridCell(oldRow, oldAttribute), false, true);
+                spreadsheet.setCursor(new GridCell(oldRow, oldAttribute), false, true, true);
             }
         }
         spreadsheet.layout(true, true);
