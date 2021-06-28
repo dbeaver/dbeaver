@@ -238,4 +238,14 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             throw new DBException("Error while searching in system catalog", e, dataSource);
         }
     }
+
+    @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return true;
+    }
 }

@@ -511,4 +511,17 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             this.definitionClause = definitionClause;
         }
     }
+
+    @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return objectType == RelationalObjectType.TYPE_TABLE
+            || objectType == RelationalObjectType.TYPE_CONSTRAINT
+            || objectType == RelationalObjectType.TYPE_PROCEDURE
+            || objectType == RelationalObjectType.TYPE_TABLE_COLUMN;
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return objectType == RelationalObjectType.TYPE_CONSTRAINT || objectType == RelationalObjectType.TYPE_PROCEDURE;
+    }
 }

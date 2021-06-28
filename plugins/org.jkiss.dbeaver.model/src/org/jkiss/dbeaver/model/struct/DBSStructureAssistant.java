@@ -41,6 +41,14 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
     List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
                                                @NotNull ObjectsSearchParams params) throws DBException;
 
+    default boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return false;
+    }
+
+    default boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return false;
+    }
+
     /**
      * A data class with search parameters.
      *

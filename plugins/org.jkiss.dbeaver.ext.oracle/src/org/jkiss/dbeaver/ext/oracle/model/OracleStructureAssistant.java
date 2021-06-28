@@ -389,4 +389,14 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         String property = dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
         return CommonUtils.getBoolean(property);
     }
+
+    @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return objectType == OracleObjectType.TABLE;
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return true;
+    }
 }

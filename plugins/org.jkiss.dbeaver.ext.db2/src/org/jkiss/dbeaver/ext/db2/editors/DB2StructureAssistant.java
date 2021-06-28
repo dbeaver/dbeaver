@@ -141,20 +141,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         int maxResults = params.getMaxResults();
 
         // Tables, Alias, Views, Nicknames, MQT
-        if ((db2ObjectTypes.contains(DB2ObjectType.ALIAS)) || (db2ObjectTypes.contains(DB2ObjectType.TABLE))
-            || (db2ObjectTypes.contains(DB2ObjectType.NICKNAME)) || (db2ObjectTypes.contains(DB2ObjectType.VIEW))
-            || (db2ObjectTypes.contains(DB2ObjectType.MQT)))
-        {
+        if (db2ObjectTypes.stream().anyMatch(DB2StructureAssistant::isTable)) {
             searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
-
             if (nbResults >= maxResults) {
                 return objects;
             }
-        }
-
-        // Columns
-        if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
-            searchColumns(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
         }
 
         // Routines
@@ -163,6 +154,14 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
 
         return objects;
+    }
+
+    private static boolean isTable(@Nullable DB2ObjectType objectType) {
+        return objectType == DB2ObjectType.ALIAS
+            || objectType == DB2ObjectType.TABLE
+            || objectType == DB2ObjectType.NICKNAME
+            || objectType == DB2ObjectType.VIEW
+            || objectType == DB2ObjectType.MQT;
     }
 
     // --------------
@@ -461,6 +460,15 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             sb.append("'");
         }
         return String.format(baseStatement, sb.toString());
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        if (!(objectType instanceof DB2ObjectType)) {
+            return false;
+        }
+        DB2ObjectType db2ObjectType = (DB2ObjectType) objectType;
+        return db2ObjectType == DB2ObjectType.ROUTINE || isTable(db2ObjectType);
     }
 
     static {
