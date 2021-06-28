@@ -28,6 +28,7 @@ public class SQLServerConstants {
     public static final String DEFAULT_HOST_AZURE = ".database.windows.net";
     public static final String DEFAULT_DATABASE = "master";
     public static final String DEFAULT_DATABASE_AZURE = "master";
+    public static final String TEMPDB_DATABASE = "tempdb";
 
     public static final String PROVIDER_SQL_SERVER = "sqlserver";
     public static final String PROVIDER_GENERIC = "mssql";
