@@ -329,6 +329,9 @@ public class SQLQueryJob extends DataSourceJob
                 }
                 lastError = e;
                 return false;
+            } finally {
+                statistics.addStatementsCount();
+                statistics.addMessage("Command " + ((SQLControlCommand) element).getCommand() + " processed");
             }
         }
         SQLQuery sqlQuery = (SQLQuery) element;
