@@ -301,8 +301,9 @@ public class SQLContextInformer
                                 DBCExecutionContext executionContext = editor.getExecutionContext();
                                 if (executionContext != null) {
                                     DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
-                                            structureAssistant.getAutoCompleteObjectTypes(),
-                                            containerNames[0]
+                                        structureAssistant.getAutoCompleteObjectTypes(),
+                                        containerNames[0],
+                                        containerNames[0]
                                     );
                                     params.setGlobalSearch(true);
                                     params.setMaxResults(1);
@@ -359,7 +360,7 @@ public class SQLContextInformer
                     DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
                     DBCExecutionContext executionContext = editor.getExecutionContext();
                     if (executionContext != null) {
-                        DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(objectTypes, objectName);
+                        DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(objectTypes, objectName, objectName);
                         params.setParentObject(container);
                         params.setCaseSensitive(caseSensitive);
                         params.setMaxResults(10);

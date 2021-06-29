@@ -368,8 +368,9 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         public void run(DBRProgressMonitor param) throws InvocationTargetException, InterruptedException {
             try {
                 DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
-                        typesToSearch.toArray(new DBSObjectType[0]),
-                        nameMask
+                    typesToSearch.toArray(new DBSObjectType[0]),
+                    nameMask,
+                    nameMask
                 );
                 params.setParentObject(container);
                 params.setGlobalSearch(true);

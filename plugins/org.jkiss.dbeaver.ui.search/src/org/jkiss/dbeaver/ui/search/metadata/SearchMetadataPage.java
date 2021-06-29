@@ -444,8 +444,9 @@ public class SearchMetadataPage extends AbstractSearchPage {
         }
 
         DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
-                objectTypes.toArray(new DBSObjectType[0]),
-                objectNameMask
+            objectTypes.toArray(new DBSObjectType[0]),
+            nameMask,
+            objectNameMask
         );
         params.setParentObject(parentObject);
         params.setCaseSensitive(caseSensitive);

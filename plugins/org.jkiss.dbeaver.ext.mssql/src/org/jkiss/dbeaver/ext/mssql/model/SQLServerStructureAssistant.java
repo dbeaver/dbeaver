@@ -30,7 +30,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,7 +129,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            if (params.getMask().startsWith("%#")) {
+            if (params.getName().startsWith("#")) {
                 // Search temp tables
                 searchTempTables(session, params, objects);
             } else {
@@ -267,7 +270,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             .append("' AND name LIKE '#%' AND name LIKE ? AND OBJECT_ID(CONCAT('").append(SQLServerConstants.TEMPDB_DATABASE).append("..', QUOTENAME(name))) <> 0");
 
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, params.getMask());
+            dbStat.setString(1, "%" + params.getMask() + "%");
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
