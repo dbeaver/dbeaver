@@ -130,7 +130,7 @@ public class SQLRuleManager {
         {
             if (!minimalRules && syntaxManager.isVariablesEnabled()) {
                 // Variable rule
-                rules.add(new SQLVariableRule(parameterToken));
+                rules.add(new ScriptVariableRule(parameterToken));
             }
         }
 
@@ -240,7 +240,7 @@ public class SQLRuleManager {
 
             // Parameter rule
             for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
-                rules.add(new SQLParameterRule(syntaxManager, parameterToken, npPrefix));
+                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
             }
         }
 
