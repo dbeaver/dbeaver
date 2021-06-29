@@ -299,6 +299,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean isWordStart(int ch) {
+        return Character.isUnicodeIdentifierStart(ch);
+    }
+
+    @Override
+    public boolean isWordPart(int ch) {
+        return Character.isUnicodeIdentifierPart(ch);
+    }
+
+    @Override
     public boolean validIdentifierStart(char c) {
         return Character.isLetter(c);
     }

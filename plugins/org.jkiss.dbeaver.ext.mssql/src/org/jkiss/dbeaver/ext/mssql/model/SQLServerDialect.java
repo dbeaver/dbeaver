@@ -294,6 +294,16 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
     }
 
     @Override
+    public boolean isWordStart(int ch) {
+        return super.isWordStart(ch) || ch == '#';
+    }
+
+    @Override
+    public boolean isWordPart(int ch) {
+        return super.isWordPart(ch) || ch == '#';
+    }
+
+    @Override
     public String[] getSingleLineComments() {
         if (!isSqlServer) {
             // Sybase supports double dash and double slash as single line comment indicators (and "%" - but not recommend to use it in documentation)
