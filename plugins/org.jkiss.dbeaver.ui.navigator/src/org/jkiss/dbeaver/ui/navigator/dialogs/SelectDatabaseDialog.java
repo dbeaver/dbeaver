@@ -21,6 +21,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -78,20 +80,26 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 
     @Override
     protected void createUpperControls(Composite dialogArea) {
-
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
-        if (currentInstanceName != null && dataSource != null) {
-
-            DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-            DBCExecutionContextDefaults contextDefaults = null;
-            DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instanceContainer, true);
-            if (defaultContext != null) {
-                contextDefaults = defaultContext.getContextDefaults();
-            }
-            if (instanceContainer != null && contextDefaults != null && contextDefaults.supportsCatalogChange()) {
-                createInstanceSelector(dialogArea, instanceContainer);
-            }
+        if (currentInstanceName == null || dataSource == null) {
+            return;
         }
+        DBCExecutionContextDefaults contextDefaults = getContextDefaults();
+        if (contextDefaults != null && contextDefaults.supportsCatalogChange()) {
+            DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+            createInstanceSelector(dialogArea, instanceContainer);
+        }
+    }
+
+    @Nullable
+    private DBCExecutionContextDefaults getContextDefaults() {
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instanceContainer, true);
+        if (defaultContext == null) {
+            return null;
+        }
+        return defaultContext.getContextDefaults();
     }
 
     private void createInstanceSelector(Composite group, DBSObjectContainer instanceContainer) {
@@ -110,18 +118,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
                         }
                     }
                     Collection<? extends DBSObject> instances = instanceContainer.getChildren(monitor);
-                    List<DBNDatabaseNode> instanceNodes = new ArrayList<>();
-                    if (!CommonUtils.isEmpty(instances)) {
-                        for (DBSObject instance : instances) {
-                            if (instance instanceof DBSCatalog || instance instanceof DBSSchema) {
-                                DBNDatabaseNode instanceNode = DBNUtils.getNodeByObject(monitor, instance, false);
-                                if (instanceNode != null) {
-                                    instanceNodes.add(instanceNode);
-                                }
-                            }
-                        }
-                    }
-                    result = instanceNodes;
+                    result = getNodeList(monitor, instances);
                     objectList.loadData();
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
@@ -158,20 +155,15 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         }
         if (rootObject instanceof DBSObjectContainer) {
             try {
-                Collection<? extends DBSObject> objectList = ((DBSObjectContainer) rootObject).getChildren(monitor);
-                if (objectList == null) {
-                    return Collections.emptyList();
+                DBCExecutionContextDefaults contextDefaults = getContextDefaults();
+                Collection<? extends DBSObject> objectsCollection;
+                if (rootObject instanceof DBSCatalog && contextDefaults != null && !contextDefaults.supportsSchemaChange()) {
+                    DBSSchema schema = contextDefaults.getDefaultSchema();
+                    objectsCollection = Collections.singletonList(schema);
+                } else {
+                    objectsCollection = ((DBSObjectContainer) rootObject).getChildren(monitor);
                 }
-                List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());
-                for (DBSObject object : objectList) {
-                    if (object instanceof DBSObjectContainer) {
-                        DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, object, false);
-                        if (databaseNode != null) {
-                            nodeList.add(databaseNode);
-                        }
-                    }
-                }
-                return nodeList;
+                return getNodeList(monitor, objectsCollection);
             } catch (DBException e) {
                 // Do not show error (it will close the dialog)
                 log.error(e);
@@ -179,6 +171,23 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
             }
         }
         return objects;
+    }
+
+    @NotNull
+    private static List<DBNDatabaseNode> getNodeList(@NotNull DBRProgressMonitor monitor, @Nullable Collection<? extends DBSObject> objectList) {
+        if (CommonUtils.isEmpty(objectList)) {
+            return Collections.emptyList();
+        }
+        List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());
+        for (DBSObject object : objectList) {
+            if (object instanceof DBSObjectContainer) {
+                DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, object, false);
+                if (databaseNode != null) {
+                    nodeList.add(databaseNode);
+                }
+            }
+        }
+        return nodeList;
     }
 
     public String getCurrentInstanceName() {
