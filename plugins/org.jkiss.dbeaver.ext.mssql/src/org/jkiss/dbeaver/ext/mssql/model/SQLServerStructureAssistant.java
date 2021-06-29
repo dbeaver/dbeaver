@@ -309,6 +309,10 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
 
     @NotNull
     private static String extractTempTableName(@NotNull String originalName) {
+        if (originalName.startsWith("##")) {
+            // Global temporary tables does not contain padding in their names. Use as-is
+            return originalName;
+        }
         final String name = originalName.substring(0, 116);
         for (int i = name.length() - 1; i >= 0; i--) {
             if (name.charAt(i) != '_') {
