@@ -291,7 +291,7 @@ public class ActionUtils
                     boolean needContextPatch = false;
                     if (selection != null) {
                         needContextPatch = true;
-                        if (serviceLocator instanceof IWorkbenchSite) {
+                        if (serviceLocator instanceof IWorkbenchPartSite) {
                             final ISelection curSelection = ((IWorkbenchSite) serviceLocator).getSelectionProvider().getSelection();
                             if (curSelection instanceof IStructuredSelection && selection instanceof IStructuredSelection) {
                                 if (((IStructuredSelection) curSelection).size() == ((IStructuredSelection) selection).size() &&
