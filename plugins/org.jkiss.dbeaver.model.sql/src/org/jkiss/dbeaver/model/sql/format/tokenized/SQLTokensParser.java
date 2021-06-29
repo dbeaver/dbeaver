@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
 import org.jkiss.utils.ArrayUtils;
@@ -117,17 +118,14 @@ class SQLTokensParser {
 
         if (isSpace(fChar)) {
             StringBuilder workString = new StringBuilder();
-            for (;;) {
+            for (; fPos < fBefore.length(); fPos++) {
                 fChar = fBefore.charAt(fPos);
-                workString.append(fChar);
                 if (!isSpace(fChar)) {
-                    return new FormatterToken(TokenType.SPACE, workString.toString(), start_pos);
+                    break;
                 }
-                fPos++;
-                if (fPos >= fBefore.length()) {
-                    return new FormatterToken(TokenType.SPACE, workString.toString(), start_pos);
-                }
+                workString.append(fChar);
             }
+            return new FormatterToken(TokenType.SPACE, workString.toString(), start_pos);
         } else if (fChar == ';') {
             fPos++;
             return new FormatterToken(TokenType.SYMBOL, ";", start_pos);
@@ -171,7 +169,7 @@ class SQLTokensParser {
             fPos += commentString.length() - 1;
             while (fPos < fBefore.length()) {
                 fPos++;
-                if (fBefore.charAt(fPos - 1) == '\n') {
+                if (fBefore.substring(fPos).startsWith(System.lineSeparator())) {
                     break;
                 }
             }
@@ -180,13 +178,13 @@ class SQLTokensParser {
         }
         else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isLetter(fChar) || isDigit(fChar) || fChar == '*' || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
+            while (isLetter(fChar) || isDigit(fChar) || (fChar == '*' && fPos > 0 && fBefore.charAt(fPos - 1) == structSeparator)
+                || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
                 s.append(fChar);
                 fPos++;
                 if (fPos >= fBefore.length()) {
                     break;
                 }
-
                 fChar = fBefore.charAt(fPos);
             }
             String word = s.toString();

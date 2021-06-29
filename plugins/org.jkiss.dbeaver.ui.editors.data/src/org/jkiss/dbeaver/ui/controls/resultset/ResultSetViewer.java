@@ -2328,7 +2328,7 @@ public class ResultSetViewer extends Viewer
 
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || !executionContext.isConnected()) {
-            return "No connected to database";
+            return "No connection to database";
         }
         if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
             return "Data edit restricted";

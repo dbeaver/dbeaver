@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -124,8 +126,13 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            // Search all objects
-            searchAllObjects(session, database, schema, params, objects);
+            if (params.getMask().startsWith("%#")) {
+                // Search temp tables
+                searchTempTables(session, params, objects);
+            } else {
+                // Search all objects
+                searchAllObjects(session, database, schema, params, objects);
+            }
 
             return objects;
         }
@@ -223,5 +230,63 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         } catch (Throwable e) {
             throw new DBException("Error while searching in system catalog", e, dataSource);
         }
+    }
+
+    private void searchTempTables(@NotNull JDBCSession session, @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects) throws DBException {
+        final SQLServerDatabase database = dataSource.getDatabase(session.getProgressMonitor(), SQLServerConstants.TEMPDB_DATABASE);
+        final SQLServerSchema schema = database.getSchema(session.getProgressMonitor(), SQLServerConstants.DEFAULT_SCHEMA_NAME);
+
+        // Otherwise reference resolution will fail if tables are not cached. Is there any better solution for that?
+        schema.getTableCache().setFullCache(false);
+
+        final StringBuilder sql = new StringBuilder()
+            .append("SELECT TOP ").append(params.getMaxResults() - objects.size()).append(" * ")
+            .append("\nFROM ").append(SQLServerUtils.getSystemTableName(database, "all_objects"))
+            .append("\nWHERE type = '").append(SQLServerObjectType.U.name())
+            .append("' AND name LIKE '#%' AND name LIKE ? AND OBJECT_ID(CONCAT('").append(SQLServerConstants.TEMPDB_DATABASE).append("..', QUOTENAME(name))) <> 0");
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+            dbStat.setString(1, params.getMask());
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
+                    final String objectName = JDBCUtils.safeGetString(dbResult, "name");
+                    final String objectNameTrimmed = extractTempTableName(objectName);
+                    final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
+                    final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
+
+                    objects.add(new AbstractObjectReference(objectName, database, null, objectType.getTypeClass(), objectType) {
+                        @Override
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                            final DBSObject object = objectType.findObject(session.getProgressMonitor(), database, schema, objectName);
+                            if (object == null) {
+                                throw new DBException(objectTypeName + " '" + objectName + "' not found");
+                            }
+                            return object;
+                        }
+
+                        @NotNull
+                        @Override
+                        public String getFullyQualifiedName(DBPEvaluationContext context) {
+                            return objectNameTrimmed;
+                        }
+                    });
+                }
+            }
+        } catch (Throwable e) {
+            throw new DBException("Error while searching in system catalog", e, dataSource);
+        }
+    }
+
+    @NotNull
+    private static String extractTempTableName(@NotNull String originalName) {
+        final String name = originalName.substring(0, 116);
+        for (int i = name.length() - 1; i >= 0; i--) {
+            if (name.charAt(i) != '_') {
+                return name.substring(0, i + 1);
+            }
+        }
+        return name;
     }
 }
