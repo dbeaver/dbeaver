@@ -236,11 +236,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         final SQLServerDatabase database = dataSource.getDatabase(session.getProgressMonitor(), SQLServerConstants.TEMPDB_DATABASE);
         final SQLServerSchema schema = database.getSchema(session.getProgressMonitor(), SQLServerConstants.DEFAULT_SCHEMA_NAME);
 
-        // Otherwise reference resolution will fail if tables are not cached. Is there any better solution for that?
-        schema.getTableCache().setFullCache(false);
-
         final StringBuilder sql = new StringBuilder()
-            .append("SELECT TOP ").append(params.getMaxResults() - objects.size()).append(" * ")
+            .append("SELECT TOP ").append(params.getMaxResults() - objects.size()).append(" *")
             .append("\nFROM ").append(SQLServerUtils.getSystemTableName(database, "all_objects"))
             .append("\nWHERE type = '").append(SQLServerObjectType.U.name())
             .append("' AND name LIKE '#%' AND name LIKE ? AND OBJECT_ID(CONCAT('").append(SQLServerConstants.TEMPDB_DATABASE).append("..', QUOTENAME(name))) <> 0");
@@ -253,15 +250,19 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
                     final String objectName = JDBCUtils.safeGetString(dbResult, "name");
                     final String objectNameTrimmed = extractTempTableName(objectName);
-                    final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-                    final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
+                    final SQLServerObjectType objectType = SQLServerObjectType.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "type"));
 
                     objects.add(new AbstractObjectReference(objectName, database, null, objectType.getTypeClass(), objectType) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            final DBSObject object = objectType.findObject(session.getProgressMonitor(), database, schema, objectName);
+                            DBSObject object = schema.getChild(session.getProgressMonitor(), objectName);
                             if (object == null) {
-                                throw new DBException(objectTypeName + " '" + objectName + "' not found");
+                                // Likely not cached, invalidate and try again
+                                schema.getTableCache().setFullCache(false);
+                                object = schema.getChild(session.getProgressMonitor(), objectName);
+                            }
+                            if (object == null) {
+                                throw new DBException(objectType.name() + " '" + objectName + "' not found");
                             }
                             return object;
                         }
