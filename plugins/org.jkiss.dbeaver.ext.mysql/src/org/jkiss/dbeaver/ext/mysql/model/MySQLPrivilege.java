@@ -52,11 +52,11 @@ public class MySQLPrivilege implements DBAPrivilege
         MISC
     }
 
-    private MySQLDataSource dataSource;
-    private String name;
-    private String context;
-    private String comment;
-    private Kind kind;
+    private final MySQLDataSource dataSource;
+    private final String name;
+    private final String context;
+    private final String comment;
+    private final Kind kind;
     
     public MySQLPrivilege(MySQLDataSource dataSource, ResultSet resultSet) {
         this.dataSource = dataSource;

@@ -169,6 +169,15 @@ public class ArrayUtils {
         return -1;
     }
 
+    public static int indexOf(int[] array, int offset, int element) {
+        for (int i = offset; i < array.length; i++) {
+            if (array[i] == element) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static int indexOf(byte[] array, int offset, byte element) {
         for (int i = offset; i < array.length; i++) {
             if (array[i] == element) {
@@ -224,6 +233,13 @@ public class ArrayUtils {
             }
         }
         return elements;
+    }
+
+    public static int[] add(int[] elements, int add) {
+        int[] newArray = new int[elements.length + 1];
+        System.arraycopy(elements, 0, newArray, 0, elements.length);
+        newArray[elements.length] = add;
+        return newArray;
     }
 
     public static void main(String[] args) {

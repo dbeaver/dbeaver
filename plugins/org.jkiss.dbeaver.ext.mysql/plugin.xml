@@ -116,7 +116,11 @@
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.users.node.tip">
-                    <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
+                    <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLGrant" label="%tree.userGrants.node.name" description="%tree.userGrants.node.tip">
+                            <items label="%tree.user.node.name" path="grants" property="grants"/>
+                        </folder>
+                    </items>
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
                     <treeContribution category="connectionEditor"/>

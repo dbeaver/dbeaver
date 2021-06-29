@@ -32,8 +32,12 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 
+import java.sql.SQLException;
+
 public class HiveDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(HiveDataSource.class);
+
+    private static final String CONNECTION_CLOSED_MESSAGE = "Connection is closed";
 
     public HiveDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -54,6 +58,9 @@ public class HiveDataSource extends GenericDataSource {
 
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
+        if (error instanceof SQLException && CONNECTION_CLOSED_MESSAGE.equals(error.getMessage())) {
+            return ErrorType.CONNECTION_LOST;
+        }
         String sqlState = SQLState.getStateFromException(error);
         if (SQLState.SQL_08S01.getCode().equals(sqlState)) {
             // By some reason many Hive errors have this SQL state

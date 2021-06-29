@@ -88,6 +88,17 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        //TODO: currently, we do not search for data types, although it's absolutely possible.
+        return new DBSObjectType[]{
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_CONSTRAINT,
+            RelationalObjectType.TYPE_PROCEDURE,
+            RelationalObjectType.TYPE_TABLE_COLUMN,
+        };
+    }
+
+    @Override
     protected void findObjectsByMask(@NotNull PostgreExecutionContext executionContext, @NotNull JDBCSession session,
                                      @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
                                      @NotNull List<DBSObjectReference> references) throws DBException, SQLException {

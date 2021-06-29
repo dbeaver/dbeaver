@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -148,14 +149,15 @@ public class SQLQuery implements SQLScriptElement {
                     if (fromItem instanceof Table &&
                         isPotentiallySingleSourceSelect(plainSelect))
                     {
-                        boolean hasSubSelects = false;
+                        boolean hasSubSelects = false, hasDirectSelects = false;
                         for (SelectItem si : plainSelect.getSelectItems()) {
                             if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof SubSelect) {
                                 hasSubSelects = true;
-                                break;
+                            } else if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof Column) {
+                                hasDirectSelects = true;
                             }
                         }
-                        if (!hasSubSelects) {
+                        if (hasDirectSelects || !hasSubSelects) {
                             fillSingleSource((Table) fromItem);
                         }
                     }

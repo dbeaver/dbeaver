@@ -17,11 +17,15 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -30,18 +34,18 @@ import java.util.regex.Pattern;
 /**
  * User privilege grant
  */
-public class MySQLGrant implements DBAPrivilegeGrant {
+public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
 
     public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+");
     public static final Pattern GLOBAL_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+(.+)\\s+TO\\s+");
 
-    private MySQLUser user;
-    private List<MySQLPrivilege> privileges;
+    private final MySQLUser user;
+    private final List<MySQLPrivilege> privileges;
     @Nullable
-    private String catalogName;
+    private final String catalogName;
     @Nullable
-    private String tableName;
-    private boolean allPrivileges;
+    private final String tableName;
+    private final boolean allPrivileges;
     private boolean grantOption;
 
     public MySQLGrant(MySQLUser user, List<MySQLPrivilege> privileges, @Nullable String catalogName, @Nullable String tableName, boolean allPrivileges, boolean grantOption)
@@ -52,6 +56,35 @@ public class MySQLGrant implements DBAPrivilegeGrant {
         this.tableName = tableName;
         this.allPrivileges = allPrivileges;
         this.grantOption = grantOption;
+    }
+
+    @Nullable
+    @Override
+    public MySQLUser getParentObject() {
+        return this.user;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return this.user.getDataSource();
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return allPrivileges ? "ALL PRIVILEGES" : privileges.toString();
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return true;
     }
 
     public MySQLUser getSubject(DBRProgressMonitor monitor) {
@@ -81,6 +114,11 @@ public class MySQLGrant implements DBAPrivilegeGrant {
         return privileges.toArray(new MySQLPrivilege[0]);
     }
 
+    @Property(viewable = true, order = 1)
+    public String getPrivilegeNames() {
+        return allPrivileges ? "ALL PRIVILEGES" : privileges.toString();
+    }
+
     @Override
     public boolean isGranted() {
         return true;
@@ -91,12 +129,14 @@ public class MySQLGrant implements DBAPrivilegeGrant {
         return "*".equals(catalogName);
     }
 
+    @Property(viewable = true, order = 10)
     @Nullable
     public String getCatalog()
     {
         return catalogName;
     }
 
+    @Property(viewable = true, order = 11)
     @Nullable
     public String getTable()
     {

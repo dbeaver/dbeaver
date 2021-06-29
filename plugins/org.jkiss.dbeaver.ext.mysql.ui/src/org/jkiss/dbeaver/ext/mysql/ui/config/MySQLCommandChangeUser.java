@@ -46,6 +46,11 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
+    public boolean isDisableSessionLogging() {
+        return getProperties().containsKey(UserPropertyHandler.PASSWORD.name());
+    }
+
+    @Override
     public void updateModel()
     {
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
@@ -87,7 +92,6 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                     }
                 });
         }
-        boolean hasSet;
         final MySQLDataSource dataSource = getObject().getDataSource();
         if (MySQLUtils.isAlterUSerSupported(dataSource)) {
             StringBuilder script = new StringBuilder();
@@ -129,12 +133,13 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     private String generatePasswordSet() {
-        Object passwordValue = getProperties().get(UserPropertyHandler.PASSWORD.toString());
+        Object passwordValue = getProperties().get(UserPropertyHandler.PASSWORD.name());
         if (passwordValue == null) {
             return null;
         }
-        return "SET PASSWORD FOR '" + getObject().getUserName() + "'@'" + getObject().getHost() +
-            "' = PASSWORD('" + passwordValue + "')";
+        MySQLUser user = getObject();
+        return "SET PASSWORD FOR '" + user.getUserName() + "'@'" + user.getHost() +
+            "' = PASSWORD(" + SQLUtils.quoteString(user, passwordValue.toString()) + ")";
     }
 
     private boolean generateAlterScript(StringBuilder script) {

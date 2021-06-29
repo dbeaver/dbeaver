@@ -115,6 +115,15 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> extends AbstractRe
         return column;
     }
 
+    protected void addColumn(@NotNull LocalResultSetColumn column) {
+        metaColumns.add(column);
+    }
+
+    @NotNull
+    protected DBCAttributeMetaData getMetaColumn(int index) {
+        return metaColumns.get(index);
+    }
+
     public void addRow(Object... values) {
         rows.add(values);
     }

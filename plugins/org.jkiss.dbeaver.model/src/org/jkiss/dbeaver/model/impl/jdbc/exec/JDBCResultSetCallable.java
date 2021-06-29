@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -59,7 +65,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     @Override
     public Object getAttributeValue(int index) throws DBCException {
         try {
-            return this.getObject(index + 1);
+            return this.getObject(getColumnOriginalIndex(index));
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
@@ -69,7 +75,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     @Override
     public Object getAttributeValue(String name) throws DBCException {
         try {
-            return this.getObject(name + 1);
+            return this.getObject(name);
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
@@ -91,55 +97,55 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public String getString(int parameterIndex) throws SQLException {
-        return statement.getString(parameterIndex);
+        return statement.getString(getColumnOriginalIndex(parameterIndex));
     }
 
     public boolean getBoolean(int parameterIndex) throws SQLException {
-        return statement.getBoolean(parameterIndex);
+        return statement.getBoolean(getColumnOriginalIndex(parameterIndex));
     }
 
     public byte getByte(int parameterIndex) throws SQLException {
-        return statement.getByte(parameterIndex);
+        return statement.getByte(getColumnOriginalIndex(parameterIndex));
     }
 
     public short getShort(int parameterIndex) throws SQLException {
-        return statement.getShort(parameterIndex);
+        return statement.getShort(getColumnOriginalIndex(parameterIndex));
     }
 
     public int getInt(int parameterIndex) throws SQLException {
-        return statement.getInt(parameterIndex);
+        return statement.getInt(getColumnOriginalIndex(parameterIndex));
     }
 
     public long getLong(int parameterIndex) throws SQLException {
-        return statement.getLong(parameterIndex);
+        return statement.getLong(getColumnOriginalIndex(parameterIndex));
     }
 
     public float getFloat(int parameterIndex) throws SQLException {
-        return statement.getFloat(parameterIndex);
+        return statement.getFloat(getColumnOriginalIndex(parameterIndex));
     }
 
     public double getDouble(int parameterIndex) throws SQLException {
-        return statement.getDouble(parameterIndex);
+        return statement.getDouble(getColumnOriginalIndex(parameterIndex));
     }
 
     public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
-        return statement.getBigDecimal(parameterIndex, scale);
+        return statement.getBigDecimal(getColumnOriginalIndex(parameterIndex), scale);
     }
 
     public byte[] getBytes(int parameterIndex) throws SQLException {
-        return statement.getBytes(parameterIndex);
+        return statement.getBytes(getColumnOriginalIndex(parameterIndex));
     }
 
     public Date getDate(int parameterIndex) throws SQLException {
-        return statement.getDate(parameterIndex);
+        return statement.getDate(getColumnOriginalIndex(parameterIndex));
     }
 
     public Time getTime(int parameterIndex) throws SQLException {
-        return statement.getTime(parameterIndex);
+        return statement.getTime(getColumnOriginalIndex(parameterIndex));
     }
 
     public Timestamp getTimestamp(int parameterIndex) throws SQLException {
-        return statement.getTimestamp(parameterIndex);
+        return statement.getTimestamp(getColumnOriginalIndex(parameterIndex));
     }
 
     @Override
@@ -158,7 +164,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public URL getURL(int parameterIndex) throws SQLException {
-        return statement.getURL(parameterIndex);
+        return statement.getURL(getColumnOriginalIndex(parameterIndex));
     }
 
     public String getString(String parameterName) throws SQLException {
@@ -264,7 +270,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        return statement.getDate(columnIndex);
+        return statement.getDate(getColumnOriginalIndex(columnIndex));
     }
 
     public Date getDate(String parameterName, Calendar cal) throws SQLException {
@@ -273,7 +279,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        return statement.getTime(columnIndex);
+        return statement.getTime(getColumnOriginalIndex(columnIndex));
     }
 
     public Time getTime(String parameterName, Calendar cal) throws SQLException {
@@ -282,7 +288,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        return statement.getTimestamp(columnIndex);
+        return statement.getTimestamp(getColumnOriginalIndex(columnIndex));
     }
 
     public Timestamp getTimestamp(String parameterName, Calendar cal) throws SQLException {
@@ -295,27 +301,27 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        return statement.getObject(columnIndex);
+        return statement.getObject(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
     public Ref getRef(int columnIndex) throws SQLException {
-        return statement.getRef(columnIndex);
+        return statement.getRef(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
     public Blob getBlob(int columnIndex) throws SQLException {
-        return statement.getBlob(columnIndex);
+        return statement.getBlob(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
     public Clob getClob(int columnIndex) throws SQLException {
-        return statement.getClob(columnIndex);
+        return statement.getClob(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
     public Array getArray(int columnIndex) throws SQLException {
-        return statement.getArray(columnIndex);
+        return statement.getArray(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
@@ -340,7 +346,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public Object getObject(int columnIndex) throws SQLException {
-        return statement.getObject(columnIndex);
+        return statement.getObject(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
@@ -720,7 +726,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public RowId getRowId(int columnIndex) throws SQLException {
-        return statement.getRowId(columnIndex);
+        return statement.getRowId(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
@@ -729,7 +735,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public NClob getNClob(int parameterIndex) throws SQLException {
-        return statement.getNClob(parameterIndex);
+        return statement.getNClob(getColumnOriginalIndex(parameterIndex));
     }
 
     public NClob getNClob(String parameterName) throws SQLException {
@@ -737,7 +743,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public SQLXML getSQLXML(int parameterIndex) throws SQLException {
-        return statement.getSQLXML(parameterIndex);
+        return statement.getSQLXML(getColumnOriginalIndex(parameterIndex));
     }
 
     public SQLXML getSQLXML(String parameterName) throws SQLException {
@@ -745,7 +751,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public String getNString(int parameterIndex) throws SQLException {
-        return statement.getNString(parameterIndex);
+        return statement.getNString(getColumnOriginalIndex(parameterIndex));
     }
 
     public String getNString(String parameterName) throws SQLException {
@@ -753,7 +759,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public Reader getNCharacterStream(int parameterIndex) throws SQLException {
-        return statement.getNCharacterStream(parameterIndex);
+        return statement.getNCharacterStream(getColumnOriginalIndex(parameterIndex));
     }
 
     public Reader getNCharacterStream(String parameterName) throws SQLException {
@@ -761,7 +767,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     public Reader getCharacterStream(int parameterIndex) throws SQLException {
-        return statement.getCharacterStream(parameterIndex);
+        return statement.getCharacterStream(getColumnOriginalIndex(parameterIndex));
     }
 
     public Reader getCharacterStream(String parameterName) throws SQLException {
@@ -770,7 +776,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return statement.getBigDecimal(columnIndex);
+        return statement.getBigDecimal(getColumnOriginalIndex(columnIndex));
     }
 
     @Override
@@ -965,7 +971,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
 
     @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        return statement.getObject(columnIndex, type);
+        return statement.getObject(getColumnOriginalIndex(columnIndex), type);
     }
 
     @Override
@@ -983,4 +989,71 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
         return false;
     }
 
+    /** @deprecated Use {@link JDBCResultSetCallable#addColumn(String, DBPDataKind, int, int)} instead */
+    @Override
+    public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind) {
+        return addColumn(label, dataKind, getColumnCount(), getColumnCount());
+    }
+
+    /** @deprecated Use {@link JDBCResultSetCallable#addColumn(String, DBSTypedObject, int, int)} instead */
+    @Override
+    public DBCAttributeMetaData addColumn(String label, DBSTypedObject typedObject) {
+        return addColumn(label, typedObject, getColumnCount(), getColumnCount());
+    }
+
+    DBCAttributeMetaData addColumn(@NotNull String label, @NotNull DBSTypedObject typedObject, int localIndex, int originalIndex) {
+        final MappedLocalResultSetColumn column = new MappedLocalResultSetColumn(this, label, typedObject, localIndex, originalIndex);
+        addColumn(column);
+        return column;
+    }
+
+    DBCAttributeMetaData addColumn(@NotNull String label, @NotNull DBPDataKind dataKind, int localIndex, int originalIndex) {
+        final MappedLocalResultSetColumn column = new MappedLocalResultSetColumn(this, label, dataKind, localIndex, originalIndex);
+        addColumn(column);
+        return column;
+    }
+
+    private int getColumnOriginalIndex(int localIndex) throws SQLException {
+        final DBCAttributeMetaData metaColumn = getMetaColumn(localIndex - 1);
+        if (!(metaColumn instanceof MappedLocalResultSetColumn)) {
+            // Should **never** reach here
+            throw new SQLException("Can't get original index from local index: " + localIndex);
+        }
+        return ((MappedLocalResultSetColumn) metaColumn).getOriginalIndex();
+    }
+
+    /**
+     * Column containing is local result set index along with original result set index.
+     * <p>
+     * It is useful when not every parameter of a procedure produce scalar values
+     * but also cursors which we remove from local result set and instead process
+     * in a new tab, making holes in the local result set.
+     * <p>
+     * Consider following example:
+     * <pre>
+     *     CREATE PROCEDURE test(OUT tab1 Table, OUT val1 INT, OUT tab2 Table, OUT val2 INT) AS
+     *     BEGIN
+     *        ...
+     *     END
+     * </pre>
+     * After removing cursors (tab1, tab2), our local result set may look like: (val1, val2) which have zero-based
+     * indexes (0, 1), but their real indexes are (1, 3).
+     */
+    private static class MappedLocalResultSetColumn extends LocalResultSetColumn {
+        private final int originalIndex;
+
+        private MappedLocalResultSetColumn(DBCResultSet resultSet, String label, DBPDataKind dataKind, int index, int originalIndex) {
+            super(resultSet, index, label, dataKind);
+            this.originalIndex = originalIndex;
+        }
+
+        private MappedLocalResultSetColumn(DBCResultSet resultSet, String label, DBSTypedObject typedObject, int index, int originalIndex) {
+            super(resultSet, index, label, typedObject);
+            this.originalIndex = originalIndex;
+        }
+
+        private int getOriginalIndex() {
+            return originalIndex;
+        }
+    }
 }

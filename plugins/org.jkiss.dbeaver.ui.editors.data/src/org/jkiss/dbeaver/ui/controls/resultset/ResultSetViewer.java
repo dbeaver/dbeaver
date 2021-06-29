@@ -1028,6 +1028,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
+        if (selectedPresentation == activePresentationDescriptor) {
+            return;
+        }
         try {
             IResultSetPresentation instance = selectedPresentation.createInstance();
             activePresentationDescriptor = selectedPresentation;
@@ -1821,6 +1824,11 @@ public class ResultSetViewer extends Viewer
     {
         //Object state = savePresentationState();
         List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        if (selectedRows.isEmpty()) {
+            if (model.getRowCount() > 0) {
+                selectedRows = Collections.singletonList(model.getRow(0));
+            }
+        }
         this.selectedRecords = new int[selectedRows.size()];
         for (int i = 0; i < selectedRows.size(); i++) {
             this.selectedRecords[i] = selectedRows.get(i).getVisualNumber();
@@ -1967,12 +1975,12 @@ public class ResultSetViewer extends Viewer
         }
         if (this.recordMode && rowShift != 0 && selectedRecords.length > 0) {
             if (!ArrayUtils.contains(selectedRecords, curRow.getVisualNumber())) {
-                // Shift selected records
+                // Shift     selected records
                 int firstSelRecord = selectedRecords[0];
                 firstSelRecord += rowShift;
                 if (firstSelRecord < 0) firstSelRecord = 0;
-                if (firstSelRecord >= model.getRowCount() - selectedRecords.length) {
-                    firstSelRecord = model.getRowCount() - selectedRecords.length - 1;
+                if (firstSelRecord > model.getRowCount() - selectedRecords.length) {
+                    firstSelRecord = model.getRowCount() - selectedRecords.length;
                 }
                 for (int i = 0; i < selectedRecords.length; i++) {
                     selectedRecords[i] = firstSelRecord + i;
@@ -2320,7 +2328,7 @@ public class ResultSetViewer extends Viewer
 
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || !executionContext.isConnected()) {
-            return "No connected to database";
+            return "No connection to database";
         }
         if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
             return "Data edit restricted";
@@ -4141,7 +4149,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = new int[] { curRow.getVisualNumber() };
+                    this.selectedRecords = ArrayUtils.add(this.selectedRecords, this.selectedRecords[this.selectedRecords.length - 1] + 1);
 
                     newRowIndex++;
                     srcRowIndex++;
