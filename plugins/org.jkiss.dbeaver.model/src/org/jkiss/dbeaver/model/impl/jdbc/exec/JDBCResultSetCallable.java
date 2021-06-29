@@ -989,23 +989,25 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
         return false;
     }
 
+    /** @deprecated Use {@link JDBCResultSetCallable#addColumn(String, DBPDataKind, int, int)} instead */
     @Override
     public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind) {
         return addColumn(label, dataKind, getColumnCount(), getColumnCount());
     }
 
+    /** @deprecated Use {@link JDBCResultSetCallable#addColumn(String, DBSTypedObject, int, int)} instead */
     @Override
     public DBCAttributeMetaData addColumn(String label, DBSTypedObject typedObject) {
         return addColumn(label, typedObject, getColumnCount(), getColumnCount());
     }
 
-    public DBCAttributeMetaData addColumn(@NotNull String label, @NotNull DBSTypedObject typedObject, int localIndex, int originalIndex) {
+    DBCAttributeMetaData addColumn(@NotNull String label, @NotNull DBSTypedObject typedObject, int localIndex, int originalIndex) {
         final MappedLocalResultSetColumn column = new MappedLocalResultSetColumn(this, label, typedObject, localIndex, originalIndex);
         addColumn(column);
         return column;
     }
 
-    public DBCAttributeMetaData addColumn(@NotNull String label, @NotNull DBPDataKind dataKind, int localIndex, int originalIndex) {
+    DBCAttributeMetaData addColumn(@NotNull String label, @NotNull DBPDataKind dataKind, int localIndex, int originalIndex) {
         final MappedLocalResultSetColumn column = new MappedLocalResultSetColumn(this, label, dataKind, localIndex, originalIndex);
         addColumn(column);
         return column;

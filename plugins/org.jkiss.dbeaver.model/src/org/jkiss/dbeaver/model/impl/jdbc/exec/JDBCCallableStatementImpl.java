@@ -137,6 +137,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         } else {
             // Try to make columns from parameters meta
             try {
+                int localIndex = 0;
                 for (int index : jdbcOutputParameters) {
                     if (isParameterCursor(dataSource, paramsMeta, index)) {
                         continue;
@@ -144,9 +145,9 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     final DBSDataType dataType = dataSource.getLocalDataType(paramsMeta.getParameterTypeName(index));
                     if (dataType == null) {
                         final DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, paramsMeta.getParameterTypeName(index), paramsMeta.getParameterType(index));
-                        procResults.addColumn(String.valueOf(index), dataKind);
+                        procResults.addColumn(String.valueOf(index), dataKind, localIndex++, index);
                     } else {
-                        procResults.addColumn(String.valueOf(index), dataType);
+                        procResults.addColumn(String.valueOf(index), dataType, localIndex++, index);
                     }
                 }
             } catch (Throwable e) {
