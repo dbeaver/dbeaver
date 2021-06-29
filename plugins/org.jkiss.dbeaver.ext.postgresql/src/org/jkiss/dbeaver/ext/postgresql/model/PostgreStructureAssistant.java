@@ -36,6 +36,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -147,28 +149,33 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findTablesByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
-                                  @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
-                                    throws SQLException, DBException {
+    private static void findTablesByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull final List<PostgreSchema> schemas,
+                                         @NotNull ObjectsSearchParams params, @NotNull Collection<? super DBSObjectReference> objects)
+                                            throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = buildFindQuery(
+        QueryParams queryParams = new QueryParams(
             "pc.oid,pc.relname,pc.relnamespace,pc.relkind",
             "pg_catalog.pg_class pc",
-            "pc.relkind in('r','v','m','f')",
-            params.isSearchInComments(),
             "pc.relname",
-            params.isCaseSensitive(),
-            "obj_description(pc.oid, 'pg_class')",
-            schema,
+            schemas,
             "pc.relnamespace",
-            "pc.relname",
-            params.getMaxResults() - objects.size()
+            "pc.relname"
         );
+        queryParams.setWhereClause("pc.relkind in('r','v','m','f')");
+        queryParams.setCaseSensitive(params.isCaseSensitive());
+        if (params.isSearchInComments()) {
+            queryParams.setDescriptionClause("obj_description(pc.oid, 'pg_class')");
+        }
+        if (params.isSearchInDefinitions()) {
+            queryParams.setDefinitionClause("pc.relkind = 'v' AND pg_get_viewdef(pc.\"oid\")");
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = buildFindQuery(queryParams);
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schemas, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
@@ -198,28 +205,33 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findProceduresByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
-                                      @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
-                                        throws SQLException, DBException {
+    private static void findProceduresByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database,
+                                             @NotNull final List<PostgreSchema> schemas, @NotNull ObjectsSearchParams params,
+                                             @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = buildFindQuery(
+        QueryParams queryParams = new QueryParams(
             "pp.oid, pp.*",
             "pg_catalog.pg_proc pp",
-            "pp.proname NOT LIKE '\\_%'",
-            params.isSearchInComments(),
             "pp.proname",
-            params.isCaseSensitive(),
-            "obj_description(pp.oid, 'pg_proc')",
-            schema,
+            schemas,
             "pp.pronamespace",
-            "pp.proname",
-            params.getMaxResults() - objects.size()
+            "pp.proname"
         );
+        queryParams.setWhereClause("pp.proname NOT LIKE '\\_%'");
+        queryParams.setCaseSensitive(params.isCaseSensitive());
+        if (params.isSearchInComments()) {
+            queryParams.setDescriptionClause("obj_description(pp.oid, 'pg_proc')");
+        }
+        if (params.isSearchInDefinitions()) {
+            queryParams.setDefinitionClause("pp.prokind <> 'm' AND pp.prokind <> 'a' AND pg_get_functiondef(pp.\"oid\")");
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = buildFindQuery(queryParams);
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schemas, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
@@ -248,28 +260,32 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findConstraintsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
-                                       @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
-                                        throws SQLException, DBException {
+    private static void findConstraintsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull final List<PostgreSchema> schemas,
+                                              @NotNull ObjectsSearchParams params, @NotNull Collection<? super DBSObjectReference> objects)
+                                                throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = buildFindQuery(
+        QueryParams queryParams = new QueryParams(
             "pc.oid, pc.conname, pc.connamespace",
             "pg_catalog.pg_constraint pc",
-            null,
-            params.isSearchInComments(),
             "pc.conname",
-            params.isCaseSensitive(),
-            "obj_description(pc.oid, 'pg_constraint')",
-            schema,
+            schemas,
             "pc.connamespace",
-            "pc.conname",
-            params.getMaxResults() - objects.size()
+            "pc.conname"
         );
+        queryParams.setCaseSensitive(params.isCaseSensitive());
+        if (params.isSearchInComments()) {
+            queryParams.setDescriptionClause("obj_description(pc.oid, 'pg_constraint')");
+        }
+        if (params.isSearchInDefinitions()) {
+            queryParams.setDefinitionClause("pg_get_constraintdef(pc.\"oid\")");
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = buildFindQuery(queryParams);
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, params, schemas, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
@@ -295,28 +311,31 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findTableColumnsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable final List<PostgreSchema> schema,
-                                        @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects)
-                                            throws SQLException, DBException {
+    private static void findTableColumnsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull List<PostgreSchema> schemas,
+                                               @NotNull ObjectsSearchParams objectsSearchParams,
+                                               @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        String sql = buildFindQuery(
+        QueryParams queryParams = new QueryParams(
             "x.attname,x.attrelid,x.atttypid,c.relnamespace",
             "pg_catalog.pg_attribute x, pg_catalog.pg_class c",
-            "c.oid=x.attrelid",
-            params.isSearchInComments(),
             "x.attname",
-            params.isCaseSensitive(),
-            "col_description(c.oid, x.attnum)",
-            schema,
+            schemas,
             "c.relnamespace",
-            "x.attname",
-            params.getMaxResults() - objects.size()
+            "x.attname"
         );
+        queryParams.setWhereClause("c.oid=x.attrelid");
+        if (objectsSearchParams.isSearchInComments()) {
+            queryParams.setDescriptionClause("col_description(c.oid, x.attnum)");
+        }
+        queryParams.setMaxResults(objectsSearchParams.getMaxResults() - objects.size());
+        queryParams.setCaseSensitive(objectsSearchParams.isCaseSensitive());
+
+        String sql = buildFindQuery(queryParams);
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            fillParams(dbStat, params, schema);
+            fillParams(dbStat, objectsSearchParams, schemas, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
@@ -342,38 +361,178 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private static String buildFindQuery(@NotNull String select, @NotNull String from, @Nullable String where, boolean searchInComments,
-                                         @NotNull String name, boolean caseSensitive, @NotNull String descriptionClause,
-                                         @Nullable List<PostgreSchema> schema, @NotNull String namespace, @NotNull String orderBy, int maxResults) {
-        StringBuilder sql = new StringBuilder("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ");
-        if (where != null) {
-            sql.append(where).append(" AND ");
+    private static String buildFindQuery(@NotNull QueryParams queryParams) {
+        StringBuilder sql = new StringBuilder("SELECT ").append(queryParams.getColumnsToSelect());
+        sql.append(" FROM ").append(queryParams.getFromClause()).append(" WHERE ");
+        if (queryParams.getWhereClause() != null) {
+            sql.append(queryParams.getWhereClause()).append(" AND ");
         }
-        if (searchInComments) {
+        boolean addParentheses = queryParams.getDefinitionClause() != null || queryParams.getDescriptionClause() != null;
+        if (addParentheses) {
             sql.append("(");
         }
-        String likeClause = caseSensitive ? " LIKE ?" : " ILIKE ?";
-        sql.append(name).append(likeClause).append(" ");
-        if (searchInComments) {
-            sql.append("OR ").append(descriptionClause).append(likeClause).append(") ");
+        String likeClause = queryParams.isCaseSensitive() ? " LIKE ?" : " ILIKE ?";
+        sql.append(queryParams.getName()).append(likeClause).append(" ");
+        if (queryParams.getDescriptionClause() != null) {
+            sql.append("OR ").append(queryParams.getDescriptionClause()).append(likeClause);
         }
-        if (!CommonUtils.isEmpty(schema)) {
-            sql.append("AND ").append(namespace).append(" IN (").append(SQLUtils.generateParamList(schema.size())).append(") ");
+        if (queryParams.getDefinitionClause() != null) {
+            sql.append(" OR (").append(queryParams.getDefinitionClause()).append(likeClause).append(")");
         }
-        sql.append("ORDER BY ").append(orderBy).append(" LIMIT ").append(maxResults);
+        if (addParentheses) {
+            sql.append(")");
+        }
+        if (!queryParams.getSchemas().isEmpty()) {
+            sql.append("AND ").append(queryParams.getNamespace()).append(" IN (");
+            sql.append(SQLUtils.generateParamList(queryParams.getSchemas().size())).append(") ");
+        }
+        sql.append("ORDER BY ").append(queryParams.getOrderBy()).append(" LIMIT ").append(queryParams.getMaxResults());
         return sql.toString();
     }
 
     private static void fillParams(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
-                                   @Nullable List<PostgreSchema> schema) throws SQLException {
+                                   @Nullable List<? extends PostgreSchema> schema, boolean fillSearchInDefinitions) throws SQLException {
         statement.setString(1, params.getMask());
-        int arrayParamIdx = 2;
+        int idx = 2;
         if (params.isSearchInComments()) {
-            statement.setString(2, params.getMask());
-            arrayParamIdx++;
+            statement.setString(idx, params.getMask());
+            idx++;
+        }
+        if (fillSearchInDefinitions) {
+            statement.setString(idx, params.getMask());
+            idx++;
         }
         if (!CommonUtils.isEmpty(schema)) {
-            PostgreUtils.setArrayParameter(statement, arrayParamIdx, schema);
+            PostgreUtils.setArrayParameter(statement, idx, schema);
         }
+    }
+
+    private static final class QueryParams {
+        @NotNull
+        private final String columnsToSelect;
+
+        @NotNull
+        private final String fromClause;
+
+        @Nullable
+        private String whereClause;
+
+        @NotNull
+        private final String name;
+
+        private boolean caseSensitive;
+
+        @Nullable
+        private String descriptionClause;
+
+        @NotNull
+        private final Collection<? extends PostgreSchema> schemas;
+
+        @NotNull
+        private final String namespace;
+
+        @NotNull
+        private final String orderBy;
+
+        private int maxResults;
+
+        @Nullable
+        private String definitionClause;
+
+        private QueryParams(@NotNull String columnsToSelect, @NotNull String fromClause, @NotNull String name,
+                            @NotNull Collection<? extends PostgreSchema> schemas, @NotNull String namespace, @NotNull String orderBy) {
+            this.columnsToSelect = columnsToSelect;
+            this.fromClause = fromClause;
+            this.name = name;
+            this.schemas = schemas;
+            this.namespace = namespace;
+            this.orderBy = orderBy;
+        }
+
+        @NotNull
+        private String getColumnsToSelect() {
+            return columnsToSelect;
+        }
+
+        @NotNull
+        private String getFromClause() {
+            return fromClause;
+        }
+
+        @Nullable
+        private String getWhereClause() {
+            return whereClause;
+        }
+
+        private void setWhereClause(@Nullable String whereClause) {
+            this.whereClause = whereClause;
+        }
+
+        @NotNull
+        private String getName() {
+            return name;
+        }
+
+        private boolean isCaseSensitive() {
+            return caseSensitive;
+        }
+
+        private void setCaseSensitive(boolean caseSensitive) {
+            this.caseSensitive = caseSensitive;
+        }
+
+        @Nullable
+        private String getDescriptionClause() {
+            return descriptionClause;
+        }
+
+        private void setDescriptionClause(@Nullable String descriptionClause) {
+            this.descriptionClause = descriptionClause;
+        }
+
+        @NotNull
+        private Collection<PostgreSchema> getSchemas() {
+            return Collections.unmodifiableCollection(schemas);
+        }
+
+        @NotNull
+        private String getNamespace() {
+            return namespace;
+        }
+
+        @NotNull
+        private String getOrderBy() {
+            return orderBy;
+        }
+
+        private int getMaxResults() {
+            return maxResults;
+        }
+
+        private void setMaxResults(int maxResults) {
+            this.maxResults = maxResults;
+        }
+
+        @Nullable
+        private String getDefinitionClause() {
+            return definitionClause;
+        }
+
+        private void setDefinitionClause(@Nullable String definitionClause) {
+            this.definitionClause = definitionClause;
+        }
+    }
+
+    @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return objectType == RelationalObjectType.TYPE_TABLE
+            || objectType == RelationalObjectType.TYPE_CONSTRAINT
+            || objectType == RelationalObjectType.TYPE_PROCEDURE
+            || objectType == RelationalObjectType.TYPE_TABLE_COLUMN;
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return objectType == RelationalObjectType.TYPE_CONSTRAINT || objectType == RelationalObjectType.TYPE_PROCEDURE;
     }
 }

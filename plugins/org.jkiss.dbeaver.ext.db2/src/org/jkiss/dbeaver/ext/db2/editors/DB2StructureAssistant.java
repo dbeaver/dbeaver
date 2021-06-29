@@ -18,11 +18,13 @@
 package org.jkiss.dbeaver.ext.db2.editors;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -30,11 +32,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -44,6 +48,9 @@ import java.util.List;
  */
 public class DB2StructureAssistant implements DBSStructureAssistant<DB2ExecutionContext> {
     private static final Log LOG = Log.getLog(DB2StructureAssistant.class);
+
+    private static final String WITH_UR = "WITH UR";
+    private static final String LF = "\n";
 
     // TODO DF: Work in progess
 
@@ -134,52 +141,58 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         int maxResults = params.getMaxResults();
 
         // Tables, Alias, Views, Nicknames, MQT
-        if ((db2ObjectTypes.contains(DB2ObjectType.ALIAS)) || (db2ObjectTypes.contains(DB2ObjectType.TABLE))
-            || (db2ObjectTypes.contains(DB2ObjectType.NICKNAME)) || (db2ObjectTypes.contains(DB2ObjectType.VIEW))
-            || (db2ObjectTypes.contains(DB2ObjectType.MQT)))
-        {
-            searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
-
+        if (db2ObjectTypes.stream().anyMatch(DB2StructureAssistant::isTable)) {
+            searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
             if (nbResults >= maxResults) {
                 return objects;
             }
         }
 
-        // Columns
-        if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
-            searchColumns(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
-        }
-
         // Routines
         if (db2ObjectTypes.contains(DB2ObjectType.ROUTINE)) {
-            searchRoutines(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
+            searchRoutines(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
         }
 
         return objects;
+    }
+
+    private static boolean isTable(@Nullable DB2ObjectType objectType) {
+        return objectType == DB2ObjectType.ALIAS
+            || objectType == DB2ObjectType.TABLE
+            || objectType == DB2ObjectType.NICKNAME
+            || objectType == DB2ObjectType.VIEW
+            || objectType == DB2ObjectType.MQT;
     }
 
     // --------------
     // Helper Classes
     // --------------
 
-    private void searchTables(JDBCSession session, DB2Schema schema, String searchObjectNameMask,
-        List<DB2ObjectType> db2ObjectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
-        DBException
-    {
-        String baseSQL;
+    private void searchTables(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
+                              @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, @NotNull Collection<? super DBSObjectReference> objects,
+                              int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
+        String sql;
         if (schema != null) {
-            baseSQL =
+            sql =
                 "SELECT TABSCHEMA,TABNAME,TYPE FROM SYSCAT.TABLES\n" +
-                "WHERE TABSCHEMA =? AND TABNAME LIKE ? AND TYPE IN (%s)\n" +
-                "WITH UR";
+                "WHERE TABSCHEMA =? AND TABNAME LIKE ? AND TYPE IN (%s)";
         } else {
-            baseSQL =
+            sql =
                 "SELECT TABSCHEMA,TABNAME,TYPE FROM SYSCAT.TABLES\n" +
-                "WHERE TABNAME LIKE ? AND TYPE IN (%s)\n" +
-                "WITH UR";
+                "WHERE TABNAME LIKE ? AND TYPE IN (%s)";
+        }
+        sql = buildTableSQL(sql, db2ObjectTypes);
+
+        if (searchInDefinitions) {
+            StringBuilder query = new StringBuilder("\nUNION ALL\nSELECT\n\tt.TABSCHEMA,\n\tt.TABNAME,\n\tt.\"TYPE\"\nFROM\n\t\"SYSIBM\".SYSVIEWS v\n" +
+                "INNER JOIN SYSCAT.TABLES t ON\n\tv.NAME = t.TABNAME\nWHERE\n\tv.TEXT LIKE ?\n\tAND TYPE IN (%s)");
+            if (schema != null) {
+                query.append("\n\tAND TABSCHEMA = ?");
+            }
+            sql += buildTableSQL(query.toString(), db2ObjectTypes);
         }
 
-        String sql = buildTableSQL(baseSQL, db2ObjectTypes);
+        sql += LF + WITH_UR;
 
         int n = 1;
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -187,7 +200,14 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                 dbStat.setString(n++, schema.getName());
                 //dbStat.setString(n++, DB2Constants.SYSTEM_CATALOG_SCHEMA);
             }
-            dbStat.setString(n++, searchObjectNameMask);
+            dbStat.setString(n++, mask);
+            if (searchInDefinitions) {
+                dbStat.setString(n, mask);
+                n++;
+                if (schema != null) {
+                    dbStat.setString(n, schema.getName());
+                }
+            }
 
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
@@ -224,23 +244,35 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
     }
 
-    private void searchRoutines(JDBCSession session, DB2Schema schema, String searchObjectNameMask,
-                              List<DB2ObjectType> db2ObjectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
-        DBException
-    {
-        String baseSQL =
-                "SELECT ROUTINESCHEMA,ROUTINENAME FROM SYSCAT.ROUTINES\n" +
-                    "WHERE " + (schema != null ? "ROUTINESCHEMA = ? AND " : "") + "ROUTINENAME LIKE ?\n" +
-                    "WITH UR";
+    private void searchRoutines(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
+                                @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, Collection<? super DBSObjectReference> objects,
+                                int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
 
-        String sql = buildTableSQL(baseSQL, db2ObjectTypes);
+        StringBuilder baseSQL = new StringBuilder("SELECT ROUTINESCHEMA, ROUTINENAME" + LF + "FROM SYSCAT.ROUTINES" + LF +
+            SQLConstants.KEYWORD_WHERE + LF);
+        if (schema != null) {
+            baseSQL.append("ROUTINESCHEMA = ? AND ");
+        }
+        if (searchInDefinitions) {
+            baseSQL.append("(TEXT LIKE ? OR ");
+        }
+        baseSQL.append("ROUTINENAME LIKE ?");
+        if (searchInDefinitions) {
+            baseSQL.append(")");
+        }
+        baseSQL.append(LF + WITH_UR);
+
+        String sql = buildTableSQL(baseSQL.toString(), db2ObjectTypes);
 
         int n = 1;
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());
             }
-            dbStat.setString(n++, searchObjectNameMask);
+            dbStat.setString(n++, mask);
+            if (searchInDefinitions) {
+                dbStat.setString(n, mask);
+            }
 
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
@@ -428,6 +460,15 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             sb.append("'");
         }
         return String.format(baseStatement, sb.toString());
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        if (!(objectType instanceof DB2ObjectType)) {
+            return false;
+        }
+        DB2ObjectType db2ObjectType = (DB2ObjectType) objectType;
+        return db2ObjectType == DB2ObjectType.ROUTINE || isTable(db2ObjectType);
     }
 
     static {
