@@ -266,7 +266,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             }
             dbStat.setString(1, mask);
             int idx = 2;
-            if (schema != null) {
+            if (!ownerClause.isEmpty()) {
                 dbStat.setString(idx, schema.getName());
                 idx++;
             }
@@ -284,6 +284,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             }
             if (params.isSearchInDefinitions()) {
                 dbStat.setString(idx, mask);
+                idx++;
+                if (!ownerClause.isEmpty()) {
+                    dbStat.setString(idx, schema.getName());
+                }
             }
 
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -392,7 +396,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
 
     @Override
     public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
-        return objectType == OracleObjectType.TABLE || objectType == OracleObjectType.PROCEDURE || objectType == OracleObjectType.PACKAGE;
+        return objectType == OracleObjectType.TABLE;
     }
 
     @Override
