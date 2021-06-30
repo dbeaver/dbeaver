@@ -306,7 +306,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL) {
-            rules.add(new SQLVariableRule());
+            rules.add(new SQLVariableRule(this));
         }
         if (position == RulePosition.KEYWORDS) {
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);

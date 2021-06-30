@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLVariableToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPPredicateRule;
@@ -27,7 +29,13 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
  */
 public class SQLVariableRule implements TPPredicateRule {
 
-    private final TPToken token = new SQLVariableToken();
+    private final SQLDialect dialect;
+    private final TPToken token;
+
+    public SQLVariableRule(@NotNull SQLDialect dialect) {
+        this.dialect = dialect;
+        this.token = new SQLVariableToken();
+    }
 
     @Override
     public TPToken getSuccessToken() {
@@ -41,7 +49,7 @@ public class SQLVariableRule implements TPPredicateRule {
         int ch = scanner.read();
         int read = 0;
 
-        if (!Character.isJavaIdentifierPart(ch)) {
+        if (!dialect.validIdentifierPart((char) ch, false)) {
             ch = scanner.read();
             read++;
 
@@ -49,7 +57,7 @@ public class SQLVariableRule implements TPPredicateRule {
                 do {
                     ch = scanner.read();
                     read++;
-                } while (Character.isJavaIdentifierPart(ch));
+                } while (dialect.validIdentifierPart((char) ch, false));
 
                 if (read > 2) {
                     scanner.unread();
