@@ -30,17 +30,14 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SQL script execution context
  */
 public class SQLScriptContext implements DBCScriptContext {
 
-    private final Map<String, Object> variables = new HashMap<>();
+    private final Map<String, VariableInfo> variables = new LinkedHashMap<>();
     private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> pragmas = new HashMap<>();
     private Map<String, Object> statementPragmas;
@@ -93,16 +90,16 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public Object getVariable(String name) {
-        Object value = variables.get(name);
-        if (value == null && parentContext != null) {
-            value = parentContext.getVariable(name);
+        VariableInfo variableInfo = variables.get(name);
+        if (variableInfo == null && parentContext != null) {
+            return parentContext.getVariable(name);
         }
-        return value;
+        return variableInfo == null ? null : variableInfo.value;
     }
 
     @Override
     public void setVariable(String name, Object value) {
-        variables.put(name, value);
+        variables.put(name, new VariableInfo(name, value, VariableType.VARIABLE));
         if (parentContext != null) {
             parentContext.setVariable(name, value);
         }
@@ -116,9 +113,18 @@ public class SQLScriptContext implements DBCScriptContext {
         }
     }
 
+    @Override
+    public List<VariableInfo> getVariables() {
+        return new ArrayList<>(variables.values());
+    }
+
     public void setVariables(Map<String, Object> variables) {
         this.variables.clear();
-        this.variables.putAll(variables);
+        for (Map.Entry<String, Object> v : variables.entrySet()) {
+            this.variables.put(
+                v.getKey(),
+                new VariableInfo(v.getKey(), v.getValue(), VariableType.VARIABLE));
+        }
     }
 
     public Object getParameterDefaultValue(String name) {
@@ -220,6 +226,8 @@ public class SQLScriptContext implements DBCScriptContext {
                 Object varValue = variables.get(parameter.getVarName());
                 if (varValue == null) {
                     varValue = defaultParameters.get(parameter.getVarName());
+                } else {
+                    varValue = ((VariableInfo)varValue).value;
                 }
                 if (varValue != null) {
                     parameter.setValue(CommonUtils.toString(varValue));
@@ -233,9 +241,11 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     public Map<String, Object> getAllParameters() {
-        Map<String, Object> params = new LinkedHashMap<>();
+        Map<String, Object> params = new LinkedHashMap<>(defaultParameters.size() + variables.size());
         params.putAll(defaultParameters);
-        params.putAll(variables);
+        for (Map.Entry<String, VariableInfo> v : variables.entrySet()) {
+            params.put(v.getKey(), v.getValue().value);
+        }
         return params;
     }
 

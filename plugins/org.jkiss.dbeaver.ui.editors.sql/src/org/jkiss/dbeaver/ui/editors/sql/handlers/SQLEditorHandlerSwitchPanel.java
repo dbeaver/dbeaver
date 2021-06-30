@@ -48,6 +48,9 @@ public class SQLEditorHandlerSwitchPanel extends AbstractHandler {
             case SQLEditorCommands.CMD_SQL_SHOW_LOG:
                 editor.showExecutionLogPanel();
                 break;
+            case SQLEditorCommands.CMD_SQL_SHOW_VARIABLES:
+                editor.showVariablesPanel();
+                break;
         }
         return null;
     }

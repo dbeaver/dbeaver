@@ -236,6 +236,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.query.prev" name="%command.org.jkiss.dbeaver.ui.editors.sql.query.prev.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.query.prev.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.output" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.output.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.output.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.log" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.show.variables" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" name="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.switch.panel" name="%command.org.jkiss.dbeaver.ui.editors.sql.switch.panel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.switch.panel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -282,6 +283,7 @@
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/variables.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.png"/>
     </extension>
@@ -455,6 +457,9 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPanel">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPanel">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleResultsPanel">

@@ -28,9 +28,7 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class SQLQueryParameterRegistry
 {
@@ -63,6 +61,10 @@ public class SQLQueryParameterRegistry
             registry.loadProfiles();
         }
         return registry;
+    }
+
+    public List<ParameterInfo> getAllParameters() {
+        return new ArrayList<>(parameterMap.values());
     }
 
     public ParameterInfo getParameter(String name)

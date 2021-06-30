@@ -65,6 +65,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_error_execution_plan_title;
     public static String editors_sql_execution_log;
     public static String editors_sql_execution_log_tip;
+    public static String editors_sql_variables;
+    public static String editors_sql_variables_tip;
     public static String editors_sql_explain_plan;
     public static String editors_sql_output;
     public static String editors_sql_output_tip;

@@ -101,6 +101,7 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -140,12 +141,13 @@ public class SQLEditor extends SQLEditorBase implements
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
     private static final Pattern EMBEDDED_BINDING_PREFIX_PATTERN = Pattern.compile("--\\s*CONNECTION:\\s*(.+)", Pattern.CASE_INSENSITIVE);
 
-    private static Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
-    private static Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
-    private static Image IMG_EXPLAIN_PLAN = DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN);
-    private static Image IMG_LOG = DBeaverIcons.getImage(UIIcon.SQL_PAGE_LOG);
-    private static Image IMG_OUTPUT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT);
-    private static Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
+    private static final Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
+    private static final Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
+    private static final Image IMG_EXPLAIN_PLAN = DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN);
+    private static final Image IMG_LOG = DBeaverIcons.getImage(UIIcon.SQL_PAGE_LOG);
+    private static final Image IMG_VARIABLES = DBeaverIcons.getImage(UIIcon.SQL_VARIABLES);
+    private static final Image IMG_OUTPUT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT);
+    private static final Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
 //    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
 //    private static final String TOOLBAR_GROUP_TOP = "top";
@@ -176,6 +178,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private SQLLogPanel logViewer;
     private SQLEditorOutputConsoleViewer outputViewer;
+    private SQLVariablesPanel variablesViewer;
 
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
@@ -268,6 +271,10 @@ public class SQLEditor extends SQLEditorBase implements
             return DBUtils.getDefaultContext(getDataSource(), false);
         }
         return null;
+    }
+
+    public SQLScriptContext getGlobalScriptContext() {
+        return globalScriptContext;
     }
 
     @Nullable
@@ -911,15 +918,19 @@ public class SQLEditor extends SQLEditorBase implements
             SWT.LEFT | SWT.CHECK,
             getSite(),
             SQLEditorCommands.CMD_SQL_SHOW_OUTPUT,
-            true)
-            .setText("Out");
+            false);
         VerticalButton.create(
             sideToolBar,
             SWT.LEFT | SWT.CHECK,
             getSite(),
             SQLEditorCommands.CMD_SQL_SHOW_LOG,
-            true)
-            .setText("Log");
+            false);
+        VerticalButton.create(
+            sideToolBar,
+            SWT.LEFT | SWT.CHECK,
+            getSite(),
+            SQLEditorCommands.CMD_SQL_SHOW_VARIABLES,
+            false);
 
 /*
         sideToolBar.add(new GroupMarker(TOOLBAR_GROUP_PANELS));
@@ -1075,6 +1086,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Extra views
         //planView = new ExplainPlanViewer(this, resultTabs);
         logViewer = new SQLLogPanel(sqlExtraPanelFolder, this);
+        variablesViewer = new SQLVariablesPanel(sqlExtraPanelFolder, this);
         outputViewer = new SQLEditorOutputConsoleViewer(getSite(), sqlExtraPanelFolder, SWT.NONE);
 
         // Create results tab
@@ -1363,6 +1375,19 @@ public class SQLEditor extends SQLEditorBase implements
             IMG_LOG,
             logViewer,
             null);
+    }
+
+    public void showVariablesPanel() {
+        showExtraView(
+            SQLEditorCommands.CMD_SQL_SHOW_VARIABLES,
+            SQLEditorMessages.editors_sql_variables,
+            SQLEditorMessages.editors_sql_variables_tip,
+            IMG_VARIABLES,
+            variablesViewer,
+            null);
+        UIUtils.asyncExec(() -> {
+            variablesViewer.refreshVariables();
+        });
     }
 
     public <T> T getExtraPresentationPanel(Class<T> panelClass) {
