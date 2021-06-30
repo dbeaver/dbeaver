@@ -126,7 +126,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            if (params.getMask().startsWith("%#")) {
+            if (params.getMask().startsWith("%#") || params.getMask().startsWith("#")) {
                 // Search temp tables
                 searchTempTables(session, params, objects);
             } else {
@@ -267,7 +267,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             .append("' AND name LIKE '#%' AND name LIKE ? AND OBJECT_ID(CONCAT('").append(SQLServerConstants.TEMPDB_DATABASE).append("..', QUOTENAME(name))) <> 0");
 
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, params.getMask());
+            dbStat.setString(1, "%" + params.getMask() + "%");
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -306,6 +306,10 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
 
     @NotNull
     private static String extractTempTableName(@NotNull String originalName) {
+        if (originalName.startsWith("##")) {
+            // Global temporary tables does not contain padding in their names. Use as-is
+            return originalName;
+        }
         final String name = originalName.substring(0, 116);
         for (int i = name.length() - 1; i >= 0; i--) {
             if (name.charAt(i) != '_') {
