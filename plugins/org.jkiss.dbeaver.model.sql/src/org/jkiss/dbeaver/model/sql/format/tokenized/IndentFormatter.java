@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -185,10 +186,10 @@ class IndentFormatter {
                     break;
                 case "END": // CASE ... END
                     if (!isCompact) {
-	                    indent--;
-	                    result += insertReturnAndIndent(argList, index, indent);
+                        indent--;
+                        result += insertReturnAndIndent(argList, index, indent);
                     }
-                	break;
+                    break;
                 case "FROM":
                 case "WHERE":
                 case "START WITH":
@@ -307,6 +308,9 @@ class IndentFormatter {
                 case COMMAND:
                     index = formatCommand(argList, index, token);
                     break;
+                case SPACE:
+                    index = formatSpace(argList, index, token);
+                    //fallthrough
                 default:
                     if (statementDelimiters.contains(tokenString)) {
                         indent = 0;
@@ -315,6 +319,33 @@ class IndentFormatter {
             }
             prev = token;
         }
+    }
+
+    private int formatSpace(@NotNull List<? extends FormatterToken> argList, int index, @NotNull FormatterToken token) {
+        if (token.getType() != TokenType.SPACE || !CommonUtils.isValidIndex(index, argList.size() - 1) || index == 0) {
+            return index;
+        }
+        if (argList.get(index - 1).getType() != TokenType.COMMENT || argList.get(index + 1).getType() != TokenType.NAME) {
+            return index;
+        }
+        String tokenString = token.getString();
+        int indexOfLastSeparator = tokenString.lastIndexOf(System.lineSeparator());
+        if (indexOfLastSeparator == -1) {
+            return index;
+        }
+        int indexAfterLastSeparator = indexOfLastSeparator + System.lineSeparator().length();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < indent; i++) {
+            stringBuilder.append(formatterCfg.getIndentString());
+        }
+        String indentation = stringBuilder.toString();
+        String afterLastSeparator = tokenString.substring(indexAfterLastSeparator);
+        if (afterLastSeparator.equals(indentation)) {
+            return index;
+        }
+        String newTokenString = tokenString.substring(0, indexAfterLastSeparator) + indentation;
+        token.setString(newTokenString);
+        return index;
     }
 
     private int formatCommand(List<FormatterToken> argList, int index, FormatterToken token) {
