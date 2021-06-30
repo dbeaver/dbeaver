@@ -89,9 +89,8 @@ public class SQLSearchUtils
                     if (structureAssistant != null) {
                         String objectNameMask = nameList.get(0);
                         DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
-                            structureAssistant.getAutoCompleteObjectTypes(),
-                            identifierDetector.removeQuotes(objectNameMask),
-                            identifierDetector.removeQuotes(objectNameMask)
+                                structureAssistant.getAutoCompleteObjectTypes(),
+                                identifierDetector.removeQuotes(objectNameMask)
                         );
                         params.setParentObject(sc);
                         params.setCaseSensitive(identifierDetector.isQuoted(objectNameMask));

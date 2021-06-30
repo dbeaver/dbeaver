@@ -743,9 +743,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                         if (structureAssistant != null) {
                             DBSStructureAssistant.ObjectsSearchParams params = new DBSStructureAssistant.ObjectsSearchParams(
-                                structureAssistant.getAutoCompleteObjectTypes(),
-                                request.getWordDetector().removeQuotes(token),
-                                request.getWordDetector().removeQuotes(token)
+                                    structureAssistant.getAutoCompleteObjectTypes(),
+                                    request.getWordDetector().removeQuotes(token)
                             );
                             params.setCaseSensitive(request.getWordDetector().isQuoted(token));
                             params.setMaxResults(2);
@@ -1110,9 +1109,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         @NotNull Map<String, Object> params) throws DBException
     {
         DBSStructureAssistant.ObjectsSearchParams assistantParams = new DBSStructureAssistant.ObjectsSearchParams(
-            objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
-            objectName,
-            makeObjectNameMask(objectName, rootSC)
+                objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
+                makeObjectNameMask(objectName, rootSC)
         );
         assistantParams.setParentObject(rootSC);
         assistantParams.setCaseSensitive(request.getWordDetector().isQuoted(objectName));

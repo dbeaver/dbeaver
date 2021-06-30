@@ -57,7 +57,6 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
      *     <li>{@code parentObject}: parent (schema or catalog)</li>
      *     <li>{@code objectTypes}: type of objects to search</li>
      *     <li>{@code mask}: name mask</li>
-     *     <li>{@code mask}: original name</li>
      *     <li>{@code caseSensitive}: case sensitive search (ignored by some implementations)</li>
      *     <li>{@code globalSearch}: search in all available schemas/catalogs. If {@code false} then search with respect of active schema/catalog</li>
      *     <li>{@code maxResults}: maximum number of results</li>
@@ -66,9 +65,11 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
      * </ul>
      */
     class ObjectsSearchParams {
+        @NotNull
         private final DBSObjectType[] objectTypes;
-        private String name;
+        @NotNull
         private String mask;
+        @Nullable
         private DBSObject parentObject;
         private int maxResults = Integer.MAX_VALUE;
         private boolean caseSensitive;
@@ -76,9 +77,8 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
         private boolean searchInDefinitions;
         private boolean globalSearch;
 
-        public ObjectsSearchParams(@NotNull DBSObjectType[] objectTypes, @NotNull String name, @NotNull String mask) {
+        public ObjectsSearchParams(@NotNull DBSObjectType[] objectTypes, @NotNull String mask) {
             this.objectTypes = objectTypes;
-            this.name = name;
             this.mask = mask;
         }
 
@@ -103,15 +103,6 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
 
         public void setMask(@NotNull String mask) {
             this.mask = mask;
-        }
-
-        @NotNull
-        public String getName() {
-            return name;
-        }
-
-        public void setName(@NotNull String name) {
-            this.name = name;
         }
 
         public boolean isCaseSensitive() {

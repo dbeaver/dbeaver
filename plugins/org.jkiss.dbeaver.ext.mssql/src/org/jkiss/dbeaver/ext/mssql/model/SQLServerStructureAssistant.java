@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -129,7 +126,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            if (params.getName().startsWith("#")) {
+            if (params.getMask().startsWith("%#") || params.getMask().startsWith("#")) {
                 // Search temp tables
                 searchTempTables(session, params, objects);
             } else {
