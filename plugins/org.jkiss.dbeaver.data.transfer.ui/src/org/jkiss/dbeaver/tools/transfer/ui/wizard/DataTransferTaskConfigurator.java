@@ -291,7 +291,11 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DataTransferPipe object = (DataTransferPipe) objectsTable.getItem(objectsTable.getSelectionIndex()).getData();
-                    if (UIUtils.confirmAction(DTUIMessages.data_transfer_task_configurator_confirm_action_title, NLS.bind(DTUIMessages.data_transfer_task_configurator_confirm_action_question, getTableNode(object).getObjectName()))) {
+                    if (UIUtils.confirmAction(
+                        DTUIMessages.data_transfer_task_configurator_confirm_action_title,
+                        NLS.bind(DTUIMessages.data_transfer_task_configurator_confirm_action_question,
+                        CommonUtils.truncateString(getTableNode(object).getObjectName(), 255))))
+                    {
                         objectsTable.remove(objectsTable.getSelectionIndex());
                         updateSettings(propertyChangeListener);
                     }
