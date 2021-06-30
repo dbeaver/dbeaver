@@ -392,7 +392,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
 
     @Override
     public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
-        return objectType == OracleObjectType.TABLE || objectType == OracleObjectType.PROCEDURE || objectType == OracleObjectType.PACKAGE;
+        return objectType == OracleObjectType.TABLE;
     }
 
     @Override
