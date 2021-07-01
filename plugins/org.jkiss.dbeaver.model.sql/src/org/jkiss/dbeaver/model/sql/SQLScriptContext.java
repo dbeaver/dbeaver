@@ -285,7 +285,7 @@ public class SQLScriptContext implements DBCScriptContext {
         List<VariableInfo> varList;
         if (dataSource != null) {
             varList = SQLVariablesRegistry.getInstance().getDataSourceVariables(dataSource);
-        } else if (dataSource != null) {
+        } else if (driver != null) {
             varList = SQLVariablesRegistry.getInstance().getDriverVariables(driver);
         } else {
             varList = new ArrayList<>();
