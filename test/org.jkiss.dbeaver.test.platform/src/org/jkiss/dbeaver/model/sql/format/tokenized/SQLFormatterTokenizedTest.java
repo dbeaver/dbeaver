@@ -421,7 +421,7 @@ public class SQLFormatterTokenizedTest {
             "\t1 = 1;"; //$NON-NLS-1$
         assertEquals("SQLFormatterTokenized does not properly format query with a comment between FROM and WHERE", expected, format(sql));
 
-        sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--cmnt" + lineBreak + "a, b FROM a ;";
+        sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--comment" + lineBreak + "a, b FROM a ;";
         expected = SQLConstants.KEYWORD_SELECT + lineBreak +
             "\t--comment" + lineBreak +
             "\ta," + lineBreak +
