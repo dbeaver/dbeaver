@@ -31,10 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -164,24 +161,14 @@ public class DataExporterHTML extends StreamExporterAbstract {
     private void writeTableTitle(String value, int columns) {
         PrintWriter out = getWriter();
         out.write(String.format("<th colspan=\"%d\">", columns));
-        if (value == null) {
-            out.write("&nbsp;");
-        } else {
-            value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-            out.write(value);
-        }
+        out.write(CommonUtils.escapeHtml(value));
         out.write("</th>");
     }
 
     private void writeTextCell(String value, boolean header) {
         PrintWriter out = getWriter();
         out.write(header ? "<th>" : "<td>");
-        if (value == null) {
-            out.write("&nbsp;");
-        } else {
-            value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-            out.write(value);
-        }
+        out.write(CommonUtils.escapeHtml(value));
         out.write(header ? "</th>" : "</td>");
     }
 
@@ -228,33 +215,16 @@ public class DataExporterHTML extends StreamExporterAbstract {
     }
 
     private void writeCellValue(Reader reader) throws IOException {
-        try {
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
             PrintWriter out = getWriter();
-            // Copy reader
-            char[] buffer = new char[2000];
-            for (; ; ) {
-                int count = reader.read(buffer);
-                if (count <= 0) {
-                    break;
-                }
-                for (int i = 0; i < count; i++) {
-                    if (buffer[i] == '<') {
-                        out.write("&lt;");
-                    } else if (buffer[i] == '>') {
-                        out.write("&gt;");
-                    }
-                    if (buffer[i] == '&') {
-                        out.write("&amp;");
-                    }
-                    out.write(buffer[i]);
+            String line = bufferedReader.readLine();
+            while (line != null) {
+                out.write(CommonUtils.escapeHtml(line));
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    out.write("<br>");
                 }
             }
-        } finally {
-            ContentUtils.close(reader);
         }
-    }
-
-    public boolean saveBinariesAsImages() {
-        return true;
     }
 }
