@@ -23,8 +23,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
+import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -41,6 +43,8 @@ public class SQLScriptContext implements DBCScriptContext {
     private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> pragmas = new HashMap<>();
     private Map<String, Object> statementPragmas;
+
+    private DBCScriptContextListener[] listeners = null;
 
     private final Map<String, Object> data = new HashMap<>();
 
@@ -99,7 +103,11 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public void setVariable(String name, Object value) {
-        variables.put(name, new VariableInfo(name, value, VariableType.VARIABLE));
+        VariableInfo v = new VariableInfo(name, value, VariableType.VARIABLE);
+        VariableInfo ov = variables.put(name, v);
+
+        notifyListeners(ov == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, v);
+
         if (parentContext != null) {
             parentContext.setVariable(name, value);
         }
@@ -107,7 +115,11 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public void removeVariable(String name) {
-        variables.remove(name);
+        VariableInfo v = variables.remove(name);
+        if (v != null) {
+            notifyListeners(DBCScriptContextListener.ContextAction.DELETE, v);
+        }
+
         if (parentContext != null) {
             parentContext.removeVariable(name);
         }
@@ -120,10 +132,17 @@ public class SQLScriptContext implements DBCScriptContext {
 
     public void setVariables(Map<String, Object> variables) {
         this.variables.clear();
-        for (Map.Entry<String, Object> v : variables.entrySet()) {
-            this.variables.put(
-                v.getKey(),
-                new VariableInfo(v.getKey(), v.getValue(), VariableType.VARIABLE));
+        for (Map.Entry<String, Object> ve : variables.entrySet()) {
+            VariableInfo v = new VariableInfo(ve.getKey(), ve.getValue(), VariableType.VARIABLE);
+            VariableInfo ov = this.variables.put(
+                ve.getKey(),
+                v);
+
+            notifyListeners(ov == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, v);
+        }
+
+        if (parentContext != null) {
+            parentContext.setVariables(variables);
         }
     }
 
@@ -132,7 +151,13 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     public void setParameterDefaultValue(String name, Object value) {
-        defaultParameters.put(name, value);
+        Object op = defaultParameters.put(name, value);
+
+        notifyListeners(op == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, name, value);
+
+        if (parentContext != null) {
+            parentContext.setParameterDefaultValue(name, value);
+        }
     }
 
     @NotNull
@@ -247,6 +272,47 @@ public class SQLScriptContext implements DBCScriptContext {
             params.put(v.getKey(), v.getValue().value);
         }
         return params;
+    }
+
+
+    @Override
+    public synchronized void addListener(DBCScriptContextListener listener) {
+        if (listeners == null) {
+            listeners = new DBCScriptContextListener[] { listener };
+        } else {
+            listeners = ArrayUtils.add(DBCScriptContextListener.class, listeners, listener);
+        }
+    }
+
+    @Override
+    public synchronized void removeListener(DBCScriptContextListener listener) {
+        if (listeners != null) {
+            listeners = ArrayUtils.remove(DBCScriptContextListener.class, listeners, listener);
+        }
+    }
+
+    @Nullable
+    private DBCScriptContextListener[] getListenersCopy() {
+        synchronized (this) {
+            if (listeners != null) {
+                return Arrays.copyOf(listeners, listeners.length);
+            }
+        }
+        return null;
+    }
+
+
+    private void notifyListeners(DBCScriptContextListener.ContextAction contextAction, VariableInfo variableInfo) {
+        DBCScriptContextListener[] lc = getListenersCopy();
+        if (lc != null) {
+            for (DBCScriptContextListener l : lc) l.variableChanged(contextAction, variableInfo);
+        }
+    }
+    private void notifyListeners(DBCScriptContextListener.ContextAction contextAction, String paramName, Object paramValue) {
+        DBCScriptContextListener[] lc = getListenersCopy();
+        if (lc != null) {
+            for (DBCScriptContextListener l : lc) l.parameterChanged(contextAction, paramName, paramValue);
+        }
     }
 
 }

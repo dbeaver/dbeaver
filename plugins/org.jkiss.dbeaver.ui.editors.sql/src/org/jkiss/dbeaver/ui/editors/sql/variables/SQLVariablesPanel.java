@@ -34,6 +34,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
+import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.*;
@@ -53,7 +54,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * SQLVariablesPanel
  */
-public class SQLVariablesPanel extends Composite {
+public class SQLVariablesPanel extends Composite implements DBCScriptContextListener {
 
     static protected final Log log = Log.getLog(SQLVariablesPanel.class);
 
@@ -71,6 +72,9 @@ public class SQLVariablesPanel extends Composite {
     }
 
     private void createControls() {
+        mainEditor.getGlobalScriptContext().addListener(this);
+        addDisposeListener(e -> mainEditor.getGlobalScriptContext().removeListener(this));
+
         SashForm sash = new SashForm(this, SWT.VERTICAL);
 
         // Variables table
@@ -125,6 +129,8 @@ public class SQLVariablesPanel extends Composite {
 
             valueEditor.getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
+
+        sash.setWeights(new int[] { 600, 400 });
     }
 
     private void editCurrentVariable() {
@@ -183,6 +189,16 @@ public class SQLVariablesPanel extends Composite {
             GeneralUtils.DEFAULT_ENCODING
         ));
         valueEditor.reloadSyntaxRules();
+    }
+
+    @Override
+    public void variableChanged(ContextAction action, DBCScriptContext.VariableInfo variable) {
+        UIUtils.asyncExec(this::refreshVariables);
+    }
+
+    @Override
+    public void parameterChanged(ContextAction action, String name, Object value) {
+        UIUtils.asyncExec(this::refreshVariables);
     }
 
     private class VariableListControl extends ProgressPageControl {

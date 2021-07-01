@@ -69,4 +69,8 @@ public interface DBCScriptContext {
 
     PrintWriter getOutputWriter();
 
+    void addListener(DBCScriptContextListener listener);
+
+    void removeListener(DBCScriptContextListener listener);
+
 }
