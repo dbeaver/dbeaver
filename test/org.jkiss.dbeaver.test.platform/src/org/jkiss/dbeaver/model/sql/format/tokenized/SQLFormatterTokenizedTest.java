@@ -420,5 +420,25 @@ public class SQLFormatterTokenizedTest {
             SQLConstants.KEYWORD_WHERE + lineBreak + //$NON-NLS-1$
             "\t1 = 1;"; //$NON-NLS-1$
         assertEquals("SQLFormatterTokenized does not properly format query with a comment between FROM and WHERE", expected, format(sql));
+
+        sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--cmnt" + lineBreak + "a, b FROM a ;";
+        expected = SQLConstants.KEYWORD_SELECT + lineBreak +
+            "\t--comment" + lineBreak +
+            "\ta," + lineBreak +
+            "\tb" + lineBreak +
+            SQLConstants.KEYWORD_FROM + lineBreak +
+            "\ta ;";
+        assertEquals(
+            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] without indent before the name",
+            expected,
+            format(sql)
+        );
+
+        sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--comment" + lineBreak + "\t\ta, b FROM a ;";
+        assertEquals(
+            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] with 2 indents before the name",
+            expected,
+            format(sql)
+        );
     }
 }

@@ -896,4 +896,24 @@ public class CommonUtils {
     public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
     }
+
+    /**
+     * Checks if the {@code index} is within the bounds of the range from
+     * {@code 0} (inclusive) to {@code length} (exclusive).
+     *
+     * <p>The {@code index} is defined to be out of bounds if any of the
+     * following inequalities is true:
+     * <ul>
+     *  <li>{@code index < 0}</li>
+     *  <li>{@code index >= length}</li>
+     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
+     * </ul>
+     *
+     * @param index the index
+     * @param length the upper-bound (exclusive) of the range
+     * @return {@code true} if it is within bounds of the range
+     */
+    public static boolean isValidIndex(int index, int length) {
+        return index >= 0 || index < length;
+    }
 }
