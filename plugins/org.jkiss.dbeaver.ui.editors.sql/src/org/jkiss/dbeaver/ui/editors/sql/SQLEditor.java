@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -1084,10 +1085,7 @@ public class SQLEditor extends SQLEditorBase implements
         });
 
         // Extra views
-        //planView = new ExplainPlanViewer(this, resultTabs);
-        logViewer = new SQLLogPanel(sqlExtraPanelFolder, this);
-        variablesViewer = new SQLVariablesPanel(sqlExtraPanelFolder, this);
-        outputViewer = new SQLEditorOutputConsoleViewer(getSite(), sqlExtraPanelFolder, SWT.NONE);
+        createExtraViewControls();
 
         // Create results tab
         createQueryProcessor(true, true);
@@ -1272,24 +1270,110 @@ public class SQLEditor extends SQLEditorBase implements
     /////////////////////////////////////////////////////////////
     // Panels
 
+    public void toggleExtraPanelsLayout() {
+        CTabItem outTab = getExtraViewTab(outputViewer.getControl());
+        CTabItem logTab = getExtraViewTab(logViewer);
+        CTabItem varTab = getExtraViewTab(variablesViewer);
+        if (outTab != null) outTab.dispose();
+        if (logTab != null) logTab.dispose();
+        if (varTab != null) varTab.dispose();
+
+        IPreferenceStore preferenceStore = getPreferenceStore();
+        String epLocation = getExtraPanelsLocation();
+        if (SQLPreferenceConstants.LOCATION_RESULTS.equals(epLocation)) {
+            epLocation = SQLPreferenceConstants.LOCATION_RIGHT;
+        } else {
+            epLocation = SQLPreferenceConstants.LOCATION_RESULTS;
+        }
+        preferenceStore.setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, epLocation);
+
+        createExtraViewControls();
+
+        if (outTab != null) showOutputPanel();
+        if (logTab != null) showExecutionLogPanel();
+        if (varTab != null) showVariablesPanel();
+    }
+
+    public String getExtraPanelsLocation() {
+        return getPreferenceStore().getString(SQLPreferenceConstants.EXTRA_PANEL_LOCATION);
+    }
+
+    private void createExtraViewControls() {
+        if (logViewer != null) {
+            logViewer.dispose();
+            logViewer = null;
+        }
+        if (variablesViewer != null) {
+            variablesViewer.dispose();
+            variablesViewer = null;
+        }
+        if (outputViewer != null) {
+            outputViewer.dispose();
+            outputViewer = null;
+        }
+        if (sqlExtraPanelFolder != null) {
+            for (CTabItem ti : sqlExtraPanelFolder.getItems()) {
+                ti.dispose();
+            }
+        }
+
+        //planView = new ExplainPlanViewer(this, resultTabs);
+        CTabFolder folder = getFolderForExtraPanels();
+
+        logViewer = new SQLLogPanel(folder, this);
+        variablesViewer = new SQLVariablesPanel(folder, this);
+        outputViewer = new SQLEditorOutputConsoleViewer(getSite(), folder, SWT.NONE);
+
+        if (getFolderForExtraPanels() != sqlExtraPanelFolder) {
+            sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
+        }
+    }
+
+    private CTabFolder getFolderForExtraPanels() {
+        CTabFolder folder = this.sqlExtraPanelFolder;
+        String epLocation = getExtraPanelsLocation();
+        if (SQLPreferenceConstants.LOCATION_RESULTS.equals(epLocation)) {
+            folder = resultTabs;
+        }
+        return folder;
+    }
+
+    private CTabItem getExtraViewTab(Control control) {
+        CTabFolder tabFolder = this.getFolderForExtraPanels();
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() == control) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view, IActionContributor actionContributor) {
         VerticalButton viewItem = getViewToolItem(commandId);
         if (viewItem == null) {
             log.warn("Tool item for command " + commandId + " not found");
             return;
         }
-        for (CTabItem item : sqlExtraPanelFolder.getItems()) {
-            if (item.getData() == view) {
-                // Close tab if it is already open
-                viewItem.setChecked(false);
-                viewItem.redraw();
-                item.dispose();
-                return;
-            }
+        CTabFolder tabFolder = this.getFolderForExtraPanels();
+        CTabItem curItem = getExtraViewTab(view);
+        if (curItem != null) {
+            // Close tab if it is already open
+            viewItem.setChecked(false);
+            viewItem.redraw();
+            curItem.dispose();
+            return;
         }
 
-        if (sqlExtraPanelSash.getMaximizedControl() != null) {
-            sqlExtraPanelSash.setMaximizedControl(null);
+        boolean isTabsToTheRight = tabFolder == sqlExtraPanelFolder;
+
+        if (isTabsToTheRight) {
+            if (sqlExtraPanelSash.getMaximizedControl() != null) {
+                sqlExtraPanelSash.setMaximizedControl(null);
+            }
+        } else {
+            sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
+            // Show results
+            showResultsPanel();
         }
 
         if (view == outputViewer.getControl()) {
@@ -1299,7 +1383,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Create new tab
         viewItem.setChecked(true);
 
-        CTabItem item = new CTabItem(sqlExtraPanelFolder, SWT.CLOSE);
+        CTabItem item = new CTabItem(tabFolder, SWT.CLOSE);
         item.setControl(view);
         item.setText(name);
         item.setToolTipText(toolTip);
@@ -1312,14 +1396,16 @@ public class SQLEditor extends SQLEditorBase implements
                 viewItem.setChecked(false);
                 viewItem.redraw();
             }
-            if (sqlExtraPanelFolder.getItemCount() == 0) {
+            if (tabFolder.getItemCount() == 0) {
                 sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
             }
         });
-        sqlExtraPanelFolder.setSelection(item);
+        tabFolder.setSelection(item);
         viewItem.redraw();
 
-        updateExtraViewToolbar(actionContributor);
+        if (isTabsToTheRight) {
+            updateExtraViewToolbar(actionContributor);
+        }
     }
 
     private void updateExtraViewToolbar(IActionContributor actionContributor) {
@@ -1328,6 +1414,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (actionContributor != null) {
             actionContributor.contributeActions(sqlExtraPanelToolbar);
         }
+        sqlExtraPanelToolbar.add(ActionUtils.makeCommandContribution(
+            getSite(),
+            "org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels",
+            CommandContributionItem.STYLE_CHECK,
+            UIIcon.ARROW_DOWN));
         sqlExtraPanelToolbar.update(true);
     }
 
@@ -1362,9 +1453,7 @@ public class SQLEditor extends SQLEditorBase implements
             SQLEditorMessages.editors_sql_output_tip,
             IMG_OUTPUT,
             outputViewer.getControl(),
-            manager -> {
-                manager.add(new OutputAutoShowToggleAction());
-            });
+            manager -> manager.add(new OutputAutoShowToggleAction()));
     }
 
     public void showExecutionLogPanel() {
@@ -1385,9 +1474,7 @@ public class SQLEditor extends SQLEditorBase implements
             IMG_VARIABLES,
             variablesViewer,
             null);
-        UIUtils.asyncExec(() -> {
-            variablesViewer.refreshVariables();
-        });
+        UIUtils.asyncExec(() -> variablesViewer.refreshVariables());
     }
 
     public <T> T getExtraPresentationPanel(Class<T> panelClass) {
