@@ -58,7 +58,7 @@ public class SQLQueryParameterRegistry
     {
         if (registry == null) {
             registry = new SQLQueryParameterRegistry();
-            registry.loadProfiles();
+            registry.loadParameters();
         }
         return registry;
     }
@@ -77,7 +77,7 @@ public class SQLQueryParameterRegistry
         parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, value));
     }
 
-    private void loadProfiles()
+    private void loadParameters()
     {
         File storeFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE_NAME);
         if (!storeFile.exists()) {

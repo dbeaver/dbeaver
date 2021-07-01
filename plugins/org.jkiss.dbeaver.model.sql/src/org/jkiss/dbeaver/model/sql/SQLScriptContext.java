@@ -21,11 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -274,6 +277,28 @@ public class SQLScriptContext implements DBCScriptContext {
         return params;
     }
 
+    ////////////////////////////////////////////////////
+    // Persistence
+
+    public void loadVariables(DBPDriver driver, DBPDataSourceContainer dataSource) {
+        variables.clear();
+        List<VariableInfo> varList;
+        if (dataSource != null) {
+            varList = SQLVariablesRegistry.getInstance().getDataSourceVariables(dataSource);
+        } else if (dataSource != null) {
+            varList = SQLVariablesRegistry.getInstance().getDriverVariables(driver);
+        } else {
+            varList = new ArrayList<>();
+        }
+
+    }
+
+    public void saveVariables(DBPDriver driver, DBPDataSourceContainer dataSource) {
+        SQLVariablesRegistry.getInstance().updateVariables(driver, dataSource, new ArrayList<>(variables.values()));
+    }
+
+    ////////////////////////////////////////////////////
+    // Listeners
 
     @Override
     public synchronized void addListener(DBCScriptContextListener listener) {
