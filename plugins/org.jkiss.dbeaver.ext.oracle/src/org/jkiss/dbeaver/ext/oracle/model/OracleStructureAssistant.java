@@ -157,9 +157,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + OracleUtils.getSysCatalogHint((OracleDataSource) session.getDataSource()) + " OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
                 "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, (OracleDataSource) session.getDataSource(), "CONSTRAINTS") + "\n" +
-                "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
-                (schema != null ? " AND OWNER=?" : ""))) {
-            dbStat.setString(1, params.getMask().toUpperCase());
+                "WHERE" + (params.isCaseSensitive() ? " CONSTRAINT_NAME " : " UPPER(CONSTRAINT_NAME) ") +
+                "LIKE ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") + (schema != null ? " AND OWNER=?" : ""))) {
+            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }
@@ -250,13 +250,25 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         if (searchViewsByDefinition) {
             query.append(" UNION ALL SELECT OWNER, VIEW_NAME, 'VIEW' AS OBJECT_TYPE FROM ");
             query.append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "VIEWS"));
-            query.append(" v WHERE v.\"TEXT_VC\" LIKE ?");
+            query.append(" v WHERE ");
+            if (params.isCaseSensitive()) {
+                query.append("v.\"TEXT_VC\"");
+            } else {
+                query.append("UPPER(v.\"TEXT_VC\")");
+            }
+            query.append(" LIKE ?");
             query.append(ownerClause);
         }
         if (params.isSearchInDefinitions()) {
             query.append(" UNION ALL SELECT DISTINCT owner, name, type FROM ");
             query.append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SOURCE"));
-            query.append(" WHERE text LIKE ?");
+            query.append(" WHERE ");
+            if (params.isCaseSensitive()) {
+                query.append("text ");
+            } else {
+                query.append("UPPER(text) ");
+            }
+            query.append("LIKE ?");
             query.append(ownerClause);
         }
         query.append(")\nORDER BY OBJECT_NAME");
