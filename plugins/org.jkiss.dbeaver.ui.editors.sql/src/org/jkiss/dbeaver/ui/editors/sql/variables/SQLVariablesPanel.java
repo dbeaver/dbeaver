@@ -17,15 +17,18 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.variables;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -33,16 +36,19 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * SQLVariablesPanel
@@ -53,8 +59,8 @@ public class SQLVariablesPanel extends Composite {
 
     private final SQLEditor mainEditor;
     private SQLEditorBase valueEditor;
-    private Table varsTable;
-    private Button showParametersCheck;
+    private TableViewer varsTable;
+    private boolean showParameters;
 
     public SQLVariablesPanel(Composite parent, SQLEditor editor)
     {
@@ -69,46 +75,8 @@ public class SQLVariablesPanel extends Composite {
 
         // Variables table
         {
-            Composite varsGroup = UIUtils.createPlaceholder(sash, 1);
-
-            varsTable = new Table(varsGroup, SWT.SINGLE | SWT.FULL_SELECTION);
-            varsTable.setHeaderVisible(true);
-            varsTable.setLinesVisible(true);
-            varsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            UIUtils.createTableColumn(varsTable, SWT.LEFT, "Variable");
-            UIUtils.createTableColumn(varsTable, SWT.LEFT, "Value");
-            UIUtils.createTableColumn(varsTable, SWT.LEFT, "Type");
-
-            Composite controlPanel = UIUtils.createComposite(varsGroup, 2);
-            controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            ToolBar buttonsBar = new ToolBar(controlPanel, SWT.HORIZONTAL);
-            buttonsBar.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-
-            ToolItem addButton = UIUtils.createToolItem(buttonsBar, "Add variable", UIIcon.ADD, new SelectionAdapter() {
-
-            });
-            ToolItem removeButton = UIUtils.createToolItem(buttonsBar, "Delete variable", UIIcon.DELETE, new SelectionAdapter() {
-
-            });
-
-            showParametersCheck = UIUtils.createCheckbox(controlPanel, "Show parameters", "Show query parameters", false, 1);
-            showParametersCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    refreshVariables();
-                }
-            });
-
-            varsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    editCurrentVariable();
-                }
-            });
-
-            //sash.addListener(SWT.Resize, event -> UIUtils.packColumns(varsTable, true));
+            VariableListControl variableListControl = new VariableListControl(sash);
+            variableListControl.createOrSubstituteProgressPanel(mainEditor.getSite());
         }
 
         // Editor
@@ -160,14 +128,14 @@ public class SQLVariablesPanel extends Composite {
     }
 
     private void editCurrentVariable() {
-        int selectionIndex = varsTable.getSelectionIndex();
+        ISelection selection = varsTable.getSelection();
         StyledText editorControl = valueEditor.getEditorControl();
         if (editorControl == null) {
             return;
         }
-        if (selectionIndex >= 0) {
-            TableItem item = varsTable.getItem(selectionIndex);
-            DBCScriptContext.VariableInfo variable = (DBCScriptContext.VariableInfo) item.getData();
+        if (!selection.isEmpty()) {
+            //TableItem item = varsTable.getItem(selectionIndex);
+            DBCScriptContext.VariableInfo variable = (DBCScriptContext.VariableInfo) ((IStructuredSelection)selection).getFirstElement();
 
             StringEditorInput sqlInput = new StringEditorInput(
                 "Variable " + variable.name,
@@ -187,9 +155,9 @@ public class SQLVariablesPanel extends Composite {
 
         SQLScriptContext context = mainEditor.getGlobalScriptContext();
 
-        varsTable.removeAll();
+        //varsTable.removeAll();
         List<DBCScriptContext.VariableInfo> variables = context.getVariables();
-        if (showParametersCheck.getSelection()) {
+        if (showParameters) {
             for (SQLQueryParameterRegistry.ParameterInfo param : SQLQueryParameterRegistry.getInstance().getAllParameters()) {
                 if (context.hasVariable(param.name)) {
                     continue;
@@ -204,15 +172,9 @@ public class SQLVariablesPanel extends Composite {
                     DBCScriptContext.VariableType.PARAMETER));
             }
         }
-        for (DBCScriptContext.VariableInfo variable : variables) {
-            TableItem ti = new TableItem(varsTable, SWT.NONE);
-            ti.setText(0, variable.name);
-            ti.setText(1, CommonUtils.toString(variable.value));
-            ti.setText(2, variable.type.getTitle());
-            ti.setData(variable);
-        }
 
-        UIUtils.packColumns(varsTable, true);
+        varsTable.setInput(variables);
+        UIUtils.packColumns(varsTable.getTable(), true);
 
         valueEditor.setInput(new StringEditorInput(
             "Variable",
@@ -223,4 +185,132 @@ public class SQLVariablesPanel extends Composite {
         valueEditor.reloadSyntaxRules();
     }
 
+    private class VariableListControl extends ProgressPageControl {
+
+        private final ISearchExecutor searcher;
+        private Action addAction;
+        private Action deleteAction;
+
+        public VariableListControl(Composite parent) {
+            super(parent, SWT.SHEET);
+            searcher = new ISearchExecutor() {
+                @Override
+                public boolean performSearch(String searchString, int options) {
+                    try {
+                        PatternFilter searchFilter = new PatternFilter() {
+                            protected boolean isLeafMatch(Viewer viewer, Object element) {
+                                DBCScriptContext.VariableInfo variable = (DBCScriptContext.VariableInfo) element;
+
+                                return wordMatches(variable.name) || wordMatches(CommonUtils.toString(variable.value));
+                            }
+                        };
+                        searchFilter.setPattern(searchString);
+                            //(options & SEARCH_CASE_SENSITIVE) != 0);
+                        varsTable.setFilters(new ViewerFilter[]{ searchFilter });
+                        return true;
+                    } catch (PatternSyntaxException e) {
+                        log.error(e.getMessage());
+                        return false;
+                    }
+                }
+
+                @Override
+                public void cancelSearch() {
+                    varsTable.setFilters(new ViewerFilter[0]);
+                }
+            };
+
+            varsTable = new TableViewer(this, SWT.SINGLE | SWT.FULL_SELECTION);
+            varsTable.getTable().setHeaderVisible(true);
+            varsTable.getTable().setLinesVisible(true);
+            varsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            UIUtils.createTableColumn(varsTable.getTable(), SWT.LEFT, "Variable");
+            UIUtils.createTableColumn(varsTable.getTable(), SWT.LEFT, "Value");
+            UIUtils.createTableColumn(varsTable.getTable(), SWT.LEFT, "Type");
+
+            varsTable.setContentProvider(new ListContentProvider());
+            varsTable.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell) {
+                    DBCScriptContext.VariableInfo variable = (DBCScriptContext.VariableInfo) cell.getElement();
+                    switch (cell.getColumnIndex()) {
+                        case 0:
+                            cell.setText(variable.name);
+                            break;
+                        case 1:
+                            cell.setText(CommonUtils.toString(variable.value));
+                            break;
+                        case 2:
+                            cell.setText(variable.type.getTitle());
+                            break;
+                    }
+                }
+            });
+
+            varsTable.addSelectionChangedListener(event -> {
+                if (deleteAction != null) {
+                    deleteAction.setEnabled(!event.getSelection().isEmpty());
+                    updateActions();
+                }
+                editCurrentVariable();
+            });
+        }
+
+        @Override
+        protected ISearchExecutor getSearchRunner() {
+            return searcher;
+        }
+
+        protected void addSearchAction(IContributionManager contributionManager) {
+            contributionManager.add(new Action("Find variable", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
+                @Override
+                public void run() {
+                    performSearch(SearchType.NONE);
+                }
+            });
+        }
+
+        @Override
+        protected void createSearchControls() {
+            super.createSearchControls();
+            Text textControl = getSearchTextControl();
+            if (textControl != null) {
+                TextEditorUtils.enableHostEditorKeyBindingsSupport(mainEditor.getSite(), textControl);
+            }
+        }
+
+        @Override
+        public void fillCustomActions(IContributionManager contributionManager) {
+            super.fillCustomActions(contributionManager);
+
+            addAction = new Action("Add variable", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
+                @Override
+                public void run() {
+                    super.run();
+                }
+            };
+            contributionManager.add(addAction);
+            deleteAction = new Action("Delete variable", DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+                @Override
+                public void run() {
+                    super.run();
+                }
+            };
+            deleteAction.setEnabled(false);
+            contributionManager.add(deleteAction);
+
+            Action showParamsAction = new Action("Show parameters", Action.AS_CHECK_BOX) {
+                @Override
+                public void run() {
+                    showParameters = !showParameters;
+                    refreshVariables();
+                }
+            };
+            showParamsAction.setChecked(showParameters);
+            showParamsAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_VARIABLES));
+            showParamsAction.setDescription("Show query parameters");
+            contributionManager.add(ActionUtils.makeActionContribution(showParamsAction, true));
+        }
+    }
 }
