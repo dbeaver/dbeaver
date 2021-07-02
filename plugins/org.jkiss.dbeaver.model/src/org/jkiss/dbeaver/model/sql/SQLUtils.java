@@ -176,7 +176,7 @@ public final class SQLUtils {
             else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
-                    if (nc == '_' || nc == '*' || nc == '?' || nc == '.') {
+                    if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
                         result.append("\\").append(nc);
                         i++;
                     } else {

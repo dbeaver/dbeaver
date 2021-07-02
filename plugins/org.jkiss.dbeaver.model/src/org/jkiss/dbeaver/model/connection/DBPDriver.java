@@ -170,4 +170,8 @@ public interface DBPDriver extends DBPNamedObject
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
 
+    default String getFullId() {
+        return getProviderId() + ":" + getId();
+    }
+
 }
