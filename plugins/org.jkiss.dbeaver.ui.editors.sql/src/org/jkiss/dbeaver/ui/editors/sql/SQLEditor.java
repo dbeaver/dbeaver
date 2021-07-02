@@ -1789,6 +1789,30 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.getLocalFileFromInput(getEditorInput()),
             new OutputLogWriter(),
             new SQLEditorParametersProvider(getSite()));
+
+        this.globalScriptContext.addListener(new DBCScriptContextListener() {
+            @Override
+            public void variableChanged(ContextAction action, DBCScriptContext.VariableInfo variable) {
+                saveContextVariables();
+            }
+            @Override
+            public void parameterChanged(ContextAction action, String name, Object value) {
+                saveContextVariables();
+            }
+            private void saveContextVariables() {
+                new AbstractJob("Save variables") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        DBPDataSourceContainer ds = getDataSourceContainer();
+                        if (ds != null) {
+                            globalScriptContext.saveVariables(ds.getDriver(), null);
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule(200);
+            }
+
+        });
     }
 
     @Override
@@ -2469,7 +2493,8 @@ public class SQLEditor extends SQLEditorBase implements
             reloadSyntaxRules();
         }
 
-        if (getDataSourceContainer() == null) {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer == null) {
             resultsSash.setMaximizedControl(sqlEditorPanel);
         } else {
             if (curQueryProcessor != null && curQueryProcessor.getFirstResults().hasData()) {
@@ -2481,6 +2506,12 @@ public class SQLEditor extends SQLEditorBase implements
         syntaxLoaded = true;
 
         loadActivePreferenceSettings();
+
+        if (dataSourceContainer != null) {
+            globalScriptContext.loadVariables(dataSourceContainer.getDriver(), null);
+        } else {
+            globalScriptContext.clearVariables();
+        }
     }
 
     @Override

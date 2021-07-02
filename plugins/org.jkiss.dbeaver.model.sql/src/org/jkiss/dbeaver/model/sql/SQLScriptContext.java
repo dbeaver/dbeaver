@@ -281,20 +281,35 @@ public class SQLScriptContext implements DBCScriptContext {
     // Persistence
 
     public void loadVariables(DBPDriver driver, DBPDataSourceContainer dataSource) {
-        variables.clear();
-        List<VariableInfo> varList;
-        if (dataSource != null) {
-            varList = SQLVariablesRegistry.getInstance().getDataSourceVariables(dataSource);
-        } else if (driver != null) {
-            varList = SQLVariablesRegistry.getInstance().getDriverVariables(driver);
-        } else {
-            varList = new ArrayList<>();
+        synchronized (variables) {
+            variables.clear();
+            List<VariableInfo> varList;
+            if (dataSource != null) {
+                varList = SQLVariablesRegistry.getInstance().getDataSourceVariables(dataSource);
+            } else if (driver != null) {
+                varList = SQLVariablesRegistry.getInstance().getDriverVariables(driver);
+            } else {
+                varList = new ArrayList<>();
+            }
+            for (VariableInfo v : varList) {
+                variables.put(v.name, v);
+            }
         }
 
     }
 
     public void saveVariables(DBPDriver driver, DBPDataSourceContainer dataSource) {
-        SQLVariablesRegistry.getInstance().updateVariables(driver, dataSource, new ArrayList<>(variables.values()));
+        ArrayList<VariableInfo> vCopy;
+        synchronized (variables) {
+            vCopy = new ArrayList<>(this.variables.values());
+        }
+        SQLVariablesRegistry.getInstance().updateVariables(driver, dataSource, vCopy);
+    }
+
+    public void clearVariables() {
+        synchronized (variables) {
+            variables.clear();
+        }
     }
 
     ////////////////////////////////////////////////////
