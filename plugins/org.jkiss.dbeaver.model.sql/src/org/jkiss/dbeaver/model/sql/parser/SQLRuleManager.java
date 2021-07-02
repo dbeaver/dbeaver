@@ -244,6 +244,10 @@ public class SQLRuleManager {
             }
         }
 
+        if (ruleProvider != null) {
+            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.FINAL);
+        }
+
         allRules = rules.toArray(new TPRule[0]);
     }
 
