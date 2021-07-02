@@ -2685,6 +2685,7 @@ public class SQLEditor extends SQLEditorBase implements
             case ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED:
             case ModelPreferences.SQL_VARIABLES_ENABLED:
             case ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX:
+            case ModelPreferences.SQL_CONTROL_COMMAND_PREFIX:
                 reloadSyntaxRules();
                 return;
             case SQLPreferenceConstants.RESULT_SET_ORIENTATION:

@@ -234,6 +234,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;
+    public static String pref_page_sql_editor_text_control_command_prefix;
+    public static String pref_page_sql_editor_text_explanation_link;
     public static String pref_page_sql_editor_combo_item_each_line_autocommit;
     public static String pref_page_sql_editor_combo_item_each_spec_line;
     public static String pref_page_sql_editor_combo_item_ignore;
