@@ -916,4 +916,18 @@ public class CommonUtils {
     public static boolean isValidIndex(int index, int length) {
         return index >= 0 || index < length;
     }
+
+    @NotNull
+    public static String escapeHtml(@Nullable String text) {
+        if (text == null) {
+            return "&nbsp;";
+        }
+        return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\r\n", "<br>")
+            .replace("\r", "<br>")
+            .replace("\n", "<br>");
+    }
 }
