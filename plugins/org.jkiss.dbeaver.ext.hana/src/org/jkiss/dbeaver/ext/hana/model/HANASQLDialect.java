@@ -117,7 +117,7 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
 
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
-        if (position == RulePosition.INITIAL) {
+        if (position == RulePosition.FINAL) {
             rules.add(new SQLVariableRule(this));
         }
     }
