@@ -23,7 +23,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeImportExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -135,7 +135,7 @@ class MySQLExportWizard extends AbstractNativeImportExportWizard<MySQLExportSett
             }
             boolean fileDeleted = file.delete();
             if (!fileDeleted) {
-                DBeaverUI.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                     MySQLUIMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
                     MySQLUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message
                 );
