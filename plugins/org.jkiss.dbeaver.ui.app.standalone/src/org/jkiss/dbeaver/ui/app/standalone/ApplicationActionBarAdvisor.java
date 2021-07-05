@@ -92,6 +92,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
         //"org.eclipse.search.searchActionSet" //$NON-NLS-1$
         "org.eclipse.mylyn.tasks.ui.navigation",
+
+        // Disable files actionset to redefine OpenLocalFileAction
+        "org.eclipse.ui.actionSet.openFiles"
     };
 
 

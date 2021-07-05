@@ -14,6 +14,7 @@ Export-Package: org.jkiss.dbeaver.ui.app.standalone,
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.app,
+ org.eclipse.core.filesystem,
  org.eclipse.core.runtime,
  org.eclipse.swt,
  org.eclipse.jface,

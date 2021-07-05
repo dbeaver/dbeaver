@@ -166,6 +166,7 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
