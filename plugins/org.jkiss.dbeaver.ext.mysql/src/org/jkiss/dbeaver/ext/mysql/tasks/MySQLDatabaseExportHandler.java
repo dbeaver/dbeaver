@@ -159,7 +159,12 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         });
 
         File outFile = new File(settings.getOutputFolder(), outFileName);
-
+        if (outFile.exists()) {
+            // Unlike pg_dump, mysqldump happily overrides files which can easily lead to a lost dump.
+            // We prevent that with our manual check
+            // https://github.com/dbeaver/dbeaver/issues/11532
+            throw new IOException("Output file already exists");
+        }
         boolean isFiltering = settings.isRemoveDefiner();
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile, log) :
