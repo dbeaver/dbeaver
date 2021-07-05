@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.firebird.model.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
+import org.jkiss.dbeaver.model.meta.Property;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +31,7 @@ import java.util.List;
  */
 public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 
-	String plan;
+	private String plan;
 	FireBirdPlanNode parent;
 	private List<FireBirdPlanNode> nested;
 	
@@ -39,6 +40,7 @@ public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 		this.nested = new ArrayList<>();
 	}
 
+	@Property
 	@Override
 	public String getNodeName() {
 		return plan;
