@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -27,13 +28,14 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings {
 
@@ -259,5 +261,33 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
             ((DBPPreferenceMap) store).getPropertyMap().put("exportObjects", objectList);
         }
+    }
+
+    public File getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
+        String outputFileName = GeneralUtils.replaceVariables(getOutputFilePattern(), name -> {
+            switch (name) {
+                case NativeToolUtils.VARIABLE_DATABASE:
+                    return info.getDatabase().getName();
+                case NativeToolUtils.VARIABLE_HOST:
+                    return info.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
+                case NativeToolUtils.VARIABLE_CONN_TYPE:
+                    return info.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getId();
+                case NativeToolUtils.VARIABLE_TABLE:
+                    final Iterator<PostgreTableBase> iterator = info.getTables() == null ? null : info.getTables().iterator();
+                    if (iterator != null && iterator.hasNext()) {
+                        return iterator.next().getName();
+                    } else {
+                        return "null";
+                    }
+                case NativeToolUtils.VARIABLE_TIMESTAMP:
+                    return RuntimeUtils.getCurrentTimeStamp();
+                case NativeToolUtils.VARIABLE_DATE:
+                    return RuntimeUtils.getCurrentDate();
+                default:
+                    System.getProperty(name);
+            }
+            return null;
+        });
+        return new File(getOutputFolder(), outputFileName);
     }
 }

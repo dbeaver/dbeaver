@@ -22,6 +22,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
@@ -109,4 +111,30 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         return new PostgreDatabaseBackupSettings();
     }
 
+    @Override
+    protected boolean verifyNoFileConflict() {
+        PostgreDatabaseBackupSettings settings = getSettings();
+        for (PostgreDatabaseBackupInfo info: settings.getExportObjects()) {
+            File file = settings.getOutputFile(info);
+            if (!file.exists()) {
+                continue;
+            }
+            boolean deleteFile = UIUtils.confirmAction(
+                PostgreMessages.tools_db_export_wizard_file_already_exists_title,
+                PostgreMessages.tools_db_export_wizard_file_already_exists_message
+            );
+            if (!deleteFile) {
+                return false;
+            }
+            boolean fileDeleted = file.delete();
+            if (!fileDeleted) {
+                DBeaverUI.getInstance().showError(
+                    PostgreMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
+                    PostgreMessages.tools_db_export_wizard_file_have_not_been_deleted_message
+                );
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -22,6 +22,11 @@ import org.eclipse.osgi.util.NLS;
 public class PostgreMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
 
+    public static String tools_db_export_wizard_file_already_exists_title;
+    public static String tools_db_export_wizard_file_already_exists_message;
+    public static String tools_db_export_wizard_file_have_not_been_deleted_title;
+    public static String tools_db_export_wizard_file_have_not_been_deleted_message;
+
     /*backup wizard*/
     public static String wizard_backup_title;
     public static String wizard_backup_msgbox_success_title;

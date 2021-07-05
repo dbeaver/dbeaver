@@ -67,7 +67,10 @@ public abstract class AbstractNativeImportExportWizard<SETTINGS extends Abstract
                 }
             }
         }
-
+        boolean ok = verifyNoFileConflict();
+        if (!ok) {
+            return false;
+        }
         return super.performFinish();
     }
 
@@ -80,4 +83,5 @@ public abstract class AbstractNativeImportExportWizard<SETTINGS extends Abstract
         return true;
     }
 
+    protected abstract boolean verifyNoFileConflict();
 }

@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeImportExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
@@ -116,4 +118,30 @@ class MySQLExportWizard extends AbstractNativeImportExportWizard<MySQLExportSett
         return true;
     }
 
+    @Override
+    protected boolean verifyNoFileConflict() {
+        MySQLExportSettings settings = getSettings();
+        for (MySQLDatabaseExportInfo info: settings.getExportObjects()) {
+            File file = settings.getOutputFile(info);
+            if (!file.exists()) {
+                continue;
+            }
+            boolean deleteFile = UIUtils.confirmAction(
+                MySQLUIMessages.tools_db_export_wizard_file_already_exists_title,
+                MySQLUIMessages.tools_db_export_wizard_file_already_exists_message
+            );
+            if (!deleteFile) {
+                return false;
+            }
+            boolean fileDeleted = file.delete();
+            if (!fileDeleted) {
+                DBeaverUI.getInstance().showError(
+                    MySQLUIMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
+                    MySQLUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message
+                );
+                return false;
+            }
+        }
+        return true;
+    }
 }

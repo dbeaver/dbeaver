@@ -107,4 +107,8 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
         return new PostgreDatabaseRestoreSettings();
     }
 
+    @Override
+    protected boolean verifyNoFileConflict() {
+        return true;
+    }
 }
