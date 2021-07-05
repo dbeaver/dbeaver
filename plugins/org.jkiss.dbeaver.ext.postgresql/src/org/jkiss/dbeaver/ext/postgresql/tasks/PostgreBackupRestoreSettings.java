@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -26,17 +27,20 @@ import org.jkiss.utils.CommonUtils;
 
 public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<DBSObject> {
     public enum ExportFormat {
-        PLAIN("p", "Plain"),
-        CUSTOM("c", "Custom"),
-        DIRECTORY("d", "Directory"),
-        TAR("t", "Tar");
+        PLAIN("p", "Plain", "sql"),
+        CUSTOM("c", "Custom", ""),
+        DIRECTORY("d", "Directory", ""),
+        TAR("t", "Tar", "tar");
 
         private final String id;
         private String title;
+        @NotNull
+        private final String ext;
 
-        ExportFormat(String id, String title) {
+        ExportFormat(String id, String title, @NotNull String ext) {
             this.id = id;
             this.title = title;
+            this.ext = ext;
         }
 
         public String getId() {
@@ -45,6 +49,11 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
 
         public String getTitle() {
             return title;
+        }
+
+        @NotNull
+        public String getExt() {
+            return ext;
         }
     }
 
