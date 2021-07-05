@@ -486,7 +486,7 @@ public final class SQLUtils {
         for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
             if (hasOrder) query.append(',');
             String orderString = null;
-            if (co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
+            if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
                 String orderColumn = co.getAttributeName();
                 if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
                     // It is a simple column.

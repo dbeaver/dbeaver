@@ -37,6 +37,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     private DBSAttributeBase attribute;
     private String attributeName;
     private int originalVisualPosition;
+    private boolean plainNameReference; // Disables ordering by column index
 
     public DBDAttributeConstraint(@NotNull DBDAttributeBinding attribute) {
         setAttribute(attribute);
@@ -88,6 +89,15 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     public int getOriginalVisualPosition() {
         return originalVisualPosition;
+    }
+
+    // Disables ordering by column index
+    public boolean isPlainNameReference() {
+        return plainNameReference;
+    }
+
+    public void setPlainNameReference(boolean plainNameReference) {
+        this.plainNameReference = plainNameReference;
     }
 
     @Override
@@ -142,4 +152,5 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         return isVisible() == constraint.isVisible() && getVisualPosition() == constraint.getVisualPosition() &&
             Arrays.equals(getOptions(), constraint.getOptions());
     }
+
 }
