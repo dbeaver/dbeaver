@@ -28,9 +28,7 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class SQLQueryParameterRegistry
 {
@@ -60,9 +58,13 @@ public class SQLQueryParameterRegistry
     {
         if (registry == null) {
             registry = new SQLQueryParameterRegistry();
-            registry.loadProfiles();
+            registry.loadParameters();
         }
         return registry;
+    }
+
+    public List<ParameterInfo> getAllParameters() {
+        return new ArrayList<>(parameterMap.values());
     }
 
     public ParameterInfo getParameter(String name)
@@ -75,7 +77,7 @@ public class SQLQueryParameterRegistry
         parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, value));
     }
 
-    private void loadProfiles()
+    private void loadParameters()
     {
         File storeFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE_NAME);
         if (!storeFile.exists()) {

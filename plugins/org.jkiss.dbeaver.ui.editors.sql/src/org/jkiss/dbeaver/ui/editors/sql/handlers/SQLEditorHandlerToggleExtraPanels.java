@@ -19,40 +19,34 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class SQLEditorHandlerSwitchPanel extends AbstractHandler {
+import java.util.Map;
 
-    private static final Log log = Log.getLog(SQLEditorHandlerSwitchPanel.class);
+public class SQLEditorHandlerToggleExtraPanels extends AbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor == null) {
-            return null;
-        }
-
-        String actionId = event.getCommand().getId();
-
-        switch (actionId) {
-            case SQLEditorCommands.CMD_SQL_SWITCH_PANEL:
-                editor.toggleActivePanel();
-                break;
-            case SQLEditorCommands.CMD_SQL_SHOW_OUTPUT:
-                editor.showOutputPanel();
-                break;
-            case SQLEditorCommands.CMD_SQL_SHOW_LOG:
-                editor.showExecutionLogPanel();
-                break;
-            case SQLEditorCommands.CMD_SQL_SHOW_VARIABLES:
-                editor.showVariablesPanel();
-                break;
+        if (editor != null) {
+            editor.toggleExtraPanelsLayout();
         }
         return null;
     }
 
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
+        IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+        if (activeEditor instanceof SQLEditor) {
+            element.setChecked(SQLPreferenceConstants.LOCATION_RESULTS.equals(((SQLEditor) activeEditor).getExtraPanelsLocation()));
+        }
+    }
 }

@@ -21,29 +21,33 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
+import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SQL script execution context
  */
 public class SQLScriptContext implements DBCScriptContext {
 
-    private final Map<String, Object> variables = new HashMap<>();
+    private final Map<String, VariableInfo> variables = new LinkedHashMap<>();
     private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> pragmas = new HashMap<>();
     private Map<String, Object> statementPragmas;
+
+    private DBCScriptContextListener[] listeners = null;
 
     private final Map<String, Object> data = new HashMap<>();
 
@@ -93,16 +97,20 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public Object getVariable(String name) {
-        Object value = variables.get(name);
-        if (value == null && parentContext != null) {
-            value = parentContext.getVariable(name);
+        VariableInfo variableInfo = variables.get(name);
+        if (variableInfo == null && parentContext != null) {
+            return parentContext.getVariable(name);
         }
-        return value;
+        return variableInfo == null ? null : variableInfo.value;
     }
 
     @Override
     public void setVariable(String name, Object value) {
-        variables.put(name, value);
+        VariableInfo v = new VariableInfo(name, value, VariableType.VARIABLE);
+        VariableInfo ov = variables.put(name, v);
+
+        notifyListeners(ov == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, v);
+
         if (parentContext != null) {
             parentContext.setVariable(name, value);
         }
@@ -110,15 +118,35 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public void removeVariable(String name) {
-        variables.remove(name);
+        VariableInfo v = variables.remove(name);
+        if (v != null) {
+            notifyListeners(DBCScriptContextListener.ContextAction.DELETE, v);
+        }
+
         if (parentContext != null) {
             parentContext.removeVariable(name);
         }
     }
 
+    @Override
+    public List<VariableInfo> getVariables() {
+        return new ArrayList<>(variables.values());
+    }
+
     public void setVariables(Map<String, Object> variables) {
         this.variables.clear();
-        this.variables.putAll(variables);
+        for (Map.Entry<String, Object> ve : variables.entrySet()) {
+            VariableInfo v = new VariableInfo(ve.getKey(), ve.getValue(), VariableType.VARIABLE);
+            VariableInfo ov = this.variables.put(
+                ve.getKey(),
+                v);
+
+            notifyListeners(ov == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, v);
+        }
+
+        if (parentContext != null) {
+            parentContext.setVariables(variables);
+        }
     }
 
     public Object getParameterDefaultValue(String name) {
@@ -126,7 +154,13 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     public void setParameterDefaultValue(String name, Object value) {
-        defaultParameters.put(name, value);
+        Object op = defaultParameters.put(name, value);
+
+        notifyListeners(op == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, name, value);
+
+        if (parentContext != null) {
+            parentContext.setParameterDefaultValue(name, value);
+        }
     }
 
     @NotNull
@@ -220,6 +254,8 @@ public class SQLScriptContext implements DBCScriptContext {
                 Object varValue = variables.get(parameter.getVarName());
                 if (varValue == null) {
                     varValue = defaultParameters.get(parameter.getVarName());
+                } else {
+                    varValue = ((VariableInfo)varValue).value;
                 }
                 if (varValue != null) {
                     parameter.setValue(CommonUtils.toString(varValue));
@@ -233,10 +269,90 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     public Map<String, Object> getAllParameters() {
-        Map<String, Object> params = new LinkedHashMap<>();
+        Map<String, Object> params = new LinkedHashMap<>(defaultParameters.size() + variables.size());
         params.putAll(defaultParameters);
-        params.putAll(variables);
+        for (Map.Entry<String, VariableInfo> v : variables.entrySet()) {
+            params.put(v.getKey(), v.getValue().value);
+        }
         return params;
+    }
+
+    ////////////////////////////////////////////////////
+    // Persistence
+
+    public void loadVariables(DBPDriver driver, DBPDataSourceContainer dataSource) {
+        synchronized (variables) {
+            variables.clear();
+            List<VariableInfo> varList;
+            if (dataSource != null) {
+                varList = SQLVariablesRegistry.getInstance().getDataSourceVariables(dataSource);
+            } else if (driver != null) {
+                varList = SQLVariablesRegistry.getInstance().getDriverVariables(driver);
+            } else {
+                varList = new ArrayList<>();
+            }
+            for (VariableInfo v : varList) {
+                variables.put(v.name, v);
+            }
+        }
+
+    }
+
+    public void saveVariables(DBPDriver driver, DBPDataSourceContainer dataSource) {
+        ArrayList<VariableInfo> vCopy;
+        synchronized (variables) {
+            vCopy = new ArrayList<>(this.variables.values());
+        }
+        SQLVariablesRegistry.getInstance().updateVariables(driver, dataSource, vCopy);
+    }
+
+    public void clearVariables() {
+        synchronized (variables) {
+            variables.clear();
+        }
+    }
+
+    ////////////////////////////////////////////////////
+    // Listeners
+
+    @Override
+    public synchronized void addListener(DBCScriptContextListener listener) {
+        if (listeners == null) {
+            listeners = new DBCScriptContextListener[] { listener };
+        } else {
+            listeners = ArrayUtils.add(DBCScriptContextListener.class, listeners, listener);
+        }
+    }
+
+    @Override
+    public synchronized void removeListener(DBCScriptContextListener listener) {
+        if (listeners != null) {
+            listeners = ArrayUtils.remove(DBCScriptContextListener.class, listeners, listener);
+        }
+    }
+
+    @Nullable
+    private DBCScriptContextListener[] getListenersCopy() {
+        synchronized (this) {
+            if (listeners != null) {
+                return Arrays.copyOf(listeners, listeners.length);
+            }
+        }
+        return null;
+    }
+
+
+    private void notifyListeners(DBCScriptContextListener.ContextAction contextAction, VariableInfo variableInfo) {
+        DBCScriptContextListener[] lc = getListenersCopy();
+        if (lc != null) {
+            for (DBCScriptContextListener l : lc) l.variableChanged(contextAction, variableInfo);
+        }
+    }
+    private void notifyListeners(DBCScriptContextListener.ContextAction contextAction, String paramName, Object paramValue) {
+        DBCScriptContextListener[] lc = getListenersCopy();
+        if (lc != null) {
+            for (DBCScriptContextListener l : lc) l.parameterChanged(contextAction, paramName, paramValue);
+        }
     }
 
 }

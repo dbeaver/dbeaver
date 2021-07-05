@@ -82,6 +82,10 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         writer = new PrintWriter(out, true);
     }
 
+    public void dispose() {
+        this.getControl().dispose();
+    }
+
     public boolean isDisposed() {
         return this.getControl().isDisposed();
     }

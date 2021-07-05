@@ -74,12 +74,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
 
-    private static Gson CONFIG_GSON = new GsonBuilder()
+    private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .setPrettyPrinting()
         .create();
-    private static Gson SECURE_GSON = new GsonBuilder()
+    private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .create();
@@ -92,7 +92,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     //  0 level: datasource ID
     //  1 level: object type (connection or handler id)
     //  2 level: map of secured properties
-    private Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
+    private final Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
 
     DataSourceSerializerModern(DataSourceRegistry registry) {
         this.registry = registry;
