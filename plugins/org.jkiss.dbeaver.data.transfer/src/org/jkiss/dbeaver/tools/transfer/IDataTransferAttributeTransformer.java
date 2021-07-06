@@ -14,31 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.database;
+package org.jkiss.dbeaver.tools.transfer;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+
+import java.util.Map;
 
 /**
-* Mapping type
-*/
-public enum DatabaseMappingType {
-    unspecified(false, false),
-    existing(true, false),
-    create(true, false),
-    transform(true, true),
-    skip(false, false);
+ * Attribute transformer
+ */
+public interface IDataTransferAttributeTransformer {
 
-    private final boolean isValid;
-    private final boolean isAttrOnly;
+    Object transformAttribute(
+        @NotNull DBCSession session,
+        @NotNull DBDAttributeBinding[] dataAttributes,
+        @NotNull Object[] dataRow,
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull Map<String, Object> options)
+        throws DBException;
 
-    DatabaseMappingType(boolean isValid, boolean isAttrOnly) {
-        this.isValid = isValid;
-        this.isAttrOnly = isAttrOnly;
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public boolean isAttrOnly() {
-        return isAttrOnly;
-    }
 }

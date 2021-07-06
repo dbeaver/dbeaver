@@ -50,7 +50,7 @@ public class BooleanAttributeTransformer implements DBDAttributeTransformer {
         attribute.setTransformHandler(new BooleanValueHandler(attribute.getValueHandler()));
     }
 
-    private class BooleanValueHandler extends ProxyValueHandler {
+    private static class BooleanValueHandler extends ProxyValueHandler {
         BooleanValueHandler(DBDValueHandler target) {
             super(target);
         }

@@ -14,74 +14,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.datatype;
+
+package org.jkiss.dbeaver.tools.transfer.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * AttributeTransformerDescriptor
+ * DataTransferAttributeTransformerDescriptor
  */
-public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<DBDAttributeTransformer> implements DBDAttributeTransformerDescriptor
-{
+public class DataTransferAttributeTransformerDescriptor extends AbstractDescriptor {
+    @NotNull
+    private final String id;
+    @NotNull
     private final String name;
     private final String description;
-    private final boolean applyByDefault;
-    private final boolean custom;
+    @NotNull
     private final DBPImage icon;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
-    public AttributeTransformerDescriptor(IConfigurationElement config)
-    {
-        super(config, DBDAttributeTransformer.class);
+    public DataTransferAttributeTransformerDescriptor(IConfigurationElement config) {
+        super(config);
 
-        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.applyByDefault = "true".equals(config.getAttribute("applyByDefault"));
-        this.custom = "true".equals(config.getAttribute("custom"));
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.id = config.getAttribute("id");
+        this.name = config.getAttribute("label");
+        this.description = config.getAttribute("description");
+        this.icon = iconToImage(config.getAttribute("icon"), DBIcon.TYPE_UNKNOWN);
 
         for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
             properties.addAll(PropertyDescriptor.extractProperties(prop));
         }
     }
 
-    @Override
+    @NotNull
+    public String getId() {
+        return id;
+    }
+
+    @NotNull
     public String getName() {
         return name;
     }
 
-    @Override
+    @Nullable
     public String getDescription() {
         return description;
     }
 
-    @Override
-    public boolean isApplicableByDefault() {
-        return applyByDefault;
+    @NotNull
+    public DBPImage getIcon() {
+        return icon;
     }
 
-    @Override
-    public boolean isCustom() {
-        return custom;
-    }
-
-    @Override
+    @NotNull
     public List<DBPPropertyDescriptor> getProperties() {
         return properties;
     }
 
     @Override
-    public DBPImage getIcon() {
-        return icon;
+    public String toString() {
+        return id;
     }
-
 }

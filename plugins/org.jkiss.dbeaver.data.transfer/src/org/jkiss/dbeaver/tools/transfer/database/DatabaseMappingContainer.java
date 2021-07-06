@@ -22,7 +22,10 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -46,12 +49,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
 
-    private DatabaseConsumerSettings consumerSettings;
+    private final DatabaseConsumerSettings consumerSettings;
     private DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
-    private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
+    private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
