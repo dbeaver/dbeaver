@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2021 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mysql.tasks;
+package org.jkiss.dbeaver.tasks.nativetool;
 
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
+import org.jkiss.code.NotNull;
 
-public abstract class MySQLNativeToolSettings extends AbstractImportExportSettings<DBSObject> {
+import java.io.File;
 
+public interface ExportSettingsExtension<INFO> {
+    @NotNull
+    Iterable<INFO> getExportObjects();
 
+    @NotNull
+    File getOutputFile(@NotNull INFO info);
 }

@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -25,7 +24,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 
-import java.io.File;
 import java.util.Collection;
 
 public abstract class AbstractNativeImportExportWizard<SETTINGS extends AbstractImportExportSettings<DBSObject>, PROCESS_ARG>
@@ -56,28 +54,7 @@ public abstract class AbstractNativeImportExportWizard<SETTINGS extends Abstract
     }
 
     @Override
-    public boolean performFinish() {
-        if (isExportWizard()) {
-            final File dir = getSettings().getOutputFolder();
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
-                    getContainer().updateMessage();
-                    return false;
-                }
-            }
-        }
-
-        return super.performFinish();
-    }
-
-    @Override
     public boolean isVerbose() {
         return true;
     }
-
-    public boolean isExportWizard() {
-        return true;
-    }
-
 }
