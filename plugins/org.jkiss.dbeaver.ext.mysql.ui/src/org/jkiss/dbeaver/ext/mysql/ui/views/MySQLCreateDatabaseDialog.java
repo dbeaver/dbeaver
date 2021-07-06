@@ -85,10 +85,12 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
             assert charset != null;
 
             collationCombo.removeAll();
-            for (MySQLCollation col : charset.getCollations()) {
-                collationCombo.add(col.getName());
+            if (charset != null) {
+                for (MySQLCollation col : charset.getCollations()) {
+                    collationCombo.add(col.getName());
+                }
+                collation = charset.getDefaultCollation();
             }
-            collation = charset.getDefaultCollation();
             if (collation != null) {
                 UIUtils.setComboSelection(collationCombo, collation.getName());
             }
