@@ -20,34 +20,38 @@ package org.jkiss.dbeaver.tasks.ui.nativetool.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class TaskNativeUIMessages extends NLS {
-	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages"; //$NON-NLS-1$
 
-	public static String tools_script_execute_wizard_task_completed;
-	public static String tools_wizard_error_task_error_message;
-	public static String tools_wizard_error_task_error_title;
-	public static String tools_wizard_error_no_database_object_selected;
-	public static String tools_wizard_error_no_native_client_selected;
-	public static String tools_wizard_database_group_title;
-	public static String tools_wizard_client_group_title;
-	public static String tools_wizard_client_group_client;
-	public static String tools_wizard_client_button;
-	public static String tools_wizard_client_dialog_title;
-	public static String tools_wizard_error_task_canceled;
-	public static String tools_wizard_log_process_exit_code;
-	public static String tools_wizard_log_io_error;
-	public static String tools_wizard_message_client_home_not_found;
-	public static String tools_wizard_message_no_client_home;
-	public static String tools_wizard_page_log_task_finished;
-	public static String tools_wizard_page_log_task_log_reader;
-	public static String tools_wizard_page_log_task_progress;
-	public static String tools_wizard_page_log_task_progress_log;
-	public static String tools_wizard_page_log_task_started_at;
+    public static String tools_script_execute_wizard_task_completed;
+    public static String tools_wizard_error_task_error_message;
+    public static String tools_wizard_error_task_error_title;
+    public static String tools_wizard_error_no_database_object_selected;
+    public static String tools_wizard_error_no_native_client_selected;
+    public static String tools_wizard_database_group_title;
+    public static String tools_wizard_client_group_title;
+    public static String tools_wizard_client_group_client;
+    public static String tools_wizard_client_button;
+    public static String tools_wizard_client_dialog_title;
+    public static String tools_wizard_error_task_canceled;
+    public static String tools_wizard_log_process_exit_code;
+    public static String tools_wizard_log_io_error;
+    public static String tools_wizard_message_client_home_not_found;
+    public static String tools_wizard_message_no_client_home;
+    public static String tools_wizard_page_log_task_finished;
+    public static String tools_wizard_page_log_task_log_reader;
+    public static String tools_wizard_page_log_task_progress;
+    public static String tools_wizard_page_log_task_progress_log;
+    public static String tools_wizard_page_log_task_started_at;
+    public static String tools_db_export_wizard_file_already_exists_title;
+    public static String tools_db_export_wizard_file_already_exists_message;
+    public static String tools_db_export_wizard_file_have_not_been_deleted_title;
+    public static String tools_db_export_wizard_file_have_not_been_deleted_message;
 
     static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, TaskNativeUIMessages.class);
-	}
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, TaskNativeUIMessages.class);
+    }
 
-	private TaskNativeUIMessages() {
-	}
+    private TaskNativeUIMessages() {
+    }
 }

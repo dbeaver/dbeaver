@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -29,12 +28,13 @@ import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeImportExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collections;
 import java.util.Map;
 
-class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
+class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatabaseRestoreSettings, PostgreDatabaseRestoreInfo> {
 
     private PostgreRestoreWizardPageSettings settingsPage;
 
@@ -57,11 +57,6 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
         settingsPage.saveState();
 
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
-    }
-
-    @Override
-    public boolean isExportWizard() {
-        return false;
     }
 
     @Override
@@ -106,5 +101,4 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     protected PostgreDatabaseRestoreSettings createSettings() {
         return new PostgreDatabaseRestoreSettings();
     }
-
 }
