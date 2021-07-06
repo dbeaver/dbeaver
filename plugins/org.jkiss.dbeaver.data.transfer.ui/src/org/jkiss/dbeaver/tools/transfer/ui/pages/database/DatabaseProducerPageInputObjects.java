@@ -22,13 +22,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -42,15 +40,8 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.utils.CommonUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTransferWizard> {
 
@@ -104,82 +95,9 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             });
             UIUtils.asyncExec(() -> UIUtils.packColumns(mappingTable, true));
         }
-        {
-            Composite controlGroup = UIUtils.createComposite(composite, 1);
-            Button autoAssignButton = new Button(controlGroup, SWT.PUSH);
-            autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.ASTERISK));
-            autoAssignButton.setText(DTMessages.data_transfer_db_consumer_auto_assign);
-            autoAssignButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    autoAssignMappings();
-                }
-            });
-        }
 
         setControl(composite);
 
-    }
-
-    private void autoAssignMappings() {
-        DBSObjectContainer objectContainer = chooseEntityContainer();
-        if (objectContainer == null) {
-            return;
-        }
-
-        java.util.List<DBSObject> containerObjects = new ArrayList<>();
-        try {
-            getWizard().getContainer().run(true, true, mon -> {
-                try {
-                    Collection<? extends DBSObject> children = objectContainer.getChildren(new DefaultProgressMonitor(mon));
-                    if (children != null) {
-                        containerObjects.addAll(children);
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(DTUIMessages.database_producer_page_input_objects_title_assign_error,
-                    DTUIMessages.database_producer_page_input_objects_message_error_reading_container_objects, e);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        if (!CommonUtils.isEmpty(containerObjects)) {
-            autoAssignMappings(containerObjects);
-        }
-    }
-
-    private void autoAssignMappings(List<DBSObject> containerObjects) {
-        boolean chooseConsumer = getWizard().getSettings().isConsumerOptional();
-
-        for (TableItem item : mappingTable.getItems()) {
-            DataTransferPipe pipe = (DataTransferPipe) item.getData();
-            if ((chooseConsumer && (pipe.getConsumer() == null || pipe.getConsumer().getDatabaseObject() == null)) ||
-                (!chooseConsumer && (pipe.getProducer() == null || pipe.getProducer().getDatabaseObject() == null))) {
-                DBSObject objectToMap = chooseConsumer ? pipe.getProducer().getDatabaseObject() : pipe.getConsumer().getDatabaseObject() ;
-                if (objectToMap == null) {
-                    continue;
-                }
-
-                DBSObject object = DBUtils.findObject(containerObjects, objectToMap.getName());
-                if (object != null) {
-                    if (chooseConsumer) {
-                        if (object instanceof DBSDataManipulator) {
-                            pipe.setConsumer(new DatabaseTransferConsumer((DBSDataManipulator) object));
-                        }
-                    } else {
-                        if (object instanceof DBSDataContainer) {
-                            pipe.setProducer(new DatabaseTransferProducer((DBSDataContainer) object));
-                        }
-                    }
-                    updateItemData(item, pipe);
-                }
-
-            }
-        }
-        updatePageCompletion();
     }
 
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
