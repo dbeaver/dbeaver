@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
+import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -39,7 +40,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject> implements MySQLNativeCredentialsSettings {
+public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
+        implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
     private static final Log log = Log.getLog(MySQLExportSettings.class);
 
     public enum DumpMethod {
@@ -155,6 +157,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         this.exportObjects = exportObjects;
     }
 
+    @NotNull
     public List<MySQLDatabaseExportInfo> getExportObjects() {
         return exportObjects;
     }
@@ -305,6 +308,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         }
     }
 
+    @NotNull
     public File getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
         String outFileName = GeneralUtils.replaceVariables(getOutputFilePattern(), name -> {
             switch (name) {

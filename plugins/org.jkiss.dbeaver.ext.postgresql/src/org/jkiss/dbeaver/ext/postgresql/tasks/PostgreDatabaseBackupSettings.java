@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -37,7 +38,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings {
+public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings implements ExportSettingsExtension<PostgreDatabaseBackupInfo> {
 
     private static final Log log = Log.getLog(PostgreDatabaseBackupSettings.class);
 
@@ -50,6 +51,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private boolean noPrivileges;
     private boolean noOwner;
 
+    @NotNull
     public List<PostgreDatabaseBackupInfo> getExportObjects() {
         return exportObjects;
     }
@@ -263,6 +265,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         }
     }
 
+    @NotNull
     public File getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
         String outputFileName = GeneralUtils.replaceVariables(getOutputFilePattern(), name -> {
             switch (name) {

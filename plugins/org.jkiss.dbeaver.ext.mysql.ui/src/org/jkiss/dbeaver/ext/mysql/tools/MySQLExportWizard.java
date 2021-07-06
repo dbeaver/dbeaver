@@ -21,7 +21,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
@@ -31,17 +30,14 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeImportExportWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
-class MySQLExportWizard extends AbstractNativeImportExportWizard<MySQLExportSettings, MySQLDatabaseExportInfo> implements IExportWizard {
-
+class MySQLExportWizard extends AbstractNativeExportWizard<MySQLExportSettings, MySQLDatabaseExportInfo> {
     private MySQLExportWizardPageObjects objectsPage;
     private MySQLExportWizardPageSettings settingsPage;
 
@@ -111,37 +107,4 @@ class MySQLExportWizard extends AbstractNativeImportExportWizard<MySQLExportSett
             SWT.ICON_INFORMATION);
         UIUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
 	}
-
-    @Override
-    public boolean isVerbose()
-    {
-        return true;
-    }
-
-    @Override
-    protected boolean verifyNoFileConflict() {
-        MySQLExportSettings settings = getSettings();
-        for (MySQLDatabaseExportInfo info: settings.getExportObjects()) {
-            File file = settings.getOutputFile(info);
-            if (!file.exists()) {
-                continue;
-            }
-            boolean deleteFile = UIUtils.confirmAction(
-                MySQLUIMessages.tools_db_export_wizard_file_already_exists_title,
-                MySQLUIMessages.tools_db_export_wizard_file_already_exists_message
-            );
-            if (!deleteFile) {
-                return false;
-            }
-            boolean fileDeleted = file.delete();
-            if (!fileDeleted) {
-                DBWorkbench.getPlatformUI().showError(
-                    MySQLUIMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
-                    MySQLUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message
-                );
-                return false;
-            }
-        }
-        return true;
-    }
 }

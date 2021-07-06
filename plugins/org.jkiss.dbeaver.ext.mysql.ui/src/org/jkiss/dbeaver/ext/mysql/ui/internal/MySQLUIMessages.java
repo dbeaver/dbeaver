@@ -120,10 +120,6 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_page_name;
     public static String tools_db_export_wizard_task_name;
     public static String tools_db_export_wizard_title;
-    public static String tools_db_export_wizard_file_already_exists_title;
-    public static String tools_db_export_wizard_file_already_exists_message;
-    public static String tools_db_export_wizard_file_have_not_been_deleted_title;
-    public static String tools_db_export_wizard_file_have_not_been_deleted_message;
     public static String tools_script_execute_wizard_db_import;
     public static String tools_script_execute_wizard_execute_script;
     public static String tools_script_execute_wizard_page_settings_group_input;
