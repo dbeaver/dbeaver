@@ -54,7 +54,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private Button disableReferentialIntegrity;
     private Combo onDuplicateKeyInsertMethods;
     private Group loadSettings;
-    private String disableReferentialIntegrityCheckboxTooltip = "";
+    private String disableReferentialIntegrityCheckboxTooltip;
     private boolean isDisablingReferentialIntegritySupported;
 
     public DatabaseConsumerPageLoadSettings() {
@@ -194,6 +194,8 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     }
 
     private void loadUISettingsForDisableReferentialIntegrityCheckbox() {
+        isDisablingReferentialIntegritySupported = false;
+        disableReferentialIntegrityCheckboxTooltip = "";
         try {
             getWizard().getRunnableContext().run(false, false, monitor -> {
                 for (DatabaseMappingContainer mappingContainer : getSettings().getDataMappings().values()) {
