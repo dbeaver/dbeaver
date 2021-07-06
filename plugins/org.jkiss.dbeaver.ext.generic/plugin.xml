@@ -1163,6 +1163,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         description="Driver for MySQL (4.x and earlier)">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
+                    <property name="rewriteBatchedStatements" value="true"/>
                 </driver>
 
                 <driver
