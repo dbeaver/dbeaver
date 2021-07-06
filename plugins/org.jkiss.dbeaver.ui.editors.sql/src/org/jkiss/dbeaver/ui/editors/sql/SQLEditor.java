@@ -102,6 +102,7 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -1160,6 +1161,16 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         }
                     });
+                    if (activeTab.getData() instanceof QueryResultsContainer) {
+                        QueryResultsContainer rc = ((QueryResultsContainer) activeTab.getData());
+                        if (rc.hasData()) {
+                            manager.add(new AssignVariableAction(
+                                SQLEditor.this,
+                                rc.getQuery().getText(),
+                                true,
+                                false));
+                        }
+                    }
                 }
                 if (pinnedTabsCount > 1 || resultTabsCount > 1 || (activeTab != null && activeTab.getShowClose())) {
                     manager.add(new Separator());

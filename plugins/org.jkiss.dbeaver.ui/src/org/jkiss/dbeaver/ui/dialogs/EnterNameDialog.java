@@ -31,7 +31,7 @@ public class EnterNameDialog extends Dialog {
 
     private String propertyName;
     private String propertyValue;
-    private Text propNameText;
+    protected Text propNameText;
     private String result;
 
     public EnterNameDialog(Shell parentShell, String propertyName, String propertyValue)

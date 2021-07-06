@@ -103,6 +103,8 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
+    public static String action_result_tabs_assign_variable;
+    public static String action_result_tabs_assign_variable_sql;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;

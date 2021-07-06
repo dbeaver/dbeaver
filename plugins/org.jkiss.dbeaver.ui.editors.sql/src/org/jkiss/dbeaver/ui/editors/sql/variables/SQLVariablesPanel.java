@@ -123,6 +123,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 log.error(e);
             }
             valueEditor.createPartControl(editorPH);
+            valueEditor.setWordWrap(true);
             valueEditor.reloadSyntaxRules();
 
             //valueEditor.getEditorControl().setEnabled(false);
@@ -303,14 +304,21 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             addAction = new Action("Add variable", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
                 @Override
                 public void run() {
-                    super.run();
+                    AssignVariableAction action = new AssignVariableAction(mainEditor, "", false, true);
+                    action.run();
                 }
             };
             contributionManager.add(addAction);
             deleteAction = new Action("Delete variable", DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
                 @Override
                 public void run() {
-                    super.run();
+                    if (!varsTable.getSelection().isEmpty()) {
+                        Object varElement = ((IStructuredSelection) varsTable.getSelection()).getFirstElement();
+                        if (varElement instanceof DBCScriptContext.VariableInfo) {
+                            RemoveVariableAction action = new RemoveVariableAction(mainEditor, ((DBCScriptContext.VariableInfo) varElement).name);
+                            action.run();
+                        }
+                    }
                 }
             };
             deleteAction.setEnabled(false);
