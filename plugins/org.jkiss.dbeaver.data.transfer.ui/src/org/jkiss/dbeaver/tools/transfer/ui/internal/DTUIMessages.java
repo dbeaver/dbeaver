@@ -77,6 +77,8 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_column_source_text;
 	public static String database_consumer_page_mapping_column_target_text;
 	public static String database_consumer_page_mapping_column_mapping_text;
+	public static String database_consumer_page_mapping_column_transformer_text;
+	public static String database_consumer_page_mapping_column_transformer_tip;
 	public static String database_consumer_page_mapping_node_title;
 	public static String database_consumer_page_mapping_table_name;
 	public static String database_consumer_page_mapping_label_hint;
