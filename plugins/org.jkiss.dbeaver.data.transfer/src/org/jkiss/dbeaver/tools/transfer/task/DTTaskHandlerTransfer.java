@@ -33,7 +33,9 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * DTTaskHandlerTransfer
@@ -54,6 +56,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         try {
             runnableContext.run(true, true, monitor -> {
                 settings[0] = new DataTransferSettings(monitor, task, log, Collections.emptyMap(), new DataTransferState());
+                settings[0].loadNodeSettings(monitor);
             });
         } catch (InvocationTargetException e) {
             throw new DBException("Error loading task settings", e.getTargetException());

@@ -3051,7 +3051,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
 
                 if (export) {
-                    List<IDataTransferProducer> producers = new ArrayList<>();
+                    List<IDataTransferProducer<?>> producers = new ArrayList<>();
                     for (int i = 0; i < queries.size(); i++) {
                         SQLScriptElement element = queries.get(i);
                         if (element instanceof SQLControlCommand) {
