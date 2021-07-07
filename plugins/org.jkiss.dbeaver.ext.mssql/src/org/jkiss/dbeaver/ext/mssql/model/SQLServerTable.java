@@ -263,7 +263,7 @@ public class SQLServerTable extends SQLServerTableBase
     }
 
     @Override
-    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
         return true;
     }
 
@@ -290,7 +290,7 @@ public class SQLServerTable extends SQLServerTableBase
 
     @NotNull
     @Override
-    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
         return SQLServerMessages.referential_integrity_disable_warning;
     }
 

@@ -589,7 +589,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     }
 
     @Override
-    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
         return true;
     }
 
