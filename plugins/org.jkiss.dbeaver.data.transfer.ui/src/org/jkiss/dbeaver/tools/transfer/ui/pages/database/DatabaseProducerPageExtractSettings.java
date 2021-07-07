@@ -173,6 +173,9 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
     }
 
     private void enableNewConnectionCheckbox() {
+        if (selectedColumnsOnlyCheckbox == null || selectedRowsOnlyCheckbox == null) {
+            return;
+        }
         boolean enable = !selectedColumnsOnlyCheckbox.getSelection() && !selectedRowsOnlyCheckbox.getSelection();
         newConnectionCheckbox.setEnabled(enable);
          if (!enable) {
