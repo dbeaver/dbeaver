@@ -332,7 +332,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 }
             };
             showParamsAction.setChecked(showParameters);
-            showParamsAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_VARIABLES));
+            showParamsAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_PARAMETER));
             showParamsAction.setDescription("Show query parameters");
             contributionManager.add(ActionUtils.makeActionContribution(showParamsAction, true));
         }
