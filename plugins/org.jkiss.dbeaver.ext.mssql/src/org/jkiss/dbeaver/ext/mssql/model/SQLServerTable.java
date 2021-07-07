@@ -20,10 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPObjectStatistics;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -50,7 +49,8 @@ import java.util.Map;
 /**
  * SQLServerTable
  */
-public class SQLServerTable extends SQLServerTableBase implements DBPObjectStatistics, DBSCheckConstraintContainer {
+public class SQLServerTable extends SQLServerTableBase
+        implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
@@ -260,6 +260,38 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
     void setDefaultTableStats() {
         totalBytes = 0;
         usedBytes = 0;
+    }
+
+    @Override
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return true;
+    }
+
+    @Override
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ALTER TABLE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
+        if (enable) {
+            builder.append("WITH CHECK CHECK ");
+        } else {
+            builder.append("NOCHECK ");
+        }
+        builder.append("CONSTRAINT ALL");
+        String sql = builder.toString();
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
+            try (JDBCStatement statement = session.createStatement()) {
+                statement.execute(sql);
+            } catch (SQLException e) {
+                throw new DBException("Unable to change referential integrity", e);
+            }
+        }
+    }
+
+    @NotNull
+    @Override
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return SQLServerMessages.referential_integrity_disable_warning;
     }
 
     /**

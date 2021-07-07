@@ -44,6 +44,8 @@ public class SQLServerMessages extends NLS {
     public static String index_type_XML;
     public static String index_type_Spatial;
 
+    public static String referential_integrity_disable_warning;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLServerMessages.class);
@@ -51,6 +53,4 @@ public class SQLServerMessages extends NLS {
 
     private SQLServerMessages() {
     }
-
-
 }
