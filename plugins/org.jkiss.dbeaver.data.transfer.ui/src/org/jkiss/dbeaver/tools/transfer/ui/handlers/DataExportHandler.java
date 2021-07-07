@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 public class DataExportHandler extends DataTransferHandler {
 
     @Override
-    protected IDataTransferNode adaptTransferNode(Object object)
+    protected IDataTransferNode<?> adaptTransferNode(Object object)
     {
         final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
         if (adapted != null) {

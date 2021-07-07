@@ -35,22 +35,22 @@ public class DataTransferPipe {
         this.consumer = consumer;
     }
 
-    public IDataTransferProducer getProducer()
+    public IDataTransferProducer<?> getProducer()
     {
         return producer;
     }
 
-    public void setProducer(IDataTransferProducer producer)
+    public void setProducer(IDataTransferProducer<?> producer)
     {
         this.producer = producer;
     }
 
-    public IDataTransferConsumer getConsumer()
+    public IDataTransferConsumer<?,?> getConsumer()
     {
         return consumer;
     }
 
-    public void setConsumer(IDataTransferConsumer consumer)
+    public void setConsumer(IDataTransferConsumer<?,?> consumer)
     {
         this.consumer = consumer;
     }

@@ -387,7 +387,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return false;
     }
 
-    NodePageSettings getNodeInfo(IDataTransferNode node) {
+    NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
         return this.nodeSettings.get(node.getClass());
     }
 

@@ -71,6 +71,6 @@ public abstract class DataTransferHandler extends AbstractHandler {
         return null;
     }
 
-    protected abstract IDataTransferNode adaptTransferNode(Object object);
+    protected abstract IDataTransferNode<?> adaptTransferNode(Object object);
 
 }

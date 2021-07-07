@@ -194,7 +194,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             }
         } else if (!ArrayUtils.isEmpty(initProducers)) {
             // Make pipes
-            for (IDataTransferProducer source : initProducers) {
+            for (IDataTransferProducer<?> source : initProducers) {
                 if (source.getDatabaseObject() != null) initObjects.add(source.getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(source, null));
             }
@@ -209,7 +209,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             }
         } else if (!ArrayUtils.isEmpty(initConsumers)) {
             // Make pipes
-            for (IDataTransferConsumer target : initConsumers) {
+            for (IDataTransferConsumer<?,?> target : initConsumers) {
                 if (target.getDatabaseObject() != null) initObjects.add(target.getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(null, target));
             }
@@ -231,7 +231,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
 
         if (!ArrayUtils.isEmpty(initConsumers)) {
-            for (IDataTransferConsumer target : initConsumers) {
+            for (IDataTransferConsumer<?,?> target : initConsumers) {
                 DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
                 if (node != null) {
                     this.consumer = node;
@@ -560,14 +560,13 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             }
         }
         // Configure pipes
-        for (int i = 0; i < dataPipes.size(); i++) {
-            DataTransferPipe pipe = dataPipes.get(i);
+        for (DataTransferPipe pipe : dataPipes) {
             if (!rewrite && pipe.getConsumer() != null) {
                 continue;
             }
             if (consumer != null) {
                 try {
-                    IDataTransferConsumer consumerNode = (IDataTransferConsumer) consumer.createNode();
+                    IDataTransferConsumer<?,?> consumerNode = (IDataTransferConsumer<?,?>) consumer.createNode();
                     pipe.setConsumer(consumerNode);
                 } catch (DBException e) {
                     log.error(e);
@@ -594,7 +593,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             }
             if (producer != null) {
                 try {
-                    pipe.setProducer((IDataTransferProducer) producer.createNode());
+                    pipe.setProducer((IDataTransferProducer<?>) producer.createNode());
                 } catch (DBException e) {
                     log.error(e);
                     pipe.setProducer(null);
@@ -639,7 +638,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         Object nodeList = config.get(nodeType);
         if (nodeList instanceof Collection) {
             MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
-            for (Object nodeObj : (Collection)nodeList) {
+            for (Object nodeObj : (Collection<?>)nodeList) {
                 if (nodeObj instanceof Map) {
                     try {
                         Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
