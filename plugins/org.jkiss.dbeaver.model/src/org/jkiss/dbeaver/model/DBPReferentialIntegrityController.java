@@ -23,6 +23,18 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBPReferentialIntegrityController {
     boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+    /**
+     * Enables or disables referential integrity checks.
+     *
+     * <p>
+     * This method was originally introduced for use in data transfer.
+     * As of the time of writing, DT uses two different sessions to prepare consumers for the transfer and the transfer itself,
+     * so it is strongly advised to apply the result of execution of this method database-wide, not session-wide.
+     *
+     * @param monitor monitor
+     * @param enable {@code true} to enable referential integrity checks
+     * @throws DBException upon any errors
+     */
     void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
 
     /**
