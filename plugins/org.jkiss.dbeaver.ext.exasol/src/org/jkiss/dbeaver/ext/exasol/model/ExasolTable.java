@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,7 +51,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, DBPScriptObject {
+public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBPReferentialIntegrityController {
 
     private long sizeRaw;
     private long sizeCompressed;
@@ -402,41 +405,77 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	return tablePartitionColumnCache.getAvailableTableColumns(this, monitor);
     }
     
-   public void setHasPartitionKey(Boolean hasPartitionKey) {
-    	if (this.additionalInfo.hasPartitionKey == false && hasPartitionKey == true)
-    		return;
-		this.additionalInfo.hasPartitionKey = hasPartitionKey;
-		tablePartitionColumnCache.setCache(new ArrayList<ExasolTablePartitionColumn>());
-	}  
+    public void setHasPartitionKey(Boolean hasPartitionKey) {
+        if (this.additionalInfo.hasPartitionKey == false && hasPartitionKey == true)
+            return;
+        this.additionalInfo.hasPartitionKey = hasPartitionKey;
+        tablePartitionColumnCache.setCache(new ArrayList<ExasolTablePartitionColumn>());
+    }
     public void setHasPartitionKey(Boolean hasPartitionKey, Boolean force) {
-    	if (force)
-    		this.additionalInfo.hasPartitionKey = hasPartitionKey;
-    	setHasPartitionKey(hasPartitionKey);
-	}   
+        if (force)
+            this.additionalInfo.hasPartitionKey = hasPartitionKey;
+        setHasPartitionKey(hasPartitionKey);
+    }
     
- 	public List<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-		return getIndexCache().getObjects(monitor, getSchema(), getObject());
-	}
+    public List<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        return getIndexCache().getObjects(monitor, getSchema(), getObject());
+    }
     
     private ExasolTableIndexCache getIndexCache()
     {
-    	return getSchema().getIndexCache();
+        return getSchema().getIndexCache();
     }
     
     @Override
     public Collection<ExasolTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
-    	ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
-    	Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
-    	for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {
-			if (exasolTableForeignKey.getReferencedTable() == this) {
-				refForeignKeys.add(exasolTableForeignKey);
-			}
-				
-		}
-    	return refForeignKeys;
+        ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
+        Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
+        for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {
+            if (exasolTableForeignKey.getReferencedTable() == this) {
+                refForeignKeys.add(exasolTableForeignKey);
+            }
+
+        }
+        return refForeignKeys;
     }
-	
-	
-  
-    
+
+    @Override
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
+        return true;
+    }
+
+    @Override
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        Collection<ExasolTableForeignKey> foreignKeys = getAssociations(monitor);
+        if (!CommonUtils.isEmpty(foreignKeys)) {
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder("ALTER TABLE ");
+        builder.append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+        builder.append(" MODIFY CONSTRAINT %s ");
+        if (enable) {
+            builder.append(ExasolConstants.KEYWORD_ENABLE);
+        } else {
+            builder.append(ExasolConstants.KEYWORD_DISABLE);
+        }
+        String template = builder.toString();
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
+            try (JDBCStatement statement = session.createStatement()) {
+                for (DBPNamedObject fk: foreignKeys) { // dereference is null-safe due to the CommonUtils.isEmpty() call above
+                    String sql = String.format(template, fk.getName());
+                    statement.execute(sql);
+                }
+            } catch (SQLException e) {
+                throw new DBException("Unable to change referential integrity", e);
+            }
+        }
+    }
+
+    @NotNull
+    @Override
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
+        return ExasolMessages.referential_integrity_disable_warning;
+    }
 }
