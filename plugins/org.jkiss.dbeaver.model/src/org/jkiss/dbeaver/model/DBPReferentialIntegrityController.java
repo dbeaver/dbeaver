@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
+
 public interface DBPReferentialIntegrityController {
     boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException;
 
@@ -37,16 +39,6 @@ public interface DBPReferentialIntegrityController {
      */
     void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
 
-    /**
-     * Returns description of things that may go wrong when changing referential integrity setting back and forth.
-     * When changing referential integrity is not supported, returns an empty string rather than null
-     * to avoid callers making redundant null checks
-     * (callers should check if controller supports changing referential integrity anyway).
-     *
-     * @param monitor monitor
-     * @return caveats description, never {@code null}
-     * @throws DBException if unable to retrieve caveats for any reason
-     */
     @NotNull
-    String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException;
+    Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) throws DBException;
 }

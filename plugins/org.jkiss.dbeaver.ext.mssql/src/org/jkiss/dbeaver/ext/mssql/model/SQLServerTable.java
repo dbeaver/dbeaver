@@ -41,10 +41,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SQLServerTable
@@ -52,6 +49,9 @@ import java.util.Map;
 public class SQLServerTable extends SQLServerTableBase
         implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(SQLServerTable.class);
+
+    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
+    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
 
@@ -269,19 +269,17 @@ public class SQLServerTable extends SQLServerTableBase
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
-        StringBuilder builder = new StringBuilder();
-        builder.append("ALTER TABLE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
+        String sql;
         if (enable) {
-            builder.append("WITH CHECK CHECK ");
+            sql = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         } else {
-            builder.append("NOCHECK ");
+            sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
-        builder.append("CONSTRAINT ALL");
-        String sql = builder.toString();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCStatement statement = session.createStatement()) {
-                statement.execute(sql);
+            try (JDBCPreparedStatement statement = session.prepareStatement((sql))) {
+                statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+                statement.executeUpdate();
             } catch (SQLException e) {
                 throw new DBException("Unable to change referential integrity", e);
             }
@@ -290,8 +288,8 @@ public class SQLServerTable extends SQLServerTableBase
 
     @NotNull
     @Override
-    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
-        return SQLServerMessages.referential_integrity_disable_warning;
+    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return Arrays.asList(DISABLE_REFERENTIAL_INTEGRITY_STATEMENT, ENABLE_REFERENTIAL_INTEGRITY_STATEMENT);
     }
 
     /**

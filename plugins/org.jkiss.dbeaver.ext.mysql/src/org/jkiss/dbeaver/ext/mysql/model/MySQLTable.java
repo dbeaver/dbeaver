@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.internal.MySQLMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -108,6 +107,10 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private volatile List<MySQLTableForeignKey> referenceCache;
+    @Nullable
+    private String disableReferentialIntegrityStatement;
+    @Nullable
+    private String enableReferentialIntegrityStatement;
 
     public MySQLTable(MySQLCatalog catalog)
     {
@@ -595,6 +598,28 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        String sql = getChangeReferentialIntegrityStatement(monitor, enable);
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
+            try (JDBCPreparedStatement statement = session.prepareStatement(sql)) {
+                if (sql.contains("?")) {
+                    statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+                }
+                statement.executeUpdate(sql);
+            } catch (SQLException e) {
+                throw new DBException("Unable to change referential integrity", e);
+            }
+        }
+    }
+
+    @NotNull
+    private String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) {
+        if (enable && enableReferentialIntegrityStatement != null) {
+            return enableReferentialIntegrityStatement;
+        } else if (!enable && disableReferentialIntegrityStatement != null) {
+            return disableReferentialIntegrityStatement;
+        }
+
         boolean supportsAlterTableKeysStmt = false; // ALTER TABLE ... ENABLE/DISABLE KEYS statement works per table and speeds up insert
         try {
             AdditionalInfo info = getAdditionalInfo(monitor);
@@ -605,37 +630,27 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             log.debug("Unable to retrieve additional info for mysql table", e);
         }
 
-        StringBuilder builder = new StringBuilder();
         if (supportsAlterTableKeysStmt) {
-            builder.append("ALTER TABLE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
-            if (enable) {
-                builder.append("ENABLE KEYS");
-            } else {
-                builder.append("DISABLE KEYS");
-            }
+            disableReferentialIntegrityStatement = "ALTER TABLE ? DISABLE KEYS";
+            enableReferentialIntegrityStatement = "ALTER TABLE ? ENABLE KEYS";
         } else {
-            builder.append("SET GLOBAL FOREIGN_KEY_CHECKS=");
-            if (enable) {
-                builder.append(1);
-            } else {
-                builder.append(0);
-            }
+            disableReferentialIntegrityStatement = "SET GLOBAL FOREIGN_KEY_CHECKS=0";
+            enableReferentialIntegrityStatement = "SET GLOBAL FOREIGN_KEY_CHECKS=1";
         }
-        String sql = builder.toString();
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCStatement statement = session.createStatement()) {
-                statement.execute(sql);
-            } catch (SQLException e) {
-                throw new DBException("Unable to change referential integrity", e);
-            }
+        if (enable) {
+            return enableReferentialIntegrityStatement;
         }
+        return disableReferentialIntegrityStatement;
     }
 
     @NotNull
     @Override
-    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
-        return MySQLMessages.referential_integrity_disable_warning;
+    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) {
+        return Arrays.asList(
+            getChangeReferentialIntegrityStatement(monitor, false),
+            getChangeReferentialIntegrityStatement(monitor, true)
+        );
     }
 
     public static class EngineListProvider implements IPropertyValueListProvider<MySQLTable> {

@@ -719,12 +719,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @NotNull
     @Override
-    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBSObject dbsObject = checkTargetContainer(monitor);
         if (dbsObject instanceof DBPReferentialIntegrityController) {
-            return ((DBPReferentialIntegrityController) dbsObject).getReferentialIntegrityDisableWarning(monitor);
+            return ((DBPReferentialIntegrityController) dbsObject).getChangeReferentialIntegrityStatements(monitor);
         }
-        return "";
+        return Collections.emptyList();
     }
 
     public DatabaseConsumerSettings getSettings() {

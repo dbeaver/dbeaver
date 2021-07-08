@@ -46,7 +46,6 @@ public class ExasolMessages extends NLS {
     public static String exasol_security_policy_name;
     public static String exasol_security_policy_description;
     public static String manager_consumer_alter;
-    public static String referential_integrity_disable_warning;
 
     static {
         // initialize resource bundle

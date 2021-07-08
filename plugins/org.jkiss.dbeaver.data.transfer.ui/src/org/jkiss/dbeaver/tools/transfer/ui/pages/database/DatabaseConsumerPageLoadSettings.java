@@ -41,7 +41,10 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTransferWizard> {
@@ -198,6 +201,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         disableReferentialIntegrityCheckboxTooltip = "";
         try {
             getWizard().getRunnableContext().run(false, false, monitor -> {
+                Collection<String> statements = new LinkedHashSet<>();
                 for (DatabaseMappingContainer mappingContainer : getSettings().getDataMappings().values()) {
                     if (!(mappingContainer.getTarget() instanceof DBPReferentialIntegrityController)) {
                         continue;
@@ -206,19 +210,20 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     try {
                         if (controller.supportsChangingReferentialIntegrity(monitor)) {
                             isDisablingReferentialIntegritySupported = true;
-                            String caveat = controller.getReferentialIntegrityDisableWarning(monitor);
-                            if (caveat.isEmpty()) {
-                                disableReferentialIntegrityCheckboxTooltip =
-                                    DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
-                            } else {
-                                disableReferentialIntegrityCheckboxTooltip =
-                                    DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats + "\n" + caveat;
-                            }
-                            return;
+                            statements.addAll(controller.getChangeReferentialIntegrityStatements(monitor));
                         }
                     } catch (DBException e) {
                         log.debug("Unexpected error when calculating UI options for 'Disable referential integrity' checkbox", e);
                     }
+                }
+                if (!statements.isEmpty()) {
+                    StringJoiner tooltip = new StringJoiner(
+                        System.lineSeparator(),
+                        DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_start,
+                        ""
+                    );
+                    statements.forEach(tooltip::add);
+                    disableReferentialIntegrityCheckboxTooltip = tooltip.toString();
                 }
             });
         } catch (InvocationTargetException e) {

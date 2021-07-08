@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -46,12 +44,11 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBPReferentialIntegrityController {
+    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? MODIFY CONSTRAINT ? DISABLE";
+    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? MODIFY CONSTRAINT ? ENABLE";
 
     private long sizeRaw;
     private long sizeCompressed;
@@ -440,32 +437,30 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
 
     @Override
-    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
-        return true;
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return !CommonUtils.isEmpty(getAssociations(monitor));
     }
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         Collection<ExasolTableForeignKey> foreignKeys = getAssociations(monitor);
-        if (!CommonUtils.isEmpty(foreignKeys)) {
+        if (CommonUtils.isEmpty(foreignKeys)) {
             return;
         }
 
-        StringBuilder builder = new StringBuilder("ALTER TABLE ");
-        builder.append(getFullyQualifiedName(DBPEvaluationContext.DDL));
-        builder.append(" MODIFY CONSTRAINT %s ");
+        String sql;
         if (enable) {
-            builder.append(ExasolConstants.KEYWORD_ENABLE);
+            sql = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         } else {
-            builder.append(ExasolConstants.KEYWORD_DISABLE);
+            sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
-        String template = builder.toString();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCStatement statement = session.createStatement()) {
-                for (DBPNamedObject fk: foreignKeys) { // dereference is null-safe due to the CommonUtils.isEmpty() call above
-                    String sql = String.format(template, fk.getName());
-                    statement.execute(sql);
+            try (JDBCPreparedStatement statement = session.prepareStatement(sql)) {
+                statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+                for (DBPNamedObject fk: foreignKeys) {
+                    statement.setString(2, fk.getName());
+                    statement.executeUpdate();
                 }
             } catch (SQLException e) {
                 throw new DBException("Unable to change referential integrity", e);
@@ -475,7 +470,10 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
 
     @NotNull
     @Override
-    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
-        return ExasolMessages.referential_integrity_disable_warning;
+    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (supportsChangingReferentialIntegrity(monitor)) {
+            return Arrays.asList(DISABLE_REFERENTIAL_INTEGRITY_STATEMENT, ENABLE_REFERENTIAL_INTEGRITY_STATEMENT);
+        }
+        return Collections.emptyList();
     }
 }
