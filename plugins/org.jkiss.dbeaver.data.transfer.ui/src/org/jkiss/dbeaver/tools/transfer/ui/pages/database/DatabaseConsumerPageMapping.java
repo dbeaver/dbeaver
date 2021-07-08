@@ -533,10 +533,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 public void update(ViewerCell cell) {
                     DataTransferAttributeTransformerDescriptor transformer = getTransformer (cell.getElement());
                     if (transformer != null) {
-                        if (transformer.getIcon() != null) {
-                            cell.setImage(DBeaverIcons.getImage(transformer.getIcon()));
-                        }
                         cell.setText(transformer.getName());
+                    } else {
+                        cell.setText("");
                     }
                     super.update(cell);
                 }
