@@ -123,7 +123,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
     private void autoAssignMappings() {
         DBSObjectContainer objectContainer = chooseEntityContainer();
         if (objectContainer == null) {
-            setErrorMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed);
+            setMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed, WARNING);
             return;
         }
 
@@ -146,7 +146,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             // ignore
         }
         if (CommonUtils.isEmpty(containerObjects)) {
-            setErrorMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed);
+            setMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed, WARNING);
         } else {
             autoAssignMappings(containerObjects);
         }
@@ -183,7 +183,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             }
         }
         if (!success) {
-            setErrorMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed);
+            setMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed, WARNING);
         }
         updatePageCompletion();
     }
