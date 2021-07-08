@@ -468,12 +468,15 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (supportsChangingReferentialIntegrity(monitor)) {
-            return Arrays.asList(DISABLE_REFERENTIAL_INTEGRITY_STATEMENT, ENABLE_REFERENTIAL_INTEGRITY_STATEMENT);
+    public String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        if (!supportsChangingReferentialIntegrity(monitor)) {
+            return null;
         }
-        return Collections.emptyList();
+        if (enable) {
+            return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+        }
+        return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 }

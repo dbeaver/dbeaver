@@ -210,7 +210,8 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     try {
                         if (controller.supportsChangingReferentialIntegrity(monitor)) {
                             isDisablingReferentialIntegritySupported = true;
-                            statements.addAll(controller.getChangeReferentialIntegrityStatements(monitor));
+                            statements.add(controller.getChangeReferentialIntegrityStatement(monitor, false));
+                            statements.add(controller.getChangeReferentialIntegrityStatement(monitor, true));
                         }
                     } catch (DBException e) {
                         log.debug("Unexpected error when calculating UI options for 'Disable referential integrity' checkbox", e);
@@ -219,7 +220,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                 if (!statements.isEmpty()) {
                     StringJoiner tooltip = new StringJoiner(
                         System.lineSeparator(),
-                        DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_start,
+                        DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_start + System.lineSeparator(),
                         ""
                     );
                     statements.forEach(tooltip::add);

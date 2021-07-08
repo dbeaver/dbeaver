@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
@@ -27,9 +28,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * PostgreTableRegular
@@ -79,12 +77,15 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) {
-        if (supportsChangingReferentialIntegrity(monitor)) {
-            return Arrays.asList(DISABLE_REFERENTIAL_INTEGRITY_STATEMENT, ENABLE_REFERENTIAL_INTEGRITY_STATEMENT);
+    public String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) {
+        if (!supportsChangingReferentialIntegrity(monitor)) {
+            return null;
         }
-        return Collections.emptyList();
+        if (enable) {
+            return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+        }
+        return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 }

@@ -613,7 +613,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     }
 
     @NotNull
-    private String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) {
+    public String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) {
         if (enable && enableReferentialIntegrityStatement != null) {
             return enableReferentialIntegrityStatement;
         } else if (!enable && disableReferentialIntegrityStatement != null) {
@@ -642,15 +642,6 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             return enableReferentialIntegrityStatement;
         }
         return disableReferentialIntegrityStatement;
-    }
-
-    @NotNull
-    @Override
-    public Collection<String> getChangeReferentialIntegrityStatements(@NotNull DBRProgressMonitor monitor) {
-        return Arrays.asList(
-            getChangeReferentialIntegrityStatement(monitor, false),
-            getChangeReferentialIntegrityStatement(monitor, true)
-        );
     }
 
     public static class EngineListProvider implements IPropertyValueListProvider<MySQLTable> {
