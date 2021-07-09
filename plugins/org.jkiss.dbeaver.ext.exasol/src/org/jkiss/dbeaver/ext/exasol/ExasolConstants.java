@@ -60,4 +60,6 @@ public class ExasolConstants {
     public static final String TYPE_CHAR = "CHAR";
     public static final String TYPE_HASHTYPE = "HASHTYPE";
 
+    public static final String KEYWORD_ENABLE = "ENABLE";
+    public static final String KEYWORD_DISABLE = "DISABLE";
 }

@@ -17,24 +17,27 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface DBPReferentialIntegrityController {
     boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
-
     /**
-     * Returns description of things that may go wrong when changing referential integrity setting back and forth.
-     * When changing referential integrity is not supported, returns an empty string rather than null
-     * to avoid callers making redundant null checks
-     * (callers should check if controller supports changing referential integrity anyway).
+     * Enables or disables referential integrity checks.
+     *
+     * <p>
+     * This method was originally introduced for use in data transfer.
+     * As of the time of writing, DT uses two different sessions to prepare consumers for the transfer and the transfer itself,
+     * so it is strongly advised to apply the result of execution of this method database-wide, not session-wide.
      *
      * @param monitor monitor
-     * @return caveats description, never {@code null}
-     * @throws DBException if unable to retrieve caveats for any reason
+     * @param enable {@code true} to enable referential integrity checks
+     * @throws DBException upon any errors
      */
-    @NotNull
-    String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException;
+    void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
+
+    @Nullable
+    String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
 }
