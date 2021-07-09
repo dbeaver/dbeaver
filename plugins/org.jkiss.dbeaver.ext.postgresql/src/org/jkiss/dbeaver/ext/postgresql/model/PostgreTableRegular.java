@@ -22,8 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
@@ -56,24 +54,15 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
-        if (!supportsChangingReferentialIntegrity(monitor)) {
-            throw new DBException("Changing referential integrity is not supported");
+        String sql = getChangeReferentialIntegrityStatement(monitor, enable);
+        if (sql == null) {
+            return;
         }
-
-        String sql;
-        if (enable) {
-            sql = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-        } else {
-            sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-        }
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Disabling referential integrity")) {
-            try (JDBCPreparedStatement statement = session.prepareStatement(sql)) {
-                statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
-                statement.execute(sql);
-            } catch (SQLException e) {
-                throw new DBException("Unable to change referential integrity", e);
-            }
+        sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
+        try {
+            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+        } catch (SQLException e) {
+            throw new DBException("Unable to change referential integrity", e);
         }
     }
 

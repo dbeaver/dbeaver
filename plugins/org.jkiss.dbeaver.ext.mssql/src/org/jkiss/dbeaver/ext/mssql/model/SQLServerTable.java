@@ -268,20 +268,12 @@ public class SQLServerTable extends SQLServerTableBase
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
-        String sql;
-        if (enable) {
-            sql = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-        } else {
-            sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-        }
+        String sql = getChangeReferentialIntegrityStatement(monitor, enable);
         sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCStatement statement = session.createStatement()) {
-                statement.execute(sql);
-            } catch (SQLException e) {
-                throw new DBException("Unable to change referential integrity", e);
-            }
+        try {
+            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+        } catch (SQLException e) {
+            throw new DBException("Unable to change referential integrity", e);
         }
     }
 
