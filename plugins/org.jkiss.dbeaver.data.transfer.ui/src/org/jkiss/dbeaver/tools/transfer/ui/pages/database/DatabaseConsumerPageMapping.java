@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
@@ -429,6 +430,31 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         mappingViewer.getTree().setLinesVisible(true);
         mappingViewer.getTree().setHeaderVisible(true);
 
+        UIUtils.setControlContextMenu(mappingViewer.getTree(), manager -> {
+            IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
+            if (!selection.isEmpty()) {
+                Object element = selection.getFirstElement();
+                if (element instanceof DatabaseMappingAttribute) {
+                    DatabaseMappingAttribute mapping= (DatabaseMappingAttribute) element;
+                    if (mapping.getTransformer() != null && !mapping.getTransformer().getProperties().isEmpty()) {
+                        manager.add(new Action("Transformer settings ...") {
+                            @Override
+                            public void run() {
+                                AttributeTransformerSettingsDialog settingsDialog = new AttributeTransformerSettingsDialog(
+                                    getShell(),
+                                    (DatabaseMappingAttribute) element,
+                                    mapping.getTransformer());
+                                if (settingsDialog.open() != IDialogConstants.OK_ID) {
+                                    return;
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            UIUtils.fillDefaultTreeContextMenu(manager, mappingViewer.getTree());
+        });
+
         {
             TreeViewerColumn columnSource = new TreeViewerColumn(mappingViewer, SWT.LEFT);
             columnSource.setLabelProvider(new MappingLabelProvider() {
@@ -566,7 +592,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
                 @Override
                 protected Object getValue(Object element) {
-                    return getTransformer(element);
+                    DataTransferAttributeTransformerDescriptor transformer = getTransformer(element);
+                    return transformer == null ? "" : transformer.getName();
                 }
 
                 @Override
@@ -579,9 +606,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         newTransformer = DataTransferRegistry.getInstance().getAttributeTransformerByName(tName);
                     }
                     if (element instanceof DatabaseMappingAttribute) {
+                        if (newTransformer != null && !newTransformer.getProperties().isEmpty()) {
+                            AttributeTransformerSettingsDialog settingsDialog = new AttributeTransformerSettingsDialog(
+                                getShell(),
+                                (DatabaseMappingAttribute) element,
+                                newTransformer);
+                            if (settingsDialog.open() != IDialogConstants.OK_ID) {
+                                return;
+                            }
+                        }
                         ((DatabaseMappingAttribute) element).setTransformer(newTransformer);
+                        mappingViewer.refresh();
                     }
-                    mappingViewer.refresh();
                     setErrorMessage(null);
                 }
             });

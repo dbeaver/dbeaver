@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -33,6 +34,7 @@ public interface IDataTransferAttributeTransformer {
         @NotNull DBDAttributeBinding[] dataAttributes,
         @NotNull Object[] dataRow,
         @NotNull DBDAttributeBinding attribute,
+        @Nullable Object attrValue,
         @NotNull Map<String, Object> options)
         throws DBException;
 

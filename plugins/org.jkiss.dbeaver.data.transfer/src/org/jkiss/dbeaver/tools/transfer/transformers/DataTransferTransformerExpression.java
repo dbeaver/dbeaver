@@ -30,7 +30,7 @@ import java.util.Map;
 public class DataTransferTransformerExpression implements IDataTransferAttributeTransformer {
 
     @Override
-    public Object transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding[] dataAttributes, @NotNull Object[] dataRow, @NotNull DBDAttributeBinding attribute, @NotNull Map<String, Object> options) throws DBException {
+    public Object transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding[] dataAttributes, @NotNull Object[] dataRow, @NotNull DBDAttributeBinding attribute, Object attrValue, @NotNull Map<String, Object> options) throws DBException {
         return null;
     }
 

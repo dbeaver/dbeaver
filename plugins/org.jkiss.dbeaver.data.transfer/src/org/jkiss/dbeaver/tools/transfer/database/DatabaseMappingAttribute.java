@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
@@ -277,7 +278,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
             if (transformer != null) {
                 settings.put("transformer", transformer.getId());
-                settings.put("properties", new LinkedHashMap<>(transformerProperties));
+                settings.put("transformerProperties", new LinkedHashMap<>(transformerProperties));
             }
         }
     }
@@ -307,6 +308,19 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 mappingType = newMappingType;
             } catch (Exception e) {
                 log.error(e);
+            }
+        }
+        Object transformerId = settings.get("transformer");
+        if (transformerId != null) {
+            transformer = DataTransferRegistry.getInstance().getAttributeTransformer(transformerId.toString());
+            if (transformer == null) {
+                log.error("Can't find attribute transformer " + transformerId);
+            } else {
+                Map<String, Object> tp = (Map<String, Object>) settings.get("transformerProperties");
+                transformerProperties.clear();
+                if (tp != null) {
+                    transformerProperties.putAll(tp);
+                }
             }
         }
     }

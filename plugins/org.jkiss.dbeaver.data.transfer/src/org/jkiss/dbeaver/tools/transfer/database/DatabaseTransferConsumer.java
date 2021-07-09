@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferAttributeTransformer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -78,6 +79,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private boolean isPreview;
     private List<Object[]> previewRows;
+    private DBDAttributeBinding[] rsAttributes;
 
     public static class ColumnMapping {
         public DBDAttributeBinding sourceAttr;
@@ -85,6 +87,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         public DBDValueHandler sourceValueHandler;
         public DBDValueHandler targetValueHandler;
         public int targetIndex = -1;
+        public IDataTransferAttributeTransformer valueTransformer;
+        public Map<String, Object> valueTransformerProperties;
 
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
@@ -160,7 +164,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        DBDAttributeBinding[] rsAttributes;
         boolean dynamicTarget = targetContext.getDataSource().getInfo().isDynamicMetadata();
         DBSDataContainer sourceObject = getSourceObject();
         if (dynamicTarget) {
@@ -216,6 +219,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
                 continue;
             }
+            if (columnMapping.targetAttr.getTransformer() != null) {
+                try {
+                    columnMapping.valueTransformer = columnMapping.targetAttr.getTransformer().createTransformer();
+                    columnMapping.valueTransformerProperties = columnMapping.targetAttr.getTransformerProperties();
+                } catch (DBException e) {
+                    throw new DBCException("Can't create attribute transformer", e);
+                }
+            }
             DBSEntityAttribute targetAttr = columnMapping.targetAttr.getTarget();
             if (targetAttr == null) {
                 if (isPreview) {
@@ -266,7 +277,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (column == null || column.targetIndex < 0) {
                 continue;
             }
-            final Object attrValue;
+            Object attrValue;
             if (column.sourceValueHandler != null) {
                 if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
                     attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
@@ -277,6 +288,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 // No value handler - get raw value
                 attrValue = resultSet.getAttributeValue(i);
             }
+
             if (containerMapping != null && containerMapping.getTarget() instanceof DBSDocumentContainer) {
                 rowValues[column.targetIndex] = attrValue;
             } else {
@@ -288,6 +300,31 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     false, false);
             }
         }
+
+        // Transform value
+        for (ColumnMapping column : columnMappings) {
+            if (column == null || column.targetIndex < 0) {
+                continue;
+            }
+            if (column.valueTransformer != null) {
+                Object attrValue = rowValues[column.targetIndex];
+                try {
+                    rowValues[column.targetIndex] = column.valueTransformer.transformAttribute(
+                        session,
+                        rsAttributes,
+                        rowValues,
+                        column.sourceAttr,
+                        attrValue,
+                        column.valueTransformerProperties);
+                } catch (DBException e) {
+                    throw new DBCException(
+                        "Error transforming attribute '" + column.sourceAttr.getName() +
+                            "' value with transformer '" + column.targetAttr.getTransformer().getName() + "'", e);
+                }
+            }
+        }
+
+
         executeBatch.add(rowValues);
 
         rowsExported++;

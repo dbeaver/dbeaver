@@ -33,14 +33,14 @@ import java.util.Locale;
  */
 public class DataTransferJob implements DBRRunnableWithProgress {
 
-    private DataTransferSettings settings;
-    private DBTTask task;
+    private final DataTransferSettings settings;
+    private final DBTTask task;
     private long elapsedTime;
     private boolean hasErrors;
 
-    private Locale locale;
-    private Log log;
-    private DBTTaskExecutionListener listener;
+    private final Locale locale;
+    private final Log log;
+    private final DBTTaskExecutionListener listener;
 
     public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener)
     {
@@ -64,7 +64,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Perform data transfer", 1);
         hasErrors = false;
         long startTime = System.currentTimeMillis();

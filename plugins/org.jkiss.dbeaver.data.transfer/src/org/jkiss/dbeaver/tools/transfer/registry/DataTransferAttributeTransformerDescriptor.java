@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferAttributeTransformer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public class DataTransferAttributeTransformerDescriptor extends AbstractDescript
     private final String description;
     @NotNull
     private final DBPImage icon;
+    private final ObjectType implType;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
     public DataTransferAttributeTransformerDescriptor(IConfigurationElement config) {
@@ -49,6 +52,7 @@ public class DataTransferAttributeTransformerDescriptor extends AbstractDescript
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.icon = iconToImage(config.getAttribute("icon"), DBIcon.TYPE_UNKNOWN);
+        this.implType = new ObjectType(config.getAttribute("class"));
 
         for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
             properties.addAll(PropertyDescriptor.extractProperties(prop));
@@ -78,6 +82,16 @@ public class DataTransferAttributeTransformerDescriptor extends AbstractDescript
     @NotNull
     public List<DBPPropertyDescriptor> getProperties() {
         return properties;
+    }
+
+    public IDataTransferAttributeTransformer createTransformer() throws DBException
+    {
+        try {
+            return implType.getObjectClass(IDataTransferAttributeTransformer.class)
+                .getDeclaredConstructor().newInstance();
+        } catch (Throwable e) {
+            throw new DBException("Can't create attribute transformer instance", e);
+        }
     }
 
     @Override
