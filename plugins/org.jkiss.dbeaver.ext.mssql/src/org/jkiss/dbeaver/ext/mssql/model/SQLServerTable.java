@@ -49,8 +49,8 @@ public class SQLServerTable extends SQLServerTableBase
         implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
-    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
-    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
+    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
+    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
 
@@ -268,20 +268,12 @@ public class SQLServerTable extends SQLServerTableBase
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
-        String sql;
-        if (enable) {
-            sql = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-        } else {
-            sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-        }
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCPreparedStatement statement = session.prepareStatement((sql))) {
-                statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
-                statement.executeUpdate();
-            } catch (SQLException e) {
-                throw new DBException("Unable to change referential integrity", e);
-            }
+        String sql = getChangeReferentialIntegrityStatement(monitor, enable);
+        sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
+        try {
+            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+        } catch (SQLException e) {
+            throw new DBException("Unable to change referential integrity", e);
         }
     }
 
