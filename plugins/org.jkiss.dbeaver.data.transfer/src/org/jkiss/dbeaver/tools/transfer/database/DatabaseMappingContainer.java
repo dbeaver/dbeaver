@@ -20,12 +20,10 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -183,13 +181,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public DatabaseMappingAttribute getAttributeMapping(DBSAttributeBase sourceAttr) {
-        for (DatabaseMappingAttribute attr : attributeMappings) {
-            if (attr.getSource().getName().equalsIgnoreCase(sourceAttr.getName())) {
-                return attr;
-            }
-        }
-        return null;
+    DatabaseMappingAttribute getAttributeMapping(@NotNull DBPNamedObject sourceAttr) {
+        return CommonUtils.findObject(attributeMappings, sourceAttr.getName(), attr -> attr.getSource().getName());
     }
 
     public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRRunnableContext runnableContext) {

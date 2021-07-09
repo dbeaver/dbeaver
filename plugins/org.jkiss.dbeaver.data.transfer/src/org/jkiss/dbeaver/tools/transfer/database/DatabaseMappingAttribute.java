@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -45,6 +46,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     private final DatabaseMappingContainer parent;
     private final DBSAttributeBase source;
+    @Nullable
     private DBSEntityAttribute target;
     private String targetName;
     private String targetType;
@@ -141,7 +143,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
-                    target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                    if (targetAttributes != null) {
+                        target = CommonUtils.findObject(targetAttributes, targetName, DBSEntityAttribute::getName);
+                    } else {
+                        target = null;
+                    }
 
                     if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
                         StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
@@ -156,7 +162,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                             if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
                                 DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
                                 targetName = targetAttribute.getName();
-                                target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                                target = CommonUtils.findObject(targetAttributes, targetName, DBSEntityAttribute::getName);
                             }
                         }
 

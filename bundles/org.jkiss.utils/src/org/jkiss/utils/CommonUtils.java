@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Common utils
@@ -929,5 +930,30 @@ public class CommonUtils {
             .replace("\r\n", "<br>")
             .replace("\r", "<br>")
             .replace("\n", "<br>");
+    }
+
+    /**
+     * Finds the object with the best matching name. Here we consider a case sensitive match better then a case insensitive one.
+     *
+     * @param iterable container with objects
+     * @param name to match
+     * @param nameExtractor function which extracts the name from object
+     * @param <T> type of objects to search from
+     * @return the best match or {@code null} if nothing found
+     */
+    @Nullable
+    public static <T> T findObject(@NotNull Iterable<? extends T> iterable, @NotNull String name,
+                                   @NotNull Function<? super T, String> nameExtractor) {
+        T firstCaseInsensitiveMatch = null;
+        for (T t: iterable) {
+            String objectName = nameExtractor.apply(t);
+            if (name.equals(objectName)) { //case sensitive match
+                return t;
+            }
+            if (firstCaseInsensitiveMatch == null && name.equalsIgnoreCase(objectName)) {
+                firstCaseInsensitiveMatch = t;
+            }
+        }
+        return firstCaseInsensitiveMatch;
     }
 }
