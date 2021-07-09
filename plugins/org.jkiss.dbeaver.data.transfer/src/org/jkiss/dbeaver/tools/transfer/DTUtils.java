@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -101,14 +103,38 @@ public class DTUtils {
         if (query instanceof SQLQuery) {
             DBCEntityMetaData singleSource = ((SQLQuery) query).getSingleSource();
             if (singleSource != null) {
+                SQLDialect dialect = dataSource.getSQLDialect();
+                String entity = transformName(dialect, singleSource.getEntityName());
                 if (shortName) {
-                    return DBUtils.getQuotedIdentifier(dataSource.getDataSource(), singleSource.getEntityName());
-                } else {
-                    return DBUtils.getFullyQualifiedName(dataSource.getDataSource(), singleSource.getCatalogName(), singleSource.getSchemaName(), singleSource.getEntityName());
+                    return entity;
                 }
+                String schema = transformName(dialect, singleSource.getSchemaName());
+                String catalog = transformName(dialect, singleSource.getCatalogName());
+                String structSeparator = String.valueOf(dialect.getStructSeparator());
+                StringBuilder nameBuilder = new StringBuilder();
+                if (catalog != null) {
+                    nameBuilder.append(catalog).append(structSeparator);
+                }
+                if (schema != null) {
+                    nameBuilder.append(schema).append(structSeparator);
+                }
+                nameBuilder.append(entity);
+                return nameBuilder.toString();
             }
         }
         return null;
+    }
+
+    @Nullable
+    private static String transformName(@NotNull SQLDialect dialect, @Nullable String name) {
+        if (name == null) {
+            return null;
+        }
+        if (dialect.isQuotedIdentifier(name)) {
+            return name;
+        }
+        DBPIdentifierCase identifierCase = dialect.storesUnquotedCase();
+        return identifierCase.transform(name);
     }
 
     @NotNull
