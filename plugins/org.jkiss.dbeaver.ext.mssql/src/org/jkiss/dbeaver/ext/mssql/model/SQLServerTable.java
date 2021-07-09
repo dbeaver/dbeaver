@@ -274,11 +274,11 @@ public class SQLServerTable extends SQLServerTableBase
         } else {
             sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
+        sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCPreparedStatement statement = session.prepareStatement((sql))) {
-                statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
-                statement.executeUpdate();
+            try (JDBCStatement statement = session.createStatement()) {
+                statement.execute(sql);
             } catch (SQLException e) {
                 throw new DBException("Unable to change referential integrity", e);
             }
