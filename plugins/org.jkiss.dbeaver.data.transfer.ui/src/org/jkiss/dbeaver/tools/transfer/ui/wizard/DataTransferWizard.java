@@ -68,7 +68,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     private static final Log log = Log.getLog(DataTransferWizard.class);
 
     private DataTransferSettings settings;
-    private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
+    private final Map<Class<?>, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
     private DataTransferWizard(@Nullable DBTTask task) {
         super(task);
@@ -83,7 +83,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
         // Initialize task variables from producers
         if (initTaskVariables && settings.getInitProducers() != null) {
-            for (IDataTransferProducer producer : settings.getInitProducers()) {
+            for (IDataTransferProducer<?> producer : settings.getInitProducers()) {
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
 
@@ -139,7 +139,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         if (ArrayUtils.isEmpty(settings.getInitProducers())) {
             nodes.addAll(registry.getAvailableProducers(objectTypes));
         } else {
-            for (IDataTransferProducer source : settings.getInitProducers()) {
+            for (IDataTransferProducer<?> source : settings.getInitProducers()) {
                 DataTransferNodeDescriptor node = registry.getNodeByType(source.getClass());
                 if (node != null && !nodes.contains(node)) {
                     nodes.add(node);
@@ -149,7 +149,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         if (ArrayUtils.isEmpty(settings.getInitConsumers())) {
             nodes.addAll(registry.getAvailableConsumers(objectTypes));
         } else {
-            for (IDataTransferConsumer target : settings.getInitConsumers()) {
+            for (IDataTransferConsumer<?, ?> target : settings.getInitConsumers()) {
                 DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
                 if (node != null && !nodes.contains(node)) {
                     nodes.add(node);
@@ -387,7 +387,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return false;
     }
 
-    NodePageSettings getNodeInfo(IDataTransferNode node) {
+    NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
         return this.nodeSettings.get(node.getClass());
     }
 
@@ -408,8 +408,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        List<IDataTransferNode> producers = new ArrayList<>();
-        List<IDataTransferNode> consumers = new ArrayList<>();
+        List<IDataTransferNode<?>> producers = new ArrayList<>();
+        List<IDataTransferNode<?>> consumers = new ArrayList<>();
         for (DataTransferPipe pipe : settings.getDataPipes()) {
             if (pipe.getProducer() != null) {
                 producers.add(pipe.getProducer());
@@ -429,7 +429,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
         // Save nodes' settings
         boolean isTask = getCurrentTask() != null;
-        for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
+        for (Map.Entry<Class<?>, NodePageSettings> entry : nodeSettings.entrySet()) {
             NodePageSettings nodePageSettings = entry.getValue();
             if (isTask) {
                 // Do not save settings for nodes not involved in this task
@@ -520,7 +520,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     class DataTransferWizardExecutor extends TaskProcessorUI {
-        private DataTransferSettings settings;
+        private final DataTransferSettings settings;
 
         DataTransferWizardExecutor(@NotNull DBRRunnableContext staticContext, @NotNull String taskName, @NotNull DataTransferSettings settings) {
             super(staticContext, getProject().getTaskManager().createTemporaryTask(getTaskType(), taskName));
@@ -545,40 +545,30 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
-        @Nullable Collection<IDataTransferProducer> producers,
-        @Nullable Collection<IDataTransferConsumer> consumers)
+        @Nullable Collection<IDataTransferProducer<?>> producers,
+        @Nullable Collection<IDataTransferConsumer<?,?>> consumers)
     {
         openWizard(workbenchWindow, producers, consumers, null);
     }
 
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
-        @Nullable Collection<IDataTransferProducer> producers,
-        @Nullable Collection<IDataTransferConsumer> consumers,
+        @Nullable Collection<IDataTransferProducer<?>> producers,
+        @Nullable Collection<IDataTransferConsumer<?,?>> consumers,
         @Nullable IStructuredSelection selection)
     {
-        try {
-            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<DataTransferSettings>() {
-                @Override
-                public void run(DBRProgressMonitor monitor) {
-                    result = new DataTransferSettings(
-                        monitor,
-                        producers,
-                        consumers,
-                        new DialogSettingsMap(getWizardDialogSettings()),
-                        new DataTransferState(),
-                        true,
-                        CommonUtils.isEmpty(consumers),
-                        false);
-                }
-            });
+        DataTransferSettings settings = new DataTransferSettings(
+            producers,
+            consumers,
+            new DialogSettingsMap(getWizardDialogSettings()),
+            new DataTransferState(),
+            true,
+            CommonUtils.isEmpty(consumers),
+            false);
 
-            DataTransferWizard wizard = new DataTransferWizard(null, settings, true);
-            TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
-            dialog.open();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Data transfer error", "Can not open data transfer wizard", e);
-        }
+        DataTransferWizard wizard = new DataTransferWizard(null, settings, true);
+        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
+        dialog.open();
     }
 
     public static DataTransferWizard openWizard(@NotNull DBTTask task)

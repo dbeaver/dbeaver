@@ -23,6 +23,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -40,11 +42,13 @@ import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,6 +66,8 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
     private SQLEditorBase valueEditor;
     private TableViewer varsTable;
     private boolean showParameters;
+    private boolean saveInProgress;
+    private DBCScriptContext.VariableInfo curVariable;
 
     public SQLVariablesPanel(Composite parent, SQLEditor editor)
     {
@@ -129,9 +135,37 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             //valueEditor.getEditorControl().setEnabled(false);
 
             valueEditor.getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
+            StyledText editorControl = valueEditor.getEditorControl();
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(mainEditor.getSite(), editorControl);
+            if (editorControl != null) {
+                editorControl.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        saveVariableValue(editorControl);
+                    }
+                });
+                editorControl.addDisposeListener(e -> saveVariableValue(editorControl));
+            }
         }
 
         sash.setWeights(new int[] { 600, 400 });
+    }
+
+    private void saveVariableValue(StyledText editorControl) {
+        String varValue = editorControl.getText();
+
+        if (curVariable != null) {
+            saveInProgress = true;
+            try {
+                curVariable.value = varValue;
+                mainEditor.getGlobalScriptContext().setVariable(
+                    curVariable.name,
+                    varValue);
+                varsTable.refresh();
+            } finally {
+                saveInProgress = false;
+            }
+        }
     }
 
     private void editCurrentVariable() {
@@ -142,11 +176,11 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
         }
         if (!selection.isEmpty()) {
             //TableItem item = varsTable.getItem(selectionIndex);
-            DBCScriptContext.VariableInfo variable = (DBCScriptContext.VariableInfo) ((IStructuredSelection)selection).getFirstElement();
+            curVariable = (DBCScriptContext.VariableInfo) ((IStructuredSelection)selection).getFirstElement();
 
             StringEditorInput sqlInput = new StringEditorInput(
-                "Variable " + variable.name,
-                CommonUtils.toString(variable.value),
+                "Variable " + curVariable.name,
+                CommonUtils.toString(curVariable.value),
                 false,
                 GeneralUtils.DEFAULT_ENCODING
                 );
@@ -181,7 +215,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
         }
 
         varsTable.setInput(variables);
-        UIUtils.packColumns(varsTable.getTable(), true);
+        //UIUtils.packColumns(varsTable.getTable(), true);
 
         valueEditor.setInput(new StringEditorInput(
             "Variable",
@@ -194,11 +228,17 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
 
     @Override
     public void variableChanged(ContextAction action, DBCScriptContext.VariableInfo variable) {
+        if (saveInProgress) {
+            return;
+        }
         UIUtils.asyncExec(this::refreshVariables);
     }
 
     @Override
     public void parameterChanged(ContextAction action, String name, Object value) {
+        if (saveInProgress) {
+            return;
+        }
         UIUtils.asyncExec(this::refreshVariables);
     }
 
@@ -242,28 +282,30 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             varsTable.getTable().setLinesVisible(true);
             varsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            UIUtils.createTableColumn(varsTable.getTable(), SWT.LEFT, "Variable");
-            UIUtils.createTableColumn(varsTable.getTable(), SWT.LEFT, "Value");
-            UIUtils.createTableColumn(varsTable.getTable(), SWT.LEFT, "Type");
+            ViewerColumnController columnController = new ViewerColumnController("sqlVariablesViewer", varsTable);
 
             varsTable.setContentProvider(new ListContentProvider());
-            varsTable.setLabelProvider(new CellLabelProvider() {
+
+            columnController.addColumn("Variable", "Variable or parameter name", SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
-                public void update(ViewerCell cell) {
-                    DBCScriptContext.VariableInfo variable = (DBCScriptContext.VariableInfo) cell.getElement();
-                    switch (cell.getColumnIndex()) {
-                        case 0:
-                            cell.setText(variable.name);
-                            break;
-                        case 1:
-                            cell.setText(CommonUtils.toString(variable.value));
-                            break;
-                        case 2:
-                            cell.setText(variable.type.getTitle());
-                            break;
-                    }
+                public String getText(Object element) {
+                    return ((DBCScriptContext.VariableInfo) element).name;
                 }
             });
+            columnController.addColumn("Value", "Variable or parameter value", SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return CommonUtils.toString(((DBCScriptContext.VariableInfo) element).value);
+                }
+            });
+            columnController.addColumn("Type", "Variable type", SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return ((DBCScriptContext.VariableInfo) element).type.getTitle();
+                }
+            });
+
+            columnController.createColumns(true);
 
             varsTable.addSelectionChangedListener(event -> {
                 if (deleteAction != null) {
@@ -272,6 +314,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 }
                 editCurrentVariable();
             });
+            NavigatorUtils.createContextMenu(mainEditor.getSite(), varsTable, manager -> {} );
         }
 
         @Override
@@ -304,7 +347,8 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             addAction = new Action("Add variable", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
                 @Override
                 public void run() {
-                    AssignVariableAction action = new AssignVariableAction(mainEditor, "", false, true);
+                    AssignVariableAction action = new AssignVariableAction(mainEditor, "");
+                    action.setEditable(true);
                     action.run();
                 }
             };
@@ -332,7 +376,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 }
             };
             showParamsAction.setChecked(showParameters);
-            showParamsAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_VARIABLES));
+            showParamsAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_PARAMETER));
             showParamsAction.setDescription("Show query parameters");
             contributionManager.add(ActionUtils.makeActionContribution(showParamsAction, true));
         }

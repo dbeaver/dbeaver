@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.variables;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PartInitException;
@@ -39,16 +40,28 @@ public class AssignVariableAction extends Action {
 
     private final SQLEditor editor;
     private final String queryText;
-    private final boolean isQuery;
-    private final boolean isEditable;
+    private boolean isQuery = false;
+    private boolean isEditable = true;
+    private boolean checkDuplicates = true;
     private SQLEditorBase valueEditor;
+    private String varValue;
 
-    public AssignVariableAction(SQLEditor editor, String varValue, boolean isQuery, boolean isEditable) {
+    public AssignVariableAction(SQLEditor editor, String varValue) {
         super(SQLEditorMessages.action_result_tabs_assign_variable);
         this.editor = editor;
         this.queryText = varValue;
-        this.isQuery = isQuery;
-        this.isEditable = isEditable;
+    }
+
+    public void setQuery(boolean query) {
+        isQuery = query;
+    }
+
+    public void setEditable(boolean editable) {
+        isEditable = editable;
+    }
+
+    public void setCheckDuplicates(boolean checkDuplicates) {
+        this.checkDuplicates = checkDuplicates;
     }
 
     @Override
@@ -56,7 +69,9 @@ public class AssignVariableAction extends Action {
         EnterNameDialog dialog = new EnterNameDialog(
             editor.getEditorControlWrapper().getShell(),
             isQuery ? SQLEditorMessages.action_result_tabs_assign_variable_sql : SQLEditorMessages.action_result_tabs_assign_variable,
-            "") {
+            "")
+        {
+
             @Override
             protected IDialogSettings getDialogBoundsSettings() {
                 return UIUtils.getDialogSettings("DBeaver.SQLEditor.AssignVariableDialog"); //$NON-NLS-1$
@@ -92,9 +107,23 @@ public class AssignVariableAction extends Action {
                 return area;
             }
 
+            @Override
+            protected void okPressed() {
+                if (checkDuplicates) {
+                    String varName = propNameText.getText();
+                    if (editor.getGlobalScriptContext().hasVariable(varName)) {
+                        UIUtils.showMessageBox(getShell(), "Duplicate variable", "Variable '" + varName + "' already declared", SWT.ICON_ERROR);
+                        return;
+                    }
+                }
+                varValue = valueEditor.getEditorControl().getText();
+                super.okPressed();
+            }
         };
         if (dialog.open() == IDialogConstants.OK_ID) {
-            editor.getGlobalScriptContext().setVariable(dialog.getResult(), queryText);
+            editor.getGlobalScriptContext().setVariable(
+                dialog.getResult(),
+                varValue);
         }
     }
 }

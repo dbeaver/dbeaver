@@ -76,6 +76,8 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_column_source_text;
 	public static String database_consumer_page_mapping_column_target_text;
 	public static String database_consumer_page_mapping_column_mapping_text;
+	public static String database_consumer_page_mapping_column_transformer_text;
+	public static String database_consumer_page_mapping_column_transformer_tip;
 	public static String database_consumer_page_mapping_node_title;
 	public static String database_consumer_page_mapping_table_name;
 	public static String database_consumer_page_mapping_label_hint;
@@ -154,6 +156,7 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_message_error_generating_target_DDL;
 	public static String database_producer_page_input_objects_title_assign_error;
 	public static String database_producer_page_input_objects_message_error_reading_container_objects;
+	public static String database_producer_page_input_objects_error_message_auto_assign_failed;
 	public static String stream_producer_page_preview_title_load_entity_meta;
 	public static String stream_producer_page_preview_message_entity_attributes;
 	public static String stream_producer_page_preview_title_preview_data;

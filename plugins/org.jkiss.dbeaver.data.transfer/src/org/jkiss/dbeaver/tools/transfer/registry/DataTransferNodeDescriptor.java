@@ -111,7 +111,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return implType.getObjectClass(IDataTransferNode.class);
     }
 
-    public IDataTransferNode createNode() throws DBException
+    public IDataTransferNode<?> createNode() throws DBException
     {
         implType.checkObjectClass(IDataTransferNode.class);
         try {
@@ -136,7 +136,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return nodeType;
     }
 
-    public boolean appliesToType(Class objectType)
+    public boolean appliesToType(Class<?> objectType)
     {
         if (!sourceTypes.isEmpty()) {
             for (ObjectType sourceType : sourceTypes) {

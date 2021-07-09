@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class DataTransferHandler extends AbstractHandler {
@@ -44,16 +43,14 @@ public abstract class DataTransferHandler extends AbstractHandler {
             return null;
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
-        final List<IDataTransferProducer> producers = new ArrayList<>();
-        final List<IDataTransferConsumer> consumers = new ArrayList<>();
-        for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
-            Object object = iter.next();
-
-            IDataTransferNode node = adaptTransferNode(object);
+        final List<IDataTransferProducer<?>> producers = new ArrayList<>();
+        final List<IDataTransferConsumer<?,?>> consumers = new ArrayList<>();
+        for (Object object : ss) {
+            IDataTransferNode<?> node = adaptTransferNode(object);
             if (node instanceof IDataTransferProducer) {
-                producers.add((IDataTransferProducer) node);
+                producers.add((IDataTransferProducer<?>) node);
             } else if (node instanceof IDataTransferConsumer) {
-                consumers.add((IDataTransferConsumer) node);
+                consumers.add((IDataTransferConsumer<?, ?>) node);
             }
         }
 
@@ -74,6 +71,6 @@ public abstract class DataTransferHandler extends AbstractHandler {
         return null;
     }
 
-    protected abstract IDataTransferNode adaptTransferNode(Object object);
+    protected abstract IDataTransferNode<?> adaptTransferNode(Object object);
 
 }

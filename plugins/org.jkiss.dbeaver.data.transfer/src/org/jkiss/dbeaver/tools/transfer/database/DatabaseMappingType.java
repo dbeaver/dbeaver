@@ -23,7 +23,6 @@ public enum DatabaseMappingType {
     unspecified(false, false),
     existing(true, false),
     create(true, false),
-    transform(true, true),
     skip(false, false);
 
     private final boolean isValid;

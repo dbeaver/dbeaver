@@ -173,4 +173,7 @@ public class DataTransferRegistry {
         return transformers.get(id);
     }
 
+    public DataTransferAttributeTransformerDescriptor getAttributeTransformerByName(String tName) {
+        return transformers.values().stream().filter(t -> t.getName().equals(tName)).findFirst().get();
+    }
 }

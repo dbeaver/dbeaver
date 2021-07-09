@@ -20,11 +20,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,7 +49,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     private String targetName;
     private String targetType;
     private DatabaseMappingType mappingType;
-    private DBDAttributeTransformerDescriptor transformer;
+    private DataTransferAttributeTransformerDescriptor transformer;
     private final Map<String, Object> transformerProperties = new LinkedHashMap<>();
 
     DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
@@ -244,12 +244,25 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetType = targetType;
     }
 
-    public DBDAttributeTransformerDescriptor getTransformer() {
+    public DataTransferAttributeTransformerDescriptor getTransformer() {
         return transformer;
     }
 
-    public void setTransformer(DBDAttributeTransformerDescriptor transformer) {
+    public void setTransformer(DataTransferAttributeTransformerDescriptor transformer) {
         this.transformer = transformer;
+    }
+
+    public Map<String, Object> getTransformerProperties() {
+        synchronized (transformerProperties) {
+            return new LinkedHashMap<>(transformerProperties);
+        }
+    }
+
+    public void setTransformerProperties(Map<String, Object> properties) {
+        synchronized (transformerProperties) {
+            transformerProperties.clear();
+            transformerProperties.putAll(properties);
+        }
     }
 
     void saveSettings(Map<String, Object> settings) {
