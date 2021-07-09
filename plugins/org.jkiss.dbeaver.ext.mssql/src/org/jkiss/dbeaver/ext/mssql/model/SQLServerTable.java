@@ -49,8 +49,8 @@ public class SQLServerTable extends SQLServerTableBase
         implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
-    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
-    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
+    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
+    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
 
