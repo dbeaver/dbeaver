@@ -347,7 +347,8 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             addAction = new Action("Add variable", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
                 @Override
                 public void run() {
-                    AssignVariableAction action = new AssignVariableAction(mainEditor, "", false, true);
+                    AssignVariableAction action = new AssignVariableAction(mainEditor, "");
+                    action.setEditable(true);
                     action.run();
                 }
             };

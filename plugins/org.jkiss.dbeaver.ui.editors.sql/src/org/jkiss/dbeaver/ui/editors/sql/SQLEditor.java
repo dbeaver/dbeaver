@@ -1164,11 +1164,11 @@ public class SQLEditor extends SQLEditorBase implements
                     if (activeTab.getData() instanceof QueryResultsContainer) {
                         QueryResultsContainer rc = ((QueryResultsContainer) activeTab.getData());
                         if (rc.hasData()) {
-                            manager.add(new AssignVariableAction(
+                            AssignVariableAction action = new AssignVariableAction(
                                 SQLEditor.this,
-                                rc.getQuery().getText(),
-                                true,
-                                false));
+                                rc.getQuery().getText());
+                            action.setEditable(false);
+                            manager.add(action);
                         }
                     }
                 }
