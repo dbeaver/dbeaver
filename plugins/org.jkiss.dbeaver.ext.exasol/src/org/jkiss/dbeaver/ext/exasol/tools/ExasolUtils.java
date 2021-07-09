@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.tools;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolTableObjectType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -210,7 +211,7 @@ public class ExasolUtils {
         for (DBSEntityAttributeRef c : pk.getAttributeReferences(monitor)) {
             columns.add("\"" + c.getAttribute().getName() + "\"");
         }
-        return "ALTER TABLE " + DBUtils.getObjectFullName(exasolTable, DBPEvaluationContext.DDL) + " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(pk) + " PRIMARY KEY (" + CommonUtils.joinStrings(",", columns) + ") " + (pk.getEnabled() ? "ENABLE" : "DISABLE");
+        return "ALTER TABLE " + DBUtils.getObjectFullName(exasolTable, DBPEvaluationContext.DDL) + " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(pk) + " PRIMARY KEY (" + CommonUtils.joinStrings(",", columns) + ") " + (pk.getEnabled() ? ExasolConstants.KEYWORD_ENABLE : ExasolConstants.KEYWORD_DISABLE);
     }
 
     public static String getConnectionDdl(ExasolConnection con, DBRProgressMonitor monitor) throws DBException {
