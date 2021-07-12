@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -47,8 +48,12 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBPReferentialIntegrityController {
-    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? MODIFY CONSTRAINT ? DISABLE";
-    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? MODIFY CONSTRAINT ? ENABLE";
+    private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
+    private static final CharSequence FOREIGN_KEY_NAME_PLACEHOLDER = "%foreign_key_name%";
+    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
+        + FOREIGN_KEY_NAME_PLACEHOLDER + " DISABLE";
+    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
+        + FOREIGN_KEY_NAME_PLACEHOLDER + " ENABLE";
 
     private long sizeRaw;
     private long sizeCompressed;
@@ -448,19 +453,19 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
             return;
         }
 
-        String sql;
+        String template;
         if (enable) {
-            sql = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+            template = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         } else {
-            sql = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+            template = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
+        template = template.replace(TABLE_NAME_PLACEHOLDER, getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            try (JDBCPreparedStatement statement = session.prepareStatement(sql)) {
-                statement.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+            try (JDBCStatement statement = session.createStatement()) {
                 for (DBPNamedObject fk: foreignKeys) {
-                    statement.setString(2, fk.getName());
-                    statement.executeUpdate();
+                    String sql = template.replace(FOREIGN_KEY_NAME_PLACEHOLDER,  fk.getName());
+                    statement.executeUpdate(sql);
                 }
             } catch (SQLException e) {
                 throw new DBException("Unable to change referential integrity", e);
