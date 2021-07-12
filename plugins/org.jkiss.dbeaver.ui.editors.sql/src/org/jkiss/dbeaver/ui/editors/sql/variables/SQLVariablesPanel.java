@@ -144,7 +144,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                         saveVariableValue(editorControl);
                     }
                 });
-                editorControl.addDisposeListener(e -> saveVariableValue(editorControl));
+                //editorControl.addDisposeListener(e -> saveVariableValue(editorControl));
             }
         }
 
@@ -309,7 +309,12 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
 
             varsTable.addSelectionChangedListener(event -> {
                 if (deleteAction != null) {
-                    deleteAction.setEnabled(!event.getSelection().isEmpty());
+                    Object varElement = event.getSelection().isEmpty() ?
+                        null : ((IStructuredSelection) varsTable.getSelection()).getFirstElement();
+
+                    deleteAction.setEnabled(
+                        varElement instanceof DBCScriptContext.VariableInfo &&
+                        ((DBCScriptContext.VariableInfo) varElement).type != DBCScriptContext.VariableType.PARAMETER);
                     updateActions();
                 }
                 editCurrentVariable();
