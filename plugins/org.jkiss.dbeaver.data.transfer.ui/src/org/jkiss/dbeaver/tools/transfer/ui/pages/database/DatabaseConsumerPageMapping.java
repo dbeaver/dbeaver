@@ -54,21 +54,21 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransforme
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.SharedTextColors;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
@@ -553,77 +553,6 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         //TreeViewerEditor.create(mappingViewer, new TreeViewerFocusCellManager(), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
 
         {
-            TreeViewerColumn columnTransformer = new TreeViewerColumn(mappingViewer, SWT.LEFT);
-            columnTransformer.setLabelProvider(new MappingLabelProvider() {
-                @Override
-                public void update(ViewerCell cell) {
-                    DataTransferAttributeTransformerDescriptor transformer = getTransformer (cell.getElement());
-                    if (transformer != null) {
-                        cell.setText(transformer.getName());
-                    } else {
-                        cell.setText("");
-                    }
-                    super.update(cell);
-                }
-            });
-            columnTransformer.getColumn().setText(DTUIMessages.database_consumer_page_mapping_column_transformer_text);
-            columnTransformer.getColumn().setToolTipText(DTUIMessages.database_consumer_page_mapping_column_transformer_tip);
-            columnTransformer.setEditingSupport(new EditingSupport(mappingViewer) {
-                @Override
-                protected CellEditor getCellEditor(Object element) {
-                    if (element instanceof DatabaseMappingAttribute) {
-                        List<DataTransferAttributeTransformerDescriptor> transformers = DataTransferRegistry.getInstance().getAttributeTransformers();
-                        transformers.add(0, null);
-                        return new CustomComboBoxCellEditor(
-                            mappingViewer,
-                            mappingViewer.getTree(),
-                            transformers.stream().map(t->t == null ? "" : t.getName()).toArray(String[]::new),
-                            SWT.DROP_DOWN | SWT.READ_ONLY);
-                    } else {
-                        return null;
-                    }
-                }
-
-                @Override
-                protected boolean canEdit(Object element) {
-                    return element instanceof DatabaseMappingAttribute &&
-                        ((DatabaseMappingAttribute) element).getMappingType().isValid();
-                }
-
-                @Override
-                protected Object getValue(Object element) {
-                    DataTransferAttributeTransformerDescriptor transformer = getTransformer(element);
-                    return transformer == null ? "" : transformer.getName();
-                }
-
-                @Override
-                protected void setValue(Object element, Object value) {
-                    String tName = (String) value;
-                    DataTransferAttributeTransformerDescriptor newTransformer;
-                    if (CommonUtils.isEmpty(tName)) {
-                        newTransformer = null;
-                    } else {
-                        newTransformer = DataTransferRegistry.getInstance().getAttributeTransformerByName(tName);
-                    }
-                    if (element instanceof DatabaseMappingAttribute) {
-                        if (newTransformer != null && !newTransformer.getProperties().isEmpty()) {
-                            AttributeTransformerSettingsDialog settingsDialog = new AttributeTransformerSettingsDialog(
-                                getShell(),
-                                (DatabaseMappingAttribute) element,
-                                newTransformer);
-                            if (settingsDialog.open() != IDialogConstants.OK_ID) {
-                                return;
-                            }
-                        }
-                        ((DatabaseMappingAttribute) element).setTransformer(newTransformer);
-                        mappingViewer.refresh();
-                    }
-                    setErrorMessage(null);
-                }
-            });
-        }
-
-        {
             TreeViewerColumn columnMapping = new TreeViewerColumn(mappingViewer, SWT.LEFT);
             columnMapping.setLabelProvider(new MappingLabelProvider() {
                 @Override
@@ -687,6 +616,91 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             });
         }
 
+        {
+            TreeViewerColumn columnTransformer = new TreeViewerColumn(mappingViewer, SWT.LEFT);
+            columnTransformer.setLabelProvider(new MappingLabelProvider() {
+                @Override
+                public void update(ViewerCell cell) {
+                    DataTransferAttributeTransformerDescriptor transformer = getTransformer (cell.getElement());
+                    if (transformer != null) {
+                        cell.setText(transformer.getName());
+                    } else {
+                        cell.setText("");
+                    }
+                    super.update(cell);
+                }
+
+                @Override
+                public String getToolTipText(Object element) {
+                    DataTransferAttributeTransformerDescriptor transformer = getTransformer (element);
+                    if (transformer != null) {
+                        Map<String, Object> props = ((DatabaseMappingAttribute) element).getTransformerProperties();
+                        if (!CommonUtils.isEmpty(props)) {
+                            return props.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
+                                .collect(Collectors.joining(GeneralUtils.getDefaultLineSeparator()));
+                        }
+                    }
+                    return null;
+                }
+            });
+            columnTransformer.getColumn().setText(DTUIMessages.database_consumer_page_mapping_column_transformer_text);
+            columnTransformer.getColumn().setToolTipText(DTUIMessages.database_consumer_page_mapping_column_transformer_tip);
+            columnTransformer.setEditingSupport(new EditingSupport(mappingViewer) {
+                @Override
+                protected CellEditor getCellEditor(Object element) {
+                    if (element instanceof DatabaseMappingAttribute) {
+                        List<DataTransferAttributeTransformerDescriptor> transformers = DataTransferRegistry.getInstance().getAttributeTransformers();
+                        transformers.add(0, null);
+                        return new CustomComboBoxCellEditor(
+                            mappingViewer,
+                            mappingViewer.getTree(),
+                            transformers.stream().map(t->t == null ? "" : t.getName()).toArray(String[]::new),
+                            SWT.DROP_DOWN | SWT.READ_ONLY);
+                    } else {
+                        return null;
+                    }
+                }
+
+                @Override
+                protected boolean canEdit(Object element) {
+                    return element instanceof DatabaseMappingAttribute &&
+                        ((DatabaseMappingAttribute) element).getMappingType().isValid();
+                }
+
+                @Override
+                protected Object getValue(Object element) {
+                    DataTransferAttributeTransformerDescriptor transformer = getTransformer(element);
+                    return transformer == null ? "" : transformer.getName();
+                }
+
+                @Override
+                protected void setValue(Object element, Object value) {
+                    String tName = (String) value;
+                    DataTransferAttributeTransformerDescriptor newTransformer;
+                    if (CommonUtils.isEmpty(tName)) {
+                        newTransformer = null;
+                    } else {
+                        newTransformer = DataTransferRegistry.getInstance().getAttributeTransformerByName(tName);
+                    }
+                    if (element instanceof DatabaseMappingAttribute) {
+                        if (newTransformer != null && !newTransformer.getProperties().isEmpty()) {
+                            AttributeTransformerSettingsDialog settingsDialog = new AttributeTransformerSettingsDialog(
+                                getShell(),
+                                (DatabaseMappingAttribute) element,
+                                newTransformer);
+                            if (settingsDialog.open() != IDialogConstants.OK_ID) {
+                                return;
+                            }
+                        }
+                        ((DatabaseMappingAttribute) element).setTransformer(newTransformer);
+                        mappingViewer.refresh();
+                    }
+                    setErrorMessage(null);
+                }
+            });
+        }
+
+        new DefaultViewerToolTipSupport(mappingViewer);
         mappingViewer.setContentProvider(new TreeContentProvider() {
             @Override
             public boolean hasChildren(Object element)
