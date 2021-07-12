@@ -144,7 +144,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
                     if (targetAttributes != null) {
-                        target = CommonUtils.findObject(targetAttributes, targetName, DBSEntityAttribute::getName);
+                        target = CommonUtils.findBestCaseAwareMatch(targetAttributes, targetName, DBSEntityAttribute::getName);
                     } else {
                         target = null;
                     }
@@ -162,7 +162,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                             if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
                                 DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
                                 targetName = targetAttribute.getName();
-                                target = CommonUtils.findObject(targetAttributes, targetName, DBSEntityAttribute::getName);
+                                target = CommonUtils.findBestCaseAwareMatch(targetAttributes, targetName, DBSEntityAttribute::getName);
                             }
                         }
 

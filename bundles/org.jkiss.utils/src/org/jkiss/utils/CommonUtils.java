@@ -935,23 +935,23 @@ public class CommonUtils {
     /**
      * Finds the object with the best matching name. Here we consider a case sensitive match better then a case insensitive one.
      *
-     * @param iterable container with objects
+     * @param objects container with objects
      * @param name to match
      * @param nameExtractor function which extracts the name from object
      * @param <T> type of objects to search from
      * @return the best match or {@code null} if nothing found
      */
     @Nullable
-    public static <T> T findObject(@NotNull Iterable<? extends T> iterable, @NotNull String name,
-                                   @NotNull Function<? super T, String> nameExtractor) {
+    public static <T> T findBestCaseAwareMatch(@NotNull Iterable<? extends T> objects, @NotNull String name,
+                                               @NotNull Function<? super T, String> nameExtractor) {
         T firstCaseInsensitiveMatch = null;
-        for (T t: iterable) {
-            String objectName = nameExtractor.apply(t);
+        for (T obj: objects) {
+            String objectName = nameExtractor.apply(obj);
             if (name.equals(objectName)) { //case sensitive match
-                return t;
+                return obj;
             }
             if (firstCaseInsensitiveMatch == null && name.equalsIgnoreCase(objectName)) {
-                firstCaseInsensitiveMatch = t;
+                firstCaseInsensitiveMatch = obj;
             }
         }
         return firstCaseInsensitiveMatch;

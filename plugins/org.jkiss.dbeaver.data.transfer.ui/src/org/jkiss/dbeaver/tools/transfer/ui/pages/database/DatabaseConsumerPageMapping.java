@@ -760,7 +760,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
                     Iterable<? extends DBSEntityAttribute> attributes = parentEntity.getAttributes(new VoidProgressMonitor());
                     if (attributes != null) {
-                        DBSEntityAttribute matchingAttribute = CommonUtils.findObject(attributes, name, DBSEntityAttribute::getName);
+                        DBSEntityAttribute matchingAttribute = CommonUtils.findBestCaseAwareMatch(attributes, name, DBSEntityAttribute::getName);
                         if (matchingAttribute != null) {
                             attrMapping.setMappingType(DatabaseMappingType.existing);
                             attrMapping.setTarget(matchingAttribute);

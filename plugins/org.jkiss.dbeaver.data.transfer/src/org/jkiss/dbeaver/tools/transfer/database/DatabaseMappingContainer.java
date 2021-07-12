@@ -182,7 +182,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     DatabaseMappingAttribute getAttributeMapping(@NotNull DBPNamedObject sourceAttr) {
-        return CommonUtils.findObject(attributeMappings, sourceAttr.getName(), attr -> attr.getSource().getName());
+        return CommonUtils.findBestCaseAwareMatch(attributeMappings, sourceAttr.getName(), attr -> attr.getSource().getName());
     }
 
     public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRRunnableContext runnableContext) {
