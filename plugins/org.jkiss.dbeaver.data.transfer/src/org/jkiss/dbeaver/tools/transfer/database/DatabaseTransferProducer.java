@@ -85,6 +85,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         this.dataFilter = dataFilter;
     }
 
+    public void setDataContainer(@NotNull DBSDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
+    }
+
     @Override
     public DBSDataContainer getDatabaseObject()
     {

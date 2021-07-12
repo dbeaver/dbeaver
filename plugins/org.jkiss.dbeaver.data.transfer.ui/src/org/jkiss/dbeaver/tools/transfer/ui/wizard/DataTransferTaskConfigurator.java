@@ -53,12 +53,10 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -85,7 +83,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
     }
 
     @Override
-    public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
+    public TaskConfigurationWizard<?> createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         return DataTransferWizard.openWizard(taskConfiguration);
     }
 
@@ -129,7 +127,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             UIUtils.createTableColumn(objectsTable, SWT.NONE, DTUIMessages.data_transfer_task_configurator_table_column_text_data_source);
             UIUtils.createTableContextMenu(objectsTable, null);
 
-            Composite buttonsPanel = UIUtils.createComposite(group, isExport ? 3 : 2);
+            Composite buttonsPanel = UIUtils.createComposite(group, isExport ? 4 : 3);
             UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_table, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -287,6 +285,34 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     }
                 });
             }
+            Button editButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_wizard_settings_button_edit, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    TableItem item = objectsTable.getItem(objectsTable.getSelectionIndex());
+                    DataTransferPipe pipe = (DataTransferPipe) item.getData();
+                    IDataTransferProducer<?> producer = pipe.getProducer();
+                    if (producer instanceof DatabaseTransferProducer && producer.getDatabaseObject() instanceof SQLQueryDataContainer) {
+                        DBPDataSource dataSource = producer.getDatabaseObject().getDataSource();
+                        DataSourceContextProvider contextProvider = new DataSourceContextProvider(producer.getDatabaseObject());
+
+                        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                        if (serviceSQL != null) {
+
+                            String query = serviceSQL.openSQLEditor(
+                                contextProvider,
+                                DTUIMessages.data_transfer_task_configurator_sql_query_title,
+                                UIIcon.SQL_SCRIPT,
+                                ((SQLQueryDataContainer) producer.getDatabaseObject()).getQuery().getText());
+                            if (query != null) {
+                                SQLQueryDataContainer container = (SQLQueryDataContainer)producer.getDatabaseObject();
+                                container.setQuery(new SQLQuery(dataSource, query));
+                                IDataTransferNode node = getTableNode(pipe);
+                                item.setText(node.getObjectName());
+                            }
+                        }
+                    }
+                }
+            });
             Button removeButton = UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -301,11 +327,21 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     }
                 }
             });
+            editButton.setEnabled(false);
             removeButton.setEnabled(false);
+
             objectsTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    removeButton.setEnabled(objectsTable.getSelectionIndex() >= 0);
+                    int selectionIndex = objectsTable.getSelectionIndex();
+                    DataTransferPipe pipe = (selectionIndex >= 0) ?
+                        (DataTransferPipe) objectsTable.getItem(selectionIndex).getData() : null;
+                    editButton.setEnabled(
+                        pipe != null &&
+                        pipe.getProducer() instanceof DatabaseTransferProducer &&
+                        pipe.getProducer().getDatabaseObject() instanceof SQLQueryDataContainer);
+
+                    removeButton.setEnabled(pipe != null);
                 }
             });
         }

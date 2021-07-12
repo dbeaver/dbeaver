@@ -42,8 +42,8 @@ import java.util.Map;
 public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContainer, DBPContextProvider, DBPImageProvider {
 
     private final DBPContextProvider contextProvider;
-    private final SQLQuery query;
     private final SQLScriptContext scriptContext;
+    private SQLQuery query;
     private final Log log;
 
     public SQLQueryDataContainer(DBPContextProvider contextProvider, SQLQuery query, SQLScriptContext scriptContext, Log log) {
@@ -240,6 +240,10 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
     @Override
     public SQLScriptElement getQuery() {
         return query;
+    }
+
+    public void setQuery(SQLQuery query) {
+        this.query = query;
     }
 
     @Override
