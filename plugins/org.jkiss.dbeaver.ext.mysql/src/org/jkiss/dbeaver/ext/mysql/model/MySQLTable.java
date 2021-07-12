@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
@@ -321,9 +322,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             additionalInfo.loaded = true;
             return;
         }
+        StringBuilder sqlBulder = new StringBuilder("SHOW TABLE STATUS FROM ");
+        sqlBulder.append(DBUtils.getQuotedIdentifier(getContainer()));
+        sqlBulder.append(" LIKE '");
+        sqlBulder.append(SQLUtils.escapeString(getDataSource(), getName()));
+        sqlBulder.append("'");
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlBulder.toString())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         fetchAdditionalInfo(dbResult);
