@@ -285,6 +285,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             if (transformer != null) {
                 settings.put("transformer", transformer.getId());
                 settings.put("transformerProperties", new LinkedHashMap<>(transformerProperties));
+                settings.put("transformerPropertiesNames", String.join(",", transformerProperties.keySet()));
             }
         }
     }
@@ -323,9 +324,14 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 log.error("Can't find attribute transformer " + transformerId);
             } else {
                 Map<String, Object> tp = (Map<String, Object>) settings.get("transformerProperties");
+                String[] tpNames = CommonUtils.toString(settings.get("transformerPropertiesNames"), "").split(",");
                 transformerProperties.clear();
                 if (tp != null) {
-                    transformerProperties.putAll(tp);
+                    for (String name : tpNames) {
+                        if (!CommonUtils.isEmpty(name)) {
+                            transformerProperties.put(name, tp.get(name));
+                        }
+                    }
                 }
             }
         }

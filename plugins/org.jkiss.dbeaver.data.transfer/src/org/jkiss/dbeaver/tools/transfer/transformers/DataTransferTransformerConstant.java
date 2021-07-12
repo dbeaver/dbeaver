@@ -31,7 +31,7 @@ public class DataTransferTransformerConstant implements IDataTransferAttributeTr
 
     @Override
     public Object transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding[] dataAttributes, @NotNull Object[] dataRow, @NotNull DBDAttributeBinding attribute, Object attrValue, @NotNull Map<String, Object> options) throws DBException {
-        return null;
+        return options.get("constant");
     }
 
 }

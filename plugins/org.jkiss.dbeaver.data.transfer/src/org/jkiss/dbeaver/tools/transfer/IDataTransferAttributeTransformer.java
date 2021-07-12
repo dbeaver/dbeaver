@@ -25,7 +25,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import java.util.Map;
 
 /**
- * Attribute transformer
+ * Attribute transformer for data transfer.
+ * Transformer may have a state. It is instantiated for each entity attribute.
  */
 public interface IDataTransferAttributeTransformer {
 
