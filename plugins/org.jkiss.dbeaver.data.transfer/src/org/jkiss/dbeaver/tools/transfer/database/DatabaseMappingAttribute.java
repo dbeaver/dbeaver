@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -242,8 +243,19 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
-
-        return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
+        String dataType = DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
+        if (!SQLConstants.KEYWORD_NULL.equals(dataType)) {
+            return dataType;
+        }
+        // This is a MySQL-specific workaround. In case of a statement like
+        // SELECT NULL 'column_name',
+        // column_name's type is NULL (at least that's what JDBC driver returns).
+        // Here we substitute this 'data type' to varchar.
+        // See https://github.com/dbeaver/dbeaver/issues/11946.
+        if (addModifiers) {
+            return "varchar(100)";
+        }
+        return "varchar";
     }
 
     public void setTargetType(String targetType)
