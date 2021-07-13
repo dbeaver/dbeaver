@@ -6,7 +6,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -89,10 +88,8 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             cmd.add("--no-owner");
         }
 
-        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            cmd.add("--file");
-            cmd.add(settings.getOutputFile(arg).getAbsolutePath());
-        }
+        cmd.add("--file");
+        cmd.add(settings.getOutputFile(arg).getAbsolutePath());
 
         // Objects
         if (settings.getExportObjects().isEmpty()) {
@@ -131,15 +128,5 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
         cmd.add(arg.getDatabase().getName());
 
         return cmd;
-    }
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
-        super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            File outFile = settings.getOutputFile(arg);
-            DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
-            job.start();
-        }
     }
 }

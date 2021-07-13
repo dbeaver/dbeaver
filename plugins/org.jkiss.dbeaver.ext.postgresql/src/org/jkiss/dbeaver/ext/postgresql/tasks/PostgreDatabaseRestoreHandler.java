@@ -85,9 +85,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         if (!CommonUtils.isEmpty(databaseObjects)) {
             cmd.add("--dbname=" + databaseObjects.get(0).getName());
         }
-        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            cmd.add(settings.getInputFile());
-        }
+        cmd.add(settings.getInputFile());
 
         return cmd;
     }
@@ -109,9 +107,6 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
         }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            new BinaryFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), log).start();
-        }
     }
 
     @Override
