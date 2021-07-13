@@ -651,10 +651,13 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     if (element instanceof DatabaseMappingAttribute) {
                         List<DataTransferAttributeTransformerDescriptor> transformers = DataTransferRegistry.getInstance().getAttributeTransformers();
                         transformers.add(0, null);
+
+                        List<String> tsfNames = transformers.stream().map(t->t == null ? "" : t.getName()).collect(Collectors.toList());
+
                         return new CustomComboBoxCellEditor(
                             mappingViewer,
                             mappingViewer.getTree(),
-                            transformers.stream().map(t->t == null ? "" : t.getName()).toArray(String[]::new),
+                            tsfNames.toArray(new String[0]),
                             SWT.DROP_DOWN | SWT.READ_ONLY);
                     } else {
                         return null;
@@ -683,6 +686,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         newTransformer = DataTransferRegistry.getInstance().getAttributeTransformerByName(tName);
                     }
                     if (element instanceof DatabaseMappingAttribute) {
+                        if (newTransformer == ((DatabaseMappingAttribute) element).getTransformer()) {
+                            return;
+                        }
                         if (newTransformer != null && !newTransformer.getProperties().isEmpty()) {
                             AttributeTransformerSettingsDialog settingsDialog = new AttributeTransformerSettingsDialog(
                                 getShell(),
