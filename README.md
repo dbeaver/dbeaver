@@ -11,7 +11,11 @@
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
-Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (MongoDB, Cassandra, Couchbase, Redis, BigTable, DynamoDB, etc).
+Supports any database which has JDBC driver (which basically means - ANY database). 
+<a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as 
+MongoDB, Cassandra, Couchbase, Redis, BigTable, DynamoDB, etc.
+You can find the list of all databases supported in commercial versions 
+<a href="https://dbeaver.com/databases/">here</a>.
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
 * Based on <a href="https://wiki.eclipse.org/Rich_Client_Platform">Eclipse</a> platform.
