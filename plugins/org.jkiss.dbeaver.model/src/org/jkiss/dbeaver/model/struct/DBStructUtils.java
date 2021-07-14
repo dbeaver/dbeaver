@@ -261,14 +261,22 @@ public final class DBStructUtils {
     }
 
     public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
-        if (typedObject instanceof DBSObject && objectContainer != null) {
+        boolean isBindingWithEntityAttr = false;
+        if (typedObject instanceof DBDAttributeBinding) {
+            DBDAttributeBinding attributeBinding = (DBDAttributeBinding) typedObject;
+            if (attributeBinding.getEntityAttribute() != null) {
+                isBindingWithEntityAttr = true;
+            }
+        }
+        if (objectContainer != null && (typedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr)) {
             // If source and target datasources have the same type then just return the same type name
             DBPDataSource srcDataSource = ((DBSObject) typedObject).getDataSource();
             DBPDataSource tgtDataSource = objectContainer.getDataSource();
-            if (srcDataSource != null && tgtDataSource != null && srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
+            if (srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
                 return typedObject.getFullTypeName();
             }
         }
+
         String typeName = typedObject.getTypeName();
         String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = typedObject.getDataKind();
