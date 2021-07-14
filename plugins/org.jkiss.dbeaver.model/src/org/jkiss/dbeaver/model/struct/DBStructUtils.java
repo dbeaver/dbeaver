@@ -341,6 +341,19 @@ public final class DBStructUtils {
                                 }
                             }
                         }
+                    } else if (targetType == null && dataKind == DBPDataKind.STRING) {
+                        if (typeNameLower.contains("text")) {
+                            if (possibleTypes.containsKey("text")) {
+                                targetType = possibleTypes.get("text");
+                            } else {
+                                for (Map.Entry<String, DBSDataType> type : possibleTypes.entrySet()) {
+                                    if (type.getKey().contains("text")) {
+                                        targetType = type.getValue();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 if (targetType == null) {
