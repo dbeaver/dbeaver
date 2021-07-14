@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -37,8 +38,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
-* DatabaseMappingAttribute
-*/
+ * DatabaseMappingAttribute
+ */
 public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingAttribute.class);
@@ -46,6 +47,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     public static final String TARGET_NAME_SKIP = "[skip]";
 
     private final DatabaseMappingContainer parent;
+    @Nullable
     private final DBSAttributeBase source;
     @Nullable
     private DBSEntityAttribute target;
@@ -55,14 +57,25 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     private DataTransferAttributeTransformerDescriptor transformer;
     private final Map<String, Object> transformerProperties = new LinkedHashMap<>();
 
-    DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
-    {
+    DatabaseMappingAttribute(DatabaseMappingContainer parent, @NotNull DBSAttributeBase source) {
         this.parent = parent;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    DatabaseMappingAttribute(DatabaseMappingAttribute attribute, DatabaseMappingContainer parent) {
+    DatabaseMappingAttribute(
+        @NotNull DatabaseMappingContainer parent,
+        @Nullable DBSAttributeBase source,
+        @Nullable DBSEntityAttribute target,
+        @NotNull DatabaseMappingType mappingType)
+    {
+        this.parent = parent;
+        this.source = source;
+        this.target = target;
+        this.mappingType = mappingType;
+    }
+
+    DatabaseMappingAttribute(@NotNull DatabaseMappingAttribute attribute, @NotNull DatabaseMappingContainer parent) {
         this.parent = parent;
         this.source = attribute.source;
         this.target = attribute.target;
@@ -71,25 +84,25 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = attribute.mappingType;
     }
 
-    public DatabaseMappingContainer getParent()
-    {
+    public DatabaseMappingContainer getParent() {
         return parent;
     }
 
     @Override
-    public DBPImage getIcon()
-    {
+    public DBPImage getIcon() {
         return DBValueFormatting.getObjectImage(source);
     }
 
+    @Nullable
     @Override
-    public DBSAttributeBase getSource()
-    {
+    public DBSAttributeBase getSource() {
         return source;
     }
 
-    public String getSourceType()
-    {
+    public String getSourceType() {
+        if (source == null) {
+            return null;
+        }
         String typeName = source.getTypeName();
         if (source.getDataKind() == DBPDataKind.STRING) {
             typeName += "(" + source.getMaxLength() + ")";
@@ -98,8 +111,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     @Override
-    public String getTargetName()
-    {
+    public String getTargetName() {
         switch (mappingType) {
             case existing:
                 if (target != null) {
@@ -117,13 +129,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     @Override
-    public DatabaseMappingType getMappingType()
-    {
+    public DatabaseMappingType getMappingType() {
         return mappingType;
     }
 
-    public void setMappingType(DatabaseMappingType mappingType)
-    {
+    public void setMappingType(DatabaseMappingType mappingType) {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
@@ -132,11 +142,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    public void updateMappingType(DBRProgressMonitor monitor) throws DBException
-    {
+    public void updateMappingType(DBRProgressMonitor monitor) throws DBException {
         switch (parent.getMappingType()) {
-            case existing:
-            {
+            case existing: {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
                     if (CommonUtils.isEmpty(targetName)) {
@@ -229,24 +237,21 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         return container == null ? name : DBUtils.getQuotedIdentifier(container.getDataSource(), name);
     }
 
+    @Nullable
     @Override
-    public DBSEntityAttribute getTarget()
-    {
+    public DBSEntityAttribute getTarget() {
         return target;
     }
 
-    public void setTarget(DBSEntityAttribute target)
-    {
+    public void setTarget(@Nullable DBSEntityAttribute target) {
         this.target = target;
     }
 
-    public void setTargetName(String targetName)
-    {
+    public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
-    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers)
-    {
+    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers) {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
@@ -254,8 +259,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
     }
 
-    public void setTargetType(String targetType)
-    {
+    public void setTargetType(String targetType) {
         this.targetType = targetType;
     }
 
@@ -309,7 +313,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     DBSDataManipulator targetEntity = parent.getTarget();
                     if (targetEntity instanceof DBSEntity) {
                         this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(),
-                            DBUtils.getUnQuotedIdentifier(((DBSEntity)targetEntity).getDataSource(), targetName));
+                            DBUtils.getUnQuotedIdentifier(((DBSEntity) targetEntity).getDataSource(), targetName));
                     }
                 }
 
@@ -347,6 +351,6 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     @Override
     public String toString() {
-        return source.getName();
+        return source != null ? source.getName() : getTargetName();
     }
 }
