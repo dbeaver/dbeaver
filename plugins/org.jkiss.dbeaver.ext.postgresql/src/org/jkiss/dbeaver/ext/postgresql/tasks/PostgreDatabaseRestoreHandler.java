@@ -85,7 +85,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         if (!CommonUtils.isEmpty(databaseObjects)) {
             cmd.add("--dbname=" + databaseObjects.get(0).getName());
         }
-        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             cmd.add(settings.getInputFile());
         }
 
@@ -94,12 +94,12 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
 
     @Override
     protected boolean isLogInputStream() {
-        return true;
+        return false;
     }
 
     @Override
     protected boolean isMergeProcessStreams() {
-        return true;
+        return false;
     }
 
     @Override
@@ -109,7 +109,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
         }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (USE_STREAM_MONITOR && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             new BinaryFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), log).start();
         }
     }

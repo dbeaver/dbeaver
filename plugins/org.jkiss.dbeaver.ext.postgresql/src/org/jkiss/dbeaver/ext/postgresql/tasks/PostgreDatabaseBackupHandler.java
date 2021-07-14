@@ -89,7 +89,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             cmd.add("--no-owner");
         }
 
-        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             cmd.add("--file");
             cmd.add(settings.getOutputFile(arg).getAbsolutePath());
         }
@@ -136,7 +136,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (USE_STREAM_MONITOR && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             File outFile = settings.getOutputFile(arg);
             DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
             job.start();

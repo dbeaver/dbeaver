@@ -16,6 +16,8 @@ import java.util.List;
 public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
     extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
+    public static final boolean USE_STREAM_MONITOR = false;
+
     @Override
     protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
         String userPassword = settings.getToolUserPassword();
