@@ -96,7 +96,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             catalog.checkInstanceConnection(monitor);
 
             DBSObject oldInstance = getOwnerInstance();
-            boolean changed = false;
+            boolean catalogChanged = false, schemaChanged = false;
             if (oldInstance != catalog) {
                 // Changing catalog means reconnect
                 // Change it only for isolated editor contexts
@@ -107,12 +107,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 } else {
                     getDataSource().setActiveDatabase(catalog);
                 }
-                changed = true;
+                catalogChanged = true;
             }
             if (schema != null) {
-                changed = changeDefaultSchema(monitor, schema, true, force);
+                schemaChanged = changeDefaultSchema(monitor, schema, true, force);
             }
-            if (changed) {
+            if (catalogChanged || schemaChanged) {
                 DBUtils.fireObjectSelectionChange(oldInstance, catalog);
             }
         } catch (DBException e) {
