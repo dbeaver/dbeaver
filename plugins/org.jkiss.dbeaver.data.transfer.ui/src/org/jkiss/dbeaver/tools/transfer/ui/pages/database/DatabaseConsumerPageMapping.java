@@ -756,6 +756,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 ((DatabaseMappingContainer) mapping).setTargetName(name);
             } else {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
+                DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
+                if (targetDataSource != null) {
+                    name = DBUtils.getUnQuotedIdentifier(targetDataSource, name);
+                }
                 if (attrMapping.getParent().getTarget() instanceof DBSEntity) {
                     DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
                     Iterable<? extends DBSEntityAttribute> attributes = parentEntity.getAttributes(new VoidProgressMonitor());
