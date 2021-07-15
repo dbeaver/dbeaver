@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
+import org.jkiss.dbeaver.model.impl.data.ExecuteBatchWithMultipleInsert;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.sql.BaseInsertMethod;
@@ -64,6 +65,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private static final String DEFAULT_TABLE_ALIAS = "x";
 
     private boolean persisted;
+    private boolean allNulls;
 
     protected JDBCTable(CONTAINER container, boolean persisted)
     {
@@ -296,14 +298,49 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
      */
     @NotNull
     @Override
-    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
+    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source, Map<String, Object> options)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
 
-        return new ExecuteBatchImpl(attributes, keysReceiver, true) {
+        boolean multiInsertSupported = getDataSource().getSQLDialect().getDefaultMultiValueInsertMode() == SQLDialect.MultiValueInsertMode.GROUP_ROWS;
 
-            private boolean allNulls;
+        if (CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_USE_MULTI_INSERT)) && multiInsertSupported) {
+            return new ExecuteBatchWithMultipleInsert(attributes, keysReceiver, true) {
+
+                @NotNull
+                @Override
+                protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
+                    StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes,true, options);
+                    // Execute
+                    DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, queryForStatement.toString(), false, false, keysReceiver != null);
+                    dbStat.setStatementSource(source);
+                    return dbStat;
+                }
+
+                @Override
+                protected void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException {
+                    int paramIndex = 0;
+                    int handlersLength = handlers.length;
+                    int attributeCount = 0;
+                    for (Object attribute : attributeValues) {
+                        if (DBUtils.isPseudoAttribute(attributes[attributeCount])) {
+                            continue;
+                        }
+                        handlers[attributeCount].bindValueObject(statement.getSession(), statement, attributes[attributeCount], paramIndex++, attribute);
+                        attributeCount++;
+                        if (attributeCount == handlersLength) {
+                            attributeCount = 0;
+                        }
+                        if (session.getProgressMonitor().isCanceled()) {
+                            break;
+                        }
+                    }
+                }
+            };
+        }
+
+        return new ExecuteBatchImpl(attributes, keysReceiver, true) {
 
             protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
                 paramIndex++;
@@ -317,65 +354,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             @NotNull
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
-                // Make query
-                String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
-                StringBuilder query = new StringBuilder(200);
-
-                DBDInsertReplaceMethod method = (DBDInsertReplaceMethod) options.get(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD);
-                if (method == null) {
-                    method = new BaseInsertMethod();
-                }
-
-                if (useUpsert(session)) {
-                    query.append(SQLConstants.KEYWORD_UPSERT).append(" INTO");
-                } else {
-                    query.append(method.getOpeningClause(JDBCTable.this, session.getProgressMonitor()));
-                }
-                query.append(" ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
-
-                allNulls = true;
-                for (int i = 0; i < attributes.length; i++) {
-                    if (!DBUtils.isNullValue(attributeValues[i])) {
-                        allNulls = false;
-                        break;
-                    }
-                }
-                boolean hasKey = false;
-                for (int i = 0; i < attributes.length; i++) {
-                    DBSAttributeBase attribute = attributes[i];
-                    if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[i]))) {
-                        continue;
-                    }
-                    if (hasKey) query.append(","); //$NON-NLS-1$
-                    hasKey = true;
-                    query.append(getAttributeName(attribute));
-                }
-                query.append(")\n\tVALUES ("); //$NON-NLS-1$
-                hasKey = false;
-                for (int i = 0; i < attributes.length; i++) {
-                    DBSAttributeBase attribute = attributes[i];
-                    if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[i]))) {
-                        continue;
-                    }
-                    if (hasKey) query.append(","); //$NON-NLS-1$
-                    hasKey = true;
-
-                    DBDValueHandler valueHandler = handlers[i];
-                    if (valueHandler instanceof DBDValueBinder) {
-                        query.append(((DBDValueBinder) valueHandler) .makeQueryBind(attribute, attributeValues[i]));
-                    } else {
-                        query.append("?"); //$NON-NLS-1$
-                    }
-                }
-                query.append(")"); //$NON-NLS-1$
-
-                String trailingClause = method.getTrailingClause(JDBCTable.this, session.getProgressMonitor(), attributes);
-                if (trailingClause != null) {
-                    query.append(trailingClause);
-                }
-
+                StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes,false, options);
                 // Execute
-                DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
+                DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, queryForStatement.toString(), false, false, keysReceiver != null);
                 dbStat.setStatementSource(source);
                 return dbStat;
             }
@@ -389,9 +370,93 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         continue;
                     }
                     handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);
+                    if (session.getProgressMonitor().isCanceled()) {
+                        break;
+                    }
                 }
             }
         };
+    }
+
+    private StringBuilder prepareQueryForStatement(
+        @NotNull DBCSession session,
+        DBDValueHandler[] handlers,
+        Object[] attributeValues,
+        DBSAttributeBase[] attributes,
+        boolean useMultiInsert,
+        Map<String, Object> options) throws DBCException {
+
+        // Make query
+        String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
+        StringBuilder query = new StringBuilder(200);
+
+        DBDInsertReplaceMethod method = (DBDInsertReplaceMethod) options.get(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD);
+        if (method == null) {
+            method = new BaseInsertMethod();
+        }
+
+        if (useUpsert(session)) {
+            query.append(SQLConstants.KEYWORD_UPSERT).append(" INTO");
+        } else {
+            query.append(method.getOpeningClause(JDBCTable.this, session.getProgressMonitor()));
+        }
+        query.append(" ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+
+
+        allNulls = true;
+        for (int i = 0; i < attributes.length; i++) {
+            if (!DBUtils.isNullValue(attributeValues[i])) {
+                allNulls = false;
+                break;
+            }
+        }
+        boolean hasKey = false;
+        for (int i = 0; i < attributes.length; i++) {
+            DBSAttributeBase attribute = attributes[i];
+            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
+                continue;
+            }
+            if (hasKey) query.append(","); //$NON-NLS-1$
+            hasKey = true;
+            query.append(getAttributeName(attribute));
+        }
+        query.append(")\n\tVALUES "); //$NON-NLS-1$
+        StringBuilder valuesPart = new StringBuilder(64);
+        valuesPart.append("(");
+        hasKey = false;
+        for (int i = 0; i < attributes.length; i++) {
+            DBSAttributeBase attribute = attributes[i];
+            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
+                continue;
+            }
+            if (hasKey) valuesPart.append(","); //$NON-NLS-1$
+            hasKey = true;
+
+            DBDValueHandler valueHandler = handlers[i];
+            if (valueHandler instanceof DBDValueBinder) {
+                valuesPart.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
+            } else {
+                valuesPart.append("?"); //$NON-NLS-1$
+            }
+        }
+        valuesPart.append(")"); //$NON-NLS-1$
+        if (useMultiInsert) {
+            for (int i = 0; i < attributeValues.length / attributes.length; i++) {
+                if (i != 0) {
+                    query.append(",");
+                }
+                query.append(valuesPart);
+            }
+        } else {
+            query.append(valuesPart);
+        }
+
+        String trailingClause = method.getTrailingClause(JDBCTable.this, session.getProgressMonitor(), attributes);
+        if (trailingClause != null) {
+            query.append(trailingClause);
+        }
+
+        return query;
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -411,7 +476,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 session,
                 ArrayUtils.concatArrays(updateAttributes, keyAttributes),
                 keysReceiver,
-                source);
+                source,
+                Collections.emptyMap());
         }
         readRequiredMeta(session.getProgressMonitor());
 

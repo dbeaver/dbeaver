@@ -166,11 +166,36 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             });
             commitAfterEdit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
+            final Button useMultiInsert = UIUtils.createCheckbox(performanceSettings, "Use multi value insert", "Use multi insert with extended values number for higher performance", settings.isUseMultiInsert(), 4);
+            useMultiInsert.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setUseMultiInsert(useMultiInsert.getSelection());
+                }
+            });
+
+            final Spinner multiInsertBatch = UIUtils.createLabelSpinner(performanceSettings, "Multi insert batch size", settings.getMultiInsertBatch(), 1, Integer.MAX_VALUE);
+            multiInsertBatch.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setMultiInsertBatch(multiInsertBatch.getSelection());
+                }
+            });
+            multiInsertBatch.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+
+
             final Button useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
             useBatchCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setDisableUsingBatches(useBatchCheck.getSelection());
+                    if (useBatchCheck.getSelection()) {
+                        useMultiInsert.setSelection(false);
+                        useMultiInsert.setEnabled(false);
+                        settings.setUseMultiInsert(false);
+                    } else if (!useBatchCheck.getSelection() && !useMultiInsert.getEnabled()) {
+                        useMultiInsert.setEnabled(true);
+                    }
                 }
             });
         }
