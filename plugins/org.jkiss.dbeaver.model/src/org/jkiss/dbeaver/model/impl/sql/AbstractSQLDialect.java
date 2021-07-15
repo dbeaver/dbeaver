@@ -817,4 +817,24 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return true;
     }
 
+    @Nullable
+    @Override
+    public String getWideEnoughIntegerType(long val, @Nullable DBPDataTypeProvider typeProvider) {
+        if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
+            return SQLConstants.TYPE_INTEGER;
+        }
+        if (typeProvider != null) {
+            for (DBSTypedObject dataType: typeProvider.getLocalDataTypes()) {
+                if (dataType.getDataKind() != DBPDataKind.NUMERIC) {
+                    continue;
+                }
+                String name = dataType.getTypeName();
+                String nameUpper = name.toUpperCase(Locale.ENGLISH);
+                if (nameUpper.contains(SQLConstants.TYPE_BIGINT) || nameUpper.contains("INT8")) {
+                    return name;
+                }
+            }
+        }
+        return null;
+    }
 }
