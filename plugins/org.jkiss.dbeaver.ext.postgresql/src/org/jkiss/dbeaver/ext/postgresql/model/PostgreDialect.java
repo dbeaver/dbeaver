@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -804,11 +804,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     public String getTypeCastClause(DBSTypedObject attribute, String expression) {
         String typeName = attribute.getTypeName();
         if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
-            if (attribute instanceof DBDAttributeBindingMeta) {
-                DBSDataType dataType = ((DBDAttributeBindingMeta) attribute).getDataType();
+            if (attribute instanceof DBDAttributeBinding) {
+                DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
                 if (dataType != null) {
                     DBSObject parentObject = dataType.getParentObject();
-                    if (parentObject instanceof PostgreSchema && dataType instanceof PostgreDataType && !parentObject.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+                    if (parentObject instanceof PostgreSchema && dataType instanceof PostgreDataType) {
                         typeName = ((PostgreDataType) dataType).getFullyQualifiedName(DBPEvaluationContext.DDL);
                     }
                 }
