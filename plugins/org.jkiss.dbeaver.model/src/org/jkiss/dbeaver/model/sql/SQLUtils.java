@@ -648,12 +648,6 @@ public final class SQLUtils {
 
         DBPDataKind dataKind = attribute.getDataKind();
         switch (dataKind) {
-            case BOOLEAN:
-            case NUMERIC:
-                if (sqlDialect != null) {
-                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
-                }
-                return strValue;
             case CONTENT:
                 if (value instanceof DBDContent) {
                     String contentType = ((DBDContent) value).getContentType();
@@ -665,9 +659,11 @@ public final class SQLUtils {
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
-                    return sqlDialect.getTypeCastClause(attribute, sqlDialect.getQuotedString(strValue));
+                    return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
+            case BOOLEAN:
+            case NUMERIC:
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
