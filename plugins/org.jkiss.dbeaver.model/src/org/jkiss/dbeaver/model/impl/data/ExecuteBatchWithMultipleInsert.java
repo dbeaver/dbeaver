@@ -26,11 +26,16 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
+public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
+
+    private final DBCExecutionSource source;
+    private DBSTable table;
+
     /**
      * Constructs new batch
      *
@@ -38,8 +43,10 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
      * @param keysReceiver   keys receiver (or null)
      * @param reuseStatement true if engine should reuse single prepared statement for each execution.
      */
-    protected ExecuteBatchWithMultipleInsert(@NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, boolean reuseStatement) {
-        super(attributes, keysReceiver, reuseStatement);
+    public ExecuteBatchWithMultipleInsert(@NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, boolean reuseStatement, @NotNull DBCSession session, @NotNull final DBCExecutionSource source, @NotNull DBSTable table) {
+        super(attributes, keysReceiver, reuseStatement, session, source, table, false);
+        this.source = source;
+        this.table = table;
     }
 
     @Override
@@ -61,6 +68,16 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
 
     @NotNull
     @Override
+    protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
+        StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes, table, true, options);
+        // Execute
+        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, queryForStatement.toString(), false, false, keysReceiver != null);
+        dbStat.setStatementSource(source);
+        return dbStat;
+    }
+
+    @NotNull
+    @Override
     public DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
         int attributesLength = attributes.length;
         DBDValueHandler[] handlers = new DBDValueHandler[attributesLength];
@@ -73,7 +90,7 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
         }
 
         DBCStatistics statistics = new DBCStatistics();
-        DBCStatement statement = null;
+        DBCStatement batchStatement = null;
 
         try {
             int multiInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 1000);
@@ -85,31 +102,41 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
                     break;
                 }
                 Object[] objects = values.get(i);
+                // Check current batch size to avoid values batch overflow and work on the latest values
+                // Execute batch if it has a suitable size, or this are the last values
                 if (i == valuesListSize - 1 || allMultiInsertValuesList.size() + objects.length > multiInsertBatchSize) {
+                    // We can reuse statement, but not for the last values (their amount can be different from previous batches)
                     if (i == valuesListSize - 1) {
                         Collections.addAll(allMultiInsertValuesList, objects);
+                        Object[] allMultiInsertValues = allMultiInsertValuesList.toArray(new Object[0]);
+                        try (DBCStatement statement = prepareStatement(session, handlers, allMultiInsertValues, options)) {
+                            bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues);
+                            allMultiInsertValuesList.clear();
+                            break;
+                        }
                     }
                     Object[] allMultiInsertValues = allMultiInsertValuesList.toArray(new Object[0]);
-                    statement = prepareStatement(session, handlers, allMultiInsertValues, options);
-                    statistics.setQueryText(statement.getQueryString());
-                    statistics.addStatementsCount();
-                    bindStatement(handlers, statement, allMultiInsertValues);
-                    statement.addToBatch();
-                    flushBatch(statistics, statement);
+                    batchStatement = prepareStatement(session, handlers, allMultiInsertValues, options);
+                    bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValues);
                     allMultiInsertValuesList.clear();
-                    if (i == valuesListSize - 1) {
-                        break;
-                    }
                 }
                 Collections.addAll(allMultiInsertValuesList, objects);
             }
             values.clear();
         } finally {
-            if (statement != null) {
-                statement.close();
+            if (batchStatement != null) {
+                 batchStatement.close();
             }
         }
 
         return statistics;
+    }
+
+    private void bindAndFlushStatement(DBDValueHandler[] handlers, DBCStatistics statistics, DBCStatement batchStatement, Object[] allMultiInsertValues) throws DBCException {
+        statistics.setQueryText(batchStatement.getQueryString());
+        statistics.addStatementsCount();
+        bindStatement(handlers, batchStatement, allMultiInsertValues);
+        batchStatement.addToBatch();
+        flushBatch(statistics, batchStatement);
     }
 }
