@@ -195,6 +195,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
                 try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
                     Boolean oldAutoCommit = null;
+                    DBCSavepoint savepoint = null;
                     try {
                         AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);
                         session.enableLogging(false);
@@ -207,6 +208,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 if (txnManager != null && txnManager.isSupportsTransactions()) {
                                     oldAutoCommit = txnManager.isAutoCommit();
                                     txnManager.setAutoCommit(monitor, false);
+                                    if (txnManager.supportsSavepoints()) {
+                                        savepoint = txnManager.setSavepoint(monitor, "Data transfer start");
+                                    }
                                 }
                             } catch (DBCException e) {
                                 log.warn("Can't change auto-commit", e);
@@ -223,7 +227,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 try {
                                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
                                     if (txnManager != null && !txnManager.isAutoCommit()) {
-                                        txnManager.rollback(session, null);
+                                        txnManager.rollback(session, savepoint);
                                     }
                                 } catch (Throwable e1) {
                                     log.warn("Error rolling back transaction", e1);
@@ -263,11 +267,15 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     } finally {
                         if (!selectiveExportFromUI && (newConnection || forceDataReadTransactions)) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit() && oldAutoCommit != null && oldAutoCommit) {
-                                try {
-                                    txnManager.setAutoCommit(session.getProgressMonitor(), true);
-                                } catch (Exception e) {
-                                    log.error("Can't finish transaction in data producer connection", e);
+                            if (txnManager != null && txnManager.isSupportsTransactions()) {
+                                if (!txnManager.isAutoCommit()) {
+                                    txnManager.rollback(session, savepoint);
+                                }
+                                if (savepoint != null) {
+                                    txnManager.releaseSavepoint(monitor, savepoint);
+                                }
+                                if (oldAutoCommit != null) {
+                                    txnManager.setAutoCommit(monitor, oldAutoCommit);
                                 }
                             }
                         }
