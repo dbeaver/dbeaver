@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.CommonUtils;
@@ -43,6 +40,23 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
      */
     protected ExecuteBatchWithMultipleInsert(@NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, boolean reuseStatement) {
         super(attributes, keysReceiver, reuseStatement);
+    }
+
+    @Override
+    protected void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException {
+        int paramIndex = 0;
+        int handlersLength = handlers.length;
+        int attributeCount = 0;
+        for (Object attribute : attributeValues) {
+            if (DBUtils.isPseudoAttribute(attributes[attributeCount])) {
+                continue;
+            }
+            handlers[attributeCount].bindValueObject(statement.getSession(), statement, attributes[attributeCount], paramIndex++, attribute);
+            attributeCount++;
+            if (attributeCount == handlersLength) {
+                attributeCount = 0;
+            }
+        }
     }
 
     @NotNull
@@ -67,6 +81,9 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
             int valuesListSize = values.size();
             List<Object> allMultiInsertValuesList = new ArrayList<>();
             for (int i = 0; i < valuesListSize; i++) {
+                if (session.getProgressMonitor().isCanceled()) {
+                    break;
+                }
                 Object[] objects = values.get(i);
                 if (i == valuesListSize - 1 || allMultiInsertValuesList.size() + objects.length > multiInsertBatchSize) {
                     if (i == valuesListSize - 1) {
@@ -85,9 +102,6 @@ public abstract class ExecuteBatchWithMultipleInsert extends ExecuteBatchImpl {
                     }
                 }
                 Collections.addAll(allMultiInsertValuesList, objects);
-                if (session.getProgressMonitor().isCanceled()) {
-                    break;
-                }
             }
             values.clear();
         } finally {

@@ -317,26 +317,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     dbStat.setStatementSource(source);
                     return dbStat;
                 }
-
-                @Override
-                protected void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException {
-                    int paramIndex = 0;
-                    int handlersLength = handlers.length;
-                    int attributeCount = 0;
-                    for (Object attribute : attributeValues) {
-                        if (DBUtils.isPseudoAttribute(attributes[attributeCount])) {
-                            continue;
-                        }
-                        handlers[attributeCount].bindValueObject(statement.getSession(), statement, attributes[attributeCount], paramIndex++, attribute);
-                        attributeCount++;
-                        if (attributeCount == handlersLength) {
-                            attributeCount = 0;
-                        }
-                        if (session.getProgressMonitor().isCanceled()) {
-                            break;
-                        }
-                    }
-                }
             };
         }
 
