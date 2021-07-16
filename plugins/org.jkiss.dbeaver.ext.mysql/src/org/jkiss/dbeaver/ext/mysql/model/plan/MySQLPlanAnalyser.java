@@ -108,16 +108,16 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
                 if (node instanceof MySQLPlanNodePlain) {
                     MySQLPlanNodePlain plainNode = (MySQLPlanNodePlain) node;
                     attributes.add("id", new JsonPrimitive(plainNode.getId()));
-                    attributes.add("select_type", new JsonPrimitive(plainNode.getSelectType()));
-                    attributes.add("table", new JsonPrimitive(plainNode.getTable()));
-                    attributes.add("type", new JsonPrimitive(plainNode.getNodeType()));
-                    attributes.add("possible_keys", new JsonPrimitive(plainNode.getPossibleKeys()));
-                    attributes.add("key", new JsonPrimitive(plainNode.getKey()));
-                    attributes.add("key_len", new JsonPrimitive(plainNode.getKeyLength()));
-                    attributes.add("ref", new JsonPrimitive(plainNode.getRef()));
+                    attributes.add("select_type", new JsonPrimitive(CommonUtils.notEmpty((plainNode.getSelectType()))));
+                    attributes.add("table", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getTable())));
+                    attributes.add("type", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getNodeType())));
+                    attributes.add("possible_keys", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getPossibleKeys())));
+                    attributes.add("key", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getKey())));
+                    attributes.add("key_len", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getKeyLength())));
+                    attributes.add("ref", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getRef())));
                     attributes.add("rows", new JsonPrimitive(plainNode.getRowCount()));
                     attributes.add("filtered", new JsonPrimitive(plainNode.getFiltered()));
-                    attributes.add("extra", new JsonPrimitive(plainNode.getExtra()));
+                    attributes.add("extra", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getExtra())));
                 } else if (node instanceof MySQLPlanNodeJSON) {
                     MySQLPlanNodeJSON jsNode = (MySQLPlanNodeJSON) node;
                     for(Map.Entry<String, String>  e : jsNode.getNodeProps().entrySet()) {
