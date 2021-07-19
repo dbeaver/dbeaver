@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import com.sun.istack.NotNull;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
@@ -23,8 +24,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.utils.CommonUtils;
 
 /**
 * BitStringInlineEditor
@@ -40,8 +41,7 @@ public class BitStringInlineEditor extends BaseValueEditor<Text> {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         final Text editor = new Text(valueController.getEditPlaceholder(), inline ? SWT.BORDER : SWT.NONE);
         editor.setEditable(!valueController.isReadOnly());
-        final int precision = CommonUtils.toInt(valueController.getValueType().getPrecision());
-        editor.setTextLimit(precision <= 1 ? 1 : precision);
+        editor.setTextLimit(getValueLength(valueController.getValueType()));
         editor.addVerifyListener(new VerifyListener() {
             @Override
             public void verifyText(VerifyEvent e)
@@ -69,5 +69,15 @@ public class BitStringInlineEditor extends BaseValueEditor<Text> {
     public Object extractEditorValue()
     {
         return control.getText();
+    }
+
+    private int getValueLength(@NotNull DBSTypedObject object) {
+        final int length;
+        if (object.getPrecision() != null) {
+            length = object.getPrecision();
+        } else {
+            length = (int) object.getMaxLength();
+        }
+        return Math.max(1, length);
     }
 }
