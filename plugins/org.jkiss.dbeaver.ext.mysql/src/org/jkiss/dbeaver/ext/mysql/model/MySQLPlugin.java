@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -96,6 +95,7 @@ public class MySQLPlugin extends MySQLInformation implements DBPStatefulObject {
 
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) {
+        // do nothing
     }
 
     public enum Status {
