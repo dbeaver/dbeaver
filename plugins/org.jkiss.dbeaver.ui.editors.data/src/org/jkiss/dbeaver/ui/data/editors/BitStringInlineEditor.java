@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import com.sun.istack.NotNull;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -72,12 +72,10 @@ public class BitStringInlineEditor extends BaseValueEditor<Text> {
     }
 
     private int getValueLength(@NotNull DBSTypedObject object) {
-        final int length;
         if (object.getPrecision() != null) {
-            length = object.getPrecision();
+            return Math.max(1, object.getPrecision());
         } else {
-            length = (int) object.getMaxLength();
+            return Math.max(1, (int) Math.min(object.getMaxLength(), Integer.MAX_VALUE));
         }
-        return Math.max(1, length);
     }
 }
