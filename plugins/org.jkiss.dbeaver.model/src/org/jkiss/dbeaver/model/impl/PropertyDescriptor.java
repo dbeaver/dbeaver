@@ -76,6 +76,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private static final String ATTR_REQUIRED = "required"; //NON-NLS-1
     private static final String ATTR_DEFAULT_VALUE = "defaultValue"; //NON-NLS-1
     private static final String ATTR_VALID_VALUES = "validValues"; //NON-NLS-1
+    private static final String ATTR_ALLOW_CUSTOM_VALUES = "allowCustomValues";
     private static final String ATTR_FEATURES = "features";
 
     private static final String VALUE_SPLITTER = ","; //NON-NLS-1
@@ -88,6 +89,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private boolean required;
     private Object defaultValue;
     private Object[] validValues;
+    private boolean allowCustomValues;
     private boolean editable;
     private String[] features;
 
@@ -160,7 +162,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
                 validValues[i] = convertString(values[i], type);
             }
         }
-
+        this.allowCustomValues = CommonUtils.getBoolean(config.getAttribute(ATTR_ALLOW_CUSTOM_VALUES), true);
         String featuresString = config.getAttribute(ATTR_FEATURES);
         if (!CommonUtils.isEmpty(featuresString)) {
             this.features = featuresString.split(",");
@@ -250,7 +252,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
 
     @Override
     public boolean allowCustomValue() {
-        return true;//ArrayUtils.isEmpty(validValues);
+        return ArrayUtils.isEmpty(validValues) || allowCustomValues;
     }
 
     @Override
