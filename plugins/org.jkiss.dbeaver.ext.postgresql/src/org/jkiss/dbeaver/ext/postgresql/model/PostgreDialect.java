@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -32,6 +33,8 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
@@ -801,6 +804,15 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     public String getTypeCastClause(DBSTypedObject attribute, String expression) {
         String typeName = attribute.getTypeName();
         if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
+            if (attribute instanceof DBDAttributeBinding) {
+                DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
+                if (dataType != null) {
+                    DBSObject parentObject = dataType.getParentObject();
+                    if (parentObject instanceof PostgreSchema && dataType instanceof PostgreDataType) {
+                        typeName = ((PostgreDataType) dataType).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                    }
+                }
+            }
             return expression + "::" + typeName;
         }
         return expression;
