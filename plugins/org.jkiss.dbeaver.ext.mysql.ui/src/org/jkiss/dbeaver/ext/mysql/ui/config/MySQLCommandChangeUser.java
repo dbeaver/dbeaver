@@ -17,9 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -39,6 +41,9 @@ import java.util.Map;
  * Grant/Revoke privilege command
  */
 public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
+
+    // When this plugin is active, we must use alternate syntax when creating a new user. See #12945
+    private static final String SIMPLE_PASSWORD_CHECK_PLUGIN_NAME = "simple_password_check";
 
     protected MySQLCommandChangeUser(MySQLUser user)
     {
@@ -80,9 +85,12 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         boolean newUser = !getObject().isPersisted();
+        boolean includeUserPassword = true;
         if (newUser) {
+            final StringBuilder script = new StringBuilder();
+            includeUserPassword = generateCreateScript(script);
             actions.add(
-                new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_create_new_user, "CREATE USER " + getObject().getFullName()) { //$NON-NLS-2$
+                new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_create_new_user, script.toString()) {
                     @Override
                     public void afterExecute(DBCSession session, Throwable error)
                     {
@@ -95,7 +103,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         final MySQLDataSource dataSource = getObject().getDataSource();
         if (MySQLUtils.isAlterUSerSupported(dataSource)) {
             StringBuilder script = new StringBuilder();
-            if (generateAlterScript(script)) {
+            if (generateAlterScript(script, includeUserPassword)) {
                 actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, script.toString()));
             }
         } else {
@@ -142,12 +150,27 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             "' = PASSWORD(" + SQLUtils.quoteString(user, passwordValue.toString()) + ")";
     }
 
-    private boolean generateAlterScript(StringBuilder script) {
+    private boolean generateCreateScript(@NotNull StringBuilder script) {
+        final MySQLUser object = getObject();
+        script.append("CREATE USER ").append(object.getFullName());
+
+        if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
+            final MySQLPlugin plugin = object.getDataSource().getPlugin(SIMPLE_PASSWORD_CHECK_PLUGIN_NAME);
+            if (plugin != null && plugin.getStatus() == MySQLPlugin.Status.ACTIVE) {
+                generateIdentifiedByClause(script);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean generateAlterScript(StringBuilder script, boolean includePassword) {
         boolean hasSet = false, hasResOptions = false;
 
         script.append("ALTER USER ").append(getObject().getFullName()); //$NON-NLS-1$
-        if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
-            script.append("\nIDENTIFIED BY ").append(SQLUtils.quoteString(getObject(), CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append(" ");
+        if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name()) && includePassword) {
+            generateIdentifiedByClause(script);
             hasSet = true;
         }
         StringBuilder resOptions = new StringBuilder();
@@ -165,4 +188,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         return hasSet || hasResOptions;
     }
 
+    private void generateIdentifiedByClause(@NotNull StringBuilder script) {
+        script.append(" IDENTIFIED BY ").append(SQLUtils.quoteString(getObject(), CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name()))));
+    }
 }
