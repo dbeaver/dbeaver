@@ -166,22 +166,22 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             });
             commitAfterEdit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            final Button useMultiInsert = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_description, settings.isUseMultiInsert(), 4);
-            useMultiInsert.addSelectionListener(new SelectionAdapter() {
+            final Button useMultiRowInsert = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_description, settings.isUseMultiRowInsert(), 4);
+            useMultiRowInsert.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    settings.setUseMultiInsert(useMultiInsert.getSelection());
+                    settings.setUseMultiRowInsert(useMultiRowInsert.getSelection());
                 }
             });
 
-            final Spinner multiInsertBatch = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size, settings.getMultiInsertBatch(), 1, Integer.MAX_VALUE);
-            multiInsertBatch.addSelectionListener(new SelectionAdapter() {
+            final Spinner multiRowInsertBatch = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size, settings.getMultiRowInsertBatch(), 1, Integer.MAX_VALUE);
+            multiRowInsertBatch.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    settings.setMultiInsertBatch(multiInsertBatch.getSelection());
+                    settings.setMultiRowInsertBatch(multiRowInsertBatch.getSelection());
                 }
             });
-            multiInsertBatch.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+            multiRowInsertBatch.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
 
             final Button useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
@@ -190,11 +190,11 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                 public void widgetSelected(SelectionEvent e) {
                     settings.setDisableUsingBatches(useBatchCheck.getSelection());
                     if (useBatchCheck.getSelection()) {
-                        useMultiInsert.setSelection(false);
-                        useMultiInsert.setEnabled(false);
-                        settings.setUseMultiInsert(false);
-                    } else if (!useBatchCheck.getSelection() && !useMultiInsert.getEnabled()) {
-                        useMultiInsert.setEnabled(true);
+                        useMultiRowInsert.setSelection(false);
+                        useMultiRowInsert.setEnabled(false);
+                        settings.setUseMultiRowInsert(false);
+                    } else if (!useBatchCheck.getSelection() && !useMultiRowInsert.getEnabled()) {
+                        useMultiRowInsert.setEnabled(true);
                     }
                 }
             });

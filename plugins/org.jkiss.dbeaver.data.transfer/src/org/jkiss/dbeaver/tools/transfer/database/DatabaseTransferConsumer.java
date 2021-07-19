@@ -249,7 +249,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
 
         Map<String, Object> options = new HashMap<>();
-        options.put(DBSDataManipulator.OPTION_USE_MULTI_INSERT, settings.isUseMultiInsert());
+        options.put(DBSDataManipulator.OPTION_USE_MULTI_INSERT, settings.isUseMultiRowInsert());
 
         if (!isPreview) {
             if (targetObject instanceof DBSDataManipulatorExt) {
@@ -347,7 +347,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         boolean disableUsingBatches = settings.isDisableUsingBatches();
         boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodId() != null && !settings.getOnDuplicateKeyInsertMethodId().equals(DBSDataManipulator.INSERT_NONE_METHOD);
         options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
-        options.put(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE, settings.getMultiInsertBatch());
+        options.put(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE, settings.getMultiRowInsertBatch());
         if (onDuplicateKeyCaseOn) {
             String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
             SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);

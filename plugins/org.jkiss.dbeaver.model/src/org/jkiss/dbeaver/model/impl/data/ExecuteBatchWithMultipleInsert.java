@@ -93,7 +93,7 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
         DBCStatement batchStatement = null;
 
         try {
-            int multiInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 1000);
+            int multiRowInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 1000);
 
             int valuesListSize = values.size();
             List<Object> allMultiInsertValuesList = new ArrayList<>();
@@ -104,7 +104,7 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
                 Object[] objects = values.get(i);
                 // Check current batch size to avoid values batch overflow and work on the latest values
                 // Execute batch if it has a suitable size, or this are the last values
-                if (i == valuesListSize - 1 || allMultiInsertValuesList.size() + objects.length > multiInsertBatchSize) {
+                if (i == valuesListSize - 1 || allMultiInsertValuesList.size() + objects.length > multiRowInsertBatchSize) {
                     // We can reuse statement, but not for the last values (their amount can be different from previous batches)
                     if (i == valuesListSize - 1) {
                         Collections.addAll(allMultiInsertValuesList, objects);

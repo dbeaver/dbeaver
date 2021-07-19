@@ -97,7 +97,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         Object[] attributeValues,
         DBSAttributeBase[] attributes,
         DBSTable table,
-        boolean useMultiInsert,
+        boolean useMultiRowInsert,
         Map<String, Object> options) throws DBCException {
 
         // Make query
@@ -127,7 +127,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         boolean hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
             DBSAttributeBase attribute = attributes[i];
-            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
+            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiRowInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
                 continue;
             }
             if (hasKey) query.append(","); //$NON-NLS-1$
@@ -146,7 +146,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
             DBSAttributeBase attribute = attributes[i];
-            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
+            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiRowInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
                 continue;
             }
             if (hasKey) valuesPart.append(","); //$NON-NLS-1$
@@ -160,7 +160,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
             }
         }
         valuesPart.append(")"); //$NON-NLS-1$
-        if (useMultiInsert) {
+        if (useMultiRowInsert) {
             for (int i = 0; i < attributeValues.length / attributes.length; i++) {
                 if (i != 0) {
                     query.append(",");
