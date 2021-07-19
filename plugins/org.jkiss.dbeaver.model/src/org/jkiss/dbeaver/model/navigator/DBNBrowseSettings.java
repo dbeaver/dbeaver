@@ -31,7 +31,7 @@ public interface DBNBrowseSettings {
 
     boolean isHideFolders();
 
-    boolean isHideSchemas();
+    boolean isMergeSchemas();
 
     boolean isHideVirtualModel();
 
