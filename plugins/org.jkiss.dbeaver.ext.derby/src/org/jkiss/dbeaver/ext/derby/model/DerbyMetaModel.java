@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -198,5 +199,10 @@ public class DerbyMetaModel extends GenericMetaModel
             log.debug("Can't get Derby constraint", e);
         }
         return super.createConstraintColumnsImpl(session, parent, object, pkObject, dbResult);
+    }
+
+    @Override
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new DerbyDataSource(monitor, container, this);
     }
 }
