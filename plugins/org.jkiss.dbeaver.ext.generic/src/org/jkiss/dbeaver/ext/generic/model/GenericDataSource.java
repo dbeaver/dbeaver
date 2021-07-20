@@ -528,23 +528,25 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             }
 
             if (CommonUtils.isEmpty(catalogs) && !catalogsFiltered) {
-                // Catalogs not supported - try to read root schemas
-                monitor.subTask("Extract schemas");
-                monitor.worked(1);
+                if (!getDataSource().getContainer().getNavigatorSettings().isMergeEntities()) {
+                    // Catalogs not supported - try to read root schemas
+                    monitor.subTask("Extract schemas");
+                    monitor.worked(1);
 
-                try {
-                    List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
-                    if (tmpSchemas != null) {
-                        this.schemas = tmpSchemas;
-                    }
-                } catch (Throwable e) {
-                    if (metaModel.isSchemasOptional()) {
-                        log.warn("Can't read schema list", e);
-                    } else {
-                        if (e instanceof DBException) {
-                            throw (DBException) e;
+                    try {
+                        List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
+                        if (tmpSchemas != null) {
+                            this.schemas = tmpSchemas;
                         }
-                        throw new DBException("Error reading schema list", e, this);
+                    } catch (Throwable e) {
+                        if (metaModel.isSchemasOptional()) {
+                            log.warn("Can't read schema list", e);
+                        } else {
+                            if (e instanceof DBException) {
+                                throw (DBException) e;
+                            }
+                            throw new DBException("Error reading schema list", e, this);
+                        }
                     }
                 }
 
