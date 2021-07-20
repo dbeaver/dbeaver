@@ -211,8 +211,8 @@
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
             <propertyGroup label="Properties">
-                <property id="type" label="%UUIDTransformer.property.type.label" type="string" description="%UUIDTransformer.property.type.description" defaultValue="Version1" required="true" validValues="Version1,Version2,Ordered"/>
-                <property id="case" label="%UUIDTransformer.property.case.label" type="string" description="%UUIDTransformer.property.case.description" defaultValue="Lower case" required="true" validValues="Lower case,Upper case"/>
+                <property id="type" label="%UUIDTransformer.property.type.label" type="string" description="%UUIDTransformer.property.type.description" defaultValue="Version1" required="true" validValues="Version1,Version2,Ordered" allowCustomValues="false"/>
+                <property id="case" label="%UUIDTransformer.property.case.label" type="string" description="%UUIDTransformer.property.case.description" defaultValue="Lower case" required="true" validValues="Lower case,Upper case" allowCustomValues="false"/>
             </propertyGroup>
         </transformer>
         <transformer
@@ -224,7 +224,7 @@
                 custom="true">
             <type kind="STRING"/>
             <propertyGroup label="Properties">
-                <property id="format" label="%BinaryTransformer.property.format.label" type="string" description="%BinaryTransformer.property.format.description" defaultValue="Hex" required="false" validValues="hex,native,base64,string"/>
+                <property id="format" label="%BinaryTransformer.property.format.label" type="string" description="%BinaryTransformer.property.format.description" defaultValue="hex" required="false" validValues="hex,native,base64,string" allowCustomValues="false"/>
                 <property id="encoding" label="%BinaryTransformer.property.encoding.label" type="string" description="%BinaryTransformer.property.encoding.description" defaultValue="utf-8" required="false"/>
             </propertyGroup>
         </transformer>

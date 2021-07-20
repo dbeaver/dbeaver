@@ -76,6 +76,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private List<MySQLCharset> charsets;
+    private List<MySQLPlugin> plugins;
     private Map<String, MySQLCollation> collations;
     private String defaultCharset, defaultCollation;
     private int lowerCaseTableNames = 1;
@@ -335,6 +336,20 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
             }
 
+            // Read plugins
+            {
+                plugins = new ArrayList<>();
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            plugins.add(new MySQLPlugin(this, dbResult));
+                        }
+                    }
+                } catch (SQLException e) {
+                    log.debug("Error reading plugins information", e);
+                }
+            }
+
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VARIABLES LIKE 'lower_case_table_names'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -524,6 +539,21 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     public MySQLCollation getDefaultCollation() {
         return getCollation(defaultCollation);
+    }
+
+    @NotNull
+    public Collection<MySQLPlugin> getPlugins() {
+        return plugins;
+    }
+
+    @Nullable
+    public MySQLPlugin getPlugin(@NotNull String name) {
+        for (MySQLPlugin plugin : plugins) {
+            if (plugin.getName().equals(name)) {
+                return plugin;
+            }
+        }
+        return null;
     }
 
     public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor)
