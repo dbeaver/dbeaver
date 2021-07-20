@@ -70,8 +70,6 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 //            "com.mysql.jdbc.authentication.MysqlClearPasswordPlugin," +
 //            "com.mysql.jdbc.authentication.MysqlOldPasswordPlugin," +
 //            "org.jkiss.jdbc.mysql.auth.DialogAuthenticationPlugin");
-        // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html
-        connectionsProps.put("enabledTLSProtocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
 
     public static Map<String,String> getConnectionsProps() {
