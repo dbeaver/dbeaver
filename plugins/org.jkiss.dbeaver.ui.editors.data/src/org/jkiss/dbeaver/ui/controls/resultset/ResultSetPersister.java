@@ -766,7 +766,8 @@ class ResultSetPersister {
                             session,
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
                             statement.needKeys() ? new KeyDataReceiver(statement) : null,
-                            new ExecutionSource(dataContainer))) {
+                            new ExecutionSource(dataContainer),
+                            options)) {
                             batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);

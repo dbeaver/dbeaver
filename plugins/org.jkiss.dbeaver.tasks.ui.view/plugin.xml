@@ -62,6 +62,9 @@
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
@@ -70,6 +73,9 @@
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
@@ -78,6 +84,9 @@
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
@@ -86,6 +95,9 @@
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
@@ -95,6 +107,9 @@
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>

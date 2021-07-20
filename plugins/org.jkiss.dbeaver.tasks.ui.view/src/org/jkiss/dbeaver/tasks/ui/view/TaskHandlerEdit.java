@@ -21,7 +21,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -29,7 +31,9 @@ import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 
-public class TaskHandlerEdit extends AbstractHandler {
+import java.util.Map;
+
+public class TaskHandlerEdit extends AbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -60,4 +64,8 @@ public class TaskHandlerEdit extends AbstractHandler {
         return null;
     }
 
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+
+    }
 }

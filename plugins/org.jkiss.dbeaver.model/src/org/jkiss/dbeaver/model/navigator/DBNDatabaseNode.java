@@ -431,6 +431,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         final boolean showSystem = navSettings.isShowSystemObjects();
         final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
         final boolean hideFolders = navSettings.isHideFolders();
+        final boolean mergeSchemas = navSettings.isMergeSchemas();
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
@@ -440,13 +441,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (showOnlyEntities && !isEntityMeta(child)) {
                 continue;
             }
+
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
-                boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, hideFolders, reflect);
-                if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
-                    // This may occur only if no child nodes was read
-                    // Then we try to go on next DBX level
-                    loadChildren(monitor, item, oldList, toList, source, reflect);
+                /*if (mergeSchemas && isSchemaItem(item)) {
+                    // Merge
+                } else */{
+                    boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, hideFolders, reflect);
+                    if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
+                        // This may occur only if no child nodes was read
+                        // Then we try to go on next DBX level
+                        loadChildren(monitor, item, oldList, toList, source, reflect);
+                    }
                 }
             } else if (child instanceof DBXTreeFolder) {
                 if (hideFolders) {
