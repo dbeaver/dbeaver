@@ -48,6 +48,7 @@ import org.osgi.framework.Bundle;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * DBeaverCore
@@ -285,7 +286,18 @@ public class DBeaverCore extends BasePlatformImpl {
             // Make temp folder
             monitor.subTask("Create temp folder");
             try {
-                final java.nio.file.Path tempDirectory = Files.createTempDirectory(TEMP_PROJECT_NAME);
+                String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
+                if (!CommonUtils.isEmpty(tempFolderPath)) {
+                    File dbTempFolder = new File(tempFolderPath);
+                    if (!dbTempFolder.mkdirs()) {
+                        throw new IOException("Can't create temp directory '" + dbTempFolder.getAbsolutePath() + "'");
+                    }
+                } else {
+                    tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
+                }
+                final java.nio.file.Path tempDirectory = Files.createTempDirectory(
+                    Paths.get(tempFolderPath),
+                    TEMP_PROJECT_NAME);
                 tempFolder = tempDirectory.toFile();
             } catch (IOException e) {
                 final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);

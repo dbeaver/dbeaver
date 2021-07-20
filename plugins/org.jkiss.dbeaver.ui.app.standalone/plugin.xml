@@ -149,6 +149,14 @@
             id="org.eclipse.ui.views.PropertySheet"
             name="%view.properties.title">
         </view>
+        <view
+            name="%view.search.title"
+            icon="icons/eclipse/search.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.search2.internal.ui.SearchView"
+            allowMultiple="true"
+            id="org.eclipse.search.ui.views.SearchView">
+        </view>
         <!--view
                 id="org.eclipse.help.ui.HelpView"
                 category="org.jkiss.dbeaver.core.category"
@@ -166,6 +174,7 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">

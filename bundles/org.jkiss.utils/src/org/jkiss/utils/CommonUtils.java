@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Common utils
@@ -895,5 +896,64 @@ public class CommonUtils {
     @SafeVarargs
     public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
+    }
+
+    /**
+     * Checks if the {@code index} is within the bounds of the range from
+     * {@code 0} (inclusive) to {@code length} (exclusive).
+     *
+     * <p>The {@code index} is defined to be out of bounds if any of the
+     * following inequalities is true:
+     * <ul>
+     *  <li>{@code index < 0}</li>
+     *  <li>{@code index >= length}</li>
+     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
+     * </ul>
+     *
+     * @param index the index
+     * @param length the upper-bound (exclusive) of the range
+     * @return {@code true} if it is within bounds of the range
+     */
+    public static boolean isValidIndex(int index, int length) {
+        return index >= 0 || index < length;
+    }
+
+    @NotNull
+    public static String escapeHtml(@Nullable String text) {
+        if (text == null) {
+            return "&nbsp;";
+        }
+        return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\r\n", "<br>")
+            .replace("\r", "<br>")
+            .replace("\n", "<br>");
+    }
+
+    /**
+     * Finds the object with the best matching name. Here we consider a case sensitive match better then a case insensitive one.
+     *
+     * @param objects container with objects
+     * @param name to match
+     * @param nameExtractor function which extracts the name from object
+     * @param <T> type of objects to search from
+     * @return the best match or {@code null} if nothing found
+     */
+    @Nullable
+    public static <T> T findBestCaseAwareMatch(@NotNull Iterable<? extends T> objects, @NotNull String name,
+                                               @NotNull Function<? super T, String> nameExtractor) {
+        T firstCaseInsensitiveMatch = null;
+        for (T obj: objects) {
+            String objectName = nameExtractor.apply(obj);
+            if (name.equals(objectName)) { //case sensitive match
+                return obj;
+            }
+            if (firstCaseInsensitiveMatch == null && name.equalsIgnoreCase(objectName)) {
+                firstCaseInsensitiveMatch = obj;
+            }
+        }
+        return firstCaseInsensitiveMatch;
     }
 }

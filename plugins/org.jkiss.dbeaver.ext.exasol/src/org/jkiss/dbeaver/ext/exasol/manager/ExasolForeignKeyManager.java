@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -96,7 +97,7 @@ public class ExasolForeignKeyManager
                 new SQLDatabasePersistAction("Alter FK",
                     "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                         " MODIFY CONSTRAINT " + constraint.getName() + " " +
-                        (constraint.getEnabled() ? "ENABLE" : "DISABLE")
+                        (constraint.getEnabled() ? ExasolConstants.KEYWORD_ENABLE : ExasolConstants.KEYWORD_DISABLE)
                 )
             );
         }

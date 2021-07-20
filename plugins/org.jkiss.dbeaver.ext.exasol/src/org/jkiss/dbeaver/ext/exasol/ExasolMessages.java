@@ -20,40 +20,38 @@ package org.jkiss.dbeaver.ext.exasol;
 import org.eclipse.osgi.util.NLS;
 
 public class ExasolMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
-	public static String manager_consumer_drop;
-	public static String manager_consumer_rename;
-	public static String manager_consumer_create;
-	public static String dialog_schema_drop_title;
-	public static String dialog_schema_drop_message;
-	public static String dialog_connection_alter_message;
-	public static String dialog_connection_alter_title;
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
 
-	public static String dialog_general_continue;
+    public static String manager_consumer_drop;
+    public static String manager_consumer_rename;
+    public static String manager_consumer_create;
+    public static String dialog_schema_drop_title;
+    public static String dialog_schema_drop_message;
+    public static String dialog_connection_alter_message;
+    public static String dialog_connection_alter_title;
 
-	public static String read_table_details;
-	public static String read_schema_details;
-	public static String manager_priority_group_comment;
-	public static String manager_priority_create;
-	public static String manager_priority_drop;
-	public static String manager_priority_alter;
-	public static String manager_priority_rename;
-	public static String manager_schema_owner;
-	public static String manager_schema_raw_limit;
-	public static String manager_schema_create;
-	public static String manager_assign_priority_group;
-	public static String exasol_security_policy_name;
-	public static String exasol_security_policy_description;
-	public static String manager_consumer_alter;
+    public static String dialog_general_continue;
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
-	}
+    public static String read_table_details;
+    public static String read_schema_details;
+    public static String manager_priority_group_comment;
+    public static String manager_priority_create;
+    public static String manager_priority_drop;
+    public static String manager_priority_alter;
+    public static String manager_priority_rename;
+    public static String manager_schema_owner;
+    public static String manager_schema_raw_limit;
+    public static String manager_schema_create;
+    public static String manager_assign_priority_group;
+    public static String exasol_security_policy_name;
+    public static String exasol_security_policy_description;
+    public static String manager_consumer_alter;
 
-	private ExasolMessages() {
-	}
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
+    }
 
-	
-
+    private ExasolMessages() {
+    }
 }

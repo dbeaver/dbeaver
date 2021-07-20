@@ -51,6 +51,4 @@ public class SQLServerMessages extends NLS {
 
     private SQLServerMessages() {
     }
-
-
 }

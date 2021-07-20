@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -29,13 +31,17 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
-public class HANASQLDialect extends GenericSQLDialect {
+public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     private static final Log log = Log.getLog(HANASQLDialect.class);
 
@@ -107,5 +113,12 @@ public class HANASQLDialect extends GenericSQLDialect {
     public String getSearchStringEscape() {
         // https://github.com/dbeaver/dbeaver/issues/9998#issuecomment-805710837
         return "\\";
+    }
+
+    @Override
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+        if (position == RulePosition.FINAL) {
+            rules.add(new SQLVariableRule(this));
+        }
     }
 }

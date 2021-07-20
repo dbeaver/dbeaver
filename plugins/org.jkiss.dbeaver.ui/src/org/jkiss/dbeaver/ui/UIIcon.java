@@ -190,6 +190,9 @@ public class UIIcon {
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_PREVIEW = new DBIcon("sql_preview", "sql/sql_preview.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_TEXT = new DBIcon("sql_text", "sql/sql_text.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_VARIABLE = new DBIcon("sql_variable", "sql/variable.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_VARIABLE2 = new DBIcon("sql_variable2", "sql/variable2.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_PARAMETER = new DBIcon("sql_parameter", "sql/parameter.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon SQL_PAGE_DATA_GRID = new DBIcon("sql/page_data_grid.png"); //$NON-NLS-1$
     public static final DBIcon SQL_PAGE_DATA_GRID_LOCKED = new DBIcon("sql/page_data_grid_locked.png"); //$NON-NLS-1$

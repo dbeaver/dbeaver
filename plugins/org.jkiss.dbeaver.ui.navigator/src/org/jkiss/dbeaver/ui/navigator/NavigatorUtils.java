@@ -96,7 +96,7 @@ public class NavigatorUtils {
             Object selectedObject = ((IStructuredSelection)selection).getFirstElement();
             if (selectedObject instanceof DBNNode) {
                 return (DBNNode) selectedObject;
-            } else {
+            } else if (selectedObject != null) {
                 return RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
             }
         }

@@ -42,7 +42,7 @@ public class DataImportHandler extends DataTransferHandler {
     private static final Log log = Log.getLog(DataImportHandler.class);
 
     @Override
-    protected IDataTransferNode adaptTransferNode(Object object)
+    protected IDataTransferNode<?> adaptTransferNode(Object object)
     {
         final DBSDataManipulator adapted = RuntimeUtils.getObjectAdapter(object, DBSDataManipulator.class);
         if (adapted != null) {

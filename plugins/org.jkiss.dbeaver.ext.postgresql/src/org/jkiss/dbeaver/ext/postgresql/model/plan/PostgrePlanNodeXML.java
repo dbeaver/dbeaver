@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public class PostgrePlanNodeXML extends PostgrePlanNodeBase<PostgrePlanNodeXML> {
 
-    public PostgrePlanNodeXML(PostgreDataSource dataSource, PostgrePlanNodeXML parent, Element element) {
+    public PostgrePlanNodeXML(DBPDataSource dataSource, PostgrePlanNodeXML parent, Element element) {
         super(dataSource, parent);
 
         Map<String, String> attributes = new LinkedHashMap<>();

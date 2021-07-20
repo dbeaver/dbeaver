@@ -2328,7 +2328,7 @@ public class ResultSetViewer extends Viewer
 
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || !executionContext.isConnected()) {
-            return "No connected to database";
+            return "No connection to database";
         }
         if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
             return "Data edit restricted";
@@ -4149,7 +4149,10 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = ArrayUtils.add(this.selectedRecords, this.selectedRecords[this.selectedRecords.length - 1] + 1);
+                    this.selectedRecords = ArrayUtils.add(this.selectedRecords,
+                        this.selectedRecords.length == 0 ?
+                            newRowIndex :
+                            this.selectedRecords[this.selectedRecords.length - 1] + 1);
 
                     newRowIndex++;
                     srcRowIndex++;

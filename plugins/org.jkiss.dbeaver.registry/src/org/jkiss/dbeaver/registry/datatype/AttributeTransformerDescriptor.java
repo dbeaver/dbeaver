@@ -34,10 +34,10 @@ public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<D
 {
     private final String name;
     private final String description;
-    private boolean applyByDefault;
-    private boolean custom;
+    private final boolean applyByDefault;
+    private final boolean custom;
     private final DBPImage icon;
-    private List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
     public AttributeTransformerDescriptor(IConfigurationElement config)
     {

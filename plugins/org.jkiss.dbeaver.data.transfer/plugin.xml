@@ -215,6 +215,22 @@
             </processor>
         </node>
 
+
+<!--        <transformer id="none" label="" description="PAss value as is" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>-->
+        <transformer id="null" label="Set to NULL" description="Set column value to NULL" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>
+
+        <transformer id="constant" label="Constant" description="Set column value to a constant value" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerConstant">
+            <propertyGroup label="Settings">
+                <property id="constant" label="Constant value" type="string" description="Constant value" defaultValue="" required="false"/>
+            </propertyGroup>
+        </transformer>
+
+        <transformer id="expression" label="Expression" description="Set column value to a result of expression" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
+            <propertyGroup label="Settings">
+                <property id="expression" label="Expression" type="string" description="Expression to evaluate" defaultValue="" required="true"/>
+            </propertyGroup>
+        </transformer>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">

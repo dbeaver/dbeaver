@@ -21,10 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPObjectStatistics;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -50,8 +47,7 @@ import java.util.*;
 /**
  * MySQLTable
  */
-public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
-{
+public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
@@ -111,6 +107,10 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private volatile List<MySQLTableForeignKey> referenceCache;
+    @Nullable
+    private String disableReferentialIntegrityStatement;
+    @Nullable
+    private String enableReferentialIntegrityStatement;
 
     public MySQLTable(MySQLCatalog catalog)
     {
@@ -589,6 +589,54 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         this.referenceCache = null;
 
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
+        return true;
+    }
+
+    @Override
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        String sql = getChangeReferentialIntegrityStatement(monitor, enable);
+        sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
+        try {
+            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+        } catch (SQLException e) {
+            throw new DBException("Unable to change referential integrity", e);
+        }
+    }
+
+    @NotNull
+    public String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) {
+        if (enable && enableReferentialIntegrityStatement != null) {
+            return enableReferentialIntegrityStatement;
+        } else if (!enable && disableReferentialIntegrityStatement != null) {
+            return disableReferentialIntegrityStatement;
+        }
+
+        boolean supportsAlterTableKeysStmt = false; // ALTER TABLE ... ENABLE/DISABLE KEYS statement works per table and speeds up insert
+        try {
+            AdditionalInfo info = getAdditionalInfo(monitor);
+            if (info != null && info.getEngine() != null && MySQLEngine.MYISAM.equals(info.getEngine().getName())) {
+                supportsAlterTableKeysStmt = true;
+            }
+        } catch (DBCException e) {
+            log.debug("Unable to retrieve additional info for mysql table", e);
+        }
+
+        if (supportsAlterTableKeysStmt) {
+            disableReferentialIntegrityStatement = "ALTER TABLE ? DISABLE KEYS";
+            enableReferentialIntegrityStatement = "ALTER TABLE ? ENABLE KEYS";
+        } else {
+            disableReferentialIntegrityStatement = "SET GLOBAL FOREIGN_KEY_CHECKS=0";
+            enableReferentialIntegrityStatement = "SET GLOBAL FOREIGN_KEY_CHECKS=1";
+        }
+
+        if (enable) {
+            return enableReferentialIntegrityStatement;
+        }
+        return disableReferentialIntegrityStatement;
     }
 
     public static class EngineListProvider implements IPropertyValueListProvider<MySQLTable> {

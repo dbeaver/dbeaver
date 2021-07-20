@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -74,7 +74,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
                           "materialize",
                           "function"));
 
-    private PostgreDataSource dataSource;
+    private final DBPDataSource dataSource;
     protected NODE parent;
     protected final List<NODE> nested = new ArrayList<>();
 
@@ -83,7 +83,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
     private String cost;
     protected Map<String, String> attributes = Collections.emptyMap();
 
-    protected PostgrePlanNodeBase(PostgreDataSource dataSource, NODE parent) {
+    protected PostgrePlanNodeBase(DBPDataSource dataSource, NODE parent) {
         this.parent = parent;
         this.dataSource = dataSource;
 

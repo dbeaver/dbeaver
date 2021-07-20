@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -222,14 +223,27 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     public void activatePage() {
-        if (activated) {
+        if (activated && getWizard().getSettings().isPipeChangeRestricted()) {
             // Second activation - we need to disable any selectors
-            if (getWizard().getSettings().isPipeChangeRestricted() || getWizard().isTaskEditor()) {
-                nodesTable.getTable().setEnabled(false);
-            }
+            nodesTable.getTable().setEnabled(false);
             return;
         }
         activated = true;
+
+        UIUtils.asyncExec(this::loadNodeSettings);
+    }
+
+    private void loadNodeSettings() {
+        try {
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                getWizard().getSettings().loadNodeSettings(monitor);
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+
         if (getWizard().getSettings().isConsumerOptional()) {
             setTitle(DTMessages.data_transfer_wizard_init_title);
             setDescription(DTMessages.data_transfer_wizard_init_description);

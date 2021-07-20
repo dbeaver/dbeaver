@@ -483,7 +483,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     navSettings.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
                     navSettings.setShowOnlyEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
                     navSettings.setHideFolders(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS)));
-                    navSettings.setHideSchemas(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
+                    navSettings.setMergeSchemas(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
                     navSettings.setHideVirtualModel(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL)));
                     navSettings.setMergeEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES)));
 

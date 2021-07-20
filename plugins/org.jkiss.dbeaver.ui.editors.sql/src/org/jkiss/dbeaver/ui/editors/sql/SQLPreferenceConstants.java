@@ -116,6 +116,7 @@ public class SQLPreferenceConstants
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
     public static final String EXTRA_PANEL_RATIO                        = "SQLEditor.extraPanels.ratio";
+    public static final String EXTRA_PANEL_LOCATION                     = "SQLEditor.extraPanels.location";
     public static final String OUTPUT_PANEL_AUTO_SHOW                   = "SQLEditor.outputPanel.autoShow";
 
     public static final String SCRIPT_BIND_EMBEDDED_READ                = "SQLEditor.script.bind.embedded.read"; //$NON-NLS-1$
@@ -144,5 +145,8 @@ public class SQLPreferenceConstants
 
     public static final String DEFAULT_SQL_EDITOR_OPEN_COMMAND          = "SQLEditor.defaultOpenCommand";
 
+    public static final String LOCATION_RIGHT       = "right";
+    public static final String LOCATION_BOTTOM      = "bottom";
+    public static final String LOCATION_RESULTS     = "results";
 
 }

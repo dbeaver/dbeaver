@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -124,8 +126,13 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            // Search all objects
-            searchAllObjects(session, database, schema, params, objects);
+            if (params.getMask().startsWith("%#") || params.getMask().startsWith("#")) {
+                // Search temp tables
+                searchTempTables(session, params, objects);
+            } else {
+                // Search all objects
+                searchAllObjects(session, database, schema, params, objects);
+            }
 
             return objects;
         }
@@ -169,12 +176,22 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             sql.append("LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
         sql.append("WHERE o.type IN (").append(objectTypeClause.toString()).append(") AND ");
-        if (params.isSearchInComments()) {
+        boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
+        if (addParentheses) {
             sql.append("(");
         }
         sql.append("o.name LIKE ? ");
         if (params.isSearchInComments()) {
-            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)) ");
+            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
+        }
+        if (params.isSearchInDefinitions()) {
+            if (params.isSearchInComments()) {
+                sql.append(" ");
+            }
+            sql.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
+        }
+        if (addParentheses) {
+            sql.append(") ");
         }
         if (schema != null) {
             sql.append("AND o.schema_id = ? ");
@@ -184,13 +201,17 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         // Seek for objects (join with public synonyms)
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
             dbStat.setString(1, params.getMask());
-            int schemaIdIdx = 2;
+            int idx = 2;
             if (params.isSearchInComments()) {
-                dbStat.setString(2, params.getMask());
-                schemaIdIdx++;
+                dbStat.setString(idx, params.getMask());
+                idx++;
+            }
+            if (params.isSearchInDefinitions()) {
+                dbStat.setString(idx, params.getMask());
+                idx++;
             }
             if (schema != null) {
-                dbStat.setLong(schemaIdIdx, schema.getObjectId());
+                dbStat.setLong(idx, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -223,5 +244,78 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         } catch (Throwable e) {
             throw new DBException("Error while searching in system catalog", e, dataSource);
         }
+    }
+
+  @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return true;
+    }
+  
+    private void searchTempTables(@NotNull JDBCSession session, @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> objects) throws DBException {
+        final SQLServerDatabase database = dataSource.getDatabase(session.getProgressMonitor(), SQLServerConstants.TEMPDB_DATABASE);
+        final SQLServerSchema schema = database.getSchema(session.getProgressMonitor(), SQLServerConstants.DEFAULT_SCHEMA_NAME);
+
+        final StringBuilder sql = new StringBuilder()
+            .append("SELECT TOP ").append(params.getMaxResults() - objects.size()).append(" *")
+            .append("\nFROM ").append(SQLServerUtils.getSystemTableName(database, "all_objects"))
+            .append("\nWHERE type = '").append(SQLServerObjectType.U.name())
+            .append("' AND name LIKE '#%' AND name LIKE ? AND OBJECT_ID(CONCAT('").append(SQLServerConstants.TEMPDB_DATABASE).append("..', QUOTENAME(name))) <> 0");
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+            dbStat.setString(1, "%" + params.getMask() + "%");
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
+                    final String objectName = JDBCUtils.safeGetString(dbResult, "name");
+                    final String objectNameTrimmed = extractTempTableName(objectName);
+                    final SQLServerObjectType objectType = SQLServerObjectType.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "type"));
+
+                    objects.add(new AbstractObjectReference(objectName, database, null, objectType.getTypeClass(), objectType) {
+                        @Override
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                            DBSObject object = schema.getChild(session.getProgressMonitor(), objectName);
+                            if (object == null) {
+                                // Likely not cached, invalidate and try again
+                                schema.getTableCache().setFullCache(false);
+                                object = schema.getChild(session.getProgressMonitor(), objectName);
+                            }
+                            if (object == null) {
+                                throw new DBException(objectType.name() + " '" + objectName + "' not found");
+                            }
+                            return object;
+                        }
+
+                        @NotNull
+                        @Override
+                        public String getFullyQualifiedName(DBPEvaluationContext context) {
+                            return objectNameTrimmed;
+                        }
+                    });
+                }
+            }
+        } catch (Throwable e) {
+            throw new DBException("Error while searching in system catalog", e, dataSource);
+        }
+    }
+
+    @NotNull
+    private static String extractTempTableName(@NotNull String originalName) {
+        if (originalName.startsWith("##")) {
+            // Global temporary tables does not contain padding in their names. Use as-is
+            return originalName;
+        }
+        final String name = originalName.substring(0, 116);
+        for (int i = name.length() - 1; i >= 0; i--) {
+            if (name.charAt(i) != '_') {
+                return name.substring(0, i + 1);
+            }
+        }
+        return name;
     }
 }

@@ -16,64 +16,65 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLVariableToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPPredicateRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 
 /**
-* SQL variable rule.
-* ${varName}
-*/
-public class SQLVariableRule implements TPRule {
+ * Rule that matches {@code @variableName} supported by some dialects.
+ */
+public class SQLVariableRule implements TPPredicateRule {
 
-    private final TPToken parameterToken;
+    private final SQLDialect dialect;
+    private final TPToken token;
 
-    public SQLVariableRule(TPToken parameterToken) {
-        this.parameterToken = parameterToken;
+    public SQLVariableRule(@NotNull SQLDialect dialect) {
+        this.dialect = dialect;
+        this.token = new SQLVariableToken();
     }
 
     @Override
-    public TPToken evaluate(TPCharacterScanner scanner)
-    {
-        int c = scanner.read();
-        if (c == '$') {
-            int prefixLength = 0;
-            c = scanner.read();
-            if (SQLQueryParameter.supportsJasperSyntax()) {
-                if (c == 'P') {
-                    c = scanner.read();
-                    prefixLength++;
-                    if (c == '!') {
-                        c = scanner.read();
-                        prefixLength++;
-                    }
-                }
-            }
-            if (c == '{') {
-                int varLength = 0;
-                for (;;) {
-                    c = scanner.read();
-                    if (c == '}' || Character.isWhitespace(c) || c == TPCharacterScanner.EOF) {
-                        break;
-                    }
-                    varLength++;
-                }
-                if (varLength > 0 && c == '}') {
-                    return parameterToken;
-                }
-                scanner.unread();
+    public TPToken getSuccessToken() {
+        return token;
+    }
 
-                for (int i = varLength - 1 + prefixLength; i >= 0; i--) {
+    @Override
+    public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
+        scanner.unread();
+
+        int ch = scanner.read();
+        int read = 0;
+
+        if (!dialect.validIdentifierPart((char) ch, false)) {
+            ch = scanner.read();
+            read++;
+
+            if (ch == '@') {
+                do {
+                    ch = scanner.read();
+                    read++;
+                } while (dialect.validIdentifierPart((char) ch, false));
+
+                if (read > 2) {
                     scanner.unread();
+                    return token;
                 }
             }
+        }
+
+        while (read-- > 0) {
             scanner.unread();
         }
-        scanner.unread();
 
         return TPTokenAbstract.UNDEFINED;
     }
 
+    @Override
+    public TPToken evaluate(TPCharacterScanner scanner) {
+        return evaluate(scanner, false);
+    }
 }

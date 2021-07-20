@@ -59,15 +59,19 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
-    private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments";
+    private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments"; //$NON-NLS-1$
+    private static final String PROP_SEARCH_IN_DEFINITIONS = "search.metadata.search-in-definitions"; //$NON-NLS-1$
 
     private Table typesTable;
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
+    private Button searchInCommentsCheckbox;
+    private Button searchInDefinitionsCheckbox;
 
     private String nameMask;
     private boolean caseSensitive;
     private boolean searchInComments = true;
+    private boolean searchInDefinitions;
     private int maxResults;
     private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<>();
@@ -77,12 +81,12 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private DBPProject currentProject;
 
     public SearchMetadataPage() {
-		super("Database objects search");
+        super("Database objects search");
         currentProject = NavigatorUtils.getSelectedProject();
     }
 
-	@Override
-	public void createControl(Composite parent) {
+    @Override
+    public void createControl(Composite parent) {
         super.createControl(parent);
 
         initializeDialogUnits(parent);
@@ -216,13 +220,30 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     }
                 });
 
-                Button searchInCommentsCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, null, searchInComments, 2);
+                searchInCommentsCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, null, searchInComments, 2);
+                searchInCommentsCheckbox.setSelection(true);
                 searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         searchInComments = searchInCommentsCheckbox.getSelection();
                     }
                 });
+                searchInCommentsCheckbox.setEnabled(false);
+
+                searchInDefinitionsCheckbox = UIUtils.createCheckbox(
+                    settingsGroup,
+                    UISearchMessages.dialog_search_objects_search_in_definitions,
+                    null,
+                    searchInDefinitions,
+                    2
+                );
+                searchInDefinitionsCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        searchInDefinitions = searchInDefinitionsCheckbox.getSelection();
+                    }
+                });
+                searchInDefinitionsCheckbox.setEnabled(false);
             }
 
             Label otLabel = UIUtils.createControlLabel(settingsGroup, UISearchMessages.dialog_search_objects_group_object_types);
@@ -243,6 +264,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                         }
                     }
                     updateEnablement();
+                    updateSearchOptionsCheckboxes();
                 }
             });
             typesTable.addMouseListener(new MouseAdapter() {
@@ -262,6 +284,33 @@ public class SearchMetadataPage extends AbstractSearchPage {
         }
 
         UIUtils.asyncExec(this::loadState);
+    }
+
+    private void updateSearchOptionsCheckboxes() {
+        DBSStructureAssistant structureAssistant = getSelectedStructureAssistant();
+        boolean enableSearchInCommentsCheckbox = false;
+        boolean enableSearchInDefinitionsCheckbox = false;;
+        for (DBSObjectType objectType: checkedTypes) {
+            if (!enableSearchInCommentsCheckbox && structureAssistant.supportsSearchInCommentsFor(objectType)) {
+                enableSearchInCommentsCheckbox = true;
+            }
+            if (!enableSearchInDefinitionsCheckbox && structureAssistant.supportsSearchInDefinitionsFor(objectType)) {
+                enableSearchInDefinitionsCheckbox = true;
+            }
+            if (enableSearchInCommentsCheckbox && enableSearchInDefinitionsCheckbox) {
+                break;
+            }
+        }
+        searchInCommentsCheckbox.setEnabled(enableSearchInCommentsCheckbox);
+        if (!enableSearchInCommentsCheckbox) {
+            searchInCommentsCheckbox.setSelection(false);
+            searchInComments = false;
+        }
+        searchInDefinitionsCheckbox.setEnabled(enableSearchInDefinitionsCheckbox);
+        if (!enableSearchInDefinitionsCheckbox) {
+            searchInDefinitionsCheckbox.setSelection(false);
+            searchInDefinitions = false;
+        }
     }
 
     private void loadState() {
@@ -346,6 +395,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     savedTypeNames.remove(objectType.getTypeName());
                 }
             }
+            updateSearchOptionsCheckboxes();
         }
         for (TableColumn column : typesTable.getColumns()) {
             column.pack();
@@ -401,6 +451,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         params.setCaseSensitive(caseSensitive);
         params.setSearchInComments(searchInComments);
         params.setMaxResults(maxResults);
+        params.setSearchInDefinitions(searchInDefinitions);
 
         return new SearchMetadataQuery(dataSource, assistant, params);
     }
@@ -411,6 +462,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         nameMask = store.getString(PROP_MASK);
         caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
         searchInComments = store.getBoolean(PROP_SEARCH_IN_COMMENTS);
+        searchInDefinitions = store.getBoolean(PROP_SEARCH_IN_DEFINITIONS);
         maxResults = store.getInt(PROP_MAX_RESULT);
         matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
         for (int i = 0; ;i++) {
@@ -438,6 +490,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         store.setValue(PROP_MASK, nameMask);
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_SEARCH_IN_COMMENTS, searchInComments);
+        store.setValue(PROP_SEARCH_IN_DEFINITIONS, searchInDefinitions);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
         saveTreeState(store, PROP_SOURCES, dataSourceTree);

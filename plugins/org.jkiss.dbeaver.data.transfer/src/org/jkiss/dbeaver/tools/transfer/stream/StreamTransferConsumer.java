@@ -389,13 +389,16 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
             closeExporter();
 
-            if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish()) {
+            if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish() && !settings.isUseSingleFile()) {
                 executeFinishCommand();
             }
 
             return;
         }
 
+        if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish() && settings.isUseSingleFile()) {
+            executeFinishCommand();
+        }
         if (!parameters.isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
                 String strContents = outputBuffer.toString();

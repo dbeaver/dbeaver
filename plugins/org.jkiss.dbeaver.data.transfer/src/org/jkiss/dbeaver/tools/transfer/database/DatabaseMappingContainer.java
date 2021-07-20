@@ -20,6 +20,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -46,12 +47,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
 
-    private DatabaseConsumerSettings consumerSettings;
+    private final DatabaseConsumerSettings consumerSettings;
     private DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
-    private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
+    private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
@@ -180,13 +181,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public DatabaseMappingAttribute getAttributeMapping(DBSAttributeBase sourceAttr) {
-        for (DatabaseMappingAttribute attr : attributeMappings) {
-            if (attr.getSource().getName().equalsIgnoreCase(sourceAttr.getName())) {
-                return attr;
-            }
-        }
-        return null;
+    DatabaseMappingAttribute getAttributeMapping(@NotNull DBPNamedObject sourceAttr) {
+        return CommonUtils.findBestCaseAwareMatch(attributeMappings, sourceAttr.getName(), attr -> attr.getSource().getName());
     }
 
     public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRRunnableContext runnableContext) {

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -32,18 +34,20 @@ import java.util.Set;
  */
 public class SQLWordRule implements TPRule {
 
-    private SQLDelimiterRule delimRule;
-    private TPToken functionToken;
-    private TPToken defaultToken;
-    private Map<String, TPToken> words = new HashMap<>();
-    private Set<String> functions = new HashSet<>();
-    private StringBuilder buffer = new StringBuilder();
+    private final SQLDelimiterRule delimRule;
+    private final TPToken functionToken;
+    private final TPToken defaultToken;
+    private final Map<String, TPToken> words = new HashMap<>();
+    private final Set<String> functions = new HashSet<>();
+    private final StringBuilder buffer = new StringBuilder();
+    private final SQLDialect dialect;
     private char[][] delimiters;
 
-    public SQLWordRule(SQLDelimiterRule delimRule, TPToken functionToken, TPToken defaultToken) {
+    public SQLWordRule(SQLDelimiterRule delimRule, TPToken functionToken, TPToken defaultToken, @NotNull SQLDialect dialect) {
         this.delimRule = delimRule;
         this.functionToken = functionToken;
         this.defaultToken = defaultToken;
+        this.dialect = dialect;
     }
 
     public boolean hasWord(String word) {
@@ -65,7 +69,7 @@ public class SQLWordRule implements TPRule {
     @Override
     public TPToken evaluate(TPCharacterScanner scanner) {
         int c = scanner.read();
-        if (c != TPCharacterScanner.EOF && Character.isUnicodeIdentifierStart(c)) {
+        if (c != TPCharacterScanner.EOF && dialect.isWordStart(c)) {
             buffer.setLength(0);
             delimiters = delimRule.getDelimiters();
             char prevC;
@@ -108,7 +112,7 @@ public class SQLWordRule implements TPRule {
     }
 
     private boolean isWordPart(char c, char prevC, TPCharacterScanner scanner) {
-        if (!Character.isUnicodeIdentifierPart(c) && c != '$') {
+        if (!dialect.isWordPart(c) && c != '$') {
             return false;
         }
         if (c == '$' && prevC == '$') {

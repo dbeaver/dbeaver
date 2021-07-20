@@ -43,8 +43,7 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_truncate_checkbox_label;
 	public static String database_consumer_wizard_truncate_checkbox_description;
 	public static String database_consumer_wizard_disable_referential_integrity_label;
-	public static String database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
-	public static String database_consumer_wizard_disable_referential_integrity_tip_with_caveats;
+	public static String database_consumer_wizard_disable_referential_integrity_tip_start;
 	public static String database_consumer_wizard_performance_group_label;
 	public static String database_consumer_wizard_transactions_checkbox_label;
 	public static String database_consumer_wizard_commit_spinner_label;
@@ -53,10 +52,14 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_final_message_checkbox_label;
 	public static String database_consumer_wizard_truncate_checkbox_title;
 	public static String database_consumer_wizard_truncate_checkbox_question;
+	public static String database_consumer_wizard_checkbox_multi_insert_label;
+	public static String database_consumer_wizard_checkbox_multi_insert_description;
+	public static String database_consumer_wizard_spinner_multi_insert_batch_size;
 	public static String database_consumer_wizard_disable_import_batches_label;
 	public static String database_consumer_wizard_disable_import_batches_description;
 	public static String database_consumer_wizard_on_duplicate_key_insert_method_text;
 	public static String database_consumer_wizard_link_label_replace_method_wiki;
+	public static String database_consumer_wizard_label_replace_method_not_supported;
 	
 	public static String columns_mapping_dialog_shell_text;
 	public static String columns_mapping_dialog_composite_label_text_source_container;
@@ -77,6 +80,8 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_column_source_text;
 	public static String database_consumer_page_mapping_column_target_text;
 	public static String database_consumer_page_mapping_column_mapping_text;
+	public static String database_consumer_page_mapping_column_transformer_text;
+	public static String database_consumer_page_mapping_column_transformer_tip;
 	public static String database_consumer_page_mapping_node_title;
 	public static String database_consumer_page_mapping_table_name;
 	public static String database_consumer_page_mapping_label_hint;
@@ -155,6 +160,7 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_message_error_generating_target_DDL;
 	public static String database_producer_page_input_objects_title_assign_error;
 	public static String database_producer_page_input_objects_message_error_reading_container_objects;
+	public static String database_producer_page_input_objects_error_message_auto_assign_failed;
 	public static String stream_producer_page_preview_title_load_entity_meta;
 	public static String stream_producer_page_preview_message_entity_attributes;
 	public static String stream_producer_page_preview_title_preview_data;

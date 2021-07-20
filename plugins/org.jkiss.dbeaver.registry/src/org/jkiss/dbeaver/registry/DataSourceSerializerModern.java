@@ -74,12 +74,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
 
-    private static Gson CONFIG_GSON = new GsonBuilder()
+    private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .setPrettyPrinting()
         .create();
-    private static Gson SECURE_GSON = new GsonBuilder()
+    private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .create();
@@ -92,7 +92,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     //  0 level: datasource ID
     //  1 level: object type (connection or handler id)
     //  2 level: map of secured properties
-    private Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
+    private final Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
 
     DataSourceSerializerModern(DataSourceRegistry registry) {
         this.registry = registry;
@@ -506,7 +506,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
                 navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
                 navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
-                navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
+                navSettings.setMergeSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
                 navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
                 navSettings.setMergeEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
 
@@ -767,7 +767,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (navSettings.isShowUtilityObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, true);
         if (navSettings.isShowOnlyEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, true);
         if (navSettings.isHideFolders()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_FOLDERS, true);
-        if (navSettings.isHideSchemas()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, true);
+        if (navSettings.isMergeSchemas()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, true);
         if (navSettings.isHideVirtualModel()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_VIRTUAL, true);
         if (navSettings.isMergeEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_MERGE_ENTITIES, true);
 

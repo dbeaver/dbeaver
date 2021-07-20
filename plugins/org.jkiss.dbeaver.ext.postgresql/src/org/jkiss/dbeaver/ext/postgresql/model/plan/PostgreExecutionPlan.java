@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -154,12 +154,12 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         Document planDocument = XMLUtils.parseDocument(planXML.getBinaryStream());
         Element queryElement = XMLUtils.getChildElement(planDocument.getDocumentElement(), "Query");
         for (Element planElement : XMLUtils.getChildElementList(queryElement, "Plan")) {
-            rootNodes.add(new PostgrePlanNodeXML((PostgreDataSource) session.getDataSource(), null, planElement));
+            rootNodes.add(new PostgrePlanNodeXML(session.getDataSource(), null, planElement));
         }
     }
 
     private void parsePlanText(DBCSession session, List<String> lines) {
-        PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+        DBPDataSource dataSource = session.getDataSource();
         List<PostgrePlanNodeText> nodes = new ArrayList<>(lines.size());
         PostgrePlanNodeText rootNode = null, curNode = null, curParentNode = null;
         int curIndent = 0;

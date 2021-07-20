@@ -20,16 +20,14 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DataTransferRegistry
@@ -49,7 +47,8 @@ public class DataTransferRegistry {
         return instance;
     }
 
-    private List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
+    private final List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
+    private final Map<String, DataTransferAttributeTransformerDescriptor> transformers = new LinkedHashMap<>();
 
     private DataTransferRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -61,8 +60,14 @@ public class DataTransferRegistry {
                     continue;
                 }
                 nodes.add(new DataTransferNodeDescriptor(ext));
+            } else if ("transformer".equals(ext.getName())) {
+                // Load transformers
+                DataTransferAttributeTransformerDescriptor at = new DataTransferAttributeTransformerDescriptor(ext);
+                transformers.put(at.getId(), at);
             }
+
         }
+
         // Load references
         for (IConfigurationElement ext : extElements) {
             if ("node".equals(ext.getName())) {
@@ -79,6 +84,8 @@ public class DataTransferRegistry {
             }
         }
         nodes.sort(Comparator.comparing(DataTransferNodeDescriptor::getName));
+
+        //transformers.sort(Comparator.comparing(DataTransferAttributeTransformerDescriptor::getName));
     }
 
     public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<DBSObject> sourceObjects) {
@@ -156,4 +163,17 @@ public class DataTransferRegistry {
         return null;
     }
 
+    @NotNull
+    public List<DataTransferAttributeTransformerDescriptor> getAttributeTransformers() {
+        return new ArrayList<>(transformers.values());
+    }
+
+    @Nullable
+    public DataTransferAttributeTransformerDescriptor getAttributeTransformer(String id) {
+        return transformers.get(id);
+    }
+
+    public DataTransferAttributeTransformerDescriptor getAttributeTransformerByName(String tName) {
+        return transformers.values().stream().filter(t -> t.getName().equals(tName)).findFirst().orElse(null);
+    }
 }

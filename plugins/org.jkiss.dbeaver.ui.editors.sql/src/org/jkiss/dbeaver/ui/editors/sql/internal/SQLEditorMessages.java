@@ -65,6 +65,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_error_execution_plan_title;
     public static String editors_sql_execution_log;
     public static String editors_sql_execution_log_tip;
+    public static String editors_sql_variables;
+    public static String editors_sql_variables_tip;
     public static String editors_sql_explain_plan;
     public static String editors_sql_output;
     public static String editors_sql_output_tip;
@@ -101,6 +103,8 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
+    public static String action_result_tabs_assign_variable;
+    public static String action_result_tabs_assign_variable_sql;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
@@ -234,6 +238,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;
+    public static String pref_page_sql_editor_text_control_command_prefix;
+    public static String pref_page_sql_editor_text_explanation_link;
     public static String pref_page_sql_editor_combo_item_each_line_autocommit;
     public static String pref_page_sql_editor_combo_item_each_spec_line;
     public static String pref_page_sql_editor_combo_item_ignore;

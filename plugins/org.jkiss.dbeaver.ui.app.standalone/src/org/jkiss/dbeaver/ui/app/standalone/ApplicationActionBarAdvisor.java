@@ -92,6 +92,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
         //"org.eclipse.search.searchActionSet" //$NON-NLS-1$
         "org.eclipse.mylyn.tasks.ui.navigation",
+
+        // Disable files actionset to redefine OpenLocalFileAction
+        "org.eclipse.ui.actionSet.openFiles"
     };
 
 
@@ -264,6 +267,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
             fileMenu.add(recentEditors);
 
+            fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));

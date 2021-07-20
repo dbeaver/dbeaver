@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -45,9 +44,8 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,44 +103,55 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             }
         }
 
-        if (procedure != null) {
-            try {
-                Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
-                if (!CommonUtils.isEmpty(params)) {
-                    for (DBSProcedureParameter param : params) {
-                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT ||
-                            param.getParameterKind() == DBSProcedureParameterKind.INOUT ||
-                            param.getParameterKind() == DBSProcedureParameterKind.RETURN)
-                        {
-                            procResults.addColumn(param.getName(), param.getParameterType());
-                        }
-                    }
+        ParameterMetaData paramsMeta = null;
+
+        try {
+            paramsMeta = original.getParameterMetaData();
+        } catch (Throwable e) {
+            log.debug("Error extracting parameters meta data", e);
+        }
+
+        final List<DBSProcedureParameter> metaOutputParameters = getOutputParametersFromMeta();
+        final List<Integer> jdbcOutputParameters = getOutputParametersFromJDBC(paramsMeta);
+
+        if (metaOutputParameters == null && jdbcOutputParameters == null) {
+            log.debug("Can't obtain procedure metadata nor jdbc metadata");
+            return;
+        }
+
+        final JDBCDataSource dataSource = connection.getDataSource();
+
+        if (metaOutputParameters != null && jdbcOutputParameters != null && metaOutputParameters.size() == jdbcOutputParameters.size()) {
+            for (int index = 0, localIndex = 0; index < metaOutputParameters.size(); index++) {
+                final DBSProcedureParameter param = metaOutputParameters.get(index);
+                if (isParameterCursor(dataSource, paramsMeta, jdbcOutputParameters.get(index))) {
+                    continue;
                 }
-            } catch (DBException e) {
-                log.debug("Error extracting callable results", e);
+                procResults.addColumn(param.getName(), param.getParameterType(), localIndex++, jdbcOutputParameters.get(index));
+            }
+        } else if (metaOutputParameters != null) {
+            for (int index = 0; index < metaOutputParameters.size(); index++) {
+                final DBSProcedureParameter param = metaOutputParameters.get(index);
+                procResults.addColumn(param.getName(), param.getParameterType(), index, index + 1);
             }
         } else {
             // Try to make columns from parameters meta
             try {
-                JDBCDataSource dataSource = connection.getDataSource();
-                ParameterMetaData paramsMeta = original.getParameterMetaData();
-                int parameterCount = paramsMeta.getParameterCount();
-                if (parameterCount > 0) {
-                    for (int index = 0; index < parameterCount; index++) {
-                        int parameterMode = paramsMeta.getParameterMode(index + 1);
-                        if (parameterMode == ParameterMetaData.parameterModeOut || parameterMode == ParameterMetaData.parameterModeInOut) {
-                            DBSDataType dataType = dataSource.getLocalDataType(paramsMeta.getParameterTypeName(index + 1));
-                            if (dataType == null) {
-                                DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, paramsMeta.getParameterTypeName(index + 1), paramsMeta.getParameterType(index + 1));
-                                procResults.addColumn(String.valueOf(index + 1), dataKind);
-                            } else {
-                                procResults.addColumn(String.valueOf(index + 1), dataType);
-                            }
-                        }
+                int localIndex = 0;
+                for (int index : jdbcOutputParameters) {
+                    if (isParameterCursor(dataSource, paramsMeta, index)) {
+                        continue;
+                    }
+                    final DBSDataType dataType = dataSource.getLocalDataType(paramsMeta.getParameterTypeName(index));
+                    if (dataType == null) {
+                        final DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, paramsMeta.getParameterTypeName(index), paramsMeta.getParameterType(index));
+                        procResults.addColumn(String.valueOf(index), dataKind, localIndex++, index);
+                    } else {
+                        procResults.addColumn(String.valueOf(index), dataType, localIndex++, index);
                     }
                 }
             } catch (Throwable e) {
-                log.debug("Error extracting parameters meta data: " + e.getMessage());
+                log.debug("Error extracting parameters meta data", e);
             }
         }
         procResults.addRow();
@@ -241,7 +250,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
         if (!CommonUtils.isEmpty(params)) {
             for (DBSProcedureParameter param : params) {
-                if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
+                if (param.getParameterKind().isOutput()) {
                     return true;
                 }
             }
@@ -258,7 +267,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             if (!CommonUtils.isEmpty(params)) {
                 int index = 0;
                 for (DBSProcedureParameter param : params) {
-                    if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
+                    if (param.getParameterKind().isOutput()) {
                         index++;
                         registerOutParameter(index, param.getParameterType().getTypeID());
                     }
@@ -269,25 +278,77 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
     }
 
+    @Nullable
+    private List<DBSProcedureParameter> getOutputParametersFromMeta() {
+        if (procedure == null) {
+            return null;
+        }
+        try {
+            final Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
+            if (params.isEmpty()) {
+                return Collections.emptyList();
+            }
+            final List<DBSProcedureParameter> outputParams = new ArrayList<>();
+            for (DBSProcedureParameter param : params) {
+                if (param.getParameterKind().isOutput()) {
+                    outputParams.add(param);
+                }
+            }
+            return outputParams;
+        } catch (DBException e) {
+            log.debug("Error obtaining output parameters from procedure: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Nullable
+    private List<Integer> getOutputParametersFromJDBC(@Nullable ParameterMetaData paramsMeta) {
+        if (paramsMeta == null) {
+            return null;
+        }
+        try {
+            final int count = paramsMeta.getParameterCount();
+            if (count == 0) {
+                return Collections.emptyList();
+            }
+            final List<Integer> outputParams = new ArrayList<>();
+            for (int index = 1; index <= count; index++) {
+                final int mode = paramsMeta.getParameterMode(index);
+                if (mode == ParameterMetaData.parameterModeOut || mode == ParameterMetaData.parameterModeInOut) {
+                    outputParams.add(index);
+                }
+            }
+            return outputParams;
+        } catch (SQLException e) {
+            log.debug("Error obtaining output parameters from metadata: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static boolean isParameterCursor(@NotNull DBPDataSource dataSource, @Nullable ParameterMetaData parameterMetaData, int parameterIndex) {
+        try {
+            // If database supports multiple results and parameter is cursor, then it will be in a separate result set
+            return dataSource.getInfo().supportsMultipleResults() && parameterMetaData != null && parameterMetaData.getParameterType(parameterIndex) == Types.REF_CURSOR;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
     @Override
     public boolean executeStatement() throws DBCException {
-        boolean hasResults = super.executeStatement();
-        if (!hasResults && procResults.getColumnCount() > 0) {
-            return true;
-        }
-        return hasResults;
+        return super.executeStatement() || procResults.getColumnCount() > 0;
+    }
+
+    @Override
+    public boolean nextResults() throws DBCException {
+        return super.nextResults() || procResults.getColumnCount() > 0;
     }
 
     @Nullable
     @Override
-    public JDBCResultSet getResultSet()
-        throws SQLException
-    {
-        JDBCResultSet resultSet = makeResultSet(getOriginal().getResultSet());
-        if (resultSet == null && procResults != null) {
-            return procResults;
-        }
-        return resultSet;
+    public JDBCResultSet getResultSet() throws SQLException {
+        final JDBCResultSet resultSet = makeResultSet(getOriginal().getResultSet());
+        return resultSet != null ? resultSet : procResults;
     }
 
 

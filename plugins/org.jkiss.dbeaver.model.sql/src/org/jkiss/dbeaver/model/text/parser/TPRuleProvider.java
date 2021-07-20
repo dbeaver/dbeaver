@@ -31,6 +31,7 @@ public interface TPRuleProvider {
     enum RulePosition {
         PARTITION,
         INITIAL,
+        FINAL,
         CONTROL,
         QUOTES,
         KEYWORDS

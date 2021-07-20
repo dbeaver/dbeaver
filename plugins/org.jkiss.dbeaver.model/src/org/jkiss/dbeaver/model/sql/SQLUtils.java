@@ -176,7 +176,7 @@ public final class SQLUtils {
             else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
-                    if (nc == '_' || nc == '*' || nc == '?' || nc == '.') {
+                    if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
                         result.append("\\").append(nc);
                         i++;
                     } else {
@@ -486,7 +486,7 @@ public final class SQLUtils {
         for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
             if (hasOrder) query.append(',');
             String orderString = null;
-            if (co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
+            if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
                 String orderColumn = co.getAttributeName();
                 if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
                     // It is a simple column.
@@ -648,12 +648,6 @@ public final class SQLUtils {
 
         DBPDataKind dataKind = attribute.getDataKind();
         switch (dataKind) {
-            case BOOLEAN:
-            case NUMERIC:
-                if (sqlDialect != null) {
-                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
-                }
-                return strValue;
             case CONTENT:
                 if (value instanceof DBDContent) {
                     String contentType = ((DBDContent) value).getContentType();
@@ -665,9 +659,11 @@ public final class SQLUtils {
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
-                    return sqlDialect.getTypeCastClause(attribute, sqlDialect.getQuotedString(strValue));
+                    return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
+            case BOOLEAN:
+            case NUMERIC:
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);

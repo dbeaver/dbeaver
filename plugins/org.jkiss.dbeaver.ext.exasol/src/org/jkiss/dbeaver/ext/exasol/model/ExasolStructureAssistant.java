@@ -351,4 +351,12 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     protected JDBCDataSource getDataSource() {
         return this.dataSource;
     }
+
+    @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return objectType == ExasolObjectType.TABLE
+            || objectType == ExasolObjectType.VIEW
+            || objectType == ExasolObjectType.SCRIPT
+            || objectType == ExasolObjectType.COLUMN;
+    }
 }

@@ -71,6 +71,10 @@ class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
         } else {
             objectContainer = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
         }
+        if (objectContainer == null) {
+            // Possibly neither catalogs nor schemas are supported
+            objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+        }
         if (objectContainer != null) {
             makeProposalsFromChildren(monitor, objectContainer, entities);
         }

@@ -20,18 +20,24 @@ package org.jkiss.dbeaver.tools.transfer.database;
 * Mapping type
 */
 public enum DatabaseMappingType {
-    unspecified(false),
-    existing(true),
-    create(true),
-    skip(false);
+    unspecified(false, false),
+    existing(true, false),
+    create(true, false),
+    skip(false, false);
 
     private final boolean isValid;
+    private final boolean isAttrOnly;
 
-    DatabaseMappingType(boolean isValid) {
+    DatabaseMappingType(boolean isValid, boolean isAttrOnly) {
         this.isValid = isValid;
+        this.isAttrOnly = isAttrOnly;
     }
 
     public boolean isValid() {
         return isValid;
+    }
+
+    public boolean isAttrOnly() {
+        return isAttrOnly;
     }
 }

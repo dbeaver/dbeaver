@@ -180,7 +180,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         }
 
         if (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7)) {
-            genExpression = JDBCUtils.safeGetString(dbResult, "GENERATION_EXPRESSION");
+            genExpression = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION);
         }
 
         for (String modifier : CommonUtils.notEmpty(fullTypeName).toLowerCase().split(" ")) {

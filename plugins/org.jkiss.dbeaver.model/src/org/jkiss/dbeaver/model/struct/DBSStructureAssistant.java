@@ -41,6 +41,14 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
     List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
                                                @NotNull ObjectsSearchParams params) throws DBException;
 
+    default boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
+        return false;
+    }
+
+    default boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return false;
+    }
+
     /**
      * A data class with search parameters.
      *
@@ -53,6 +61,7 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
      *     <li>{@code globalSearch}: search in all available schemas/catalogs. If {@code false} then search with respect of active schema/catalog</li>
      *     <li>{@code maxResults}: maximum number of results</li>
      *     <li>{@code searchInComments}: perform additional search in comments (ignored by some implementations)</li>
+     *     <li>{@code searchInDefinitions}: perform additional search in definitions (ignored by some implementations)</li>
      * </ul>
      */
     class ObjectsSearchParams {
@@ -62,10 +71,11 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
         private String mask;
         @Nullable
         private DBSObject parentObject;
+        private int maxResults = Integer.MAX_VALUE;
         private boolean caseSensitive;
         private boolean searchInComments;
+        private boolean searchInDefinitions;
         private boolean globalSearch;
-        private int maxResults = Integer.MAX_VALUE;
 
         public ObjectsSearchParams(@NotNull DBSObjectType[] objectTypes, @NotNull String mask) {
             this.objectTypes = objectTypes;
@@ -117,6 +127,14 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
 
         public void setSearchInComments(boolean searchInComments) {
             this.searchInComments = searchInComments;
+        }
+
+        public boolean isSearchInDefinitions() {
+            return searchInDefinitions;
+        }
+
+        public void setSearchInDefinitions(boolean searchInDefinitions) {
+            this.searchInDefinitions = searchInDefinitions;
         }
 
         public boolean isGlobalSearch() {

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -42,10 +41,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OracleTable
@@ -53,6 +49,13 @@ import java.util.Map;
 public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer,
         DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(OracleTable.class);
+
+    private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
+    private static final CharSequence FOREIGN_KEY_NAME_PLACEHOLDER = "%foreign_key_name%";
+    private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
+        + FOREIGN_KEY_NAME_PLACEHOLDER + " DISABLE";
+    private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
+        + FOREIGN_KEY_NAME_PLACEHOLDER + " ENABLE";
 
     private OracleDataType tableType;
     private String iotType;
@@ -437,20 +440,23 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         Collection<OracleTableForeignKey> foreignKeys = getAssociations(monitor);
-        if (foreignKeys == null || foreignKeys.isEmpty()) {
+        if (CommonUtils.isEmpty(foreignKeys)) {
             return;
         }
+
+        String template;
+        if (enable) {
+            template = ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+        } else {
+            template = DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+        }
+        template = template.replace(TABLE_NAME_PLACEHOLDER, getFullyQualifiedName(DBPEvaluationContext.DDL));
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
-            String prefix = "ALTER TABLE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY CONSTRAINT ";
-            String suffix;
-            if (enable) {
-                suffix = " ENABLE";
-            } else {
-                suffix = " DISABLE";
-            }
             try (JDBCStatement statement = session.createStatement()) {
-                for (OracleTableForeignKey fk: foreignKeys) {
-                    statement.execute(prefix + fk.getName() + suffix);
+                for (DBPNamedObject fk: foreignKeys) {
+                    String sql = template.replace(FOREIGN_KEY_NAME_PLACEHOLDER,  fk.getName());
+                    statement.executeUpdate(sql);
                 }
             } catch (SQLException e) {
                 throw new DBException("Unable to change referential integrity", e);
@@ -459,13 +465,19 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
-        return true;
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return !CommonUtils.isEmpty(getAssociations(monitor));
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
-        return OracleMessages.oracle_referential_integrity_disable_warning;
+    public String getChangeReferentialIntegrityStatement(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        if (!supportsChangingReferentialIntegrity(monitor)) {
+            return null;
+        }
+        if (enable) {
+            return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+        }
+        return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 }

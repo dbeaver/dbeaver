@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
@@ -45,8 +46,11 @@ public class SQLFormatterTokenizedTest {
     private SQLSyntaxManager syntaxManager;
 
     private SQLDialect dialect = BasicSQLDialect.INSTANCE;
-    private final String lineBreak = System.getProperty("line.separator");
+    private final String lineBreak = System.lineSeparator();
 
+    private String format(String sql) {
+        return formatter.format(sql, configuration);
+    }
 
     @Before
     public void init() throws Exception {
@@ -56,7 +60,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(syntaxManager.getDialect()).thenReturn(dialect);
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
-
+        Mockito.when(syntaxManager.getStructSeparator()).thenReturn('.');
         Mockito.when(configuration.getIndentString()).thenReturn("\t");
         Mockito.doReturn(preferenceStore).when(configuration).getPreferenceStore();
 
@@ -71,7 +75,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
 
@@ -85,7 +89,7 @@ public class SQLFormatterTokenizedTest {
         String inputString = " ";
 
         //when
-        String format = formatter.format(inputString, configuration);
+        String format = format(inputString);
 
         //then
         assertEquals(expectedString, format);
@@ -98,7 +102,7 @@ public class SQLFormatterTokenizedTest {
         String inputString = "select * from mytable;";
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -111,7 +115,7 @@ public class SQLFormatterTokenizedTest {
         String inputString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\ttable1;" + lineBreak +" -- SELECT * FROM mytable;";
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -124,7 +128,7 @@ public class SQLFormatterTokenizedTest {
         String inputString = "-- SELECT * FROM mytable;";
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -140,7 +144,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -157,7 +161,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -172,7 +176,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(false);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -193,7 +197,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -211,7 +215,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -228,7 +232,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(configuration.isFunction("lpad")).thenReturn(true);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -259,7 +263,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(configuration.isFunction("generate_series")).thenReturn(true);
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -282,7 +286,7 @@ public class SQLFormatterTokenizedTest {
                 "\t\t\tAND 2 = 2));";
 
         //when
-        String formattedString = formatter.format(inputString, configuration);
+        String formattedString = format(inputString);
 
         //then
         assertEquals(expectedString, formattedString);
@@ -361,6 +365,80 @@ public class SQLFormatterTokenizedTest {
         return sb.toString();
     }
 
+    @Test
+    public void shouldDoDefaultFormatWhenThereIsNoSpaceBetweenSelectKeywordAndAsterisk() {
+        String sql = "SELECT* FROM Album a;"; //$NON-NLS-1$
+        String expected = SQLConstants.KEYWORD_SELECT + lineBreak +
+            "\t*" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak +
+            "\tAlbum a;"; //$NON-NLS-1$
+        assertEquals(
+            "SQLFormatterTokenized does not properly format query with SELECT* (no space between keyword and asterisk)",
+            expected,
+            format(sql)
+        );
 
+        sql = "SELECT* FROM Album a UNION ALL SELECT* FROM Album a;"; //$NON-NLS-1$
+        expected = SQLConstants.KEYWORD_SELECT + lineBreak +
+            "\t*" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak +
+            "\tAlbum a" + lineBreak +
+            "UNION ALL" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_SELECT + lineBreak +
+            "\t*" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak +
+            "\tAlbum a;";
+        assertEquals(
+            "SQLFormatterTokenized does not properly format query with multiple SELECT* (no space between keyword and asterisk)",
+            expected,
+            format(sql)
+        );
+    }
+
+    @Test
+    public void shouldDoDefaultFormatWhenThereAreCommentsInsideQuery() {
+        String sql = SQLConstants.KEYWORD_SELECT + lineBreak + //$NON-NLS-1$
+            "\t--comment" + lineBreak + //$NON-NLS-1$
+            "\t'x' AS x, 'y' AS y, 'z' AS z FROM dual;"; //$NON-NLS-1$
+        String expected = SQLConstants.KEYWORD_SELECT + lineBreak + //$NON-NLS-1$
+            "\t--comment" + lineBreak + //$NON-NLS-1$
+            "\t'x' AS x," + lineBreak + //$NON-NLS-1$
+            "\t'y' AS y," + lineBreak + //$NON-NLS-1$
+            "\t'z' AS z" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak + //$NON-NLS-1$
+            "\tdual;"; //$NON-NLS-1$
+        assertEquals("SQLFormatterTokenized does not properly format query with a comment between SELECT and FROM", expected, format(sql));
+
+        sql = "SELECT 'x' AS X FROM dual" + lineBreak + //$NON-NLS-1$
+            "--comment" + lineBreak + //$NON-NLS-1$
+            "WHERE 1 = 1;"; //$NON-NLS-1$
+        expected = SQLConstants.KEYWORD_SELECT + lineBreak + //$NON-NLS-1$
+            "\t'x' AS X" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_FROM + lineBreak + //$NON-NLS-1$
+            "\tdual" + lineBreak + //$NON-NLS-1$
+            "\t--comment" + lineBreak + //$NON-NLS-1$
+            SQLConstants.KEYWORD_WHERE + lineBreak + //$NON-NLS-1$
+            "\t1 = 1;"; //$NON-NLS-1$
+        assertEquals("SQLFormatterTokenized does not properly format query with a comment between FROM and WHERE", expected, format(sql));
+
+        sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--comment" + lineBreak + "a, b FROM a ;";
+        expected = SQLConstants.KEYWORD_SELECT + lineBreak +
+            "\t--comment" + lineBreak +
+            "\ta," + lineBreak +
+            "\tb" + lineBreak +
+            SQLConstants.KEYWORD_FROM + lineBreak +
+            "\ta ;";
+        assertEquals(
+            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] without indent before the name",
+            expected,
+            format(sql)
+        );
+
+        sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--comment" + lineBreak + "\t\ta, b FROM a ;";
+        assertEquals(
+            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] with 2 indents before the name",
+            expected,
+            format(sql)
+        );
+    }
 }
-

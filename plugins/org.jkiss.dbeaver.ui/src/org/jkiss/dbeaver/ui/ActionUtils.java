@@ -238,17 +238,20 @@ public class ActionUtils
         IBindingService bindingService = serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = null;
-            for (Binding b : bindingService.getBindings()) {
-                ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
-                if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
-                    if (paramName != null) {
-                        Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
-                        if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
-                            continue;
+            Binding[] bindings = bindingService.getBindings();
+            if (bindings != null) {
+                for (Binding b : bindings) {
+                    ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
+                    if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
+                        if (paramName != null) {
+                            Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
+                            if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
+                                continue;
+                            }
                         }
+                        sequence = b.getTriggerSequence();
+                        break;
                     }
-                    sequence = b.getTriggerSequence();
-                    break;
                 }
             }
             if (sequence == null) {
@@ -291,7 +294,7 @@ public class ActionUtils
                     boolean needContextPatch = false;
                     if (selection != null) {
                         needContextPatch = true;
-                        if (serviceLocator instanceof IWorkbenchSite) {
+                        if (serviceLocator instanceof IWorkbenchPartSite) {
                             final ISelection curSelection = ((IWorkbenchSite) serviceLocator).getSelectionProvider().getSelection();
                             if (curSelection instanceof IStructuredSelection && selection instanceof IStructuredSelection) {
                                 if (((IStructuredSelection) curSelection).size() == ((IStructuredSelection) selection).size() &&

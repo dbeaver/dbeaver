@@ -130,7 +130,7 @@ public class SQLRuleManager {
         {
             if (!minimalRules && syntaxManager.isVariablesEnabled()) {
                 // Variable rule
-                rules.add(new SQLVariableRule(parameterToken));
+                rules.add(new ScriptVariableRule(parameterToken));
             }
         }
 
@@ -202,7 +202,7 @@ public class SQLRuleManager {
 
         if (!minimalRules) {
             // Add word rule for keywords, functions, types, and constants.
-            SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken);
+            SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken, dialect);
             for (String reservedWord : dialect.getReservedWords()) {
                 DBPKeywordType keywordType = dialect.getKeywordType(reservedWord);
                 // Functions without parentheses has type 'DBPKeywordType.OTHER' (#8710)
@@ -240,8 +240,12 @@ public class SQLRuleManager {
 
             // Parameter rule
             for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
-                rules.add(new SQLParameterRule(syntaxManager, parameterToken, npPrefix));
+                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
             }
+        }
+
+        if (ruleProvider != null) {
+            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.FINAL);
         }
 
         allRules = rules.toArray(new TPRule[0]);

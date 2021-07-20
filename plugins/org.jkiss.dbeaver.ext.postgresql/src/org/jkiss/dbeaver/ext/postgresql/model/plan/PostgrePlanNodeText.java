@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.*;
 
@@ -217,7 +217,7 @@ public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText
         
     }
     
-    public PostgrePlanNodeText(PostgreDataSource dataSource, PostgrePlanNodeText parent, String line, int indent) {
+    public PostgrePlanNodeText(DBPDataSource dataSource, PostgrePlanNodeText parent, String line, int indent) {
         super(dataSource, parent);
         
         this.indent = indent;

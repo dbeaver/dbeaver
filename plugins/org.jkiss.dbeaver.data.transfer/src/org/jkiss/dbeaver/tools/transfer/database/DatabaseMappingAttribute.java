@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -24,17 +26,20 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
-* DatabaseMappingAttribute
-*/
+ * DatabaseMappingAttribute
+ */
 public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingAttribute.class);
@@ -42,20 +47,35 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     public static final String TARGET_NAME_SKIP = "[skip]";
 
     private final DatabaseMappingContainer parent;
-    private DBSAttributeBase source;
+    @Nullable
+    private final DBSAttributeBase source;
+    @Nullable
     private DBSEntityAttribute target;
     private String targetName;
     private String targetType;
     private DatabaseMappingType mappingType;
+    private DataTransferAttributeTransformerDescriptor transformer;
+    private final Map<String, Object> transformerProperties = new LinkedHashMap<>();
 
-    DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
-    {
+    DatabaseMappingAttribute(DatabaseMappingContainer parent, @NotNull DBSAttributeBase source) {
         this.parent = parent;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    DatabaseMappingAttribute(DatabaseMappingAttribute attribute, DatabaseMappingContainer parent) {
+    DatabaseMappingAttribute(
+        @NotNull DatabaseMappingContainer parent,
+        @Nullable DBSAttributeBase source,
+        @Nullable DBSEntityAttribute target,
+        @NotNull DatabaseMappingType mappingType)
+    {
+        this.parent = parent;
+        this.source = source;
+        this.target = target;
+        this.mappingType = mappingType;
+    }
+
+    DatabaseMappingAttribute(@NotNull DatabaseMappingAttribute attribute, @NotNull DatabaseMappingContainer parent) {
         this.parent = parent;
         this.source = attribute.source;
         this.target = attribute.target;
@@ -64,25 +84,25 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = attribute.mappingType;
     }
 
-    public DatabaseMappingContainer getParent()
-    {
+    public DatabaseMappingContainer getParent() {
         return parent;
     }
 
     @Override
-    public DBPImage getIcon()
-    {
+    public DBPImage getIcon() {
         return DBValueFormatting.getObjectImage(source);
     }
 
+    @Nullable
     @Override
-    public DBSAttributeBase getSource()
-    {
+    public DBSAttributeBase getSource() {
         return source;
     }
 
-    public String getSourceType()
-    {
+    public String getSourceType() {
+        if (source == null) {
+            return null;
+        }
         String typeName = source.getTypeName();
         if (source.getDataKind() == DBPDataKind.STRING) {
             typeName += "(" + source.getMaxLength() + ")";
@@ -91,8 +111,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     @Override
-    public String getTargetName()
-    {
+    public String getTargetName() {
         switch (mappingType) {
             case existing:
                 if (target != null) {
@@ -110,13 +129,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     @Override
-    public DatabaseMappingType getMappingType()
-    {
+    public DatabaseMappingType getMappingType() {
         return mappingType;
     }
 
-    public void setMappingType(DatabaseMappingType mappingType)
-    {
+    public void setMappingType(DatabaseMappingType mappingType) {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
@@ -125,11 +142,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    public void updateMappingType(DBRProgressMonitor monitor) throws DBException
-    {
+    public void updateMappingType(DBRProgressMonitor monitor) throws DBException {
         switch (parent.getMappingType()) {
-            case existing:
-            {
+            case existing: {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
                     if (CommonUtils.isEmpty(targetName)) {
@@ -137,7 +152,15 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
-                    target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                    if (targetAttributes != null) {
+                        target = CommonUtils.findBestCaseAwareMatch(
+                            targetAttributes,
+                            DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
+                            DBSEntityAttribute::getName
+                        );
+                    } else {
+                        target = null;
+                    }
 
                     if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
                         StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
@@ -152,7 +175,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                             if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
                                 DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
                                 targetName = targetAttribute.getName();
-                                target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                                target = CommonUtils.findBestCaseAwareMatch(
+                                    targetAttributes,
+                                    DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
+                                    DBSEntityAttribute::getName
+                                );
                             }
                         }
 
@@ -210,24 +237,21 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         return container == null ? name : DBUtils.getQuotedIdentifier(container.getDataSource(), name);
     }
 
+    @Nullable
     @Override
-    public DBSEntityAttribute getTarget()
-    {
+    public DBSEntityAttribute getTarget() {
         return target;
     }
 
-    public void setTarget(DBSEntityAttribute target)
-    {
+    public void setTarget(@Nullable DBSEntityAttribute target) {
         this.target = target;
     }
 
-    public void setTargetName(String targetName)
-    {
+    public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
-    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers)
-    {
+    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers) {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
@@ -235,9 +259,29 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
     }
 
-    public void setTargetType(String targetType)
-    {
+    public void setTargetType(String targetType) {
         this.targetType = targetType;
+    }
+
+    public DataTransferAttributeTransformerDescriptor getTransformer() {
+        return transformer;
+    }
+
+    public void setTransformer(DataTransferAttributeTransformerDescriptor transformer) {
+        this.transformer = transformer;
+    }
+
+    public Map<String, Object> getTransformerProperties() {
+        synchronized (transformerProperties) {
+            return new LinkedHashMap<>(transformerProperties);
+        }
+    }
+
+    public void setTransformerProperties(Map<String, Object> properties) {
+        synchronized (transformerProperties) {
+            transformerProperties.clear();
+            transformerProperties.putAll(properties);
+        }
     }
 
     void saveSettings(Map<String, Object> settings) {
@@ -249,6 +293,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
+
+            if (transformer != null) {
+                settings.put("transformer", transformer.getId());
+                settings.put("transformerProperties", new LinkedHashMap<>(transformerProperties));
+                settings.put("transformerPropertiesNames", String.join(",", transformerProperties.keySet()));
+            }
         }
     }
 
@@ -263,7 +313,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     DBSDataManipulator targetEntity = parent.getTarget();
                     if (targetEntity instanceof DBSEntity) {
                         this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(),
-                            DBUtils.getUnQuotedIdentifier(((DBSEntity)targetEntity).getDataSource(), targetName));
+                            DBUtils.getUnQuotedIdentifier(((DBSEntity) targetEntity).getDataSource(), targetName));
                     }
                 }
 
@@ -279,10 +329,28 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 log.error(e);
             }
         }
+        Object transformerId = settings.get("transformer");
+        if (transformerId != null) {
+            transformer = DataTransferRegistry.getInstance().getAttributeTransformer(transformerId.toString());
+            if (transformer == null) {
+                log.error("Can't find attribute transformer " + transformerId);
+            } else {
+                Map<String, Object> tp = (Map<String, Object>) settings.get("transformerProperties");
+                String[] tpNames = CommonUtils.toString(settings.get("transformerPropertiesNames"), "").split(",");
+                transformerProperties.clear();
+                if (tp != null) {
+                    for (String name : tpNames) {
+                        if (!CommonUtils.isEmpty(name)) {
+                            transformerProperties.put(name, tp.get(name));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
     public String toString() {
-        return source.getName();
+        return source != null ? source.getName() : getTargetName();
     }
 }

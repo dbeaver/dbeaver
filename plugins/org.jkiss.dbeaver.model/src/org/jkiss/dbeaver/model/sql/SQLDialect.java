@@ -233,6 +233,10 @@ public interface SQLDialect {
     @NotNull
     SQLStateType getSQLStateType();
 
+    boolean isWordStart(int ch);
+
+    boolean isWordPart(int ch);
+
     boolean validIdentifierStart(char c);
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
