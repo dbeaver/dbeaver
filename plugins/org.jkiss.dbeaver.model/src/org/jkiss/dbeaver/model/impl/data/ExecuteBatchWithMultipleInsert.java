@@ -93,34 +93,33 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
         DBCStatement batchStatement = null;
 
         try {
-            int multiRowInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 1000);
+            int multiRowInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 100);
 
-            int valuesListSize = values.size();
-            List<Object> allMultiInsertValuesList = new ArrayList<>();
-            for (int i = 0; i < valuesListSize; i++) {
+            int rowsCount = values.size();
+            List<Object> multiRowInsertBatchValuesList = new ArrayList<>();
+            for (int i = 0; i < rowsCount; i++) {
                 if (session.getProgressMonitor().isCanceled()) {
                     break;
                 }
                 Object[] objects = values.get(i);
-                // Check current batch size to avoid values batch overflow and work on the latest values
                 // Execute batch if it has a suitable size, or this are the last values
-                if (i == valuesListSize - 1 || allMultiInsertValuesList.size() + objects.length > multiRowInsertBatchSize) {
+                if (i == rowsCount - 1 || (i != 0 && i % multiRowInsertBatchSize == 0)) {
                     // We can reuse statement, but not for the last values (their amount can be different from previous batches)
-                    if (i == valuesListSize - 1) {
-                        Collections.addAll(allMultiInsertValuesList, objects);
-                        Object[] allMultiInsertValues = allMultiInsertValuesList.toArray(new Object[0]);
+                    if (i == rowsCount - 1) {
+                        Collections.addAll(multiRowInsertBatchValuesList, objects);
+                        Object[] allMultiInsertValues = multiRowInsertBatchValuesList.toArray(new Object[0]);
                         try (DBCStatement statement = prepareStatement(session, handlers, allMultiInsertValues, options)) {
                             bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues);
-                            allMultiInsertValuesList.clear();
+                            multiRowInsertBatchValuesList.clear();
                             break;
                         }
                     }
-                    Object[] allMultiInsertValues = allMultiInsertValuesList.toArray(new Object[0]);
-                    batchStatement = prepareStatement(session, handlers, allMultiInsertValues, options);
-                    bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValues);
-                    allMultiInsertValuesList.clear();
+                    Object[] allMultiInsertValuesBatch = multiRowInsertBatchValuesList.toArray(new Object[0]);
+                    batchStatement = prepareStatement(session, handlers, allMultiInsertValuesBatch, options);
+                    bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValuesBatch);
+                    multiRowInsertBatchValuesList.clear();
                 }
-                Collections.addAll(allMultiInsertValuesList, objects);
+                Collections.addAll(multiRowInsertBatchValuesList, objects);
             }
             values.clear();
         } finally {

@@ -58,7 +58,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     private boolean truncateBeforeLoad = false;
     private boolean openTableOnFinish = true;
     private boolean useMultiRowInsert;
-    private int multiRowInsertBatch = 1000;
+    private int multiRowInsertBatch = 100;
     private boolean disableUsingBatches = false;
     private String onDuplicateKeyInsertMethodId;
     private boolean disableReferentialIntegrity;
