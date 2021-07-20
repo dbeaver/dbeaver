@@ -52,10 +52,14 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_final_message_checkbox_label;
 	public static String database_consumer_wizard_truncate_checkbox_title;
 	public static String database_consumer_wizard_truncate_checkbox_question;
+	public static String database_consumer_wizard_checkbox_multi_insert_label;
+	public static String database_consumer_wizard_checkbox_multi_insert_description;
+	public static String database_consumer_wizard_spinner_multi_insert_batch_size;
 	public static String database_consumer_wizard_disable_import_batches_label;
 	public static String database_consumer_wizard_disable_import_batches_description;
 	public static String database_consumer_wizard_on_duplicate_key_insert_method_text;
 	public static String database_consumer_wizard_link_label_replace_method_wiki;
+	public static String database_consumer_wizard_label_replace_method_not_supported;
 	
 	public static String columns_mapping_dialog_shell_text;
 	public static String columns_mapping_dialog_composite_label_text_source_container;
