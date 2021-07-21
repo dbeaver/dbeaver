@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
@@ -249,6 +250,15 @@ class TransformerSettingsDialog extends BaseDialog {
                 if (prop.getValue() != null) {
                     settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
                 }
+            }
+        }
+
+        Map<String, Object> changedProperties = propertySource.getChangedProperties();
+        for (DBPPropertyDescriptor descriptor: transformer.getProperties()) {
+            Object val = changedProperties.get(descriptor.getId());
+            if (val != null && descriptor instanceof PropertyDescriptor) {
+                PropertyDescriptor propertyDescriptor = (PropertyDescriptor) descriptor;
+                propertyDescriptor.setDefaultValue(val);
             }
         }
     }

@@ -33,8 +33,8 @@ public class PropertySourceCustom implements DBPPropertySource {
 
     private List<DBPPropertyDescriptor> props = new ArrayList<>();
 
+    private final Map<String, Object> propValues = new TreeMap<>();
     private Map<String, Object> originalValues = new TreeMap<>();
-    private Map<String, Object> propValues = new TreeMap<>();
     private Map<String,Object> defaultValues = new TreeMap<>();
     private IVariableResolver defValueResolver = null;
 
@@ -224,5 +224,9 @@ public class PropertySourceCustom implements DBPPropertySource {
         originalValues.clear();
         propValues.clear();
         defaultValues.clear();
+    }
+
+    public Map<String, Object> getChangedProperties() {
+        return Collections.unmodifiableMap(propValues);
     }
 }
