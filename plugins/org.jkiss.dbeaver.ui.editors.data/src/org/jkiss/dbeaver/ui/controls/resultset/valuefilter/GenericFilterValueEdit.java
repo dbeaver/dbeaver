@@ -256,6 +256,8 @@ class GenericFilterValueEdit {
                 loadConstraintEnum(enumerableConstraint, onFinish);
             } else if (attribute.getEntityAttribute() instanceof DBSAttributeEnumerable) {
                 loadAttributeEnum((DBSAttributeEnumerable) attribute.getEntityAttribute(), onFinish);
+            } else if (attribute.getDataContainer() instanceof DBSDocumentAttributeEnumerable) {
+                loadDictionaryEnum((DBSDocumentAttributeEnumerable) attribute.getDataContainer(), onFinish);
             } else {
                 loadMultiValueList(Collections.emptyList(), true);
             }
@@ -321,6 +323,32 @@ class GenericFilterValueEdit {
                             showRowCount,
                             true,
                             caseInsensitiveSearch);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+                return result;
+            }
+        };
+        loadJob.schedule();
+    }
+
+    private void loadDictionaryEnum(@NotNull DBSDocumentAttributeEnumerable dictionaryEnumerable, @Nullable Runnable onFinish) {
+        loadJob = new KeyLoadJob("Load '" + attribute.getName() + "' values", onFinish) {
+            @NotNull
+            @Override
+            List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
+                final List<DBDLabelValuePair> result = new ArrayList<>();
+                DBExecUtils.tryExecuteRecover(monitor, dictionaryEnumerable.getDataSource(), param -> {
+                    try (DBCSession session = DBUtils.openUtilSession(monitor, dictionaryEnumerable, "Read value enumeration")) {
+                        result.addAll(dictionaryEnumerable.getValueEnumeration(
+                            session,
+                            attribute,
+                            filterPattern,
+                            showRowCount,
+                            caseInsensitiveSearch,
+                            MAX_MULTI_VALUES
+                        ));
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
