@@ -38,7 +38,7 @@ public class DBDLabelValuePairExt extends DBDLabelValuePair {
     @Override
     public int compareTo(@NotNull Object o) {
         if (o instanceof DBDLabelValuePairExt) {
-            long countCmp = count - ((DBDLabelValuePairExt) o).count;
+            long countCmp = ((DBDLabelValuePairExt) o).count - count;
             if (countCmp != 0) {
                 return (int) countCmp;
             }
