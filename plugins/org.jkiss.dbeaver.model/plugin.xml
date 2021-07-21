@@ -42,19 +42,19 @@
         <formatter id="date" label="%DateFormatter.date.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.DateFormatSample">
             <propertyGroup label="%DateFormatter.date.general.label">
                 <property id="pattern" label="%DateFormatter.date.general.pattern.label" type="string" description="%DateFormatter.date.general.pattern.description" required="true"/>
-                <property id="timezone" label="%DateFormatter.date.general.timezone.label" type="string" description="%DateFormatter.date.general.timezone.description" required="true"/>
+                <property id="timezone" label="%DateFormatter.date.general.timezone.label" type="string" description="%DateFormatter.date.general.timezone.description" required="false"/>
             </propertyGroup>
         </formatter>
         <formatter id="time" label="%DateFormatter.time.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimeFormatSample">
             <propertyGroup label="%DateFormatter.time.general.label">
                 <property id="pattern" label="%DateFormatter.time.general.pattern.label" type="string" description="%DateFormatter.time.general.pattern.description" required="true"/>
-                <property id="timezone" label="%DateFormatter.time.general.timezone.label" type="string" description="%DateFormatter.time.general.timezone.description" required="true"/>
+                <property id="timezone" label="%DateFormatter.time.general.timezone.label" type="string" description="%DateFormatter.time.general.timezone.description" required="false"/>
             </propertyGroup>
         </formatter>
         <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample">
             <propertyGroup label="%DateFormatter.timestamp.general.label">
                 <property id="pattern" label="%DateFormatter.timestamp.general.pattern.label" type="string" description="%DateFormatter.timestamp.general.pattern.description" required="true"/>
-                <property id="timezone" label="%DateFormatter.timestamp.general.timezone.label" type="string" description="%DateFormatter.timestamp.general.timezone.description" required="true"/>
+                <property id="timezone" label="%DateFormatter.timestamp.general.timezone.label" type="string" description="%DateFormatter.timestamp.general.timezone.description" required="false"/>
             </propertyGroup>
         </formatter>
         <formatter id="number" label="%DateFormatter.number.label" class="org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.NumberFormatSample">
