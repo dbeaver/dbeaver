@@ -217,6 +217,13 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             if (container != null) {
                 targetName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), targetName);
             }
+        } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {
+            String sourceLabelOrName = getSourceLabelOrName(source);
+            if (sourceLabelOrName != null && sourceLabelOrName.equalsIgnoreCase(targetName) && !sourceLabelOrName.equals(targetName)) {
+                // Here we change the target name if we switched from target container with identifier case X to container with identifier case Y
+                // See https://github.com/dbeaver/dbeaver/issues/13236
+                targetName = sourceLabelOrName;
+            }
         }
     }
 
