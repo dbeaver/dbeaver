@@ -40,4 +40,9 @@ final class DerbyDataSource extends GenericDataSource {
         }
         return super.getDataSourceFeature(featureId);
     }
+
+    @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
 }

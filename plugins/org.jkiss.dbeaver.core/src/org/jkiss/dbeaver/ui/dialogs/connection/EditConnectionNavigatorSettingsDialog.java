@@ -33,6 +33,7 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
     private Button showSystemObjects;
     private Button showUtilityObjects;
     private Button showOnlyEntities;
+    private Button mergeEntities;
     private Button hideFolders;
 
     public EditConnectionNavigatorSettingsDialog(Shell shell, DBNBrowseSettings navigatorSettings) {
@@ -72,6 +73,13 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 navigatorSettings.isShowOnlyEntities(),
                 1);
 
+            mergeEntities = UIUtils.createCheckbox(
+                miscGroup,
+                CoreMessages.dialog_connection_wizard_final_checkbox_merge_entities,
+                CoreMessages.dialog_connection_wizard_final_checkbox_merge_entities_tip,
+                navigatorSettings.isMergeEntities(),
+                1);
+
             hideFolders = UIUtils.createCheckbox(
                 miscGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_hide_folders,
@@ -88,6 +96,7 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
         navigatorSettings.setShowSystemObjects(showSystemObjects.getSelection());
         navigatorSettings.setShowUtilityObjects(showUtilityObjects.getSelection());
         navigatorSettings.setShowOnlyEntities(showOnlyEntities.getSelection());
+        navigatorSettings.setMergeEntities(mergeEntities.getSelection());
         navigatorSettings.setHideFolders(hideFolders.getSelection());
         super.okPressed();
     }

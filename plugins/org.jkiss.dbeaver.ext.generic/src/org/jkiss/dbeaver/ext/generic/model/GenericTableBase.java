@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -52,8 +53,7 @@ import java.util.*;
 /**
  * Generic table
  */
-public abstract class GenericTableBase extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject, DBPScriptObject
-{
+public abstract class GenericTableBase extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject, DBPScriptObject {
     private static final Log log = Log.getLog(GenericTableBase.class);
 
     private String tableType;
@@ -61,13 +61,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     private String description;
     private Long rowCount;
     private List<? extends GenericTrigger> triggers;
+    private final String tableCatalogName;
+    private final String tableSchemaName;
 
     public GenericTableBase(
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
-        @Nullable JDBCResultSet dbResult)
-    {
+        @Nullable JDBCResultSet dbResult) {
         super(container, tableName, dbResult != null);
         this.tableType = tableType;
         if (this.tableType == null) {
@@ -80,11 +81,19 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
         final GenericMetaModel metaModel = container.getDataSource().getMetaModel();
         this.isSystem = metaModel.isSystemTable(this);
+
+        boolean mergeEntities = container.getDataSource().isMergeEntities();
+        if (mergeEntities) {
+            tableCatalogName = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.TABLE_CATALOG);
+            tableSchemaName = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
+        } else {
+            tableCatalogName = null;
+            tableSchemaName = null;
+        }
     }
 
     @Override
-    public TableCache getCache()
-    {
+    public TableCache getCache() {
         return getContainer().getTableCache();
     }
 
@@ -96,15 +105,13 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public GenericStructContainer getParentObject()
-    {
+    public GenericStructContainer getParentObject() {
         return getContainer().getObject();
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         if (isView() && context == DBPEvaluationContext.DDL && !getDataSource().getMetaModel().useCatalogInObjectNames()) {
             // [SQL Server] workaround. You can't use catalog name in operations with views.
             return DBUtils.getFullQualifiedName(
@@ -120,8 +127,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public boolean isSystem()
-    {
+    public boolean isSystem() {
         return this.isSystem;
     }
 
@@ -130,35 +136,56 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Property(viewable = true, order = 2)
-    public String getTableType()
-    {
+    public String getTableType() {
         return tableType;
     }
 
     @Property(viewable = true, optional = true, order = 3)
-    public GenericCatalog getCatalog()
-    {
+    public GenericCatalog getCatalog() {
+        if (!CommonUtils.isEmpty(tableCatalogName)) {
+            getDataSource().getCatalog(tableCatalogName);
+        }
         return getContainer().getCatalog();
     }
 
+    //@Property(viewable = true, optional = true, order = 3)
+    public String getCatalogName() {
+        return tableCatalogName;
+    }
+
     @Property(viewable = true, optional = true, order = 4)
-    public GenericSchema getSchema()
-    {
-        return getContainer().getSchema();
+    public GenericSchema getSchema() {
+        GenericStructContainer container = getContainer();
+        if (!CommonUtils.isEmpty(tableSchemaName)) {
+            if (!(container instanceof GenericCatalog)) {
+                return getDataSource().getSchema(tableSchemaName);
+            } else {
+                try {
+                    return ((GenericCatalog)container).getSchema(new VoidProgressMonitor(), tableSchemaName);
+                } catch (Exception e) {
+                    log.error(e);
+                    return null;
+                }
+            }
+        }
+        return container.getSchema();
+    }
+
+    //@Property(viewable = true, optional = true, order = 4)
+    public String getSchemaName() {
+        return tableSchemaName;
     }
 
     @Nullable
     @Override
     public List<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public GenericTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
-        throws DBException
-    {
+        throws DBException {
         return this.getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
@@ -172,8 +199,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Override
     public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (getDataSource().getInfo().supportsIndexes()) {
             // Read indexes using cache
             return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
@@ -184,8 +210,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     @Nullable
     @Override
     public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
             // ensure all columns are already cached
             getAttributes(monitor);
@@ -200,8 +225,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Override
     public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return loadReferences(monitor);
         }
@@ -210,8 +234,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Override
     public Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
         }
@@ -220,16 +243,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Association
     @Nullable
-    public Collection<GenericTableBase> getSubTables()
-    {
+    public Collection<GenericTableBase> getSubTables() {
         return null;
     }
 
     @Nullable
     @Override
     @Property(viewable = true, editableExpr = "object.dataSource.metaModel.tableCommentEditable", updatableExpr = "object.dataSource.metaModel.tableCommentEditable", length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
@@ -238,8 +259,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.getContainer().getIndexCache().clearObjectCache(this);
         this.getContainer().getConstraintKeysCache().clearObjectCache(this);
         this.getContainer().getForeignKeysCache().clearObjectCache(this);
@@ -249,8 +269,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
     @Property(viewable = false, expensive = true, order = 5, category = DBConstants.CAT_STATISTICS)
-    public Long getRowCount(DBRProgressMonitor monitor)
-    {
+    public Long getRowCount(DBRProgressMonitor monitor) {
         if (rowCount != null) {
             return rowCount;
         }
@@ -283,8 +302,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Nullable
-    public Long getRowCountFromIndexes(DBRProgressMonitor monitor)
-    {
+    public Long getRowCountFromIndexes(DBRProgressMonitor monitor) {
         try {
             // Try to get cardinality from some unique index
             // Cardinality
@@ -312,8 +330,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     public abstract String getDDL();
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<>();
         }
@@ -331,10 +348,18 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                 DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
                 DBSForeignKeyDeferability deferability;
                 switch (info.deferabilityNum) {
-                    case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
-                    case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
-                    case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
-                    default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+                    case DatabaseMetaData.importedKeyInitiallyDeferred:
+                        deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED;
+                        break;
+                    case DatabaseMetaData.importedKeyInitiallyImmediate:
+                        deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE;
+                        break;
+                    case DatabaseMetaData.importedKeyNotDeferrable:
+                        deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE;
+                        break;
+                    default:
+                        deferability = DBSForeignKeyDeferability.UNKNOWN;
+                        break;
                 }
 
                 if (info.fkTableName == null) {
@@ -432,10 +457,9 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         JDBCDatabaseMetaData metaData = session.getMetaData();
         // Load indexes
         try (JDBCResultSet dbResult = metaData.getExportedKeys(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                getName()))
-        {
+            getCatalog() == null ? null : getCatalog().getName(),
+            getSchema() == null ? null : getSchema().getName(),
+            getName())) {
             while (dbResult.next()) {
                 ForeignKeyInfo fkInfo = new ForeignKeyInfo();
                 fkInfo.fetchColumnsInfo(fkObject, dbResult);

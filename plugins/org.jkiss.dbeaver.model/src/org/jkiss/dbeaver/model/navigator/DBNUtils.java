@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
@@ -116,15 +117,23 @@ public class DBNUtils {
 
         // Sort children is we have this feature on in preferences
         // and if children are not folders
-        if (children.length > 0 && prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            if (!(children[0] instanceof DBNContainer)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
+        if (children.length > 0) {
+            if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(children[0])) {
+                if (!(children[0] instanceof DBNContainer)) {
+                    Arrays.sort(children, NodeNameComparator.INSTANCE);
+                }
             }
         }
 
         if (children.length > 0 && prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
             Arrays.sort(children, NodeFolderComparator.INSTANCE);
         }
+    }
+
+    private static boolean isMergedEntity(DBNNode node) {
+        return node instanceof DBNDatabaseNode &&
+            ((DBNDatabaseNode) node).getObject() instanceof DBSEntity &&
+            ((DBNDatabaseNode) node).getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
     }
 
     public static boolean isDefaultElement(Object element)

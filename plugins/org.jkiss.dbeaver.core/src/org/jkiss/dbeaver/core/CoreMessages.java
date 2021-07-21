@@ -111,6 +111,8 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_wizard_final_checkbox_auto_commit;
 	public static String dialog_connection_wizard_final_checkbox_show_only_entities;
 	public static String dialog_connection_wizard_final_checkbox_show_only_entities_tip;
+	public static String dialog_connection_wizard_final_checkbox_merge_entities;
+	public static String dialog_connection_wizard_final_checkbox_merge_entities_tip;
 	public static String dialog_connection_wizard_final_checkbox_show_system_objects;
 	public static String dialog_connection_wizard_final_checkbox_show_system_objects_tip;
 	public static String dialog_connection_wizard_final_checkbox_show_util_objects;

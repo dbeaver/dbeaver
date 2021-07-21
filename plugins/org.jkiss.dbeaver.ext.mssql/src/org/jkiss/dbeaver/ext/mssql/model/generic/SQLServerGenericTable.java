@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
-import org.jkiss.dbeaver.model.DBPOverloadedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,7 +37,7 @@ import java.util.List;
 /**
 * SQL Server table
 */
-public class SQLServerGenericTable extends GenericTable implements DBPOverloadedObject, DBPObjectWithLazyDescription {
+public class SQLServerGenericTable extends GenericTable implements DBPObjectWithLazyDescription {
 
     public SQLServerGenericTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -55,11 +54,13 @@ public class SQLServerGenericTable extends GenericTable implements DBPOverloaded
         return (SQLServerGenericTableColumn)super.getAttribute(monitor, attributeName);
     }
 
+/*
     @Override
     public String getOverloadedName() {
         //return getSchema().getName() + "." + getName();
         return getName();
     }
+*/
 
     @Override
     public String getDescription() {

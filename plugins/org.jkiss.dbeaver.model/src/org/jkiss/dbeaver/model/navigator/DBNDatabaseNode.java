@@ -116,11 +116,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             {
                 objectName = object.getParentObject().getName() + "." + object.getName();
             } else {
-                objectName = object.getName();
+                if (object instanceof DBSEntity && object.getDataSource().getContainer().getNavigatorSettings().isMergeEntities()) {
+                    objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
+                } else {
+                    objectName = object.getName();
+                }
             }
         } else {
             objectName = object.getName();
         }
+
         if (showDefaults && CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -63,18 +64,23 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return this;
     }
 
+    public Collection<GenericSchema> getSchemaList(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (getDataSource().isMergeEntities()) {
+            return null;
+        }
+        return getSchemas(monitor);
+    }
+
+    @Association
     public Collection<GenericSchema> getSchemas(DBRProgressMonitor monitor)
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            if (getDataSource().getContainer().getNavigatorSettings().isMergeEntities()) {
-                this.schemas = null;
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load catalog schemas")) {
+                this.schemas = this.getDataSource().getMetaModel().loadSchemas(session, getDataSource(), this);
                 this.isInitialized = true;
-            } else {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load catalog schemas")) {
-                    this.schemas = this.getDataSource().getMetaModel().loadSchemas(session, getDataSource(), this);
-                    this.isInitialized = true;
-                }
             }
         }
         return schemas;

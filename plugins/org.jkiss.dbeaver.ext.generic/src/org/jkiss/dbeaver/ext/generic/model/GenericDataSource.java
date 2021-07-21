@@ -313,6 +313,20 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return DBUtils.findObject(getCatalogs(), name);
     }
 
+    public final Collection<GenericCatalog> getCatalogList() {
+//        if (getDataSource().isMergeEntities()) {
+//            return null;
+//        }
+        return getCatalogs();
+    }
+
+    public final Collection<GenericSchema> getSchemaList() {
+        if (getDataSource().isMergeEntities()) {
+            return null;
+        }
+        return getSchemas();
+    }
+
     @Association
     public List<GenericSchema> getSchemas() {
         return schemas;
@@ -528,29 +542,27 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             }
 
             if (CommonUtils.isEmpty(catalogs) && !catalogsFiltered) {
-                if (!getDataSource().getContainer().getNavigatorSettings().isMergeEntities()) {
-                    // Catalogs not supported - try to read root schemas
-                    monitor.subTask("Extract schemas");
-                    monitor.worked(1);
+                // Catalogs not supported - try to read root schemas
+                monitor.subTask("Extract schemas");
+                monitor.worked(1);
 
-                    try {
-                        List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
-                        if (tmpSchemas != null) {
-                            this.schemas = tmpSchemas;
+                try {
+                    List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
+                    if (tmpSchemas != null) {
+                        this.schemas = tmpSchemas;
+                    }
+                } catch (Throwable e) {
+                    if (metaModel.isSchemasOptional()) {
+                        log.warn("Can't read schema list", e);
+                    } else {
+                        if (e instanceof DBException) {
+                            throw (DBException) e;
                         }
-                    } catch (Throwable e) {
-                        if (metaModel.isSchemasOptional()) {
-                            log.warn("Can't read schema list", e);
-                        } else {
-                            if (e instanceof DBException) {
-                                throw (DBException) e;
-                            }
-                            throw new DBException("Error reading schema list", e, this);
-                        }
+                        throw new DBException("Error reading schema list", e, this);
                     }
                 }
 
-                if (CommonUtils.isEmpty(schemas)) {
+                if (isMergeEntities() || (CommonUtils.isEmpty(schemas))) {
                     this.structureContainer = new DataSourceObjectContainer();
                 }
             }
@@ -724,6 +736,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     void setSelectedEntityFromAPI(boolean selectedEntityFromAPI) {
         this.selectedEntityFromAPI = selectedEntityFromAPI;
+    }
+
+    public boolean isMergeEntities() {
+        return getContainer().getNavigatorSettings().isMergeEntities();
     }
 
     @Override
