@@ -191,6 +191,28 @@ public final class SQLUtils {
         return result.toString();
     }
 
+    @NotNull
+    public static String makeRegexFromLike(@NotNull String clause) {
+        final StringBuilder sb = new StringBuilder();
+        for (int index = 0, length = clause.length(); index < length; index++) {
+            final char ch = clause.charAt(index);
+            if (ch == '%') {
+                if (index > 0 && index < length - 1) {
+                    sb.append(".*");
+                }
+            } else {
+                if (index == 0) {
+                    sb.append('^');
+                }
+                sb.append(ch == '_' ? '.' : ch);
+                if (index == length - 1) {
+                    sb.append('$');
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     public static String makeSQLLike(String like)
     {
         return like.replace("*", "%").replace("?", "_");
