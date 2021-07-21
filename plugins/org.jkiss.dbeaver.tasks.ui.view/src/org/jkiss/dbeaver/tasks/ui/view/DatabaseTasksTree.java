@@ -46,12 +46,14 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DatabaseTasksTree {
     private static final Log log = Log.getLog(DatabaseTasksTree.class);
@@ -60,6 +62,7 @@ public class DatabaseTasksTree {
     private ViewerColumnController taskColumnController;
 
     private final List<DBTTask> allTasks = new ArrayList<>();
+    private final List<DBTTaskFolder> allTasksFolders = new ArrayList<>();
 
     private boolean groupByProject = false;
     private boolean groupByType = false;
@@ -88,6 +91,8 @@ public class DatabaseTasksTree {
                     return ((DBPProject) element).getName();
                 } else if (element instanceof DBTTask) {
                     return ((DBTTask) element).getName();
+                } else if (element instanceof DBTTaskFolder) {
+                    return ((DBTTaskFolder) element).getName();
                 } else {
                     return element.toString();
                 }
@@ -103,6 +108,8 @@ public class DatabaseTasksTree {
                     return ((TaskCategoryNode) element).category.getIcon();
                 } else if (element instanceof TaskTypeNode) {
                     return ((TaskTypeNode) element).type.getIcon();
+                } else if (element instanceof DBTTaskFolder) {
+                    return DBIcon.TREE_FOLDER;
                 }
                 return null;
             }
@@ -334,7 +341,12 @@ public class DatabaseTasksTree {
                     rootObjects.add(new TaskTypeNode(null, null, type));
                 }
             } else {
-                rootObjects.addAll(allTasks);
+                if (!CommonUtils.isEmpty(allTasksFolders)) {
+                    rootObjects.addAll(allTasksFolders);
+                    rootObjects.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == null).collect(Collectors.toList()));
+                } else {
+                    rootObjects.addAll(allTasks);
+                }
             }
             switch (options) {
                 case EXPAND_ALL:
@@ -393,6 +405,7 @@ public class DatabaseTasksTree {
 
     private void refreshTasks() {
         allTasks.clear();
+        allTasksFolders.clear();
 
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
@@ -401,7 +414,12 @@ public class DatabaseTasksTree {
                 continue;
             }
             Collections.addAll(allTasks, tasks);
+            DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
+            if (!ArrayUtils.isEmpty(tasksFolders)) {
+                Collections.addAll(allTasksFolders, tasksFolders);
+            }
         }
+        allTasksFolders.sort(Comparator.comparing(DBTTaskFolder::getName));
         allTasks.sort(Comparator.comparing(DBTTask::getName));
     }
 
@@ -488,8 +506,21 @@ public class DatabaseTasksTree {
                         children.add(new TaskTypeNode(project, null, type));
                     }
                 } else {
-                    for (DBTTask task : allTasks) {
+                    children.addAll(allTasksFolders.stream().filter(taskFolder -> taskFolder.getProject() == parentElement).collect(Collectors.toList()));
+                    children.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement).collect(Collectors.toList()));
+                    /*for (DBTTask task : allTasks) {
                         if (task.getProject() == parentElement) {
+                            children.add(task);
+                        }
+                    }*/
+                }
+            } else if (parentElement instanceof DBTTaskFolder) {
+                DBTTaskFolder taskFolder = (DBTTaskFolder) parentElement;
+                if (groupByProject) {
+                    children.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == taskFolder && taskFolder.getProject() == task.getProject()).collect(Collectors.toList()));
+                } else {
+                    for (DBTTask task : allTasks) {
+                        if (task.getTaskFolder() == taskFolder) {
                             children.add(task);
                         }
                     }
@@ -522,8 +553,6 @@ public class DatabaseTasksTree {
                         children.add(task);
                     }
                 }
-            } else {
-
             }
 
             return children.toArray();
@@ -565,6 +594,37 @@ public class DatabaseTasksTree {
                 return wordMatches(element.toString());
             }
             return true;
+        }
+    }
+
+    private static class TaskFolderNode {
+        final DBPProject project;
+        final DBTTaskFolder taskFolder;
+
+        TaskFolderNode(DBPProject project, DBTTaskFolder taskFolder) {
+            this.project = project;
+            this.taskFolder = taskFolder;
+        }
+
+        @Override
+        public String toString() {
+            return taskFolder.getName();
+        }
+
+        @Override
+        public int hashCode() {
+            return (project == null ? 0 : project.hashCode()) +
+                (taskFolder == null ? 0 : taskFolder.hashCode());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof TaskFolderNode)) {
+                return false;
+            }
+            TaskFolderNode cmp = (TaskFolderNode) obj;
+            return project == cmp.project &&
+                CommonUtils.equalObjects(taskFolder, cmp.taskFolder);
         }
     }
 

@@ -51,11 +51,15 @@ public interface DBTTaskManager {
     @NotNull
     DBTTaskType[] getExistingTaskTypes();
 
+    @Nullable
+    DBTTaskFolder[] getTasksFolders();
+
     @NotNull
     DBTTask createTask(
         @NotNull DBTTaskType task,
         @NotNull String label,
         @Nullable String description,
+        @Nullable String taskFolderName,
         @NotNull Map<String, Object> properties) throws DBException;
 
     /**

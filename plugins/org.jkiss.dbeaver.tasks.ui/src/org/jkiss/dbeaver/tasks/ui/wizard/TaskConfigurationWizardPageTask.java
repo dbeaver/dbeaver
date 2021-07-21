@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
+import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -58,11 +60,13 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private Text taskLabelText;
     private Text taskDescriptionText;
     private Tree taskCategoryTree;
+    private Combo taskFoldersCombo;
 
     private DBTTaskCategory selectedCategory;
     private DBTTaskType selectedTaskType;
     private String taskName;
     private String taskDescription;
+    private DBTTaskFolder taskFolder;
     private Map<String, Object> initialProperties = new LinkedHashMap<>();
 
     private TaskImpl task;
@@ -79,6 +83,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (this.task != null) {
             this.taskName = this.task.getName();
             this.taskDescription = this.task.getDescription();
+            this.taskFolder = this.task.getTaskFolder();
             this.selectedTaskType = this.task.getType();
             this.selectedCategory = selectedTaskType.getCategory();
         }
@@ -148,6 +153,18 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     taskDescription = taskDescriptionText.getText();
                     modifyListener.modifyText(e);
                 });
+
+                UIUtils.createControlLabel(infoPanel, "Task folders");
+                taskFoldersCombo = new Combo(infoPanel, SWT.DROP_DOWN);
+                taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                DBTTaskFolder[] tasksFolders = selectedProject.getTaskManager().getTasksFolders();
+                taskFoldersCombo.add("");
+                if (!ArrayUtils.isEmpty(tasksFolders)) {
+                    for (DBTTaskFolder taskFolder : tasksFolders) {
+                        taskFoldersCombo.add(taskFolder.getName());
+                    }
+                }
 
                 if (task != null && !CommonUtils.isEmpty(task.getId())) {
                     UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_task_id, task.getId(), SWT.BORDER | SWT.READ_ONLY);
@@ -336,8 +353,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (realWizard == null) {
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(selectedTaskType);
 
+            String taskFolderName = taskFoldersCombo.getText();
+
             if (task == null) {
-                task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
+                task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, taskFolderName, new LinkedHashMap<>());
             }
             realWizard = configurator.createTaskConfigWizard(task);
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
