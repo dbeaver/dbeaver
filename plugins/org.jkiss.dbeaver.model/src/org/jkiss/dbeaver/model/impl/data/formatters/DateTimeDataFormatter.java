@@ -25,17 +25,23 @@ import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
 public class DateTimeDataFormatter implements DBDDataFormatter {
 
     public static final String PROP_PATTERN = "pattern";
+    public static final String PROP_TIMEZONE = "timezone";
 
     private String pattern;
+    private ZoneId zone;
     private DateFormat dateFormat;
     private StringBuffer buffer;
     private FieldPosition position;
@@ -45,6 +51,8 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {
         pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
+        final String timezone = CommonUtils.toString(properties.get(PROP_TIMEZONE));
+        zone = CommonUtils.isEmptyTrimmed(timezone) ? null : ZoneId.of(timezone);
         dateFormat = new ExtendedDateFormat(
             pattern,
             locale);
@@ -66,7 +74,21 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     @Override
     public String formatValue(Object value)
     {
+        if (value instanceof Date && zone != null) {
+            return dateTimeFormatter.format(ZonedDateTime.ofInstant(((Date) value).toInstant(), zone));
+        }
         if (value instanceof TemporalAccessor) {
+            if (zone != null) {
+                if (value instanceof LocalDateTime) {
+                    return dateTimeFormatter.format(((LocalDateTime) value).atZone(zone));
+                }
+                if (value instanceof ZonedDateTime) {
+                    return dateTimeFormatter.format(((ZonedDateTime) value).withZoneSameInstant(zone));
+                }
+                if (value instanceof OffsetDateTime) {
+                    return dateTimeFormatter.format(((OffsetDateTime) value).atZoneSameInstant(zone));
+                }
+            }
             return dateTimeFormatter.format((TemporalAccessor) value);
         }
         synchronized (dateFormat) {
