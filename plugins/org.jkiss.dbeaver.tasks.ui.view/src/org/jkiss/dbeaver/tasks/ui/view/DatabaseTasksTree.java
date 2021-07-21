@@ -508,11 +508,6 @@ public class DatabaseTasksTree {
                 } else {
                     children.addAll(allTasksFolders.stream().filter(taskFolder -> taskFolder.getProject() == parentElement).collect(Collectors.toList()));
                     children.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement).collect(Collectors.toList()));
-                    /*for (DBTTask task : allTasks) {
-                        if (task.getProject() == parentElement) {
-                            children.add(task);
-                        }
-                    }*/
                 }
             } else if (parentElement instanceof DBTTaskFolder) {
                 DBTTaskFolder taskFolder = (DBTTaskFolder) parentElement;
@@ -594,37 +589,6 @@ public class DatabaseTasksTree {
                 return wordMatches(element.toString());
             }
             return true;
-        }
-    }
-
-    private static class TaskFolderNode {
-        final DBPProject project;
-        final DBTTaskFolder taskFolder;
-
-        TaskFolderNode(DBPProject project, DBTTaskFolder taskFolder) {
-            this.project = project;
-            this.taskFolder = taskFolder;
-        }
-
-        @Override
-        public String toString() {
-            return taskFolder.getName();
-        }
-
-        @Override
-        public int hashCode() {
-            return (project == null ? 0 : project.hashCode()) +
-                (taskFolder == null ? 0 : taskFolder.hashCode());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof TaskFolderNode)) {
-                return false;
-            }
-            TaskFolderNode cmp = (TaskFolderNode) obj;
-            return project == cmp.project &&
-                CommonUtils.equalObjects(taskFolder, cmp.taskFolder);
         }
     }
 

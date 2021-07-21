@@ -83,7 +83,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return null;//UIUtils.getDialogSettings(DIALOG_ID);
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
@@ -119,7 +119,6 @@ public class EditTaskConfigurationDialog extends BaseDialog
             taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
-            taskFoldersCombo.add("");
             if (!ArrayUtils.isEmpty(tasksFolders)) {
                 for (DBTTaskFolder taskFolder : tasksFolders) {
                     taskFoldersCombo.add(taskFolder.getName());

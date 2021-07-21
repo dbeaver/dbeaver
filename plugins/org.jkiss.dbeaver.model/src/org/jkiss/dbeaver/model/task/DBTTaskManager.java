@@ -55,6 +55,9 @@ public interface DBTTaskManager {
     DBTTaskFolder[] getTasksFolders();
 
     @NotNull
+    DBTTaskFolder createTaskFolder(@NotNull DBPProject project, @NotNull String folderName, @Nullable DBTTask[] folderTasks) throws DBException;
+
+    @NotNull
     DBTTask createTask(
         @NotNull DBTTaskType task,
         @NotNull String label,

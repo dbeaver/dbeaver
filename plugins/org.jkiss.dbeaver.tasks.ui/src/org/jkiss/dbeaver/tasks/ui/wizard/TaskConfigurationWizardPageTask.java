@@ -66,7 +66,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private DBTTaskType selectedTaskType;
     private String taskName;
     private String taskDescription;
-    private DBTTaskFolder taskFolder;
     private Map<String, Object> initialProperties = new LinkedHashMap<>();
 
     private TaskImpl task;
@@ -83,7 +82,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (this.task != null) {
             this.taskName = this.task.getName();
             this.taskDescription = this.task.getDescription();
-            this.taskFolder = this.task.getTaskFolder();
             this.selectedTaskType = this.task.getType();
             this.selectedCategory = selectedTaskType.getCategory();
         }
@@ -159,7 +157,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 DBTTaskFolder[] tasksFolders = selectedProject.getTaskManager().getTasksFolders();
-                taskFoldersCombo.add("");
                 if (!ArrayUtils.isEmpty(tasksFolders)) {
                     for (DBTTaskFolder taskFolder : tasksFolders) {
                         taskFoldersCombo.add(taskFolder.getName());
