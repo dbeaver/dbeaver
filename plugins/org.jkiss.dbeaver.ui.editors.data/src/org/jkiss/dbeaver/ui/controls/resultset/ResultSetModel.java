@@ -684,10 +684,6 @@ public class ResultSetModel {
         hasData = true;
     }
 
-    boolean hasColorMapping(DBDAttributeBinding binding) {
-        return colorMapping.containsKey(binding);
-    }
-
     public void updateColorMapping(boolean reset) {
         colorMapping.clear();
 

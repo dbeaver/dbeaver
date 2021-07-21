@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui.controls.resultset.colors;
 
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -25,20 +27,21 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class ResetRowColorAction extends ColorAction {
-    private ResultSetViewer resultSetViewer;
-    private final DBDAttributeBinding attribute;
+    private final DBVColorOverride mapping;
 
-    public ResetRowColorAction(ResultSetViewer resultSetViewer, DBDAttributeBinding attr, Object value) {
-        super(resultSetViewer, NLS.bind(ResultSetMessages.actions_name_color_reset_by,
-            attr.getName() + " = " + UITextUtils.getShortText(resultSetViewer.getSizingGC(), CommonUtils.toString(value), 100)));
-        this.resultSetViewer = resultSetViewer;
-        this.attribute = attr;
+    public ResetRowColorAction(@NotNull ResultSetViewer rsv, @NotNull DBVColorOverride mapping, @Nullable Object value) {
+        super(rsv, NLS.bind(ResultSetMessages.actions_name_color_reset_by, new Object[]{
+            mapping.getAttributeName(),
+            mapping.getOperator().getExpression(),
+            UITextUtils.getShortText(rsv.getSizingGC(), CommonUtils.toString(value), 100)
+        }));
+        this.mapping = mapping;
     }
 
     @Override
     public void run() {
         final DBVEntity vEntity = getColorsVirtualEntity();
-        vEntity.removeColorOverride(attribute);
+        vEntity.removeColorOverride(mapping);
         updateColors(vEntity);
     }
 }

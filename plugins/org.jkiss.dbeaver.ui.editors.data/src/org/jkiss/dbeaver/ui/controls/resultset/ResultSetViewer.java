@@ -110,6 +110,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * ResultSetViewer
@@ -2682,8 +2683,8 @@ public class ResultSetViewer extends Viewer
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
                 viewMenu.add(new SetRowColorAction(this, attr, valueController.getValue()));
-                if (getModel().hasColorMapping(attr)) {
-                    viewMenu.add(new ResetRowColorAction(this, attr, valueController.getValue()));
+                for (DBVColorOverride mapping : getColorOverrides(attr, valueController.getValue())) {
+                    viewMenu.add(new ResetRowColorAction(this, mapping, valueController.getValue()));
                 }
             }
             viewMenu.add(new CustomizeColorsAction(this, attr, row));
@@ -2871,6 +2872,23 @@ public class ResultSetViewer extends Viewer
         }
 
         return refTablesMenu;
+    }
+
+    @NotNull
+    private List<DBVColorOverride> getColorOverrides(@NotNull DBDAttributeBinding binding, @Nullable Object value) {
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return Collections.emptyList();
+        }
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return Collections.emptyList();
+        }
+        return virtualEntity.getColorOverrides().stream()
+            .filter(override -> binding.getName().equals(override.getAttributeName()))
+            .filter(override -> override.getOperator() == DBCLogicalOperator.EQUALS)
+            .filter(override -> override.getOperator().evaluate(value, override.getAttributeValues()))
+            .collect(Collectors.toList());
     }
 
     @Override
