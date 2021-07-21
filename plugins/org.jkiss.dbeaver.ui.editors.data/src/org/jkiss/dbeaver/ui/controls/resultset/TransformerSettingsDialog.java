@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.Gson;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -44,12 +48,16 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
 
 class TransformerSettingsDialog extends BaseDialog {
-
     private static final Log log = Log.getLog(TransformerSettingsDialog.class);
+
+    private static final String PROP_FOR_TRANSFORMER = "propertiesForTransformerWithId=";
+    private static final Type PROPERTIES_TYPE = new TypeToken<Map<String, Object>>(){}.getType();
+    private static final Gson GSON = new Gson();
 
     private final ResultSetViewer viewer;
     private final DBVEntity vEntitySrc;
@@ -250,6 +258,7 @@ class TransformerSettingsDialog extends BaseDialog {
                     settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
                 }
             }
+            getDialogSettings().put(PROP_FOR_TRANSFORMER + transformer.getId(), GSON.toJson(properties, PROPERTIES_TYPE));
         }
     }
 
@@ -313,6 +322,12 @@ class TransformerSettingsDialog extends BaseDialog {
     private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {
         DBVTransformSettings settings = currentAttribute == null ? null : DBVUtils.getTransformSettings(currentAttribute, false);
         Map<String, Object> transformOptions = settings == null ? null : settings.getTransformOptions();
+        if (transformOptions == null && transformer != null) {
+            String propertiesJson = getDialogSettings().get(PROP_FOR_TRANSFORMER + transformer.getId());
+            if (propertiesJson != null) {
+                transformOptions = GSON.fromJson(propertiesJson, PROPERTIES_TYPE);
+            }
+        }
         if (transformOptions == null) {
             transformOptions = Collections.emptyMap();
         }
@@ -356,5 +371,10 @@ class TransformerSettingsDialog extends BaseDialog {
             this.vEntity.dispose();
         }
         return super.close();
+    }
+
+    @NotNull
+    private static IDialogSettings getDialogSettings() {
+        return UIUtils.getDialogSettings(TransformerSettingsDialog.class.getSimpleName());
     }
 }
