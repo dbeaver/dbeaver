@@ -83,7 +83,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         this.isSystem = metaModel.isSystemTable(this);
 
         boolean mergeEntities = container.getDataSource().isMergeEntities();
-        if (mergeEntities) {
+        if (mergeEntities && dbResult != null) {
             tableCatalogName = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.TABLE_CATALOG);
             tableSchemaName = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
         } else {
