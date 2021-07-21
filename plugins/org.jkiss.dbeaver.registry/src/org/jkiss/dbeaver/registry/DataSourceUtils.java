@@ -342,7 +342,7 @@ public class DataSourceUtils {
         navSettings.setShowSystemObjects(showSystemObjects);
         navSettings.setShowUtilityObjects(showUtilityObjects);
         navSettings.setShowOnlyEntities(showOnlyEntities);
-        navSettings.setMergeSchemas(hideSchemas);
+        navSettings.setHideSchemas(hideSchemas);
         navSettings.setHideFolders(hideFolders);
         navSettings.setMergeEntities(mergeEntities);
 

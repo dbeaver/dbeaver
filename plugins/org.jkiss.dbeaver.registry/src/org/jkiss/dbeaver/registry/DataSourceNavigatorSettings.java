@@ -81,7 +81,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean showOnlyEntities;
     private boolean mergeEntities;
     private boolean hideFolders;
-    private boolean mergeSchemas;
+    private boolean hideSchemas;
     private boolean hideVirtualModel;
 
     public DataSourceNavigatorSettings() {
@@ -93,7 +93,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.showOnlyEntities = copyFrom.isShowOnlyEntities();
         this.mergeEntities = copyFrom.isMergeEntities();
         this.hideFolders = copyFrom.isHideFolders();
-        this.mergeSchemas = copyFrom.isMergeSchemas();
+        this.hideSchemas = copyFrom.isHideSchemas();
         this.hideVirtualModel = copyFrom.isHideVirtualModel();
     }
 
@@ -143,12 +143,12 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     }
 
     @Override
-    public boolean isMergeSchemas() {
-        return mergeSchemas;
+    public boolean isHideSchemas() {
+        return hideSchemas;
     }
 
-    public void setMergeSchemas(boolean mergeSchemas) {
-        this.mergeSchemas = mergeSchemas;
+    public void setHideSchemas(boolean hideSchemas) {
+        this.hideSchemas = hideSchemas;
     }
 
     @Override
@@ -171,7 +171,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
             this.showOnlyEntities == source.showOnlyEntities &&
             this.mergeEntities == source.mergeEntities &&
             this.hideFolders == source.hideFolders &&
-            this.mergeSchemas == source.mergeSchemas &&
+            this.hideSchemas == source.hideSchemas &&
             this.hideVirtualModel == source.hideVirtualModel;
     }
 
@@ -181,7 +181,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_SHOW_ONLY_ENTITIES = "navigator.settings.default.showOnlyEntities";
     private static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
     private static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
-    private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.mergeSchemas";
+    private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
@@ -202,7 +202,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         settings.setShowOnlyEntities(preferences.getBoolean(DEFAULT_SHOW_ONLY_ENTITIES));
         settings.setMergeEntities(preferences.getBoolean(DEFAULT_MERGE_ENTITIES));
         settings.setHideFolders(preferences.getBoolean(DEFAULT_HIDE_FOLDERS));
-        settings.setMergeSchemas(preferences.getBoolean(DEFAULT_MERGE_SCHEMAS));
+        settings.setHideSchemas(preferences.getBoolean(DEFAULT_MERGE_SCHEMAS));
         settings.setHideVirtualModel(preferences.getBoolean(DEFAULT_HIDE_VIRTUAL_MODEL));
         return settings;
     }
@@ -231,7 +231,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         preferences.setValue(DEFAULT_SHOW_ONLY_ENTITIES, settings.isShowOnlyEntities());
         preferences.setValue(DEFAULT_MERGE_ENTITIES, settings.isMergeEntities());
         preferences.setValue(DEFAULT_HIDE_FOLDERS, settings.isHideFolders());
-        preferences.setValue(DEFAULT_MERGE_SCHEMAS, settings.isMergeSchemas());
+        preferences.setValue(DEFAULT_MERGE_SCHEMAS, settings.isHideSchemas());
         preferences.setValue(DEFAULT_HIDE_VIRTUAL_MODEL, settings.isHideVirtualModel());
     }
 

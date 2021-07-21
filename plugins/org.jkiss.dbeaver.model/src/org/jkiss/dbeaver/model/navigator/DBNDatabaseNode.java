@@ -449,7 +449,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
-                /*if (mergeSchemas && isSchemaItem(item)) {
+                /*if (hideSchemas && isSchemaItem(item)) {
                     // Merge
                 } else */{
                     boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, hideFolders, reflect);

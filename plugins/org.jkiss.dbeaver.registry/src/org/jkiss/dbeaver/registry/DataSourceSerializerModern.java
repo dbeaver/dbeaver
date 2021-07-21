@@ -506,7 +506,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
                 navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
                 navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
-                navSettings.setMergeSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
+                navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
                 navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
                 navSettings.setMergeEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
 
@@ -767,7 +767,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (navSettings.isShowUtilityObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, true);
         if (navSettings.isShowOnlyEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, true);
         if (navSettings.isHideFolders()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_FOLDERS, true);
-        if (navSettings.isMergeSchemas()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, true);
+        if (navSettings.isHideSchemas()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, true);
         if (navSettings.isHideVirtualModel()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_VIRTUAL, true);
         if (navSettings.isMergeEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_MERGE_ENTITIES, true);
 
