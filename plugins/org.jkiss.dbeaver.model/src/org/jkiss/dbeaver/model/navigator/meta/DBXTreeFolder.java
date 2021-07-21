@@ -41,6 +41,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     private String type;
     private String label;
     private String description;
+    private String optionalItem;
 
     private List<String> contributedCategories = null;
     private ItemType[] itemTypes = null;
@@ -74,6 +75,7 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.type = type;
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.optionalItem = config.getAttribute("optionalItem");
 
         IConfigurationElement[] itemTypesConfig = config.getChildren("itemType");
         if (!ArrayUtils.isEmpty(itemTypesConfig)) {
@@ -114,6 +116,10 @@ public class DBXTreeFolder extends DBXTreeNode {
     public String getIdOrType() {
         String id = getId();
         return !CommonUtils.isEmpty(id) ? id : type;
+    }
+
+    public String getOptionalItem() {
+        return optionalItem;
     }
 
     @Override
@@ -166,6 +172,15 @@ public class DBXTreeFolder extends DBXTreeNode {
             return childrenWithContributions;
         }
         return children;
+    }
+
+    public DBXTreeItem getChildByPath(String path) {
+        for (DBXTreeNode node : getChildren()) {
+            if (node instanceof DBXTreeItem && path.equals(((DBXTreeItem) node).getPath())) {
+                return (DBXTreeItem) node;
+            }
+        }
+        return null;
     }
 
     @Override

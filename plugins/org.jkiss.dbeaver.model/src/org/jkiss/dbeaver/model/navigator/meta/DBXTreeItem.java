@@ -38,11 +38,11 @@ public class DBXTreeItem extends DBXTreeNode
 {
     private String label;
     private String itemLabel;
-    private String path;
-    private String propertyName;
-    private boolean optional;
+    private final String path;
+    private final String propertyName;
+    private final boolean optional;
 
-    private Map<Class<?>, Method> propertyGettersCache = new IdentityHashMap<>();
+    private final Map<Class<?>, Method> propertyGettersCache = new IdentityHashMap<>();
 
     private static final Method NULL_GETTER;
 

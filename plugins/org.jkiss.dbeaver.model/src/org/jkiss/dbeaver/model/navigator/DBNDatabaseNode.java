@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -436,7 +437,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         final boolean showSystem = navSettings.isShowSystemObjects();
         final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
         final boolean hideFolders = navSettings.isHideFolders();
-        final boolean mergeSchemas = navSettings.isMergeSchemas();
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
@@ -467,6 +467,21 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     // Fall down
                     loadChildren(monitor, child, oldList, toList, source, reflect);
                 } else {
+                    String optionalPath = ((DBXTreeFolder) child).getOptionalItem();
+                    if (optionalPath != null) {
+                        DBXTreeItem optionalItem = ((DBXTreeFolder) child).getChildByPath(optionalPath);
+                        if (optionalItem == null) {
+                            log.error("Optional item '" + optionalPath + "' not found in folder " + child.getId());
+                        } else {
+                            Object optionalValue = extractPropertyValue(monitor, getValueObject(), optionalItem);
+                            if (optionalValue == null || (optionalValue instanceof Collection && ((Collection<?>) optionalValue).isEmpty())) {
+                                // Go on next DBX level
+                                loadChildren(monitor, optionalItem, oldList, toList, source, reflect);
+                                continue;
+                            }
+                        }
+                    }
+
                     if (oldList == null) {
                         // Load new folders only if there are no old ones
                         toList.add(
@@ -552,7 +567,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         boolean hideFolders,
         boolean reflect)
         throws DBException {
-        if (this.isDisposed()) {
+        if (this.isDisposed())
+        {
             // Property reading can take really long time so this node can be disposed at this moment -
             // check it
             return false;
@@ -563,7 +579,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return false;
         }
         final PropertyValueReader valueReader = new PropertyValueReader(monitor, meta, valueObject);
-        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), valueReader);
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            DBExecUtils.tryExecuteRecover(monitor, dataSource, valueReader);
+        } else {
+            try {
+                valueReader.run(monitor);
+            } catch (InvocationTargetException e) {
+                throw new DBCException("Error reading child elements", e.getTargetException());
+            } catch (InterruptedException e) {
+                return false;
+            }
+        }
         final Object propertyValue = valueReader.propertyValue;
         if (propertyValue == null) {
             return false;
