@@ -59,6 +59,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private Group loadSettings;
     private String disableReferentialIntegrityCheckboxTooltip;
     private boolean isDisablingReferentialIntegritySupported;
+    private Spinner multiRowInsertBatch;
 
     public DatabaseConsumerPageLoadSettings() {
     	super(DTUIMessages.database_consumer_wizard_name);
@@ -171,10 +172,20 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setUseMultiRowInsert(useMultiRowInsert.getSelection());
+                    if (multiRowInsertBatch != null) {
+                        if (!useMultiRowInsert.getSelection()) {
+                            multiRowInsertBatch.setEnabled(false);
+                        } else if (!multiRowInsertBatch.getEnabled()) {
+                            multiRowInsertBatch.setEnabled(true);
+                        }
+                    }
                 }
             });
 
-            final Spinner multiRowInsertBatch = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size, settings.getMultiRowInsertBatch(), 1, Integer.MAX_VALUE);
+            multiRowInsertBatch = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size, settings.getMultiRowInsertBatch(), 2, Integer.MAX_VALUE);
+            if (!useMultiRowInsert.getSelection()) {
+                multiRowInsertBatch.setEnabled(false);
+            }
             multiRowInsertBatch.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
