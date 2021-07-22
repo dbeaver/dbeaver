@@ -30,11 +30,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.task.TaskFolderImpl;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
@@ -154,18 +155,46 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 taskFoldersCombo = new Combo(infoPanel, SWT.DROP_DOWN);
                 taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-                    DBTTaskManager taskManager = project.getTaskManager();
-                    DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
-                    if (!ArrayUtils.isEmpty(tasksFolders)) {
-                        for (DBTTaskFolder taskFolder : tasksFolders) {
-                            taskFoldersCombo.add(taskFolder.getName());
-                        }
+                // Show only selected project folders list (not all projects folders) to avoid folder naming mess
+                // (Because we can create folders with equal names in different projects)
+                DBTTaskManager taskManager = selectedProject.getTaskManager();
+                DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
+                if (!ArrayUtils.isEmpty(tasksFolders)) {
+                    for (DBTTaskFolder taskFolder : tasksFolders) {
+                        taskFoldersCombo.add(taskFolder.getName());
                     }
+                }
+
+                // Set current task folder name for Edit dialog or selected folder from new created from context menu task
+                if (task != null && task.getTaskFolder() != null) {
+                    taskFoldersCombo.setText(task.getTaskFolder().getName());
+                } else if (task == null) {
                     DBTTaskFolder selectedTaskFolder = taskManager.getCurrentSelectedTaskFolder();
                     if (selectedTaskFolder != null) {
                         taskFoldersCombo.setText(selectedTaskFolder.getName());
                     }
+                }
+
+                // Check task folder changing in Edit task dialog
+                if (task != null) {
+                    List<DBTTaskFolder> taskFoldersList = Arrays.asList(tasksFolders != null ? tasksFolders : new DBTTaskFolder[0]);
+                    taskFoldersCombo.addModifyListener(e -> {
+                        String foldersComboText = taskFoldersCombo.getText();
+                        if (task.getTaskFolder() == null || !foldersComboText.equals(task.getTaskFolder().getName())) {
+                            DBTTaskFolder folder = DBUtils.findObject(taskFoldersList, foldersComboText);
+                            if (folder != null) {
+                                task.setTaskFolder(folder);
+                            } else {
+                                TaskFolderImpl taskFolder;
+                                try {
+                                    taskFolder = (TaskFolderImpl) taskManager.createTaskFolder(selectedProject, foldersComboText, new DBTTask[]{task});
+                                    task.setTaskFolder(taskFolder);
+                                } catch (DBException ex) {
+                                    log.error("Can't create new task folder", ex);
+                                }
+                            }
+                        }
+                    });
                 }
 
                 if (task != null && !CommonUtils.isEmpty(task.getId())) {

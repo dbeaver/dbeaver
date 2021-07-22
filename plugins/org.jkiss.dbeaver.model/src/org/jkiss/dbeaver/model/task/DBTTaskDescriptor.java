@@ -21,19 +21,21 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Task type descriptor.
- *
- * Task type groups similar tasks. Tasks of the same type have the same configurator and are shown in the same category in UI.
+ * Main task type descriptor.
  */
-public interface DBTTaskCategory extends DBTTaskDescriptor {
+
+public interface DBTTaskDescriptor {
+
+    @NotNull
+    String getId();
+
+    @NotNull
+    String getName();
 
     @Nullable
-    DBTTaskCategory getParent();
+    String getDescription();
 
-    @NotNull
-    DBTTaskCategory[] getChildren();
-
-    @NotNull
-    DBTTaskType[] getTaskTypes();
+    @Nullable
+    DBPImage getIcon();
 
 }
