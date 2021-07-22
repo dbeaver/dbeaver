@@ -166,7 +166,7 @@ public class SQLQuery implements SQLScriptElement {
                     if (items != null && !items.isEmpty()) {
                         selectItems = new ArrayList<>();
                         for (SelectItem item : items) {
-                            selectItems.add(new SQLSelectItem(item));
+                            selectItems.add(new SQLSelectItem(this, item));
                         }
                     }
                 }
@@ -214,11 +214,15 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     private void fillSingleSource(Table fromItem) {
+        singleTableMeta = createTableMetaData(fromItem);
+    }
+
+    SingleTableMeta createTableMetaData(Table fromItem) {
         Database database = fromItem.getDatabase();
         String catalogName = database == null ? null : database.getDatabaseName();
         String schemaName = fromItem.getSchemaName();
         String tableName = fromItem.getName();
-        singleTableMeta = new SingleTableMeta(
+        return new SingleTableMeta(
             unquoteIdentifier(catalogName),
             unquoteIdentifier(schemaName),
             unquoteIdentifier(tableName));

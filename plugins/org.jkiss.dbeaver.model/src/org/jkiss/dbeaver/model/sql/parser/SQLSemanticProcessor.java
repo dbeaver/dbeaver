@@ -300,6 +300,34 @@ public class SQLSemanticProcessor {
         return null;
     }
 
+    @Nullable
+    public static Table findTableByNameOrAlias(Select select, String tableName) {
+        SelectBody selectBody = select.getSelectBody();
+        if (selectBody instanceof PlainSelect) {
+            FromItem fromItem = ((PlainSelect) selectBody).getFromItem();
+            if (fromItem instanceof Table && equalTables((Table) fromItem, tableName)) {
+                return (Table) fromItem;
+            }
+            for (Join join : ((PlainSelect) selectBody).getJoins()) {
+                if (join.getRightItem() instanceof Table && equalTables((Table) join.getRightItem(), tableName)) {
+                    return (Table) join.getRightItem();
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean equalTables(Table t1, String name) {
+        if (t1 == null || name == null) {
+            return true;
+        }
+        if (t1.getAlias() != null) {
+            return CommonUtils.equalObjects(t1.getAlias().getName(), name);
+        } else {
+            return CommonUtils.equalObjects(t1.getName(), name);
+        }
+    }
+
     public static void addWhereToSelect(PlainSelect select, String condString) throws JSQLParserException {
         Expression filterWhere;
         try {

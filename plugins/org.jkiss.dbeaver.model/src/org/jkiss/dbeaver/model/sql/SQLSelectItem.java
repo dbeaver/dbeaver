@@ -19,23 +19,26 @@ package org.jkiss.dbeaver.model.sql;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQL query select item.
  * Presents in SELECT statements.
  */
 public class SQLSelectItem {
-    private SelectItem source;
-    private Table table;
-    private String name;
+    private final SQLQuery query;
+    private final SelectItem source;
+    private final Table table;
+    private final String name;
     private boolean plainColumn;
 
-    SQLSelectItem(SelectItem item) {
+    SQLSelectItem(SQLQuery query, SelectItem item) {
+        this.query = query;
         this.source = item;
         if (item instanceof SelectExpressionItem) {
             final Expression itemExpression = ((SelectExpressionItem) item).getExpression();
@@ -72,8 +75,26 @@ public class SQLSelectItem {
         return plainColumn;
     }
 
+    public DBCEntityMetaData getEntityMetaData() {
+        if (table == null) {
+            return null;
+        }
+        Database tableDatabase = table.getDatabase();
+        if (table.getAlias() == null && (tableDatabase == null || CommonUtils.isEmpty(tableDatabase.getDatabaseName())) && table.getSchemaName() == null) {
+            // Only name was specified. Probably an alias.
+            if (query.getStatement() instanceof Select) {
+                Table refTable = SQLSemanticProcessor.findTableByNameOrAlias((Select) query.getStatement(), table.getName());
+                if (refTable != null) {
+                    return query.createTableMetaData(refTable);
+                }
+            }
+        }
+        return query.createTableMetaData(table);
+    }
+
     @Override
     public String toString() {
         return source.toString();
     }
+
 }

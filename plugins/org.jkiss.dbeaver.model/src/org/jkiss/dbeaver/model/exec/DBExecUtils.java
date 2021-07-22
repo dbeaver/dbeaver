@@ -666,7 +666,13 @@ public class DBExecUtils {
                 // To be editable we need this resultset contain set of columns from the same table
                 // which construct any unique key
                 DBSEntity attrEntity = null;
-                final DBCEntityMetaData attrEntityMeta = attrMeta.getEntityMetaData();
+                DBCEntityMetaData attrEntityMeta = attrMeta.getEntityMetaData();
+                if (attrEntityMeta == null && sqlQuery != null) {
+                    SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                    if (selectItem != null && selectItem.isPlainColumn()) {
+                        attrEntityMeta = selectItem.getEntityMetaData();
+                    }
+                }
                 if (attrEntityMeta != null) {
                     attrEntity = entityBindingMap.get(attrEntityMeta);
                     if (attrEntity == null) {
