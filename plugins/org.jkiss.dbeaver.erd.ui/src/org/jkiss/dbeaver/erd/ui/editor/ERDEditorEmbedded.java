@@ -46,11 +46,11 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
+import org.jkiss.dbeaver.erd.ui.action.DiagramExportAction;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
-
 import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -95,6 +95,9 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     @Override
     protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
         super.fillDefaultEditorContributions(toolBarManager);
+
+        DiagramExportAction saveDiagram = new DiagramExportAction(this, parent.getShell());
+        toolBarManager.add(saveDiagram);
 
         toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
 
