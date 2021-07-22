@@ -134,7 +134,10 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             if (!isChecked()) {
                 return;
             }
-            EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(UIUtils.getActiveWorkbenchShell(), dsContainer.getNavigatorSettings());
+            EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(
+                UIUtils.getActiveWorkbenchShell(),
+                dsContainer.getNavigatorSettings(),
+                dsContainer);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 updateSettings(dialog.getNavigatorSettings());
             }

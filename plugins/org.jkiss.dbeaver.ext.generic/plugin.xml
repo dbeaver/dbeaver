@@ -28,7 +28,7 @@
             label="Generic"
             icon="#database_icon_default"
             dialect="generic">
-            <tree path="generic" label="Generic data source">
+            <tree path="generic" label="Generic data source" supportsEntityMerge="true">
                 <items label="#catalog" path="catalog" property="catalogList" icon="#database" optional="true">
                     <items label="#schema" path="schema" property="schemaList" icon="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">

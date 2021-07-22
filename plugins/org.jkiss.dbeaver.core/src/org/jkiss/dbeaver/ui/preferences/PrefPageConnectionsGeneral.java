@@ -51,7 +51,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                     defaultConnectionType = connectionTypeCombo.getSelectedItem();
                 }
             });
-            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupDefaults, this);
+            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupDefaults, this, null);
         }
 
         {

@@ -64,7 +64,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final boolean temporary;
     private DBPImage icon;
     private DBPDataSourceProvider instance;
-    private DBXTreeItem treeDescriptor;
+    private DBXTreeDescriptor treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManagable;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
@@ -113,7 +113,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 this.treeDescriptor = this.loadTreeInfo(trees[0]);
             } else if (parentProvider != null) {
                 // Use parent's tree
-                this.treeDescriptor = new DBXTreeItem(this, null, parentProvider.treeDescriptor);
+                this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.treeDescriptor);
             }
 
             // Load tree injections
@@ -190,7 +190,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.description = "Missing datasource provider " + id;
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
-        this.treeDescriptor = new DBXTreeItem(this, null, null, id, id, false, true, false, false, true, null, null);
+        this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
         this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
     }
 
@@ -264,7 +264,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @Override
-    public DBXTreeNode getTreeDescriptor()
+    public DBXTreeDescriptor getTreeDescriptor()
     {
         return treeDescriptor;
     }
@@ -378,9 +378,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     {
     }
 
-    private DBXTreeItem loadTreeInfo(IConfigurationElement config)
+    private DBXTreeDescriptor loadTreeInfo(IConfigurationElement config)
     {
-        DBXTreeItem treeRoot = new DBXTreeItem(
+        DBXTreeDescriptor treeRoot = new DBXTreeDescriptor(
             this,
             null,
             config,

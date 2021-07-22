@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
@@ -328,7 +329,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }
 
             {
-                navigatorSettingsCombo = createNavigatorSettingsCombo(miscGroup, this);
+                navigatorSettingsCombo = createNavigatorSettingsCombo(miscGroup, this, dataSourceDescriptor);
             }
 
             folderSelector = new ConnectionFolderSelector(miscGroup);
@@ -448,7 +449,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
-    public static Combo createNavigatorSettingsCombo(Composite composite, NavigatorSettingsStorage settingsStorage) {
+    public static Combo createNavigatorSettingsCombo(Composite composite, NavigatorSettingsStorage settingsStorage, DBPDataSourceContainer dataSourceDescriptor) {
         UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_wizard_final_label_navigator_settings);
 
         Composite ctGroup = UIUtils.createComposite(composite, 2);
@@ -478,7 +479,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_navigator_settings_customize, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                settingsStorage.setNavigatorSettings(editNavigatorSettings(navigatorSettingsCombo, settingsStorage.getNavigatorSettings()));
+                settingsStorage.setNavigatorSettings(
+                    editNavigatorSettings(navigatorSettingsCombo, settingsStorage.getNavigatorSettings(), dataSourceDescriptor));
             }
         });
         return navigatorSettingsCombo;
@@ -499,8 +501,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         return connectionTypeCombo;
     }
 
-    private static DBNBrowseSettings editNavigatorSettings(Combo navigatorSettingsCombo, DBNBrowseSettings navigatorSettings) {
-        EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(navigatorSettingsCombo.getShell(), navigatorSettings);
+    private static DBNBrowseSettings editNavigatorSettings(
+        @NotNull Combo navigatorSettingsCombo,
+        @NotNull DBNBrowseSettings navigatorSettings,
+        @Nullable DBPDataSourceContainer dataSourceDescriptor) {
+        EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(
+            navigatorSettingsCombo.getShell(),
+            navigatorSettings,
+            dataSourceDescriptor);
         if (dialog.open() == IDialogConstants.OK_ID) {
             navigatorSettings = dialog.getNavigatorSettings();
             updateNavigatorSettingsPreset(navigatorSettingsCombo, navigatorSettings);
