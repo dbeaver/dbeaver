@@ -148,7 +148,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
                     if (CommonUtils.isEmpty(targetName)) {
-                        targetName = source.getName();
+                        targetName = getSourceLabelOrName(source);
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
