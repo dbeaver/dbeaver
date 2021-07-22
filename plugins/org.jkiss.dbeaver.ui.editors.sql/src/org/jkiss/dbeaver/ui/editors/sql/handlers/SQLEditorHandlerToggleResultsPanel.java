@@ -29,7 +29,7 @@ public class SQLEditorHandlerToggleResultsPanel extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            editor.toggleResultPanel(true);
+            editor.toggleResultPanel(true, true);
         }
         return null;
     }
