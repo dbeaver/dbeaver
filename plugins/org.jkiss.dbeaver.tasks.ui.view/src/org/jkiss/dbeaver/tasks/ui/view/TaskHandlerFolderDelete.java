@@ -24,7 +24,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;

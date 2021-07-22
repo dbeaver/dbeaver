@@ -114,7 +114,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
                 taskLabelCombo.add(tc.getName());
             }
 
-            UIUtils.createControlLabel(formPanel, "Task folders");
+            UIUtils.createControlLabel(formPanel, TaskUIMessages.edit_task_config_dialog_task_folders_label_name);
             taskFoldersCombo = new Combo(formPanel, SWT.DROP_DOWN);
             taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

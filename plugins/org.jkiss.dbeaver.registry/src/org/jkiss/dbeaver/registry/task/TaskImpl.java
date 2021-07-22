@@ -58,7 +58,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private DBTTaskType type;
     private Map<String, Object> properties;
     private TaskRunImpl lastRun;
-    private TaskFolderImpl taskFolder;
+    @Nullable private TaskFolderImpl taskFolder;
 
     private static class RunStatistics {
         private final List<TaskRunImpl> runs = new ArrayList<>();
@@ -107,12 +107,15 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         this.description = description;
     }
 
+    @Nullable
+    @Override
     public DBTTaskFolder getTaskFolder() {
         return taskFolder;
     }
 
-    public void setTaskFolder(TaskFolderImpl taskFolder) {
-        this.taskFolder = taskFolder;
+    @Override
+    public void setTaskFolder(@Nullable DBTTaskFolder taskFolder) {
+        this.taskFolder = (TaskFolderImpl) taskFolder;
     }
 
     @NotNull

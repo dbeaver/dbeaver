@@ -81,6 +81,11 @@ public class TaskUIViewMessages extends NLS {
 	public static String task_handler_delete_folder_error_title;
 	public static String task_handler_delete_folder_error_message;
 
+    public static String task_handler_folder_create_dialog_title;
+    public static String task_handler_folder_create_dialog_text_label_name;
+    public static String task_handler_folder_create_dialog_text_label_folder_project;
+	public static String task_handler_folder_create_error_title;
+	public static String task_handler_folder_create_error_message;
 
 	static {
 		// initialize resource bundle

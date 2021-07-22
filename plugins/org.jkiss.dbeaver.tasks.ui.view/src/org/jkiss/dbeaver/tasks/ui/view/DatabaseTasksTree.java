@@ -410,10 +410,9 @@ public class DatabaseTasksTree {
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
             DBTTask[] tasks = taskManager.getAllTasks();
-            if (tasks.length == 0) {
-                continue;
+            if (tasks.length != 0) {
+                Collections.addAll(allTasks, tasks);
             }
-            Collections.addAll(allTasks, tasks);
             DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
             if (!ArrayUtils.isEmpty(tasksFolders)) {
                 Collections.addAll(allTasksFolders, tasksFolders);

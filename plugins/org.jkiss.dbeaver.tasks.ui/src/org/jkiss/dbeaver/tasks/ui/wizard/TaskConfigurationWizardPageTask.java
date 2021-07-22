@@ -31,12 +31,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskCategory;
-import org.jkiss.dbeaver.model.task.DBTTaskFolder;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
@@ -152,14 +150,21 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     modifyListener.modifyText(e);
                 });
 
-                UIUtils.createControlLabel(infoPanel, "Task folders");
+                UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_create_folder_label);
                 taskFoldersCombo = new Combo(infoPanel, SWT.DROP_DOWN);
                 taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                DBTTaskFolder[] tasksFolders = selectedProject.getTaskManager().getTasksFolders();
-                if (!ArrayUtils.isEmpty(tasksFolders)) {
-                    for (DBTTaskFolder taskFolder : tasksFolders) {
-                        taskFoldersCombo.add(taskFolder.getName());
+                for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+                    DBTTaskManager taskManager = project.getTaskManager();
+                    DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
+                    if (!ArrayUtils.isEmpty(tasksFolders)) {
+                        for (DBTTaskFolder taskFolder : tasksFolders) {
+                            taskFoldersCombo.add(taskFolder.getName());
+                        }
+                    }
+                    DBTTaskFolder selectedTaskFolder = taskManager.getCurrentSelectedTaskFolder();
+                    if (selectedTaskFolder != null) {
+                        taskFoldersCombo.setText(selectedTaskFolder.getName());
                     }
                 }
 

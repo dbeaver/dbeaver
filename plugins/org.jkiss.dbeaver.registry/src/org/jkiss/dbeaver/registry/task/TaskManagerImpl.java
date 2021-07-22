@@ -67,6 +67,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
     private File statisticsFolder;
+    @Nullable private DBTTaskFolder currentSelectedTaskFolder;
 
     public TaskManagerImpl(ProjectMetadata projectMetadata) {
         this.projectMetadata = projectMetadata;
@@ -85,6 +86,17 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBPProject getProject() {
         return projectMetadata;
+    }
+
+    @Nullable
+    @Override
+    public DBTTaskFolder getCurrentSelectedTaskFolder() {
+        return currentSelectedTaskFolder;
+    }
+
+    @Override
+    public void setCurrentSelectedTaskFolder(@Nullable DBTTaskFolder taskFolder) {
+        this.currentSelectedTaskFolder = taskFolder;
     }
 
     @NotNull
@@ -230,7 +242,13 @@ public class TaskManagerImpl implements DBTTaskManager {
             throw new DBException("Task folder with name '" + taskFolder.getName() + "' is missing");
         }
 
+        // Remove empty task folder or make task folder empty and then remove it
         List<DBTTask> folderTasks = taskFolder.getTasks();
+        if (!CommonUtils.isEmpty(folderTasks)) {
+            for (DBTTask task : folderTasks) {
+                task.setTaskFolder(null);
+            }
+        }
 
         synchronized (tasksFolders) {
             tasksFolders.remove(taskFolder);
@@ -284,8 +302,10 @@ public class TaskManagerImpl implements DBTTaskManager {
                         taskConfig.setProperties(state);
                         if (taskFolder != null) {
                             taskFolder.addTaskToFolder(taskConfig);
-                            synchronized (tasksFolders) {
-                                tasksFolders.add(taskFolder);
+                            if (!tasksFolders.contains(taskFolder)) {
+                                synchronized (tasksFolders) {
+                                    tasksFolders.add(taskFolder);
+                                }
                             }
                         }
 

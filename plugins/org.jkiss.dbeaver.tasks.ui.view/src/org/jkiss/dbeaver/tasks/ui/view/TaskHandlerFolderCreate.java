@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tasks.ui.view;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -49,6 +51,11 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
             try {
                 folderProject.getTaskManager().createTaskFolder(folderProject, createFolderDialog.getName(), null);
             } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                        TaskUIViewMessages.task_handler_folder_create_error_title,
+                        NLS.bind(TaskUIViewMessages.task_handler_folder_create_error_message, createFolderDialog.getName()),
+                        e
+                );
                 log.error("Can't create new task folder", e);
             }
         }
@@ -61,7 +68,7 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
         private String name;
 
         CreateFolderDialog(Shell parentShell, DBPProject project) {
-            super(parentShell, "Create new task folder", null);
+            super(parentShell, TaskUIViewMessages.task_handler_folder_create_dialog_title, null);
             this.project = project;
         }
 
@@ -69,14 +76,14 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
-            final Text nameText = UIUtils.createLabelText(composite, "Name", ""); //$NON-NLS-2$
+            final Text nameText = UIUtils.createLabelText(composite, TaskUIViewMessages.task_handler_folder_create_dialog_text_label_name, ""); //$NON-NLS-2$
             nameText.addModifyListener(e -> {
                 name = nameText.getText().trim();
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
             });
 
             List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
-            UIUtils.createControlLabel(composite, "Folder project");
+            UIUtils.createControlLabel(composite, TaskUIViewMessages.task_handler_folder_create_dialog_text_label_folder_project);
 
             final Combo projectCombo = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
             projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
