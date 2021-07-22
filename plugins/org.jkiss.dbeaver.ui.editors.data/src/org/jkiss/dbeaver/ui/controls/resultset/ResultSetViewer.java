@@ -2202,7 +2202,14 @@ public class ResultSetViewer extends Viewer
         if (focusRow > 0 && focusRow < model.getRowCount()) {
             this.curRow = model.getRow(focusRow);
         }
-        this.selectedRecords = this.curRow == null ? new int[0] : new int[] { curRow.getVisualNumber() };
+        if (this.selectedRecords.length > 1) {
+            this.selectedRecords = Arrays.stream(this.selectedRecords).filter(value -> value < rows.size()).toArray();
+            if (this.selectedRecords.length == 0) {
+                this.selectedRecords = this.curRow == null ? new int[0] : new int[]{curRow.getVisualNumber()};
+            }
+        } else {
+            this.selectedRecords = this.curRow == null ? new int[0] : new int[]{curRow.getVisualNumber()};
+        }
 
         {
 
