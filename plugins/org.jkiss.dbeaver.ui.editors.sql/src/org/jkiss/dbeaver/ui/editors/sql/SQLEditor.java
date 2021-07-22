@@ -238,7 +238,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (resultTabs.getItemCount() == 0) {
                 if (resultsSash.getMaximizedControl() == null) {
                     // Hide results
-                    toggleResultPanel(false);
+                    toggleResultPanel(false, true);
                 }
             }
         }
@@ -1384,7 +1384,7 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
             // Show results
-            showResultsPanel();
+            showResultsPanel(true);
         }
 
         if (view == outputViewer.getControl()) {
@@ -1644,7 +1644,7 @@ public class SQLEditor extends SQLEditorBase implements
         return presentationStack.getChildren()[EXTRA_CONTROL_INDEX];
     }
 
-    public void toggleResultPanel(boolean switchFocus) {
+    public void toggleResultPanel(boolean switchFocus, boolean createQueryProcessor) {
         UIUtils.syncExec(() -> {
             if (resultsSash.getMaximizedControl() == null) {
                 resultsSash.setMaximizedControl(sqlEditorPanel);
@@ -1652,7 +1652,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 // Show both editor and results
                 // Check for existing query processors (maybe all result tabs were closed)
-                if (resultTabs.getItemCount() == 0) {
+                if (resultTabs.getItemCount() == 0 && createQueryProcessor) {
                     createQueryProcessor(true, true);
                 }
 
@@ -2003,7 +2003,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery) {
-        showResultsPanel();
+        showResultsPanel(false);
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
 
         DBCPlanStyle planStyle = planner.getPlanStyle();
@@ -2021,9 +2021,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void showResultsPanel() {
+    private void showResultsPanel(boolean createQueryProcessor) {
         if (resultsSash.getMaximizedControl() != null) {
-            toggleResultPanel(false);
+            toggleResultPanel(false, createQueryProcessor);
         }
         UIUtils.syncExec(() -> {
             if (resultsSash.isDownHidden()) {
@@ -3984,7 +3984,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void runPostExecuteActions(@Nullable SQLQueryResult result) {
-        showResultsPanel();
+        showResultsPanel(true);
 
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
