@@ -224,6 +224,20 @@ public class TaskManagerImpl implements DBTTaskManager {
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_REMOVE));
     }
 
+    @Override
+    public void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException {
+        if (!tasksFolders.contains(taskFolder)) {
+            throw new DBException("Task folder with name '" + taskFolder.getName() + "' is missing");
+        }
+
+        List<DBTTask> folderTasks = taskFolder.getTasks();
+
+        synchronized (tasksFolders) {
+            tasksFolders.remove(taskFolder);
+        }
+        saveConfiguration();
+    }
+
     @NotNull
     @Override
     public File getStatisticsFolder() {
@@ -297,6 +311,9 @@ public class TaskManagerImpl implements DBTTaskManager {
             taskFolder = DBUtils.findObject(tasksFolders, taskFolderName);
             if (taskFolder == null) {
                 taskFolder = new TaskFolderImpl(taskFolderName, projectMetadata, new ArrayList<>());
+                synchronized (tasksFolders) {
+                    tasksFolders.add(taskFolder);
+                }
             }
         }
         return taskFolder;
