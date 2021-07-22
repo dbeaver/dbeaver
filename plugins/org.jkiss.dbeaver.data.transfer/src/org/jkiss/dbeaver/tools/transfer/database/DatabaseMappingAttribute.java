@@ -227,7 +227,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    private String getSourceLabelOrName(DBSAttributeBase source) {
+    String getSourceLabelOrName(DBSAttributeBase source) {
         String name = null;
         if (source instanceof DBDAttributeBinding) {
             name = ((DBDAttributeBinding) source).getLabel();

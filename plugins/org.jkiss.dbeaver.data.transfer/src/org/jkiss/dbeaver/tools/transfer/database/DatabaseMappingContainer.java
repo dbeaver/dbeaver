@@ -23,7 +23,11 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -181,8 +185,10 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    DatabaseMappingAttribute getAttributeMapping(@NotNull DBPNamedObject sourceAttr) {
-        return CommonUtils.findBestCaseAwareMatch(attributeMappings, sourceAttr.getName(), attr -> attr.getSource().getName());
+    DatabaseMappingAttribute getAttributeMapping(@NotNull DBDAttributeBinding sourceAttr) {
+        return CommonUtils.findBestCaseAwareMatch(
+            attributeMappings,
+            CommonUtils.notNull(sourceAttr.getLabel(), sourceAttr.getName()), attr -> attr.getSourceLabelOrName(attr.getSource()));
     }
 
     public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRRunnableContext runnableContext) {
@@ -238,7 +244,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 DBSAttributeBase sourceAttr = attrMapping.getSource();
                 if (sourceAttr != null) {
                     Map<String, Object> attrSettings = new LinkedHashMap<>();
-                    attrsSection.put(sourceAttr.getName(), attrSettings);
+                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
             }
@@ -278,7 +284,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                     DBSAttributeBase sourceAttr = attrMapping.getSource();
                     if (sourceAttr != null) {
-                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(sourceAttr.getName());
+                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(attrMapping.getSourceLabelOrName(sourceAttr));
                         if (attrSettings != null) {
                             attrMapping.loadSettings(attrSettings);
                         }
