@@ -67,6 +67,10 @@ public class SQLConstants {
 
     public static final String KEYWORD_EXPLAIN = "EXPLAIN";
 
+    public static final String TYPE_INT = "INT";
+    public static final String TYPE_INTEGER = "INTEGER";
+    public static final String TYPE_BIGINT = "BIGINT";
+
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_UPDATE,
@@ -615,10 +619,10 @@ public class SQLConstants {
         "VARCHAR",
         "BINARY",
         "VARBINARY",
-        "INT",
-        "INTEGER",
+        TYPE_INT,
+        TYPE_INTEGER,
         "SMALLINT",
-        "BIGINT",
+        TYPE_BIGINT,
         "NUMBER",
         "NUMERIC",
         "DECIMAL",

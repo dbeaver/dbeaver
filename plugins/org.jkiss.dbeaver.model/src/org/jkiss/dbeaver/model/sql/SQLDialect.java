@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -413,4 +410,6 @@ public interface SQLDialect {
 
     boolean supportsAlterTableStatement();
 
+    @Nullable
+    String getWideEnoughIntegerType(long val, @Nullable DBPDataTypeProvider typeProvider);
 }

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -260,7 +261,7 @@ public final class DBStructUtils {
         monitor.done();
     }
 
-    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
+    public static String mapTargetDataType(@Nullable DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
         boolean isBindingWithEntityAttr = false;
         if (typedObject instanceof DBDAttributeBinding) {
             DBDAttributeBinding attributeBinding = (DBDAttributeBinding) typedObject;
@@ -277,10 +278,19 @@ public final class DBStructUtils {
             }
         }
 
-        String typeName = typedObject.getTypeName();
-        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
-        DBPDataKind dataKind = typedObject.getDataKind();
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
+        String typeName = typedObject.getTypeName();
+        DBPDataKind dataKind = typedObject.getDataKind();
+        if (dataKind == DBPDataKind.NUMERIC && (SQLConstants.TYPE_INTEGER.equals(typeName) || SQLConstants.TYPE_INT.equals(typeName)) &&
+                typedObject instanceof AbstractAttribute && objectContainer != null) {
+            AbstractAttribute attribute = (AbstractAttribute) typedObject;
+            String intType = objectContainer.getDataSource().getSQLDialect().getWideEnoughIntegerType(attribute.getMaxLength(), dataTypeProvider);
+            if (intType != null) {
+                return intType;
+            }
+        }
+
+        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
         if (dataTypeProvider != null) {
             DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType == null && typeName.contains("(")) {
