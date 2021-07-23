@@ -193,6 +193,8 @@ public class TaskManagerImpl implements DBTTaskManager {
         synchronized (tasksFolders) {
             tasksFolders.add(taskFolder);
         }
+
+        TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_ADD));
         return taskFolder;
     }
 
@@ -220,6 +222,10 @@ public class TaskManagerImpl implements DBTTaskManager {
             new DBTTaskEvent(
                 task,
                 newTask ? DBTTaskEvent.Action.TASK_ADD : DBTTaskEvent.Action.TASK_UPDATE));
+
+        if (task.getTaskFolder() != null) {
+            TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(task.getTaskFolder(), DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
+        }
     }
 
     @Override
@@ -257,6 +263,8 @@ public class TaskManagerImpl implements DBTTaskManager {
             tasksFolders.remove(taskFolder);
         }
         saveConfiguration();
+
+        TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
     }
 
     @NotNull

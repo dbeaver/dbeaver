@@ -301,6 +301,24 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         });
     }
 
+    @Override
+    public void handleTaskFolderEvent(DBTTaskFolderEvent event) {
+        UIUtils.asyncExec(() -> {
+            DBTTaskFolder taskFolder = event.getTaskFolder();
+            switch (event.getAction()) {
+                case TASK_FOLDER_ADD:
+                    refresh();
+                    tasksTree.getViewer().setSelection(new StructuredSelection(taskFolder), true);
+                    break;
+                case TASK_FOLDER_UPDATE:
+                    tasksTree.getViewer().refresh(taskFolder);
+                case TASK_FOLDER_REMOVE:
+                    refresh();
+                    break;
+            }
+        });
+    }
+
     private void loadViewConfig() {
         tasksTree.loadViewConfig();
 
