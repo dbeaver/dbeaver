@@ -32,13 +32,9 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
-import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.ProjectMetadata;
-import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -46,7 +42,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * TaskManagerImpl
@@ -290,6 +285,7 @@ public class TaskManagerImpl implements DBTTaskManager {
             try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
+                // First read and create folders
                 for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "tasksFolders")) {
                     String taskName = folderMap.getKey();
                     if (CommonUtils.isNotEmpty(taskName)) {

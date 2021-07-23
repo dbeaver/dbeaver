@@ -63,6 +63,7 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
                 );
                 log.error("Can't create new task folder", e);
             }
+            // Write new task folder name in json file
             if (taskFolder != null && taskManager instanceof TaskManagerImpl) {
                 ((TaskManagerImpl) taskManager).saveConfiguration();
             }

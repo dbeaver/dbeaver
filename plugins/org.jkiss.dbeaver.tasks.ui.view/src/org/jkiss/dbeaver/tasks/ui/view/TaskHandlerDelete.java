@@ -48,6 +48,7 @@ public class TaskHandlerDelete extends AbstractHandler {
                 if (element instanceof DBTTask) {
                     objectsToDelete.add((DBTTask) element);
                 } else if (element instanceof DatabaseTasksTree.TaskFolderWrapper) {
+                    // Delete original task from wrapper, not wrapper
                     objectsToDelete.add(((DatabaseTasksTree.TaskFolderWrapper) element).getTaskFolder());
                 } else if (element instanceof DBTTaskFolder) {
                     objectsToDelete.add((DBTTaskFolder) element);
@@ -57,8 +58,19 @@ public class TaskHandlerDelete extends AbstractHandler {
 
         if (!objectsToDelete.isEmpty()) {
             if (objectsToDelete.size() == 1) {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_task, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_task, objectsToDelete.get(0).getName()))) {
-                    return null;
+                DBPNamedObject namedObject = objectsToDelete.get(0);
+                if (namedObject instanceof DatabaseTasksTree.TaskFolderWrapper) {
+                    if (confirmDeleteObjectAction(event, TaskUIViewMessages.task_handler_delete_folder_error_title, TaskUIViewMessages.task_handler_delete_confirm_question_delete_task_folder_wrapper, namedObject)) {
+                        return null;
+                    }
+                } else if (namedObject instanceof DBTTaskFolder) {
+                    if (confirmDeleteObjectAction(event, TaskUIViewMessages.task_handler_delete_folder_error_title, TaskUIViewMessages.task_handler_delete_confirm_question_delete_task_folder, namedObject)) {
+                        return null;
+                    }
+                } else {
+                    if (confirmDeleteObjectAction(event, TaskUIViewMessages.task_handler_delete_confirm_title_delete_task, TaskUIViewMessages.task_handler_delete_confirm_question_delete_task, namedObject)) {
+                        return null;
+                    }
                 }
             } else {
                 if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_tasks, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_tasks, objectsToDelete.size()))) {
@@ -93,6 +105,10 @@ public class TaskHandlerDelete extends AbstractHandler {
         }
 
         return null;
+    }
+
+    private boolean confirmDeleteObjectAction(ExecutionEvent event, String title, String message, DBPNamedObject namedObject) {
+        return !UIUtils.confirmAction(HandlerUtil.getActiveShell(event), title, NLS.bind(message, namedObject.getName()));
     }
 
 }

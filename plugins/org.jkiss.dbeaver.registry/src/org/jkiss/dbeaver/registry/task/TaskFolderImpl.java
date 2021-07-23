@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
@@ -29,7 +30,7 @@ public class TaskFolderImpl implements DBTTaskFolder {
     private DBPProject folderProject;
     private List<DBTTask> folderTasks;
 
-    public TaskFolderImpl(String folderName, DBPProject folderProject, List<DBTTask> folderTasks) {
+    public TaskFolderImpl(@NotNull String folderName, @NotNull DBPProject folderProject, @Nullable List<DBTTask> folderTasks) {
         this.folderName = folderName;
         this.folderProject = folderProject;
         this.folderTasks = folderTasks;
@@ -41,13 +42,14 @@ public class TaskFolderImpl implements DBTTaskFolder {
         return folderProject;
     }
 
+    @Nullable
     @Override
     public List<DBTTask> getTasks() {
         return folderTasks;
     }
 
     @Override
-    public void addTaskToFolder(DBTTask task) {
+    public void addTaskToFolder(@NotNull DBTTask task) {
         folderTasks.add(task);
     }
 

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
@@ -27,9 +28,10 @@ public interface DBTTaskFolder extends DBPNamedObject2 {
     @NotNull
     DBPProject getProject();
 
+    @Nullable
     List<DBTTask> getTasks();
 
-    void addTaskToFolder(DBTTask task);
+    void addTaskToFolder(@NotNull DBTTask task);
 
     void removeTaskFromFolder(DBTTask task);
 }
