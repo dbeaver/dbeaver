@@ -700,6 +700,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (curNetworkHandler.isSavePassword()) {
                     curNetworkHandler.setPassword(creds.getUserPassword());
                 }
+                if (creds.getProperties() != null) {
+                    curNetworkHandler.setSecureProperties(creds.getProperties());
+                }
             }
             {
                 // Still try to read credentials directly from configuration (#6564)
@@ -947,11 +950,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
         JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
         JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
         if (!CommonUtils.isEmpty(configuration.getUserName()) || !CommonUtils.isEmpty(configuration.getPassword())) {
+            final SecureCredentials credentials = new SecureCredentials(configuration);
+            credentials.setProperties(configuration.getSecureProperties());
             saveSecuredCredentials(
                 dataSource,
                 profile,
                 "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
-                new SecureCredentials(configuration));
+                credentials);
         }
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
         json.endObject();
