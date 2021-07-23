@@ -32,7 +32,9 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.ProjectMetadata;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -57,7 +59,6 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     public static final String CONFIG_FILE = "tasks.json";
     public static final String TASK_STATS_FOLDER = "task-stats";
-    public static final String EMPTY_TASK_FOLDER = "#emptyTaskFolder.";
     private static Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
@@ -189,7 +190,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         if (!CommonUtils.isEmpty(tasksFolders) && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getName().equals(folderName))) {
             throw new DBException("Task folder with name '" + folderName + "' already exists");
         }
-        TaskFolderImpl taskFolder = new TaskFolderImpl(folderName, project, ArrayUtils.safeArray(folderTasks));
+        TaskFolderImpl taskFolder = new TaskFolderImpl(folderName, project, folderTasks != null ? new ArrayList<>(Arrays.asList(folderTasks)) : new ArrayList<>());
         synchronized (tasksFolders) {
             tasksFolders.add(taskFolder);
         }
@@ -216,8 +217,6 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
         }
 
-        saveConfiguration();
-
         TaskRegistry.getInstance().notifyTaskListeners(
             new DBTTaskEvent(
                 task,
@@ -226,6 +225,8 @@ public class TaskManagerImpl implements DBTTaskManager {
         if (task.getTaskFolder() != null) {
             TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(task.getTaskFolder(), DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
         }
+
+        saveConfiguration();
     }
 
     @Override
@@ -289,25 +290,19 @@ public class TaskManagerImpl implements DBTTaskManager {
             try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
+                for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "tasksFolders")) {
+                    String taskName = folderMap.getKey();
+                    if (CommonUtils.isNotEmpty(taskName)) {
+                        createTaskFolder(projectMetadata, taskName, new DBTTask[0]);
+                    }
+                }
+
                 for (Map.Entry<String, Object> taskMap : jsonMap.entrySet()) {
                     Map<String, Object> taskJSON = (Map<String, Object>) taskMap.getValue();
 
                     try {
                         String id = taskMap.getKey();
-                        if (id.startsWith(EMPTY_TASK_FOLDER)) {
-                            // Read empty tasks
-                            String emptyTaskProjectName = JSONUtils.getString(taskJSON, "emptyTaskProjectName");
-                            String emptyTaskName = JSONUtils.getString(taskJSON, "emptyTaskName");
-                            List<DBPProject> projectsList = new ArrayList<>(DBWorkbench.getPlatform().getWorkspace().getProjects());
-                            DBPProject folderProject = projectMetadata;
-                            Optional<DBPProject> dbpProject = projectsList.stream().filter(project -> project.getName().equals(emptyTaskProjectName)).findFirst();
-                            if (dbpProject.isPresent()) {
-                                folderProject = dbpProject.get();
-                            }
-                            if (CommonUtils.isNotEmpty(emptyTaskName)) {
-                                createTaskFolder(folderProject, emptyTaskName, new DBTTask[0]);
-                            }
-                        } else {
+                        if (!id.startsWith("tasksFolders")) {
                             String task = JSONUtils.getString(taskJSON, "task");
                             String label = CommonUtils.toString(JSONUtils.getString(taskJSON, "label"), id);
                             String description = JSONUtils.getString(taskJSON, "description");
@@ -339,7 +334,6 @@ public class TaskManagerImpl implements DBTTaskManager {
                             }
                         }
 
-
                     } catch (Exception e) {
                         log.warn("Error parsing task configuration", e);
                     }
@@ -365,7 +359,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         return taskFolder;
     }
 
-    private void saveConfiguration() {
+    public void saveConfiguration() {
         IProgressMonitor monitor = new NullProgressMonitor();
 
         File configFile = getConfigFile(true);
@@ -405,6 +399,16 @@ public class TaskManagerImpl implements DBTTaskManager {
     private void serializeTasks(DBRProgressMonitor monitor, JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
+        if (!CommonUtils.isEmpty(tasksFolders)) {
+            jsonWriter.name("tasksFolders");
+            jsonWriter.beginObject();
+            for (TaskFolderImpl taskFolder : tasksFolders) {
+                jsonWriter.name(taskFolder.getName());
+                jsonWriter.beginObject();
+                jsonWriter.endObject();
+            }
+            jsonWriter.endObject();
+        }
         for (TaskImpl task : tasks) {
             jsonWriter.name(task.getId());
             jsonWriter.beginObject();
@@ -419,19 +423,6 @@ public class TaskManagerImpl implements DBTTaskManager {
             JSONUtils.field(jsonWriter, "updateTime", systemDateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, "state", task.getProperties());
             jsonWriter.endObject();
-        }
-        if (!CommonUtils.isEmpty(tasksFolders) && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getTasks().isEmpty())) {
-            // Write empty task folders to JSON
-            List<TaskFolderImpl> emptyTaskFolders = tasksFolders.stream()
-                    .filter(taskFolder -> taskFolder.getTasks().isEmpty())
-                    .collect(Collectors.toList());
-            for (TaskFolderImpl taskFolder : emptyTaskFolders) {
-                jsonWriter.name(EMPTY_TASK_FOLDER + taskFolder.getProject().getName() + "." + taskFolder.getName());
-                jsonWriter.beginObject();
-                JSONUtils.field(jsonWriter, "emptyTaskProjectName", taskFolder.getProject().getName());
-                JSONUtils.field(jsonWriter, "emptyTaskName", taskFolder.getName());
-                jsonWriter.endObject();
-            }
         }
         jsonWriter.endObject();
     }

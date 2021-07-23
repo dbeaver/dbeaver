@@ -29,6 +29,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.task.DBTTaskFolder;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,8 +51,10 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
         CreateFolderDialog createFolderDialog = new CreateFolderDialog(HandlerUtil.getActiveShell(event), project);
         if (createFolderDialog.open() == IDialogConstants.OK_ID) {
             DBPProject folderProject = createFolderDialog.getProject();
+            DBTTaskManager taskManager = folderProject.getTaskManager();
+            DBTTaskFolder taskFolder = null;
             try {
-                folderProject.getTaskManager().createTaskFolder(folderProject, createFolderDialog.getName(), null);
+                taskFolder = taskManager.createTaskFolder(folderProject, createFolderDialog.getName(), null);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                         TaskUIViewMessages.task_handler_folder_create_error_title,
@@ -57,6 +62,9 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
                         e
                 );
                 log.error("Can't create new task folder", e);
+            }
+            if (taskFolder != null && taskManager instanceof TaskManagerImpl) {
+                ((TaskManagerImpl) taskManager).saveConfiguration();
             }
         }
         return null;

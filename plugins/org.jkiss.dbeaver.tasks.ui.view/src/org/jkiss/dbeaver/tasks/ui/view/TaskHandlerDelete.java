@@ -24,13 +24,14 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class TaskHandlerDelete extends AbstractHandler {
@@ -39,36 +40,54 @@ public class TaskHandlerDelete extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        List<DBTTask> tasksToDelete = new ArrayList<>();
+        List<DBPNamedObject> objectsToDelete = new ArrayList<>();
+
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection)selection;
-            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
+            for (Object element : structSelection) {
                 if (element instanceof DBTTask) {
-                    tasksToDelete.add((DBTTask) element);
+                    objectsToDelete.add((DBTTask) element);
+                } else if (element instanceof DatabaseTasksTree.TaskFolderWrapper) {
+                    objectsToDelete.add(((DatabaseTasksTree.TaskFolderWrapper) element).getTaskFolder());
+                } else if (element instanceof DBTTaskFolder) {
+                    objectsToDelete.add((DBTTaskFolder) element);
                 }
             }
         }
 
-        if (!tasksToDelete.isEmpty()) {
-            if (tasksToDelete.size() == 1) {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_task, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_task, tasksToDelete.get(0).getName()))) {
+        if (!objectsToDelete.isEmpty()) {
+            if (objectsToDelete.size() == 1) {
+                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_task, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_task, objectsToDelete.get(0).getName()))) {
                     return null;
                 }
             } else {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_tasks, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_tasks, tasksToDelete.size()))) {
+                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_tasks, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_tasks, objectsToDelete.size()))) {
                     return null;
                 }
             }
-            for (DBTTask task : tasksToDelete) {
+            for (DBPNamedObject object : objectsToDelete) {
                 try {
-                    task.getProject().getTaskManager().deleteTaskConfiguration(task);
+                    if (object instanceof DBTTask) {
+                        DBTTask task = (DBTTask) object;
+                        task.getProject().getTaskManager().deleteTaskConfiguration(task);
+                    } else {
+                        DBTTaskFolder taskFolder = (DBTTaskFolder) object;
+                        taskFolder.getProject().getTaskManager().removeTaskFolder(taskFolder);
+                    }
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError(
+                    if (object instanceof DBTTask) {
+                        DBWorkbench.getPlatformUI().showError(
                             TaskUIViewMessages.task_handler_delete_error_deleting_task_from_scheduler_title,
-                            NLS.bind(TaskUIViewMessages.task_handler_delete_error_deleting_task_from_scheduler_message, task.getId()),
+                            NLS.bind(TaskUIViewMessages.task_handler_delete_error_deleting_task_from_scheduler_message, ((DBTTask)object).getId()),
                             e
-                    );
+                        );
+                    } else {
+                        DBWorkbench.getPlatformUI().showError(
+                            TaskUIViewMessages.task_handler_delete_folder_error_title,
+                            NLS.bind(TaskUIViewMessages.task_handler_delete_folder_error_message, object.getName()),
+                            e
+                        );
+                    }
                 }
             }
         }

@@ -579,8 +579,8 @@ public class DatabaseTasksTree {
             for (DBTTask task : CommonUtils.safeCollection(getSortedByParameterTasks(parentType, isCategory))) {
                 DBTTaskFolder taskFolder = task.getTaskFolder();
                 if (taskFolder != null) {
-                    if (typeFoldersWrappersList.size() > 0 && typeFoldersWrappersList.stream().anyMatch(taskFolderWrapper -> taskFolderWrapper.taskFolder == taskFolder)) {
-                        TaskFolderWrapper folderWrapper = typeFoldersWrappersList.stream().filter(taskFolderWrapper -> taskFolderWrapper.taskFolder == taskFolder).findFirst().get();
+                    if (typeFoldersWrappersList.size() > 0 && typeFoldersWrappersList.stream().anyMatch(taskFolderWrapper -> taskFolderWrapper.getTaskFolder()== taskFolder)) {
+                        TaskFolderWrapper folderWrapper = typeFoldersWrappersList.stream().filter(taskFolderWrapper -> taskFolderWrapper.getTaskFolder() == taskFolder).findFirst().get();
                         folderWrapper.addTaskToList(task);
                     } else {
                         TaskFolderWrapper taskFolderWrapper = new TaskFolderWrapper(taskFolder, new ArrayList<>(Collections.singletonList(task)));
@@ -691,7 +691,7 @@ public class DatabaseTasksTree {
 
     // We need this class for category/type task grouping. One folder can belong to different categories/types
     // So this is a tricky way to separate it
-    private class TaskFolderWrapper extends TaskFolderImpl {
+    class TaskFolderWrapper extends TaskFolderImpl {
 
         DBTTaskFolder taskFolder;
         List<DBTTask> allSpecificTypeTasks;
@@ -704,6 +704,10 @@ public class DatabaseTasksTree {
 
         void addTaskToList(DBTTask task) {
             allSpecificTypeTasks.add(task);
+        }
+
+        public DBTTaskFolder getTaskFolder() {
+            return taskFolder;
         }
     }
 

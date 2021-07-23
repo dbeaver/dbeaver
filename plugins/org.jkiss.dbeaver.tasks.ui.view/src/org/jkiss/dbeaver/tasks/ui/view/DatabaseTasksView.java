@@ -70,7 +70,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
     public static final String RUN_TASK_CMD_ID = "org.jkiss.dbeaver.task.run";
     private static final String CREATE_FOLDER_TASK_CMD_ID = "org.jkiss.dbeaver.folder.task.create";
-    private static final String DELETE_FOLDER_TASK_CMD_ID = "org.jkiss.dbeaver.folder.task.delete";
     public static final String GROUP_TASK_CMD_ID = "org.jkiss.dbeaver.task.group";
 
     private static final ArrayList<Object> EMPTY_TASK_RUN_LIST = new ArrayList<>();
@@ -174,7 +173,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task, null));
             manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), DELETE_FOLDER_TASK_CMD_ID));
             manager.add(new Separator());
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
