@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -30,13 +31,14 @@ public interface DBCExecutionContextDefaults<CATALOG extends DBSCatalog, SCHEMA 
 
     CATALOG getDefaultCatalog();
 
+    @Nullable
     SCHEMA getDefaultSchema();
 
     boolean supportsCatalogChange();
 
     boolean supportsSchemaChange();
 
-    void setDefaultCatalog(DBRProgressMonitor monitor, CATALOG catalog, SCHEMA schema) throws DBCException;
+    void setDefaultCatalog(DBRProgressMonitor monitor, CATALOG catalog, @Nullable SCHEMA schema) throws DBCException;
 
     void setDefaultSchema(DBRProgressMonitor monitor, SCHEMA schema) throws DBCException;
 
