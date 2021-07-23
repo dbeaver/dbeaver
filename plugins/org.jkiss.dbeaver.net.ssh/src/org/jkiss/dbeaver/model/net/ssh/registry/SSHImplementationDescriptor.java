@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.SSHImplementation;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SSHImplementationDescriptor
@@ -33,6 +34,7 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
     private final AbstractDescriptor.ObjectType implClass;
     private final String id;
     private final String label;
+    private final boolean supportsJumpServer;
 
     SSHImplementationDescriptor(
         IConfigurationElement config)
@@ -42,6 +44,7 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.implClass = new AbstractDescriptor.ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.supportsJumpServer = CommonUtils.getBoolean(config.getAttribute("supportsJumpServer"));
     }
 
     public ObjectType getImplClass() {
@@ -54,6 +57,10 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
 
     public String getLabel() {
         return label;
+    }
+
+    public boolean isSupportsJumpServer() {
+        return supportsJumpServer;
     }
 
     public SSHImplementation createImplementation()

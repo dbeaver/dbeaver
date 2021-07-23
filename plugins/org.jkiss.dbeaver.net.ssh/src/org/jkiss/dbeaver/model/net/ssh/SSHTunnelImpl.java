@@ -67,7 +67,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                 throw new DBException("Can't find SSH tunnel implementation '" + implId + "'");
             }
             if (implementation == null || implementation.getClass() != implDesc.getImplClass().getObjectClass()) {
-                implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
+                implementation = implDesc.createImplementation();
             }
         } catch (Throwable e) {
             throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
@@ -125,7 +125,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
         if (implementation != null) {
             RuntimeUtils.runTask(monitor1 -> {
-                monitor1.beginTask("Invalidate SSH tiunnel", 1);
+                monitor1.beginTask("Invalidate SSH tunnel", 1);
                 try {
                     implementation.invalidateTunnel(monitor1);
                 } catch (Exception e) {
