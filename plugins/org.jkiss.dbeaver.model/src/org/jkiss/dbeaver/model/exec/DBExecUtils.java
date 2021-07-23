@@ -394,7 +394,7 @@ public class DBExecUtils {
         boolean changeCatalog = (curCatalogName != null ? !CommonUtils.equalObjects(curCatalogName, newCatalogName) : newCatalog != null);
 
         if (newCatalog != null && newSchema != null && changeCatalog) {
-            contextDefaults.setDefaultCatalog(monitor, newCatalog, newSchema);
+            contextDefaults.setDefaultCatalog(monitor, newCatalog, contextDefaults.supportsSchemaChange() ? newSchema : null);
         } else if (newSchema != null && contextDefaults.supportsSchemaChange()) {
             contextDefaults.setDefaultSchema(monitor, newSchema);
         } else if (newCatalog != null && changeCatalog) {
