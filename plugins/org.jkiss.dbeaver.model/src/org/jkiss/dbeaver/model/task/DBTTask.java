@@ -46,6 +46,11 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
     @NotNull
     DBTTaskType getType();
 
+    @Nullable
+    DBTTaskFolder getTaskFolder();
+
+    void setTaskFolder(@Nullable DBTTaskFolder taskFolder);
+
     @NotNull
     Map<String, Object> getProperties();
 

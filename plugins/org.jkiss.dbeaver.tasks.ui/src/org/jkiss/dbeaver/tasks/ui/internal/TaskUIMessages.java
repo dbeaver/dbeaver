@@ -27,6 +27,7 @@ public class TaskUIMessages extends NLS {
 	public static String edit_task_config_dialog_label_type;
 	public static String edit_task_config_dialog_label_name;
 	public static String edit_task_config_dialog_label_descr;
+	public static String edit_task_config_dialog_task_folders_label_name;
 	
 	public static String edit_task_variabl_dialog_title_task_variables;
 	public static String edit_task_variabl_dialog_column_variable;
@@ -53,6 +54,7 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_page_task_text_label_name;
 	public static String task_config_wizard_page_task_control_label_descr;
 	public static String task_config_wizard_page_task_text_label_task_id;
+	public static String task_config_wizard_page_task_create_folder_label;
 	
 	public static String task_config_wizard_stub_title_create_task;
 	public static String task_config_wizard_stub_page_name_void;

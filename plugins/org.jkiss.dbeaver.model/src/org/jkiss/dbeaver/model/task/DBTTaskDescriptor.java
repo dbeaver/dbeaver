@@ -16,13 +16,26 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+
 /**
- * Task registry
+ * Main task type descriptor.
  */
-public interface DBTTaskListener {
 
-    void handleTaskEvent(DBTTaskEvent event);
+public interface DBTTaskDescriptor {
 
-    void handleTaskFolderEvent(DBTTaskFolderEvent event);
+    @NotNull
+    String getId();
+
+    @NotNull
+    String getName();
+
+    @Nullable
+    String getDescription();
+
+    @Nullable
+    DBPImage getIcon();
 
 }

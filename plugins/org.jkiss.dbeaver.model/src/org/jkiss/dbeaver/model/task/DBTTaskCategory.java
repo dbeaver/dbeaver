@@ -25,25 +25,13 @@ import org.jkiss.dbeaver.model.DBPImage;
  *
  * Task type groups similar tasks. Tasks of the same type have the same configurator and are shown in the same category in UI.
  */
-public interface DBTTaskCategory {
-
-    @NotNull
-    String getId();
+public interface DBTTaskCategory extends DBTTaskDescriptor {
 
     @Nullable
     DBTTaskCategory getParent();
 
     @NotNull
     DBTTaskCategory[] getChildren();
-
-    @NotNull
-    String getName();
-
-    @Nullable
-    String getDescription();
-
-    @Nullable
-    DBPImage getIcon();
 
     @NotNull
     DBTTaskType[] getTaskTypes();

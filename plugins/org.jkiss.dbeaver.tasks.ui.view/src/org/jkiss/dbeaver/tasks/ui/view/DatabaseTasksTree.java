@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.task.TaskFolderImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
@@ -46,12 +48,14 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DatabaseTasksTree {
     private static final Log log = Log.getLog(DatabaseTasksTree.class);
@@ -60,6 +64,7 @@ public class DatabaseTasksTree {
     private ViewerColumnController taskColumnController;
 
     private final List<DBTTask> allTasks = new ArrayList<>();
+    private final List<DBTTaskFolder> allTasksFolders = new ArrayList<>();
 
     private boolean groupByProject = false;
     private boolean groupByType = false;
@@ -88,6 +93,8 @@ public class DatabaseTasksTree {
                     return ((DBPProject) element).getName();
                 } else if (element instanceof DBTTask) {
                     return ((DBTTask) element).getName();
+                } else if (element instanceof DBTTaskFolder) {
+                    return ((DBTTaskFolder) element).getName();
                 } else {
                     return element.toString();
                 }
@@ -103,6 +110,8 @@ public class DatabaseTasksTree {
                     return ((TaskCategoryNode) element).category.getIcon();
                 } else if (element instanceof TaskTypeNode) {
                     return ((TaskTypeNode) element).type.getIcon();
+                } else if (element instanceof DBTTaskFolder) {
+                    return DBIcon.TREE_FOLDER;
                 }
                 return null;
             }
@@ -334,7 +343,13 @@ public class DatabaseTasksTree {
                     rootObjects.add(new TaskTypeNode(null, null, type));
                 }
             } else {
-                rootObjects.addAll(allTasks);
+                if (!CommonUtils.isEmpty(allTasksFolders)) {
+                    // Add task folders as parent elements, task from these folders will be added in children list
+                    rootObjects.addAll(allTasksFolders);
+                    rootObjects.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == null).collect(Collectors.toList()));
+                } else {
+                    rootObjects.addAll(allTasks);
+                }
             }
             switch (options) {
                 case EXPAND_ALL:
@@ -393,15 +408,20 @@ public class DatabaseTasksTree {
 
     private void refreshTasks() {
         allTasks.clear();
+        allTasksFolders.clear();
 
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
             DBTTask[] tasks = taskManager.getAllTasks();
-            if (tasks.length == 0) {
-                continue;
+            if (tasks.length != 0) {
+                Collections.addAll(allTasks, tasks);
             }
-            Collections.addAll(allTasks, tasks);
+            DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
+            if (!ArrayUtils.isEmpty(tasksFolders)) {
+                Collections.addAll(allTasksFolders, tasksFolders);
+            }
         }
+        allTasksFolders.sort(Comparator.comparing(DBTTaskFolder::getName));
         allTasks.sort(Comparator.comparing(DBTTask::getName));
     }
 
@@ -488,8 +508,23 @@ public class DatabaseTasksTree {
                         children.add(new TaskTypeNode(project, null, type));
                     }
                 } else {
+                    // Add task folders as parent elements, task from these folders will be added in children list
+                    children.addAll(allTasksFolders.stream().filter(taskFolder -> taskFolder.getProject() == parentElement).collect(Collectors.toList()));
+                    children.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement).collect(Collectors.toList()));
+                }
+            } else if (parentElement instanceof TaskFolderWrapper) {
+                // We are forced to use task folder wrapper, because we don't know on this step parent parent element and task folder doesn't have type/category
+                List<DBTTask> specificTypeTasks = ((TaskFolderWrapper) parentElement).allSpecificTypeTasks;
+                if (!CommonUtils.isEmpty(specificTypeTasks)) {
+                    children.addAll(specificTypeTasks);
+                }
+            } else if (parentElement instanceof DBTTaskFolder) {
+                DBTTaskFolder taskFolder = (DBTTaskFolder) parentElement;
+                if (groupByProject) {
+                    children.addAll(allTasks.stream().filter(task -> task.getTaskFolder() == taskFolder && taskFolder.getProject() == task.getProject()).collect(Collectors.toList()));
+                } else {
                     for (DBTTask task : allTasks) {
-                        if (task.getProject() == parentElement) {
+                        if (task.getTaskFolder() == taskFolder) {
                             children.add(task);
                         }
                     }
@@ -508,25 +543,56 @@ public class DatabaseTasksTree {
                     }
                 } else {
                     // Tasks
-                    for (DBTTask task : allTasks) {
-                        if ((parentCat.project == null || task.getProject() == parentCat.project) && task.getType().getCategory() == parentCat.category) {
-                            children.add(task);
-                        }
-                    }
+                    fillChildrenListOfSortedTasks(children, parentCat, true);
                 }
             } else if (parentElement instanceof TaskTypeNode) {
                 // Child tasks
                 TaskTypeNode parentType = (TaskTypeNode) parentElement;
-                for (DBTTask task : allTasks) {
-                    if ((parentType.project == null || task.getProject() == parentType.project) && task.getType() == parentType.type) {
-                        children.add(task);
-                    }
-                }
-            } else {
-
+                fillChildrenListOfSortedTasks(children, parentType, false);
             }
 
             return children.toArray();
+        }
+
+        // Sort all tasks into list by task type or by task category
+        /**
+         * @param descriptor      TaskCategoryNode or TaskTypeNode class object
+         * @param isCategory      search by category if true, search by type if false
+         */
+        private List<DBTTask> getSortedByParameterTasks(AbstractTaskNode descriptor, boolean isCategory) {
+            List<DBTTask> sortedByDescriptorList = new ArrayList<>();
+            for (DBTTask task : allTasks) {
+                if ((descriptor.project == null || task.getProject() == descriptor.project)) {
+                    if ((isCategory && task.getType().getCategory() == descriptor.taskDescriptor) ||
+                            (!isCategory && task.getType() == descriptor.taskDescriptor)) {
+                        sortedByDescriptorList.add(task);
+                    }
+                }
+            }
+            return sortedByDescriptorList;
+        }
+
+        // Add elements (task folders and task without folders) to tree sorted by category/type
+        private List<Object> fillChildrenListOfSortedTasks(List<Object> children, AbstractTaskNode parentType, boolean isCategory) {
+            List<TaskFolderWrapper> typeFoldersWrappersList = new ArrayList<>();
+            List<DBTTask> tasksWithoutFolders = new ArrayList<>();
+            for (DBTTask task : CommonUtils.safeCollection(getSortedByParameterTasks(parentType, isCategory))) {
+                DBTTaskFolder taskFolder = task.getTaskFolder();
+                if (taskFolder != null) {
+                    if (typeFoldersWrappersList.size() > 0 && typeFoldersWrappersList.stream().anyMatch(taskFolderWrapper -> taskFolderWrapper.getTaskFolder()== taskFolder)) {
+                        TaskFolderWrapper folderWrapper = typeFoldersWrappersList.stream().filter(taskFolderWrapper -> taskFolderWrapper.getTaskFolder() == taskFolder).findFirst().get();
+                        folderWrapper.addTaskToList(task);
+                    } else {
+                        TaskFolderWrapper taskFolderWrapper = new TaskFolderWrapper(taskFolder, new ArrayList<>(Collections.singletonList(task)));
+                        typeFoldersWrappersList.add(taskFolderWrapper);
+                    }
+                } else {
+                    tasksWithoutFolders.add(task);
+                }
+            }
+            children.addAll(typeFoldersWrappersList);
+            children.addAll(tasksWithoutFolders);
+            return children;
         }
 
         @Override
@@ -568,14 +634,38 @@ public class DatabaseTasksTree {
         }
     }
 
-    private static class TaskCategoryNode {
+    private static abstract class AbstractTaskNode {
         final DBPProject project;
         final TaskCategoryNode parent;
+        final DBTTaskDescriptor taskDescriptor;
+
+        AbstractTaskNode(DBPProject project, TaskCategoryNode parent, DBTTaskDescriptor taskDescriptor) {
+            this.project = project;
+            this.parent = parent;
+            this.taskDescriptor = taskDescriptor;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AbstractTaskNode that = (AbstractTaskNode) o;
+            return Objects.equals(project, that.project) &&
+                    Objects.equals(parent, that.parent) &&
+                    Objects.equals(taskDescriptor, that.taskDescriptor);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(project, parent, taskDescriptor);
+        }
+    }
+
+    private static class TaskCategoryNode extends AbstractTaskNode {
         final DBTTaskCategory category;
 
         TaskCategoryNode(DBPProject project, TaskCategoryNode parent, DBTTaskCategory category) {
-            this.project = project;
-            this.parent = parent;
+            super(project, parent, category);
             this.category = category;
         }
 
@@ -583,34 +673,13 @@ public class DatabaseTasksTree {
         public String toString() {
             return category.getName();
         }
-
-        @Override
-        public int hashCode() {
-            return (project == null ? 0 : project.hashCode()) +
-                (parent == null ? 0 : parent.hashCode()) +
-                (category == null ? 0 : category.hashCode());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof TaskCategoryNode)) {
-                return false;
-            }
-            TaskCategoryNode cmp = (TaskCategoryNode)obj;
-            return project == cmp.project &&
-                CommonUtils.equalObjects(parent, cmp.parent) &&
-                category == cmp.category;
-        }
     }
 
-    private static class TaskTypeNode {
-        final DBPProject project;
-        final TaskCategoryNode parent;
+    private static class TaskTypeNode extends AbstractTaskNode {
         final DBTTaskType type;
 
         TaskTypeNode(DBPProject project, TaskCategoryNode parent, DBTTaskType type) {
-            this.project = project;
-            this.parent = parent;
+            super(project, parent, type);
             this.type = type;
         }
 
@@ -618,23 +687,27 @@ public class DatabaseTasksTree {
         public String toString() {
             return type.getName();
         }
+    }
 
-        @Override
-        public int hashCode() {
-            return (project == null ? 0 : project.hashCode()) +
-                (parent == null ? 0 : parent.hashCode()) +
-                (type == null ? 0 : type.hashCode());
+    // We need this class for category/type task grouping. One folder can belong to different categories/types
+    // So this is a tricky way to separate it
+    class TaskFolderWrapper extends TaskFolderImpl {
+
+        DBTTaskFolder taskFolder;
+        List<DBTTask> allSpecificTypeTasks;
+
+        TaskFolderWrapper(@NotNull DBTTaskFolder taskFolder, List<DBTTask> folderTasks) {
+            super(taskFolder.getName(), taskFolder.getProject(), folderTasks);
+            this.taskFolder = taskFolder;
+            this.allSpecificTypeTasks = folderTasks;
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof TaskTypeNode)) {
-                return false;
-            }
-            TaskTypeNode cmp = (TaskTypeNode)obj;
-            return project == cmp.project &&
-                CommonUtils.equalObjects(parent, cmp.parent) &&
-                type == cmp.type;
+        void addTaskToList(DBTTask task) {
+            allSpecificTypeTasks.add(task);
+        }
+
+        public DBTTaskFolder getTaskFolder() {
+            return taskFolder;
         }
     }
 
