@@ -130,12 +130,16 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 selectedRows.add((long) selectedRow.getRowNumber());
             }
             List<String> selectedAttributes = new ArrayList<>();
+            // this list stores the ordinal positions of the selected columns
+            List<Integer> selectedAttributesOrdinalPositions = new ArrayList<>();
             for (DBDAttributeBinding attributeBinding : rsSelectedAttributes) {
                 selectedAttributes.add(attributeBinding.getName());
+                selectedAttributesOrdinalPositions.add(attributeBinding.getOrdinalPosition());
             }
 
             options.setSelectedRows(selectedRows);
             options.setSelectedColumns(selectedAttributes);
+            options.setSelectedColumnsOrdinalPositions(selectedAttributesOrdinalPositions);
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {

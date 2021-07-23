@@ -69,12 +69,16 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                 selectedRows.add((long) selectedRow.getRowNumber());
             }
             List<String> selectedAttributes = new ArrayList<>();
+            // this list stores the ordinal positions of the selected columns
+            List<Integer> selectedAttributesOrdinalPositions = new ArrayList<>();
             for (DBDAttributeBinding attributeBinding : rsSelection.getSelectedAttributes()) {
                 selectedAttributes.add(attributeBinding.getName());
+                selectedAttributesOrdinalPositions.add(attributeBinding.getOrdinalPosition());
             }
 
             options.setSelectedRows(selectedRows);
             options.setSelectedColumns(selectedAttributes);
+            options.setSelectedColumnsOrdinalPositions(selectedAttributesOrdinalPositions);
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
