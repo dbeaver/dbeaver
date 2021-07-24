@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -73,6 +74,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         return getDataSource().getDatabase(activeDatabaseName);
     }
 
+    @Nullable
     @Override
     public SQLServerSchema getDefaultSchema() {
         if (CommonUtils.isEmpty(activeSchemaName)) {
@@ -98,7 +100,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, SQLServerDatabase catalog, SQLServerSchema schema) throws DBCException {
+    public void setDefaultCatalog(DBRProgressMonitor monitor, SQLServerDatabase catalog, @Nullable SQLServerSchema schema) throws DBCException {
         if (activeDatabaseName != null && activeDatabaseName.equals(catalog.getName())) {
             return;
         }
