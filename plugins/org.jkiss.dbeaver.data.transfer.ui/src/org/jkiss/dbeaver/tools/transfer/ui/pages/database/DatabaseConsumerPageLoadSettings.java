@@ -60,6 +60,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private String disableReferentialIntegrityCheckboxTooltip;
     private boolean isDisablingReferentialIntegritySupported;
     private Spinner multiRowInsertBatch;
+    private Button useBatchCheck;
 
     public DatabaseConsumerPageLoadSettings() {
     	super(DTUIMessages.database_consumer_wizard_name);
@@ -168,6 +169,10 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             commitAfterEdit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             final Button useMultiRowInsert = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_description, settings.isUseMultiRowInsert(), 4);
+            if (useBatchCheck != null && ((!useBatchCheck.isDisposed() && useBatchCheck.getSelection())
+            || (useBatchCheck.isDisposed() && settings.isDisableUsingBatches()))) {
+                useMultiRowInsert.setEnabled(false);
+            }
             useMultiRowInsert.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -183,7 +188,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             });
 
             multiRowInsertBatch = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size, settings.getMultiRowInsertBatch(), 2, Integer.MAX_VALUE);
-            if (!useMultiRowInsert.getSelection()) {
+            if (!useMultiRowInsert.getSelection() || useBatchCheck != null && !useBatchCheck.isDisposed() && useBatchCheck.getSelection()) {
                 multiRowInsertBatch.setEnabled(false);
             }
             multiRowInsertBatch.addSelectionListener(new SelectionAdapter() {
@@ -195,7 +200,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             multiRowInsertBatch.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
 
-            final Button useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
+            useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
             useBatchCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -204,6 +209,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                         useMultiRowInsert.setSelection(false);
                         useMultiRowInsert.setEnabled(false);
                         settings.setUseMultiRowInsert(false);
+                        multiRowInsertBatch.setEnabled(false);
                     } else if (!useBatchCheck.getSelection() && !useMultiRowInsert.getEnabled()) {
                         useMultiRowInsert.setEnabled(true);
                     }
