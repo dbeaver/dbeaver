@@ -111,9 +111,15 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         return new String[]{"EXECUTE SCRIPT"};
     }
 
+    @NotNull
     @Override
-    public String escapeScriptValue(DBSTypedObject attribute, Object value, String strValue) {
+    public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
 		return super.escapeScriptValue(attribute, value, strValue);
+    }
+
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return true;
     }
 
 }

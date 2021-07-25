@@ -155,7 +155,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     statistics.addStatementsCount();
                 }
                 try {
-                    bindStatement(handlers, statement, rowValues);
+                    if (this instanceof ExecuteInsertBatchImpl && ((ExecuteInsertBatchImpl) this).isAllColumnsDefault()) {
+                        // There is nothing to bind
+                    } else {
+                        bindStatement(handlers, statement, rowValues);
+                    }
                     if (actions == null) {
                         if (useBatch) {
                             statement.addToBatch();

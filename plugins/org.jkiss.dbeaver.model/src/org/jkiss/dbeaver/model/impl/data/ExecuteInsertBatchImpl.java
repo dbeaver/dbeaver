@@ -20,17 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
-import org.jkiss.dbeaver.model.data.DBDValueBinder;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.sql.BaseInsertMethod;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -41,6 +40,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
     private DBSTable table;
     private boolean useUpsert;
     private boolean allNulls;
+    private boolean allColumnsDefault;
 
     /**
      * Constructs new batch
@@ -55,6 +55,10 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         this.source = source;
         this.table = table;
         this.useUpsert = useUpsert;
+    }
+
+    public boolean isAllColumnsDefault() {
+        return allColumnsDefault;
     }
 
     protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
@@ -123,6 +127,29 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                 allNulls = false;
                 break;
             }
+        }
+        if (allNulls && !useMultiRowInsert && method instanceof BaseInsertMethod && !useUpsert
+                && session.getDataSource().getSQLDialect().supportsInsertAllDefaultValuesStatement()) {
+            allColumnsDefault = true;
+            for (DBSAttributeBase attribute : attributes) {
+                if (DBUtils.isPseudoAttribute(attribute)) {
+                    continue;
+                }
+                if (attribute instanceof DBDAttributeBinding) {
+                    DBSEntityAttribute entityAttribute = ((DBDAttributeBinding) attribute).getEntityAttribute();
+                    if (entityAttribute != null && CommonUtils.isNotEmpty(entityAttribute.getDefaultValue())) {
+                        continue;
+                    }
+                }
+                allColumnsDefault = false;
+                break;
+            }
+            if (allColumnsDefault) {
+                query.setLength(0);
+                query.append("INSERT INTO ").append(tableName).append(" DEFAULT VALUES");
+                return query;
+            }
+
         }
         boolean hasKey = false;
         for (int i = 0; i < attributes.length; i++) {

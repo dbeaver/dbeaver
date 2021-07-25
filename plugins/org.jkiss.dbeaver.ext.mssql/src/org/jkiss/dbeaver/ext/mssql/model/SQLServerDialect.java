@@ -333,4 +333,9 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
             rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRAN"}, keywordToken));
         }
     }
+
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return isSqlServer; // Sybase throws a syntax error on "DEFAULT" keyword
+    }
 }
