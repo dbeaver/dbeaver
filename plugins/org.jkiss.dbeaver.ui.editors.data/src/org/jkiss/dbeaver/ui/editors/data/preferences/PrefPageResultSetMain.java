@@ -97,7 +97,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
             store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
-            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
+            store.contains(ModelPreferences.SQL_REPLACE_NULLS_TO_DEFAULT_VALUES)
             ;
     }
 
@@ -158,8 +158,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 }
             });
 
-            replaceAllNullsOnDefault = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_replace_nulls_on_default,
-            ResultSetMessages.pref_page_database_resultsets_label_replace_nulls_on_default_tip, true, 2);
+            replaceAllNullsOnDefault = UIUtils.createCheckbox(
+                queriesGroup,
+                ResultSetMessages.pref_page_database_resultsets_label_replace_nulls_to_default,
+                ResultSetMessages.pref_page_database_resultsets_label_replace_nulls_to_default_tip,
+                true,
+                2);
 
         }
         {

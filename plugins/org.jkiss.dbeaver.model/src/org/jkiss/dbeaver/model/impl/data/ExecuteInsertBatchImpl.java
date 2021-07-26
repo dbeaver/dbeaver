@@ -85,6 +85,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
     @Override
     protected void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException {
         if (allColumnsDefault) {
+            // There is nothing to bind in this statement
             return;
         }
         int paramIndex = 0;
@@ -202,7 +203,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
     private void checkDefaultAttributeValues(DBSAttributeBase[] attributes) {
         allColumnsDefault = true;
         for (DBSAttributeBase attribute : attributes) {
-            if (DBUtils.isPseudoAttribute(attribute)) {
+            if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isHiddenObject(attribute)) {
                 continue;
             }
             if (attribute instanceof DBDAttributeBinding) {
