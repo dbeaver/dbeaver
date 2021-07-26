@@ -453,8 +453,22 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Override
         public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+            // We need to dismiss all rename commands if there is a create command in the command queue.
+            // Otherwise we issue redundant rename commands
+            // See https://github.com/dbeaver/dbeaver/issues/11917
+            int hashCode = getObject().hashCode();
+            String createId = "create#" + hashCode;
+            Object createCmd = userParams.get(createId);
+            if (createCmd != null) {
+                return (DBECommand<?>) createCmd;
+            }
+            if (prevCommand instanceof SQLObjectEditor.ObjectCreateCommand) {
+                userParams.put(createId, prevCommand);
+                return prevCommand;
+            }
+
             // We need very first and very last rename commands. They produce final rename
-            final String mergeId = "rename" + getObject().hashCode();
+            String mergeId = "rename#" + hashCode;
             ObjectRenameCommand renameCmd = (ObjectRenameCommand) userParams.get(mergeId);
             if (renameCmd == null) {
                 renameCmd = new ObjectRenameCommand(getObject(), getTitle(), options, newName);
