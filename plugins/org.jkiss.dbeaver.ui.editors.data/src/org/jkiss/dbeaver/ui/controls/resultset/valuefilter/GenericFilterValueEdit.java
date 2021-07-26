@@ -496,6 +496,12 @@ class GenericFilterValueEdit {
     }
 
     private DBDLabelValuePair findValue(Map<Object, DBDLabelValuePair> rowData, Object cellValue) {
+        final DBDLabelValuePair value = rowData.get(cellValue);
+        if (value != null) {
+            // If we managed to found something at this point - return right away
+            return value;
+        }
+        // Otherwise try to match values manually
         if (cellValue instanceof Number) {
             for (Map.Entry<Object, DBDLabelValuePair> pair : rowData.entrySet()) {
                 if (pair.getKey() instanceof Number && CommonUtils.compareNumbers((Number) pair.getKey(), (Number) cellValue) == 0) {
@@ -503,7 +509,14 @@ class GenericFilterValueEdit {
                 }
             }
         }
-        return rowData.get(cellValue);
+        if (cellValue instanceof String) {
+            for (Map.Entry<Object, DBDLabelValuePair> pair : rowData.entrySet()) {
+                if (!DBUtils.isNullValue(pair.getKey()) && CommonUtils.toString(pair.getKey()).equals(cellValue)) {
+                    return pair.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
