@@ -54,6 +54,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     public static final String CONFIG_FILE = "tasks.json";
     public static final String TASK_STATS_FOLDER = "task-stats";
+    public static final String TASKS_FOLDERS_TAG = "##tasksFolders";
     private static Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
@@ -66,7 +67,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
     private File statisticsFolder;
-    @Nullable private DBTTaskFolder currentSelectedTaskFolder;
 
     public TaskManagerImpl(ProjectMetadata projectMetadata) {
         this.projectMetadata = projectMetadata;
@@ -85,17 +85,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBPProject getProject() {
         return projectMetadata;
-    }
-
-    @Nullable
-    @Override
-    public DBTTaskFolder getCurrentSelectedTaskFolder() {
-        return currentSelectedTaskFolder;
-    }
-
-    @Override
-    public void setCurrentSelectedTaskFolder(@Nullable DBTTaskFolder taskFolder) {
-        this.currentSelectedTaskFolder = taskFolder;
     }
 
     @NotNull
@@ -286,7 +275,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                 Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
                 // First read and create folders
-                for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "tasksFolders")) {
+                for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, TASKS_FOLDERS_TAG)) {
                     String taskName = folderMap.getKey();
                     if (CommonUtils.isNotEmpty(taskName)) {
                         createTaskFolder(projectMetadata, taskName, new DBTTask[0]);
@@ -298,7 +287,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
                     try {
                         String id = taskMap.getKey();
-                        if (!id.startsWith("tasksFolders")) {
+                        if (!id.startsWith(TASKS_FOLDERS_TAG)) {
                             String task = JSONUtils.getString(taskJSON, "task");
                             String label = CommonUtils.toString(JSONUtils.getString(taskJSON, "label"), id);
                             String description = JSONUtils.getString(taskJSON, "description");
@@ -396,7 +385,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
         if (!CommonUtils.isEmpty(tasksFolders)) {
-            jsonWriter.name("tasksFolders");
+            jsonWriter.name(TASKS_FOLDERS_TAG);
             jsonWriter.beginObject();
             for (TaskFolderImpl taskFolder : tasksFolders) {
                 jsonWriter.name(taskFolder.getName());

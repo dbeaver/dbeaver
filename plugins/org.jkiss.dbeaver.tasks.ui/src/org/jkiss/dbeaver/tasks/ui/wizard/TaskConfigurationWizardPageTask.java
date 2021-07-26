@@ -170,9 +170,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 if (task != null && task.getTaskFolder() != null) {
                     taskFoldersCombo.setText(task.getTaskFolder().getName());
                 } else if (task == null) {
-                    DBTTaskFolder selectedTaskFolder = taskManager.getCurrentSelectedTaskFolder();
-                    if (selectedTaskFolder != null) {
-                        taskFoldersCombo.setText(selectedTaskFolder.getName());
+                    TaskConfigurationWizard wizard = getWizard();
+                    if (wizard != null) {
+                        DBTTaskFolder currentSelectedTaskFolder = wizard.getCurrentSelectedTaskFolder();
+                        if (currentSelectedTaskFolder != null) {
+                            taskFoldersCombo.setText(currentSelectedTaskFolder.getName());
+                        }
                     }
                 }
 

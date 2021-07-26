@@ -79,10 +79,6 @@ public interface DBTTaskManager {
 
     void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException;
 
-    DBTTaskFolder getCurrentSelectedTaskFolder();
-
-    void setCurrentSelectedTaskFolder(DBTTaskFolder taskFolder);
-
     @NotNull
     File getStatisticsFolder();
 
