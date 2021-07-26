@@ -57,6 +57,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button readQueryReferences;
     private Text queryCancelTimeout;
     private Button filterForceSubselect;
+    private Button replaceAllNullsOnDefault;
 
     private Button keepStatementOpenCheck;
     private Button alwaysUseAllColumns;
@@ -95,7 +96,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
-                    store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
+            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
+            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
             ;
     }
 
@@ -155,6 +157,10 @@ public class PrefPageResultSetMain extends TargetPrefPage
                     updateOptionsEnablement();
                 }
             });
+
+            replaceAllNullsOnDefault = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_replace_nulls_on_default,
+            ResultSetMessages.pref_page_database_resultsets_label_replace_nulls_on_default_tip, true, 2);
+
         }
         {
             Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -207,6 +213,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
+            replaceAllNullsOnDefault.setSelection(store.getBoolean(ModelPreferences.SQL_REPLACE_NULLS_TO_DEFAULT_VALUES));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
             alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
@@ -238,6 +245,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
+            store.setValue(ModelPreferences.SQL_REPLACE_NULLS_TO_DEFAULT_VALUES, replaceAllNullsOnDefault.getSelection());
 
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
@@ -267,6 +275,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_READ_REFERENCES);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
         store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
+        store.setToDefault(ModelPreferences.SQL_REPLACE_NULLS_TO_DEFAULT_VALUES);
 
         store.setToDefault(ResultSetPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);

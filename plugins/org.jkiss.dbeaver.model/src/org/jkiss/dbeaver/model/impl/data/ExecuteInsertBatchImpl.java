@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -131,15 +133,16 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                 break;
             }
         }
-        if (allNulls && !useMultiRowInsert && method instanceof BaseInsertMethod && !useUpsert
-                && session.getDataSource().getSQLDialect().supportsInsertAllDefaultValuesStatement()) {
+        DBPDataSource dataSource = session.getDataSource();
+        boolean replaceNullsToDefaults = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_REPLACE_NULLS_TO_DEFAULT_VALUES); // Disable this setting to set actually nulls into row
+        if (allNulls && replaceNullsToDefaults && !useMultiRowInsert && method instanceof BaseInsertMethod && !useUpsert
+                && dataSource.getSQLDialect().supportsInsertAllDefaultValuesStatement()) {
             checkDefaultAttributeValues(attributes);
             if (allColumnsDefault) {
                 query.setLength(0);
                 query.append("INSERT INTO ").append(tableName).append(" DEFAULT VALUES");
                 return query;
             }
-
         }
         boolean hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
