@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.utils.CommonUtils;
 
 public class ChangeUserPasswordPropertyTester extends PropertyTester {
 
@@ -32,9 +34,11 @@ public class ChangeUserPasswordPropertyTester extends PropertyTester {
 
         if (property.equals("canChangePassword")) {
             DBNDataSource dsNode = (DBNDataSource) element;
-            DBPDataSource dataSource = dsNode.getDataSourceContainer().getDataSource();
+            DBPDataSourceContainer dataSourceContainer = dsNode.getDataSourceContainer();
+            DBPDataSource dataSource = dataSourceContainer.getDataSource();
+            String userName = dataSourceContainer.getConnectionConfiguration().getUserName();
             if (dataSource instanceof IAdaptable) {
-                return ((IAdaptable) dataSource).getAdapter(DBAUserChangePassword.class) != null;
+                return ((IAdaptable) dataSource).getAdapter(DBAUserChangePassword.class) != null && CommonUtils.isNotEmpty(userName);
             }
         }
         return false;
