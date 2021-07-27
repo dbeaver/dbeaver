@@ -219,7 +219,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         if (panelObject instanceof TextViewer) {
             Object editor = ((TextViewer) panelObject).getData("editor");
             if (editor instanceof SQLEditorBase) {
-                UIUtils.asyncExec(((SQLEditorBase) editor)::dispose);
+                ((SQLEditorBase) editor).dispose();
             }
         }
     }
