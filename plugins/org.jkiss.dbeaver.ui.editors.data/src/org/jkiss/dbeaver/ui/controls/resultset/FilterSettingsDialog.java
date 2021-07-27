@@ -441,7 +441,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 case 3: {
                     DBCExecutionContext executionContext = resultSetViewer.getExecutionContext();
                     if (executionContext != null) {
-                        String condition = SQLUtils.getConstraintCondition(executionContext.getDataSource(), constraint, true);
+                        String condition = SQLUtils.getConstraintCondition(executionContext.getDataSource(), constraint, null, true);
                         if (condition != null) {
                             return condition;
                         }

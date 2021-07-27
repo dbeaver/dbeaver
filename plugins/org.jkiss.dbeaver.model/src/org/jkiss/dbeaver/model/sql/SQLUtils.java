@@ -457,16 +457,21 @@ public final class SQLUtils {
         @NotNull StringBuilder query,
         boolean inlineCriteria)
     {
-        String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
-        boolean hasWhere = false;
-        for (DBDAttributeConstraint constraint : filter.getConstraints()) {
-            String condition = getConstraintCondition(dataSource, constraint, inlineCriteria);
-            if (condition == null) {
-                continue;
-            }
+        final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
+        final DBDAttributeConstraint[] constraints = filter.getConstraints().stream()
+            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
+            .toArray(DBDAttributeConstraint[]::new);
 
-            if (hasWhere) query.append(operator);
-            hasWhere = true;
+        for (int index = 0; index < constraints.length; index++) {
+            final DBDAttributeConstraint constraint = constraints[index];
+            if (index > 0) {
+                query.append(operator);
+            }
+            if (constraints.length > 1) {
+                // Add parenthesis for the sake of sanity
+                // Constraint may consist of several conditions and we don't want to break operator precedence
+                query.append('(');
+            }
             if (constraint.getEntityAlias() != null) {
                 query.append(constraint.getEntityAlias()).append('.');
             } else if (conditionTable != null) {
@@ -492,11 +497,16 @@ public final class SQLUtils {
             } else {
                 attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
-            query.append(attrName).append(' ').append(condition);
+            query.append(attrName).append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
+            if (constraints.length > 1) {
+                query.append(')');
+            }
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (hasWhere) query.append(operator);
+            if (constraints.length > 1) {
+                query.append(operator);
+            }
             query.append(filter.getWhere());
         }
     }
@@ -541,7 +551,7 @@ public final class SQLUtils {
     }
 
     @Nullable
-    public static String getConstraintCondition(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, boolean inlineCriteria) {
+    public static String getConstraintCondition(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, @Nullable String conditionTable, boolean inlineCriteria) {
         String criteria = constraint.getCriteria();
         if (!CommonUtils.isEmpty(criteria)) {
             final char firstChar = criteria.trim().charAt(0);
@@ -606,7 +616,11 @@ public final class SQLUtils {
                     return "IS NULL";
                 }
                 if (hasNull) {
-                    conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
+                    conString.append("IS NULL OR ");
+                    if (conditionTable != null) {
+                        conString.append(conditionTable).append('.');
+                    }
+                    conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
                 conString.append(operator.getExpression());
