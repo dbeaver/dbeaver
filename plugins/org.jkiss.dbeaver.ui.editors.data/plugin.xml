@@ -188,7 +188,7 @@
         <generator id="dataSelect" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectFromData" label="SELECT .. WHERE .. =" description="SELECT from table" order="1">
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
-        <generator id="dataSelectMany" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectManyFromData" label="SELECT .. WHERE .. IN" description="SELECT from table IN" order="2" multiObject="true">
+        <generator id="dataSelectMany" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectManyFromData" label="SELECT .. WHERE .. IN" description="SELECT from table IN" order="2">
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
         <generator id="dataInsert" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorInsertFromData" label="INSERT" description="INSERT into table" order="3">
