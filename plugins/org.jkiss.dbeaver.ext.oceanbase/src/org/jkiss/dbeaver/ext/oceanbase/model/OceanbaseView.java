@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 
 /**
- * ClickhouseView
+ * OceanbaseView
  */
 public class OceanbaseView extends MySQLView
 {

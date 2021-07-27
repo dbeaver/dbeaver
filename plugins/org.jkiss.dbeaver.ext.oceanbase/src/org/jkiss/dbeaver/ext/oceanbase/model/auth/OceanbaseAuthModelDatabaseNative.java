@@ -17,7 +17,6 @@ public class OceanbaseAuthModelDatabaseNative extends AuthModelDatabaseNative {
 	@Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
 		String userName = configuration.getUserName();
-		System.out.println("current user is " + userName);
 		if (!CommonUtils.isEmpty(userName) ) {
 			if (!userName.contains("@")) {
 				userName += "@" + configuration.getServerName();
