@@ -135,8 +135,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
             }
         }
         DBPDataSource dataSource = session.getDataSource();
-        boolean replaceNullsToDefaults = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_REPLACE_NULLS_TO_DEFAULT_VALUES); // Disable this setting to set actually nulls into row
-        if (allNulls && replaceNullsToDefaults && !useMultiRowInsert && method instanceof BaseInsertMethod && !useUpsert
+        if (allNulls && !useMultiRowInsert && method instanceof BaseInsertMethod && !useUpsert
                 && dataSource.getSQLDialect().supportsInsertAllDefaultValuesStatement()) {
             checkDefaultAttributeValues(attributes);
             if (allColumnsDefault) {
