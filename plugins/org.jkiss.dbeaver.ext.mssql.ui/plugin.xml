@@ -81,16 +81,16 @@
         </configurator>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+    <!--<extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasourcePatch id="sqlserver">
             <treeInjection path="sqlserver/database" after="trigger">
                 <folder label="%tree.databaseInfo.node.name" icon="#folder_info" description="Database system information">
                     <treeContribution category="connectionEditor"/>
-<!--                    <object type="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"/>-->
-                </folder>
+                    <object type="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"/>-->
+                <!--</folder>
             </treeInjection>
         </datasourcePatch>
-    </extension>
+    </extension>-->
 
     <extension point="org.eclipse.ui.editors">
         <editor

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -416,6 +417,8 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 			return adapter.cast(new ExasolStructureAssistant(this));
 		} else if (adapter == DBAServerSessionManager.class) {
 			return adapter.cast(new ExasolServerSessionManager(this));
+		} else if (adapter == DBAUserChangePassword.class) {
+			return adapter.cast(new ExasolChangeUserPassword(this));
 		}
 		return super.getAdapter(adapter);
 	}

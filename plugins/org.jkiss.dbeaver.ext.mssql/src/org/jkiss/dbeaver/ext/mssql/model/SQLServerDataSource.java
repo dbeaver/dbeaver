@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
@@ -57,6 +58,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     // Delegate data type reading to the driver
     private final SystemDataTypeCache dataTypeCache = new SystemDataTypeCache();
     private final DatabaseCache databaseCache = new DatabaseCache();
+    private final ServerLoginCache serverLoginCache = new ServerLoginCache();
 
     private boolean supportsColumnProperty;
     private String serverVersion;
@@ -111,6 +113,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public DatabaseCache getDatabaseCache() {
         return databaseCache;
+    }
+
+    @Association
+    public List<SQLServerLogin> getLogins(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return serverLoginCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public SQLServerLogin getLogin(@NotNull DBRProgressMonitor monitor, @NotNull String loginName) throws DBException {
+        return serverLoginCache.getObject(monitor, this, loginName);
     }
 
     @Override
@@ -370,6 +382,8 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             return adapter.cast(new SQLServerStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new SQLServerSessionManager(this));
+        } else if (adapter == DBAUserChangePassword.class) {
+            return adapter.cast(new SQLServerChangeLoginPassword(this));
         }
         return super.getAdapter(adapter);
     }
@@ -483,6 +497,25 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         @Override
         protected SQLServerDataType fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerDataType(dataSource, resultSet);
+        }
+    }
+
+    private class ServerLoginCache extends JDBCObjectCache<SQLServerDataSource, SQLServerLogin> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource) throws SQLException {
+            return session.prepareStatement("SELECT * FROM sys.server_principals");
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerLogin fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String loginName = JDBCUtils.safeGetString(resultSet, "name");
+            if (CommonUtils.isNotEmpty(loginName)) {
+                return new SQLServerLogin(dataSource, loginName, resultSet);
+            }
+            return null;
         }
     }
 }

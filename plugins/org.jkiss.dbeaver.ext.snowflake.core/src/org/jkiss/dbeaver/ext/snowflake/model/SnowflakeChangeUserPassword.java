@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
+package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,23 +28,19 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
-public class PostgresUserChangePassword implements DBAUserChangePassword {
+public class SnowflakeChangeUserPassword implements DBAUserChangePassword {
 
-    private PostgreDataSource dataSource;
+    private SnowflakeDataSource dataSource;
 
-    public PostgresUserChangePassword(PostgreDataSource dataSource) {
+    SnowflakeChangeUserPassword(SnowflakeDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
-        if (CommonUtils.isEmpty(newPassword)) {
-            // User can set new empty password, but then we will get an error when connecting with an empty password
-            throw new DBException("Password change error for user: " + userName + ". New password can not be empty.");
-        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " WITH PASSWORD " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " SET PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }

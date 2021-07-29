@@ -21,6 +21,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface DBAUserChangePassword {
 
-    void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword) throws DBException;
+    void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException;
 
 }

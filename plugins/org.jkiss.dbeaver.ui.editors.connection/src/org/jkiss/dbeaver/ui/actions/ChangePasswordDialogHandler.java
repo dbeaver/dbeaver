@@ -63,7 +63,7 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
                         try {
                             UIUtils.runInProgressService(monitor -> {
                                 try {
-                                    changePassword.changeUserPassword(monitor, userName, newPassword);
+                                    changePassword.changeUserPassword(monitor, userName, newPassword, oldPassword);
 
                                     if (DBWorkbench.getPlatformUI().confirmAction(
                                         UIConnectionMessages.dialog_user_password_change_question_label,

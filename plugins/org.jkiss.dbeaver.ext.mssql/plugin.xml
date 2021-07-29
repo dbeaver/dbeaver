@@ -37,6 +37,7 @@
             dialect="sqlserver">
 
             <tree path="sqlserver" label="SQL Server data source">
+                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase" label="%tree.databases.node.name" icon="#folder_database" description="%tree.databases.node.tip">
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
                     <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
                         <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
@@ -133,12 +134,6 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <!--<folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table type indexes" visibleIf="object.isTableType()">
-                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
-                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" virtual="true">
-                                            </items>
-                                        </items>
-                                    </folder>-->
                                  </items>
                             </folder>
                         </items>
@@ -146,8 +141,16 @@
                     <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger" label="%tree.databaseTriggers.node.name" icon="#triggers" description="All database triggers">
                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                     </folder>
-
                 </items>
+                </folder>
+                <folder label="%tree.security.node.name" icon="#security" description="Security management">
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin" label="%tree.logins.node.name" icon="#folder_user" description="Logins">
+                        <items label="%tree.login.node.name" path="logins" property="logins" icon="#user"/>
+                    </folder>
+                </folder>
+                <folder label="%tree.administer.node.name" icon="#folder_admin" description="tree.administer.node.description">
+                    <treeContribution category="connectionEditor"/>
+                </folder>
             </tree>
 
             <drivers managable="true">

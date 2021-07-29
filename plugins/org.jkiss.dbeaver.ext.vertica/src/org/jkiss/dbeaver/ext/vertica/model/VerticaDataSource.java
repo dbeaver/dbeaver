@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -114,6 +115,14 @@ public class VerticaDataSource extends GenericDataSource {
     @Association
     public Collection<VerticaNode> getClusterNodes(DBRProgressMonitor monitor) throws DBException {
         return nodeCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBAUserChangePassword.class) {
+            return adapter.cast(new VerticaChangeUserPassword(this));
+        }
+        return super.getAdapter(adapter);
     }
 
     class NodeCache extends JDBCObjectCache<VerticaDataSource, VerticaNode> {
