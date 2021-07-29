@@ -40,6 +40,9 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.function.Consumer;
 
 /**
 * BaseValueEditor
@@ -175,16 +178,26 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                     return;
                 }
 
-                // Check new focus control in async mode
-                // (because right now focus is still on edit control)
-                if (!valueController.isReadOnly()) {
-                    saveValue(false);
-                }
-                if (valueController instanceof IMultiController) {
-                    ((IMultiController) valueController).closeInlineEditor();
-                }
+                onFocusLost(valueController::updateSelectionValue);
             }
         });
+
+        // Unfortunately, focusLost events on macOS never reach the listener above.
+        // However, we rely on them to save the value when the user clicks somewhere on the grid and LightGrid forces focus on itself.
+        // The solution is to add dispose listener. But here is a catch: when inline control is about to be disposed of, the selection is already
+        // on some other cell on the grid. Hence, we need to use updateValue() on valueController, not updateSelectionValue().
+        if (RuntimeUtils.isMacOS()) {
+            inlineControl.addDisposeListener(e -> onFocusLost(value -> valueController.updateValue(value, true)));
+        }
+    }
+
+    private void onFocusLost(@NotNull Consumer<Object> valueSaver) {
+        if (!valueController.isReadOnly()) {
+            saveValue(false, valueSaver);
+        }
+        if (valueController instanceof IMultiController) {
+            ((IMultiController) valueController).closeInlineEditor();
+        }
     }
 
     protected void saveValue() {
@@ -192,11 +205,15 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     }
 
     protected void saveValue(boolean showError) {
+        saveValue(showError, valueController::updateSelectionValue);
+    }
+
+    private void saveValue(boolean showError, @NotNull Consumer<Object> valueUpdater) {
         try {
             Object newValue = extractEditorValue();
             if (dirty || control instanceof Combo || control instanceof CCombo || control instanceof List) {
                 // Combos are always dirty (because drop-down menu sets a selection)
-                valueController.updateSelectionValue(newValue);
+                valueUpdater.accept(newValue);
             }
         } catch (DBException e) {
             if (valueController instanceof IMultiController) {
