@@ -95,7 +95,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
-                    store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
+            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
             ;
     }
 
@@ -155,6 +155,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
                     updateOptionsEnablement();
                 }
             });
+
         }
         {
             Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);

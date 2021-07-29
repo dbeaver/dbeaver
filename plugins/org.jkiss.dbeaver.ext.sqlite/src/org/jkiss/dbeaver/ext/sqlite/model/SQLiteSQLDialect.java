@@ -54,4 +54,8 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
         return MultiValueInsertMode.GROUP_ROWS;
     }
 
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return true;
+    }
 }

@@ -107,4 +107,9 @@ public class VerticaSQLDialect extends GenericSQLDialect {
     public String[][] getBlockBoundStrings() {
         return VERTICA_BEGIN_END_BLOCK;
     }
+
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return true;
+    }
 }

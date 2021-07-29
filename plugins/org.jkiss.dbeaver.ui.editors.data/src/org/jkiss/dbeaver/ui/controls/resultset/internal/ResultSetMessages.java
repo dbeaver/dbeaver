@@ -282,6 +282,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_group_string;
     public static String pref_page_database_resultsets_checkbox_string_use_editor;
     public static String pref_page_database_resultsets_checkbox_string_use_editor_tip;
+    public static String pref_page_database_resultsets_label_replace_nulls_to_default;
+    public static String pref_page_database_resultsets_label_replace_nulls_to_default_tip;
 
     public static String pref_page_database_resultsets_label_read_metadata_tip;
     public static String pref_page_database_resultsets_label_read_references_tip;

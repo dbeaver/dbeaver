@@ -817,4 +817,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return true;
     }
 
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return false;
+    }
 }

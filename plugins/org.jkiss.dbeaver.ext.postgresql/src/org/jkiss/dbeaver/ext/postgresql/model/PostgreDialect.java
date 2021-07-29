@@ -910,4 +910,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
             rules.add(new PostgreEscapeStringRule());
         }
     }
+
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return true;
+    }
 }

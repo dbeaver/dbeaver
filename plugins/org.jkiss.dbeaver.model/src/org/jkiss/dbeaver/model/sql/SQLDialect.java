@@ -413,4 +413,6 @@ public interface SQLDialect {
 
     boolean supportsAlterTableStatement();
 
+    boolean supportsInsertAllDefaultValuesStatement();
+
 }

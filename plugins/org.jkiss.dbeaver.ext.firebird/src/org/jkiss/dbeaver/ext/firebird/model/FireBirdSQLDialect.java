@@ -79,4 +79,9 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         return "select * from " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
     }
+
+    @Override
+    public boolean supportsInsertAllDefaultValuesStatement() {
+        return true;
+    }
 }
