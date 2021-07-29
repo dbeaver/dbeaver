@@ -397,12 +397,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         body = "-- Aggregate function";
                     } else {
                         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
+                            if (!session.isConnected()) {
+                                session.getExecutionContext().reconnect(monitor);
+                            }
                             body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
                         } catch (SQLException e) {
                             if (!CommonUtils.isEmpty(this.procSrc)) {
                                 log.debug("Error reading procedure body", e);
                                 // At least we have it
-                                body = this.procSrc;
+                                body = "-- Unable to read procedure header\n" + procSrc;
                             } else {
                                 throw new DBException("Error reading procedure body", e);
                             }
