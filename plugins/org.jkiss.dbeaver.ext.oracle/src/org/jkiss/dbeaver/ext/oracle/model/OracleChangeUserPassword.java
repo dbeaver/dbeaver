@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -39,7 +40,8 @@ public class OracleChangeUserPassword implements DBAUserChangePassword {
         // Do not use numbers in the password beginning
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + newPassword); // newPassword is unquoted, yes. That how it works in Oracle
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
+                    " REPLACE " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }
