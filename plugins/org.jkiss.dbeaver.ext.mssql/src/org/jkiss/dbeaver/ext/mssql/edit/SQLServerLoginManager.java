@@ -65,7 +65,7 @@ public class SQLServerLoginManager extends SQLObjectEditor<SQLServerLogin, SQLSe
         if (command.hasProperty("disabled")) {
             actionList.add(new SQLDatabasePersistAction(
                     "Alter login",
-                    "ALTER LOGIN " + DBUtils.getQuotedIdentifier(login.getDataSource(), login.getName()) + (login.isDisabled() ? " DISABLE" : " ENABLE")
+                    "ALTER LOGIN " + DBUtils.getQuotedIdentifier(login.getDataSource(), login.getName()) + (login.isDisabled() ? " DISABLE" : " ENABLE") //$NON-NLS-2$
             ));
         }
     }
@@ -95,7 +95,7 @@ public class SQLServerLoginManager extends SQLObjectEditor<SQLServerLogin, SQLSe
 
         actions.add(new SQLDatabasePersistAction(
                 "Rename login",
-                "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " WITH NAME = " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())
+                "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " WITH NAME = " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName()) //$NON-NLS-2$
         ));
     }
 
