@@ -73,4 +73,5 @@
 	<tip>You can ignore the PK validation constraint when importing data into a table by selecting the Replace method in the data load settings. Supported by Oracle, MySQL, PostgreSQL, Firebird, and SQLite. You can find out more about that in our <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Import-and-Replace">wiki article</a>.</tip>
 	<tip>Choose the fully qualified name of the object in the SQL Editor and use <b>Ctrl(Cmd) + Left click</b>. This will take you to the object's tab. Works with tables, columns and procedures.</tip>
 <!--	Tips above were reviewed on 10th of February, 2021.-->
+	<tip>If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.</tip>
 </tips>
