@@ -39,8 +39,8 @@ public class ExasolChangeUserPassword implements DBAUserChangePassword {
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY \"" + CommonUtils.notEmpty(newPassword) +
-                "\" REPLACE \"" + CommonUtils.notEmpty(oldPassword) + "\""); // Password string must be quoted in double quote
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
+                " REPLACE " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }
