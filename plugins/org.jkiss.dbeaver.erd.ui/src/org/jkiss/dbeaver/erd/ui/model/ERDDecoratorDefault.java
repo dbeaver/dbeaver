@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditPartFactory;
+import org.jkiss.dbeaver.erd.ui.editor.tools.HandToolEntry;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -80,6 +81,10 @@ public class ERDDecoratorDefault implements ERDDecorator {
         // the selection tool
         ToolEntry selectionTool = new SelectionToolEntry();
         controls.add(selectionTool);
+
+        // the hand tool
+        ToolEntry moveTool = new HandToolEntry();
+        controls.add(moveTool);
 
         // use selection tool as default entry
         paletteRoot.setDefaultEntry(selectionTool);
