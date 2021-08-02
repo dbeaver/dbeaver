@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.erd.ui;
 
+import org.eclipse.gef.palette.PaletteContainer;
+import org.eclipse.gef.palette.PaletteEntry;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDObject;
@@ -88,4 +91,16 @@ public class ERDUIUtils
         return attributeLabel;
 	}
 
+    @Nullable
+    public static PaletteEntry findPaletteEntry(@NotNull PaletteContainer container, @NotNull String id) {
+        for (Object child : container.getChildren()) {
+            if (child instanceof PaletteEntry && id.equals(((PaletteEntry) child).getId())) {
+                return (PaletteEntry) child;
+            }
+            if (child instanceof PaletteContainer) {
+                return findPaletteEntry((PaletteContainer) child, id);
+            }
+        }
+        return null;
+    }
 }

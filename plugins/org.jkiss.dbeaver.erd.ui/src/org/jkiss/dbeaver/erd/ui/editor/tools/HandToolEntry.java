@@ -29,8 +29,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public class HandToolEntry extends ToolEntry {
+    public static final String ID = "hand-tool";
+
     public HandToolEntry() {
         super("Pan Diagram", "Pan diagram view", SharedImages.DESC_SELECTION_TOOL_16, SharedImages.DESC_SELECTION_TOOL_24, ToolHand.class);
+        setUserModificationPermission(PERMISSION_NO_MODIFICATION);
+        setId(ID);
     }
 
     public static class ToolHand extends AbstractTool {

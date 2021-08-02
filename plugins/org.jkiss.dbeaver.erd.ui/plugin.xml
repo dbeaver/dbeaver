@@ -517,4 +517,12 @@
         <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportGraphML"/>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.erd.toggleHand" name="Toggle hand tool" description="Cycle through hand tool and previously used tool"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
+    </extension>
+
 </plugin>
