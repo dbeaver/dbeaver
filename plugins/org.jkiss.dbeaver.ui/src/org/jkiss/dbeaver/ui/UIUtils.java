@@ -2062,4 +2062,10 @@ public class UIUtils {
             ((GridData) gd).exclude = !visible;
         }
     }
+
+    public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {
+        if (RuntimeUtils.isMacOS()) {
+            widget.addDisposeListener(e -> onFocusLost.run());
+        }
+    }
 }

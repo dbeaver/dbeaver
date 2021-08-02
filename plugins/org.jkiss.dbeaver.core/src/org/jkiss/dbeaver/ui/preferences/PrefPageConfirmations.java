@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -52,7 +53,6 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 
     private Table confirmTable;
-    private CustomTableEditor tableEditor;
 
     @Override
     public void init(IWorkbench workbench)
@@ -78,26 +78,28 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         UIUtils.createTableColumn(confirmTable, SWT.LEFT, CoreMessages.pref_page_confirmations_table_column_group);
         UIUtils.createTableColumn(confirmTable, SWT.RIGHT, CoreMessages.pref_page_confirmations_table_column_value);
 
-        tableEditor = new CustomTableEditor(confirmTable) {
+        new CustomTableEditor(confirmTable) {
             {
                 firstTraverseIndex = 2;
                 lastTraverseIndex = 2;
                 editOnEnter = false;
             }
+
+            @Nullable
             @Override
             protected Control createEditor(Table table, int index, TableItem item) {
                 if (index != 2) {
                     return null;
                 }
                 CCombo editor = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
-                editor.setItems(new String[] { CoreMessages.pref_page_confirmations_combo_always, CoreMessages.pref_page_confirmations_combo_never, CoreMessages.pref_page_confirmations_combo_prompt} );
+                editor.setItems(new String[]{CoreMessages.pref_page_confirmations_combo_always, CoreMessages.pref_page_confirmations_combo_never, CoreMessages.pref_page_confirmations_combo_prompt});
                 editor.setText(item.getText(2));
                 return editor;
             }
+
             @Override
             protected void saveEditorValue(Control control, int index, TableItem item) {
                 item.setText(2, ((CCombo) control).getText());
-
             }
         };
 
@@ -170,7 +172,6 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
 
     @Override
     public boolean performOk() {
-        tableEditor.saveEditorValues();
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         for (TableItem item : confirmTable.getItems()) {
             String id = (String) item.getData("id");
