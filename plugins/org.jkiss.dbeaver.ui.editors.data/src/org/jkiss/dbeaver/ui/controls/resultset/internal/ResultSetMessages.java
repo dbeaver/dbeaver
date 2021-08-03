@@ -46,6 +46,8 @@ public class ResultSetMessages extends NLS {
 
     public static String controls_resultset_filter_button_reset;
     public static String controls_resultset_filter_column_name;
+    public static String controls_resultset_filter_column_visible;
+    public static String controls_resultset_filter_column_pinned;
     public static String controls_resultset_filter_column_criteria;
     public static String controls_resultset_filter_column_order;
     public static String controls_resultset_filter_group_columns;
