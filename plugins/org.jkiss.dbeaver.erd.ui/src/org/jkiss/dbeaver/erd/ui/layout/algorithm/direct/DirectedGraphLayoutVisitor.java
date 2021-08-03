@@ -223,6 +223,9 @@ public class DirectedGraphLayoutVisitor {
 */
             }
             conn.setRoutingConstraint(bends);
+        } else {
+            // Clear previous bend points
+            conn.setRoutingConstraint(null);
         }
 
     }
