@@ -148,13 +148,23 @@ public class DiagramLoader extends ERDPersistedState {
         if (entitiesElem != null) {
             // Parse data source
             for (Element dsElem : XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE)) {
+                String dsProjectName = dsElem.getAttribute(ATTR_PROJECT);
+                DBPProject dsProject = projectMeta;
+                if (!CommonUtils.isEmpty(dsProjectName)) {
+                    // Get owner project, if any
+                    dsProject = DBWorkbench.getPlatform().getWorkspace().getProject(dsProjectName);
+                    if (dsProject == null) {
+                        log.warn("Cannot find datasource registry for project '" + dsProjectName + "'");
+                        continue;
+                    }
+                }
                 String dsId = dsElem.getAttribute(ATTR_ID);
                 if (CommonUtils.isEmpty(dsId)) {
                     log.warn("Missing datasource ID");
                     continue;
                 }
                 // Get connected datasource
-                final DBPDataSourceContainer dataSourceContainer = projectMeta.getDataSourceRegistry().getDataSource(dsId);
+                final DBPDataSourceContainer dataSourceContainer = dsProject.getDataSourceRegistry().getDataSource(dsId);
                 if (dataSourceContainer == null) {
                     log.warn("Datasource '" + dsId + "' not found");
                     continue;
@@ -411,6 +421,7 @@ public class DiagramLoader extends ERDPersistedState {
             xml.startElement(TAG_ENTITIES);
             for (DBPDataSourceContainer dsContainer : dsMap.keySet()) {
                 xml.startElement(TAG_DATA_SOURCE);
+                xml.addAttribute(ATTR_PROJECT, dsContainer.getProject().getName());
                 xml.addAttribute(ATTR_ID, dsContainer.getId());
 
                 final DataSourceObjects desc = dsMap.get(dsContainer);

@@ -54,6 +54,7 @@ public class ERDPersistedState {
     public static final String ATTR_NAME = "name";
     public static final String ATTR_TIME = "time";
     public static final String ATTR_ALIAS = "alias";
+    public static final String ATTR_PROJECT = "project";
     public static final String ATTR_ID = "id";
     public static final String ATTR_ORDER = "order";
     public static final String ATTR_TRANSPARENT = "transparent";
@@ -96,10 +97,19 @@ public class ERDPersistedState {
             if (entitiesElem != null) {
                 // Parse data source
                 for (Element dsElem : XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE)) {
+                    String dsProjectName = dsElem.getAttribute(ATTR_PROJECT);
+                    DBPProject project = projectMeta;
+                    if (!CommonUtils.isEmpty(dsProjectName)) {
+                        // Get owner project, if any
+                        project = DBWorkbench.getPlatform().getWorkspace().getProject(dsProjectName);
+                        if (project == null) {
+                            continue;
+                        }
+                    }
                     String dsId = dsElem.getAttribute(ATTR_ID);
                     if (!CommonUtils.isEmpty(dsId)) {
                         // Get connected datasource
-                        final DBPDataSourceContainer dataSourceContainer = projectMeta.getDataSourceRegistry().getDataSource(dsId);
+                        final DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsId);
                         if (dataSourceContainer != null) {
                             containers.add(dataSourceContainer);
                         }
