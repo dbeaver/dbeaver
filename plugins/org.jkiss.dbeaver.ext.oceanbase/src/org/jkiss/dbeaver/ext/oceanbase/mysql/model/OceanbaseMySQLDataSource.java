@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oceanbase.model;
+package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
 import java.util.Collection;
 
@@ -34,10 +34,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
-public class OceanbaseDataSource extends MySQLDataSource {
+public class OceanbaseMySQLDataSource extends MySQLDataSource {
 	private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
 
-    public OceanbaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
+    public OceanbaseMySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
     	super(monitor, container);

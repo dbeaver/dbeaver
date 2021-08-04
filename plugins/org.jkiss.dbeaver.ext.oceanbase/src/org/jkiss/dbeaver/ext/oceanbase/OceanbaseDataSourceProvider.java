@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.oceanbase;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseDataSource;
+import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -43,7 +43,7 @@ public class OceanbaseDataSourceProvider extends MySQLDataSourceProvider {
             @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
             throws DBException
         {
-            return new OceanbaseDataSource(monitor, container);
+            return new OceanbaseMySQLDataSource(monitor, container);
         }
 
 

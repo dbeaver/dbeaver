@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oceanbase.model;
+package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.DBPObjectStatistics;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 
-public class OceanbaseTable extends MySQLTable implements DBPObjectStatistics
+/**
+ * OceanbaseView
+ */
+public class OceanbaseView extends MySQLView
 {
-
-	public OceanbaseTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
-		super(monitor, catalog, source);
+    public OceanbaseView(MySQLCatalog catalog) {
+		super(catalog);
 	}
-	
+
 }

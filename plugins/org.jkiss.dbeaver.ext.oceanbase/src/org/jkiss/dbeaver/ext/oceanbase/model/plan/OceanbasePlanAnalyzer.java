@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseDataSource;
+import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -32,9 +32,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer implements DBCQueryPlanner{
-	private OceanbaseDataSource dataSource;
+	private OceanbaseMySQLDataSource dataSource;
 
-	public OceanbasePlanAnalyzer(OceanbaseDataSource dataSource) {
+	public OceanbasePlanAnalyzer(OceanbaseMySQLDataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 	
