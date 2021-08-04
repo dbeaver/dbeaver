@@ -122,7 +122,6 @@
                     	iconBig="icons/ob_icon_big.png"
                         categories="sql">
                     <replace provider="generic" driver="oceanbase"/>
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
             </drivers>
