@@ -16,32 +16,50 @@
  */
 package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEngine;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.oceanbase.model.plan.OceanbasePlanAnalyzer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseMySQLDataSource extends MySQLDataSource {
 	private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
+	private final String tenantType;
+    private final OceanbaseCatalogCache oceanbaseCatalogCache = new OceanbaseCatalogCache();
 
     public OceanbaseMySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
     	super(monitor, container);
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
+        tenantType = container.getConnectionConfiguration().getProviderProperty("tenantType");
     }
     
     @Override
@@ -49,6 +67,8 @@ public class OceanbaseMySQLDataSource extends MySQLDataSource {
         throws DBException {
         super.initialize(monitor);
         dataTypeCache.getAllObjects(monitor, this);
+        // Read catalogs
+        oceanbaseCatalogCache.getAllObjects(monitor, this);
     }
     
     @Override
@@ -97,4 +117,85 @@ public class OceanbaseMySQLDataSource extends MySQLDataSource {
     public DBSDataType getLocalDataType(int typeID) {
         return dataTypeCache.getCachedObject(typeID);
     }
+    
+    public boolean isMySQLMode () {
+    	return tenantType.equals("MySQL");
+    }
+    
+    MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)throws DBException {
+        if (CommonUtils.isEmpty(catalogName)) {
+            return null;
+        }
+        OceanbaseMySQLCatalog catalog = (OceanbaseMySQLCatalog)getCatalog(catalogName);
+        if (catalog == null) {
+            return null;
+        }
+        return catalog.getTable(monitor, tableName);
+    }
+    
+    @Override
+    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor)
+        throws DBException {
+        return getCatalogs();
+    }
+
+    @Override
+    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+        throws DBException {
+        return getCatalog(childName);
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
+        throws DBException {
+        return OceanbaseMySQLCatalog.class;
+    }
+    
+    public OceanbaseCatalogCache getOceanbaseCatalogCache() {
+        return oceanbaseCatalogCache;
+    }
+    
+    @Override
+    public MySQLCatalog getCatalog(String name) {
+        return oceanbaseCatalogCache.getCachedObject(name);
+    }
+    
+    @Override
+    public Collection<MySQLCatalog> getCatalogs() {
+    	List<MySQLCatalog> catalogs = new ArrayList<>();
+    	for (OceanbaseMySQLCatalog oceanbaseMySQLCatalog : oceanbaseCatalogCache.getCachedObjects()) {
+    		catalogs.add(oceanbaseMySQLCatalog);
+    	}
+    	return catalogs;
+    }
+    
+    static class OceanbaseCatalogCache extends JDBCObjectCache<OceanbaseMySQLDataSource, OceanbaseMySQLCatalog> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OceanbaseMySQLDataSource owner) throws SQLException {
+            StringBuilder catalogQuery = new StringBuilder("show databases");
+            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            if (catalogFilters != null) {
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true);
+            }
+            JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
+            if (catalogFilters != null) {
+                JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected OceanbaseMySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull OceanbaseMySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new OceanbaseMySQLCatalog(owner, resultSet);
+        }
+
+    }
+    
+    @Override
+    public boolean supportsInformationSchema() {
+        return true;
+    }
+    
 }

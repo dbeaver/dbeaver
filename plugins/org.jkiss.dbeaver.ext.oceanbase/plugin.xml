@@ -16,7 +16,7 @@
                   icon="icons/ob_icon.png"
                   label="OceanBase data source"
                   path="oceanbase">
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
+                <folder type="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
                     <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
@@ -65,6 +65,12 @@
                         <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" virtual="true">
                             <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
                                 <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
+                            <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="Parameters" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
                                 </items>
                             </items>
                         </folder>
@@ -152,7 +158,10 @@
         </editor>
     </extension>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution editorId="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution 
+        	editorId="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor" 
+        	category="connectionEditor" label="%editor.session_manager.name" 
+        	icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="oceanbase"/>
         </editorContribution>
     </extension>
@@ -191,6 +200,10 @@
         <propertyConfigurator 
         	class="org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative" 
         	uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDatabaseManager" objectType="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLCatalog" label="%manager.catalog.name"/>
     </extension>
     
 </plugin>
