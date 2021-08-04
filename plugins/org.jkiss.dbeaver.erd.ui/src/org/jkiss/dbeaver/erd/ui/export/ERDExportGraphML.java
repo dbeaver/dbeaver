@@ -20,29 +20,26 @@ import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.erd.model.ERDUtils;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeListFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
-import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
-import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
-import org.jkiss.dbeaver.erd.ui.part.EntityPart;
+import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.Pair;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * GraphML exporter
@@ -50,11 +47,10 @@ import java.util.Map;
 public class ERDExportGraphML implements ERDExportFormatHandler
 {
     private static final Log log = Log.getLog(ERDExportGraphML.class);
-    private final int fontSize = 12;
+    private static final int fontSize = 12;
 
     @Override
-    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) throws DBException
-    {
+    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) {
         try {
             try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(targetFile), GeneralUtils.UTF8_CHARSET)) {
                 XMLBuilder xml = new XMLBuilder(osw, GeneralUtils.UTF8_ENCODING);
@@ -86,191 +82,38 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                 xml.addAttribute("edgedefault", "directed");
                 xml.addAttribute("id", "G");
 
-                Map<ERDEntity, String> entityMap = new HashMap<>();
-                int nodeNum = 0;
-                for (ERDEntity entity : diagram.getEntities()) {
-                    nodeNum++;
-                    String nodeId = "n" + nodeNum;
-                    entityMap.put(entity, nodeId);
+                // A list of diagram elements sorted according to their z-order
+                final List<ERDElement<?>> elements = Stream
+                    .concat(
+                        diagram.getEntities().stream().map(x -> new Pair<>(x, diagram.getVisualInfo(x.getObject()))),
+                        diagram.getNotes().stream().map(x -> new Pair<>(x, diagram.getVisualInfo(x))))
+                    .sorted(Comparator.comparing(x -> x.getSecond() == null ? 0 : x.getSecond().zOrder))
+                    .map(Pair::getFirst)
+                    .collect(Collectors.toList());
 
-                    // node
-                    xml.startElement("node");
-                    xml.addAttribute("id", nodeId);
-                    {
-                        // Graph data
-                        xml.startElement("data");
-                        xml.addAttribute("key", "nodegraph");
+                final Map<ERDElement<?>, String> associations = new HashMap<>();
 
-                        {
-                            // Generic node
-                            EntityPart entityPart = diagramPart.getEntityPart(entity);
-                            EntityFigure entityFigure = entityPart.getFigure();
-                            Rectangle partBounds = entityPart.getBounds();
-                            xml.startElement("y:GenericNode");
-                            xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");
-
-                            // Geometry
-                            xml.startElement("y:Geometry");
-                            xml.addAttribute("height", partBounds.height);
-                            xml.addAttribute("width", partBounds.width + getExtraTableLength(diagram, entity));
-                            xml.addAttribute("x", partBounds.x());
-                            xml.addAttribute("y", partBounds.y());
-                            xml.endElement();
-
-                            // Fill
-                            xml.startElement("y:Fill");
-                            xml.addAttribute("color", getHtmlColor(entityFigure.getBackgroundColor()));
-                            //xml.addAttribute("color2", partBounds.width);
-                            xml.addAttribute("transparent", "false");
-                            xml.endElement();
-
-                            // Border
-                            xml.startElement("y:BorderStyle");
-                            xml.addAttribute("color", getHtmlColor(entityFigure.getForegroundColor()));
-                            xml.addAttribute("type", "line");
-                            xml.addAttribute("width", "1.0");
-                            xml.endElement();
-
-                            {
-                                // Entity Name
-                                Rectangle nameBounds = entityFigure.getNameLabel().getBounds();
-
-                                xml.startElement("y:NodeLabel");
-                                xml.addAttribute("alignment", "center");
-                                xml.addAttribute("autoSizePolicy", "content");
-                                xml.addAttribute("configuration", "com.yworks.entityRelationship.label.name");
-                                xml.addAttribute("fontFamily", "Courier");
-                                xml.addAttribute("fontSize", fontSize);
-                                xml.addAttribute("fontStyle", "plain");
-                                xml.addAttribute("hasLineColor", "false");
-                                xml.addAttribute("modelName", "internal");
-                                xml.addAttribute("modelPosition", "t");
-                                xml.addAttribute("backgroundColor", getHtmlColor(entityFigure.getNameLabel().getBackgroundColor()));
-                                xml.addAttribute("textColor", "#FFFFFF");
-                                xml.addAttribute("visible", "true");
-                                xml.addAttribute("horizontalTextPosition", "center");
-                                xml.addAttribute("iconTextGap", "4");
-                                xml.addAttribute("height", nameBounds.height);
-                                xml.addAttribute("width", nameBounds.width);
-                                xml.addAttribute("x", 0);
-                                xml.addAttribute("y", 4);
-
-                                xml.addText(entity.getName());
-
-                                xml.endElement();
-                            }
-
-                            {
-                                // Attributes
-                                AttributeListFigure columnsFigure = entityFigure.getColumnsFigure();
-                                Rectangle attrsBounds = columnsFigure.getBounds();
-
-                                xml.startElement("y:NodeLabel");
-                                xml.addAttribute("alignment", "left");
-                                xml.addAttribute("autoSizePolicy", "content");
-                                xml.addAttribute("configuration", "com.yworks.entityRelationship.label.attributes");
-                                xml.addAttribute("fontFamily", "Courier");
-                                xml.addAttribute("fontSize", fontSize);
-                                xml.addAttribute("fontStyle", "plain");
-                                xml.addAttribute("hasLineColor", "false");
-                                xml.addAttribute("modelName", "custom");
-                                xml.addAttribute("modelPosition", "t");
-                                xml.addAttribute("backgroundColor", getHtmlColor(columnsFigure.getBackgroundColor()));
-                                xml.addAttribute("textColor", getHtmlColor(columnsFigure.getForegroundColor()));
-                                xml.addAttribute("visible", "true");
-                                xml.addAttribute("horizontalTextPosition", "center");
-                                xml.addAttribute("iconTextGap", "4");
-
-                                xml.addAttribute("height", attrsBounds.height);
-                                xml.addAttribute("width", attrsBounds.width);
-                                xml.addAttribute("x", 2); //numbers from yEd Graph Editor
-                                xml.addAttribute("y", 31.66796875);
-
-                                StringBuilder attrsString = new StringBuilder();
-                                for (ERDEntityAttribute attr : entity.getAttributes()) {
-                                    if (attrsString.length() > 0) {
-                                        attrsString.append("\n");
-                                    }
-                                    attrsString.append(ERDUIUtils.getFullAttributeLabel(diagram, attr, true));
-                                }
-
-                                xml.addText(attrsString.toString());
-
-                                xml.startElement("y:LabelModel");
-                                xml.startElement("y:ErdAttributesNodeLabelModel");
-                                xml.endElement();
-                                xml.endElement();
-
-                                xml.startElement("y:ModelParameter");
-                                xml.startElement("y:ErdAttributesNodeLabelModelParameter");
-                                xml.endElement();
-                                xml.endElement();
-
-                                xml.endElement();
-                            }
-
-                            xml.endElement();
-                        }
-
-                        xml.endElement();
+                // Export elements and collect their associations
+                for (int index = 0; index < elements.size(); index++) {
+                    final ERDElement<?> element = elements.get(index);
+                    if (element instanceof ERDEntity) {
+                        exportEntity(index, (ERDEntity) element, diagramPart.getEntityPart((ERDEntity) element), diagram, associations, xml);
+                    } else if (element instanceof ERDNote) {
+                        exportNote(index, (ERDNote) element, diagramPart.getNotePart((ERDNote) element), associations, xml);
+                    } else {
+                        log.debug("Unsupported ERD element: " + element);
                     }
-
-                    xml.endElement();
                 }
 
-                int edgeNum = 0;
-                for (ERDEntity entity : diagram.getEntities()) {
-                    EntityPart entityPart = diagramPart.getEntityPart(entity);
-                    for (ERDAssociation association : entity.getAssociations()) {
-                        AssociationPart associationPart = entityPart.getConnectionPart(association, true);
-                        if (associationPart == null) {
-                            log.debug("Association part not found");
-                            continue;
-                        }
-
-                        edgeNum++;
-                        String edgeId = "e" + edgeNum;
-
-                        xml.startElement("edge");
-                        xml.addAttribute("id", edgeId);
-                        xml.addAttribute("source", entityMap.get(entity));
-                        xml.addAttribute("target", entityMap.get(association.getTargetEntity()));
-
-                        xml.startElement("data");
-                        xml.addAttribute("key", "edgegraph");
-                        xml.startElement("y:PolyLineEdge");
-                        xml.startElement("y:Path"); // sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
-                        xml.addAttribute("sx",0.0);
-                        xml.addAttribute("sy",0.0);
-                        xml.addAttribute("tx",0.0);
-                        xml.addAttribute("ty",0.0);
-                        for (Bendpoint bp : associationPart.getBendpoints()) {
-                            xml.startElement("y:Point");
-                            xml.addAttribute("x", bp.getLocation().x);
-                            xml.addAttribute("y", bp.getLocation().y);
-                            xml.endElement();
-                        }
-                        xml.endElement();
-
-                        boolean identifying = ERDUtils.isIdentifyingAssociation(association);
-                        xml.startElement("y:LineStyle");
-                        xml.addAttribute("color", "#000000");
-                        xml.addAttribute("type", !identifying || association.isLogical() ? "dashed" : "line");
-                        xml.addAttribute("width", "1.0");
-                        xml.endElement();
-                        xml.startElement("y:Arrows");
-                        String sourceStyle = !identifying ? "white_diamond" : "none";
-                        xml.addAttribute("source", sourceStyle);
-                        xml.addAttribute("target", "circle");
-                        xml.endElement();
-                        xml.startElement("y:BendStyle");
-                        xml.addAttribute("smoothed", "false");
-                        xml.endElement();
-
-                        xml.endElement();
-                        xml.endElement();
-
-                        xml.endElement();
+                // Export edges using collected associations
+                for (int index = 0; index < elements.size(); index++) {
+                    final ERDElement<?> element = elements.get(index);
+                    if (element instanceof ERDEntity) {
+                        exportEdge(index, element, diagramPart.getEntityPart((ERDEntity) element), associations, xml);
+                    } else if (element instanceof ERDNote) {
+                        exportEdge(index, element, diagramPart.getNotePart((ERDNote) element), associations, xml);
+                    } else {
+                        log.debug("Unsupported ERD element: " + element);
                     }
                 }
 
@@ -287,7 +130,257 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         }
     }
 
-    private double getExtraTableLength(EntityDiagram diagram, ERDEntity entity) {
+    private static void exportEntity(int index, ERDEntity entity, EntityPart entityPart, EntityDiagram diagram, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+        final String entityId = "entity" + index;
+        final EntityFigure entityFigure = entityPart.getFigure();
+        final Rectangle partBounds = entityPart.getBounds();
+
+        associations.put(entity, entityId);
+
+        // node
+        xml.startElement("node");
+        xml.addAttribute("id", entityId);
+        {
+            // Graph data
+            xml.startElement("data");
+            xml.addAttribute("key", "nodegraph");
+
+            {
+                // Generic node
+                xml.startElement("y:GenericNode");
+                xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");
+
+                // Geometry
+                xml.startElement("y:Geometry");
+                xml.addAttribute("height", partBounds.height);
+                xml.addAttribute("width", partBounds.width + getExtraTableLength(diagram, entity));
+                xml.addAttribute("x", partBounds.x());
+                xml.addAttribute("y", partBounds.y());
+                xml.endElement();
+
+                // Fill
+                xml.startElement("y:Fill");
+                xml.addAttribute("color", getHtmlColor(entityFigure.getBackgroundColor()));
+                //xml.addAttribute("color2", partBounds.width);
+                xml.addAttribute("transparent", "false");
+                xml.endElement();
+
+                // Border
+                xml.startElement("y:BorderStyle");
+                xml.addAttribute("color", getHtmlColor(entityFigure.getForegroundColor()));
+                xml.addAttribute("type", "line");
+                xml.addAttribute("width", "1.0");
+                xml.endElement();
+
+                {
+                    // Entity Name
+                    Rectangle nameBounds = entityFigure.getNameLabel().getBounds();
+
+                    xml.startElement("y:NodeLabel");
+                    xml.addAttribute("alignment", "center");
+                    xml.addAttribute("autoSizePolicy", "content");
+                    xml.addAttribute("configuration", "com.yworks.entityRelationship.label.name");
+                    xml.addAttribute("fontFamily", "Courier");
+                    xml.addAttribute("fontSize", fontSize);
+                    xml.addAttribute("fontStyle", "plain");
+                    xml.addAttribute("hasLineColor", "false");
+                    xml.addAttribute("modelName", "internal");
+                    xml.addAttribute("modelPosition", "t");
+                    xml.addAttribute("backgroundColor", getHtmlColor(entityFigure.getNameLabel().getBackgroundColor()));
+                    xml.addAttribute("textColor", "#FFFFFF");
+                    xml.addAttribute("visible", "true");
+                    xml.addAttribute("horizontalTextPosition", "center");
+                    xml.addAttribute("iconTextGap", "4");
+                    xml.addAttribute("height", nameBounds.height);
+                    xml.addAttribute("width", nameBounds.width);
+                    xml.addAttribute("x", 0);
+                    xml.addAttribute("y", 4);
+
+                    xml.addText(entity.getName());
+
+                    xml.endElement();
+                }
+
+                {
+                    // Attributes
+                    AttributeListFigure columnsFigure = entityFigure.getColumnsFigure();
+                    Rectangle attrsBounds = columnsFigure.getBounds();
+
+                    xml.startElement("y:NodeLabel");
+                    xml.addAttribute("alignment", "left");
+                    xml.addAttribute("autoSizePolicy", "content");
+                    xml.addAttribute("configuration", "com.yworks.entityRelationship.label.attributes");
+                    xml.addAttribute("fontFamily", "Courier");
+                    xml.addAttribute("fontSize", fontSize);
+                    xml.addAttribute("fontStyle", "plain");
+                    xml.addAttribute("hasLineColor", "false");
+                    xml.addAttribute("modelName", "custom");
+                    xml.addAttribute("modelPosition", "t");
+                    xml.addAttribute("backgroundColor", getHtmlColor(columnsFigure.getBackgroundColor()));
+                    xml.addAttribute("textColor", getHtmlColor(columnsFigure.getForegroundColor()));
+                    xml.addAttribute("visible", "true");
+                    xml.addAttribute("horizontalTextPosition", "center");
+                    xml.addAttribute("iconTextGap", "4");
+
+                    xml.addAttribute("height", attrsBounds.height);
+                    xml.addAttribute("width", attrsBounds.width);
+                    xml.addAttribute("x", 2); //numbers from yEd Graph Editor
+                    xml.addAttribute("y", 31.66796875);
+
+                    StringBuilder attrsString = new StringBuilder();
+                    for (ERDEntityAttribute attr : entity.getAttributes()) {
+                        if (attrsString.length() > 0) {
+                            attrsString.append("\n");
+                        }
+                        attrsString.append(ERDUIUtils.getFullAttributeLabel(diagram, attr, true));
+                    }
+
+                    xml.addText(attrsString.toString());
+
+                    xml.startElement("y:LabelModel");
+                    xml.startElement("y:ErdAttributesNodeLabelModel");
+                    xml.endElement();
+                    xml.endElement();
+
+                    xml.startElement("y:ModelParameter");
+                    xml.startElement("y:ErdAttributesNodeLabelModelParameter");
+                    xml.endElement();
+                    xml.endElement();
+
+                    xml.endElement();
+                }
+
+                xml.endElement();
+            }
+
+            xml.endElement();
+        }
+
+        xml.endElement();
+    }
+
+    private static void exportNote(int index, ERDNote note, NotePart notePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+        final String noteId = "note" + index;
+        final IFigure noteFigure = notePart.getFigure();
+        final Rectangle noteBounds = notePart.getBounds();
+
+        associations.put(note, noteId);
+
+        xml.startElement("node");
+        {
+            xml.addAttribute("id", noteId);
+
+            xml.startElement("data");
+            {
+                xml.addAttribute("key", "nodegraph");
+
+                xml.startElement("y:ShapeNode");
+                {
+                    xml.startElement("y:Geometry");
+                    {
+                        xml.addAttribute("height", noteBounds.height);
+                        xml.addAttribute("width", noteBounds.width);
+                        xml.addAttribute("x", noteBounds.x());
+                        xml.addAttribute("y", noteBounds.y());
+                    }
+                    xml.endElement();
+
+                    xml.startElement("y:Fill");
+                    {
+                        xml.addAttribute("color", getHtmlColor(noteFigure.getBackgroundColor()));
+                        xml.addAttribute("transparent", "false");
+                    }
+                    xml.endElement();
+
+                    xml.startElement("y:BorderStyle");
+                    {
+                        xml.addAttribute("color", getHtmlColor(noteFigure.getForegroundColor()));
+                        xml.addAttribute("type", "line");
+                        xml.addAttribute("width", "1.0");
+                    }
+                    xml.endElement();
+
+                    xml.startElement("y:NodeLabel");
+                    {
+                        xml.addAttribute("alignment", "left");
+                        xml.addAttribute("autoSizePolicy", "content");
+                        xml.addAttribute("fontFamily", "Courier");
+                        xml.addAttribute("fontSize", fontSize);
+                        xml.addAttribute("fontStyle", "plain");
+                        xml.addAttribute("hasLineColor", "false");
+                        xml.addAttribute("modelName", "custom");
+                        xml.addAttribute("modelPosition", "t");
+                        xml.addAttribute("backgroundColor", getHtmlColor(noteFigure.getBackgroundColor()));
+                        xml.addAttribute("textColor", getHtmlColor(noteFigure.getForegroundColor()));
+                        xml.addAttribute("visible", "true");
+                        xml.addAttribute("iconTextGap", "4");
+                        xml.addAttribute("height", noteBounds.height);
+                        xml.addAttribute("width", noteBounds.width);
+                        xml.addAttribute("x", 2);
+                        xml.addAttribute("y", 2);
+                        xml.addText(note.getObject());
+                    }
+                    xml.endElement();
+                }
+                xml.endElement();
+            }
+            xml.endElement();
+        }
+        xml.endElement();
+    }
+
+    private static void exportEdge(int index, ERDElement<?> node, NodePart nodePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+        for (ERDAssociation association : node.getAssociations()) {
+            AssociationPart associationPart = nodePart.getConnectionPart(association, true);
+            if (associationPart == null) {
+                log.debug("Association part not found");
+                continue;
+            }
+
+            xml.startElement("edge");
+            xml.addAttribute("id", "edge" + index);
+            xml.addAttribute("source", associations.get(node));
+            xml.addAttribute("target", associations.get(association.getTargetEntity()));
+
+            xml.startElement("data");
+            xml.addAttribute("key", "edgegraph");
+            xml.startElement("y:PolyLineEdge");
+            xml.startElement("y:Path"); // sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
+            xml.addAttribute("sx", 0.0);
+            xml.addAttribute("sy", 0.0);
+            xml.addAttribute("tx", 0.0);
+            xml.addAttribute("ty", 0.0);
+            for (Bendpoint bp : associationPart.getBendpoints()) {
+                xml.startElement("y:Point");
+                xml.addAttribute("x", bp.getLocation().x);
+                xml.addAttribute("y", bp.getLocation().y);
+                xml.endElement();
+            }
+            xml.endElement();
+
+            boolean identifying = ERDUtils.isIdentifyingAssociation(association);
+            xml.startElement("y:LineStyle");
+            xml.addAttribute("color", "#000000");
+            xml.addAttribute("type", !identifying || association.isLogical() ? "dashed" : "line");
+            xml.addAttribute("width", "1.0");
+            xml.endElement();
+            xml.startElement("y:Arrows");
+            String sourceStyle = !identifying ? "white_diamond" : "none";
+            xml.addAttribute("source", sourceStyle);
+            xml.addAttribute("target", "circle");
+            xml.endElement();
+            xml.startElement("y:BendStyle");
+            xml.addAttribute("smoothed", "false");
+            xml.endElement();
+
+            xml.endElement();
+            xml.endElement();
+
+            xml.endElement();
+        }
+    }
+
+    private static double getExtraTableLength(EntityDiagram diagram, ERDEntity entity) {
         int maxLength = 0;
         for (ERDEntityAttribute attr : entity.getAttributes()) {
             int attributeLength = (ERDUIUtils.getFullAttributeLabel(diagram, attr, true)).length();
@@ -304,11 +397,11 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         return (maxLength * (fontSize * 0.12));
     }
 
-    private String getHtmlColor(Color color) {
+    private static String getHtmlColor(Color color) {
         return "#" + getHexColor(color.getRed()) + getHexColor(color.getGreen()) + getHexColor(color.getBlue());
     }
 
-    private String getHexColor(int value) {
+    private static String getHexColor(int value) {
         String hex = Integer.toHexString(value).toUpperCase();
         return hex.length() < 2 ? "0" + hex : hex;
     }
