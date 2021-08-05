@@ -1377,7 +1377,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), schema.getDataSource(), "TRIGGERS") + " t, " +
                 OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), schema.getDataSource(), "TRIGGER_COLS") + " c" +
                 "\nWHERE t.TABLE_OWNER=?" + (table == null ? "" : " AND t.TABLE_NAME=?") +
-                " AND t.BASE_OBJECT_TYPE='TABLE' AND t.TABLE_OWNER=c.TABLE_OWNER(+) AND t.TABLE_NAME=c.TABLE_NAME(+)" +
+                " AND t.BASE_OBJECT_TYPE=" + (table instanceof OracleView ? "'VIEW'" : "'TABLE'") + " AND t.TABLE_OWNER=c.TABLE_OWNER(+) AND t.TABLE_NAME=c.TABLE_NAME(+)" +
                 " AND t.OWNER=c.TRIGGER_OWNER(+) AND t.TRIGGER_NAME=c.TRIGGER_NAME(+)" +
                 "\nORDER BY t.TRIGGER_NAME"
             );
