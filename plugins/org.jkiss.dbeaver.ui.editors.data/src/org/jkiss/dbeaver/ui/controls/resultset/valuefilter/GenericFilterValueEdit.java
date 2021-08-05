@@ -78,6 +78,7 @@ class GenericFilterValueEdit {
 
     private boolean isCheckedTable;
 
+    private static final int INPUT_DELAY_BEFORE_LOAD = 300;
     private static final int MAX_MULTI_VALUES = 1000;
     private static final String MULTI_KEY_LABEL = "...";
     private Composite buttonsPanel;
@@ -224,6 +225,16 @@ class GenericFilterValueEdit {
     }
 
     Text addFilterText(Composite composite) {
+        // Create job which will load values after specified delay
+        final AbstractJob loadValuesJob = new AbstractJob("Load values timeout") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                loadValues(null);
+                return Status.OK_STATUS;
+            }
+        };
+        loadValuesJob.setSystem(true);
+        loadValuesJob.setUser(false);
 
         // Create filter text
         final Text valueFilterText = new Text(composite, SWT.BORDER);
@@ -233,7 +244,21 @@ class GenericFilterValueEdit {
             if (filterPattern.isEmpty()) {
                 filterPattern = null;
             }
-            loadValues(null);
+            if (!loadValuesJob.isCanceled()) {
+                loadValuesJob.cancel();
+            }
+            loadValuesJob.schedule(INPUT_DELAY_BEFORE_LOAD);
+        });
+        valueFilterText.addDisposeListener(e -> {
+            KeyLoadJob curLoadJob = this.loadJob;
+            if (curLoadJob != null) {
+                if (!curLoadJob.isCanceled()) {
+                    curLoadJob.cancel();
+                }
+            }
+            if (!loadValuesJob.isCanceled()) {
+                loadValuesJob.cancel();
+            }
         });
         return valueFilterText;
     }
