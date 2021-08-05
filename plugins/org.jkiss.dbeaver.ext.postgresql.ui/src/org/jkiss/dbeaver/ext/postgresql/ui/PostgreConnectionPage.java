@@ -119,11 +119,12 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createAuthPanel(mainGroup, 1);
 
-        if (isUserRoleSupported() || serverType.supportsClient()) {
+        if (isSessionRoleSupported() || serverType.supportsClient()) {
             Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            if (isUserRoleSupported()) {
-                roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
+            if (isSessionRoleSupported()) {
+                roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_session_role, null, SWT.BORDER);
+                roleText.setToolTipText(PostgreMessages.dialog_setting_session_role_tip);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
                 roleText.setLayoutData(gd);
@@ -140,7 +141,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         setControl(mainGroup);
     }
 
-    protected boolean isUserRoleSupported() {
+    protected boolean isSessionRoleSupported() {
         return true;
     }
 

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.RequestConstants;
@@ -23,12 +24,16 @@ import org.eclipse.gef.palette.*;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDNote;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditPartFactory;
 import org.jkiss.dbeaver.erd.ui.editor.tools.HandToolEntry;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 
@@ -65,6 +70,19 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public Insets getDefaultEntityInsets() {
         return new Insets(20, 20, 10, 20);
+    }
+
+    @Nullable
+    @Override
+    public Dimension getEntitySnapSize() {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED)) {
+            return new Dimension(
+                store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
+                store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)
+            );
+        }
+        return null;
     }
 
     @NotNull
