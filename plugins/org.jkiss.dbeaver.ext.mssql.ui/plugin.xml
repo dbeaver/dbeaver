@@ -79,6 +79,9 @@
         <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerProcedureConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
         </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerLoginConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin"/>
+        </configurator>
     </extension>
 
     <!--<extension point="org.jkiss.dbeaver.dataSourceProvider">

@@ -52,9 +52,10 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
     };
 
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
-        "TOP",
-        "SYNONYM",
-        "PERSISTED"
+            "LOGIN",
+            "TOP",
+            "SYNONYM",
+            "PERSISTED"
     };
 
     private static final String[][] SQLSERVER_QUOTE_STRINGS = {

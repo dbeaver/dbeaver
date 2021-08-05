@@ -66,7 +66,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final PostgreRole role = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE ROLE " + DBUtils.getQuotedIdentifier(role));
-        addRoleOptions(script, role, true);
+        addRoleOptions(script, role, command, true);
 
         actions.add(
             new SQLDatabasePersistAction("Create role", script.toString()) //$NON-NLS-2$
@@ -77,7 +77,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         final PostgreRole role = command.getObject();
         final StringBuilder script = new StringBuilder("ALTER ROLE " + DBUtils.getQuotedIdentifier(role));
-        addRoleOptions(script, role, false);
+        addRoleOptions(script, role, command, false);
 
         actionList.add(
             new SQLDatabasePersistAction("Alter role", script.toString()) //$NON-NLS-2$
@@ -107,7 +107,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         processObjectRename(commandContext, object, options, newName);
     }
 
-    private void addRoleOptions(StringBuilder script, PostgreRole role, boolean create) {
+    private void addRoleOptions(StringBuilder script, PostgreRole role, NestedObjectCommand command, boolean create) {
         final PostgreServerExtension extension = role.getDataSource().getServerType();
         final StringBuilder options = new StringBuilder();
         if (extension.supportsSuperusers()) {
@@ -124,6 +124,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
         if (create && role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
             options.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
+            command.setDisableSessionLogging(true); // Hide password from Query Manager
         }
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
             // FIXME: use some generic approach
