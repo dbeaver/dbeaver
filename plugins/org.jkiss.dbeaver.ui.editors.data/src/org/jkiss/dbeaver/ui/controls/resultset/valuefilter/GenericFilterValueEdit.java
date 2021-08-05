@@ -602,10 +602,12 @@ class GenericFilterValueEdit {
             if (executionContext == null) {
                 return Status.OK_STATUS;
             }
+            UIUtils.syncExec(() -> tableViewer.getTable().setEnabled(false));
             try {
                 monitor.subTask("Read enumeration");
                 final List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
                 if (valueEnumeration == null) {
+                    populateValues(Collections.emptyList());
                     return Status.OK_STATUS;
                 } else {
                     populateValues(valueEnumeration);
@@ -633,6 +635,7 @@ class GenericFilterValueEdit {
         void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
             UIUtils.asyncExec(() -> {
                 loadMultiValueList(values, mergeResultsWithData());
+                tableViewer.getTable().setEnabled(true);
             });
         }
     }
