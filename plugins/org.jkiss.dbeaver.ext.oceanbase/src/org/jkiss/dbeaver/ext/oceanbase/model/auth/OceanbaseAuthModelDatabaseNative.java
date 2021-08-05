@@ -12,19 +12,22 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseAuthModelDatabaseNative extends AuthModelDatabaseNative {
-	
-	public static final String ID = "oceanbase_native";
-	@Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-		String userName = configuration.getUserName();
-		if (!CommonUtils.isEmpty(userName) ) {
-			if (!userName.contains("@")) {
-				userName += "@" + configuration.getServerName();
-			}
+
+    public static final String ID = "oceanbase_native";
+
+    @Override
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource,
+            AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration,
+            @NotNull Properties connProperties) throws DBException {
+        String userName = configuration.getUserName();
+        if (!CommonUtils.isEmpty(userName)) {
+            if (!userName.contains("@")) {
+                userName += "@" + configuration.getServerName();
+            }
         }
 
         credentials.setUserName(userName);
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
-	}
+    }
 
 }

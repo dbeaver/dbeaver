@@ -31,20 +31,17 @@ public class OceanbaseDataSourceProvider extends MySQLDataSourceProvider {
 
     public OceanbaseDataSourceProvider() {
     }
-    
+
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-    	return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
+        return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
     }
-    
+
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
-            @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
-            throws DBException
-        {
-            return new OceanbaseMySQLDataSource(monitor, container);
-        }
-
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+            throws DBException {
+        return new OceanbaseMySQLDataSource(monitor, container);
+    }
 
 }

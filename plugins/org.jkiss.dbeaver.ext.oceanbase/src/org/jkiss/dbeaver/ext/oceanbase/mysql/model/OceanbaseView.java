@@ -22,10 +22,9 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 /**
  * OceanbaseView
  */
-public class OceanbaseView extends MySQLView
-{
+public class OceanbaseView extends MySQLView {
     public OceanbaseView(MySQLCatalog catalog) {
-		super(catalog);
-	}
+        super(catalog);
+    }
 
 }

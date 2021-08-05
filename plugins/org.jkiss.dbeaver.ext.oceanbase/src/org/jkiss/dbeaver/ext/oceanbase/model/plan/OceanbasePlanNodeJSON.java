@@ -21,8 +21,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
-	
-	private OceanbasePlanNodeJSON parent;
+
+    private OceanbasePlanNodeJSON parent;
     private String name;
     private JsonObject object;
     private Map<String, String> nodeProps = new LinkedHashMap<>();
@@ -36,7 +36,7 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         parseObject(name, object);
     }
 
-    public OceanbasePlanNodeJSON(OceanbasePlanNodeJSON parent,  Map<String, String> attributes) {
+    public OceanbasePlanNodeJSON(OceanbasePlanNodeJSON parent, Map<String, String> attributes) {
         this.parent = parent;
         this.nodeProps.putAll(attributes);
     }
@@ -86,9 +86,7 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         if (nested == null) {
             nested = new ArrayList<>();
         }
-        nested.add(
-            new OceanbasePlanNodeJSON(this, name, value)
-        );
+        nested.add(new OceanbasePlanNodeJSON(this, name, value));
     }
 
     @Property(order = 0, viewable = true)
@@ -199,16 +197,8 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
         int index = 0;
         for (Map.Entry<String, String> attr : nodeProps.entrySet()) {
-            props[index++] = new PropertyDescriptor(
-                "Details",
-                attr.getKey(),
-                attr.getKey(),
-                null,
-                String.class,
-                false,
-                null,
-                null,
-                false);
+            props[index++] = new PropertyDescriptor("Details", attr.getKey(), attr.getKey(), null, String.class, false,
+                    null, null, false);
         }
         return props;
     }
@@ -220,7 +210,7 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
 
     @Override
     public boolean isPropertySet(String id) {
-        return false;//attributes.containsKey(id.toString());
+        return false;// attributes.containsKey(id.toString());
     }
 
     @Override

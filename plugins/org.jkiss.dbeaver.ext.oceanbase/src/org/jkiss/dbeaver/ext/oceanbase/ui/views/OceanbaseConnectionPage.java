@@ -40,8 +40,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * OceanbaseConnectionPage
  */
-public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider
-{
+public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final String DEFAULT_HOST = "localhost"; //$NON-NLS-1$
 
     private Text portText;
@@ -52,21 +51,18 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_icon_big.png"); //$NON-NLS-1$
 
-    public OceanbaseConnectionPage()
-    {
+    public OceanbaseConnectionPage() {
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
-        //Composite group = new Composite(composite, SWT.NONE);
-        //group.setLayout(new GridLayout(1, true));
+    public void createControl(Composite composite) {
+        // Composite group = new Composite(composite, SWT.NONE);
+        // group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
         ModifyListener textListener = e -> evaluateURL();
@@ -79,7 +75,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
 
         {
             Group hostGroup = UIUtils.createControlGroup(addrGroup, "Connection", 4, GridData.FILL_HORIZONTAL, 0);
-            
+
             Label urlLabel = new Label(hostGroup, SWT.NONE);
             urlLabel.setText(OceanbaseMessages.oceanbase_connection_page_label_url);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
@@ -94,7 +90,8 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
 
-            Label hostLabel = UIUtils.createControlLabel(hostGroup, OceanbaseMessages.oceanbase_connection_page_label_host);
+            Label hostLabel = UIUtils.createControlLabel(hostGroup,
+                    OceanbaseMessages.oceanbase_connection_page_label_host);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             hostText = new Text(hostGroup, SWT.BORDER);
@@ -103,7 +100,8 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             hostText.setLayoutData(gd);
             hostText.addModifyListener(textListener);
 
-            Label portLabel = UIUtils.createControlLabel(hostGroup, OceanbaseMessages.oceanbase_connection_page_label_port);
+            Label portLabel = UIUtils.createControlLabel(hostGroup,
+                    OceanbaseMessages.oceanbase_connection_page_label_port);
             portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             portText = new Text(hostGroup, SWT.BORDER);
@@ -113,7 +111,8 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
-            Label databaseLabel = UIUtils.createControlLabel(hostGroup, OceanbaseMessages.oceanbase_connection_page_label_database);
+            Label databaseLabel = UIUtils.createControlLabel(hostGroup,
+                    OceanbaseMessages.oceanbase_connection_page_label_database);
             databaseLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             databaseText = new Text(hostGroup, SWT.BORDER);
@@ -121,8 +120,9 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             databaseText.setLayoutData(gd);
             databaseText.addModifyListener(textListener);
-        
-            Label tenantLabel = UIUtils.createControlLabel(hostGroup, OceanbaseMessages.oceanbase_connection_page_label_tenant);
+
+            Label tenantLabel = UIUtils.createControlLabel(hostGroup,
+                    OceanbaseMessages.oceanbase_connection_page_label_tenant);
             tenantLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             tenantText = new Text(hostGroup, SWT.BORDER);
@@ -138,19 +138,14 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public boolean isComplete()
-    {
-        return super.isComplete() &&
-            hostText != null && databaseText != null && portText != null && tenantText != null &&
-            !CommonUtils.isEmpty(hostText.getText()) &&
-            !CommonUtils.isEmpty(databaseText.getText()) &&
-            !CommonUtils.isEmpty(portText.getText()) &&
-            !CommonUtils.isEmpty(tenantText.getText());
+    public boolean isComplete() {
+        return super.isComplete() && hostText != null && databaseText != null && portText != null && tenantText != null
+                && !CommonUtils.isEmpty(hostText.getText()) && !CommonUtils.isEmpty(databaseText.getText())
+                && !CommonUtils.isEmpty(portText.getText()) && !CommonUtils.isEmpty(tenantText.getText());
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         // Load values from new connection info
         DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionInfo = activeDataSource.getConnectionConfiguration();
@@ -165,7 +160,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             if (connectionInfo.getUrl() != null) {
                 urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
             } else {
-                urlText.setText(""); 
+                urlText.setText("");
             }
         }
         if (connectionInfo.getHostName() == null) {
@@ -181,7 +176,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
         if (tenantText != null) {
-        	tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+            tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
         }
 
         UIUtils.asyncExec(() -> {
@@ -192,10 +187,9 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
         });
         super.loadSettings();
     }
-    
+
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -207,26 +201,24 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             connectionInfo.setDatabaseName(databaseText.getText().trim());
         }
         if (tenantText != null) {
-        	connectionInfo.setServerName(tenantText.getText().trim());
+            connectionInfo.setServerName(tenantText.getText().trim());
         }
         super.saveSettings(dataSource);
     }
 
-    private void evaluateURL()
-    {
+    private void evaluateURL() {
         site.updateButtons();
     }
 
-	@Override
-	public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+    @Override
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
-	}
-	
-	@NotNull
+    }
+
+    @NotNull
     @Override
     protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
         return OceanbaseAuthModelDatabaseNative.ID;
     }
-
 
 }

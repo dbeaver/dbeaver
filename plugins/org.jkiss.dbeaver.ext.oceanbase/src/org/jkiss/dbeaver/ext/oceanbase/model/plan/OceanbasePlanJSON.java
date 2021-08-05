@@ -19,15 +19,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class OceanbasePlanJSON extends AbstractExecutionPlan {
-	protected OceanbaseMySQLDataSource dataSource;
+    protected OceanbaseMySQLDataSource dataSource;
     protected String query;
-	
-	private static final Gson gson = new Gson();
+
+    private static final Gson gson = new Gson();
 
     private List<OceanbasePlanNodeJSON> rootNodes;
 
     public OceanbasePlanJSON(JDBCSession session, String query) throws DBCException {
-    	this.dataSource = (OceanbaseMySQLDataSource) session.getDataSource();
+        this.dataSource = (OceanbaseMySQLDataSource) session.getDataSource();
         this.query = query;
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -48,24 +48,23 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
 
                 rootNodes = nodes;
             } catch (Exception e) {
-				// TODO: handle exception
-            	throw new DBCException(e, session.getExecutionContext());
-			}
+                // TODO: handle exception
+                throw new DBCException(e, session.getExecutionContext());
+            }
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
 
     public OceanbasePlanJSON(MySQLDataSource dataSource, String query, List<OceanbasePlanNodeJSON> rootNodes) {
-    	this.dataSource = (OceanbaseMySQLDataSource) dataSource;
+        this.dataSource = (OceanbaseMySQLDataSource) dataSource;
         this.query = query;
         this.rootNodes = rootNodes;
     }
 
     @Override
     public Object getPlanFeature(String feature) {
-        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
-            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
+        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) || DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
         }
         return super.getPlanFeature(feature);
@@ -85,6 +84,5 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     public List<OceanbasePlanNodeJSON> getPlanNodes(Map<String, Object> options) {
         return rootNodes;
     }
-
 
 }

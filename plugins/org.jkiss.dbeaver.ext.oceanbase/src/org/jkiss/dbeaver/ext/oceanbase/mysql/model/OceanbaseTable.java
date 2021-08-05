@@ -23,11 +23,10 @@ import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-public class OceanbaseTable extends MySQLTable implements DBPObjectStatistics
-{
+public class OceanbaseTable extends MySQLTable implements DBPObjectStatistics {
 
-	public OceanbaseTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
-		super(monitor, catalog, source);
-	}
-	
+    public OceanbaseTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
+        super(monitor, catalog, source);
+    }
+
 }
