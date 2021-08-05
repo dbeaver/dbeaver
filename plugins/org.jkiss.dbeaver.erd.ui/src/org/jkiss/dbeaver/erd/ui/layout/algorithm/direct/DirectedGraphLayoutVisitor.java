@@ -183,7 +183,14 @@ public class DirectedGraphLayoutVisitor {
         IFigure tableFigure = entityPart.getFigure();
 
         Dimension preferredSize = tableFigure.getPreferredSize();
+        Dimension snapSize = decorator.getEntitySnapSize();
         Rectangle bounds = new Rectangle(n.x, n.y, preferredSize.width, preferredSize.height);
+        if (snapSize != null) {
+            bounds.translate(
+                n.x / snapSize.width * snapSize.width - n.x,
+                n.y / snapSize.height * snapSize.height - n.y
+            );
+        }
 
         tableFigure.setBounds(bounds);
 
