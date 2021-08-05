@@ -76,7 +76,7 @@ Hooray, we have reached 17k of stars on GitHub and continue to grow!
 That's really cool, we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
-- You can buy <a href="https://dbeaver.com/download">DBeaver EE</a> version. It includes all features of CE + NoSQL databases support + EE extensions + official online support. Also, licensed users have priorities in bug fixes and new features development.
+- You can buy <a href="https://dbeaver.com/buy/">one of our commercial versions</a>. They include NoSQL databases support, additional extensions, and official online support. Also, licensed users have priorities in bug fixes and new features development.
 
 Thank you!  
 

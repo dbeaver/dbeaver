@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * ERD object adapter
@@ -37,6 +39,12 @@ public interface ERDDecorator {
      */
     @NotNull
     Insets getDefaultEntityInsets();
+
+    /**
+     * Snap size for entity figures. Rounds entity position to this snap size.
+     */
+    @Nullable
+    Dimension getEntitySnapSize();
 
     @NotNull
     EditPartFactory createPartFactory();

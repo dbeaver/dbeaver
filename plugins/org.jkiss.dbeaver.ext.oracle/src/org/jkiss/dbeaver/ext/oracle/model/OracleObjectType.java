@@ -128,6 +128,12 @@ public enum OracleObjectType implements DBSObjectType {
         @Override
         public OracleTrigger findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
+            // First we will try to find a trigger at the tables level
+            OracleTableTrigger trigger = schema.tableTriggerCache.getObject(monitor, schema, objectName);
+            if (trigger != null) {
+                return trigger;
+            }
+            // Nope. Now we will try to find a trigger at the schemas level
             return schema.triggerCache.getObject(monitor, schema, objectName);
         }
     }),

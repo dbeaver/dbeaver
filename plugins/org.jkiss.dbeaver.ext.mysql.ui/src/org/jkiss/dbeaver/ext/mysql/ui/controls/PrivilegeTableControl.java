@@ -76,7 +76,7 @@ public class PrivilegeTableControl extends Composite {
         UIUtils.createTableColumn(privTable, SWT.LEFT, "Description");
         UIUtils.packColumns(privTable);
 
-        Composite buttonsPanel = UIUtils.createPlaceholder(privsGroup, 3);
+        Composite buttonsPanel = UIUtils.createComposite(privsGroup, 3);
         buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         UIUtils.createPushButton(buttonsPanel, "Check All", null, new SelectionAdapter() {

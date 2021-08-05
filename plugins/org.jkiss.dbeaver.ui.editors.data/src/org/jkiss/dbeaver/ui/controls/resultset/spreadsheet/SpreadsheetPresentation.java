@@ -1067,7 +1067,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    private static int getMaxPinIndex(DBDDataFilter dataFilter) {
+    public static int getMaxPinIndex(@NotNull DBDDataFilter dataFilter) {
         int maxIndex = 0;
         for (DBDAttributeConstraint ac : dataFilter.getConstraints()) {
             Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);

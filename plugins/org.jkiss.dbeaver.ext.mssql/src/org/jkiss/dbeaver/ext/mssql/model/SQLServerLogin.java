@@ -18,17 +18,19 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
 
-public class SQLServerLogin implements DBAUser {
+public class SQLServerLogin implements DBAUser, DBPStatefulObject {
 
     public enum LoginType {
         S("SQL Server login"),
@@ -62,6 +64,8 @@ public class SQLServerLogin implements DBAUser {
     private boolean isDisabled;
     private boolean isFixedRole;
 
+    private String password; // Added through the creation dialog
+
     public SQLServerLogin(@NotNull SQLServerDataSource dataSource, @NotNull String loginName, @NotNull JDBCResultSet resultSet) {
         this.dataSource = dataSource;
         this.loginName = loginName;
@@ -84,6 +88,12 @@ public class SQLServerLogin implements DBAUser {
         this.isFixedRole = JDBCUtils.safeGetBoolean(resultSet, "is_fixed_role");
     }
 
+    // Auxiliary constructor for creating via UI-configurator
+    public SQLServerLogin(SQLServerDataSource dataSource, @NotNull String loginName) {
+        this.dataSource = dataSource;
+        this.loginName = loginName;
+    }
+
     @Nullable
     @Override
     public DBSObject getParentObject() {
@@ -92,7 +102,7 @@ public class SQLServerLogin implements DBAUser {
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public SQLServerDataSource getDataSource() {
         return dataSource;
     }
 
@@ -101,6 +111,10 @@ public class SQLServerLogin implements DBAUser {
     @Property(viewable = true, order = 1)
     public String getName() {
         return loginName;
+    }
+
+    public void setLoginName(@NotNull String loginName) {
+        this.loginName = loginName;
     }
 
     @Nullable
@@ -146,13 +160,38 @@ public class SQLServerLogin implements DBAUser {
         return defaultLanguageName;
     }
 
-    @Property(viewable = true, order = 8)
+    @Property(viewable = true, updatable = true, order = 8)
     public boolean isDisabled() {
         return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
     }
 
     @Property(viewable = true, order = 9)
     public boolean isFixedRole() {
         return isFixedRole;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        if (isDisabled) {
+            return DBSObjectState.INVALID;
+        }
+        return DBSObjectState.NORMAL;
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) {
     }
 }

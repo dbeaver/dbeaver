@@ -31,6 +31,7 @@ import java.util.Map;
 public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECommand<OBJECT_TYPE> {
     private final OBJECT_TYPE object;
     private final String title;
+    private boolean isDisableSessionLogging = false;
 
     public DBECommandAbstract(OBJECT_TYPE object, String title)
     {
@@ -58,7 +59,11 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
 
     @Override
     public boolean isDisableSessionLogging() {
-        return false;
+        return isDisableSessionLogging;
+    }
+
+    public void setDisableSessionLogging(boolean disableSessionLogging) {
+        isDisableSessionLogging = disableSessionLogging;
     }
 
     @Override

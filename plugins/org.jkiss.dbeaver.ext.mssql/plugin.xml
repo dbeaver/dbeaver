@@ -482,6 +482,7 @@
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDataTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerExtendedPropertyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerExtendedProperty"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerLoginManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin"/>
 
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>

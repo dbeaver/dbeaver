@@ -125,6 +125,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverLoginCache.getObject(monitor, this, loginName);
     }
 
+    public ServerLoginCache getServerLoginCache() {
+        return serverLoginCache;
+    }
+
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
@@ -362,6 +366,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         databaseCache.clearCache();
+        serverLoginCache.clearCache();
         hasStatistics = false;
         return super.refreshObject(monitor);
     }
