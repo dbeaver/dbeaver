@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.tools.compare.simple.CompareObjectsSettings;
+import org.jkiss.dbeaver.tools.compare.simple.ui.internal.CompareUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -37,9 +38,9 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     private Button compareScriptProperties;
 
     CompareObjectsPageSettings() {
-        super("Compare objects");
-        setTitle("Compare database objects");
-        setDescription("Settings of objects compare");
+        super(CompareUIMessages.compare_objects_page_settings_page);
+        setTitle(CompareUIMessages.compare_objects_page_settings_title);
+        setDescription(CompareUIMessages.compare_objects_page_settings_description);
         setPageComplete(false);
     }
 
@@ -57,7 +58,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
         final CompareObjectsSettings settings = getWizard().getSettings();
         {
             Group sourceSettings = new Group(composite, SWT.NONE);
-            sourceSettings.setText("Objects");
+            sourceSettings.setText(CompareUIMessages.compare_objects_page_settings_group_objects);
             gl = new GridLayout(1, false);
             sourceSettings.setLayout(gl);
             sourceSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -65,9 +66,9 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             nodesTable = new Table(sourceSettings, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
             nodesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             nodesTable.setHeaderVisible(true);
-            UIUtils.createTableColumn(nodesTable, SWT.LEFT, "Name");
-            UIUtils.createTableColumn(nodesTable, SWT.LEFT, "Type");
-            UIUtils.createTableColumn(nodesTable, SWT.LEFT, "Full qualified name");
+            UIUtils.createTableColumn(nodesTable, SWT.LEFT, CompareUIMessages.compare_objects_page_settings_nodes_column_name);
+            UIUtils.createTableColumn(nodesTable, SWT.LEFT, CompareUIMessages.compare_objects_page_settings_nodes_column_type);
+            UIUtils.createTableColumn(nodesTable, SWT.LEFT, CompareUIMessages.compare_objects_page_settings_nodes_column_full_name);
             for (DBNDatabaseNode node : settings.getNodes()) {
                 TableItem item = new TableItem(nodesTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
@@ -79,11 +80,11 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
 
         {
             Group compareSettings = new Group(composite, SWT.NONE);
-            compareSettings.setText("Compare settings");
+            compareSettings.setText(CompareUIMessages.compare_objects_page_settings_group_settings);
             compareSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             compareSettings.setLayout(new GridLayout(1, false));
 
-            skipSystemObjects = UIUtils.createCheckbox(compareSettings, "Skip system objects", settings.isSkipSystemObjects());
+            skipSystemObjects = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_skip_objects, settings.isSkipSystemObjects());
             skipSystemObjects.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -91,7 +92,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                     settings.setSkipSystemObjects(skipSystemObjects.getSelection());
                 }
             });
-            compareLazyProperties = UIUtils.createCheckbox(compareSettings, "Compare expensive properties", settings.isCompareLazyProperties());
+            compareLazyProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_compare_preporties, settings.isCompareLazyProperties());
             compareLazyProperties.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -99,7 +100,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                     settings.setCompareLazyProperties(compareLazyProperties.getSelection());
                 }
             });
-            compareOnlyStructure = UIUtils.createCheckbox(compareSettings, "Compare only structure (ignore properties)", settings.isCompareOnlyStructure());
+            compareOnlyStructure = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_compare_structure, settings.isCompareOnlyStructure());
             compareOnlyStructure.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -107,7 +108,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                     settings.setCompareOnlyStructure(compareOnlyStructure.getSelection());
                 }
             });
-            compareScriptProperties = UIUtils.createCheckbox(compareSettings, "Compare scripts/procedures", settings.isCompareScripts());
+            compareScriptProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_scripts, settings.isCompareScripts());
             compareScriptProperties.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
