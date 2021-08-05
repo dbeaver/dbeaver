@@ -100,24 +100,6 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             labelComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Label controlLabel = UIUtils.createControlLabel(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_choose_values);
             controlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (isAttributeSupportsLike()) {
-                final Button caseInsensitiveSearchCheck = UIUtils.createCheckbox(
-                    labelComposite,
-                    ResultSetMessages.dialog_filter_value_edit_table_checkbox_case_insensitive_label,
-                    ResultSetMessages.dialog_filter_value_edit_table_checkbox_case_insensitive_description,
-                    isCaseInsensitiveSearchEnabled(),
-                    1
-                );
-                caseInsensitiveSearchCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        getDialogBoundsSettings().put(PROP_CASE_INSENSITIVE_SEARCH, caseInsensitiveSearchCheck.getSelection());
-                        reloadFilterValues();
-                    }
-                });
-                caseInsensitiveSearchCheck.setEnabled(isQueryDatabaseEnabled());
-                ((GridLayout) labelComposite.getLayout()).numColumns++;
-            }
             if (descReferrer instanceof DBSEntityAssociation) {
                 Link hintLabel = UIUtils.createLink(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_define_description, new SelectionAdapter() {
                     @Override
@@ -201,15 +183,34 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             close();
         });
 
-        Composite buttonsPanel = filter.getButtonsPanel();
+        final Group optionsGroup = UIUtils.createControlGroup(tableComposite, ResultSetMessages.dialog_filter_value_edit_table_group_options, 0, GridData.FILL_HORIZONTAL, 0);
+        optionsGroup.moveAbove(filter.getButtonsPanel());
         {
+            if (isAttributeSupportsLike()) {
+                final Button caseInsensitiveSearchCheck = UIUtils.createCheckbox(
+                    optionsGroup,
+                    ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_case_insensitive_label,
+                    ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_case_insensitive_description,
+                    isCaseInsensitiveSearchEnabled(),
+                    1
+                );
+                caseInsensitiveSearchCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        getDialogBoundsSettings().put(PROP_CASE_INSENSITIVE_SEARCH, caseInsensitiveSearchCheck.getSelection());
+                        reloadFilterValues();
+                    }
+                });
+                caseInsensitiveSearchCheck.setEnabled(isQueryDatabaseEnabled());
+                ((GridLayout) optionsGroup.getLayout()).numColumns++;
+            }
             Button queryDatabaseCheck = UIUtils.createCheckbox(
-                buttonsPanel,
-                ResultSetMessages.dialog_filter_value_edit_table_checkbox_read_from_server_label,
-                ResultSetMessages.dialog_filter_value_edit_table_checkbox_read_from_server_description,
+                optionsGroup,
+                ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_read_from_server_label,
+                ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_read_from_server_description,
                 isQueryDatabaseEnabled(),
                 1);
-            ((GridLayout) buttonsPanel.getLayout()).numColumns++;
+            ((GridLayout) optionsGroup.getLayout()).numColumns++;
             queryDatabaseCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -225,12 +226,12 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         }
         if (!filter.isDictionarySelector()) {
             showRowCountCheck = UIUtils.createCheckbox(
-                buttonsPanel,
-                ResultSetMessages.dialog_filter_value_edit_table_checkbox_show_row_count_label,
-                ResultSetMessages.dialog_filter_value_edit_table_checkbox_show_row_count_description,
+                optionsGroup,
+                ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_show_row_count_label,
+                ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_show_row_count_description,
                 isRowCountEnabled(),
                 1);
-            ((GridLayout) buttonsPanel.getLayout()).numColumns++;
+            ((GridLayout) optionsGroup.getLayout()).numColumns++;
             showRowCountCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
