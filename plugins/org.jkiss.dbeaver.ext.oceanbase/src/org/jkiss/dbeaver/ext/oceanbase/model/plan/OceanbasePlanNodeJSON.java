@@ -99,9 +99,7 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
     @Override
     public String getNodeName() {
         Object nodeName = nodeProps.get("table_name");
-        if (nodeName == null) {
-
-        } else {
+        if (nodeName != null) {
             Object accessType = nodeProps.get("access_type");
             if (accessType != null) {
                 return nodeName + " (" + accessType + ")";
@@ -114,9 +112,6 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
     @Override
     public Number getNodeCost() {
         Object readCost = nodeProps.get("COST");
-        if (readCost == null) {
-            readCost = nodeProps.get("COST");
-        }
         if (readCost == null) {
             if (nested != null) {
                 long totalCost = 0;
@@ -147,20 +142,15 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
     @Override
     public Number getNodeRowCount() {
         Object rowCount = nodeProps.get("EST.ROWS");
-        if (rowCount == null) {
-            rowCount = nodeProps.get("EST.ROWS"); // MariaDB-specific plan
-            if (rowCount == null) {
-                if (nested != null) {
-                    long totalRC = 0;
-                    for (OceanbasePlanNodeJSON child : nested) {
-                        Number childRC = child.getNodeRowCount();
-                        if (childRC != null) {
-                            totalRC += childRC.longValue();
-                        }
-                    }
-                    return totalRC;
+        if (rowCount == null && nested != null) {
+            long totalRC = 0;
+            for (OceanbasePlanNodeJSON child : nested) {
+                Number childRC = child.getNodeRowCount();
+                if (childRC != null) {
+                    totalRC += childRC.longValue();
                 }
             }
+            return totalRC;
         }
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
@@ -205,7 +195,7 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
 
     @Override
     public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
-        return nodeProps.get(id.toString());
+        return nodeProps.get(id);
     }
 
     @Override
@@ -220,17 +210,17 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
 
     @Override
     public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
-
+        // noting to do
     }
 
     @Override
     public void resetPropertyValueToDefault(String id) {
-
+        // noting to do
     }
 
     @Override
     public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
-
+        // noting to do
     }
 
 }

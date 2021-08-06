@@ -94,7 +94,6 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
 
     @Override
     public DBPDataSource getDataSource() {
-        // TODO Auto-generated method stub
         return this.dataSource;
     }
 
@@ -106,7 +105,6 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
 
     @Override
     public DBCPlanStyle getPlanStyle() {
-        // TODO Auto-generated method stub
         return DBCPlanStyle.PLAN;
     }
 

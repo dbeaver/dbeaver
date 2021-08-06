@@ -29,28 +29,25 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     public OceanbasePlanJSON(JDBCSession session, String query) throws DBCException {
         this.dataSource = (OceanbaseMySQLDataSource) session.getDataSource();
         this.query = query;
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                List<OceanbasePlanNodeJSON> nodes = new ArrayList<>();
+        try{
+            JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString());
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            List<OceanbasePlanNodeJSON> nodes = new ArrayList<>();
 
-                dbResult.next();
-                String jsonPlan = dbResult.getString(1);
+            dbResult.next();
+            String jsonPlan = dbResult.getString(1);
 
-                JsonObject planObject = gson.fromJson(jsonPlan, JsonObject.class);
-                JsonObject queryBlock = planObject.getAsJsonObject();
+            JsonObject planObject = gson.fromJson(jsonPlan, JsonObject.class);
+            JsonObject queryBlock = planObject.getAsJsonObject();
 
-                OceanbasePlanNodeJSON rootNode = new OceanbasePlanNodeJSON(null, "select", queryBlock);
+            OceanbasePlanNodeJSON rootNode = new OceanbasePlanNodeJSON(null, "select", queryBlock);
 
-                if (CommonUtils.isEmpty(rootNode.getNested()) && rootNode.getProperty("message") != null) {
-                    throw new DBCException("Can't explain plan: " + rootNode.getProperty("message"));
-                }
-                nodes.add(rootNode);
-
-                rootNodes = nodes;
-            } catch (Exception e) {
-                // TODO: handle exception
-                throw new DBCException(e, session.getExecutionContext());
+            if (CommonUtils.isEmpty(rootNode.getNested()) && rootNode.getProperty("message") != null) {
+                throw new DBCException("Can't explain plan: " + rootNode.getProperty("message"));
             }
+            nodes.add(rootNode);
+
+            rootNodes = nodes;
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }

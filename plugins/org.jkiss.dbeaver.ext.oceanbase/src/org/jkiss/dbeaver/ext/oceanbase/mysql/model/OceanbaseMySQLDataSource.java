@@ -94,7 +94,6 @@ public class OceanbaseMySQLDataSource extends MySQLDataSource {
         if (name.equalsIgnoreCase("SHOW DB")) {
             return DBUtils.findObject(getPrivileges(monitor), "Show databases", true);
         }
-        ;
         return DBUtils.findObject(getPrivileges(monitor), name, true);
     }
 
@@ -155,11 +154,7 @@ public class OceanbaseMySQLDataSource extends MySQLDataSource {
 
     @Override
     public Collection<MySQLCatalog> getCatalogs() {
-        List<MySQLCatalog> catalogs = new ArrayList<>();
-        for (OceanbaseMySQLCatalog oceanbaseMySQLCatalog : oceanbaseCatalogCache.getCachedObjects()) {
-            catalogs.add(oceanbaseMySQLCatalog);
-        }
-        return catalogs;
+        return new ArrayList<>(oceanbaseCatalogCache.getCachedObjects());
     }
 
     static class OceanbaseCatalogCache extends JDBCObjectCache<OceanbaseMySQLDataSource, OceanbaseMySQLCatalog> {

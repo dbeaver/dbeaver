@@ -6,7 +6,6 @@ import java.util.Map;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -15,8 +14,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
-public class OceanbaseMySQLDatabaseManager extends SQLObjectEditor<OceanbaseMySQLCatalog, OceanbaseMySQLDataSource>
-        implements DBEObjectRenamer<OceanbaseMySQLCatalog> {
+public class OceanbaseMySQLDatabaseManager extends SQLObjectEditor<OceanbaseMySQLCatalog, OceanbaseMySQLDataSource>{
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -29,16 +27,8 @@ public class OceanbaseMySQLDatabaseManager extends SQLObjectEditor<OceanbaseMySQ
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, OceanbaseMySQLCatalog object,
-            Map<String, Object> options, String newName) throws DBException {
-        throw new DBException(
-                "Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");
-    }
-
-    @Override
     protected OceanbaseMySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
             Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        System.out.println("11111");
         return new OceanbaseMySQLCatalog((OceanbaseMySQLDataSource) container, null);
     }
 

@@ -20,10 +20,8 @@ public class OceanbaseAuthModelDatabaseNative extends AuthModelDatabaseNative {
             AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration,
             @NotNull Properties connProperties) throws DBException {
         String userName = configuration.getUserName();
-        if (!CommonUtils.isEmpty(userName)) {
-            if (!userName.contains("@")) {
-                userName += "@" + configuration.getServerName();
-            }
+        if (!CommonUtils.isEmpty(userName) && !userName.contains("@")) {
+            userName += "@" + configuration.getServerName();
         }
 
         credentials.setUserName(userName);

@@ -18,7 +18,7 @@
                   path="oceanbase">
                 <folder type="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
                     <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
-                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">

@@ -48,8 +48,8 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
     private Text urlText;
     private Text databaseText;
     private Text tenantText;
-
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_icon_big.png"); //$NON-NLS-1$
+    
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
 
     public OceanbaseConnectionPage() {
     }
@@ -157,34 +157,13 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
                     setMessage(e.getMessage());
                 }
             }
-            if (connectionInfo.getUrl() != null) {
-                urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
-            } else {
-                urlText.setText("");
-            }
+            urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
         }
-        if (connectionInfo.getHostName() == null) {
-            connectionInfo.setHostName(DEFAULT_HOST);
-        }
-        if (hostText != null) {
-            hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
-        }
-        if (portText != null) {
-            portText.setText(CommonUtils.notEmpty(connectionInfo.getHostPort()));
-        }
-        if (databaseText != null) {
-            databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-        }
-        if (tenantText != null) {
-            tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
-        }
+        hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+        portText.setText(CommonUtils.notEmpty(connectionInfo.getHostPort()));
+        databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+        tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
 
-        UIUtils.asyncExec(() -> {
-            // Set first control
-            if (CommonUtils.isEmpty(site.getDriver().getSampleURL())) {
-                urlText.setFocus();
-            }
-        });
         super.loadSettings();
     }
 

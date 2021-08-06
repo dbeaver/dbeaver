@@ -66,9 +66,11 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
                                 procedure == null ? null : JDBCUtils.escapeWildCards(session, procedure.getName()), "%")
                         .getSourceStatement();
             } else {
-                String queryFunctionString = "select * from mysql.proc where db='%s' and type='FUNCTION' and name='%s'";
-                return session
-                        .prepareStatement(String.format(queryFunctionString, owner.getName(), procedure.getName()));
+                String queryFunctionString = "select * from mysql.proc where db=? and type='FUNCTION' and name=?";
+                JDBCPreparedStatement statement = session.prepareStatement(String.format(queryFunctionString, owner.getName(), procedure.getName()));
+                statement.setString(1, owner.getName());
+                statement.setString(2, procedure.getName());
+                return statement;
             }
         }
 
@@ -143,11 +145,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
         if (!getDataSource().supportsInformationSchema()) {
             return Collections.emptyList();
         }
-        List<MySQLProcedure> objects = new ArrayList<>();
-        for (OceanbaseMySQLProcedure oceanbaseMySQLProcedure : oceanbaseProceduresCache.getAllObjects(monitor, this)) {
-            objects.add(oceanbaseMySQLProcedure);
-        }
-        return objects;
+        return new ArrayList<>(oceanbaseProceduresCache.getAllObjects(monitor, this));
     }
 
     @Override
