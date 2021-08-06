@@ -41,7 +41,6 @@ import org.jkiss.utils.CommonUtils;
  * OceanbaseConnectionPage
  */
 public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-    private static final String DEFAULT_HOST = "localhost"; //$NON-NLS-1$
 
     private Text portText;
     private Text hostText;

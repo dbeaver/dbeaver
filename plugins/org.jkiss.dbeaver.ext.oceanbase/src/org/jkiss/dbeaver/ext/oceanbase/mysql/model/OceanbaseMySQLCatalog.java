@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -67,7 +66,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
                         .getSourceStatement();
             } else {
                 String queryFunctionString = "select * from mysql.proc where db=? and type='FUNCTION' and name=?";
-                JDBCPreparedStatement statement = session.prepareStatement(String.format(queryFunctionString, owner.getName(), procedure.getName()));
+                JDBCPreparedStatement statement = session.prepareStatement(queryFunctionString);
                 statement.setString(1, owner.getName());
                 statement.setString(2, procedure.getName());
                 return statement;
