@@ -939,16 +939,36 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 {
                     // Pin/unpin
                     DBDDataFilter dataFilter = controller.getModel().getDataFilter();
-                    DBDAttributeConstraint ac = dataFilter.getConstraint(attr.getTopParent());
-                    if (ac != null) {
-                        Integer pinnedIndex = ac.getOption(ATTR_OPTION_PINNED);
-                        manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Action(pinnedIndex != null ? "Unpin column" : "Pin column") {
+
+                    final boolean allPinned = selectedColumns.stream()
+                        .map(x -> dataFilter.getConstraint(((DBDAttributeBinding) x).getTopParent()))
+                        .allMatch(x -> x != null && x.hasOption(ATTR_OPTION_PINNED));
+                    final boolean allUnpinned = selectedColumns.stream()
+                        .map(x -> dataFilter.getConstraint(((DBDAttributeBinding) x).getTopParent()))
+                        .allMatch(x -> x != null && !x.hasOption(ATTR_OPTION_PINNED));
+
+                    if (allUnpinned != allPinned) {
+                        final String pinnedTitle = allUnpinned
+                            ? selectedColumns.size() == 1
+                                ? NLS.bind(ResultSetMessages.controls_resultset_viewer_pin_column, ((DBDAttributeBinding) selectedColumns.get(0)).getName())
+                                : NLS.bind(ResultSetMessages.controls_resultset_viewer_pin_columns, selectedColumns.size())
+                            : selectedColumns.size() == 1
+                                ? NLS.bind(ResultSetMessages.controls_resultset_viewer_unpin_column, ((DBDAttributeBinding) selectedColumns.get(0)).getName())
+                                : NLS.bind(ResultSetMessages.controls_resultset_viewer_unpin_columns, selectedColumns.size());
+
+                        manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Action(pinnedTitle) {
                             @Override
                             public void run() {
-                                if (pinnedIndex != null) {
-                                    ac.removeOption(ATTR_OPTION_PINNED);
-                                } else {
-                                    ac.setOption(ATTR_OPTION_PINNED, getMaxPinIndex(dataFilter) + 1);
+                                for (Object column : selectedColumns) {
+                                    final DBDAttributeBinding attribute = (DBDAttributeBinding) column;
+                                    final DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute.getTopParent());
+                                    if (constraint != null) {
+                                        if (allUnpinned) {
+                                            constraint.setOption(ATTR_OPTION_PINNED, getMaxPinIndex(dataFilter) + 1);
+                                        } else {
+                                            constraint.removeOption(ATTR_OPTION_PINNED);
+                                        }
+                                    }
                                 }
                                 spreadsheet.refreshData(true, true, false);
                             }
