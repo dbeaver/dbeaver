@@ -32,6 +32,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -557,7 +558,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     @Override
     public void changeMode(boolean recordMode) {
-
+        text.setSelection(0);
+        text.setBlockSelectionBounds(new Rectangle(0, 0, 0, 0));
+        curSelection = null;
     }
 
     @Override
