@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ICommandListener;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -25,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -49,6 +52,7 @@ public class VerticalButton extends Canvas {
     private IAction action;
     private IServiceLocator serviceLocator;
     private String commandId;
+    private ICommandListener commandListener;
     private boolean checked;
     //float[] angles = {0, 90, 180, 270};
     //int index = 0;
@@ -113,7 +117,12 @@ public class VerticalButton extends Canvas {
             }
         });
 
-        this.addDisposeListener(e -> getFolder().removeItem(this));
+        this.addDisposeListener(e -> {
+            getFolder().removeItem(this);
+            if (commandId != null) {
+                removeCommandListener(commandId);
+            }
+        });
     }
 
     private void runAction(Event event) {
@@ -291,6 +300,10 @@ public class VerticalButton extends Canvas {
     }
 
     public void setCommand(IServiceLocator serviceLocator, String commandId, boolean showText) {
+        if (this.commandId != null) {
+            this.removeCommandListener(this.commandId);
+        }
+        this.setCommandListener(commandId);
         this.serviceLocator = serviceLocator;
         this.commandId = commandId;
         setImage(ActionUtils.findCommandImage(commandId));
@@ -300,6 +313,27 @@ public class VerticalButton extends Canvas {
         String toolTipText = ActionUtils.findCommandDescription(commandId, serviceLocator, false);
         if (!CommonUtils.isEmpty(toolTipText)) {
             this.setToolTipText(toolTipText);
+        }
+    }
+
+    private void setCommandListener(@NotNull String commandId) {
+        final Command command = ActionUtils.findCommand(commandId);
+        if (command != null) {
+            command.addCommandListener(commandListener = event -> {
+                // Update visuals
+                final String toolTipText = ActionUtils.findCommandDescription(commandId, serviceLocator, false);
+                if (CommonUtils.isNotEmpty(toolTipText)) {
+                    setToolTipText(toolTipText);
+                }
+            });
+        }
+    }
+
+    private void removeCommandListener(@NotNull String commandId) {
+        final Command command = ActionUtils.findCommand(commandId);
+        if (command != null && commandListener != null) {
+            command.removeCommandListener(commandListener);
+            commandListener = null;
         }
     }
 
