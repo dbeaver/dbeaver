@@ -162,8 +162,8 @@ public final class SQLUtils {
         return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('_') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
     }
 
-    public static String makeLikePattern(String like)
-    {
+    @NotNull
+    public static String makeLikePattern(@NotNull String like) {
         StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < like.length(); i++) {
