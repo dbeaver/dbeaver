@@ -964,7 +964,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                     final DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute.getTopParent());
                                     if (constraint != null) {
                                         if (allUnpinned) {
-                                            constraint.setOption(ATTR_OPTION_PINNED, getMaxPinIndex(dataFilter) + 1);
+                                            constraint.setOption(ATTR_OPTION_PINNED, getNextPinIndex(dataFilter));
                                         } else {
                                             constraint.removeOption(ATTR_OPTION_PINNED);
                                         }
@@ -1067,12 +1067,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    public static int getMaxPinIndex(@NotNull DBDDataFilter dataFilter) {
+    public static int getNextPinIndex(@NotNull DBDDataFilter dataFilter) {
         int maxIndex = 0;
         for (DBDAttributeConstraint ac : dataFilter.getConstraints()) {
             Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
             if (pinIndex != null) {
-                maxIndex = Math.max(maxIndex, pinIndex);
+                maxIndex = Math.max(maxIndex, pinIndex + 1);
             }
         }
         return maxIndex;
@@ -1496,16 +1496,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
         if (dragColumn instanceof DBDAttributeBinding && dropColumn instanceof DBDAttributeBinding) {
-
-            DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
+            final DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
             final DBDAttributeConstraint dragC = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
             final DBDAttributeConstraint dropC = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
             if (dragC == null || dropC == null) {
                 return;
             }
-
-            int sourcePosition = dragC.getVisualPosition();
-            int targetPosition = dropC.getVisualPosition();
+            final boolean pin = dragC.hasOption(ATTR_OPTION_PINNED) && dropC.hasOption(ATTR_OPTION_PINNED);
+            int sourcePosition = getConstraintPosition(dragC, pin);
+            int targetPosition = getConstraintPosition(dropC, pin);
             switch (location) {
                 case DROP_AFTER:
                     if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraints().size() - 1) {
@@ -1518,40 +1517,62 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                     break;
                 case SWAP:
-                    dropC.setVisualPosition(dragC.getVisualPosition());
-                    dragC.setVisualPosition(targetPosition);
+                    setConstraintPosition(dropC, pin, sourcePosition);
+                    setConstraintPosition(dragC, pin, targetPosition);
                     break;
-
             }
             if (sourcePosition == targetPosition) {
                 return;
             }
             if (location != DropLocation.SWAP) {
                 // Reposition columns
-                for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
-                    if (c == dragC) {
-                        continue;
+                final List<DBDAttributeConstraint> constraints = getOrderedConstraints(dataFilter, pin);
+                if (sourcePosition < targetPosition) {
+                    for (int i = sourcePosition + 1; i <= targetPosition; i++) {
+                        setConstraintPosition(constraints.get(i), pin, i - 1);
                     }
-                    int cPos = c.getVisualPosition();
-                    if (sourcePosition < targetPosition) {
-                        // Move to the right
-                        if (cPos > sourcePosition && cPos <= targetPosition) {
-                            c.setVisualPosition(cPos - 1);
-                        }
-                    } else {
-                        // Move to the left
-                        if (cPos < sourcePosition && cPos >= targetPosition) {
-                            c.setVisualPosition(cPos + 1);
-                        }
+                } else {
+                    for (int i = sourcePosition - 1; i >= targetPosition; i--) {
+                        setConstraintPosition(constraints.get(i), pin, i + 1);
                     }
                 }
-                dragC.setVisualPosition(targetPosition);
+                setConstraintPosition(dragC, pin, targetPosition);
             }
             controller.setDataFilter(dataFilter, false);
             spreadsheet.setFocusColumn(targetPosition);
             spreadsheet.refreshData(false, true, false);
         }
+    }
 
+    private static int getConstraintPosition(@NotNull DBDAttributeConstraint constraint, boolean pin) {
+        if (pin) {
+            return constraint.getOption(ATTR_OPTION_PINNED);
+        } else {
+            return constraint.getVisualPosition();
+        }
+    }
+
+    private static void setConstraintPosition(@NotNull DBDAttributeConstraint constraint, boolean pin, int position) {
+        if (pin) {
+            constraint.setOption(ATTR_OPTION_PINNED, position);
+        } else {
+            constraint.setVisualPosition(position);
+        }
+    }
+
+    @NotNull
+    private static List<DBDAttributeConstraint> getOrderedConstraints(@NotNull DBDDataFilter filter, boolean pin) {
+        final List<DBDAttributeConstraint> constraints = filter.getConstraints();
+        if (pin) {
+            return constraints.stream()
+                .filter(x -> x.hasOption(ATTR_OPTION_PINNED))
+                .sorted(Comparator.comparing(x -> x.getOption(ATTR_OPTION_PINNED)))
+                .collect(Collectors.toList());
+        } else {
+            return constraints.stream()
+                .sorted(Comparator.comparing(DBDAttributeConstraintBase::getVisualPosition))
+                .collect(Collectors.toList());
+        }
     }
 
     @Override

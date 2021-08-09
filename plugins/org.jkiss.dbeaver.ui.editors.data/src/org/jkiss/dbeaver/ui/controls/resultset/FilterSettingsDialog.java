@@ -198,7 +198,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     final DBDAttributeBinding binding = (DBDAttributeBinding) element;
                     final DBDAttributeConstraint constraint = getBindingConstraint(binding);
                     if (CommonUtils.getBoolean(value, false)) {
-                        constraint.setOption(SpreadsheetPresentation.ATTR_OPTION_PINNED, SpreadsheetPresentation.getMaxPinIndex(dataFilter) + 1);
+                        constraint.setOption(SpreadsheetPresentation.ATTR_OPTION_PINNED, SpreadsheetPresentation.getNextPinIndex(dataFilter));
                     } else {
                         constraint.removeOption(SpreadsheetPresentation.ATTR_OPTION_PINNED);
                     }

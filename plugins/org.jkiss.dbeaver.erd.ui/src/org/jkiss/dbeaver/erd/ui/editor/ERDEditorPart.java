@@ -54,8 +54,10 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.action.DiagramExportAction;
@@ -87,6 +89,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -99,23 +102,23 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
-import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectSearcher;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EventObject;
+import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Editor implementation based on the the example editor skeleton that is built in <i>Building
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView
-{
+        implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
+    private static final Log log = Log.getLog(Searcher.class);
+
     @Nullable
     protected ProgressControl progressControl;
 
@@ -1242,39 +1245,63 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return hasChanges;
     }
 
-    private class Searcher extends ObjectSearcher<DBPNamedObject> {
+    private class Searcher implements ISearchExecutor {
+        @Nullable
+        private Pattern curSearchPattern;
+        private boolean resultsFound;
 
         @Override
-        protected void setInfo(String message)
-        {
-            progressControl.setInfo(message);
+        public boolean performSearch(@NotNull String searchString, int options) {
+            String likePattern = SQLUtils.makeLikePattern(searchString);
+            if (likePattern.isEmpty() || (curSearchPattern != null && likePattern.equals(curSearchPattern.pattern()))) {
+                return resultsFound;
+            }
+
+            try {
+                curSearchPattern = Pattern.compile(likePattern, Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException e) {
+                log.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
+                if (progressControl != null) {
+                    progressControl.setInfo(e.getMessage());
+                }
+                return false;
+            }
+
+            resultsFound = false;
+            ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
+            graphicalViewer.deselectAll();
+            List<?> nodes = getDiagramPart().getChildren();
+            if (!CommonUtils.isEmpty(nodes)) {
+                Object obj = nodes.get(0);
+                if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
+                    for (Object node: nodes) {
+                        if (matchesSearch((DBPNamedObject) node)) {
+                            resultsFound = true;
+                            graphicalViewer.appendSelection((EditPart) node);
+                            graphicalViewer.reveal((EditPart) node);
+                        }
+                    }
+                }
+            }
+            return resultsFound;
         }
 
         @Override
-        protected Collection<DBPNamedObject> getContent()
-        {
-            return getDiagramPart().getChildren();
-        }
-
-        @Override
-        protected void selectObject(DBPNamedObject object)
-        {
-            if (object == null) {
-                getGraphicalViewer().deselectAll();
-            } else {
-                getGraphicalViewer().select((EditPart)object);
+        public void cancelSearch() {
+            if (curSearchPattern != null) {
+                curSearchPattern = null;
+                if (resultsFound) {
+                    resultsFound = false;
+                    getGraphicalViewer().deselectAll();
+                }
             }
         }
 
-        @Override
-        protected void updateObject(DBPNamedObject object)
-        {
-        }
-
-        @Override
-        protected void revealObject(DBPNamedObject object)
-        {
-            getGraphicalViewer().reveal((EditPart)object);
+        private boolean matchesSearch(@Nullable DBPNamedObject element) {
+            if (curSearchPattern == null || element == null) {
+                return false;
+            }
+            return curSearchPattern.matcher(element.getName()).find();
         }
     }
 
