@@ -19,6 +19,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.dnd;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
@@ -27,7 +30,9 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
 import org.jkiss.dbeaver.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.DiagramCollectSettingsDefault;
+import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -65,6 +71,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
             public Object getNewObject()
             {
                 Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
+                EntityDiagram diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
                 if (objects == null) {
                     return null;
                 }
@@ -74,7 +81,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     public void run(DBRProgressMonitor monitor) {
                         result = DiagramObjectCollector.generateEntityList(
                             monitor,
-                            ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram(),
+                            diagram,
                             objects,
                             new DiagramCollectSettingsDefault(),
                             true);
@@ -87,7 +94,19 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                 } catch (InterruptedException e) {
                     // ignore
                 }
-
+                final List<String> errorMessages = diagram.getErrorMessages();
+                if (!errorMessages.isEmpty()) {
+                    final List<Status> statuses = new ArrayList<>(errorMessages.size());
+                    for (String error : errorMessages) {
+                        statuses.add(new Status(Status.ERROR, ERDUIActivator.PLUGIN_ID, error));
+                    }
+                    DBWorkbench.getPlatformUI().showError(
+                        "Diagram request error",
+                        "Error(s) occurred during diagram request. If these errors are recoverable then fix errors and then repeat request",
+                        new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, statuses.toArray(new IStatus[0]), null, null)
+                    );
+                    diagram.clearErrorMessages();
+                }
                 return collector.getResult();
             }
 

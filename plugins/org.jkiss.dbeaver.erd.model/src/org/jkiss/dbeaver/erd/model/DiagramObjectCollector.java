@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -192,10 +194,23 @@ public class DiagramObjectCollector {
         boolean forceShowViews)
     {
         final List<DBSObject> roots = new ArrayList<>();
+        DBPProject currentProject = null;
+        if (!diagram.getEntities().isEmpty()) {
+            currentProject = diagram.getEntities().get(0).getDataSource().getContainer().getProject();
+        }
         for (DBPNamedObject object : objects) {
-            if (object instanceof DBSObject) {
-                roots.add((DBSObject) object);
+            if (!(object instanceof DBSObject)) {
+                continue;
             }
+            final DBPProject project = ((DBSObject) object).getDataSource().getContainer().getProject();
+            if (currentProject == null) {
+                currentProject = project;
+            }
+            if (currentProject != project) {
+                diagram.addErrorMessage("Can't add object '" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "' from different project '" + project.getName() + "' (current project is '" + currentProject.getName() + "')");
+                continue;
+            }
+            roots.add((DBSObject) object);
         }
         if (roots.isEmpty()) {
             return Collections.emptyList();

@@ -389,4 +389,8 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         errorMessages.add(message);
     }
 
+    public void clearErrorMessages() {
+        errorMessages.clear();
+    }
+
 }
