@@ -20,19 +20,19 @@
 package org.jkiss.dbeaver.erd.ui.action;
 
 import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded;
-
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Action to toggle diagram persistence
@@ -41,10 +41,10 @@ public class DiagramExportAction extends Action {
 
     private static final Log log = Log.getLog(DiagramExportAction.class);
 
-    private final ERDEditorEmbedded editor;
+    private final ERDEditorPart editor;
     private Shell shell;
 
-    public DiagramExportAction(ERDEditorEmbedded editor, Shell shell) {
+    public DiagramExportAction(ERDEditorPart editor, Shell shell) {
         super("Export diagram", DBeaverIcons.getImageDescriptor(UIIcon.EXPORT));
         setDescription("Export diagram into a ERD file");
         setToolTipText(getDescription());

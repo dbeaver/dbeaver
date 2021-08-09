@@ -58,6 +58,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.action.DiagramExportAction;
 import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
 import org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester;
@@ -951,6 +952,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 IWorkbenchCommandConstants.FILE_SAVE_AS,
                 ERDUIMessages.erd_editor_control_action_save_external_format,
                 UIIcon.PICTURE_SAVE));
+
+            DiagramExportAction saveDiagram = new DiagramExportAction(this, getSite().getShell());
+            toolBarManager.add(saveDiagram);
         }
         toolBarManager.add(new Separator());
         {
