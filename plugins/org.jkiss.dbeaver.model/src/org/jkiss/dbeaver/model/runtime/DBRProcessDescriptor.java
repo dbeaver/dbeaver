@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.runtime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -52,7 +53,7 @@ public class DBRProcessDescriptor
             GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
         commandLine = CommonUtils.notEmpty(commandLine);
 
-        processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
+        processBuilder = new ProcessBuilder(RuntimeUtils.splitCommandLine(commandLine));
         // Set working directory
         if (!CommonUtils.isEmpty(command.getWorkingDirectory())) {
             processBuilder.directory(new File(command.getWorkingDirectory()));

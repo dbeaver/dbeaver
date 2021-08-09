@@ -94,6 +94,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_about_title;
 
 	public static String dialog_connection_button_test;
+	public static String dialog_connection_events_settings_group;
 	public static String dialog_connection_events_checkbox_show_process;
 	public static String dialog_connection_events_checkbox_terminate_at_disconnect;
 	public static String dialog_connection_events_checkbox_wait_finish;
