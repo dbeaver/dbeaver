@@ -1053,11 +1053,10 @@ public class SQLEditor extends SQLEditorBase implements
         restoreSashRatio(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
 
         getTextViewer().getTextWidget().addTraverseListener(e -> {
-            if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
+            if (e.detail == SWT.TRAVERSE_TAB_NEXT && e.stateMask == SWT.MOD1) {
                 ResultSetViewer viewer = getActiveResultSetViewer();
                 if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
                     viewer.getActivePresentation().getControl().setFocus();
-                    e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 }
             }
@@ -1089,7 +1088,7 @@ public class SQLEditor extends SQLEditorBase implements
         createExtraViewControls();
 
         // Create results tab
-        createQueryProcessor(true, true);
+        // createQueryProcessor(true, true);
         resultsSash.setMaximizedControl(sqlEditorPanel);
 
         {
