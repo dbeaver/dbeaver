@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -201,6 +202,15 @@ public class DiagramObjectCollector {
         for (DBPNamedObject object : objects) {
             if (!(object instanceof DBSObject)) {
                 continue;
+            }
+            if (object instanceof DBPDataSourceContainer && !((DBPDataSourceContainer) object).isConnected()) {
+                monitor.subTask("Connect to '" + object.getName() + "'");
+                try {
+                    ((DBPDataSourceContainer) object).connect(monitor, true, true);
+                } catch (DBException e) {
+                    diagram.addErrorMessage("Can't connect to '" + object.getName() + "': " + e.getMessage());
+                    continue;
+                }
             }
             final DBPProject project = ((DBSObject) object).getDataSource().getContainer().getProject();
             if (currentProject == null) {
