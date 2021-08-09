@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * ERD content provider
@@ -38,6 +35,8 @@ import java.util.Set;
 public class ERDContentProviderDefault implements ERDContentProvider {
 
     private static final Log log = Log.getLog(ERDContentProviderDefault.class);
+
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public ERDContentProviderDefault() {
     }
@@ -155,4 +154,13 @@ public class ERDContentProviderDefault implements ERDContentProvider {
         return new ERDAssociation(association, sourceEntity, targetEntity, reflect);
     }
 
+    @Override
+    public <T> T getAttribute(String name) {
+        return (T) attributes.get(name);
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        attributes.put(name, value);
+    }
 }

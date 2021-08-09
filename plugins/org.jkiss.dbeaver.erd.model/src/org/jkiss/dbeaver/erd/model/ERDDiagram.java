@@ -63,7 +63,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     private final Map<DBSEntity, ERDEntity> entityMap = new IdentityHashMap<>();
 
     private final List<ERDNote> notes = new ArrayList<>();
-    private List<String> errorMessages = new ArrayList<>();
+    private final List<String> errorMessages = new ArrayList<>();
 
     public ERDDiagram(DBSObject container, String name, ERDContentProvider contentProvider) {
         super(container);

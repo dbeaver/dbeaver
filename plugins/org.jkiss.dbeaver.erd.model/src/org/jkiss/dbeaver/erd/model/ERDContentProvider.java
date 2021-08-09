@@ -32,12 +32,17 @@ public interface ERDContentProvider {
 
     /**
      * Create default entity attributes.
-     * @param diagram Diagram
+     *
+     * @param diagram       Diagram
      * @param otherEntities list of entities if they are added as a batch
      */
     void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity);
 
     @Nullable
     ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);
+
+    <T> T getAttribute(String name);
+
+    void setAttribute(String name, Object value);
 
 }
