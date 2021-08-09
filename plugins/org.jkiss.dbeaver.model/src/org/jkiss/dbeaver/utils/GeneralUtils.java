@@ -508,15 +508,6 @@ public class GeneralUtils {
         }
     }
 
-    public static String[] parseCommandLine(String commandLine) {
-        StringTokenizer st = new StringTokenizer(commandLine);
-        String[] args = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++) {
-            args[i] = st.nextToken();
-        }
-        return args;
-    }
-
     public static IStatus makeExceptionStatus(Throwable ex) {
         return makeExceptionStatus(IStatus.ERROR, ex);
     }
