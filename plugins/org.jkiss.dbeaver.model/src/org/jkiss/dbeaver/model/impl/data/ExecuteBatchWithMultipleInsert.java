@@ -134,7 +134,10 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
     private void bindAndFlushStatement(DBDValueHandler[] handlers, DBCStatistics statistics, DBCStatement batchStatement, Object[] allMultiInsertValues) throws DBCException {
         statistics.setQueryText(batchStatement.getQueryString());
         statistics.addStatementsCount();
-        bindStatement(handlers, batchStatement, allMultiInsertValues);
+		// can implement it better, but works now
+		if (batchStatement.getQueryString().contains("?")) {
+			bindStatement(handlers, batchStatement, allMultiInsertValues);
+		}
         batchStatement.addToBatch();
         flushBatch(statistics, batchStatement);
     }
