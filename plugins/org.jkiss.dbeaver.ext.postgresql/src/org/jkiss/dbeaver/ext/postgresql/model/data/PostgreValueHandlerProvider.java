@@ -45,6 +45,25 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * PostgreValueHandlerProvider
  */
 public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvider {
+    
+    private static List<String> validRSNumericTypes = new ArrayList<String>();
+    
+    static {
+	validRSNumericTypes.add(PostgreConstants.TYPE_INT2);
+	validRSNumericTypes.add(PostgreConstants.TYPE_INT4);
+	validRSNumericTypes.add(PostgreConstants.TYPE_INT8);
+	validRSNumericTypes.add(PostgreConstants.TYPE_FLOAT4);
+	validRSNumericTypes.add(PostgreConstants.TYPE_FLOAT8);
+	validRSNumericTypes.add("smallint");
+	validRSNumericTypes.add("integer");
+	validRSNumericTypes.add("bigint");
+	validRSNumericTypes.add("decimal");
+	validRSNumericTypes.add("numeric");
+	validRSNumericTypes.add("double precision");
+	validRSNumericTypes.add("real");
+	validRSNumericTypes.add("float");
+    }
+    
     @Nullable
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
@@ -112,21 +131,6 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
     public DBDValueHandler getRedshiftValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
 	    DBSTypedObject typedObject) {
 
-	List<String> validNumericTypes = new ArrayList<String>();
-	validNumericTypes.add(PostgreConstants.TYPE_INT2);
-	validNumericTypes.add(PostgreConstants.TYPE_INT4);
-	validNumericTypes.add(PostgreConstants.TYPE_INT8);
-	validNumericTypes.add(PostgreConstants.TYPE_FLOAT4);
-	validNumericTypes.add(PostgreConstants.TYPE_FLOAT8);
-	validNumericTypes.add("smallint");
-	validNumericTypes.add("integer");
-	validNumericTypes.add("bigint");
-	validNumericTypes.add("decimal");
-	validNumericTypes.add("numeric");
-	validNumericTypes.add("double precision");
-	validNumericTypes.add("real");
-	validNumericTypes.add("float");
-
 	int typeID = typedObject.getTypeID();
 	switch (typeID) {
 	case Types.ARRAY:
@@ -164,7 +168,7 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
 		return RedshiftIntervalValueHandler.INSTANCE;
 	    default:
 		if (PostgreConstants.SERIAL_TYPES.containsKey(typedObject.getTypeName())
-			|| validNumericTypes.contains(typedObject.getTypeName().toString().toLowerCase())) {
+			|| PostgreValueHandlerProvider.validRSNumericTypes.contains(typedObject.getTypeName().toString().toLowerCase())) {
 		    return new RedshiftNumberValueHandler(typedObject, preferences);
 		}
 		if (typeID == Types.OTHER || typedObject.getDataKind() == DBPDataKind.STRING) {
