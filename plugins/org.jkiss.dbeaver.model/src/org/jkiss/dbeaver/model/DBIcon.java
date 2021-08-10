@@ -152,6 +152,7 @@ public class DBIcon implements DBPImage
 
     public static final DBIcon STATUS_ERROR = new DBIcon("status_error", "status/error.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon STATUS_WARNING = new DBIcon("status_warning", "status/warning.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon STATUS_QUESTION = new DBIcon("status_question", "status/question.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon STATUS_INFO = new DBIcon("status_info", "status/info.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     private static final boolean VALIDATE_ICON_FILE = false;
