@@ -20,10 +20,12 @@
 package org.jkiss.dbeaver.erd.ui.action;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -35,7 +37,7 @@ public class DiagramToggleGridAction extends Action {
 
     public DiagramToggleGridAction() {
         super(ERDUIMessages.erd_editor_control_action_toggle_grid, AS_CHECK_BOX);
-        setImageDescriptor(ERDUIActivator.getImageDescriptor("icons/layer_grid.png"));
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(ERDIcon.LAYER_GRID));
         setChecked(ERDUIActivator.getDefault().getPreferences().getBoolean(ERDUIConstants.PREF_GRID_ENABLED));
     }
 

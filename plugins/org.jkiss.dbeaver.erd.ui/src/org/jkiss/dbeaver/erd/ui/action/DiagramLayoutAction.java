@@ -21,9 +21,10 @@
 package org.jkiss.dbeaver.erd.ui.action;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Action to toggle the layout between manual and automatic
@@ -36,7 +37,7 @@ public class DiagramLayoutAction extends Action
 
 	public DiagramLayoutAction(ERDEditorPart editor)
 	{
-		super(ERDUIMessages.action_diagram_layout_name, ERDUIActivator.getImageDescriptor("icons/arrangeall.png")); //$NON-NLS-2$
+		super(ERDUIMessages.action_diagram_layout_name, DBeaverIcons.getImageDescriptor(ERDIcon.ARRANGE_ALL));
 		this.editor = editor;
 	}
 

@@ -22,8 +22,10 @@ import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.jface.action.Action;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.tools.HandToolEntry;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Action to cycle between hand tool and previously selected tool
@@ -45,6 +47,7 @@ public class DiagramToggleHandAction extends Action implements PaletteListener, 
 
         setId(CMD_TOGGLE_HAND);
         setActionDefinitionId(CMD_TOGGLE_HAND);
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(ERDIcon.MOVE));
     }
 
     @Override

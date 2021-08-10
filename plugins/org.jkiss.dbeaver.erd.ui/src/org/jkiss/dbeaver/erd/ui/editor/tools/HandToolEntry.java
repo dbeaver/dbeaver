@@ -20,30 +20,30 @@ import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPartViewer;
-import org.eclipse.gef.SharedImages;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.tools.AbstractTool;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.erd.ui.ERDIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 public class HandToolEntry extends ToolEntry {
     public static final String ID = "hand-tool";
 
     public HandToolEntry() {
-        super("Pan Diagram", "Pan diagram view", SharedImages.DESC_SELECTION_TOOL_16, SharedImages.DESC_SELECTION_TOOL_24, ToolHand.class);
+        super("Pan Diagram", "Pan diagram view", DBeaverIcons.getImageDescriptor(ERDIcon.MOVE), DBeaverIcons.getImageDescriptor(ERDIcon.MOVE), ToolHand.class);
         setUserModificationPermission(PERMISSION_NO_MODIFICATION);
         setId(ID);
     }
 
     public static class ToolHand extends AbstractTool {
-
         private int viewStartX;
         private int viewStartY;
 
         public ToolHand() {
-            setDefaultCursor(Cursors.HAND);
+            setDefaultCursor(Cursors.SIZEALL);
             setUnloadWhenFinished(false);
         }
 
