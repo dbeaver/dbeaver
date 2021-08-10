@@ -100,6 +100,10 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_rows_size;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;
+    public static String controls_resultset_viewer_pin_column;
+    public static String controls_resultset_viewer_pin_columns;
+    public static String controls_resultset_viewer_unpin_column;
+    public static String controls_resultset_viewer_unpin_columns;
     public static String controls_resultset_viewer_hide_column_x;
     public static String controls_resultset_viewer_hide_columns_x;
     public static String controls_resultset_viewer_hide_columns_error_title;
@@ -182,12 +186,13 @@ public class ResultSetMessages extends NLS {
     public static String dialog_filter_value_edit_table_description_description;
     public static String dialog_filter_value_edit_table_count_label;
     public static String dialog_filter_value_edit_table_count_description;
-    public static String dialog_filter_value_edit_table_checkbox_case_insensitive_label;
-    public static String dialog_filter_value_edit_table_checkbox_case_insensitive_description;
-    public static String dialog_filter_value_edit_table_checkbox_read_from_server_label;
-    public static String dialog_filter_value_edit_table_checkbox_read_from_server_description;
-    public static String dialog_filter_value_edit_table_checkbox_show_row_count_label;
-    public static String dialog_filter_value_edit_table_checkbox_show_row_count_description;
+    public static String dialog_filter_value_edit_table_group_options;
+    public static String dialog_filter_value_edit_table_options_checkbox_case_insensitive_label;
+    public static String dialog_filter_value_edit_table_options_checkbox_case_insensitive_description;
+    public static String dialog_filter_value_edit_table_options_checkbox_read_from_server_label;
+    public static String dialog_filter_value_edit_table_options_checkbox_read_from_server_description;
+    public static String dialog_filter_value_edit_table_options_checkbox_show_row_count_label;
+    public static String dialog_filter_value_edit_table_options_checkbox_show_row_count_description;
 
     public static String dialog_control_label_massage;
     public static String dialog_cursor_view_monitor_rows_fetched;

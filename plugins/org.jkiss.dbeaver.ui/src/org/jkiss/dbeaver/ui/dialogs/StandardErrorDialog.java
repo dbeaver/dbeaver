@@ -156,7 +156,7 @@ public class StandardErrorDialog extends ErrorDialog implements BlockingPopupDia
             detailsVisible = false;
         });
         int itemCount = dropDownList.getItemCount();
-        if (itemCount > 1) {
+        if (itemCount > 1 && dropDownList.getItem(itemCount - 2).equals(dropDownList.getItem(itemCount - 1))) {
             // Remove last list item (dup)
             dropDownList.remove(itemCount - 1);
         }

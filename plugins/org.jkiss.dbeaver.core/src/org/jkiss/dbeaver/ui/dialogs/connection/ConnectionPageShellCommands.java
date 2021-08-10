@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -116,15 +115,16 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             });
         }
         {
-            Composite detailsGroup = UIUtils.createPlaceholder(group, 1, 5);
+            Composite detailsGroup = UIUtils.createComposite(group, 2);
             detailsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_connection_events_label_command);
+            UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_connection_events_label_command, 2);
             commandText = new Text(detailsGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             commandText.addModifyListener(e -> updateEvent(true));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.heightHint = 60;
+            gd.heightHint = 120;
             gd.widthHint = 300;
+            gd.horizontalSpan = 2;
             commandText.setLayoutData(gd);
 
             SelectionAdapter eventEditAdapter = new SelectionAdapter() {
@@ -135,31 +135,33 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 }
             };
 
-            showProcessCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_show_process, false);
+            Composite settingsGroup = UIUtils.createControlGroup(detailsGroup, CoreMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL, 0);
+
+            showProcessCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_show_process, false);
             showProcessCheck.addSelectionListener(eventEditAdapter);
-            waitFinishCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish, false);
-            waitFinishCheck.addSelectionListener(eventEditAdapter);
-            waitFinishTimeoutMs = createWaitFinishTimeout(detailsGroup);
-            waitFinishTimeoutMs.addSelectionListener(eventEditAdapter);
-            terminateCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
+            showProcessCheck.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+
+            terminateCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
             terminateCheck.addSelectionListener(eventEditAdapter);
-            {
-                Composite pauseComposite = UIUtils.createPlaceholder(detailsGroup, 2, 5);
-                pauseComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            terminateCheck.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
-                pauseAfterExecute = UIUtils.createLabelSpinner(pauseComposite, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_label, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_tooltip, 0, 0, Integer.MAX_VALUE);
-                pauseAfterExecute.addSelectionListener(eventEditAdapter);
+            waitFinishCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish, false);
+            waitFinishCheck.addSelectionListener(eventEditAdapter);
+            waitFinishTimeoutMs = UIUtils.createSpinner(settingsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish_timeout, 0, DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER, DBRShellCommand.WAIT_PROCESS_TIMEOUT_MAX_SELECTION);
+            waitFinishTimeoutMs.addSelectionListener(eventEditAdapter);
 
-                UIUtils.createControlLabel(pauseComposite, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
-                workingDirectory = new TextWithOpenFolder(pauseComposite, CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title);
-                workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                workingDirectory.getTextControl().addModifyListener(e -> {
-                    DBRShellCommand command = getActiveCommand();
-                    if (command != null) {
-                        command.setWorkingDirectory(workingDirectory.getText());
-                    }
-                });
-            }
+            pauseAfterExecute = UIUtils.createLabelSpinner(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_label, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_tooltip, 0, 0, Integer.MAX_VALUE);
+            pauseAfterExecute.addSelectionListener(eventEditAdapter);
+
+            UIUtils.createControlLabel(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
+            workingDirectory = new TextWithOpenFolder(settingsGroup, CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title);
+            workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            workingDirectory.getTextControl().addModifyListener(e -> {
+                DBRShellCommand command = getActiveCommand();
+                if (command != null) {
+                    command.setWorkingDirectory(workingDirectory.getText());
+                }
+            });
 
             VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
                 detailsGroup,
@@ -172,24 +174,6 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         selectEventType(null);
 
         setControl(group);
-    }
-
-    private static Spinner createWaitFinishTimeout(Composite detailsGroup) {
-        Composite waitFinishGroup = new Composite(detailsGroup, SWT.NONE);
-        GridLayout waitFinishGroupLayout = new GridLayout(2, false);
-        waitFinishGroupLayout.marginWidth = 0;
-        waitFinishGroupLayout.marginHeight = 0;
-        waitFinishGroupLayout.marginLeft = 25;
-        waitFinishGroup.setLayout(waitFinishGroupLayout);
-
-        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-        waitFinishGroup.setLayoutData(gridData);
-
-        int defaultValue = DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER;
-        int maxSelection = DBRShellCommand.WAIT_PROCESS_TIMEOUT_MAX_SELECTION;
-        Spinner spinner = UIUtils.createSpinner(waitFinishGroup, "-1 to wait forever", 0, defaultValue, maxSelection);
-        UIUtils.createLabel(waitFinishGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish_timeout);
-        return spinner;
     }
 
     private DBPConnectionEventType getSelectedEventType()

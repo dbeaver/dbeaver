@@ -198,6 +198,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
+        EntityDiagram oldDiagram = getDiagram();
         EntityDiagram diagram;
         if (!dbObject.isPersisted()) {
             diagram = new EntityDiagram(dbObject, "New Object", getContentProvider(), getDecorator());

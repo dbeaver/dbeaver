@@ -1325,43 +1325,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    /**
-     * Legacy searcher. Highlights foudn elements
-     */
-    protected class SearcherHighligther extends ObjectSearcher<DBNNode> {
-        @Override
-        protected void setInfo(String message)
-        {
-            ObjectListControl.this.setInfo(message);
-        }
-
-        @Override
-        protected Collection<DBNNode> getContent()
-        {
-            return (Collection<DBNNode>) getItemsViewer().getInput();
-        }
-
-        @Override
-        protected void selectObject(DBNNode object)
-        {
-            getItemsViewer().setSelection(object == null ? new StructuredSelection() : new StructuredSelection(object));
-        }
-
-        @Override
-        protected void updateObject(DBNNode object)
-        {
-            getItemsViewer().update(object, null);
-        }
-
-        @Override
-        protected void revealObject(DBNNode object)
-        {
-            getItemsViewer().reveal(object);
-        }
-
-    }
-
-
     protected class ViewerRenderer extends ObjectViewerRenderer {
         protected ViewerRenderer() {
             super(itemsViewer);

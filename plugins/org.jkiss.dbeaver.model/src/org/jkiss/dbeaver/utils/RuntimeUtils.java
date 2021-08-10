@@ -38,7 +38,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -306,6 +308,94 @@ public final class RuntimeUtils {
 
     public static void setThreadName(String name) {
         Thread.currentThread().setName("DBeaver: " + name);
+    }
+
+    /**
+     * Splits command line string into a list of separate arguments,
+     * respecting quoted strings and escaped characters, similar to
+     * how terminals do that.
+     *
+     * @param input input string to be split
+     * @return a list of separate, unquoted arguments
+     */
+    @NotNull
+    public static List<String> splitCommandLine(@NotNull String input) {
+        final List<String> arguments = new ArrayList<>();
+        final StringBuilder argument = new StringBuilder();
+        CommandLineState state = CommandLineState.NONE;
+        boolean escaped = false;
+
+        for (int index = 0; index < input.length(); index++) {
+            final char ch = input.charAt(index);
+            final char quote = state == CommandLineState.SINGLE_QUOTE ? '\'' : '"';
+
+            if (escaped) {
+                argument.append(ch);
+                escaped = false;
+                break;
+            }
+
+            switch (state) {
+                case NONE:
+                case NORMAL:
+                    switch (ch) {
+                        case '\\':
+                            escaped = true;
+                            state = CommandLineState.NORMAL;
+                            break;
+                        case '\'':
+                            state = CommandLineState.SINGLE_QUOTE;
+                            break;
+                        case '"':
+                            state = CommandLineState.DOUBLE_QUOTE;
+                            break;
+                        default:
+                            if (!Character.isWhitespace(ch)) {
+                                argument.append(ch);
+                                state = CommandLineState.NORMAL;
+                            } else if (state == CommandLineState.NORMAL) {
+                                arguments.add(argument.toString());
+                                argument.setLength(0);
+                                state = CommandLineState.NONE;
+                            }
+                            break;
+                    }
+                    break;
+                case SINGLE_QUOTE:
+                case DOUBLE_QUOTE:
+                    if (ch == quote) {
+                        state = CommandLineState.NORMAL;
+                        break;
+                    } else if (ch == '\\') {
+                        final char next = input.charAt(++index);
+                        if (next != quote && next != '\\') {
+                            argument.append(ch);
+                        }
+                        argument.append(next);
+                    } else {
+                        argument.append(ch);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (escaped) {
+            argument.append('\\');
+            arguments.add(argument.toString());
+        } else if (state != CommandLineState.NONE) {
+            arguments.add(argument.toString());
+        }
+
+        return arguments;
+    }
+
+    private enum CommandLineState {
+        NONE,
+        NORMAL,
+        SINGLE_QUOTE,
+        DOUBLE_QUOTE
     }
 
     private static class MonitoringTask implements DBRRunnableWithProgress {
