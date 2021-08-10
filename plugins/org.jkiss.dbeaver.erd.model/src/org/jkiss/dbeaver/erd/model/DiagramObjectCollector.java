@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -195,10 +196,7 @@ public class DiagramObjectCollector {
         boolean forceShowViews)
     {
         final List<DBSObject> roots = new ArrayList<>();
-        DBPProject currentProject = null;
-        if (!diagram.getEntities().isEmpty()) {
-            currentProject = diagram.getEntities().get(0).getDataSource().getContainer().getProject();
-        }
+        final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         for (DBPNamedObject object : objects) {
             if (!(object instanceof DBSObject)) {
                 continue;
@@ -213,11 +211,8 @@ public class DiagramObjectCollector {
                 }
             }
             final DBPProject project = ((DBSObject) object).getDataSource().getContainer().getProject();
-            if (currentProject == null) {
-                currentProject = project;
-            }
-            if (currentProject != project) {
-                diagram.addErrorMessage("Can't add object '" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "' from different project '" + project.getName() + "' (current project is '" + currentProject.getName() + "')");
+            if (activeProject != project) {
+                diagram.addErrorMessage("Can't add object '" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "' from a non-active project '" + project.getName() + "' (active project is '" + activeProject.getName() + "')");
                 continue;
             }
             roots.add((DBSObject) object);
