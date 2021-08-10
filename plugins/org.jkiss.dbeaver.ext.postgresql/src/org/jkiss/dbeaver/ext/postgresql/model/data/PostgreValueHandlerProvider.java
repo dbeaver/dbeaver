@@ -122,6 +122,7 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
 	validNumericTypes.add("integer");
 	validNumericTypes.add("bigint");
 	validNumericTypes.add("decimal");
+	validNumericTypes.add("numeric");
 	validNumericTypes.add("double precision");
 	validNumericTypes.add("real");
 	validNumericTypes.add("float");
