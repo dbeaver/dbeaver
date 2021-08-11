@@ -80,7 +80,7 @@
         <setEntry value="org.eclipse.core.variables@default:default"/>
         <setEntry value="org.eclipse.debug.core@default:default"/>
         <setEntry value="org.eclipse.debug.ui@default:default"/>
-        <setEntry value="org.eclipse.draw2d@default:default"/>
+        <setEntry value="org.eclipse.draw2dl@default:default"/>
         <setEntry value="org.eclipse.e4.core.commands@default:default"/>
         <setEntry value="org.eclipse.e4.core.contexts@default:default"/>
         <setEntry value="org.eclipse.e4.core.di.annotations@default:default"/>
@@ -158,7 +158,7 @@
         <setEntry value="org.eclipse.equinox.security@default:default"/>
         <setEntry value="org.eclipse.equinox.simpleconfigurator.manipulator@default:default"/>
         <setEntry value="org.eclipse.equinox.simpleconfigurator@1:true"/>
-        <setEntry value="org.eclipse.gef@default:default"/>
+        <setEntry value="org.eclipse.gef3@default:default"/>
         <setEntry value="org.eclipse.help@default:default"/>
         <setEntry value="org.eclipse.jface.databinding@default:default"/>
         <setEntry value="org.eclipse.jface.notifications@default:default"/>

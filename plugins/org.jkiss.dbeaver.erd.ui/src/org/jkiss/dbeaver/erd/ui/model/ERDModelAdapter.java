@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.Request;
+import org.eclipse.gef3.EditPart;
+import org.eclipse.gef3.Request;
 
 /**
  * ERD model adapter

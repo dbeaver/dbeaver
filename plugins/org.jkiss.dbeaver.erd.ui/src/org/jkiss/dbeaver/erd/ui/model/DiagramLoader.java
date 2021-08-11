@@ -20,10 +20,10 @@
 package org.jkiss.dbeaver.erd.ui.model;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.draw2d.AbsoluteBendpoint;
-import org.eclipse.draw2d.Bendpoint;
-import org.eclipse.draw2d.RelativeBendpoint;
-import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2dl.AbsoluteBendpoint;
+import org.eclipse.draw2dl.Bendpoint;
+import org.eclipse.draw2dl.RelativeBendpoint;
+import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;

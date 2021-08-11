@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.gef.*;
-import org.eclipse.gef.tools.DragEditPartsTracker;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.gef3.*;
+import org.eclipse.gef3.tools.DragEditPartsTracker;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;

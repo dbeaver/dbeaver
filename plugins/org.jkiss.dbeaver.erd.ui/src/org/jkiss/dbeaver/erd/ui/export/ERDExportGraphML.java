@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.export;
 
-import org.eclipse.draw2d.Bendpoint;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2dl.Bendpoint;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
@@ -37,7 +37,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

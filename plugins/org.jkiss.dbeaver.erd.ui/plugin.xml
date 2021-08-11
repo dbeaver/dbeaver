@@ -51,7 +51,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.erd.ui.model.ERDObjectAdapter">
+        <factory adaptableType="org.eclipse.gef3.EditPart" class="org.jkiss.dbeaver.erd.ui.model.ERDObjectAdapter">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
@@ -518,7 +518,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.erd.toggleHand" name="Toggle hand tool" description="Cycle through hand tool and previously used tool" categoryId="org.eclipse.gef.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.toggleHand" name="Toggle hand tool" description="Cycle through hand tool and previously used tool" categoryId="org.eclipse.gef3.category.view"/>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

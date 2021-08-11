@@ -27,8 +27,8 @@
       <import plugin="org.eclipse.jface.text" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.views" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.search" version="0.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.draw2d" version="0.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.gef" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.draw2dl" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.gef3" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

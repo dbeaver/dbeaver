@@ -20,12 +20,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout;
 
-import org.eclipse.draw2d.Connection;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.Viewport;
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2dl.Connection;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2dl.Viewport;
+import org.eclipse.draw2dl.geometry.Point;
+import org.eclipse.draw2dl.geometry.PointList;
+import org.eclipse.draw2dl.geometry.Rectangle;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * GraphAnimation class lifted directly from the GEF flow example. The only
+ * GraphAnimation class lifted directly from the .gef3 flow example. The only
  * modification is in playBackState(): if either the width of height of a final
  * state figure bounds is greater, then the rectangle during animation is shown
  * as the final size from the outset

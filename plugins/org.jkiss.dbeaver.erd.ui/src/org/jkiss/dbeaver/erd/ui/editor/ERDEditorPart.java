@@ -21,21 +21,21 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.PrintFigureOperation;
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Insets;
-import org.eclipse.gef.*;
-import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
-import org.eclipse.gef.editparts.ZoomManager;
-import org.eclipse.gef.palette.PaletteRoot;
-import org.eclipse.gef.ui.actions.*;
-import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
-import org.eclipse.gef.ui.palette.PaletteViewerProvider;
-import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
-import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
-import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2dl.PrintFigureOperation;
+import org.eclipse.draw2dl.geometry.Dimension;
+import org.eclipse.draw2dl.geometry.Insets;
+import org.eclipse.gef3.*;
+import org.eclipse.gef3.commands.CommandStack;
+import org.eclipse.gef3.editparts.ScalableFreeformRootEditPart;
+import org.eclipse.gef3.editparts.ZoomManager;
+import org.eclipse.gef3.palette.PaletteRoot;
+import org.eclipse.gef3.ui.actions.*;
+import org.eclipse.gef3.ui.palette.FlyoutPaletteComposite;
+import org.eclipse.gef3.ui.palette.PaletteViewerProvider;
+import org.eclipse.gef3.ui.parts.GraphicalEditorWithFlyoutPalette;
+import org.eclipse.gef3.ui.parts.GraphicalViewerKeyHandler;
+import org.eclipse.gef3.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -60,11 +60,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.erd.ui.action.DiagramExportAction;
-import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
-import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
-import org.jkiss.dbeaver.erd.ui.action.DiagramToggleHandAction;
-import org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester;
+import org.jkiss.dbeaver.erd.ui.action.*;
 import org.jkiss.dbeaver.erd.ui.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.erd.ui.dnd.NodeDropTargetListener;
@@ -107,14 +103,15 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
  * Editor implementation based on the the example editor skeleton that is built in <i>Building
- * an editor </i> in chapter <i>Introduction to GEF </i>
+ * an editor </i> in chapter <i>Introduction to .gef3 </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
@@ -314,7 +311,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public Object getAdapter(Class adapter)
     {
-        // we need to handle common GEF elements we created
+        // we need to handle common .gef3 elements we created
         if (adapter == GraphicalViewer.class || adapter == EditPartViewer.class) {
             return getGraphicalViewer();
         } else if (adapter == CommandStack.class) {

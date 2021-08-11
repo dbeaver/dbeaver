@@ -19,11 +19,11 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout;
 
-import org.eclipse.draw2d.AbstractLayout;
-import org.eclipse.draw2d.Animation;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2dl.AbstractLayout;
+import org.eclipse.draw2dl.Animation;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2dl.geometry.Dimension;
+import org.eclipse.draw2dl.geometry.Rectangle;
 import org.jkiss.dbeaver.erd.ui.layout.algorithm.direct.DirectedGraphLayoutVisitor;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 

@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2d.ConnectionLayer;
-import org.eclipse.draw2d.FanRouter;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.ShortestPathConnectionRouter;
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.gef.*;
-import org.eclipse.gef.commands.Command;
-import org.eclipse.gef.commands.CommandStackEvent;
-import org.eclipse.gef.commands.CommandStackEventListener;
+import org.eclipse.draw2dl.ConnectionLayer;
+import org.eclipse.draw2dl.FanRouter;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2dl.ShortestPathConnectionRouter;
+import org.eclipse.draw2dl.geometry.Point;
+import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.gef3.*;
+import org.eclipse.gef3.commands.Command;
+import org.eclipse.gef3.commands.CommandStackEvent;
+import org.eclipse.gef3.commands.CommandStackEventListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
@@ -206,7 +206,7 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     /**
-     * @see org.eclipse.gef.editparts.AbstractEditPart#isSelectable()
+     * @see org.eclipse.gef3.editparts.AbstractEditPart#isSelectable()
      */
     @Override
     public boolean isSelectable()
