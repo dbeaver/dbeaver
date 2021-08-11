@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -46,21 +47,17 @@ public class OceanbaseMySQLViewColumn extends MySQLTableColumn {
         setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, "Null")));
         String defaultValue = JDBCUtils.safeGetString(dbResult, "Default");
         if (defaultValue != null) {
-            switch (getDataKind()) {
-            case STRING:
-                if (!SQLConstants.NULL_VALUE.equals(defaultValue)
-                        && !SQLUtils.isStringQuoted(getDataSource(), defaultValue)) {
-                    defaultValue = SQLUtils.quoteString(getDataSource(), defaultValue);
-                }
-                break;
-            case DATETIME:
-                if (!defaultValue.isEmpty() && Character.isDigit(defaultValue.charAt(0))) {
-                    defaultValue = "'" + defaultValue + "'";
-                }
-                break;
+            DBPDataKind dataKind = getDataKind();
 
+            if (dataKind == DBPDataKind.STRING && !SQLConstants.NULL_VALUE.equals(defaultValue)
+                    && !SQLUtils.isStringQuoted(getDataSource(), defaultValue)) {
+                defaultValue = SQLUtils.quoteString(getDataSource(), defaultValue);
+            } else if (dataKind == DBPDataKind.DATETIME && !defaultValue.isEmpty()
+                    && Character.isDigit(defaultValue.charAt(0))) {
+                defaultValue = "'" + defaultValue + "'";
+            } else {
+                setDefaultValue(defaultValue);
             }
-            setDefaultValue(defaultValue);
         }
         setExtraInfo(JDBCUtils.safeGetString(dbResult, "Extra"));
     }
