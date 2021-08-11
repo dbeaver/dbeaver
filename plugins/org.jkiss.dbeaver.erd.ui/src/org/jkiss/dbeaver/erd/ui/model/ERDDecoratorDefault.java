@@ -27,8 +27,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDNote;
+import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditPartFactory;
+import org.jkiss.dbeaver.erd.ui.editor.tools.HandToolEntry;
+import org.jkiss.dbeaver.erd.ui.editor.tools.SelectionToolEntry;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -43,7 +46,7 @@ public class ERDDecoratorDefault implements ERDDecorator {
 
     public static final ImageDescriptor CONNECT_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TREE_ASSOCIATION);
     public static final ImageDescriptor FOREIGN_KEY_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TREE_FOREIGN_KEY);
-    public static final ImageDescriptor NOTE_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TYPE_TEXT);
+    public static final ImageDescriptor NOTE_IMAGE = DBeaverIcons.getImageDescriptor(ERDIcon.NOTE);
 
     private static final Log log = Log.getLog(ERDDecoratorDefault.class);
 
@@ -98,6 +101,10 @@ public class ERDDecoratorDefault implements ERDDecorator {
         // the selection tool
         ToolEntry selectionTool = new SelectionToolEntry();
         controls.add(selectionTool);
+
+        // the hand tool
+        ToolEntry moveTool = new HandToolEntry();
+        controls.add(moveTool);
 
         // use selection tool as default entry
         paletteRoot.setDefaultEntry(selectionTool);

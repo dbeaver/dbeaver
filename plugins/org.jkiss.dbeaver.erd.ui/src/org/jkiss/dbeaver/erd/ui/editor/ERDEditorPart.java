@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.action.DiagramExportAction;
 import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramToggleHandAction;
 import org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester;
 import org.jkiss.dbeaver.erd.ui.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.dnd.DataEditDropTargetListener;
@@ -530,6 +531,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IAction zoomOut = new ZoomOutAction(zoomManager);
         addAction(zoomIn);
         addAction(zoomOut);
+        addAction(new DiagramToggleHandAction(editDomain.getPaletteViewer()));
 
         graphicalViewer.addSelectionChangedListener(event -> {
             String status;
@@ -938,6 +940,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //toolBarManager.add(createAttributeVisibilityMenu());
         toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
         toolBarManager.add(new DiagramToggleGridAction());
+        toolBarManager.add(new DiagramToggleHandAction(editDomain.getPaletteViewer()));
         toolBarManager.add(new Separator());
         toolBarManager.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
         toolBarManager.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
