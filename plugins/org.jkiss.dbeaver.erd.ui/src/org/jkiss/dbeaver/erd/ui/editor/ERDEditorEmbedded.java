@@ -188,7 +188,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
     @NotNull
     @Override
-    public DBPProject getProject() {
+    public DBPProject getDiagramProject() {
         return getEditorInput().getNavigatorNode().getOwnerProject();
     }
 

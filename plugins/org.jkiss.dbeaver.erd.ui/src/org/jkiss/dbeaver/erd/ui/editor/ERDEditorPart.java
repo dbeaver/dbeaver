@@ -980,9 +980,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected abstract void loadDiagram(boolean refreshMetadata);
 
     @NotNull
-    public DBPProject getProject() {
-        return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-    }
+    public abstract DBPProject getDiagramProject();
 
     @Override
     public boolean isActiveTask() {

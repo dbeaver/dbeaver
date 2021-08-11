@@ -172,18 +172,18 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
 
     @NotNull
     @Override
-    public DBPProject getProject() {
+    public DBPProject getDiagramProject() {
         final IFile resource = getEditorFile();
         if (resource != null) {
             return DBWorkbench.getPlatform().getWorkspace().getProject(resource.getProject());
         }
-        return super.getProject();
+        return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
     }
 
     private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
         throws DBException
     {
-        final IProject project = getProject().getEclipseProject();
+        final IProject project = getDiagramProject().getEclipseProject();
         final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();

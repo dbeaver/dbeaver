@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.DiagramCollectSettingsDefault;
-import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -83,7 +82,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                         result = DiagramObjectCollector.generateEntityList(
                             monitor,
                             editor.getDiagram(),
-                            editor.getProject(),
+                            editor.getDiagramProject(),
                             objects,
                             new DiagramCollectSettingsDefault(),
                             true);
