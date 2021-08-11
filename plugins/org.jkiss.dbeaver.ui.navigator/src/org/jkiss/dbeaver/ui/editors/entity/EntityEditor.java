@@ -430,7 +430,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             if (commandContext != null) {
                 commandContext.resetChanges(true);
             }
-            refreshPart(this, true);
+            refreshPart(this, true, false);
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
@@ -873,13 +873,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public RefreshResult refreshPart(final Object source, boolean force)
-    {
-        if (getContainer() == null || getContainer().isDisposed() || isSaveInProgress()) {
+    public RefreshResult refreshPart(final Object source, boolean force) {
+        return refreshPart(source, force, true);
+    }
+
+    private RefreshResult refreshPart(final Object source, boolean force, boolean showConfirmation) {
+        if (getContainer() == null || getContainer().isDisposed() || saveInProgress) {
             return RefreshResult.IGNORED;
         }
 
-        if (force && isDirty()) {
+        if (force && isDirty() && showConfirmation) {
             if (ConfirmationDialog.showConfirmDialog(
                 ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
                 null,

@@ -104,6 +104,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
                 onFocusLost(editor);
             }
         });
+        UIUtils.installMacOSFocusLostSubstitution(editor, () -> onFocusLost(editor));
         editor.addTraverseListener(this);
         tableEditor.setEditor(editor, item, columnIndex);
     }
@@ -115,21 +116,15 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         }
     }
 
-    public void saveEditorValues() {
-        //see [#10740] and also PropertyTreeViewer.saveEditorValues()
-        Control editor = tableEditor.getEditor();
-        if (editor != null) {
-            onFocusLost(editor);
-        }
-    }
-
     private boolean isProposalPopupActive() {
         return proposalAdapter != null && proposalAdapter.isProposalPopupOpen();
     }
 
     public void closeEditor() {
-        Control oldEditor = this.tableEditor.getEditor();
-        if (oldEditor != null) oldEditor.dispose();
+        Control editor = tableEditor.getEditor();
+        if (editor != null) {
+            editor.dispose();
+        }
     }
 
     @Override

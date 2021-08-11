@@ -186,9 +186,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         // However, we rely on them to save the value when the user clicks somewhere on the grid and LightGrid forces focus on itself.
         // The solution is to add dispose listener. But here is a catch: when inline control is about to be disposed of, the selection is already
         // on some other cell on the grid. Hence, we need to use updateValue() on valueController, not updateSelectionValue().
-        if (RuntimeUtils.isMacOS()) {
-            inlineControl.addDisposeListener(e -> onFocusLost(value -> valueController.updateValue(value, true)));
-        }
+        UIUtils.installMacOSFocusLostSubstitution(inlineControl, () -> onFocusLost(value -> valueController.updateValue(value, true)));
     }
 
     private void onFocusLost(@NotNull Consumer<Object> valueSaver) {
