@@ -210,15 +210,22 @@ public class DiagramObjectCollector {
                     continue;
                 }
             }
-            final DBPProject project = ((DBSObject) object).getDataSource().getContainer().getProject();
-            if (activeProject != project) {
-                diagram.addErrorMessage("Can't add object '" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "' from a non-active project '" + project.getName() + "' (active project is '" + activeProject.getName() + "')");
-                continue;
-            }
             roots.add((DBSObject) object);
         }
         if (roots.isEmpty()) {
             return Collections.emptyList();
+        }
+        for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
+            final DBPProject project = entry.getKey();
+            final List<DBSObject> values = entry.getValue();
+            if (project != activeProject) {
+                final StringJoiner joiner = new StringJoiner(", ");
+                for (DBSObject value : values) {
+                    joiner.add(DBUtils.getObjectFullName(value, DBPEvaluationContext.UI));
+                }
+                diagram.addErrorMessage("Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a non-active project '" + project + "' (active project is '" + activeProject.getName() + "')");
+                roots.removeAll(values);
+            }
         }
 
         final List<ERDEntity> entities = new ArrayList<>();
