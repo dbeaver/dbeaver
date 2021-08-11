@@ -30,6 +30,7 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
 import org.jkiss.dbeaver.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
@@ -71,7 +72,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
             public Object getNewObject()
             {
                 Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
-                EntityDiagram diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
+                ERDEditorPart editor = ((DiagramPart) getViewer().getRootEditPart().getContents()).getEditor();
                 if (objects == null) {
                     return null;
                 }
@@ -81,7 +82,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     public void run(DBRProgressMonitor monitor) {
                         result = DiagramObjectCollector.generateEntityList(
                             monitor,
-                            diagram,
+                            editor.getDiagram(),
+                            editor.getProject(),
                             objects,
                             new DiagramCollectSettingsDefault(),
                             true);
@@ -94,7 +96,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                 } catch (InterruptedException e) {
                     // ignore
                 }
-                final List<String> errorMessages = diagram.getErrorMessages();
+                final List<String> errorMessages = editor.getDiagram().getErrorMessages();
                 if (!errorMessages.isEmpty()) {
                     final List<Status> statuses = new ArrayList<>(errorMessages.size());
                     for (String error : errorMessages) {
@@ -105,7 +107,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                         "Error(s) occurred during diagram request. If these errors are recoverable then fix errors and then repeat request",
                         new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, statuses.toArray(new IStatus[0]), null, null)
                     );
-                    diagram.clearErrorMessages();
+                    editor.getDiagram().clearErrorMessages();
                 }
                 return collector.getResult();
             }

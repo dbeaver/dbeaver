@@ -191,12 +191,12 @@ public class DiagramObjectCollector {
     public static List<ERDEntity> generateEntityList(
         DBRProgressMonitor monitor,
         final ERDDiagram diagram,
+        DBPProject diagramProject,
         Collection<DBPNamedObject> objects,
         DiagramCollectSettings settings,
         boolean forceShowViews)
     {
         final List<DBSObject> roots = new ArrayList<>();
-        final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         for (DBPNamedObject object : objects) {
             if (!(object instanceof DBSObject)) {
                 continue;
@@ -218,12 +218,12 @@ public class DiagramObjectCollector {
         for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
             final DBPProject project = entry.getKey();
             final List<DBSObject> values = entry.getValue();
-            if (project != activeProject) {
+            if (project != diagramProject) {
                 final StringJoiner joiner = new StringJoiner(", ");
                 for (DBSObject value : values) {
-                    joiner.add(DBUtils.getObjectFullName(value, DBPEvaluationContext.UI));
+                    joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
                 }
-                diagram.addErrorMessage("Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a non-active project '" + project + "' (active project is '" + activeProject.getName() + "')");
+                diagram.addErrorMessage("Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project + "' (current project is '" + diagramProject.getName() + "')");
                 roots.removeAll(values);
             }
         }
