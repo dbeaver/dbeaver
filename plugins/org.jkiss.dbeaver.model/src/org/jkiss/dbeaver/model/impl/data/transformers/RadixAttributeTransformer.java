@@ -46,6 +46,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
     public static final String PROP_RADIX = "radix";
     public static final String PROP_BITS = "bits";
     public static final String PROP_PREFIX = "prefix";
+    public static final String PROP_UNSIGNED = "unsigned";
 
     public static final String PREFIX_HEX = "0x";
     public static final String PREFIX_OCT = "0";
@@ -56,6 +57,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         int radix = 16;
         int bits = 32;
         boolean showPrefix = false;
+        boolean unsigned = false;
         if (options.containsKey(PROP_RADIX)) {
             radix = CommonUtils.toInt(options.get(PROP_RADIX), radix);
         }
@@ -65,23 +67,27 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         if (options.containsKey(PROP_PREFIX)) {
             showPrefix = CommonUtils.getBoolean(options.get(PROP_PREFIX), showPrefix);
         }
+        if (options.containsKey(PROP_UNSIGNED)) {
+            unsigned = CommonUtils.getBoolean(options.get(PROP_UNSIGNED), unsigned);
+        }
 
-        attribute.setTransformHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix));
+        attribute.setTransformHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix, unsigned));
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, "StringNumber", -1, DBPDataKind.STRING));
     }
 
-    private class RadixValueHandler extends ProxyValueHandler {
+    private static class RadixValueHandler extends ProxyValueHandler {
+        private final int radix;
+        private final int bits;
+        private final boolean showPrefix;
+        private final boolean unsigned;
 
-        private int radix;
-        private int bits;
-        private boolean showPrefix;
-
-        public RadixValueHandler(DBDValueHandler target, int radix, int bits, boolean showPrefix) {
+        public RadixValueHandler(DBDValueHandler target, int radix, int bits, boolean showPrefix, boolean unsigned) {
             super(target);
             this.radix = radix;
             this.bits = bits;
             this.showPrefix = showPrefix;
+            this.unsigned = unsigned;
         }
 
         @NotNull
@@ -89,17 +95,25 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number) {
                 final long longValue = ((Number) value).longValue();
-                final String strValue = Long.toString(longValue, radix).toUpperCase(Locale.ENGLISH);
+                final String strValue;
+                final String strValueSign;
+                if (unsigned || longValue >= 0) {
+                    strValue = Long.toUnsignedString(longValue, radix).toUpperCase(Locale.ENGLISH);
+                    strValueSign = "";
+                } else {
+                    strValue = Long.toString(longValue, radix).substring(1).toUpperCase(Locale.ENGLISH);
+                    strValueSign = "-";
+                }
                 if (showPrefix) {
                     if (radix == 16) {
-                        return PREFIX_HEX + strValue;
+                        return strValueSign + PREFIX_HEX + strValue;
                     } else if (radix == 8) {
-                        return PREFIX_OCT + strValue;
+                        return strValueSign + PREFIX_OCT + strValue;
                     } else if (radix == 2) {
-                        return PREFIX_BIN + strValue;
+                        return strValueSign + PREFIX_BIN + strValue.substring(Math.max(strValue.length() - bits, 1));
                     }
                 }
-                return strValue;
+                return strValueSign + strValue;
             }
             return DBValueFormatting.getDefaultValueDisplayString(value, format);
         }
@@ -109,6 +123,14 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
             if (object instanceof String) {
                 String strValue = (String) object;
+                String strValueSign = "";
+                if (strValue.isEmpty()) {
+                    return 0;
+                }
+                if (strValue.charAt(0) == '-') {
+                    strValue = strValue.substring(1);
+                    strValueSign = "-";
+                }
                 if (showPrefix) {
                     if (radix == 16 && strValue.startsWith(PREFIX_HEX)) {
                         strValue = strValue.substring(2);
@@ -119,7 +141,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
                     }
                 }
                 try {
-                    return Long.parseLong(strValue, radix);
+                    return Long.parseLong(strValueSign + strValue, radix);
                 } catch (NumberFormatException e) {
                     log.debug(e);
                 }
