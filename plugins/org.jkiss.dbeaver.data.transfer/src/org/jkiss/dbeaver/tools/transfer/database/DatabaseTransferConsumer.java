@@ -67,7 +67,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
 
-    private List<DBSEntityAttribute> targetAttributes;
+    private List<DBSAttributeBase> targetAttributes;
     private boolean useIsolatedConnection;
     private Boolean oldAutoCommit;
 
@@ -227,13 +227,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     throw new DBCException("Can't create attribute transformer", e);
                 }
             }
-            DBSEntityAttribute targetAttr = columnMapping.targetAttr.getTarget();
+            DBSAttributeBase targetAttr = columnMapping.targetAttr.getTarget();
             if (targetAttr == null) {
                 if (isPreview) {
                     targetAttr = new PreviewColumnInfo(null, columnMapping.sourceAttr, columnMapping.targetIndex);
-                } else if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
+                } else if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute || targetObject instanceof DBSDocumentContainer) {
                     // Use source attr. Some datasource (e.g. document oriented do not have strict set of attributes)
-                    targetAttr = (DBSEntityAttribute) columnMapping.targetAttr.getSource();
+                    targetAttr = columnMapping.targetAttr.getSource();
                 } else {
                     throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
                 }
