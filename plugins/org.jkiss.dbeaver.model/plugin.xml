@@ -178,8 +178,9 @@
             <type kind="NUMERIC"/>
             <propertyGroup label="Properties">
                 <property id="radix" label="Radix" type="string" description="Number radix" defaultValue="16" required="true" validValues="2,8,10,16,32"/>
-                <property id="bits" label="Bits" type="integer" description="Visible bit number" defaultValue="32" required="true"/>
+                <property id="bits" label="Bits" type="integer" description="Visible least significant bits number (when radix is 2)" defaultValue="32" required="true"/>
                 <property id="prefix" label="Show prefix" type="boolean" description="Shows radix prefix (0x for hex)" defaultValue="false" required="true"/>
+                <property id="unsigned" label="Unsigned" type="boolean" description="Shows value without sign" defaultValue="false" required="true"/>
             </propertyGroup>
         </transformer>
         <transformer
