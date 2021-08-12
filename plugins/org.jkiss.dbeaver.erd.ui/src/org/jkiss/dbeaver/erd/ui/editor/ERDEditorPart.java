@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -977,6 +978,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected abstract void loadDiagram(boolean refreshMetadata);
+
+    @NotNull
+    public abstract DBPProject getDiagramProject();
 
     @Override
     public boolean isActiveTask() {

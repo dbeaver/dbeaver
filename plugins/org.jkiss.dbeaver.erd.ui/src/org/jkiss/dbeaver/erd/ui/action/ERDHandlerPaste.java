@@ -74,6 +74,7 @@ public class ERDHandlerPaste extends AbstractHandler {
                             final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(
                                 monitor,
                                 editor.getDiagram(),
+                                editor.getDiagramProject(),
                                 objects,
                                 new DiagramCollectSettingsDefault(), true);
                             if (!CommonUtils.isEmpty(erdEntities)) {

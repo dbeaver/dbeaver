@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -190,15 +191,12 @@ public class DiagramObjectCollector {
     public static List<ERDEntity> generateEntityList(
         DBRProgressMonitor monitor,
         final ERDDiagram diagram,
+        DBPProject diagramProject,
         Collection<DBPNamedObject> objects,
         DiagramCollectSettings settings,
         boolean forceShowViews)
     {
         final List<DBSObject> roots = new ArrayList<>();
-        DBPProject currentProject = null;
-        if (!diagram.getEntities().isEmpty()) {
-            currentProject = diagram.getEntities().get(0).getDataSource().getContainer().getProject();
-        }
         for (DBPNamedObject object : objects) {
             if (!(object instanceof DBSObject)) {
                 continue;
@@ -212,18 +210,22 @@ public class DiagramObjectCollector {
                     continue;
                 }
             }
-            final DBPProject project = ((DBSObject) object).getDataSource().getContainer().getProject();
-            if (currentProject == null) {
-                currentProject = project;
-            }
-            if (currentProject != project) {
-                diagram.addErrorMessage("Can't add object '" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "' from different project '" + project.getName() + "' (current project is '" + currentProject.getName() + "')");
-                continue;
-            }
             roots.add((DBSObject) object);
         }
         if (roots.isEmpty()) {
             return Collections.emptyList();
+        }
+        for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
+            final DBPProject project = entry.getKey();
+            final List<DBSObject> values = entry.getValue();
+            if (project != diagramProject) {
+                final StringJoiner joiner = new StringJoiner(", ");
+                for (DBSObject value : values) {
+                    joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
+                }
+                diagram.addErrorMessage("Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project + "' (current project is '" + diagramProject.getName() + "')");
+                roots.removeAll(values);
+            }
         }
 
         final List<ERDEntity> entities = new ArrayList<>();

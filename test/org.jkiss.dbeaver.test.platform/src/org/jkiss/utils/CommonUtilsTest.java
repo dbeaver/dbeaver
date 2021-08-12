@@ -563,4 +563,13 @@ public class CommonUtilsTest {
     Assert.assertEquals("unit'''test", CommonUtils.unescapeBourneShellString("'unit'\\'''\\'''\\''test'"));
     Assert.assertEquals("'''unit'''test'''", CommonUtils.unescapeBourneShellString("''\\'''\\'''\\''unit'\\'''\\'''\\''test'\\'''\\'''\\'''"));
   }
+
+  @Test
+  public void testGroup() {
+    final List<String> values = Arrays.asList("aaa", "abb", "bbb", "bab", "ccc");
+    final Map<Character, List<String>> groups = CommonUtils.group(values, x -> x.charAt(0));
+    Assert.assertEquals(Arrays.asList("aaa", "abb"), groups.get('a'));
+    Assert.assertEquals(Arrays.asList("bbb", "bab"), groups.get('b'));
+    Assert.assertEquals(Arrays.asList("ccc"), groups.get('c'));
+  }
 }

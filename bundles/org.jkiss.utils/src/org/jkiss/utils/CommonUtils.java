@@ -956,4 +956,31 @@ public class CommonUtils {
         }
         return firstCaseInsensitiveMatch;
     }
+
+    /**
+     * Groups values into a map of their shared key and a list of matching values using that key.
+     * <p>
+     * <h3>Group strings by their first character</h3>
+     * <pre>{@code
+     * final List<String> values = Arrays.asList("aaa", "abb", "bbb", "bab", "ccc");
+     * final Map<Character, List<String>> groups = group(values, x -> x.charAt(0));
+     *
+     * Assert.assertEquals(Arrays.asList("aaa", "abb"), groups.get('a'));
+     * Assert.assertEquals(Arrays.asList("bbb", "bab"), groups.get('b'));
+     * Assert.assertEquals(Arrays.asList("ccc"), groups.get('c'));
+     * }</pre>
+     * @param values values to group
+     * @param keyExtractor a function that extracts key from value that is used to group values
+     * @return map of a shared key and a list of matching values
+     */
+    @NotNull
+    public static <K, V> Map<K, List<V>> group(@NotNull Collection<V> values, @NotNull Function<? super V, ? extends K> keyExtractor) {
+        final Map<K, List<V>> grouped = new HashMap<>();
+        for (V value : values) {
+            final K key = keyExtractor.apply(value);
+            final List<V> group = grouped.computeIfAbsent(key, k -> new ArrayList<>());
+            group.add(value);
+        }
+        return grouped;
+    }
 }

@@ -26,11 +26,13 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -168,11 +170,20 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         setPartName(getEditorInput().getName());
     }
 
+    @NotNull
+    @Override
+    public DBPProject getDiagramProject() {
+        final IFile resource = getEditorFile();
+        if (resource != null) {
+            return DBWorkbench.getPlatform().getWorkspace().getProject(resource.getProject());
+        }
+        return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+    }
+
     private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
         throws DBException
     {
-        IFile resFile = getEditorFile();
-        IProject project = resFile == null ? DBWorkbench.getPlatform().getWorkspace().getActiveProject().getEclipseProject() : resFile.getProject();
+        final IProject project = getDiagramProject().getEclipseProject();
         final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();
