@@ -39,6 +39,7 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         removeSQLKeyword("DEFAULT");
+        removeSQLKeyword("SYSTEM");
     }
 
     @Override
