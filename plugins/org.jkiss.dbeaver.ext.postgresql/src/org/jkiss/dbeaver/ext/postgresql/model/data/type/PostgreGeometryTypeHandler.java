@@ -27,27 +27,45 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
 
     public static final PostgreGeometryTypeHandler INSTANCE = new PostgreGeometryTypeHandler();
 
-    private static final int GEOMETRY_TYPE_GEOMETRY             = 0x0000_0000;
-    private static final int GEOMETRY_TYPE_POINT                = 0x0000_0004;
-    private static final int GEOMETRY_TYPE_LINESTRING           = 0x0000_0008;
-    private static final int GEOMETRY_TYPE_POLYGON              = 0x0000_000C;
-    private static final int GEOMETRY_TYPE_MULTIPOINT           = 0x0000_0010;
-    private static final int GEOMETRY_TYPE_MULTILINESTRING      = 0x0000_0014;
-    private static final int GEOMETRY_TYPE_MULTIPOLYGON         = 0x0000_0018;
-    private static final int GEOMETRY_DIMENSION_M               = 0x0000_0001;
-    private static final int GEOMETRY_DIMENSION_Z               = 0x0000_0002;
-    private static final int GEOMETRY_DIMENSION_ZM              = 0x0000_0003;
-    private static final int GEOMETRY_MASK_TYPE                 = 0x0000_00fc;
-    private static final int GEOMETRY_MASK_SRID                 = 0x00ff_ff00;
-    private static final int GEOMETRY_MASK_DIMENSION            = 0x0000_0003;
+    private static final int GEOMETRY_TYPE_GEOMETRY                 = 0x0000_0000;
+    private static final int GEOMETRY_TYPE_POINT                    = 0x0000_0004;
+    private static final int GEOMETRY_TYPE_LINESTRING               = 0x0000_0008;
+    private static final int GEOMETRY_TYPE_POLYGON                  = 0x0000_000C;
+    private static final int GEOMETRY_TYPE_MULTIPOINT               = 0x0000_0010;
+    private static final int GEOMETRY_TYPE_MULTILINESTRING          = 0x0000_0014;
+    private static final int GEOMETRY_TYPE_MULTIPOLYGON             = 0x0000_0018;
+    private static final int GEOMETRY_TYPE_GEOMETRYCOLLECTION       = 0x0000_001C;
+    private static final int GEOMETRY_TYPE_CIRCULARSTRING           = 0x0000_0020;
+    private static final int GEOMETRY_TYPE_COMPOUNDCURVE            = 0x0000_0024;
+    private static final int GEOMETRY_TYPE_CURVEPOLYGON             = 0x0000_0028;
+    private static final int GEOMETRY_TYPE_MULTICURVE               = 0x0000_002C;
+    private static final int GEOMETRY_TYPE_MULTISURFACE             = 0x0000_0030;
+    private static final int GEOMETRY_TYPE_POLYHEDRALSURFACE        = 0x0000_0034;
+    private static final int GEOMETRY_TYPE_TRIANGLE                 = 0x0000_0038;
+    private static final int GEOMETRY_TYPE_TIN                      = 0x0000_003C;
+    private static final int GEOMETRY_DIMENSION_M                   = 0x0000_0001;
+    private static final int GEOMETRY_DIMENSION_Z                   = 0x0000_0002;
+    private static final int GEOMETRY_DIMENSION_ZM                  = 0x0000_0003;
+    private static final int GEOMETRY_MASK_TYPE                     = 0x0000_00fc;
+    private static final int GEOMETRY_MASK_SRID                     = 0x00ff_ff00;
+    private static final int GEOMETRY_MASK_DIMENSION                = 0x0000_0003;
 
-    private static final String GEOMETRY_NAME_GEOMETRY          = "geometry";
-    private static final String GEOMETRY_NAME_POINT             = "point";
-    private static final String GEOMETRY_NAME_LINESTRING        = "linestring";
-    private static final String GEOMETRY_NAME_POLYGON           = "polygon";
-    private static final String GEOMETRY_NAME_MULTIPOINT        = "multipoint";
-    private static final String GEOMETRY_NAME_MULTILINESTRING   = "multilinestring";
-    private static final String GEOMETRY_NAME_MULTIPOLYGON      = "multipolygon";
+    private static final String GEOMETRY_NAME_GEOMETRY              = "geometry";
+    private static final String GEOMETRY_NAME_POINT                 = "point";
+    private static final String GEOMETRY_NAME_LINESTRING            = "linestring";
+    private static final String GEOMETRY_NAME_POLYGON               = "polygon";
+    private static final String GEOMETRY_NAME_MULTIPOINT            = "multipoint";
+    private static final String GEOMETRY_NAME_MULTILINESTRING       = "multilinestring";
+    private static final String GEOMETRY_NAME_MULTIPOLYGON          = "multipolygon";
+    private static final String GEOMETRY_NAME_GEOMETRYCOLLECTION    = "geometrycollection";
+    private static final String GEOMETRY_NAME_CIRCULARSTRING        = "circularstring";
+    private static final String GEOMETRY_NAME_COMPOUNDCURVE         = "compoundcurve";
+    private static final String GEOMETRY_NAME_CURVEPOLYGON          = "curvepolygon";
+    private static final String GEOMETRY_NAME_MULTICURVE            = "multicurve";
+    private static final String GEOMETRY_NAME_MULTISURFACE          = "multisurface";
+    private static final String GEOMETRY_NAME_POLYHEDRALSURFACE     = "polyhedralsurface";
+    private static final String GEOMETRY_NAME_TRIANGLE              = "triangle";
+    private static final String GEOMETRY_NAME_TIN                   = "tin";
 
     private PostgreGeometryTypeHandler() {
         // disallow constructing singleton class
@@ -109,6 +127,24 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
                 return GEOMETRY_NAME_MULTILINESTRING;
             case GEOMETRY_TYPE_MULTIPOLYGON:
                 return GEOMETRY_NAME_MULTIPOLYGON;
+            case GEOMETRY_TYPE_GEOMETRYCOLLECTION:
+                return GEOMETRY_NAME_GEOMETRYCOLLECTION;
+            case GEOMETRY_TYPE_CIRCULARSTRING:
+                return GEOMETRY_NAME_CIRCULARSTRING;
+            case GEOMETRY_TYPE_COMPOUNDCURVE:
+                return GEOMETRY_NAME_COMPOUNDCURVE;
+            case GEOMETRY_TYPE_CURVEPOLYGON:
+                return GEOMETRY_NAME_CURVEPOLYGON;
+            case GEOMETRY_TYPE_MULTICURVE:
+                return GEOMETRY_NAME_MULTICURVE;
+            case GEOMETRY_TYPE_MULTISURFACE:
+                return GEOMETRY_NAME_MULTISURFACE;
+            case GEOMETRY_TYPE_POLYHEDRALSURFACE:
+                return GEOMETRY_NAME_POLYHEDRALSURFACE;
+            case GEOMETRY_TYPE_TRIANGLE:
+                return GEOMETRY_NAME_TRIANGLE;
+            case GEOMETRY_TYPE_TIN:
+                return GEOMETRY_NAME_TIN;
             default:
                 throw new IllegalArgumentException("Error obtaining geometry type from typmod: " + Integer.toHexString(typmod));
         }
@@ -165,6 +201,33 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
                 break;
             case GEOMETRY_NAME_MULTIPOLYGON:
                 typmod |= GEOMETRY_TYPE_MULTIPOLYGON;
+                break;
+            case GEOMETRY_NAME_GEOMETRYCOLLECTION:
+                typmod |= GEOMETRY_TYPE_GEOMETRYCOLLECTION;
+                break;
+            case GEOMETRY_NAME_CIRCULARSTRING:
+                typmod |= GEOMETRY_TYPE_CIRCULARSTRING;
+                break;
+            case GEOMETRY_NAME_COMPOUNDCURVE:
+                typmod |= GEOMETRY_TYPE_COMPOUNDCURVE;
+                break;
+            case GEOMETRY_NAME_CURVEPOLYGON:
+                typmod |= GEOMETRY_TYPE_CURVEPOLYGON;
+                break;
+            case GEOMETRY_NAME_MULTICURVE:
+                typmod |= GEOMETRY_TYPE_MULTICURVE;
+                break;
+            case GEOMETRY_NAME_MULTISURFACE:
+                typmod |= GEOMETRY_TYPE_MULTISURFACE;
+                break;
+            case GEOMETRY_NAME_POLYHEDRALSURFACE:
+                typmod |= GEOMETRY_TYPE_POLYHEDRALSURFACE;
+                break;
+            case GEOMETRY_NAME_TRIANGLE:
+                typmod |= GEOMETRY_TYPE_TRIANGLE;
+                break;
+            case GEOMETRY_NAME_TIN:
+                typmod |= GEOMETRY_TYPE_TIN;
                 break;
             default:
                 throw new DBException("Unsupported geometry type: '" + name + "'");
