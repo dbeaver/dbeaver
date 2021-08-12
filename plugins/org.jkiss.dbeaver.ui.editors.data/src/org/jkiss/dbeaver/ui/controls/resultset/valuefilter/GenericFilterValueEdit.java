@@ -229,7 +229,7 @@ class GenericFilterValueEdit {
         final AbstractJob loadValuesJob = new AbstractJob("Load values timeout") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                loadValues(null);
+                UIUtils.asyncExec(() -> loadValues(null));
                 return Status.OK_STATUS;
             }
         };
