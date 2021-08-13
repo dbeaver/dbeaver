@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class ERDEditorAdapter implements IAdapterFactory {
             if (adaptableObject instanceof Control) {
                 return adapterType.cast(getEditor((Control) adaptableObject));
             } else if (adaptableObject instanceof MultiPageAbstractEditor) {
-                IEditorPart activeEditor = ((EntityEditor) adaptableObject).getActiveEditor();
+                IEditorPart activeEditor = ((MultiPageAbstractEditor) adaptableObject).getActiveEditor();
                 if (activeEditor instanceof ERDEditorPart) {
                     return adapterType.cast(activeEditor);
                 }
