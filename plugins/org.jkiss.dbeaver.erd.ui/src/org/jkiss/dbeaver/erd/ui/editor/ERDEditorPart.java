@@ -1146,10 +1146,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         @Override
         protected void populateCustomActions(ContributionManager contributionManager) {
+            ToolBarManager extToolBar = new ToolBarManager();
+            //contributionManager.insertAfter("save", new ToolBarContributionItem(extToolBar));
             // Add dynamic toolbar contributions
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
-                menuService.populateContributionManager(contributionManager, "toolbar:ERDEditorToolbar");
+                menuService.populateContributionManager(extToolBar , "toolbar:ERDEditorToolbar");
+            }
+            if (!extToolBar.isEmpty()) {
+                for (IContributionItem item : extToolBar.getItems()) {
+                    contributionManager.insertAfter("save", item);
+                }
+                contributionManager.update(true);
             }
         }
 
@@ -1217,7 +1225,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
 
                 if (progressControl != null) {
-                    progressControl.refreshActions();
+                    //progressControl.refreshActions();
                 }
                 //toolBarManager.getControl().setEnabled(true);
             }

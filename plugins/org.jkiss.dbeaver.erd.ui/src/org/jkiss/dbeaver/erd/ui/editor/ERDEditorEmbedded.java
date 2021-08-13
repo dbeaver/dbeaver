@@ -201,6 +201,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
         throws DBException
     {
+        monitor.beginTask("Load database entities", 1);
+
         DBSObject dbObject = getRootObject();
         if (dbObject == null) {
             log.error("Database object must be entity container to render ERD diagram");
@@ -245,6 +247,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
         }
+
+        monitor.done();
 
         return diagram;
     }
