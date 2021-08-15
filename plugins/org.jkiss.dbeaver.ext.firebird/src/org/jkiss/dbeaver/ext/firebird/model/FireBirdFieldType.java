@@ -28,6 +28,8 @@ public enum FireBirdFieldType {
 	TIME(13, Types.TIME, DBPDataKind.DATETIME, "TIME"),
 	CHAR(14, Types.CHAR, DBPDataKind.STRING, "CHAR"),
 	BIGINT(16, Types.BIGINT, DBPDataKind.NUMERIC, "BIGINT"),
+    NUMERIC(16, Types.NUMERIC, DBPDataKind.NUMERIC, "NUMERIC"), // Equal id, but another subtype - 1
+    DECIMAL(16, Types.DECIMAL, DBPDataKind.NUMERIC, "DECIMAL"), // Equal id, but another subtype - 2
     BOOLEAN(23, Types.BOOLEAN, DBPDataKind.BOOLEAN, "BOOLEAN"),
 	DOUBLE_PRECISION(27, Types.DOUBLE, DBPDataKind.NUMERIC, "DOUBLE PRECISION"),
 	TIMESTAMP(35, Types.TIMESTAMP, DBPDataKind.DATETIME, "TIMESTAMP"),
@@ -62,7 +64,17 @@ public enum FireBirdFieldType {
         return name;
     }
 
-    public static FireBirdFieldType getById(int id) {
+    public static FireBirdFieldType getById(int id, int subTypeId) {
+        if (id == 16) {
+            switch (subTypeId) {
+                case 1:
+                    return NUMERIC;
+                case 2:
+                    return DECIMAL;
+                default:
+                    return BIGINT;
+            }
+        }
         for (FireBirdFieldType ft : values()) {
             if (ft.getTypeID() == id) {
                 return ft;

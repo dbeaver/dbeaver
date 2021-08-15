@@ -77,7 +77,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                                 continue;
                             }
                             int fieldLength = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_LENGTH");
-                            int fieldScale = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SCALE");
+                            int fieldScale = Math.abs(JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SCALE")); // For some reason, FireBird returns the negative value in the scale field.
                             int fieldPrecision = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_PRECISION");
                             int fieldType = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_TYPE");
                             int fieldSubType = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SUB_TYPE");
@@ -88,7 +88,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             String typeDescription = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
                             String defaultSource = JDBCUtils.safeGetString(dbResult, "DEFAULT_SOURCE");
 
-                            FireBirdFieldType fieldDT = FireBirdFieldType.getById(fieldType);
+                            FireBirdFieldType fieldDT = FireBirdFieldType.getById(fieldType, fieldSubType);
                             if (fieldDT == null) {
                                 log.error("Field type '" + fieldType + "' not found");
                                 continue;
