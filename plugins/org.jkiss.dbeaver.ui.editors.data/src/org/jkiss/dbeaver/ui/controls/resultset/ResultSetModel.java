@@ -137,6 +137,7 @@ public class ResultSetModel {
 
     private void addConstraints(List<DBDAttributeConstraint> constraints, DBDAttributeBinding binding) {
         DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
+        constraint.setVisualPosition(constraints.size());
         constraint.setVisible(visibleAttributes.contains(binding) || binding.getParentObject() != null);
         constraints.add(constraint);
         List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
