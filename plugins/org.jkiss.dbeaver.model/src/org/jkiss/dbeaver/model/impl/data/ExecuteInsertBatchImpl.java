@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.sql.BaseInsertMethod;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -154,6 +155,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         StringBuilder valuesPart = new StringBuilder(64);
         valuesPart.append("(");
         hasKey = false;
+        boolean skipBindValues=(boolean) options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES);
         for (int i = 0; i < attributes.length; i++) {
             DBSAttributeBase attribute = attributes[i];
             if (DBUtils.isPseudoAttribute(attribute) || (!useMultiRowInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
@@ -163,10 +165,15 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
             hasKey = true;
 
             DBDValueHandler valueHandler = handlers[i];
-            if (valueHandler instanceof DBDValueBinder) {
-                valuesPart.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
+            
+            if (useMultiRowInsert && skipBindValues) {
+                valuesPart.append(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[i], DBDDisplayFormat.NATIVE));
             } else {
-                valuesPart.append("?"); //$NON-NLS-1$
+                if (valueHandler instanceof DBDValueBinder) {
+                    valuesPart.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
+                } else {
+                    valuesPart.append("?"); //$NON-NLS-1$
+                }
             }
         }
         valuesPart.append(")"); //$NON-NLS-1$

@@ -60,6 +60,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private String disableReferentialIntegrityCheckboxTooltip;
     private boolean isDisablingReferentialIntegritySupported;
     private Spinner multiRowInsertBatch;
+    private Button skipBindValues;
     private Button useBatchCheck;
 
     public DatabaseConsumerPageLoadSettings() {
@@ -184,6 +185,13 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                             multiRowInsertBatch.setEnabled(true);
                         }
                     }
+                    if (skipBindValues != null) {
+                        if (!useMultiRowInsert.getSelection()) {
+                            skipBindValues.setEnabled(false);
+                        } else if (!skipBindValues.getEnabled()) {
+                            skipBindValues.setEnabled(true);
+                        }
+                    }
                 }
             });
 
@@ -199,6 +207,16 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             });
             multiRowInsertBatch.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
+            skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
+            if (!useMultiRowInsert.getSelection() || useBatchCheck != null && !useBatchCheck.isDisposed() && useBatchCheck.getSelection()) {
+                skipBindValues.setEnabled(false);
+            }
+            skipBindValues.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setSkipBindValues(skipBindValues.getSelection());
+                }
+            });
 
             useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
             useBatchCheck.addSelectionListener(new SelectionAdapter() {

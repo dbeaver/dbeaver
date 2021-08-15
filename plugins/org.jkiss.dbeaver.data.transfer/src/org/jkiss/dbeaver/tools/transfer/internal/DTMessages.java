@@ -123,6 +123,7 @@ public class DTMessages extends NLS {
 	public static String database_consumer_settings_option_commit_after;
 	public static String database_consumer_settings_option_use_multi_insert;
 	public static String database_consumer_settings_option_multi_insert_batch;
+	public static String database_consumer_settings_option_skip_bind_values;
 	public static String database_consumer_settings_option_disable_batches;
 	public static String database_consumer_settings_option_on_duplicate_key_method_label;
 	public static String database_consumer_settings_option_transfer_auto_generated_columns;

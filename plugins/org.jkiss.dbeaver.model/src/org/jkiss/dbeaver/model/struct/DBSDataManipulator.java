@@ -44,6 +44,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
 
     String OPTION_USE_MULTI_INSERT = "data.manipulate.useMultiInsert";//$NON-NLS-1$
     String OPTION_MULTI_INSERT_BATCH_SIZE = "data.manipulate.multiInsertBatchSize";//$NON-NLS-1$
+    String OPTION_SKIP_BIND_VALUES = "data.manipulate.skipBindValues";//$NON-NLS-1$
     String OPTION_DISABLE_BATCHES = "data.manipulate.disableBatches";//$NON-NLS-1$
     String OPTION_INSERT_REPLACE_METHOD = "data.manipulate.insertReplaceMethod";//$NON-NLS-1$
     String OPTION_USE_CURRENT_DIALECT_SETTINGS = "data.manipulate.useCurrentDialect";//$NON-NLS-1$
