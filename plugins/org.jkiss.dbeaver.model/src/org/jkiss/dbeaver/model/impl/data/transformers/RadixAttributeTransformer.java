@@ -96,24 +96,28 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
             if (value instanceof Number) {
                 final long longValue = ((Number) value).longValue();
                 final String strValue;
-                final String strValueSign;
+                final StringBuilder sb = new StringBuilder();
                 if (unsigned || longValue >= 0) {
                     strValue = Long.toUnsignedString(longValue, radix).toUpperCase(Locale.ENGLISH);
-                    strValueSign = "";
                 } else {
                     strValue = Long.toString(longValue, radix).substring(1).toUpperCase(Locale.ENGLISH);
-                    strValueSign = "-";
+                    sb.append("-");
                 }
                 if (showPrefix) {
                     if (radix == 16) {
-                        return strValueSign + PREFIX_HEX + strValue;
+                        sb.append(PREFIX_HEX);
                     } else if (radix == 8) {
-                        return strValueSign + PREFIX_OCT + strValue;
+                        sb.append(PREFIX_OCT);
                     } else if (radix == 2) {
-                        return strValueSign + PREFIX_BIN + strValue.substring(Math.max(strValue.length() - bits, 1));
+                        sb.append(PREFIX_BIN);
                     }
                 }
-                return strValueSign + strValue;
+                if (radix == 2) {
+                    sb.append(strValue.substring(Math.max(strValue.length() - bits, 1)));
+                } else {
+                    sb.append(strValue);
+                }
+                return sb.toString();
             }
             return DBValueFormatting.getDefaultValueDisplayString(value, format);
         }
