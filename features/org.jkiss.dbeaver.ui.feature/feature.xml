@@ -27,8 +27,6 @@
       <import plugin="org.eclipse.jface.text" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.views" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.search" version="0.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.draw2dl" version="0.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.gef3" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -142,6 +140,20 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+          id="org.eclipse.draw2dl"
+          download-size="0"
+          install-size="0"
+          version="0.0.0"
+          unpack="false"/>
+
+   <plugin
+          id="org.eclipse.gef3"
+          download-size="0"
+          install-size="0"
+          version="0.0.0"
+          unpack="false"/>
 
    <plugin
          id="org.jkiss.dbeaver.erd.ui"
