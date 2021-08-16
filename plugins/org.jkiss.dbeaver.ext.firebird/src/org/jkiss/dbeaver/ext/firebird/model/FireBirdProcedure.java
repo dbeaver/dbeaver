@@ -102,7 +102,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "CAST(PP.RDB$PARAMETER_NAME AS varchar(63)) AS COLUMN_NAME,\n" +
                         "PP.RDB$PARAMETER_TYPE AS COLUMN_TYPE,\n" +
                         "F.RDB$FIELD_TYPE AS DATA_TYPE,\n" +
-                        "F.RDB$FIELD_SUB_TYPE AS TYPE_NAME,\n" +
+                        "F.RDB$FIELD_SUB_TYPE AS FIELD_SUB_TYPE,\n" +
                         "F.RDB$FIELD_PRECISION AS \"PRECISION\",\n" +
                         "F.RDB$FIELD_SCALE AS \"SCALE\",\n" +
                         "F.RDB$FIELD_LENGTH AS \"LENGTH\",\n" +
@@ -127,13 +127,12 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                     while (dbResult.next()) {
                         String parameterName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
                         int dataType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-                        FireBirdFieldType fieldDT = FireBirdFieldType.getById(dataType);
+                        int subType = JDBCUtils.safeGetInt(dbResult, "FIELD_SUB_TYPE");
+                        FireBirdFieldType fieldDT = FireBirdFieldType.getById(dataType, subType);
 
-                        String typeName;
+                        String typeName = "";
                         if (fieldDT != null) {
                             typeName = fieldDT.getName();
-                        } else {
-                            typeName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME);
                         }
 
                         int columnSize;
@@ -144,7 +143,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         }
 
                         boolean notNull = JDBCUtils.safeGetBoolean(dbResult, "NOT_NULL");
-                        int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
+                        int scale = Math.abs(JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE)); // For some reason, FireBird returns the negative value in the scale field.
                         int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
                         String remarks = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.REMARKS);
                         int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
