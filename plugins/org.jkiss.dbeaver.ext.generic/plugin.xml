@@ -800,6 +800,7 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
+                    <parameter name="read-only-data" value="true"/>
                 </driver>
 
                 <!-- Virtuoso  -->
