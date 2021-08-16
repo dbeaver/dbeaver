@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -25,7 +26,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,6 +50,14 @@ public class RedshiftSchema extends PostgreSchema {
     @Override
     public String getTableColumnsQueryExtraParameters(PostgreTableContainer owner, PostgreTableBase forTable) {
         return ",format_encoding(a.attencodingtype::integer) AS \"encoding\"";
+    }
+    
+    @Override
+    public JDBCTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+        throws DBException {
+	// https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
+	// Redshift converts ASCII characters to lower case
+	return super.getChild(monitor, CommonUtils.toLowerCaseASCII(childName));
     }
 
     @Override

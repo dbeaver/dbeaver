@@ -983,4 +983,27 @@ public class CommonUtils {
         }
         return grouped;
     }
+    
+    /**
+     * Returns lower case of ASCII characters in the string.
+     * 
+     * @param str input string
+     * @return lower case ASCII string
+     */
+    @Nullable
+    public static String toLowerCaseASCII(@Nullable String str) {
+        if (!isEmptyTrimmed(str)) {
+            char[] chars = str.toCharArray();
+            for (int i = 0; i < chars.length; i++) {
+                // 97-a, 122-z handles a-z in lower case
+                // 65-A, 90-Z converts to A-Z in upper case
+                // leaves other characters alone
+                if (chars[i] >= 'A' && chars[i] <= 'Z') {
+                    chars[i] = (char) (chars[i] + 32);
+                }
+            }
+            return new String(chars);
+        }
+        return str;
+    }
 }

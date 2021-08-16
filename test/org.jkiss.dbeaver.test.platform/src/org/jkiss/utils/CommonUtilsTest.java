@@ -572,4 +572,14 @@ public class CommonUtilsTest {
     Assert.assertEquals(Arrays.asList("bbb", "bab"), groups.get('b'));
     Assert.assertEquals(Arrays.asList("ccc"), groups.get('c'));
   }
+  
+  @Test
+  public void testToLowerCaseASCII() {
+    Assert.assertEquals(CommonUtils.toLowerCaseASCII("aaaa"), "aaaa");
+    Assert.assertEquals(CommonUtils.toLowerCaseASCII("AAAA"), "aaaa");
+    Assert.assertEquals(CommonUtils.toLowerCaseASCII("aaAA"), "aaaa");
+    // cyrillic
+    Assert.assertEquals(CommonUtils.toLowerCaseASCII("ABC ТЕСТ abc"), "abc ТЕСТ abc");
+  }
+  
 }
