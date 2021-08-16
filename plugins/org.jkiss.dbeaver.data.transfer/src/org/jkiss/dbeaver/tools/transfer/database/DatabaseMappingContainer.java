@@ -244,7 +244,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 DBSAttributeBase sourceAttr = attrMapping.getSource();
                 if (sourceAttr != null) {
                     Map<String, Object> attrSettings = new LinkedHashMap<>();
-                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr), attrSettings);
+                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr, true), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
             }
@@ -284,7 +284,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                     DBSAttributeBase sourceAttr = attrMapping.getSource();
                     if (sourceAttr != null) {
-                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(attrMapping.getSourceLabelOrName(sourceAttr));
+                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(attrMapping.getSourceLabelOrName(sourceAttr, true));
                         if (attrSettings != null) {
                             attrMapping.loadSettings(attrSettings);
                         }

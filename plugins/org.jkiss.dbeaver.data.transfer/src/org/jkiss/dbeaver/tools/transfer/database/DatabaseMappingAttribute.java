@@ -137,7 +137,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSourceLabelOrName(getSource());
+                targetName = getSourceLabelOrName(getSource(), true);
                 break;
         }
     }
@@ -148,7 +148,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
                     if (CommonUtils.isEmpty(targetName)) {
-                        targetName = getSourceLabelOrName(source);
+                        targetName = getSourceLabelOrName(source, true);
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
@@ -200,7 +200,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             case create:
                 mappingType = DatabaseMappingType.create;
                 if (CommonUtils.isEmpty(targetName)) {
-                    targetName = getSourceLabelOrName(source);
+                    targetName = getSourceLabelOrName(source, true);
                 }
                 break;
             case skip:
@@ -228,6 +228,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     String getSourceLabelOrName(DBSAttributeBase source) {
+        return getSourceLabelOrName(source, false);
+    }
+
+    String getSourceLabelOrName(DBSAttributeBase source, boolean quoteIdentifier) {
         String name = null;
         if (source instanceof DBDAttributeBinding) {
             name = ((DBDAttributeBinding) source).getLabel();
@@ -237,11 +241,15 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
         DBSObjectContainer container = parent.getSettings().getContainer();
 
+        if (container != null && !CommonUtils.isEmpty(name) && quoteIdentifier) {
+            name = DBUtils.getQuotedIdentifier(container.getDataSource(), name);
+        }
+
         if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
             name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
         }
 
-        return container == null ? name : DBUtils.getQuotedIdentifier(container.getDataSource(), name);
+        return name;
     }
 
     @Nullable
