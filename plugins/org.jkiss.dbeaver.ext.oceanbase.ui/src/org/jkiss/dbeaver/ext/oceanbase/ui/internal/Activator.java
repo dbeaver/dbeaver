@@ -27,7 +27,7 @@ import org.osgi.framework.BundleContext;
 public class Activator extends AbstractUIPlugin {
 
     // The plug-in ID
-    private static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.oceanbase";
+    private static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.oceanbase.ui";
 
     @Override
     public void start(BundleContext context) throws Exception {

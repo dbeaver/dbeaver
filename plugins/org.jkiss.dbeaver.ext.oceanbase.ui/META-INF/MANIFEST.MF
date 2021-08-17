@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.oceanbase;singleton:=true
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.oceanbase.ui;singleton:=true
 Bundle-Version: 1.0.1.qualifier
 Bundle-Release-Date: 20210705
 Require-Bundle: org.eclipse.ui,
@@ -9,13 +9,12 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.mysql,
+ org.jkiss.dbeaver.ext.oceanbase,
+ org.jkiss.dbeaver.ext.oracle,
  com.google.gson,
  org.jkiss.dbeaver.core
-Export-Package: org.jkiss.dbeaver.ext.oceanbase,
- org.jkiss.dbeaver.ext.oceanbase.model.auth,
- org.jkiss.dbeaver.ext.oceanbase.mysql.model
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
-Automatic-Module-Name: org.jkiss.dbeaver.ext.oceanbase
+Automatic-Module-Name: org.jkiss.dbeaver.ext.oceanbase.ui
