@@ -960,7 +960,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             DiagramExportAction saveDiagram = new DiagramExportAction(this, getSite().getShell());
             toolBarManager.add(saveDiagram);
         }
-        toolBarManager.add(new Separator());
+        toolBarManager.add(new Separator("configuration"));
         {
             Action configAction = new Action(ERDUIMessages.erd_editor_control_action_configuration) {
                 @Override
@@ -1147,15 +1147,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         protected void populateCustomActions(ContributionManager contributionManager) {
             ToolBarManager extToolBar = new ToolBarManager();
-            //contributionManager.insertAfter("save", new ToolBarContributionItem(extToolBar));
             // Add dynamic toolbar contributions
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(extToolBar , "toolbar:ERDEditorToolbar");
             }
             if (!extToolBar.isEmpty()) {
+                boolean hasSave = contributionManager.find("save") != null;
                 for (IContributionItem item : extToolBar.getItems()) {
-                    contributionManager.insertAfter("save", item);
+                    if (hasSave) {
+                        contributionManager.insertAfter("save", item);
+                    } else {
+                        contributionManager.insertAfter("configuration", item);
+                    }
                 }
                 contributionManager.update(true);
             }
