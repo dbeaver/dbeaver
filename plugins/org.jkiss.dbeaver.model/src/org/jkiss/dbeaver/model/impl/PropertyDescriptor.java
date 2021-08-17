@@ -89,7 +89,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private boolean required;
     private Object defaultValue;
     private Object[] validValues;
-    private boolean allowCustomValues;
+    private boolean allowCustomValues = true;
     private boolean editable;
     private String[] features;
 
