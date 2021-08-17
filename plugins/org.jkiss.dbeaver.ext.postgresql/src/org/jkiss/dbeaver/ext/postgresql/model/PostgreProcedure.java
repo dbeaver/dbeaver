@@ -456,6 +456,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (language != null) {
             decl.append("\tLANGUAGE ").append(language).append(lineSeparator);
         }
+        if (isSecurityDefiner()) {
+            decl.append("\tSECURITY DEFINER").append(lineSeparator);
+        }
         if (isWindow()) {
             decl.append("\tWINDOW").append(lineSeparator);
         }
