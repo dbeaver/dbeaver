@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
@@ -288,6 +289,8 @@ public class DBeaverCore extends BasePlatformImpl {
             try {
                 String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
                 if (!CommonUtils.isEmpty(tempFolderPath)) {
+                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, new SystemVariablesResolver());
+
                     File dbTempFolder = new File(tempFolderPath);
                     if (!dbTempFolder.mkdirs()) {
                         throw new IOException("Can't create temp directory '" + dbTempFolder.getAbsolutePath() + "'");
