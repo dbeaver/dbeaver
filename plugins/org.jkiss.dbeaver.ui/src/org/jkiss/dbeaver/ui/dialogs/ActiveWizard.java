@@ -36,6 +36,10 @@ public abstract class ActiveWizard extends BaseWizard
 {
     private List<WizardPrefPage> prefPages = new ArrayList<>();
 
+    protected List<WizardPrefPage> getPrefPages() {
+        return prefPages;
+    }
+
     protected WizardPrefPage addPreferencePage(IPreferencePage prefPage, String title, String description)
     {
         WizardPrefPage wizardPage = createPreferencePage(prefPage, title, description);

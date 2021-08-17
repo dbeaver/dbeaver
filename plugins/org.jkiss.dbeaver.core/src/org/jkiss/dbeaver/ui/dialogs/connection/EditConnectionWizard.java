@@ -299,18 +299,40 @@ public class EditConnectionWizard extends ConnectionWizard
         pageInit.saveSettings(dataSource);
         pageEvents.saveSettings(dataSource);
         for (IDialogPage page : getPages()) {
-            if (page instanceof WizardPrefPage) {
-                page = ((WizardPrefPage) page).getPreferencePage();
-            }
-            if (page instanceof IWorkbenchPropertyPage) {
-                ((IWorkbenchPropertyPage) page).setElement(dataSource);
-            }
+            setPageDataSourceElement(dataSource, page);
         }
+        for (WizardPrefPage wpp : getPrefPages()) {
+            setPageDataSourceElement(dataSource, wpp);
+        }
+
         super.savePrefPageSettings();
 
         // Reset password if "Save password" was disabled
         if (!dataSource.isSavePassword()) {
             dataSource.getConnectionConfiguration().setUserPassword(null);
+        }
+    }
+
+    private void setPageDataSourceElement(DataSourceDescriptor dataSource, IDialogPage page) {
+        if (page instanceof WizardPrefPage) {
+            WizardPrefPage[] subPages = ((WizardPrefPage)page).getDialogPages(false, true);
+            if (subPages != null) {
+                for (IDialogPage dp : subPages) {
+                    setPageDataSourceElement(dataSource, dp);
+                }
+            }
+
+            page = ((WizardPrefPage) page).getPreferencePage();
+        } else if (page instanceof IDialogPageProvider) {
+            IDialogPage[] subPages = ((IDialogPageProvider)page).getDialogPages(false, true);
+            if (subPages != null) {
+                for (IDialogPage dp : subPages) {
+                    setPageDataSourceElement(dataSource, dp);
+                }
+            }
+        }
+        if (page instanceof IWorkbenchPropertyPage) {
+            ((IWorkbenchPropertyPage) page).setElement(dataSource);
         }
     }
 
