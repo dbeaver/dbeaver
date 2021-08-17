@@ -1,3 +1,20 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2021 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
 import java.io.IOException;
@@ -8,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -32,13 +49,13 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer implements DBCQueryPlanner {
-    private OceanbaseMySQLDataSource dataSource;
+    private final OceanbaseMySQLDataSource dataSource;
 
     public OceanbasePlanAnalyzer(OceanbaseMySQLDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public OceanbasePlanJSON explain(JDBCSession session, String query) throws DBCException {
+    private static OceanbasePlanJSON explain(JDBCSession session, String query) throws DBCException {
         final SQLDialect dialect = SQLUtils.getDialectFromObject(session.getDataSource());
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
@@ -49,12 +66,12 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public void serialize(Writer planData, DBCPlan plan) throws IOException, InvocationTargetException {
+    public void serialize(Writer planData, DBCPlan plan) throws IOException {
         serializeJson(planData, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
             public String version() {
-                return "json";
+                return MySQLConstants.TYPE_JSON;
             }
 
             @Override
@@ -70,7 +87,7 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public DBCPlan deserialize(Reader planData) throws IOException, InvocationTargetException {
+    public DBCPlan deserialize(Reader planData) throws InvocationTargetException {
         JsonObject jo = JsonParser.parseReader(planData).getAsJsonObject();
 
         String query = getQuery(jo);
@@ -99,7 +116,7 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
 
     @Override
     public DBCPlan planQueryExecution(DBCSession session, String query, DBCQueryPlannerConfiguration configuration)
-            throws DBException {
+            throws DBCException {
         return explain((JDBCSession) session, query);
     }
 

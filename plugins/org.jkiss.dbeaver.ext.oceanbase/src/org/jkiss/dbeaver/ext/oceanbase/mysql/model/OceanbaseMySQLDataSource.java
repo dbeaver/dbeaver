@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
 import java.sql.SQLException;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEngine;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.oceanbase.model.plan.OceanbasePlanAnalyzer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseMySQLDataSource extends MySQLDataSource {
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
@@ -115,34 +114,23 @@ public class OceanbaseMySQLDataSource extends MySQLDataSource {
         return tenantType.equals("MySQL");
     }
 
-    MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName) throws DBException {
-        if (CommonUtils.isEmpty(catalogName)) {
-            return null;
-        }
-        OceanbaseMySQLCatalog catalog = (OceanbaseMySQLCatalog) getCatalog(catalogName);
-        if (catalog == null) {
-            return null;
-        }
-        return catalog.getTable(monitor, tableName);
-    }
-
     @Override
-    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor) {
         return getCatalogs();
     }
 
     @Override
-    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getCatalog(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return OceanbaseMySQLCatalog.class;
     }
 
-    public OceanbaseCatalogCache getOceanbaseCatalogCache() {
+    OceanbaseCatalogCache getOceanbaseCatalogCache() {
         return oceanbaseCatalogCache;
     }
 
@@ -175,8 +163,7 @@ public class OceanbaseMySQLDataSource extends MySQLDataSource {
 
         @Override
         protected OceanbaseMySQLCatalog fetchObject(@NotNull JDBCSession session,
-                @NotNull OceanbaseMySQLDataSource owner, @NotNull JDBCResultSet resultSet)
-                throws SQLException, DBException {
+                @NotNull OceanbaseMySQLDataSource owner, @NotNull JDBCResultSet resultSet) {
             return new OceanbaseMySQLCatalog(owner, resultSet);
         }
 

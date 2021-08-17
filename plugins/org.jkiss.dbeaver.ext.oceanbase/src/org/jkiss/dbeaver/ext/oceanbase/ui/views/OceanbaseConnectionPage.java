@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.oceanbase.ui.views;
 
 import java.util.Locale;
@@ -26,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.Activator;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.OceanbaseMessages;
@@ -41,22 +43,14 @@ import org.jkiss.utils.CommonUtils;
  * OceanbaseConnectionPage
  */
 public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
+    private static final Log log = Log.getLog(OceanbaseConnectionPage.class);
+    private static final ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
 
     private Text portText;
     private Text hostText;
     private Text urlText;
     private Text databaseText;
     private Text tenantText;
-    
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
-
-    public OceanbaseConnectionPage() {
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
 
     @Override
     public void createControl(Composite composite) {
@@ -73,7 +67,8 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
         addrGroup.setLayoutData(gd);
 
         {
-            Group hostGroup = UIUtils.createControlGroup(addrGroup, "Connection", 4, GridData.FILL_HORIZONTAL, 0);
+            Group hostGroup = UIUtils.createControlGroup(addrGroup,
+                    OceanbaseMessages.oceanbase_connection_page_label_connection, 4, GridData.FILL_HORIZONTAL, 0);
 
             Label urlLabel = new Label(hostGroup, SWT.NONE);
             urlLabel.setText(OceanbaseMessages.oceanbase_connection_page_label_url);
@@ -153,7 +148,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
                 try {
                     saveSettings(site.getActiveDataSource());
                 } catch (Exception e) {
-                    setMessage(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
             urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
@@ -184,10 +179,6 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
         super.saveSettings(dataSource);
     }
 
-    private void evaluateURL() {
-        site.updateButtons();
-    }
-
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
@@ -197,6 +188,10 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
     @Override
     protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
         return OceanbaseAuthModelDatabaseNative.ID;
+    }
+
+    private void evaluateURL() {
+        site.updateButtons();
     }
 
 }

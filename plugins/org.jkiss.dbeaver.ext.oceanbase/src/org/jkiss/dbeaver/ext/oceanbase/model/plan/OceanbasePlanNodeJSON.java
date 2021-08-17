@@ -1,7 +1,25 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2021 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,15 +38,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
+class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
 
-    private OceanbasePlanNodeJSON parent;
+    private final OceanbasePlanNodeJSON parent;
+    private final Map<String, String> nodeProps = new LinkedHashMap<>();
+    private final List<OceanbasePlanNodeJSON> nested = new ArrayList<>();
+
     private String name;
     private JsonObject object;
-    private Map<String, String> nodeProps = new LinkedHashMap<>();
-    private List<OceanbasePlanNodeJSON> nested = new ArrayList<>();
 
-    public OceanbasePlanNodeJSON(OceanbasePlanNodeJSON parent, String name, JsonObject object) {
+    OceanbasePlanNodeJSON(OceanbasePlanNodeJSON parent, String name, JsonObject object) {
         this.parent = parent;
         this.name = name;
         this.object = object;
@@ -36,13 +55,18 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         parseObject(name, object);
     }
 
-    public OceanbasePlanNodeJSON(OceanbasePlanNodeJSON parent, Map<String, String> attributes) {
+    OceanbasePlanNodeJSON(OceanbasePlanNodeJSON parent, Map<String, String> attributes) {
         this.parent = parent;
         this.nodeProps.putAll(attributes);
     }
 
-    public Map<String, String> getNodeProps() {
-        return nodeProps;
+    Map<String, String> getNodeProps() {
+        return Collections.unmodifiableMap(nodeProps);
+    }
+    
+
+    Object getProperty(String name) {
+        return nodeProps.get(name);
     }
 
     private void parseObject(String objName, JsonObject object) {
@@ -83,9 +107,6 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
     }
 
     private void addNested(String name, JsonObject value) {
-        if (nested == null) {
-            nested = new ArrayList<>();
-        }
         nested.add(new OceanbasePlanNodeJSON(this, name, value));
     }
 
@@ -165,17 +186,10 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         return nested;
     }
 
-    public Object getProperty(String name) {
-        return nodeProps.get(name);
-    }
-
     @Override
     public String toString() {
         return object == null ? nodeProps.toString() : object.toString();
     }
-
-    //////////////////////////////////////////////////////////
-    // Properties
 
     @Override
     public Object getEditableValue() {

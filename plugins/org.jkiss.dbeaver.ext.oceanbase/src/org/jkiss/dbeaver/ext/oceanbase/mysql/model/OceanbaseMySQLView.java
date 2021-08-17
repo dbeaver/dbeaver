@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
 import java.sql.ResultSet;
@@ -34,18 +35,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class OceanbaseMySQLView extends MySQLView {
 
-    public OceanbaseMySQLView(MySQLCatalog catalog) {
-        super(catalog);
-    }
-
-    public OceanbaseMySQLView(MySQLCatalog catalog, ResultSet dbResult) {
+    OceanbaseMySQLView(MySQLCatalog catalog, ResultSet dbResult) {
         super(catalog, dbResult);
     }
 
     @Override
     public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<MySQLTableColumn> childColumns = ((OceanbaseMySQLCatalog) getContainer()).oceanbaseTableCache
-                .getChildren(monitor, (OceanbaseMySQLCatalog) getContainer(), this);
+        List<MySQLTableColumn> childColumns = getContainer().getOceanbaseTableCache().getChildren(monitor,
+                getContainer(), this);
         if (childColumns == null) {
             return Collections.emptyList();
         }
@@ -57,8 +54,12 @@ public class OceanbaseMySQLView extends MySQLView {
     @Override
     public MySQLTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
             throws DBException {
-        return ((OceanbaseMySQLCatalog) getContainer()).oceanbaseTableCache.getChild(monitor,
-                (OceanbaseMySQLCatalog) getContainer(), this, attributeName);
+        return getContainer().getOceanbaseTableCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public OceanbaseMySQLCatalog getContainer() {
+        return (OceanbaseMySQLCatalog) super.getContainer();
     }
 
 }

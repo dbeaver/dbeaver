@@ -1,3 +1,20 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2021 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
 import java.sql.ResultSet;
@@ -17,13 +34,13 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseMySQLViewColumn extends MySQLTableColumn {
-    public OceanbaseMySQLViewColumn(MySQLTableBase table, ResultSet dbResult) throws DBException {
+    OceanbaseMySQLViewColumn(MySQLTableBase table, ResultSet dbResult) throws DBException {
         super(table);
         loadInfo(dbResult);
         setPersisted(true);
     }
 
-    public OceanbaseMySQLViewColumn(DBRProgressMonitor monitor, MySQLTableBase table, DBSEntityAttribute source)
+    OceanbaseMySQLViewColumn(DBRProgressMonitor monitor, MySQLTableBase table, DBSEntityAttribute source)
             throws DBException {
         super(monitor, table, source);
     }
@@ -55,9 +72,8 @@ public class OceanbaseMySQLViewColumn extends MySQLTableColumn {
             } else if (dataKind == DBPDataKind.DATETIME && !defaultValue.isEmpty()
                     && Character.isDigit(defaultValue.charAt(0))) {
                 defaultValue = "'" + defaultValue + "'";
-            } else {
-                setDefaultValue(defaultValue);
             }
+            setDefaultValue(defaultValue);
         }
         setExtraInfo(JDBCUtils.safeGetString(dbResult, "Extra"));
     }

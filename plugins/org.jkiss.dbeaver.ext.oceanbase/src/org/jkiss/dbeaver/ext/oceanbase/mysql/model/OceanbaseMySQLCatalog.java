@@ -1,3 +1,20 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2021 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
 
 import java.sql.DatabaseMetaData;
@@ -39,10 +56,86 @@ import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseMySQLCatalog extends MySQLCatalog {
     private final OceanbaseMySQLDataSource dataSource;
-    final OceanbaseProceduresCache oceanbaseProceduresCache = new OceanbaseProceduresCache();
-    final OceanbaseTableCache oceanbaseTableCache = new OceanbaseTableCache();
+    private final OceanbaseProceduresCache oceanbaseProceduresCache = new OceanbaseProceduresCache();
+    private final OceanbaseTableCache oceanbaseTableCache = new OceanbaseTableCache();
 
-    public static class OceanbaseTableCache
+    OceanbaseMySQLCatalog(OceanbaseMySQLDataSource dataSource, ResultSet dbResult) {
+        super(dataSource, dbResult);
+        this.dataSource = dataSource;
+        oceanbaseTableCache.setCaseSensitive(false);
+    }
+
+    public OceanbaseProceduresCache getOceanbaseProceduresCache() {
+        return this.oceanbaseProceduresCache;
+    }
+
+    public OceanbaseTableCache getOceanbaseTableCache() {
+        return this.oceanbaseTableCache;
+    }
+
+    @Override
+    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().supportsInformationSchema()) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(oceanbaseProceduresCache.getAllObjects(monitor, this));
+    }
+
+    @Override
+    public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName) throws DBException {
+        return oceanbaseProceduresCache.getObject(monitor, this, procName);
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
+        oceanbaseProceduresCache.clearCache();
+        oceanbaseTableCache.clearCache();
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public MySQLDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @Association
+    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        return oceanbaseTableCache.getTypedObjects(monitor, this, MySQLTable.class);
+    }
+
+    public MySQLTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
+        return oceanbaseTableCache.getObject(monitor, this, name, MySQLTable.class);
+    }
+
+    @Association
+    public Collection<MySQLView> getViews(DBRProgressMonitor monitor) throws DBException {
+        return new ArrayList<>(oceanbaseTableCache.getTypedObjects(monitor, this, OceanbaseMySQLView.class));
+    }
+
+    @Override
+    public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return oceanbaseTableCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        return oceanbaseTableCache.getObject(monitor, this, childName);
+    }
+
+    @Override
+    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+        monitor.subTask("Cache tables");
+        oceanbaseTableCache.getAllObjects(monitor, this);
+        if ((scope & STRUCT_ATTRIBUTES) != 0) {
+            monitor.subTask("Cache table columns");
+            oceanbaseTableCache.loadChildren(monitor, this, null);
+        }
+        super.cacheStructure(monitor, scope);
+    }
+
+    static class OceanbaseTableCache
             extends JDBCStructLookupCache<OceanbaseMySQLCatalog, MySQLTableBase, MySQLTableColumn> {
 
         OceanbaseTableCache() {
@@ -117,7 +210,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
 
         @Override
         protected MySQLTableBase fetchObject(@NotNull JDBCSession session, @NotNull OceanbaseMySQLCatalog owner,
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+                @NotNull JDBCResultSet dbResult) {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
             if (tableType != null && tableType.contains("VIEW")) {
                 return new OceanbaseMySQLView(owner, dbResult);
@@ -152,7 +245,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
 
         @Override
         protected MySQLTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OceanbaseMySQLCatalog owner,
-                @NotNull MySQLTableBase table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+                @NotNull MySQLTableBase table, @NotNull JDBCResultSet dbResult) throws DBException {
             if (table instanceof OceanbaseMySQLView) {
                 return new OceanbaseMySQLViewColumn(table, dbResult);
             }
@@ -164,7 +257,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
     static class OceanbaseProceduresCache
             extends JDBCStructLookupCache<OceanbaseMySQLCatalog, OceanbaseMySQLProcedure, MySQLProcedureParameter> {
 
-        public OceanbaseProceduresCache() {
+        OceanbaseProceduresCache() {
             super(JDBCConstants.PROCEDURE_NAME);
         }
 
@@ -190,10 +283,8 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
         protected JDBCStatement prepareChildrenStatement(JDBCSession session, OceanbaseMySQLCatalog owner,
                 OceanbaseMySQLProcedure procedure) throws SQLException {
             if (procedure.getProcedureType().equals(DBSProcedureType.PROCEDURE)) {
-                return session.getMetaData()
-                        .getProcedureColumns(owner.getName(), null,
-                                procedure == null ? null : JDBCUtils.escapeWildCards(session, procedure.getName()), "%")
-                        .getSourceStatement();
+                return session.getMetaData().getProcedureColumns(owner.getName(), null,
+                        JDBCUtils.escapeWildCards(session, procedure.getName()), "%").getSourceStatement();
             } else {
                 String queryFunctionString = "select * from mysql.proc where db=? and type='FUNCTION' and name=?";
                 JDBCPreparedStatement statement = session.prepareStatement(queryFunctionString);
@@ -205,7 +296,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
 
         @Override
         protected MySQLProcedureParameter fetchChild(JDBCSession session, OceanbaseMySQLCatalog owner,
-                OceanbaseMySQLProcedure parent, JDBCResultSet dbResult) throws SQLException, DBException {
+                OceanbaseMySQLProcedure parent, JDBCResultSet dbResult) {
             if (parent.getProcedureType().equals(DBSProcedureType.PROCEDURE)) {
                 String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
                 int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
@@ -244,7 +335,11 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
                 return new MySQLProcedureParameter(parent, columnName, typeName, valueType, position, columnSize, scale,
                         precision, notNull, parameterType);
             } else {
-                String[] paramList = JDBCUtils.safeGetString(dbResult, "returns").split("\\(");
+                String returnString = JDBCUtils.safeGetString(dbResult, "returns");
+                if (returnString == null) {
+                    return null;
+                }
+                String[] paramList = returnString.split("\\(");
                 int columnSize = Integer.parseInt(paramList[1].split("\\)")[0]);
 
                 return new MySQLProcedureParameter(parent, "RETURN", paramList[0], STRUCT_ATTRIBUTES, 0, columnSize,
@@ -254,82 +349,10 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
 
         @Override
         protected OceanbaseMySQLProcedure fetchObject(JDBCSession session, OceanbaseMySQLCatalog owner,
-                JDBCResultSet resultSet) throws SQLException, DBException {
+                JDBCResultSet resultSet) {
             return new OceanbaseMySQLProcedure(owner, resultSet);
         }
 
-    }
-
-    public OceanbaseMySQLCatalog(OceanbaseMySQLDataSource dataSource, ResultSet dbResult) {
-        super(dataSource, dbResult);
-        this.dataSource = dataSource;
-        oceanbaseTableCache.setCaseSensitive(false);
-    }
-
-    public OceanbaseProceduresCache getOceanbaseProceduresCache() {
-        return this.oceanbaseProceduresCache;
-    }
-
-    @Override
-    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
-        if (!getDataSource().supportsInformationSchema()) {
-            return Collections.emptyList();
-        }
-        return new ArrayList<>(oceanbaseProceduresCache.getAllObjects(monitor, this));
-    }
-
-    @Override
-    public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName) throws DBException {
-        return oceanbaseProceduresCache.getObject(monitor, this, procName);
-    }
-
-    @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.refreshObject(monitor);
-        oceanbaseProceduresCache.clearCache();
-        oceanbaseTableCache.clearCache();
-        return this;
-    }
-
-    @NotNull
-    @Override
-    public MySQLDataSource getDataSource() {
-        return (OceanbaseMySQLDataSource) dataSource;
-    }
-
-    @Association
-    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return oceanbaseTableCache.getTypedObjects(monitor, this, MySQLTable.class);
-    }
-
-    public MySQLTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
-        return oceanbaseTableCache.getObject(monitor, this, name, MySQLTable.class);
-    }
-
-    @Association
-    public Collection<MySQLView> getViews(DBRProgressMonitor monitor) throws DBException {
-        return new ArrayList<>(oceanbaseTableCache.getTypedObjects(monitor, this, OceanbaseMySQLView.class));
-    }
-
-    @Override
-    public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return oceanbaseTableCache.getAllObjects(monitor, this);
-    }
-
-    @Override
-    public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return oceanbaseTableCache.getObject(monitor, this, childName);
-    }
-
-    @Override
-    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
-        monitor.subTask("Cache tables");
-        oceanbaseTableCache.getAllObjects(monitor, this);
-        if ((scope & STRUCT_ATTRIBUTES) != 0) {
-            monitor.subTask("Cache table columns");
-            oceanbaseTableCache.loadChildren(monitor, this, null);
-        }
-        super.cacheStructure(monitor, scope);
     }
 
 }
