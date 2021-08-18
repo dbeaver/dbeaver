@@ -202,18 +202,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	                    if (ch == escapeChar) {
 	                        break;
 	                    }
-	                    if (inString) {
-	                        result.append(ch);
-	                    } else if ((ch == '\n' || ch == '\r')  && result.length() > 0) {
-	                        // Append linefeed even if it is outside of quotes
-	                        // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
-	                        if (!endsWithLF(result, ch)) {
-	                            result.append(ch);
-	                        }
-	                    }
-		            }
+                        result.append(ch);
+                    }
 		        }
-	        } 
+	        }
             else if (inComment) {
         		if (commentType == CommentType.Unknown && prevChar == '/' && ch == '*') {
         			commentType = CommentType.Block;
@@ -239,8 +231,9 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             		break;
                 case '\n':
                 case '\r':
-                    // Line feed outside of actual query
-                    if (result.length() > 0 && result.charAt(result.length() - 1) != ch) {
+                    // Append linefeed even if it is outside of quotes
+                    // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
+                    if (result.length() > 0 && !endsWithLF(result, '\n') && !endsWithLF(result, '\r')) {
                         result.append(ch == '\n' ? "\n" : "\r");
                     }
                     break;
