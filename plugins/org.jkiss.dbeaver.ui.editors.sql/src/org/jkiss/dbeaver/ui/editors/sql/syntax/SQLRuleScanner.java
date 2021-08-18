@@ -179,6 +179,11 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         public IToken evaluate(ICharacterScanner scanner) {
             return adaptToken(rule.evaluate((TPCharacterScanner) scanner));
         }
+
+        @Override
+        public String toString() {
+            return "Adapter of [" + rule.toString() + "]";
+        }
     }
 
 }

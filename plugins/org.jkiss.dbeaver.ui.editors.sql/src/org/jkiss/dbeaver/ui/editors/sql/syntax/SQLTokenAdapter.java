@@ -40,6 +40,11 @@ public class SQLTokenAdapter extends Token {
         return token;
     }
 
+    @Override
+    public String toString() {
+        return "Adapter of [" + token.toString() + "]";
+    }
+
     private static TextAttribute makeTextAttribute(TPToken token, SQLRuleScanner scanner) {
         if (token instanceof TPTokenDefault) {
             if (token.getData() instanceof SQLTokenType) {
