@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -50,8 +49,6 @@ import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.entity.IEntityDataEditor;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -261,6 +258,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 editorInput.updateContentFromFile(new DefaultProgressMonitor(monitor), editorInput.getValue());
                 editorInput.getValueController().updateValue(editorInput.getValue(), true);
 
+/*
                 // Activate owner editor and focus on cell corresponding to this content editor
                 IWorkbenchPartSite parentEditorSite = editorInput.getValueController().getValueSite();
                 IWorkbenchPart parentEditor;
@@ -273,9 +271,10 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                     parentEditor = parentEditorSite.getPart();
                 }
                 UIUtils.asyncExec(() -> parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor));
+*/
 
                 // Close editor
-                closeValueEditor();
+                UIUtils.asyncExec(this::closeValueEditor);
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(
                         "Can't save content",
