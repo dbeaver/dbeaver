@@ -50,10 +50,10 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     {
         this.name = profileName;
         this.store = store;
-        loadProfile();
+        loadProfile(store);
     }
 
-    private void loadProfile()
+    private void loadProfile(DBPPreferenceStore store)
     {
         {
             String language = store.getString(PROP_LANGUAGE);
@@ -72,7 +72,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void saveProfile() throws IOException
+    public void saveProfile(DBPPreferenceStore store) throws IOException
     {
         store.setValue(PROP_LANGUAGE, locale.getLanguage());
         store.setValue(PROP_COUNTRY, locale.getCountry());
@@ -112,7 +112,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public Map<String, Object> getFormatterProperties(String typeId)
+    public Map<String, Object> getFormatterProperties(DBPPreferenceStore store, String typeId)
     {
         DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         Map<String, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
@@ -130,7 +130,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void setFormatterProperties(String typeId, Map<String, Object> formatterProps)
+    public void setFormatterProperties(DBPPreferenceStore store, String typeId, Map<String, Object> formatterProps)
     {
         DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         for (DBPPropertyDescriptor prop : formatter.getProperties()) {
@@ -167,7 +167,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void reset()
+    public void reset(DBPPreferenceStore store)
     {
         if (store instanceof SimplePreferenceStore) {
             // Set all formatter properties to default
@@ -181,7 +181,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
                 }
             }
         }
-        loadProfile();
+        loadProfile(store);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         DBDDataFormatter formatter = descriptor.createFormatter();
 
         Map<String, Object> defProps = descriptor.getSample().getDefaultProperties(locale);
-        Map<String, Object> props = getFormatterProperties(typeId);
+        Map<String, Object> props = getFormatterProperties(store, typeId);
         Map<String, Object> formatterProps = new HashMap<>();
         if (defProps != null && !defProps.isEmpty()) {
             formatterProps.putAll(defProps);
@@ -225,7 +225,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     public void preferenceChange(PreferenceChangeEvent event) {
         if (event.getProperty() != null && event.getProperty().startsWith(DATAFORMAT_PREFIX)) {
             // Reload this profile
-            loadProfile();
+            loadProfile(store);
         }
     }
 }

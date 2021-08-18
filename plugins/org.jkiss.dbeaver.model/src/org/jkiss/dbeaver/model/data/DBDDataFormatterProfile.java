@@ -39,15 +39,15 @@ public interface DBDDataFormatterProfile {
 
     void setLocale(Locale locale);
 
-    Map<String, Object> getFormatterProperties(String typeId);
+    Map<String, Object> getFormatterProperties(DBPPreferenceStore store, String typeId);
 
-    void setFormatterProperties(String typeId, Map<String, Object> properties);
+    void setFormatterProperties(DBPPreferenceStore store, String typeId, Map<String, Object> properties);
 
     boolean isOverridesParent();
 
-    void reset();
+    void reset(DBPPreferenceStore store);
 
-    void saveProfile() throws IOException;
+    void saveProfile(DBPPreferenceStore store) throws IOException;
 
     DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws ReflectiveOperationException;
 
