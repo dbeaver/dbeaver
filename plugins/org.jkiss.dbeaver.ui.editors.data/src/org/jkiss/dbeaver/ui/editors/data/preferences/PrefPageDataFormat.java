@@ -251,8 +251,10 @@ public class PrefPageDataFormat extends TargetPrefPage
         profileName = formatterProfile.getProfileName();
         profileLocale = formatterProfile.getLocale();
         profileProperties.clear();
+
+        DBPPreferenceStore store = getTargetPreferenceStore();
         for (DataFormatterDescriptor dfd : formatterDescriptors) {
-            Map<String, Object> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            Map<String, Object> formatterProps = formatterProfile.getFormatterProperties(store, dfd.getId());
             if (formatterProps != null) {
                 profileProperties.put(dfd.getId(), formatterProps);
             }
@@ -409,9 +411,9 @@ public class PrefPageDataFormat extends TargetPrefPage
             formatterProfile.setProfileName(profileName);
             formatterProfile.setLocale(profileLocale);
             for (String typeId : profileProperties.keySet()) {
-                formatterProfile.setFormatterProperties(typeId, profileProperties.get(typeId));
+                formatterProfile.setFormatterProperties(store, typeId, profileProperties.get(typeId));
             }
-            formatterProfile.saveProfile();
+            formatterProfile.saveProfile(store);
 
             store.setValue(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT, datetimeNativeFormatCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT, numericNativeFormatCheck.getSelection());
@@ -425,7 +427,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         if (formatterProfile != null) {
-            formatterProfile.reset();
+            formatterProfile.reset(store);
         }
         store.setToDefault(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
         store.setToDefault(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
