@@ -158,6 +158,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                     if (rs.nextRow()) {
                         String activeSchemaName = JDBCUtils.safeGetString(rs, 1);
                         if (!CommonUtils.isEmpty(activeSchemaName)) {
+                            // Pre-cache schemas, we need them anyway
+                            getDefaultCatalog().getSchemas(monitor);
                             activeSchema = getDefaultCatalog().getSchema(monitor, activeSchemaName);
                         }
                         activeUser = JDBCUtils.safeGetString(rs, 2);

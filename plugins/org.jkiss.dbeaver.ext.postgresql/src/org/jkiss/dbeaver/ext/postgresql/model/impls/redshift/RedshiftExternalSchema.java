@@ -69,6 +69,11 @@ public class RedshiftExternalSchema extends PostgreSchema {
     }
 
     @Override
+    public boolean isStatisticsCollected() {
+        return true;
+    }
+
+    @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         // Not supported
     }
