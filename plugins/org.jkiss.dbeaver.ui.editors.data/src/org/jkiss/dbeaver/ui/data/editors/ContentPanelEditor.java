@@ -494,10 +494,16 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Prime LOB value");
-                streamEditor.primeEditorValue(monitor, control, content);
-            } catch (Exception e) {
-                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                DBWorkbench.getPlatformUI().showError("Value panel", "Error loading contents", e);
+                UIUtils.syncExec(() -> {
+                    try {
+                        if (!control.isDisposed()) {
+                            streamEditor.primeEditorValue(monitor, control, content);
+                        }
+                    } catch (Exception e) {
+                        valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+                        DBWorkbench.getPlatformUI().showError("Value panel", "Error loading contents", e);
+                    }
+                });
             } finally {
                 monitor.done();
             }

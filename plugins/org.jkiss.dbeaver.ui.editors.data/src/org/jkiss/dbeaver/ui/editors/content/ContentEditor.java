@@ -272,7 +272,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 } else {
                     parentEditor = parentEditorSite.getPart();
                 }
-                parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor);
+                UIUtils.asyncExec(() -> parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor));
 
                 // Close editor
                 closeValueEditor();

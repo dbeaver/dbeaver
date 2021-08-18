@@ -34,12 +34,14 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     private final DBPPlatform platform;
     private File file;
     private String charset;
+    private boolean deleteFileOnRelease;
 
-    public TemporaryContentStorage(DBPPlatform platform, File file, String charset)
+    public TemporaryContentStorage(DBPPlatform platform, File file, String charset, boolean deleteFileOnRelease)
     {
         this.platform = platform;
         this.file = file;
         this.charset = CommonUtils.toString(charset, GeneralUtils.DEFAULT_ENCODING);
+        this.deleteFileOnRelease = deleteFileOnRelease;
     }
 
     @Override
@@ -84,13 +86,15 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
             ContentUtils.deleteTempFile(tempFile);
             throw new IOException(e);
         }
-        return new TemporaryContentStorage(platform, tempFile, charset);
+        return new TemporaryContentStorage(platform, tempFile, charset, true);
     }
 
     @Override
     public void release()
     {
-        ContentUtils.deleteTempFile(file);
+        if (deleteFileOnRelease) {
+            ContentUtils.deleteTempFile(file);
+        }
     }
 
     @Override

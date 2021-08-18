@@ -377,7 +377,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                 }
             } else {
                 // Create new storage and pass it to content
-                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile, fileCharset);
+                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile, fileCharset, false);
                 contentDetached = content.updateContents(monitor, storage);
             }
         } else if (stringStorage != null) {

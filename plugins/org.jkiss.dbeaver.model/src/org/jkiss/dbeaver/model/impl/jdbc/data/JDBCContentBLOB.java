@@ -117,7 +117,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, executionContext);
                 }
-                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding());
+                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
             }
             // Free blob - we don't need it anymore
             releaseBlob();
