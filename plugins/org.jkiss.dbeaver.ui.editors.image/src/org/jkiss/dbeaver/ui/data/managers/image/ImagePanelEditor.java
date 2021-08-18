@@ -53,7 +53,11 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
                 if (!(new UITask<Boolean>() {
                     @Override
                     protected Boolean runTask() {
-                        return control.loadImage(contentStream);
+                        if (!control.isDisposed()) {
+                            return control.loadImage(contentStream);
+                        } else {
+                            return true; // already read
+                        }
                     }
                 }).execute())
                 {
