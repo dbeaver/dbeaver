@@ -3818,6 +3818,9 @@ public class SQLEditor extends SQLEditorBase implements
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
                     cr.viewer.updateFiltersText(false);
                 }
+                if (!result.hasError() && result.hasResultSet() && !queryProcessor.resultContainers.isEmpty()) {
+                    resultTabs.setSelection(queryProcessor.resultContainers.get(0).resultsTab);
+                }
                 // Set tab names by query results names
                 if (scriptMode || queryProcessor.getResultContainers().size() > 0) {
 
