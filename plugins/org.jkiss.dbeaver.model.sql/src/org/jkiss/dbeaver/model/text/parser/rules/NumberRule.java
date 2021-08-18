@@ -54,7 +54,7 @@ public class NumberRule implements TPRule {
         int ch = scanner.read();
         int chCount = 1;
 
-        if (!Character.isDigit(ch)) {
+        if (!CommonUtils.isDigit(ch, RADIX_DECIMAL)) {
             return undefined(scanner, 1);
         }
 
@@ -66,7 +66,7 @@ public class NumberRule implements TPRule {
             int ch1 = scanner.read();
             if (ch1 == 'x' || ch1 == 'X') {
                 ch1 = scanner.read();
-                if (CommonUtils.isDigit(ch1, 16)) {
+                if (CommonUtils.isDigit(ch1, RADIX_HEXADECIMAL)) {
                     radix = RADIX_HEXADECIMAL;
                 } else {
                     return undefined(scanner, 3);
