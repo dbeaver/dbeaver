@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.tasks.ui.view;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
@@ -37,7 +36,7 @@ import java.util.List;
 public class TaskHandlerDelete extends AbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         List<DBPNamedObject> objectsToDelete = new ArrayList<>();
@@ -47,9 +46,6 @@ public class TaskHandlerDelete extends AbstractHandler {
             for (Object element : structSelection) {
                 if (element instanceof DBTTask) {
                     objectsToDelete.add((DBTTask) element);
-                } else if (element instanceof DatabaseTasksTree.TaskFolderWrapper) {
-                    // Delete original task from wrapper, not wrapper
-                    objectsToDelete.add(((DatabaseTasksTree.TaskFolderWrapper) element).getTaskFolder());
                 } else if (element instanceof DBTTaskFolder) {
                     objectsToDelete.add((DBTTaskFolder) element);
                 }
@@ -59,11 +55,7 @@ public class TaskHandlerDelete extends AbstractHandler {
         if (!objectsToDelete.isEmpty()) {
             if (objectsToDelete.size() == 1) {
                 DBPNamedObject namedObject = objectsToDelete.get(0);
-                if (namedObject instanceof DatabaseTasksTree.TaskFolderWrapper) {
-                    if (confirmDeleteObjectAction(event, TaskUIViewMessages.task_handler_delete_folder_error_title, TaskUIViewMessages.task_handler_delete_confirm_question_delete_task_folder_wrapper, namedObject)) {
-                        return null;
-                    }
-                } else if (namedObject instanceof DBTTaskFolder) {
+                if (namedObject instanceof DBTTaskFolder) {
                     if (confirmDeleteObjectAction(event, TaskUIViewMessages.task_handler_delete_folder_error_title, TaskUIViewMessages.task_handler_delete_confirm_question_delete_task_folder, namedObject)) {
                         return null;
                     }
