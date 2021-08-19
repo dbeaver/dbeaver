@@ -39,6 +39,7 @@ public class AdvancedListItem {
         this.list.addItem(this);
         this.data = item;
         this.textLayout = new TextLayout(list.getDisplay());
+        this.textLayout.setFont(list.getFont());
         this.textLayout.setText(labelProvider.getText(item));
     }
 

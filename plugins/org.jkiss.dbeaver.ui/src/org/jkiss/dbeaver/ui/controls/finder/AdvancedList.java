@@ -20,10 +20,7 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IToolTipProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -71,6 +68,13 @@ public class AdvancedList extends Canvas {
         this.selectionForegroundColor = UIStyles.getDefaultTextSelectionForeground();
         this.hoverBackgroundColor = UIUtils.getSharedTextColors().getColor(
             UIUtils.blend(this.selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
+
+        Font normalFont = getFont();
+        FontData[] fontData = normalFont.getFontData();
+        fontData[0].height -= 1.3;
+        Font smallFont = new Font(normalFont.getDevice(), fontData[0]);
+        setFont(smallFont);
+        addDisposeListener(e -> smallFont.dispose());
 
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));
