@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+
 import java.util.List;
 
 public class ResultSetDataContainerOptions {
 
     private List<Long> selectedRows;
-    private List<String> selectedColumns;
+    private List<DBDAttributeBinding> selectedColumns;
 
     public List<Long> getSelectedRows() {
         return selectedRows;
@@ -31,11 +33,11 @@ public class ResultSetDataContainerOptions {
         this.selectedRows = selectedRows;
     }
 
-    public List<String> getSelectedColumns() {
+    public List<DBDAttributeBinding> getSelectedColumns() {
         return selectedColumns;
     }
 
-    public void setSelectedColumns(List<String> selectedColumns) {
+    public void setSelectedColumns(List<DBDAttributeBinding> selectedColumns) {
         this.selectedColumns = selectedColumns;
     }
 }

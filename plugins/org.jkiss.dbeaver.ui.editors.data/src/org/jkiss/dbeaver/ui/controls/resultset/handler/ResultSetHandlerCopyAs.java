@@ -109,13 +109,9 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
             for (ResultSetRow selectedRow : rsSelectedRows) {
                 selectedRows.add((long) selectedRow.getRowNumber());
             }
-            List<String> selectedAttributes = new ArrayList<>();
-            for (DBDAttributeBinding attributeBinding : rsSelectedAttributes) {
-                selectedAttributes.add(attributeBinding.getName());
-            }
 
             options.setSelectedRows(selectedRows);
-            options.setSelectedColumns(selectedAttributes);
+            options.setSelectedColumns(rsSelectedAttributes);
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {

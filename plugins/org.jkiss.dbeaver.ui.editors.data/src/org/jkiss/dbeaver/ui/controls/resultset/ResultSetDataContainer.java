@@ -167,7 +167,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             if (ac != null && !ac.isVisible()) {
                 continue;
             }
-            if (!filterAttributes || options.getSelectedColumns().contains(attr.getName())) {
+            if (!filterAttributes || options.getSelectedColumns().contains(attr)) {
                 filtered.add(attr);
             }
         }
