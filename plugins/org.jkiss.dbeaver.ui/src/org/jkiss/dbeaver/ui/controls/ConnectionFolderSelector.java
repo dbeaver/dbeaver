@@ -69,6 +69,10 @@ public class ConnectionFolderSelector {
         }
     }
 
+    public boolean isEmpty() {
+        return connectionFolders.isEmpty();
+    }
+
     public void loadConnectionFolders(DBPProject project)
     {
         connectionFolderCombo.removeAll();

@@ -549,7 +549,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
         dataSource.setName(name);
-        dataSource.setFolder(folderSelector.getFolder());
+        if (folderSelector.isEmpty()) {
+            dataSource.setFolder(curDataSourceFolder);
+        } else {
+            dataSource.setFolder(folderSelector.getFolder());
+        }
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
             confConfig.setConnectionType(connectionTypeCombo.getSelectedItem());
