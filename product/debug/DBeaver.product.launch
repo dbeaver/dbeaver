@@ -299,6 +299,7 @@
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.sql.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.tasks.ui.view@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.app.standalone@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.charts@default:default"/>
