@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
@@ -34,7 +36,7 @@ import java.util.List;
 
 public class SQLiteTable extends GenericTable implements DBDPseudoAttributeContainer,DBPNamedObject2 {
 
-    public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
+    private static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,
         "rowid",
         "$alias.rowid",
@@ -71,5 +73,11 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
             }
         }
         return false;
+    }
+
+    @Nullable
+    @Override
+    public List<SQLiteTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return (List<SQLiteTableColumn>) super.getAttributes(monitor);
     }
 }
