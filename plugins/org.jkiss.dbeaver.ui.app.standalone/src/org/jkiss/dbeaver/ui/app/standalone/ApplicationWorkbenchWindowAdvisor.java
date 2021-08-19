@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
@@ -30,8 +32,9 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
@@ -46,17 +49,34 @@ import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.StringJoiner;
 
-public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener, IResourceChangeListener {
+public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor implements DBPProjectListener, IResourceChangeListener {
     private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
-    public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
-        super(configurer);
+    private IEditorPart lastActiveEditor = null;
+    private IPerspectiveDescriptor lastPerspective = null;
+
+    private IWorkbenchPage lastActivePage;
+    private IAdaptable lastInput;
+    private String lastEditorTitle = ""; //$NON-NLS-1$
+    private IPropertyChangeListener propertyChangeListener;
+    private final IPropertyListener editorPropertyListener = (source, propId) -> {
+        if (propId == IWorkbenchPartConstants.PROP_TITLE) {
+            if (lastActiveEditor != null) {
+                String newTitle = lastActiveEditor.getTitle();
+                if (!lastEditorTitle.equals(newTitle)) {
+                    recomputeTitle();
+                }
+            }
+        }
+    };
+
+    public ApplicationWorkbenchWindowAdvisor(ApplicationWorkbenchAdvisor advisor, IWorkbenchWindowConfigurer configurer) {
+        super(advisor, configurer);
 
         if (DBeaverApplication.WORKSPACE_MIGRATED) {
             refreshProjects();
@@ -81,6 +101,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     @Override
     public void dispose() {
+        if (propertyChangeListener != null) {
+            IDEWorkbenchPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
+            propertyChangeListener = null;
+        }
+
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         // Remove project listener
         DBPPlatform platform = DBWorkbench.getPlatform();
@@ -99,9 +124,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     }
 
     @Override
+    public boolean preWindowShellClose() {
+        return true;
+    }
+
+    @Override
     public void preWindowOpen() {
         log.debug("Configure workbench window");
-        super.preWindowOpen();
+        //super.preWindowOpen();
         // Set timeout for short jobs (like SQL queries)
         // Jobs longer than this will show progress dialog
         ProgressManagerUtil.SHORT_OPERATION_TIME = 100;
@@ -139,28 +169,40 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
      */
     private void hookTitleUpdateListeners(IWorkbenchWindowConfigurer configurer) {
         // hook up the listeners to update the window title
-        configurer.getWindow().addPageListener(new AbstractPageListener() {
+        configurer.getWindow().addPageListener(new IPageListener() {
             @Override
             public void pageActivated(IWorkbenchPage page) {
-                recomputeTitle();
+                updateTitle(false);
             }
+
             @Override
             public void pageClosed(IWorkbenchPage page) {
-                recomputeTitle();
+                updateTitle(false);
+            }
+
+            @Override
+            public void pageOpened(IWorkbenchPage page) {
+                // do nothing
             }
         });
         configurer.getWindow().addPerspectiveListener(new PerspectiveAdapter() {
             @Override
-            public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-                recomputeTitle();
+            public void perspectiveActivated(IWorkbenchPage page,
+                                             IPerspectiveDescriptor perspective) {
+                updateTitle(false);
             }
+
             @Override
-            public void perspectiveSavedAs(IWorkbenchPage page, IPerspectiveDescriptor oldPerspective, IPerspectiveDescriptor newPerspective) {
-                recomputeTitle();
+            public void perspectiveSavedAs(IWorkbenchPage page,
+                                           IPerspectiveDescriptor oldPerspective,
+                                           IPerspectiveDescriptor newPerspective) {
+                updateTitle(false);
             }
+
             @Override
-            public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-                recomputeTitle();
+            public void perspectiveDeactivated(IWorkbenchPage page,
+                                               IPerspectiveDescriptor perspective) {
+                updateTitle(false);
             }
         });
         configurer.getWindow().getPartService().addPartListener(
@@ -168,42 +210,69 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
                 @Override
                 public void partActivated(IWorkbenchPartReference ref) {
                     if (ref instanceof IEditorReference) {
-                        recomputeTitle();
+                        updateTitle(false);
                     }
                 }
+
                 @Override
                 public void partBroughtToTop(IWorkbenchPartReference ref) {
                     if (ref instanceof IEditorReference) {
-                        recomputeTitle();
+                        updateTitle(false);
                     }
                 }
+
                 @Override
                 public void partClosed(IWorkbenchPartReference ref) {
-                    recomputeTitle();
+                    updateTitle(false);
                 }
 
                 @Override
-                public void partDeactivated(IWorkbenchPartReference partRef) {
+                public void partDeactivated(IWorkbenchPartReference ref) {
+                    // do nothing
                 }
 
                 @Override
-                public void partOpened(IWorkbenchPartReference partRef) {
+                public void partOpened(IWorkbenchPartReference ref) {
+                    // do nothing
                 }
 
                 @Override
                 public void partHidden(IWorkbenchPartReference ref) {
-                    recomputeTitle();
-                }
-                @Override
-                public void partVisible(IWorkbenchPartReference ref) {
-                    recomputeTitle();
+                    if (ref.getPart(false) == lastActiveEditor
+                        && lastActiveEditor != null) {
+                        updateTitle(true);
+                    }
                 }
 
                 @Override
-                public void partInputChanged(IWorkbenchPartReference partRef) {
-                    recomputeTitle();
+                public void partVisible(IWorkbenchPartReference ref) {
+                    if (ref.getPart(false) == lastActiveEditor
+                        && lastActiveEditor != null) {
+                        updateTitle(false);
+                    }
+                }
+
+                @Override
+                public void partInputChanged(IWorkbenchPartReference ref) {
+                    // do nothing
                 }
             });
+
+        // Listen for changes of the workspace name.
+        propertyChangeListener = event -> {
+            String property = event.getProperty();
+            if (IDEInternalPreferences.WORKSPACE_NAME.equals(property)
+                || IDEInternalPreferences.SHOW_LOCATION.equals(property)
+                || IDEInternalPreferences.SHOW_LOCATION_NAME.equals(property)
+                || IDEInternalPreferences.SHOW_PERSPECTIVE_IN_TITLE.equals(property)
+                || IDEInternalPreferences.SHOW_PRODUCT_IN_TITLE.equals(property)) {
+                // Make sure the title is actually updated by
+                // setting last active page.
+                lastActivePage = null;
+                updateTitle(false);
+            }
+        };
+        IDEWorkbenchPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
     }
 
     @Override
@@ -302,10 +371,55 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     public class EditorAreaDropAdapter extends DropTargetAdapter {
     }
 
+    private void updateTitle(boolean editorHidden) {
+        IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+        IWorkbenchWindow window = configurer.getWindow();
+        IEditorPart activeEditor = null;
+        IWorkbenchPage currentPage = window.getActivePage();
+        IPerspectiveDescriptor persp = null;
+        IAdaptable input = null;
+
+        if (currentPage != null) {
+            activeEditor = currentPage.getActiveEditor();
+            persp = currentPage.getPerspective();
+            input = currentPage.getInput();
+        }
+
+        if (editorHidden) {
+            activeEditor = null;
+        }
+
+        // Nothing to do if the editor hasn't changed
+        if (activeEditor == lastActiveEditor && currentPage == lastActivePage
+            && persp == lastPerspective && input == lastInput) {
+            return;
+        }
+
+        if (lastActiveEditor != null) {
+            lastActiveEditor.removePropertyListener(editorPropertyListener);
+        }
+
+        if (window.isClosing()) {
+            return;
+        }
+
+        lastActiveEditor = activeEditor;
+        lastActivePage = currentPage;
+        lastPerspective = persp;
+        lastInput = input;
+
+        if (activeEditor != null) {
+            activeEditor.addPropertyListener(editorPropertyListener);
+        }
+
+        recomputeTitle();
+    }
+
     private void recomputeTitle() {
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
         String oldTitle = configurer.getTitle();
         String newTitle = computeTitle();
+        lastEditorTitle = newTitle;
         if (!newTitle.equals(oldTitle)) {
             configurer.setTitle(newTitle);
         }

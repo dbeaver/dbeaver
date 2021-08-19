@@ -1878,6 +1878,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public String getTitleToolTip() {
+        if (!DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            // For Eclipse plugins return just title because it is used in main window title.
+            return getTitle();
+        }
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer == null) {
             return super.getTitleToolTip();
@@ -2522,6 +2526,8 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             globalScriptContext.clearVariables();
         }
+
+        setPartName(getEditorName());
     }
 
     @Override
