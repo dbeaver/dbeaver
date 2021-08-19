@@ -1063,7 +1063,7 @@ public final class DBUtils {
 
     public static boolean referrerMatches(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer referrer, @NotNull Collection<? extends DBSEntityAttribute> attributes) throws DBException {
         final List<? extends DBSEntityAttributeRef> refs = referrer.getAttributeReferences(monitor);
-        if (refs != null && !refs.isEmpty()) {
+        if (refs != null && !refs.isEmpty() && attributes.size() == refs.size()) {
             Iterator<? extends DBSEntityAttribute> attrIterator = attributes.iterator();
             for (DBSEntityAttributeRef ref : refs) {
                 if (!attrIterator.hasNext()) {
