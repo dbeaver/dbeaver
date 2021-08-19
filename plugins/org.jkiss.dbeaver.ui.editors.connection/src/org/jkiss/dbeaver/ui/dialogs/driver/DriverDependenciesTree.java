@@ -27,13 +27,16 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -45,6 +48,7 @@ import java.util.List;
 
 class DriverDependenciesTree {
 
+    public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
     private DBRRunnableContext runnableContext;
     private DBPDriver driver;
     private Collection<? extends DBPDriverLibrary> libraries;
@@ -111,7 +115,7 @@ class DriverDependenciesTree {
         return libraries;
     }
 
-    public boolean resolveLibraries() {
+    public boolean loadLibDependencies() throws DBException {
         boolean resolved = false;
         try {
             runnableContext.run(true, true, monitor -> {
@@ -128,7 +132,7 @@ class DriverDependenciesTree {
         } catch (InterruptedException e) {
             // User just canceled download
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Resolve libraries", "Error resolving driver libraries", e.getTargetException());
+            throw new DBException("Error resolving dependencies", e.getTargetException());
         }
 
         filesTree.removeAll();
@@ -165,6 +169,26 @@ class DriverDependenciesTree {
 //            ((DriverDownloadDialog)getWizard().getContainer()).closeWizard();
         }
         return resolved;
+    }
+
+    public boolean handleDownloadError(DBException e) {
+        try {
+            checkNetworkAccessible();
+        } catch (DBException dbException) {
+            DBWorkbench.getPlatformUI().showError("Download error",
+                "Network error", dbException);
+            return false;
+        }
+        DBWorkbench.getPlatformUI().showError("Resolve driver files", "Error downloading driver libraries", e);
+        return true;
+    }
+
+    private void checkNetworkAccessible() throws DBException {
+        try {
+            WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
+        } catch (IOException e) {
+            throw new DBException("Network unavailable:\n" + e.getClass().getName() + ":" + e.getMessage());
+        }
     }
 
     public void resizeTree() {

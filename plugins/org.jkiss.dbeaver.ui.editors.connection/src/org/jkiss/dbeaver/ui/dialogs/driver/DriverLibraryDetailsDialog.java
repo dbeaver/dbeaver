@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
@@ -108,13 +109,12 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
             driver,
             libList,
             false);
-        depsTree.resolveLibraries();
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                depsTree.resizeTree();
-            }
-        });
+        try {
+            depsTree.loadLibDependencies();
+        } catch (DBException e) {
+            depsTree.handleDownloadError(e);
+        }
+        UIUtils.asyncExec(depsTree::resizeTree);
 
         TabItem depsTab = new TabItem(tabs, SWT.NONE);
         depsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_depencencies);

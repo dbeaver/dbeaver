@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,6 +48,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
+
+    public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
 
     private DriverDependenciesTree depsTree;
 
@@ -123,8 +126,16 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     void resolveLibraries() {
-        if (!depsTree.resolveLibraries()) {
-            setErrorMessage(UIConnectionMessages.dialog_driver_download_auto_page_cannot_resolve_libraries_text);
+        try {
+            if (!depsTree.loadLibDependencies()) {
+                setErrorMessage(UIConnectionMessages.dialog_driver_download_auto_page_cannot_resolve_libraries_text);
+            }
+        } catch (DBException e) {
+            if (!depsTree.handleDownloadError(e)) {
+                if (getContainer() instanceof WizardDialog) {
+                    ((WizardDialog) getContainer()).close();
+                }
+            }
         }
         depsTree.resizeTree();
     }
@@ -137,12 +148,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     @Override
     boolean performFinish() {
         try {
-            getContainer().run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    downloadLibraryFiles(new DefaultProgressMonitor(monitor));
-                }
-            });
+            getContainer().run(true, true,
+                monitor -> downloadLibraryFiles(new DefaultProgressMonitor(monitor)));
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error, UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error_msg, e.getTargetException());
         } catch (InterruptedException e) {
@@ -256,6 +263,17 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         return DBWorkbench.getPlatformUI().acceptLicense(
             "You have to accept driver '" + driver.getFullName() + "' license to continue",
             license);
+    }
+
+    private boolean isNetworkAccessible() {
+        try {
+            WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
+
+            return true;
+        } catch (IOException e) {
+            // ignore
+        }
+        return false;
     }
 
     public static class DownloadErrorDialog extends StandardErrorDialog {
