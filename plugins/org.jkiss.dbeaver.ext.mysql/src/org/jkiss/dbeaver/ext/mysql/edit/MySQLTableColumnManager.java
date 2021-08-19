@@ -82,22 +82,29 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         }
     };
 
-    private final ColumnModifier<MySQLTableColumn> ExtraInfoModifier = (monitor, column, sql, command) -> {
+	private final ColumnModifier<MySQLTableColumn> ExtraInfoModifier = (monitor, column, sql, command) -> {
         String extraInfo = column.getExtraInfo();
         if (!CommonUtils.isEmpty(extraInfo)) {
-            if (MySQLConstants.EXTRA_INFO_VIRTUAL_GENERATED.equalsIgnoreCase(extraInfo)) {
+            if (extraInfo.contains(MySQLConstants.EXTRA_INFO_DEFAULT_GENERATED)) {
+                // remove "DEFAULT_GENERATED" See #13577
+                extraInfo = extraInfo.replaceAll(MySQLConstants.EXTRA_INFO_DEFAULT_GENERATED,"");
+            }
+            if (!CommonUtils.isEmpty(extraInfo) && MySQLConstants.EXTRA_INFO_VIRTUAL_GENERATED.equalsIgnoreCase(extraInfo)) {
                 if (!CommonUtils.isEmpty(column.getGenExpression())) {
                     sql.append(" GENERATED ALWAYS AS (").append(column.getGenExpression()).append(") VIRTUAL"); //$NON-NLS-1$ //$NON-NLS-2$
                 } else {
                     log.debug("No virtual column generate expression found for " + column.getName());
                 }
-            } else if (MySQLConstants.EXTRA_INFO_DEFAULT_GENERATED.equals(extraInfo)) {
-                // Do not add "DEFAULT_GENERATED" to the statement. It caused MySQLSyntaxErrorException. See #10797
-            } else {
+            } 
+//             else if (MySQLConstants.EXTRA_INFO_DEFAULT_GENERATED.equals(extraInfo)) {
+//                // Do not add "DEFAULT_GENERATED" to the statement. It caused MySQLSyntaxErrorException. See #10797
+//            }
+            else {
                 sql.append(" ").append(extraInfo); //$NON-NLS-1$
             }
         }
     };
+
 
     @Nullable
     @Override
