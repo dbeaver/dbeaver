@@ -24,9 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -53,6 +51,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class DatabaseTasksTree {
@@ -792,6 +791,105 @@ public class DatabaseTasksTree {
                     }
                 }
             }
+        });
+
+        DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
+        dropTarget.setTransfer(DatabaseTaskTransfer.getInstance());
+        dropTarget.addDropListener(new DropTargetListener() {
+            @Override
+            public void dragEnter(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragLeave(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOperationChanged(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOver(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void drop(DropTargetEvent event) {
+                handleDragEvent(event);
+                if (event.detail == DND.DROP_MOVE) {
+                    moveNodes(event);
+                }
+            }
+
+            @Override
+            public void dropAccept(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            private void handleDragEvent(DropTargetEvent event) {
+                event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
+                event.feedback = DND.FEEDBACK_SELECT;
+            }
+
+            private boolean isDropSupported(DropTargetEvent event) {
+                if (DatabaseTaskTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                    Object curObject;
+                    if (event.item instanceof Item) {
+                        curObject = event.item.getData();
+                    } else {
+                        curObject = null;
+                    }
+
+                    if (curObject instanceof DBTTask || curObject instanceof DBTTaskFolder) {
+                        return true;
+                    } else if (curObject instanceof AbstractTaskNode) {
+                        return ((AbstractTaskNode) curObject).taskFolder != null;
+                    }
+                }
+                return false;
+            }
+
+            private void moveNodes(DropTargetEvent event) {
+                Object curObject;
+                if (event.item instanceof Item) {
+                    curObject = event.item.getData();
+                } else {
+                    // Do not drop tasks to empty spaces
+                    return;
+                }
+
+                if (curObject instanceof DBTTask || curObject instanceof DBTTaskFolder || curObject instanceof AbstractTaskNode) {
+                    DBTTaskFolder taskFolder;
+                    if (curObject instanceof DBTTask) {
+                        taskFolder = ((DBTTask) curObject).getTaskFolder();
+                    } else if (curObject instanceof AbstractTaskNode) {
+                        taskFolder = ((AbstractTaskNode) curObject).taskFolder;
+                    } else {
+                        taskFolder = (DBTTaskFolder) curObject;
+                    }
+
+                    if (taskFolder == null) {
+                        // We do not want unFolder this task/tasks
+                        return;
+                    }
+
+                    if (event.data instanceof DatabaseTaskTransfer.Data) {
+                        List<DBTTask> tasksToDrop = ((DatabaseTaskTransfer.Data) event.data).getTasks();
+                        if (!CommonUtils.isEmpty(tasksToDrop)) {
+                            for (DBTTask task : tasksToDrop) {
+                                if (task.getProject() == taskFolder.getProject()) { // Do not move tasks into another project
+                                    task.setTaskFolder(taskFolder);
+                                }
+                            }
+                            TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
+                        }
+                    }
+                }
+            }
+
         });
     }
 }
