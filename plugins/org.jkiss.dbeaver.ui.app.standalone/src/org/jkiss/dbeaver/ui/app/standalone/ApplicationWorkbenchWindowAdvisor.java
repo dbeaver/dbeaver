@@ -62,15 +62,11 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
     private IWorkbenchPage lastActivePage;
     private IAdaptable lastInput;
-    private String lastEditorTitle = ""; //$NON-NLS-1$
     private IPropertyChangeListener propertyChangeListener;
     private final IPropertyListener editorPropertyListener = (source, propId) -> {
         if (propId == IWorkbenchPartConstants.PROP_TITLE) {
             if (lastActiveEditor != null) {
-                String newTitle = lastActiveEditor.getTitle();
-                if (!lastEditorTitle.equals(newTitle)) {
-                    recomputeTitle();
-                }
+                recomputeTitle();
             }
         }
     };
@@ -419,7 +415,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
         String oldTitle = configurer.getTitle();
         String newTitle = computeTitle();
-        lastEditorTitle = newTitle;
         if (!newTitle.equals(oldTitle)) {
             configurer.setTitle(newTitle);
         }
