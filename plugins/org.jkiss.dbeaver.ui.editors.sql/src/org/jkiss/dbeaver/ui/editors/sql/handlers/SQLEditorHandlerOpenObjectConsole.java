@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -76,6 +77,12 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             }
             if (object instanceof DBSEntity) {
                 entities.add((DBSEntity) object);
+            }
+            if (object instanceof DBNDatabaseFolder) {
+                DBSObject parentObject = object.getParentObject(); // It can be table properties window or database navigator table folder (columns, keys etc.)
+                if (parentObject instanceof DBSEntity) {
+                    entities.add((DBSEntity) parentObject);
+                }
             }
         }
         if (navContext == null || navContext.getDataSourceContainer() == null) {
@@ -124,7 +131,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             editor = SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, navigatorContext, title, sql);
         }
 
-        if (editor != null) {
+        if (editor != null && editor.getDocument() != null) {
             editor.getDocument().set(sql);
             AbstractJob execJob = new AbstractJob("Execute SQL in console") {
                 @Override
