@@ -94,6 +94,8 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
 
         try {
             int multiRowInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 100);
+            boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
+
 
             int rowsCount = values.size();
             List<Object> multiRowInsertBatchValuesList = new ArrayList<>();
@@ -109,14 +111,14 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
                         Collections.addAll(multiRowInsertBatchValuesList, objects);
                         Object[] allMultiInsertValues = multiRowInsertBatchValuesList.toArray(new Object[0]);
                         try (DBCStatement statement = prepareStatement(session, handlers, allMultiInsertValues, options)) {
-                            bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues);
+                            bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues, skipBindValues);
                             multiRowInsertBatchValuesList.clear();
                             break;
                         }
                     }
                     Object[] allMultiInsertValuesBatch = multiRowInsertBatchValuesList.toArray(new Object[0]);
                     batchStatement = prepareStatement(session, handlers, allMultiInsertValuesBatch, options);
-                    bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValuesBatch);
+                    bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValuesBatch, skipBindValues);
                     multiRowInsertBatchValuesList.clear();
                 }
                 Collections.addAll(multiRowInsertBatchValuesList, objects);
@@ -131,10 +133,12 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
         return statistics;
     }
 
-    private void bindAndFlushStatement(DBDValueHandler[] handlers, DBCStatistics statistics, DBCStatement batchStatement, Object[] allMultiInsertValues) throws DBCException {
+    private void bindAndFlushStatement(DBDValueHandler[] handlers, DBCStatistics statistics, DBCStatement batchStatement, Object[] allMultiInsertValues, boolean skipBindValues) throws DBCException {
         statistics.setQueryText(batchStatement.getQueryString());
         statistics.addStatementsCount();
-        bindStatement(handlers, batchStatement, allMultiInsertValues);
+        if (!skipBindValues) {
+            bindStatement(handlers, batchStatement, allMultiInsertValues);
+        }
         batchStatement.addToBatch();
         flushBatch(statistics, batchStatement);
     }
