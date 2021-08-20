@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.data.office.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -50,7 +48,7 @@ import java.util.Map;
 public class OpenSpreadsheetHandler extends AbstractHandler
 {
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public Object execute(ExecutionEvent event)
     {
     	IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
@@ -68,13 +66,9 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             for (ResultSetRow selectedRow : rsSelectedRows) {
                 selectedRows.add((long) selectedRow.getRowNumber());
             }
-            List<String> selectedAttributes = new ArrayList<>();
-            for (DBDAttributeBinding attributeBinding : rsSelection.getSelectedAttributes()) {
-                selectedAttributes.add(attributeBinding.getName());
-            }
 
             options.setSelectedRows(selectedRows);
-            options.setSelectedColumns(selectedAttributes);
+            options.setSelectedColumns(rsSelection.getSelectedAttributes());
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {

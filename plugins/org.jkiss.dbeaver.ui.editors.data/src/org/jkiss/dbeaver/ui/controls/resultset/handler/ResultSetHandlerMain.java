@@ -485,14 +485,10 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
                     selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
                 }
-                List<String> selectedAttributes = new ArrayList<>();
-                for (DBDAttributeBinding attributeBinding : rsv.getSelection().getSelectedAttributes()) {
-                    selectedAttributes.add(attributeBinding.getName());
-                }
 
                 ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
                 options.setSelectedRows(selectedRows);
-                options.setSelectedColumns(selectedAttributes);
+                options.setSelectedColumns(rsv.getSelection().getSelectedAttributes());
 
                 ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
                 DataTransferWizard.openWizard(
