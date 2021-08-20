@@ -7,6 +7,50 @@
         <meta id="sqlite" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteMetaModel" driverClass="org.sqlite.JDBC" dialect="sqlite"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSourceProvider"
+                description="SQLite"
+                id="sqlite"
+                parent="generic"
+                label="SQLite"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"
+                dialect="sqlite">
+            <drivers managable="true">
+                <driver
+                        id="sqlite_jdbc"
+                        label="SQLite"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon_big.png"
+                        class="org.sqlite.JDBC"
+                        sampleURL="jdbc:sqlite:{file}"
+                        defaultPort=""
+                        webURL="https://github.com/xerial/sqlite-jdbc"
+                        propertiesURL="https://www.sqlite.org/pragma.html"
+                        embedded="true"
+                        anonymous="true"
+                        description="SQLite JDBC driver"
+                        promoted="1"
+                        categories="sql,embedded">
+                    <replace provider="generic" driver="sqlite_zentus"/>
+                    <replace provider="generic" driver="sqlite_xerial"/>
+                    <replace provider="generic" driver="sqlite_ch_werner"/>
+                    <replace provider="generic" driver="sqlite_jdbc"/>
+
+                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
+                    <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
+
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>

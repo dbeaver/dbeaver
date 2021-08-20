@@ -277,6 +277,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             // Create default controls toolbar
             if (showDefaultControls) {
                 ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
+                ((GridLayout)searchControlsComposite.getLayout()).marginTop = 2;
                 defaultToolbarManager.removeAll();
                 if (isSearchPossible() && isSearchEnabled()) {
                     addSearchAction(defaultToolbarManager);
