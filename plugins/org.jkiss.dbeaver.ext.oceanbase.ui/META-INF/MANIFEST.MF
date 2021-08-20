@@ -7,12 +7,15 @@ Bundle-Release-Date: 20210705
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.mysql,
  org.jkiss.dbeaver.ext.oceanbase,
  org.jkiss.dbeaver.ext.oracle,
  com.google.gson,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.connection
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
