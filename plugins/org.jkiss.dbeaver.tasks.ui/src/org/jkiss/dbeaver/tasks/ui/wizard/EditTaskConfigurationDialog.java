@@ -120,6 +120,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
             DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
             if (!ArrayUtils.isEmpty(tasksFolders)) {
+                taskFoldersCombo.add(""); // Empty row as ability to remove task folder from task
                 for (DBTTaskFolder taskFolder : tasksFolders) {
                     taskFoldersCombo.add(taskFolder.getName());
                 }

@@ -661,16 +661,17 @@ public class DatabaseTasksTree {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (!(o instanceof AbstractTaskNode)) return false;
             AbstractTaskNode that = (AbstractTaskNode) o;
             return Objects.equals(project, that.project) &&
-                    Objects.equals(parent, that.parent) &&
-                    Objects.equals(taskDescriptor, that.taskDescriptor);
+                Objects.equals(parent, that.parent) &&
+                Objects.equals(taskDescriptor, that.taskDescriptor) &&
+                Objects.equals(taskFolder, that.taskFolder);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(project, parent, taskDescriptor);
+            return Objects.hash(project, parent, taskDescriptor, taskFolder);
         }
     }
 
