@@ -951,6 +951,15 @@ public class DataSourceDescriptor
             return true;
         } catch (Exception e) {
             log.debug("Connection failed (" + getId() + ")", e);
+            if (dataSource != null) {
+                try {
+                    dataSource.shutdown(monitor);
+                } catch (Exception e2) {
+                    log.debug("Error during closing failed connection", e2);
+                }
+                dataSource = null;
+            }
+
             if (tunnelHandler != null) {
                 try {
                     tunnelHandler.closeTunnel(monitor);
