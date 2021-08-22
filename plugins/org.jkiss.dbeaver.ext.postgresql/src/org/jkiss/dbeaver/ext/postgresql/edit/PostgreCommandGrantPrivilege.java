@@ -85,7 +85,16 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             }
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.permission;
-            roleName = permission.getGrantee() == null ? null : DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee());
+            if (permission.getGrantee() != null) {
+                if (permission.getGrantee().toLowerCase().contains("group ")) {
+                    roleName = permission.getGrantee().substring(0, 6)
+                            + DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee().substring(6));
+                } else {
+                    roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee());
+                }
+            } else {
+                roleName = "";
+            }
             objectName = PostgreUtils.getObjectUniqueName(object);
         }
         if (roleName == null) {
