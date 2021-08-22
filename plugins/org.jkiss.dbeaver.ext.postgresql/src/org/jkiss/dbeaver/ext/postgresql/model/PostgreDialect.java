@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -756,6 +757,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
         // #12723 Redshift driver returns wrong infor about unquoted case
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
+    }
+    
+    @Override
+    public void addKeywords(Collection<String> set, DBPKeywordType type) {
+        super.addKeywords(set, type);
     }
 
     @NotNull

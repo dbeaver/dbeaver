@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,6 +58,37 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public PostgreServerRedshift(PostgreDataSource dataSource) {
         super(dataSource);
     }
+    
+    private static final String[] REDSHIFT_OTHER_TYPES_FUNCTION = {
+        "SYSDATE"
+    };
+    
+    public static String[] REDSHIFT_EXTRA_KEYWORDS = new String[]{
+        "AUTO",
+        "BACKUP",
+        "AZ64",
+        "CASE_SENSITIVE",
+        "CASE_INSENSITIVE",
+        "COMPOUND",
+        "INTERLEAVED",
+        "COPY",
+        "DATASHARE",
+        "DISTSTYLE",
+        "DISTKEY",
+        "EVEN",
+        "MODEL",
+        "OWNER",
+        "SORTKEY",
+        "TEMP",
+        "UNLOAD",
+        "VACUUM",
+        "YES"
+    };
+   
+    public static String[] REDSHIFT_FUNCTIONS_CONDITIONAL = new String[]{
+        "NVL",
+        "NVL2"
+    };
 
     private boolean isRedshiftVersionAtLeast(int major, int minor, int micro) {
         if (redshiftVersion == null) {
@@ -342,6 +375,13 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
             super.clearCache();
             esSchemaMap.clear();
         }
+    }
+    
+    @Override
+    public void configureDialect(PostgreDialect dialect) {
+        dialect.addExtraKeywords(REDSHIFT_EXTRA_KEYWORDS);
+        dialect.addKeywords(Arrays.asList(REDSHIFT_OTHER_TYPES_FUNCTION), DBPKeywordType.OTHER);
+        dialect.addExtraFunctions(REDSHIFT_FUNCTIONS_CONDITIONAL);
     }
 
     @Override
