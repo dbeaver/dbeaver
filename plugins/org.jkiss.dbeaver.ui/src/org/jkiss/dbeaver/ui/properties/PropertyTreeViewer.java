@@ -501,30 +501,34 @@ public class PropertyTreeViewer extends TreeViewer {
                 @Override
                 public void applyEditorValue()
                 {
-                    //editorValueChanged(true, true);
-                    final Object value = cellEditor.getValue();
-                    final Object oldValue = selectedColumn == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
-                    if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
-                        // The same empty string
-                        return;
-                    }
-                    if (DBUtils.compareDataValues(oldValue, value) != 0) {
-                        if (selectedColumn == 0) {
-                            String newName = CommonUtils.toString(value);
-                            String oldPropId = prop.property.getId();
-                            Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
-                            ((DBPNamedObject2)prop.property).setName(newName);
-                            if (oldPropValue != null) {
-                                prop.propertySource.resetPropertyValueToDefault(oldPropId);
-                                prop.propertySource.setPropertyValue(null, prop.property.getId(), oldPropValue);
-                            }
-                        } else {
-                            prop.propertySource.setPropertyValue(
-                                null,
-                                prop.property.getId(),
-                                value);
+                    try {
+                        //editorValueChanged(true, true);
+                        final Object value = cellEditor.getValue();
+                        final Object oldValue = selectedColumn == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
+                        if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
+                            // The same empty string
+                            return;
                         }
-                        handlePropertyChange(prop);
+                        if (DBUtils.compareDataValues(oldValue, value) != 0) {
+                            if (selectedColumn == 0) {
+                                String newName = CommonUtils.toString(value);
+                                String oldPropId = prop.property.getId();
+                                Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
+                                ((DBPNamedObject2) prop.property).setName(newName);
+                                if (oldPropValue != null) {
+                                    prop.propertySource.resetPropertyValueToDefault(oldPropId);
+                                    prop.propertySource.setPropertyValue(null, prop.property.getId(), oldPropValue);
+                                }
+                            } else {
+                                prop.propertySource.setPropertyValue(
+                                    null,
+                                    prop.property.getId(),
+                                    value);
+                            }
+                            handlePropertyChange(prop);
+                        }
+                    } catch (Exception e) {
+                        DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
                     }
                 }
 
