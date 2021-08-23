@@ -598,10 +598,8 @@ public class DatabaseTasksTree {
         private List<DBTTask> getSortedByCategoryTasks(TaskCategoryNode descriptor) {
             List<DBTTask> sortedByDescriptorList = new ArrayList<>();
             for (DBTTask task : allTasks) {
-                if ((descriptor.project == null || task.getProject() == descriptor.project)) {
-                    if ((task.getType().getCategory() == descriptor.taskDescriptor)) {
-                        sortedByDescriptorList.add(task);
-                    }
+                if ((descriptor.project == null || task.getProject() == descriptor.project) && (task.getType().getCategory() == descriptor.taskDescriptor)) {
+                    sortedByDescriptorList.add(task);
                 }
             }
             return sortedByDescriptorList;

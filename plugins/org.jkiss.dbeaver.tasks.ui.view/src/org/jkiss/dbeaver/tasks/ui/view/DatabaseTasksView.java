@@ -310,6 +310,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     break;
                 case TASK_FOLDER_UPDATE:
                     tasksTree.getViewer().refresh(taskFolder);
+                    break;
                 case TASK_FOLDER_REMOVE:
                     refresh();
                     break;
