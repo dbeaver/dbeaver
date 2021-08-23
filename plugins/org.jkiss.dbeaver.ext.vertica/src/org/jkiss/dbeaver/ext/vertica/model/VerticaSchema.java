@@ -72,6 +72,18 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public List<VerticaTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+        return (List<VerticaTable>) super.getPhysicalTables(monitor);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<VerticaTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        return (List<VerticaTable>) super.getTables(monitor);
+    }
+
+    @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSObject> children = new ArrayList<>(getTables(monitor));
         //children.addAll(getProjections(monitor));
