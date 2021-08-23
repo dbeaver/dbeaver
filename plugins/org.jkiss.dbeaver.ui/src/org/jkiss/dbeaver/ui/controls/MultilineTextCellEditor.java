@@ -28,11 +28,11 @@ public class MultilineTextCellEditor extends TextCellEditor {
 
     public MultilineTextCellEditor() {
         super();
-        setStyle(SWT.MULTI);
+        setStyle(SWT.MULTI | SWT.WRAP);
     }
 
     public MultilineTextCellEditor(Composite parent) {
-        super(parent, SWT.MULTI);
+        super(parent, SWT.MULTI | SWT.WRAP);
     }
 
     public MultilineTextCellEditor(Composite parent, int style) {
