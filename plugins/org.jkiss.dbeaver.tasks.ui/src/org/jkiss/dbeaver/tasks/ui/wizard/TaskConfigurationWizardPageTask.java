@@ -405,10 +405,15 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 DBTTaskFolder[] tasksFolders = selectedProject.getTaskManager().getTasksFolders();
                 List<DBTTaskFolder> taskFoldersList = Arrays.asList(tasksFolders != null ? tasksFolders : new DBTTaskFolder[0]);
                 DBTTaskFolder folder = DBUtils.findObject(taskFoldersList, selectedTaskFolderName);
+                DBTTaskFolder currentTaskFolder = task.getTaskFolder();
                 if (folder != null) {
                     task.setTaskFolder(folder);
+                    folder.addTaskToFolder(task);
                 } else {
                     task.setTaskFolder(null);
+                }
+                if (currentTaskFolder != null) {
+                    currentTaskFolder.removeTaskFromFolder(task);
                 }
                 TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
             }
