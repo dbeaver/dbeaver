@@ -20,10 +20,12 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.Top;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.utils.CommonUtils;
@@ -31,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 /**
 * Query transformer for TOP
 */
-public class QueryTransformerTop implements DBCQueryTransformer {
+public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransformerExt {
 
     private static final Log log = Log.getLog(QueryTransformerTop.class);
 
@@ -79,5 +81,20 @@ public class QueryTransformerTop implements DBCQueryTransformer {
         if (!limitSet) {
             statement.setLimit(offset.longValue(), length.longValue());
         }
+    }
+
+    @Override
+    public boolean isApplicableTo(SQLQuery query) {
+        // TOP cannot be used with OFFSET. See #13594
+        if (query.isPlainSelect()) {
+            final Statement statement = query.getStatement();
+            if (statement instanceof Select) {
+                final SelectBody body = ((Select) statement).getSelectBody();
+                if (body instanceof PlainSelect) {
+                    return ((PlainSelect) body).getOffset() == null;
+                }
+            }
+        }
+        return false;
     }
 }
