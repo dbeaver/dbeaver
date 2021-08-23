@@ -35,10 +35,11 @@ public class SQLServerExtendedPropertyCache extends JDBCObjectLookupCache<SQLSer
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT *, TYPE_ID(CAST(SQL_VARIANT_PROPERTY(value, 'BaseType') as nvarchar)) AS value_type" +
             " FROM " + SQLServerUtils.getExtendedPropsTableName(owner.getDatabase()) +
-            " WHERE major_id=? AND minor_id=? ORDER BY minor_id"
+            " WHERE major_id=? AND minor_id=? AND class=? ORDER BY minor_id"
         );
         dbStat.setLong(1, owner.getMajorObjectId());
         dbStat.setLong(2, owner.getMinorObjectId());
+        dbStat.setLong(3, owner.getExtendedPropertyObjectClass().getClassId());
         return dbStat;
 
     }
