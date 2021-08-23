@@ -113,7 +113,6 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         return taskFolder;
     }
 
-    @Override
     public void setTaskFolder(@Nullable DBTTaskFolder taskFolder) {
         this.taskFolder = (TaskFolderImpl) taskFolder;
     }

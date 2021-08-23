@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
@@ -659,17 +660,6 @@ public class DatabaseTasksTree {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof AbstractTaskNode)) return false;
-            AbstractTaskNode that = (AbstractTaskNode) o;
-            return Objects.equals(project, that.project) &&
-                Objects.equals(parent, that.parent) &&
-                Objects.equals(taskDescriptor, that.taskDescriptor) &&
-                Objects.equals(taskFolder, that.taskFolder);
-        }
-
-        @Override
         public int hashCode() {
             return Objects.hash(project, parent, taskDescriptor, taskFolder);
         }
@@ -689,6 +679,22 @@ public class DatabaseTasksTree {
         public String toString() {
             return category.getName();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TaskCategoryNode)) return false;
+            TaskCategoryNode that = (TaskCategoryNode) o;
+            return Objects.equals(project, that.project) &&
+                Objects.equals(parent, that.parent) &&
+                Objects.equals(category, that.category) &&
+                Objects.equals(taskFolder, that.taskFolder);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), category, taskFolder);
+        }
     }
 
     private static class TaskTypeNode extends AbstractTaskNode {
@@ -702,6 +708,22 @@ public class DatabaseTasksTree {
         @Override
         public String toString() {
             return type.getName();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TaskTypeNode)) return false;
+            TaskTypeNode that = (TaskTypeNode) o;
+            return Objects.equals(type, that.type) &&
+                Objects.equals(project, that.project) &&
+                Objects.equals(parent, that.parent) &&
+                Objects.equals(taskFolder, that.taskFolder);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), type);
         }
     }
 
@@ -881,8 +903,8 @@ public class DatabaseTasksTree {
                         List<DBTTask> tasksToDrop = ((DatabaseTaskTransfer.Data) event.data).getTasks();
                         if (!CommonUtils.isEmpty(tasksToDrop)) {
                             for (DBTTask task : tasksToDrop) {
-                                if (task.getProject() == taskFolder.getProject()) { // Do not move tasks into another project
-                                    task.setTaskFolder(taskFolder);
+                                if (task instanceof TaskImpl && task.getProject() == taskFolder.getProject()) { // Do not move tasks into another project
+                                    ((TaskImpl)task).setTaskFolder(taskFolder);
                                 }
                             }
                             TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));

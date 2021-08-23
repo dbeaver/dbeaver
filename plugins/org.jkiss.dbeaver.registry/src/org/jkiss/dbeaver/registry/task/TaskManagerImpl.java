@@ -240,7 +240,9 @@ public class TaskManagerImpl implements DBTTaskManager {
         List<DBTTask> folderTasks = taskFolder.getTasks();
         if (!CommonUtils.isEmpty(folderTasks)) {
             for (DBTTask task : folderTasks) {
-                task.setTaskFolder(null);
+                if (task instanceof TaskImpl) {
+                    ((TaskImpl)task).setTaskFolder(null);
+                }
             }
         }
 
