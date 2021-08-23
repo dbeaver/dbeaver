@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
+import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
@@ -59,6 +61,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
     private CredentialsPanel credentialsPanel;
     private CredentialsPanel jumpServerCredentialsPanel;
+    private Button jumpServerEnabledCheck;
 
     private Combo tunnelImplCombo;
     private Text localHostText;
@@ -80,18 +83,42 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            credentialsPanel = new CredentialsPanel(settingsGroup);
+            credentialsPanel = new CredentialsPanel(settingsGroup, true);
         }
 
         {
-            Group group = UIUtils.createControlGroup(composite, "Gateway settings (jump host)", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            jumpServerCredentialsPanel = new CredentialsPanel(group);
+            final ExpandableComposite group = new ExpandableComposite(composite, SWT.CHECK);
+            group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            group.setText("Jump server settings");
+
+            final Composite client = new Composite(group, SWT.BORDER);
+            client.setLayout(new GridLayout(2, false));
+            client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            group.setClient(client);
+
+            jumpServerEnabledCheck = UIUtils.createCheckbox(client, "Use jump server", false);
+            jumpServerEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1));
+            jumpServerEnabledCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
+                }
+            });
+
+            jumpServerCredentialsPanel = new CredentialsPanel(client, false);
         }
 
         {
-            Group advancedGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_advanced, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            final ExpandableComposite group = new ExpandableComposite(composite, SWT.NONE);
+            group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            group.setText(SSHUIMessages.model_ssh_configurator_group_advanced);
 
-            tunnelImplCombo = UIUtils.createLabelCombo(advancedGroup, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
+            final Composite client = new Composite(group, SWT.BORDER);
+            client.setLayout(new GridLayout(4, false));
+            client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            group.setClient(client);
+
+            tunnelImplCombo = UIUtils.createLabelCombo(client, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 3;
             tunnelImplCombo.setLayoutData(gd);
@@ -105,26 +132,26 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 tunnelImplCombo.add(it.getLabel());
             }
 
-            localHostText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            localHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
             localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            remoteHostText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            remoteHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
             remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            localPortSpinner = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_port, String.valueOf(0));
+            localPortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_port, String.valueOf(0));
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
             setNumberEditStyles(localPortSpinner);
 
-            remotePortSpinner = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_remote_port, String.valueOf(0));
+            remotePortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_port, String.valueOf(0));
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
             setNumberEditStyles(remotePortSpinner);
 
-            UIUtils.createHorizontalLine(advancedGroup, 4, 0);
+            UIUtils.createHorizontalLine(client, 4, 0);
 
-            keepAliveText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_keep_alive, String.valueOf(0));
+            keepAliveText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_keep_alive, String.valueOf(0));
             setNumberEditStyles(keepAliveText);
 
-            tunnelTimeout = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT));
+            tunnelTimeout = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT));
             setNumberEditStyles(tunnelTimeout);
         }
 
@@ -204,7 +231,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
         credentialsPanel.loadSettings(configuration, "");
-        jumpServerCredentialsPanel.loadSettings(configuration, getJumpServerSettingsPrefix());
+
+        final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+        jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
+        jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED));
+        UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
 
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implType)) {
@@ -257,7 +288,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     public void saveSettings(DBWHandlerConfiguration configuration)
     {
         credentialsPanel.saveSettings(configuration, "");
-        jumpServerCredentialsPanel.saveSettings(configuration, getJumpServerSettingsPrefix());
+
+        final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+        jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
+        configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServerEnabledCheck.getSelection());
 
         String implLabel = tunnelImplCombo.getText();
         for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
@@ -305,18 +339,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         return false;
     }
 
-    @NotNull
-    private static String getJumpServerSettingsPrefix() {
-        // With support for multiple jump servers, '0' will be replaced with an index.
-        return SSHConstants.PROP_JUMP_SERVER + "0.";
-    }
-
     private void updateJumpServerSettingsVisibility() {
         final String name = tunnelImplCombo.getText();
         for (SSHImplementationDescriptor descriptor : SSHImplementationRegistry.getInstance().getDescriptors()) {
             if (descriptor.getLabel().equals(name)) {
-                UIUtils.setControlVisible(jumpServerCredentialsPanel.getParent(), descriptor.isSupportsJumpServer());
-                jumpServerCredentialsPanel.getParent().getParent().layout(true, true);
+                final Composite parent = jumpServerCredentialsPanel.getParent().getParent();
+                UIUtils.setControlVisible(parent, descriptor.isSupportsJumpServer());
+                parent.getParent().layout(true, true);
                 break;
             }
         }
@@ -333,7 +362,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         private final Text passwordText;
         private final Button savePasswordCheckbox;
 
-        public CredentialsPanel(@NotNull Composite parent) {
+        public CredentialsPanel(@NotNull Composite parent, boolean showSavePasswordCheckbox) {
             super(parent, SWT.NONE);
 
             setLayout(new GridLayout(2, false));
@@ -381,8 +410,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 passwordText = new Text(passComp, SWT.BORDER | SWT.PASSWORD);
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
-                savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                if (showSavePasswordCheckbox) {
+                    savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
+                    savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                } else {
+                    savePasswordCheckbox = null;
+                    ((GridData) passwordText.getLayoutData()).horizontalSpan = 2;
+                }
             }
         }
 
@@ -399,11 +433,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
-                savePasswordCheckbox.setSelection(configuration.isSavePassword());
+                if (savePasswordCheckbox != null) {
+                    savePasswordCheckbox.setSelection(configuration.isSavePassword());
+                }
             } else {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME)));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
-                savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
+                if (savePasswordCheckbox != null) {
+                    savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
+                }
             }
             updateAuthMethodVisibility();
         }
@@ -417,11 +455,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             if (prefix.isEmpty()) {
                 configuration.setUserName(userNameText.getText().trim());
                 configuration.setPassword(passwordText.getText());
-                configuration.setSavePassword(savePasswordCheckbox.getSelection());
+                if (savePasswordCheckbox != null) {
+                    configuration.setSavePassword(savePasswordCheckbox.getSelection());
+                }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
                 configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
-                configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
+                if (savePasswordCheckbox != null) {
+                    configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
+                }
             }
         }
 
@@ -443,7 +485,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                     break;
             }
 
-            getParent().getParent().layout(true, true);
+            getParent().getParent().getParent().layout(true, true);
         }
 
         private void showPasswordField(boolean show, String passwordLabelText) {

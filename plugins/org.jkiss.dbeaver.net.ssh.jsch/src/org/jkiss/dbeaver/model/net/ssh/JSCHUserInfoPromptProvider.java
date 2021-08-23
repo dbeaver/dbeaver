@@ -18,13 +18,16 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 
 /**
  * JSCH prompter provider
  */
 public interface JSCHUserInfoPromptProvider {
 
-    UserInfo createUserInfoPrompt(DBWHandlerConfiguration configuration, Session session);
+    @NotNull
+    UserInfo createUserInfoPrompt(@NotNull SSHAuthConfiguration configuration, @NotNull Session session);
 
 }
