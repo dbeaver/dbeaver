@@ -123,9 +123,10 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     }
                 } else if (
                     SQLState.SQL_42000.getCode().equals(e.getSQLState()) ||
-                    SQLState.SQL_S1009.getCode().equals(e.getSQLState()))
+                    SQLState.SQL_S1009.getCode().equals(e.getSQLState()) ||
+                    SQLState.SQL_HY000.getCode().equals(e.getSQLState()))
                 {
-                    // [MySQL] workaround. Time value may be interval (should be read as string)
+                    // [MySQL, Netezza] workaround. Time value may be interval (should be read as string)
                     return ((JDBCResultSet) resultSet).getString(index + 1);
                 }
             } catch (SQLException e1) {
