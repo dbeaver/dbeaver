@@ -179,6 +179,16 @@ public class TaskRegistry implements DBTTaskRegistry
         }
     }
 
+    public void notifyTaskFoldersListeners(DBTTaskFolderEvent event) {
+        DBTTaskListener[] listenersCopy;
+        synchronized (taskListeners) {
+            listenersCopy = taskListeners.toArray(new DBTTaskListener[0]);
+        }
+        for (DBTTaskListener listener : listenersCopy) {
+            listener.handleTaskFolderEvent(event);
+        }
+    }
+
     @Nullable
     TaskCategoryDescriptor getTaskCategory(String id) {
         return taskCategories.get(id);

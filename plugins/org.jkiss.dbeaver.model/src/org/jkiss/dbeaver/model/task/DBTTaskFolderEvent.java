@@ -16,13 +16,34 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-/**
- * Task registry
- */
-public interface DBTTaskListener {
+public class DBTTaskFolderEvent {
 
-    void handleTaskEvent(DBTTaskEvent event);
+    public enum Action
+    {
+        TASK_FOLDER_ADD,
+        TASK_FOLDER_UPDATE,
+        TASK_FOLDER_REMOVE
+    }
 
-    void handleTaskFolderEvent(DBTTaskFolderEvent event);
+    private DBTTaskFolder taskFolder;
+    private Action action;
 
+    public DBTTaskFolderEvent(DBTTaskFolder taskFolder, Action action) {
+        this.taskFolder = taskFolder;
+        this.action = action;
+    }
+
+    public Action getAction()
+    {
+        return action;
+    }
+
+    public DBTTaskFolder getTaskFolder() {
+        return taskFolder;
+    }
+
+    @Override
+    public String toString() {
+        return action + " " + taskFolder;
+    }
 }

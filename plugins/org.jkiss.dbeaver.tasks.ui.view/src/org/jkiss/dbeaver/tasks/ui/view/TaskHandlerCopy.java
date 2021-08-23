@@ -63,6 +63,7 @@ public class TaskHandlerCopy extends AbstractHandler {
                             oldTask.getType(),
                             newTaskName,
                             oldTask.getDescription(),
+                            oldTask.getTaskFolder() != null ? oldTask.getTaskFolder().getName() : null,
                             new LinkedHashMap<>(oldTask.getProperties())
                         );
                         taskManager.updateTaskConfiguration(newTask);

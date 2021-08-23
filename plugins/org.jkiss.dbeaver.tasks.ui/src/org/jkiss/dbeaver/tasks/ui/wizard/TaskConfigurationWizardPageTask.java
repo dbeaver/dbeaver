@@ -30,10 +30,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskCategory;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -58,11 +58,13 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private Text taskLabelText;
     private Text taskDescriptionText;
     private Tree taskCategoryTree;
+    private Combo taskFoldersCombo;
 
     private DBTTaskCategory selectedCategory;
     private DBTTaskType selectedTaskType;
     private String taskName;
     private String taskDescription;
+    private String selectedTaskFolderName;
     private Map<String, Object> initialProperties = new LinkedHashMap<>();
 
     private TaskImpl task;
@@ -79,6 +81,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (this.task != null) {
             this.taskName = this.task.getName();
             this.taskDescription = this.task.getDescription();
+            this.selectedTaskFolderName = this.task.getTaskFolder() != null ? this.task.getTaskFolder().getName() : null;
             this.selectedTaskType = this.task.getType();
             this.selectedCategory = selectedTaskType.getCategory();
         }
@@ -148,6 +151,44 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     taskDescription = taskDescriptionText.getText();
                     modifyListener.modifyText(e);
                 });
+
+                UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_create_folder_label);
+                taskFoldersCombo = new Combo(infoPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
+                taskFoldersCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                // Show only selected project folders list (not all projects folders) to avoid folder naming mess
+                // (Because we can create folders with equal names in different projects)
+                DBTTaskManager taskManager = selectedProject.getTaskManager();
+                DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
+                if (!ArrayUtils.isEmpty(tasksFolders)) {
+                    taskFoldersCombo.add(""); // Empty row as ability to remove task folder from task
+                    for (DBTTaskFolder taskFolder : tasksFolders) {
+                        taskFoldersCombo.add(taskFolder.getName());
+                    }
+                }
+
+                // Set current task folder name for Edit dialog or selected folder from new created from context menu task
+                if (task != null && task.getTaskFolder() != null) {
+                    taskFoldersCombo.setText(task.getTaskFolder().getName());
+                } else if (task == null) {
+                    TaskConfigurationWizard wizard = getWizard();
+                    if (wizard != null) {
+                        DBTTaskFolder currentSelectedTaskFolder = wizard.getCurrentSelectedTaskFolder();
+                        if (currentSelectedTaskFolder != null) {
+                            taskFoldersCombo.setText(currentSelectedTaskFolder.getName());
+                        }
+                    }
+                }
+
+                // Check task folder changing in Edit task dialog
+                if (task != null) {
+                    taskFoldersCombo.addModifyListener(e -> {
+                        String foldersComboText = taskFoldersCombo.getText();
+                        if (task.getTaskFolder() == null || !foldersComboText.equals(task.getTaskFolder().getName())) {
+                            selectedTaskFolderName = foldersComboText;
+                        }
+                    });
+                }
 
                 if (task != null && !CommonUtils.isEmpty(task.getId())) {
                     UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_task_id, task.getId(), SWT.BORDER | SWT.READ_ONLY);
@@ -336,8 +377,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (realWizard == null) {
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(selectedTaskType);
 
+            String taskFolderName = taskFoldersCombo.getText();
+
             if (task == null) {
-                task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
+                task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, taskFolderName, new LinkedHashMap<>());
             }
             realWizard = configurator.createTaskConfigWizard(task);
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
@@ -357,6 +400,18 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             task.setName(taskLabelText.getText());
             task.setDescription(taskDescriptionText.getText());
             task.setType(selectedTaskType);
+            // Change task folder in edit task case
+            if (selectedTaskFolderName != null) {
+                DBTTaskFolder[] tasksFolders = selectedProject.getTaskManager().getTasksFolders();
+                List<DBTTaskFolder> taskFoldersList = Arrays.asList(tasksFolders != null ? tasksFolders : new DBTTaskFolder[0]);
+                DBTTaskFolder folder = DBUtils.findObject(taskFoldersList, selectedTaskFolderName);
+                if (folder != null) {
+                    task.setTaskFolder(folder);
+                } else {
+                    task.setTaskFolder(null);
+                }
+                TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
+            }
         }
     }
 

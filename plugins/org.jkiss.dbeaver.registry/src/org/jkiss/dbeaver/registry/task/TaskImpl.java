@@ -23,10 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskEvent;
-import org.jkiss.dbeaver.model.task.DBTTaskRun;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -61,12 +58,13 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private DBTTaskType type;
     private Map<String, Object> properties;
     private TaskRunImpl lastRun;
+    @Nullable private TaskFolderImpl taskFolder;
 
     private static class RunStatistics {
         private final List<TaskRunImpl> runs = new ArrayList<>();
     }
 
-    public TaskImpl(@NotNull DBPProject project, @NotNull DBTTaskType type, @NotNull String id, @NotNull String label, @Nullable String description, @NotNull Date createTime, @Nullable Date updateTime) {
+    public TaskImpl(@NotNull DBPProject project, @NotNull DBTTaskType type, @NotNull String id, @NotNull String label, @Nullable String description, @NotNull Date createTime, @Nullable Date updateTime, @Nullable TaskFolderImpl taskFolder) {
         this.project = project;
         this.id = id;
         this.label = label;
@@ -74,6 +72,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         this.createTime = createTime;
         this.updateTime = updateTime;
         this.type = type;
+        this.taskFolder = taskFolder;
     }
 
     @NotNull
@@ -106,6 +105,16 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     public void setDescription(@NotNull String description) {
         this.description = description;
+    }
+
+    @Nullable
+    @Override
+    public DBTTaskFolder getTaskFolder() {
+        return taskFolder;
+    }
+
+    public void setTaskFolder(@Nullable DBTTaskFolder taskFolder) {
+        this.taskFolder = (TaskFolderImpl) taskFolder;
     }
 
     @NotNull

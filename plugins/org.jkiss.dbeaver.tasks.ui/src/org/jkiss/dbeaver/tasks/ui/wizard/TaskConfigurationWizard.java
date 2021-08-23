@@ -64,6 +64,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     private Map<String, Object> variables;
     private DBTTaskContext taskContext;
+    @Nullable private DBTTaskFolder currentSelectedTaskFolder;
 
     protected TaskConfigurationWizard() {
     }
@@ -104,6 +105,15 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         this.currentTask = currentTask;
         updateWizardTitle();
         getContainer().updateButtons();
+    }
+
+    @Nullable
+    public DBTTaskFolder getCurrentSelectedTaskFolder() {
+        return currentSelectedTaskFolder;
+    }
+
+    public void setCurrentSelectedTaskFolder(@Nullable DBTTaskFolder taskFolder) {
+        this.currentSelectedTaskFolder = taskFolder;
     }
 
     public DBPProject getProject() {

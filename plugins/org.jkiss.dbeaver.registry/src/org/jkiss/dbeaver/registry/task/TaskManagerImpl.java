@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -53,6 +54,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     public static final String CONFIG_FILE = "tasks.json";
     public static final String TASK_STATS_FOLDER = "task-stats";
+    public static final String TASKS_FOLDERS_TAG = "##tasksFolders";
     private static Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
@@ -63,6 +65,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     private final ProjectMetadata projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
+    private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
     private File statisticsFolder;
 
     public TaskManagerImpl(ProjectMetadata projectMetadata) {
@@ -134,12 +137,17 @@ public class TaskManagerImpl implements DBTTaskManager {
         return result.toArray(new DBTTask[0]);
     }
 
+    public DBTTaskFolder[] getTasksFolders() {
+        return tasksFolders.toArray(new DBTTaskFolder[0]);
+    }
+
     @NotNull
     @Override
     public DBTTask createTask(
         @NotNull DBTTaskType taskDescriptor,
         @NotNull String label,
         @Nullable String description,
+        @Nullable String taskFolderName,
         @NotNull Map<String, Object> properties) throws DBException
     {
         if (getTaskByName(label) != null) {
@@ -147,7 +155,8 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
-        TaskImpl task = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime);
+        TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
+        TaskImpl task = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime, taskFolder);
         task.setProperties(properties);
 
         return task;
@@ -156,7 +165,22 @@ public class TaskManagerImpl implements DBTTaskManager {
     @NotNull
     @Override
     public DBTTask createTemporaryTask(@NotNull DBTTaskType type, @NotNull String label) {
-        return new TaskImpl(getProject(), type, TEMPORARY_ID, label, label, new Date(), null);
+        return new TaskImpl(getProject(), type, TEMPORARY_ID, label, label, new Date(), null, null);
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskFolder createTaskFolder(@NotNull DBPProject project, @NotNull String folderName, @Nullable DBTTask[] folderTasks) throws DBException {
+        if (!CommonUtils.isEmpty(tasksFolders) && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getName().equals(folderName))) {
+            throw new DBException("Task folder with name '" + folderName + "' already exists");
+        }
+        TaskFolderImpl taskFolder = new TaskFolderImpl(folderName, project, folderTasks != null ? new ArrayList<>(Arrays.asList(folderTasks)) : new ArrayList<>());
+        synchronized (tasksFolders) {
+            tasksFolders.add(taskFolder);
+        }
+
+        TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_ADD));
+        return taskFolder;
     }
 
     @Override
@@ -177,12 +201,16 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
         }
 
-        saveConfiguration();
-
         TaskRegistry.getInstance().notifyTaskListeners(
             new DBTTaskEvent(
                 task,
                 newTask ? DBTTaskEvent.Action.TASK_ADD : DBTTaskEvent.Action.TASK_UPDATE));
+
+        if (task.getTaskFolder() != null) {
+            TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(task.getTaskFolder(), DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
+        }
+
+        saveConfiguration();
     }
 
     @Override
@@ -200,6 +228,30 @@ public class TaskManagerImpl implements DBTTaskManager {
         saveConfiguration();
 
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_REMOVE));
+    }
+
+    @Override
+    public void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException {
+        if (!tasksFolders.contains(taskFolder)) {
+            throw new DBException("Task folder with name '" + taskFolder.getName() + "' is missing");
+        }
+
+        // Remove empty task folder or make task folder empty and then remove it
+        List<DBTTask> folderTasks = taskFolder.getTasks();
+        if (!CommonUtils.isEmpty(folderTasks)) {
+            for (DBTTask task : folderTasks) {
+                if (task instanceof TaskImpl) {
+                    ((TaskImpl)task).setTaskFolder(null);
+                }
+            }
+        }
+
+        synchronized (tasksFolders) {
+            tasksFolders.remove(taskFolder);
+        }
+        saveConfiguration();
+
+        TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
     }
 
     @NotNull
@@ -224,29 +276,51 @@ public class TaskManagerImpl implements DBTTaskManager {
             try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
+                // First read and create folders
+                for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, TASKS_FOLDERS_TAG)) {
+                    String taskName = folderMap.getKey();
+                    if (CommonUtils.isNotEmpty(taskName)) {
+                        createTaskFolder(projectMetadata, taskName, new DBTTask[0]);
+                    }
+                }
+
                 for (Map.Entry<String, Object> taskMap : jsonMap.entrySet()) {
                     Map<String, Object> taskJSON = (Map<String, Object>) taskMap.getValue();
 
                     try {
                         String id = taskMap.getKey();
-                        String task = JSONUtils.getString(taskJSON, "task");
-                        String label = CommonUtils.toString(JSONUtils.getString(taskJSON, "label"), id);
-                        String description = JSONUtils.getString(taskJSON, "description");
-                        Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "createTime"));
-                        Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
-                        Map<String, Object> state = JSONUtils.getObject(taskJSON, "state");
+                        if (!id.startsWith(TASKS_FOLDERS_TAG)) {
+                            String task = JSONUtils.getString(taskJSON, "task");
+                            String label = CommonUtils.toString(JSONUtils.getString(taskJSON, "label"), id);
+                            String description = JSONUtils.getString(taskJSON, "description");
+                            String taskFolderName = JSONUtils.getString(taskJSON, "taskFolder");
+                            Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "createTime"));
+                            Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
+                            Map<String, Object> state = JSONUtils.getObject(taskJSON, "state");
 
-                        DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
-                        if (taskDescriptor == null) {
-                            log.error("Can't find task descriptor " + task);
-                            continue;
-                        }
-                        TaskImpl taskConfig = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime);
-                        taskConfig.setProperties(state);
+                            DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
+                            if (taskDescriptor == null) {
+                                log.error("Can't find task descriptor " + task);
+                                continue;
+                            }
 
-                        synchronized (tasks) {
-                            tasks.add(taskConfig);
+                            TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
+                            TaskImpl taskConfig = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime, taskFolder);
+                            taskConfig.setProperties(state);
+                            if (taskFolder != null) {
+                                taskFolder.addTaskToFolder(taskConfig);
+                                if (!tasksFolders.contains(taskFolder)) {
+                                    synchronized (tasksFolders) {
+                                        tasksFolders.add(taskFolder);
+                                    }
+                                }
+                            }
+
+                            synchronized (tasks) {
+                                tasks.add(taskConfig);
+                            }
                         }
+
                     } catch (Exception e) {
                         log.warn("Error parsing task configuration", e);
                     }
@@ -258,7 +332,21 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
     }
 
-    private void saveConfiguration() {
+    private TaskFolderImpl searchTaskFolderByName(String taskFolderName) {
+        TaskFolderImpl taskFolder = null;
+        if (CommonUtils.isNotEmpty(taskFolderName)) {
+            taskFolder = DBUtils.findObject(tasksFolders, taskFolderName);
+            if (taskFolder == null) {
+                taskFolder = new TaskFolderImpl(taskFolderName, projectMetadata, new ArrayList<>());
+                synchronized (tasksFolders) {
+                    tasksFolders.add(taskFolder);
+                }
+            }
+        }
+        return taskFolder;
+    }
+
+    public void saveConfiguration() {
         IProgressMonitor monitor = new NullProgressMonitor();
 
         File configFile = getConfigFile(true);
@@ -298,12 +386,26 @@ public class TaskManagerImpl implements DBTTaskManager {
     private void serializeTasks(DBRProgressMonitor monitor, JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
+        if (!CommonUtils.isEmpty(tasksFolders)) {
+            jsonWriter.name(TASKS_FOLDERS_TAG);
+            jsonWriter.beginObject();
+            for (TaskFolderImpl taskFolder : tasksFolders) {
+                jsonWriter.name(taskFolder.getName());
+                jsonWriter.beginObject();
+                jsonWriter.endObject();
+            }
+            jsonWriter.endObject();
+        }
         for (TaskImpl task : tasks) {
             jsonWriter.name(task.getId());
             jsonWriter.beginObject();
             JSONUtils.field(jsonWriter, "task", task.getType().getId());
             JSONUtils.field(jsonWriter, "label", task.getName());
             JSONUtils.field(jsonWriter, "description", task.getDescription());
+            DBTTaskFolder taskFolder = task.getTaskFolder();
+            if (taskFolder != null) {
+                JSONUtils.field(jsonWriter, "taskFolder", taskFolder.getName());
+            }
             JSONUtils.field(jsonWriter, "createTime", systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, "updateTime", systemDateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, "state", task.getProperties());

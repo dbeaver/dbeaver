@@ -92,7 +92,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
-    protected TaskConfigurationWizard getTaskWizard() {
+    public TaskConfigurationWizard getTaskWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
