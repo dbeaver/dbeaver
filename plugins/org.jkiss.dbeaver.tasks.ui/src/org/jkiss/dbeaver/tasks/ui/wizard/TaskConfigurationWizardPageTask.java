@@ -81,7 +81,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (this.task != null) {
             this.taskName = this.task.getName();
             this.taskDescription = this.task.getDescription();
-            this.selectedTaskFolderName = this.task.getTaskFolder() != null ? this.task.getTaskFolder().getName() : "";
+            this.selectedTaskFolderName = this.task.getTaskFolder() != null ? this.task.getTaskFolder().getName() : null;
             this.selectedTaskType = this.task.getType();
             this.selectedCategory = selectedTaskType.getCategory();
         }
@@ -161,7 +161,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 DBTTaskManager taskManager = selectedProject.getTaskManager();
                 DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
                 if (!ArrayUtils.isEmpty(tasksFolders)) {
-                    taskFoldersCombo.add(" "); // Empty row as ability to remove task folder from task
+                    taskFoldersCombo.add(""); // Empty row as ability to remove task folder from task
                     for (DBTTaskFolder taskFolder : tasksFolders) {
                         taskFoldersCombo.add(taskFolder.getName());
                     }
@@ -401,7 +401,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             task.setDescription(taskDescriptionText.getText());
             task.setType(selectedTaskType);
             // Change task folder in edit task case
-            if (CommonUtils.isNotEmpty(selectedTaskFolderName)) {
+            if (selectedTaskFolderName != null) {
                 DBTTaskFolder[] tasksFolders = selectedProject.getTaskManager().getTasksFolders();
                 List<DBTTaskFolder> taskFoldersList = Arrays.asList(tasksFolders != null ? tasksFolders : new DBTTaskFolder[0]);
                 DBTTaskFolder folder = DBUtils.findObject(taskFoldersList, selectedTaskFolderName);

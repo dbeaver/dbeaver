@@ -595,10 +595,10 @@ public class DatabaseTasksTree {
         }
 
         // Sort all tasks into list by task category
-        private List<DBTTask> getSortedByCategoryTasks(TaskCategoryNode descriptor) {
+        private List<DBTTask> getSortedByCategoryTasks(TaskCategoryNode taskCategory) {
             List<DBTTask> sortedByDescriptorList = new ArrayList<>();
             for (DBTTask task : allTasks) {
-                if ((descriptor.project == null || task.getProject() == descriptor.project) && (task.getType().getCategory() == descriptor.taskDescriptor)) {
+                if ((taskCategory.project == null || task.getProject() == taskCategory.project) && (task.getType().getCategory() == taskCategory.category)) {
                     sortedByDescriptorList.add(task);
                 }
             }
@@ -644,31 +644,15 @@ public class DatabaseTasksTree {
         }
     }
 
-    private static abstract class AbstractTaskNode {
+    private static class TaskCategoryNode {
         final DBPProject project;
         final TaskCategoryNode parent;
-        final DBTTaskDescriptor taskDescriptor;
+        final DBTTaskCategory category;
         @Nullable final DBTTaskFolder taskFolder;
 
-        AbstractTaskNode(DBPProject project, TaskCategoryNode parent, DBTTaskDescriptor taskDescriptor, @Nullable DBTTaskFolder taskFolder) {
+        TaskCategoryNode(DBPProject project, TaskCategoryNode parent, DBTTaskCategory category, @Nullable DBTTaskFolder taskFolder) {
             this.project = project;
             this.parent = parent;
-            this.taskDescriptor = taskDescriptor;
-            this.taskFolder = taskFolder;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(project, parent, taskDescriptor, taskFolder);
-        }
-    }
-
-    private static class TaskCategoryNode extends AbstractTaskNode {
-        final DBTTaskCategory category;
-        final DBTTaskFolder taskFolder;
-
-        TaskCategoryNode(DBPProject project, TaskCategoryNode parent, DBTTaskCategory category, DBTTaskFolder taskFolder) {
-            super(project, parent, category, taskFolder);
             this.category = category;
             this.taskFolder = taskFolder;
         }
@@ -691,16 +675,21 @@ public class DatabaseTasksTree {
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), category, taskFolder);
+            return Objects.hash(project, parent, category, taskFolder);
         }
     }
 
-    private static class TaskTypeNode extends AbstractTaskNode {
+    private static class TaskTypeNode {
+        final DBPProject project;
+        final TaskCategoryNode parent;
         final DBTTaskType type;
+        @Nullable final DBTTaskFolder taskFolder;
 
-        TaskTypeNode(DBPProject project, TaskCategoryNode parent, DBTTaskType type, DBTTaskFolder taskFolder) {
-            super(project, parent, type, taskFolder);
+        TaskTypeNode(DBPProject project, TaskCategoryNode parent, DBTTaskType type, @Nullable DBTTaskFolder taskFolder) {
+            this.project = project;
+            this.parent = parent;
             this.type = type;
+            this.taskFolder = taskFolder;
         }
 
         @Override
@@ -721,7 +710,7 @@ public class DatabaseTasksTree {
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), type);
+            return Objects.hash(project, parent, type, taskFolder);
         }
     }
 
@@ -866,8 +855,10 @@ public class DatabaseTasksTree {
 
                     if (curObject instanceof DBTTask || curObject instanceof DBTTaskFolder) {
                         return true;
-                    } else if (curObject instanceof AbstractTaskNode) {
-                        return ((AbstractTaskNode) curObject).taskFolder != null;
+                    } else if (curObject instanceof TaskCategoryNode) {
+                        return ((TaskCategoryNode) curObject).taskFolder != null;
+                    } else if (curObject instanceof TaskTypeNode) {
+                        return ((TaskTypeNode) curObject).taskFolder != null;
                     }
                 }
                 return false;
@@ -882,12 +873,14 @@ public class DatabaseTasksTree {
                     return;
                 }
 
-                if (curObject instanceof DBTTask || curObject instanceof DBTTaskFolder || curObject instanceof AbstractTaskNode) {
+                if (curObject instanceof DBTTask || curObject instanceof DBTTaskFolder || curObject instanceof TaskCategoryNode || curObject instanceof TaskTypeNode) {
                     DBTTaskFolder taskFolder;
                     if (curObject instanceof DBTTask) {
                         taskFolder = ((DBTTask) curObject).getTaskFolder();
-                    } else if (curObject instanceof AbstractTaskNode) {
-                        taskFolder = ((AbstractTaskNode) curObject).taskFolder;
+                    } else if (curObject instanceof TaskCategoryNode) {
+                        taskFolder = ((TaskCategoryNode) curObject).taskFolder;
+                    } else if (curObject instanceof TaskTypeNode) {
+                        taskFolder = ((TaskTypeNode) curObject).taskFolder;
                     } else {
                         taskFolder = (DBTTaskFolder) curObject;
                     }

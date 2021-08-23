@@ -334,7 +334,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     private TaskFolderImpl searchTaskFolderByName(String taskFolderName) {
         TaskFolderImpl taskFolder = null;
-        if (CommonUtils.isNotEmpty(taskFolderName) && !taskFolderName.equals(" ")) { // Space is special name for empty folder
+        if (CommonUtils.isNotEmpty(taskFolderName)) {
             taskFolder = DBUtils.findObject(tasksFolders, taskFolderName);
             if (taskFolder == null) {
                 taskFolder = new TaskFolderImpl(taskFolderName, projectMetadata, new ArrayList<>());

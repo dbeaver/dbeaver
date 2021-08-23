@@ -26,7 +26,19 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 /**
  * Task handler
  */
-public interface DBTTaskType extends DBTTaskDescriptor {
+public interface DBTTaskType {
+
+    @NotNull
+    String getId();
+
+    @NotNull
+    String getName();
+
+    @Nullable
+    String getDescription();
+
+    @Nullable
+    DBPImage getIcon();
 
     @NotNull
     DBTTaskCategory getCategory();
