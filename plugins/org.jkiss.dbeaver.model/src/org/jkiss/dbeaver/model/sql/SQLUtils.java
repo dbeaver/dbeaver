@@ -504,7 +504,7 @@ public final class SQLUtils {
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (constraints.length > 1) {
+            if (constraints.length > 0) {
                 query.append(operator);
             }
             query.append(filter.getWhere());
