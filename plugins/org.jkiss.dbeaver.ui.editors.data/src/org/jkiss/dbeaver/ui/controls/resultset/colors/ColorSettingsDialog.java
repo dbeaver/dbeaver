@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.managers.StringValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.ArrayUtils;
@@ -75,6 +76,14 @@ public class ColorSettingsDialog extends BaseDialog {
         DBCLogicalOperator.GREATER_EQUALS,
         DBCLogicalOperator.LESS,
         DBCLogicalOperator.LESS_EQUALS,
+        DBCLogicalOperator.ILIKE,
+        DBCLogicalOperator.LIKE,
+        DBCLogicalOperator.NOT_LIKE,
+        DBCLogicalOperator.REGEX
+    };
+
+    /** List of operators from {@code SUPPORTED_OPERATORS} that operate on strings only. */
+    private static final DBCLogicalOperator[] STRING_OPERATORS = {
         DBCLogicalOperator.ILIKE,
         DBCLogicalOperator.LIKE,
         DBCLogicalOperator.NOT_LIKE,
@@ -528,10 +537,15 @@ public class ColorSettingsDialog extends BaseDialog {
         try {
             UIUtils.disposeChildControls(editorPlaceholder);
 
-            IValueManager valueManager = ValueManagerRegistry.findValueManager(
-                resultSetViewer.getDataSource(),
-                attribute,
-                attribute.getValueHandler().getValueObjectType(attribute));
+            final IValueManager valueManager;
+            if (curOverride == null || !ArrayUtils.contains(STRING_OPERATORS, curOverride.getOperator())) {
+                valueManager = ValueManagerRegistry.findValueManager(
+                    resultSetViewer.getDataSource(),
+                    attribute,
+                    attribute.getValueHandler().getValueObjectType(attribute));
+            } else {
+                valueManager = new StringValueManager();
+            }
             ColorValueController valueController = new ColorValueController(settingsGroup) {
                 @Override
                 public Object getValue() {
