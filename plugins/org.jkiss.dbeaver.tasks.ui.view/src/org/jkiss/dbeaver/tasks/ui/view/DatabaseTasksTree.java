@@ -896,9 +896,10 @@ public class DatabaseTasksTree {
                             for (DBTTask task : tasksToDrop) {
                                 if (task instanceof TaskImpl && task.getProject() == taskFolder.getProject()) { // Do not move tasks into another project
                                     ((TaskImpl)task).setTaskFolder(taskFolder);
+                                    taskFolder.addTaskToFolder(task);
                                 }
                             }
-                            TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
+                            TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE)); // Refresh all
                         }
                     }
                 }
