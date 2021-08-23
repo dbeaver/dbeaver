@@ -37,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * SQL Server index manager
@@ -102,21 +103,27 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         if (sqlServerIndexType != null) {
             ddl.append(sqlServerIndexType).append(" ");
         }
-        ddl.append("INDEX ").append(index.getName()).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" (");
+        ddl.append("INDEX ").append(index.getName()).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
         List<SQLServerTableIndexColumn> indexColumns = index.getAttributeReferences(monitor);
         if (indexColumns != null) {
-            for (int i = 0; i < indexColumns.size(); i++) {
-                if (i == 0) {
-                    ddl.append(DBUtils.getQuotedIdentifier(indexColumns.get(i)));
-                } else {
-                    ddl.append(", ").append(DBUtils.getQuotedIdentifier(indexColumns.get(i)));
-                }
+            ddl.append(indexColumns.stream()
+                .filter(x -> !x.isIncluded())
+                .map(DBUtils::getQuotedIdentifier)
+                .collect(Collectors.joining(", ", " (", ")"))
+            );
+
+            final String includedColumns = indexColumns.stream()
+                .filter(SQLServerTableIndexColumn::isIncluded)
+                .map(DBUtils::getQuotedIdentifier)
+                .collect(Collectors.joining(", "));
+
+            if (!includedColumns.isEmpty()) {
+                ddl.append(" INCLUDE (").append(includedColumns).append(")");
             }
         } else {
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);
             return;
         }
-        ddl.append(")");
         actions.add(
                 new SQLDatabasePersistAction("Create new SQL Server index", ddl.toString())
         );

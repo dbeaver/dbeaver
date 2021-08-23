@@ -481,7 +481,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT i.*,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key,t.name as table_name\nFROM ")
+            sql.append("SELECT i.*,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key,ic.is_included_column,t.name as table_name\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append(" i, ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "index_columns")).append(" ic, ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t").append("\n");
@@ -542,9 +542,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             SQLServerTableColumn tableColumn = columnId == 0 ? null : parent.getAttribute(session.getProgressMonitor(), columnId);
             int ordinal = JDBCUtils.safeGetInt(dbResult, "key_ordinal");
             boolean ascending = JDBCUtils.safeGetInt(dbResult, "is_descending_key") == 0;
+            boolean included = JDBCUtils.safeGetInt(dbResult, "is_included_column") == 1;
 
             return new SQLServerTableIndexColumn[] {
-                new SQLServerTableIndexColumn(object, indexColumnId, tableColumn, ordinal, ascending)
+                new SQLServerTableIndexColumn(object, indexColumnId, tableColumn, ordinal, ascending, included)
             };
         }
 
