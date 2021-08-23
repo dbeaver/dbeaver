@@ -240,7 +240,8 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleProcedureConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleFunctionStandalone"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleQueueConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleQueue"/>

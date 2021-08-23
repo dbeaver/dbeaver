@@ -244,7 +244,11 @@ public class OraclePackage extends OracleSchemaObject
         protected OracleProcedurePackagedBase fetchObject(@NotNull JDBCSession session, @NotNull OraclePackage owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleProcedurePackagedBase(owner, dbResult);
+            final DBSProcedureType type = CommonUtils.valueOf(DBSProcedureType.class, JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE"), DBSProcedureType.UNKNOWN);
+            if (type == DBSProcedureType.FUNCTION) {
+                return new OracleFunctionPackaged(owner, dbResult);
+            }
+            return new OracleProcedurePackaged(owner, dbResult);
         }
 
         @Override

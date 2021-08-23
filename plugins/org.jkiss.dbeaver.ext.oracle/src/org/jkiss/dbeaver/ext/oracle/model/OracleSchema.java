@@ -258,18 +258,20 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
-    public Collection<OracleProcedureStandaloneBase> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedureStandalone> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor)
             .stream()
-            .filter(proc -> proc.getProcedureType() == DBSProcedureType.PROCEDURE)
+            .filter(proc -> proc instanceof OracleProcedureStandalone)
+            .map(proc -> (OracleProcedureStandalone) proc)
             .collect(Collectors.toList());
     }
 
     @Association
-    public Collection<OracleProcedureStandaloneBase> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleFunctionStandalone> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor)
             .stream()
-            .filter(proc -> proc.getProcedureType() == DBSProcedureType.FUNCTION)
+            .filter(proc -> proc instanceof OracleFunctionStandalone)
+            .map(proc -> (OracleFunctionStandalone) proc)
             .collect(Collectors.toList());
     }
 
@@ -1239,7 +1241,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected OracleProcedureStandaloneBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleProcedureStandaloneBase(owner, dbResult);
+            final DBSProcedureType type = CommonUtils.valueOf(DBSProcedureType.class, JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE"), DBSProcedureType.UNKNOWN);
+            if (type == DBSProcedureType.FUNCTION) {
+                return new OracleFunctionStandalone(owner, dbResult);
+            }
+            return new OracleProcedureStandalone(owner, dbResult);
         }
 
     }

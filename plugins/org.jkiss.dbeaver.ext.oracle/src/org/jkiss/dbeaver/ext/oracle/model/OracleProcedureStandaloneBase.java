@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandaloneBase extends OracleProcedureBase<OracleSchema> implements OracleSourceObject, DBPRefreshableObject
+public abstract class OracleProcedureStandaloneBase extends OracleProcedureBase<OracleSchema> implements OracleSourceObject, DBPRefreshableObject
 {
 
     private boolean valid;

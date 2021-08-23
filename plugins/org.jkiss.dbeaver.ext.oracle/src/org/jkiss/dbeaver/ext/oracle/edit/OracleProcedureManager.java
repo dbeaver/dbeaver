@@ -49,10 +49,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     protected OracleProcedureStandaloneBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new OracleProcedureStandaloneBase(
-            (OracleSchema) container,
-            "NEW_PROCEDURE",
-            DBSProcedureType.PROCEDURE);
+        return new OracleProcedureStandalone((OracleSchema) container, "NEW_PROCEDURE");
     }
 
     @Override

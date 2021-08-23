@@ -28,7 +28,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedurePackagedBase extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject
+public abstract class OracleProcedurePackagedBase extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject
 {
     private Integer overload;
 
