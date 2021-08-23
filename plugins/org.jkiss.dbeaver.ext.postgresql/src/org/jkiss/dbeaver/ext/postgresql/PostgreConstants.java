@@ -145,8 +145,14 @@ public class PostgreConstants {
         DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);
         DATA_TYPE_ALIASES.put("smallint", TYPE_INT2);
 
+        DATA_TYPE_ALIASES.put("character", TYPE_BPCHAR);
+        DATA_TYPE_ALIASES.put("character varying", TYPE_VARCHAR);
+        DATA_TYPE_ALIASES.put("char varying", TYPE_VARCHAR);
+        DATA_TYPE_ALIASES.put("bit varying", TYPE_VARBIT);
+
         DATA_TYPE_ALIASES.put("double precision", TYPE_FLOAT8);
         DATA_TYPE_ALIASES.put("real", TYPE_FLOAT4);
+        DATA_TYPE_ALIASES.put("decimal", "numeric");
         DATA_TYPE_ALIASES.put("void", "void");
 
         DATA_TYPE_ALIASES.put("time with time zone", TYPE_TIMETZ);
@@ -171,6 +177,7 @@ public class PostgreConstants {
 
         SERIAL_TYPES.put("serial", TYPE_INT4);
         SERIAL_TYPES.put("serial8", TYPE_INT8);
+        SERIAL_TYPES.put("serial4", TYPE_INT4);
         SERIAL_TYPES.put("serial2", TYPE_INT2);
         SERIAL_TYPES.put("smallserial", TYPE_INT2);
         SERIAL_TYPES.put("bigserial", TYPE_INT8);

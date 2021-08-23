@@ -33,6 +33,7 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
     private SQLServerTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
+    private boolean included;
     //private boolean nullable;
     private long objectId;
 
@@ -41,13 +42,15 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
         long objectId,
         SQLServerTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending)
+        boolean ascending,
+        boolean included)
     {
         this.index = index;
         this.objectId = objectId;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
+        this.included = included;
         //this.nullable = nullable;
     }
 
@@ -59,6 +62,7 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
         this.ordinalPosition = source.getOrdinalPosition();
         this.ascending = source.isAscending();
         if (source instanceof SQLServerTableIndexColumn) {
+            this.included = ((SQLServerTableIndexColumn) source).isIncluded();
             //this.nullable = ((SQLServerTableIndexColumn)source).nullable;
         }
     }
@@ -98,6 +102,11 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
     public boolean isAscending()
     {
         return ascending;
+    }
+
+    @Property(viewable = true, order = 4)
+    public boolean isIncluded() {
+        return included;
     }
 
 //    @Property(viewable = true, order = 4)
