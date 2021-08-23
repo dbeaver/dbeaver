@@ -141,12 +141,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     setContainerInfo(node);
                     // Reset mappings
                     for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
-                        if (mappingContainer.getMappingType() != DatabaseMappingType.unspecified) {
-                            try {
-                                mappingContainer.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.unspecified);
-                            } catch (DBException e1) {
-                                log.error(e1);
-                            }
+                        try {
+                            setMappingTarget(mappingContainer, mappingContainer.getTargetName());
+                            //mappingContainer.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.unspecified);
+                        } catch (DBException e1) {
+                            log.error(e1);
                         }
                     }
                     mappingViewer.refresh();
