@@ -46,6 +46,6 @@ public class OracleObjectAdapter implements IAdapterFactory {
 
     @Override
     public Class[] getAdapterList() {
-        return new Class[] { OracleSourceObject.class, OracleProcedurePackaged.class, DBPScriptObjectExt.class, OracleSchedulerJob.class };
+        return new Class[] { OracleSourceObject.class, OracleProcedurePackagedBase.class, DBPScriptObjectExt.class, OracleSchedulerJob.class };
     }
 }

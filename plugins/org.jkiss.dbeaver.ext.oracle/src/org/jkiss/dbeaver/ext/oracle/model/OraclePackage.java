@@ -123,7 +123,7 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleProcedurePackaged> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedurePackagedBase> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor)
             .stream()
             .filter(proc -> proc.getProcedureType() == DBSProcedureType.PROCEDURE)
@@ -131,7 +131,7 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleProcedurePackaged> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedurePackagedBase> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor)
             .stream()
             .filter(proc -> proc.getProcedureType() == DBSProcedureType.FUNCTION)
@@ -139,12 +139,12 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedurePackagedBase> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public OracleProcedurePackaged getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public OracleProcedurePackagedBase getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         return proceduresCache.getObject(monitor, this, uniqueName);
     }
 
@@ -164,7 +164,7 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
-        return OracleProcedurePackaged.class;
+        return OracleProcedurePackagedBase.class;
     }
 
     @Override
@@ -223,7 +223,7 @@ public class OraclePackage extends OracleSchemaObject
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 
-    static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
+    static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackagedBase> {
 
         @NotNull
         @Override
@@ -241,25 +241,25 @@ public class OraclePackage extends OracleSchemaObject
         }
 
         @Override
-        protected OracleProcedurePackaged fetchObject(@NotNull JDBCSession session, @NotNull OraclePackage owner, @NotNull JDBCResultSet dbResult)
+        protected OracleProcedurePackagedBase fetchObject(@NotNull JDBCSession session, @NotNull OraclePackage owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleProcedurePackaged(owner, dbResult);
+            return new OracleProcedurePackagedBase(owner, dbResult);
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, OraclePackage owner, Iterator<OracleProcedurePackaged> objectIter)
+        protected void invalidateObjects(DBRProgressMonitor monitor, OraclePackage owner, Iterator<OracleProcedurePackagedBase> objectIter)
         {
-            Map<String, OracleProcedurePackaged> overloads = new HashMap<>();
+            Map<String, OracleProcedurePackagedBase> overloads = new HashMap<>();
             while (objectIter.hasNext()) {
-                final OracleProcedurePackaged proc = objectIter.next();
+                final OracleProcedurePackagedBase proc = objectIter.next();
                 if (CommonUtils.isEmpty(proc.getName())) {
                     // Skip procedures with empty names
                     // Oracle 11+ has dummy procedure with subprogram_id=0 and empty name
                     objectIter.remove();
                     continue;
                 }
-                final OracleProcedurePackaged overload = overloads.get(proc.getName());
+                final OracleProcedurePackagedBase overload = overloads.get(proc.getName());
                 if (overload == null) {
                     overloads.put(proc.getName(), proc);
                 } else {

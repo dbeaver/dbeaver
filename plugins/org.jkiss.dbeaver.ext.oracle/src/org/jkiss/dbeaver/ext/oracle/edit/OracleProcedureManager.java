@@ -37,19 +37,19 @@ import java.util.Map;
 /**
  * OracleProcedureManager
  */
-public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStandalone, OracleSchema> {
+public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStandaloneBase, OracleSchema> {
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
+    public DBSObjectCache<? extends DBSObject, OracleProcedureStandaloneBase> getObjectsCache(OracleProcedureStandaloneBase object)
     {
         return object.getSchema().proceduresCache;
     }
 
     @Override
-    protected OracleProcedureStandalone createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
+    protected OracleProcedureStandaloneBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new OracleProcedureStandalone(
+        return new OracleProcedureStandaloneBase(
             (OracleSchema) container,
             "NEW_PROCEDURE",
             DBSProcedureType.PROCEDURE);
@@ -64,7 +64,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
-        final OracleProcedureStandalone object = objectDeleteCommand.getObject();
+        final OracleProcedureStandaloneBase object = objectDeleteCommand.getObject();
         actions.add(
             new SQLDatabasePersistAction("Drop procedure",
                 "DROP " + object.getProcedureType().name() + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$ //$NON-NLS-2$
@@ -83,7 +83,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OracleProcedureStandalone procedure)
+    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OracleProcedureStandaloneBase procedure)
     {
         String source = OracleUtils.normalizeSourceName(procedure, false);
         if (source == null) {

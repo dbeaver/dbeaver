@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -27,13 +27,13 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 /**
  * OracleProcedureConfigurator
  */
-public class OracleProcedureConfigurator implements DBEObjectConfigurator<OracleProcedureStandalone> {
+public class OracleProcedureConfigurator implements DBEObjectConfigurator<OracleProcedureStandaloneBase> {
 
     @Override
-    public OracleProcedureStandalone configureObject(DBRProgressMonitor monitor, Object container, OracleProcedureStandalone procedure) {
-        return new UITask<OracleProcedureStandalone>() {
+    public OracleProcedureStandaloneBase configureObject(DBRProgressMonitor monitor, Object container, OracleProcedureStandaloneBase procedure) {
+        return new UITask<OracleProcedureStandaloneBase>() {
             @Override
-            protected OracleProcedureStandalone runTask() {
+            protected OracleProcedureStandaloneBase runTask() {
                 CreateProcedurePage editPage = new CreateProcedurePage(procedure);
                 if (!editPage.edit()) {
                     return null;

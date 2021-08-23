@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackagedBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -60,7 +60,7 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final OracleProcedurePackaged procedure = getSelectedProcedure(event);
+        final OracleProcedurePackagedBase procedure = getSelectedProcedure(event);
         if (procedure != null) {
             OraclePackage procPackage = procedure.getParentObject();
             IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(procPackage);
@@ -77,10 +77,10 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
 
     static class NavigateJob extends AbstractJob {
 
-        private final OracleProcedurePackaged procedure;
+        private final OracleProcedurePackagedBase procedure;
         private final SQLEditorBase sqlEditor;
 
-        public NavigateJob(OracleProcedurePackaged procedure, SQLEditorBase sqlEditor) {
+        public NavigateJob(OracleProcedurePackagedBase procedure, SQLEditorBase sqlEditor) {
             super("Navigate procedure '" + procedure.getFullyQualifiedName(DBPEvaluationContext.UI));
             this.procedure = procedure;
             this.sqlEditor = sqlEditor;
@@ -140,12 +140,12 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
 
     }
 
-    private OracleProcedurePackaged getSelectedProcedure(ExecutionEvent event)
+    private OracleProcedurePackagedBase getSelectedProcedure(ExecutionEvent event)
     {
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             Object firstElement = ((IStructuredSelection) currentSelection).getFirstElement();
-            return RuntimeUtils.getObjectAdapter(firstElement, OracleProcedurePackaged.class);
+            return RuntimeUtils.getObjectAdapter(firstElement, OracleProcedurePackagedBase.class);
         }
         return null;
     }

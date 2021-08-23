@@ -62,9 +62,9 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackagedBase"/>
                         </adapt>
-                        <!--<adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>-->
+                        <!--<adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackagedBase"/>-->
                     </iterate>
                 </with>
             </enabledWhen>
@@ -189,7 +189,7 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger"/>
@@ -240,7 +240,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleProcedureConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleQueueConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleQueue"/>

@@ -39,9 +39,9 @@ public enum OracleObjectType implements DBSObjectType {
 	DIRECTORY("DIRECTORY", null, DBSObject.class, null),
 	EVALUATION_CONTEXT("EVALUATION CONTEXT", null, DBSObject.class, null),
     FOREIGN_KEY ("FOREIGN KEY", DBIcon.TREE_FOREIGN_KEY, OracleTableForeignKey.class, null), // fake object
-	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new ObjectFinder() {
+	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE, OracleProcedureStandaloneBase.class, new ObjectFinder() {
         @Override
-        public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        public OracleProcedureStandaloneBase findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.proceduresCache.getObject(monitor, schema, objectName);
         }
@@ -84,9 +84,9 @@ public enum OracleObjectType implements DBSObjectType {
             return schema.packageCache.getObject(monitor, schema, objectName);
         }
     }),
-	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new ObjectFinder() {
+	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE, OracleProcedureStandaloneBase.class, new ObjectFinder() {
         @Override
-        public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        public OracleProcedureStandaloneBase findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.proceduresCache.getObject(monitor, schema, objectName);
         }

@@ -203,7 +203,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder id="procedures" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                        <folder id="procedures" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                             <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure" id="Procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
                                     <items ref="ProcedureArgumentAttributes"/>
@@ -216,7 +216,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder id="functions" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.functions.node.name" icon="#functions" description="Functions">
+                        <folder id="functions" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase" label="%tree.functions.node.name" icon="#functions" description="Functions">
                             <items label="%tree.function.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function" id="Function">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
                                     <items ref="ProcedureArgumentAttributes"/>
@@ -403,7 +403,7 @@
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleIndexManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleViewManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleMaterializedViewManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
-        <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+        <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandaloneBase"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleQueueManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleQueue"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OraclePackageManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleTableTriggerManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger"/>
@@ -457,7 +457,7 @@
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNNode" class="org.jkiss.dbeaver.ext.oracle.model.OracleObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
-            <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+            <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackagedBase"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </factory>
         <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.sql.OracleDialectAdapterFactory">

@@ -38,13 +38,13 @@ import java.util.Map;
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleSourceObject, DBPRefreshableObject
+public class OracleProcedureStandaloneBase extends OracleProcedureBase<OracleSchema> implements OracleSourceObject, DBPRefreshableObject
 {
 
     private boolean valid;
     private String sourceDeclaration;
 
-    public OracleProcedureStandalone(
+    public OracleProcedureStandaloneBase(
         OracleSchema schema,
         ResultSet dbResult)
     {
@@ -56,7 +56,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
     }
 
-    public OracleProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)
+    public OracleProcedureStandaloneBase(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)
     {
         super(oracleSchema, name, 0l, procedureType);
         sourceDeclaration =

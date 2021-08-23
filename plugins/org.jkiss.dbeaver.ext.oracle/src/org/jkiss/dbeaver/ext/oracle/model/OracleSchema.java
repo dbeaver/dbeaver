@@ -258,7 +258,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
-    public Collection<OracleProcedureStandalone> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedureStandaloneBase> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor)
             .stream()
             .filter(proc -> proc.getProcedureType() == DBSProcedureType.PROCEDURE)
@@ -266,7 +266,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
-    public Collection<OracleProcedureStandalone> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedureStandaloneBase> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor)
             .stream()
             .filter(proc -> proc.getProcedureType() == DBSProcedureType.FUNCTION)
@@ -274,14 +274,14 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
-    public Collection<OracleProcedureStandalone> getProcedures(DBRProgressMonitor monitor)
+    public Collection<OracleProcedureStandaloneBase> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public OracleProcedureStandalone getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public OracleProcedureStandaloneBase getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         return proceduresCache.getObject(monitor, this, uniqueName);
     }
 
@@ -1218,11 +1218,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCObjectLookupCache<OracleSchema, OracleProcedureStandalone> {
+    static class ProceduresCache extends JDBCObjectLookupCache<OracleSchema, OracleProcedureStandaloneBase> {
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleProcedureStandalone object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleProcedureStandaloneBase object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
                     OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " " +
@@ -1236,10 +1236,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleProcedureStandalone fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
+        protected OracleProcedureStandaloneBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleProcedureStandalone(owner, dbResult);
+            return new OracleProcedureStandaloneBase(owner, dbResult);
         }
 
     }
