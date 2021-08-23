@@ -75,7 +75,7 @@ public class DatabaseTransferUtils {
                 case existing:
                     for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                         if (attr.getMappingType() == DatabaseMappingType.create) {
-                            attr.updateMappingType(monitor);
+                            attr.updateMappingType(monitor, false);
                             if (attr.getTarget() == null) {
                                 log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
                             }

@@ -142,12 +142,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    public void updateMappingType(DBRProgressMonitor monitor) throws DBException {
+    public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         switch (parent.getMappingType()) {
             case existing: {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
-                    if (CommonUtils.isEmpty(targetName)) {
+                    if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                         targetName = getSourceLabelOrName(source, true);
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();

@@ -124,7 +124,7 @@ class ColumnsMappingDialog extends BaseDialog {
                         DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
                         attribute.setMappingType(DatabaseMappingType.existing);
                         try {
-                            attribute.updateMappingType(new VoidProgressMonitor());
+                            attribute.updateMappingType(new VoidProgressMonitor(), false);
                         } catch (DBException e1) {
                             DBWorkbench.getPlatformUI().showError("Bad mapping", "Invalid column mapping", e1);
                         }

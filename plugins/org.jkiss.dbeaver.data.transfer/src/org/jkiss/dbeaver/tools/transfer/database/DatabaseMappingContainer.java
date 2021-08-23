@@ -68,7 +68,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(context, DatabaseMappingType.existing);
+        refreshMappingType(context, DatabaseMappingType.existing, false);
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -101,12 +101,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType) throws DBException {
+    public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
-                attr.updateMappingType(new VoidProgressMonitor());
+                attr.updateMappingType(new VoidProgressMonitor(), forceRefresh);
             }
         }
     }
@@ -224,7 +224,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private void addAttributeMapping(DBRProgressMonitor monitor, DBSAttributeBase attr) throws DBException {
         DatabaseMappingAttribute mapping = new DatabaseMappingAttribute(this, attr);
-        mapping.updateMappingType(monitor);
+        mapping.updateMappingType(monitor, false);
         attributeMappings.add(mapping);
     }
 
@@ -272,7 +272,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 } else if (target == null && newMappingType == DatabaseMappingType.existing) {
                     newMappingType = DatabaseMappingType.create;
                 }
-                refreshMappingType(context, newMappingType);
+                refreshMappingType(context, newMappingType, false);
 
             } catch (Exception e) {
                 log.error(e);
