@@ -110,7 +110,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 catalogChanged = true;
             }
             if (schema != null) {
-                if (catalogChanged) {
+                if (catalogChanged && !isolatedContext) {
                     // Catalog has been changed. Get the new one and change schema there
                     PostgreDatabase newInstance = getDataSource().getDefaultInstance();
                     PostgreExecutionContext newContext = (PostgreExecutionContext) newInstance.getDefaultContext(false);
