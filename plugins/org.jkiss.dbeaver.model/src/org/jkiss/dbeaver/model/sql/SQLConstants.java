@@ -67,6 +67,8 @@ public class SQLConstants {
 
     public static final String KEYWORD_EXPLAIN = "EXPLAIN";
 
+    public static final String KEYWORD_CASE = "CASE";
+
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_UPDATE,
@@ -121,7 +123,7 @@ public class SQLConstants {
         "CARDINALITY",
         "CASCADE",
         "CASCADED",
-        "CASE",
+        KEYWORD_CASE,
         "CAST",
         "CEIL",
         "CEILING",
