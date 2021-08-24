@@ -45,9 +45,10 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
 
     private static final Log log = Log.getLog(HANASQLDialect.class);
 
-    public static final String[][] HANA_BEGIN_END_BLOCK = new String[][]{
+    private static final String[][] HANA_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"IF", SQLConstants.BLOCK_END},
+        {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END}
     };
 
     public HANASQLDialect() {
