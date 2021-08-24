@@ -73,6 +73,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
         final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 1000), 0);
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
+        final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
 
         try (Reader reader = openStreamReader(inputStream, processorProperties)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
@@ -115,7 +116,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
                             case STRING:
                                 columnInfo.setDataKind(dataType.getFirst());
                                 columnInfo.setTypeName(dataType.getSecond());
-                                int length = line[i].length();
+                                int length = -1;
+                                if (!columnIsByteLength) {
+                                    length = line[i].length();
+                                } else {
+                                    final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
+                                    length = line[i].getBytes(encoding).length;
+                                }
                                 if (length > columnInfo.getMaxLength()) {
                                     columnInfo.setMaxLength(length);
                                 }
