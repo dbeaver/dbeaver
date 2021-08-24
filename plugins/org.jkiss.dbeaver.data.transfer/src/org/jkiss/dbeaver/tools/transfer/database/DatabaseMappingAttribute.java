@@ -199,7 +199,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             }
             case create:
                 mappingType = DatabaseMappingType.create;
-                if (CommonUtils.isEmpty(targetName)) {
+                if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                     targetName = getSourceLabelOrName(source, true);
                 }
                 break;
@@ -214,7 +214,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (mappingType == DatabaseMappingType.create && !CommonUtils.isEmpty(targetName)) {
             // Convert target name case (#1516)
             DBSObjectContainer container = parent.getSettings().getContainer();
-            if (container != null) {
+            if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), targetName)) {
                 targetName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), targetName);
             }
         } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {

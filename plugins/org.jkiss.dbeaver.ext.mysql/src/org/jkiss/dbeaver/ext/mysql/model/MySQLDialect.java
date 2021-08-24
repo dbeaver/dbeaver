@@ -129,7 +129,10 @@ class MySQLDialect extends JDBCSQLDialect {
         }
         removeSQLKeyword("SOURCE");
 
-        addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
+        // CHAR is data type, not function
+        removeSQLKeyword("CHAR");
+
+        addDataTypes(Arrays.asList("GEOMETRY", "POINT", "CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
     }
 
