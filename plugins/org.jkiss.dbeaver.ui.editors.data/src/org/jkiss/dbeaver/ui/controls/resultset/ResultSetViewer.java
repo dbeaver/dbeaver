@@ -1801,7 +1801,10 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isAllAttributesReadOnly() {
         DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext != null && executionContext.getDataSource().getInfo().isReadOnlyData()) {
+        if (executionContext != null &&
+            (executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
+            executionContext.getDataSource().getInfo().isReadOnlyData()))
+        {
             return true;
         }
         if (model.getAttributes().length == 0) {
