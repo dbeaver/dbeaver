@@ -1088,7 +1088,7 @@ public class SQLEditor extends SQLEditorBase implements
         createExtraViewControls();
 
         // Create results tab
-        // createQueryProcessor(true, true);
+        createQueryProcessor(true, true);
         resultsSash.setMaximizedControl(sqlEditorPanel);
 
         {
