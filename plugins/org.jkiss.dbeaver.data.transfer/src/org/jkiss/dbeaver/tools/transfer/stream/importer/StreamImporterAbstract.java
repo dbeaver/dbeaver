@@ -46,6 +46,7 @@ public abstract class StreamImporterAbstract implements IStreamDataImporter {
     protected static final String PROP_TIMESTAMP_ZONE = "timestampZone";
     protected static final String PROP_COLUMN_TYPE_SAMPLES = "columnTypeSamplesCount";
     protected static final String PROP_COLUMN_TYPE_LENGTH = "columnTypeMinimalLength";
+    protected static final String PROP_COLUMN_IS_BYTE_LENGTH = "columnTypeIsByteLength";
 
     private IStreamDataImporterSite site;
 

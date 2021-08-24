@@ -42,9 +42,9 @@ import java.util.Arrays;
  */
 public class OracleSQLDialect extends JDBCSQLDialect {
 
-    public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+    private static final String[] EXEC_KEYWORDS = new String[]{ "call" };
 
-    public static final String[] ORACLE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
+    private static final String[] ORACLE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
             "CREATE", "ALTER", "DROP",
@@ -52,19 +52,19 @@ public class OracleSQLDialect extends JDBCSQLDialect {
         }
     );
 
-    public static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
+    private static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"IF", SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
-        {"CASE", SQLConstants.BLOCK_END + " CASE"},
+        {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + " " + SQLConstants.KEYWORD_CASE},
     };
 
-    public static final String[] ORACLE_BLOCK_HEADERS = new String[]{
+    private static final String[] ORACLE_BLOCK_HEADERS = new String[]{
         "DECLARE",
         "PACKAGE"
     };
 
-    public static final String[] ORACLE_INNER_BLOCK_PREFIXES = new String[]{
+    private static final String[] ORACLE_INNER_BLOCK_PREFIXES = new String[]{
         "AS",
         "IS",
     };

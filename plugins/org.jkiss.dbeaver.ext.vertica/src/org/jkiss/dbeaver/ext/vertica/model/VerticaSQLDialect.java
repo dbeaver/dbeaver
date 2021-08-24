@@ -33,7 +33,7 @@ public class VerticaSQLDialect extends GenericSQLDialect {
 
     private static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
-            {"CASE", SQLConstants.BLOCK_END},
+            {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
     };
 
     private static String[] VERTICA_KEYWORDS = new String[]{
