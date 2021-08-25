@@ -80,7 +80,7 @@ public class ToggleViewAction extends Action implements IPartListener
             activePage.addPartListener(this);
             listenerRegistered = true;
             IViewReference viewReference = activePage.findViewReference(viewId);
-            setChecked(viewReference != null && viewReference.getView(false) != null);
+            setChecked(viewReference != null);
         }
 
         return super.isChecked();
