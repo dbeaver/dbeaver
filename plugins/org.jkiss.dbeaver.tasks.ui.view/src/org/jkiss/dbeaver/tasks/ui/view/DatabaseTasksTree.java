@@ -748,8 +748,7 @@ public class DatabaseTasksTree {
         }
     }
 
-    public static void addDragSourceSupport(Viewer viewer, IFilter draggableChecker)
-    {
+    public static void addDragSourceSupport(Viewer viewer, IFilter draggableChecker) {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance(), DatabaseTaskTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
@@ -802,6 +801,11 @@ public class DatabaseTasksTree {
                 }
             }
         });
+
+    }
+
+    static void addDragAndDropSourceSupport(Viewer viewer) {
+        addDragSourceSupport(viewer, null);
 
         DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
         dropTarget.setTransfer(DatabaseTaskTransfer.getInstance());
