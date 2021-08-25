@@ -62,13 +62,7 @@ public class SSHAuthConfiguration {
 
     @NotNull
     public String getPassword() {
-        Assert.isLegal(type == SSHConstants.AuthType.PASSWORD);
-        return password;
-    }
-
-    @Nullable
-    public String getPassphrase() {
-        Assert.isLegal(type == SSHConstants.AuthType.PUBLIC_KEY);
+        Assert.isLegal(type == SSHConstants.AuthType.PASSWORD || type == SSHConstants.AuthType.PUBLIC_KEY);
         return password;
     }
 

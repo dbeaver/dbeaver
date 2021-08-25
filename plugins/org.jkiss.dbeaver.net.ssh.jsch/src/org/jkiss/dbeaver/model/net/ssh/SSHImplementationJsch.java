@@ -65,7 +65,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             if (auth.getType() == AuthType.PUBLIC_KEY) {
                 log.debug("Adding identity key");
                 try {
-                    addIdentityKey(monitor, configuration.getDataSource(), auth.getKey(), auth.getPassphrase());
+                    addIdentityKey(monitor, configuration.getDataSource(), auth.getKey(), auth.getPassword());
                 } catch (JSchException e) {
                     throw new DBException("Cannot add identity key", e);
                 }

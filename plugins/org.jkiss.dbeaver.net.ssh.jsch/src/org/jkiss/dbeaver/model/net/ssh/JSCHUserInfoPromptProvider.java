@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.net.ssh;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 
 /**
