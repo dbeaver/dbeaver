@@ -8,6 +8,7 @@ Bundle-Release-Date: 20210830
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.net.ssh,
+ org.jkiss.dbeaver.model.net.ssh.config,
  org.jkiss.dbeaver.model.net.ssh.registry
 Bundle-ClassPath: .,
  lib/jsch.agentproxy.all-0.0.9.jar

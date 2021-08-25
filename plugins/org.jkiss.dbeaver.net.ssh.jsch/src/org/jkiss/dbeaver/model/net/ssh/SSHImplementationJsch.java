@@ -17,19 +17,23 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants.AuthType;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
@@ -42,94 +46,106 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private static final Log log = Log.getLog(SSHImplementationJsch.class);
 
     private transient JSch jsch;
-    private transient volatile Session session;
+    private transient volatile Session[] sessions;
 
     @Override
-    protected synchronized void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
-        try {
-            if (jsch == null) {
-                jsch = new JSch();
-                JSch.setLogger(new LoggerProxy());
+    protected synchronized void setupTunnel(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration, @NotNull SSHHostConfiguration[] hosts, @NotNull SSHPortForwardConfiguration portForward) throws DBException, IOException {
+        if (jsch == null) {
+            jsch = new JSch();
+            JSch.setLogger(new JschLoggerProxy());
+        }
+
+        sessions = new Session[hosts.length];
+
+        for (int index = 0; index < hosts.length; index++) {
+            final SSHHostConfiguration host = hosts[index];
+            final SSHAuthConfiguration auth = host.getAuthConfiguration();
+            final Session session;
+
+            if (auth.getType() == AuthType.PUBLIC_KEY) {
+                log.debug("Adding identity key");
+                try {
+                    addIdentityKey(monitor, configuration.getDataSource(), auth.getKey(), auth.getPassphrase());
+                } catch (JSchException e) {
+                    throw new DBException("Cannot add identity key", e);
+                }
+            } else if (auth.getType() == AuthType.AGENT) {
+                log.debug("Creating identity repository");
+                jsch.setIdentityRepository(new DBeaverIdentityRepository(this, getAgentData()));
             }
 
-            String autoTypeString = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE));
-            AuthType authType = CommonUtils.isEmpty(autoTypeString) ?
-                    (privKeyFile == null ? AuthType.PASSWORD : AuthType.PUBLIC_KEY) :
-                    CommonUtils.valueOf(AuthType.class, autoTypeString, AuthType.PASSWORD);
-            if (authType == AuthType.PUBLIC_KEY) {
-                addIdentityKey(monitor, configuration.getDataSource(), privKeyFile, configuration.getPassword());
-            } else if (authType == AuthType.AGENT) {
-                log.debug("Creating identityRepository");
-                IdentityRepository identityRepository = new DBeaverIdentityRepository(this, getAgentData());
-                jsch.setIdentityRepository(identityRepository);
-            }
-
-            log.debug("Instantiate SSH tunnel");
-            session = jsch.getSession(configuration.getUserName(), sshHost, sshPortNum);
-            session.setConfig("StrictHostKeyChecking", "no");
-
-            if (authType == AuthType.PASSWORD) {
-                session.setConfig("PreferredAuthentications", "password,keyboard-interactive");
-            } else {
-                session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
-            }
-            session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
-
-            // Use Eclipse standard prompter
-            UserInfo userInfo = null;
-            JSCHUserInfoPromptProvider promptProvider = GeneralUtils.adapt(this, JSCHUserInfoPromptProvider.class);
-            if (promptProvider != null) {
-                userInfo = promptProvider.createUserInfoPrompt(configuration, session);
-            }
-            if (userInfo == null) {
-                userInfo = new UIUserInfo(configuration);
-            }
-            session.setUserInfo(userInfo);
-
-            if (aliveInterval != 0) {
-                session.setServerAliveInterval(aliveInterval);
-            }
-            log.debug("Connect to tunnel host");
-            session.connect(connectTimeout);
             try {
-                if (CommonUtils.isEmpty(sshLocalHost)) {
-                    session.setPortForwardingL(sshLocalPort, sshRemoteHost, sshRemotePort);
+                if (index > 0) {
+                    final int port = sessions[index - 1].setPortForwardingL(0, host.getHostname(), 22);
+                    monitor.subTask("Instantiate tunnel " + hosts[index - 1].getHostname() + ":" + port + " -> " + host.getHostname() + ":22");
+                    session = jsch.getSession(host.getUsername(), "localhost", port);
                 } else {
-                    session.setPortForwardingL(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+                    monitor.subTask("Instantiate tunnel to " + host.getHostname() + ":" + host.getPort());
+                    session = jsch.getSession(host.getUsername(), host.getHostname(), host.getPort());
+                }
+
+                log.debug("Configure tunnel");
+
+                UserInfo userInfo = null;
+                JSCHUserInfoPromptProvider userInfoPromptProvider = GeneralUtils.adapt(this, JSCHUserInfoPromptProvider.class);
+                if (userInfoPromptProvider != null) {
+                    userInfo = userInfoPromptProvider.createUserInfoPrompt(auth, session);
+                }
+                if (userInfo == null) {
+                    userInfo = new JschUserInfo(auth);
+                }
+
+                session.setUserInfo(userInfo);
+                session.setConfig("StrictHostKeyChecking", "no");
+                session.setConfig("ConnectTimeout", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
+                session.setConfig("ServerAliveInterval", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
+
+                if (auth.getType() == AuthType.PASSWORD) {
+                    session.setConfig("PreferredAuthentications", "password,keyboard-interactive");
+                } else {
+                    session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
+                }
+
+                log.debug("Connect to tunnel host");
+
+                session.connect();
+
+                if (index == hosts.length - 1) {
+                    log.debug("Set port forwarding " + portForward.getLocalHost() + ":" + portForward.getLocalPort() + " -> " + portForward.getRemoteHost() + ":" + portForward.getRemotePort());
+                    session.setPortForwardingL(portForward.getLocalHost(), portForward.getLocalPort(), portForward.getRemoteHost(), portForward.getRemotePort());
                 }
             } catch (JSchException e) {
                 closeTunnel(monitor);
-                throw e;
+                throw new DBException("Cannot establish tunnel to " + host.getHostname() + ":" + host.getPort(), e);
             }
-        } catch (JSchException e) {
-            throw new DBException("Cannot establish tunnel", e);
+
+            sessions[index] = session;
         }
     }
 
     @Override
-    public synchronized void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
-        if (session != null) {
-            RuntimeUtils.runTask(monitor1 -> {
-                if (session != null) {
-                    try {
-                        session.disconnect();
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            }, "Close SSH session", 1000);
-            session = null;
+    public synchronized void closeTunnel(DBRProgressMonitor monitor) {
+        if (ArrayUtils.isEmpty(sessions)) {
+            return;
         }
+        RuntimeUtils.runTask(monitor1 -> {
+            for (Session session : sessions) {
+                if (session != null && session.isConnected()) {
+                    session.disconnect();
+                }
+            }
+        }, "Close SSH session", 1000);
+        sessions = null;
     }
 
     @Override
     public synchronized String getClientVersion() {
-        return session == null ? null : session.getClientVersion();
+        return ArrayUtils.isEmpty(sessions) ? null : sessions[sessions.length - 1].getClientVersion();
     }
 
     @Override
     public synchronized String getServerVersion() {
-        return session == null ? null : session.getServerVersion();
+        return ArrayUtils.isEmpty(sessions) ? null : sessions[sessions.length - 1].getServerVersion();
     }
 
     @Override
@@ -138,7 +154,9 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         boolean isAlive = false;//session != null && session.isConnected();
         if (isAlive) {
             try {
-                session.sendKeepAliveMsg();
+                for (Session session : sessions) {
+                    session.sendKeepAliveMsg();
+                }
             } catch (Exception e) {
                 isAlive = false;
             }
@@ -226,10 +244,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private class UIUserInfo implements UserInfo, UIKeyboardInteractive {
-        DBWHandlerConfiguration configuration;
+    private static class JschUserInfo implements UserInfo, UIKeyboardInteractive {
+        private final SSHAuthConfiguration configuration;
 
-        private UIUserInfo(DBWHandlerConfiguration configuration) {
+        private JschUserInfo(@NotNull SSHAuthConfiguration configuration) {
             this.configuration = configuration;
         }
 
@@ -270,7 +288,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private class LoggerProxy implements Logger {
+    private static class JschLoggerProxy implements Logger {
         @Override
         public boolean isEnabled(int level) {
             return true;

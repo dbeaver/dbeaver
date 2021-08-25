@@ -24,10 +24,13 @@ import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.ssh.SSHConstants.AuthType;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,12 +54,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     private transient LocalPortListener portListener;
 
     @Override
-    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
+    protected synchronized void setupTunnel(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration, @NotNull SSHHostConfiguration[] hosts, @NotNull SSHPortForwardConfiguration portForward) throws DBException, IOException  {
         try {
-            String autoTypeString = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE));
-            AuthType authType = CommonUtils.isEmpty(autoTypeString) ?
-                (privKeyFile == null ? AuthType.PASSWORD : AuthType.PUBLIC_KEY) :
-                CommonUtils.valueOf(AuthType.class, autoTypeString, AuthType.PASSWORD);
+            final SSHHostConfiguration host = hosts[0];
+            final SSHAuthConfiguration auth = host.getAuthConfiguration();
 
             Config clientConfig = new DefaultConfig();
             clientConfig.setLoggerFactory(LoggerFactory.DEFAULT);
@@ -64,44 +65,41 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             // TODO: make real host verifier
             sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 
-            String sshUser = configuration.getUserName();
-            String sshPassword = configuration.getPassword();
-
             try {
                 sshClient.loadKnownHosts();
             } catch (IOException e) {
                 log.debug("Error loading known hosts: " + e.getMessage());
             }
 
-            
-            sshClient.connect(sshHost, sshPortNum);
+            sshClient.connect(host.getHostname(), host.getPort());
 
-            if (authType==SSHConstants.AuthType.PUBLIC_KEY) {
-                if (privKeyFile != null) {
-                    if (!CommonUtils.isEmpty(sshPassword)) {
-                        KeyProvider keyProvider = sshClient.loadKeys(privKeyFile.getAbsolutePath(), sshPassword.toCharArray());
-                        sshClient.authPublickey(sshUser, keyProvider);
+            switch (auth.getType()) {
+                case PASSWORD:
+                    sshClient.authPassword(host.getUsername(), auth.getPassword());
+                    break;
+                case PUBLIC_KEY:
+                    if (!CommonUtils.isEmpty(auth.getPassphrase())) {
+                        KeyProvider keyProvider = sshClient.loadKeys(auth.getKey().getAbsolutePath(), auth.getPassphrase().toCharArray());
+                        sshClient.authPublickey(host.getUsername(), keyProvider);
                     } else {
-                        sshClient.authPublickey(sshUser, privKeyFile.getAbsolutePath());
+                        sshClient.authPublickey(host.getUsername(), auth.getKey().getAbsolutePath());
                     }
+                    break;
+                case AGENT: {
+                    List<SSHAgentIdentity> identities = getAgentData();
+                    List<AuthMethod> authMethods = new ArrayList<>();
+                    for (SSHAgentIdentity identity : identities) {
+                        authMethods.add(new DBeaverAuthAgent(this, identity));
+                    }
+                    sshClient.auth(host.getUsername(), authMethods);
+                    break;
                 }
-            } else if (authType == SSHConstants.AuthType.PASSWORD) {
-                if (sshPassword!=null) {
-                    sshClient.authPassword(sshUser, sshPassword);
-                }
-            } else if (authType == SSHConstants.AuthType.AGENT) {
-                List<SSHAgentIdentity> identities = getAgentData();
-                List<AuthMethod> authMethods = new ArrayList<>();
-                for (SSHAgentIdentity identity : identities) {
-                    authMethods.add(new DBeaverAuthAgent(this, identity));
-                }
-                sshClient.auth(sshUser, authMethods);
             }
 
             log.debug("Instantiate SSH tunnel");
 
             final LocalPortForwarder.Parameters params
-                = new LocalPortForwarder.Parameters(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+                = new LocalPortForwarder.Parameters(portForward.getLocalHost(), portForward.getLocalPort(), portForward.getRemoteHost(), portForward.getRemotePort());
             portListener = new LocalPortListener(params);
             portListener.start();
             RuntimeUtils.pause(100);

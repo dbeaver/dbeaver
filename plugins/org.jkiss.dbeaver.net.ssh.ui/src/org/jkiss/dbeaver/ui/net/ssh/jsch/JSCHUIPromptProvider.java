@@ -3,24 +3,26 @@ package org.jkiss.dbeaver.ui.net.ssh.jsch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.eclipse.jsch.ui.UserInfoPrompter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.utils.CommonUtils;
 
 public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
+    @NotNull
     @Override
-    public UserInfo createUserInfoPrompt(DBWHandlerConfiguration configuration, Session session) {
+    public UserInfo createUserInfoPrompt(@NotNull SSHAuthConfiguration configuration, @NotNull Session session) {
         return new UIPrompter(configuration, session);
     }
 
-    static class UIPrompter extends UserInfoPrompter {
+    private static class UIPrompter extends UserInfoPrompter {
         private static final Log log = Log.getLog(JSCHUIPromptProvider.class);
 
-        private final DBWHandlerConfiguration configuration;
+        private final SSHAuthConfiguration configuration;
 
-        UIPrompter(DBWHandlerConfiguration configuration, Session session) {
+        UIPrompter(@NotNull SSHAuthConfiguration configuration, Session session) {
             super(session);
             this.configuration = configuration;
         }

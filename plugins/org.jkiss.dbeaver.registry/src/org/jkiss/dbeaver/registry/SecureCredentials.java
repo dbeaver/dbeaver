@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -76,8 +77,13 @@ class SecureCredentials {
         return properties;
     }
 
-    public void setProperties(@Nullable Map<String, String> properties) {
-        this.properties = properties;
+    public void setProperties(@NotNull Map<String, String> properties) {
+        if (this.properties != null) {
+            this.properties.clear();
+            this.properties.putAll(properties);
+        } else {
+            this.properties = new HashMap<>(properties);
+        }
     }
 
     public void setSecureProp(String key, String value) {

@@ -22,17 +22,25 @@ import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.PageantConnector;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -132,13 +140,27 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             }
         }
 
-        if (connectTimeout == 0){
-            connectTimeout = SSHConstants.DEFAULT_CONNECT_TIMEOUT;
+        if (connectTimeout == 0) {
+            configuration.setProperty(SSHConstants.PROP_CONNECT_TIMEOUT, SSHConstants.DEFAULT_CONNECT_TIMEOUT);
         }
 
         monitor.subTask("Initiating tunnel at '" + sshHost + "'");
 
-        setupTunnel(monitor, configuration, sshHost, aliveInterval, sshPortNum, privKeyFile, connectTimeout, sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+        final SSHPortForwardConfiguration portForwardConfiguration = new SSHPortForwardConfiguration(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+        final List<SSHHostConfiguration> hostConfigurations = new ArrayList<>();
+
+        // primary host
+        hostConfigurations.add(loadConfiguration(configuration, ""));
+
+        // jump hosts, if supported and present
+        if (isSupportsJumpServer()) {
+            final String prefix = getJumpServerSettingsPrefix(0);
+            if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
+                hostConfigurations.add(0, loadConfiguration(configuration, prefix));
+            }
+        }
+
+        setupTunnel(monitor, configuration, hostConfigurations.toArray(new SSHHostConfiguration[0]), portForwardConfiguration);
         savedLocalPort = sshLocalPort;
         savedConfiguration = configuration;
         savedConnectionInfo = connectionInfo;
@@ -177,16 +199,76 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     }
 
     protected abstract void setupTunnel(
-        DBRProgressMonitor monitor,
-        DBWHandlerConfiguration configuration,
-        String sshHost,
-        int aliveInterval,
-        int sshPortNum,
-        File privKeyFile,
-        int connectTimeout,
-        String sshLocalHost,
-        int sshLocalPort,
-        String sshRemoteHost,
-        int sshRemotePort
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull SSHHostConfiguration[] hostConfiguration,
+        @NotNull SSHPortForwardConfiguration portForwardingConfiguration
     ) throws DBException, IOException;
+
+    @NotNull
+    private static SSHHostConfiguration loadConfiguration(@NotNull DBWHandlerConfiguration configuration, @NotNull String prefix) throws DBException {
+        final SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD);
+        final String hostname = configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST);
+        final int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
+        final String username;
+        final String password;
+        final boolean savePassword = configuration.isSavePassword();
+
+        if (prefix.isEmpty()) {
+            username = CommonUtils.notEmpty(configuration.getUserName());
+            password = CommonUtils.notEmpty(configuration.getPassword());
+        } else {
+            username = CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME));
+            password = CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD));
+        }
+
+        if (CommonUtils.isEmpty(hostname)) {
+            throw new DBException("SSH host not specified");
+        }
+        if (port == 0) {
+            throw new DBException("SSH port not specified");
+        }
+        if (CommonUtils.isEmpty(username)) {
+            throw new DBException("SSH user not specified");
+        }
+
+        final SSHAuthConfiguration authentication;
+        switch (authType) {
+            case PUBLIC_KEY: {
+                final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
+                if (CommonUtils.isEmpty(path)) {
+                    throw new DBException("Private key path is empty");
+                }
+                final File file = new File(path);
+                if (!file.exists()) {
+                    throw new DBException("Private key file '" + path + "' does not exist");
+                }
+                authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);
+                break;
+            }
+            case PASSWORD: {
+                authentication = SSHAuthConfiguration.usingPassword(password, savePassword);
+                break;
+            }
+            default:
+                authentication = SSHAuthConfiguration.usingAgent();
+                break;
+        }
+
+        return new SSHHostConfiguration(username, hostname, port, authentication);
+    }
+
+    @NotNull
+    public static String getJumpServerSettingsPrefix(int index) {
+        return SSHConstants.PROP_JUMP_SERVER + index + ".";
+    }
+
+    protected boolean isSupportsJumpServer() {
+        for (SSHImplementationDescriptor descriptor : SSHImplementationRegistry.getInstance().getDescriptors()) {
+            if (descriptor.getImplClass().getObjectClass() == getClass()) {
+                return descriptor.isSupportsJumpServer();
+            }
+        }
+        return false;
+    }
 }
