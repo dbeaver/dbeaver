@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.properties;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -95,9 +96,9 @@ public class PropertySourceCollection implements DBPPropertySource {
         return "[...]";
     }
 
-    private class ItemPropertyDescriptor implements DBPPropertyDescriptor {
-        private String id;
-        private Object item;
+    private static class ItemPropertyDescriptor implements DBPPropertyDescriptor {
+        private final String id;
+        private final Object item;
 
         private ItemPropertyDescriptor(String  id, Object item) {
             this.id = id;
@@ -132,6 +133,12 @@ public class PropertySourceCollection implements DBPPropertySource {
         @Override
         public boolean isEditable(Object object) {
             return false;
+        }
+
+        @NotNull
+        @Override
+        public PropertyLength getLength() {
+            return PropertyLength.LONG;
         }
 
         @Nullable

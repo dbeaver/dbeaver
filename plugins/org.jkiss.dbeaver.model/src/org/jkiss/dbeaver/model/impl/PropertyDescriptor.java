@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -78,10 +79,12 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private static final String ATTR_VALID_VALUES = "validValues"; //NON-NLS-1
     private static final String ATTR_ALLOW_CUSTOM_VALUES = "allowCustomValues";
     private static final String ATTR_FEATURES = "features";
+    private static final String ATTR_LENGTH = "length";
 
     private static final String VALUE_SPLITTER = ","; //NON-NLS-1
 
-    private String id;
+    @NotNull
+    private final String id;
     private String name;
     private String description;
     private String category;
@@ -91,6 +94,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private Object[] validValues;
     private boolean allowCustomValues = true;
     private boolean editable;
+    @NotNull
+    private PropertyLength length;
     private String[] features;
 
     public static DBPPropertyDescriptor[] extractPropertyGroups(IConfigurationElement config) {
@@ -128,6 +133,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.defaultValue = defaultValue;
         this.validValues = validValues;
         this.editable = true;
+        this.length = PropertyLength.LONG;
     }
 
     public PropertyDescriptor(String category, IConfigurationElement config) {
@@ -169,6 +175,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         }
 
         this.editable = true;
+
+        this.length = CommonUtils.valueOf(PropertyLength.class, config.getAttribute(ATTR_LENGTH), PropertyLength.LONG);
     }
 
     public static Object convertString(String value, Class<?> valueType) {
@@ -238,6 +246,12 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @Override
     public boolean isEditable(Object object) {
         return editable;
+    }
+
+    @NotNull
+    @Override
+    public PropertyLength getLength() {
+        return length;
     }
 
     @Override

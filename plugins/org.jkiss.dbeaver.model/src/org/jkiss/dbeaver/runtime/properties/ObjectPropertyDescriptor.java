@@ -155,6 +155,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propType == Boolean.class || propType == Boolean.TYPE;
     }
 
+    @NotNull
     public PropertyLength getLength() {
         return propInfo.length();
     }

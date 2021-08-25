@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.preferences;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 
 /**
  * Property descriptor.
@@ -67,6 +68,9 @@ public interface DBPPropertyDescriptor {
 
     // TODO: remove "object" parameter
     boolean isEditable(Object object);
+
+    @NotNull
+    PropertyLength getLength();
 
     @Nullable
     String[] getFeatures();

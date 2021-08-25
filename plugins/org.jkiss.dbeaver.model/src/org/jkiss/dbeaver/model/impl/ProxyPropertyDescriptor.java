@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
@@ -70,6 +71,12 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     @Override
     public boolean isEditable(Object object) {
         return original.isEditable(object);
+    }
+
+    @NotNull
+    @Override
+    public PropertyLength getLength() {
+        return original.getLength();
     }
 
     @Nullable
