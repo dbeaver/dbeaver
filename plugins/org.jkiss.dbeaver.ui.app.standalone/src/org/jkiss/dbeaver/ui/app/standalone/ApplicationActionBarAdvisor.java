@@ -320,9 +320,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             // Window
             windowMenu.add(newWindowAction);
             windowMenu.add(new Separator());
-            windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
-            windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
-            windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
+            windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID, false));
+            windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID, false));
+            windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID, false));
             //windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
             windowMenu.add(new GroupMarker("primary.views"));
             {

@@ -29,11 +29,13 @@ public class ToggleViewAction extends Action implements IPartListener
     private String viewId;
     private boolean listenerRegistered = false;
     private IViewDescriptor viewDescriptor;
+    private boolean checksStatusBeforeOpening;
 
-    public ToggleViewAction(String viewId)
+    public ToggleViewAction(String viewId, boolean checksStatusBeforeOpening)
     {
         this.viewId = viewId;
         viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(viewId);
+        this.checksStatusBeforeOpening = checksStatusBeforeOpening;
     }
 
     @Override
@@ -72,18 +74,22 @@ public class ToggleViewAction extends Action implements IPartListener
     @Override
     public boolean isChecked()
     {
-        if (!listenerRegistered) {
-            IWorkbenchPage activePage = getActivePage();
-            if (activePage == null) {
-                return false;
-            }
-            activePage.addPartListener(this);
-            listenerRegistered = true;
-            IViewReference viewReference = activePage.findViewReference(viewId);
-            setChecked(viewReference != null);
+        IWorkbenchPage activePage = getActivePage();
+        if (activePage == null) {
+            return false;
         }
-
-        return super.isChecked();
+        IViewPart pageView = activePage.findView(viewId);
+        boolean isChecked = pageView != null;
+        if (!listenerRegistered) {
+            activePage.addPartListener(this);
+            setChecked(isChecked);
+            listenerRegistered = true;
+        }
+        if (checksStatusBeforeOpening) {
+            // This buttons first check isChecked condition and then open. findView in this situation doesn't help
+            return super.isChecked();
+        }
+        return isChecked;
     }
 
     @Override
