@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
     public static final String PROP_BITS = "bits";
     public static final String PROP_PREFIX = "prefix";
     public static final String PROP_UNSIGNED = "unsigned";
+    public static final String PROP_ENDIANNESS = "endianness";
 
     public static final String PREFIX_HEX = "0x";
     public static final String PREFIX_OCT = "0";
@@ -58,6 +60,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         int bits = 32;
         boolean showPrefix = false;
         boolean unsigned = false;
+        ByteOrder order = ByteOrder.nativeOrder();
         if (options.containsKey(PROP_RADIX)) {
             radix = CommonUtils.toInt(options.get(PROP_RADIX), radix);
         }
@@ -70,8 +73,20 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         if (options.containsKey(PROP_UNSIGNED)) {
             unsigned = CommonUtils.getBoolean(options.get(PROP_UNSIGNED), unsigned);
         }
+        if (options.containsKey(PROP_ENDIANNESS)) {
+            switch (CommonUtils.toString(options.get(PROP_ENDIANNESS))) {
+                case "big-endian":
+                    order = ByteOrder.BIG_ENDIAN;
+                    break;
+                case "little-endian":
+                    order = ByteOrder.LITTLE_ENDIAN;
+                    break;
+                default:
+                    order = ByteOrder.nativeOrder();
+            }
+        }
 
-        attribute.setTransformHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix, unsigned));
+        attribute.setTransformHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix, unsigned, order));
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, "StringNumber", -1, DBPDataKind.STRING));
     }
@@ -81,22 +96,27 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         private final int bits;
         private final boolean showPrefix;
         private final boolean unsigned;
+        private final ByteOrder order;
 
-        public RadixValueHandler(DBDValueHandler target, int radix, int bits, boolean showPrefix, boolean unsigned) {
+        public RadixValueHandler(@NotNull DBDValueHandler target, int radix, int bits, boolean showPrefix, boolean unsigned, @NotNull ByteOrder order) {
             super(target);
             this.radix = radix;
             this.bits = bits;
             this.showPrefix = showPrefix;
             this.unsigned = unsigned;
+            this.order = order;
         }
 
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number) {
-                final long longValue = ((Number) value).longValue();
+                long longValue = ((Number) value).longValue();
                 final String strValue;
                 final StringBuilder sb = new StringBuilder();
+                if (order != ByteOrder.nativeOrder()) {
+                    longValue = Long.reverseBytes(longValue);
+                }
                 if (unsigned || longValue >= 0) {
                     strValue = Long.toUnsignedString(longValue, radix).toUpperCase(Locale.ENGLISH);
                 } else {
@@ -145,7 +165,17 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
                     }
                 }
                 try {
-                    return Long.parseLong(strValueSign + strValue, radix);
+                    final long longValue = Long.parseUnsignedLong(strValueSign + strValue, radix);
+                    final boolean reverse = order != ByteOrder.nativeOrder();
+                    if (longValue <= 0xffffL) {
+                        return reverse ? Short.reverseBytes((short) longValue) : (short) longValue;
+                    } else if (longValue <= 0xffffffffL) {
+                        return reverse ? Integer.reverseBytes((int) longValue) : (int) longValue;
+                    } else if (reverse) {
+                        return Long.reverseBytes(longValue);
+                    } else {
+                        return longValue;
+                    }
                 } catch (NumberFormatException e) {
                     log.debug(e);
                 }
