@@ -112,6 +112,9 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
             // Can happen if values was released
             return null;
         }
+        if (ownerValue instanceof DBDCollection) {
+            return ((DBDCollection) ownerValue).get(index);
+        }
         return collection.getItem(index);
     }
 
