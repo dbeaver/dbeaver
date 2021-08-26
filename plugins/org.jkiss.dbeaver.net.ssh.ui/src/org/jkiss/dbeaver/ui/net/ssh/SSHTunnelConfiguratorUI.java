@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -156,7 +157,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         }
 
         {
-            Composite controlGroup = UIUtils.createComposite(composite, 2);
+            Composite sc = new Composite(composite, SWT.NONE);
+            sc.setLayout(new GridLayout());
+            sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        }
+
+        {
+            Composite controlGroup = UIUtils.createComposite(composite, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
@@ -167,6 +174,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             });
             String hint = "You can use variables in SSH parameters.";
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DataSourceDescriptor.CONNECT_VARIABLES, false);
+
+            UIUtils.createLink(controlGroup, "See how to use <a>SSH</a> in our wiki", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
+                }
+            });
         }
     }
 
