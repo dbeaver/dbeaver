@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.agentproxy.AgentProxy;
-import com.jcraft.jsch.agentproxy.Identity;
-import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.PageantConnector;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
@@ -36,7 +34,6 @@ import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,25 +68,12 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             }
         }
 
-        String sshAuthType = configuration.getStringProperty(SSHConstants.PROP_AUTH_TYPE);
-        String sshHost = configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
-        int sshPortNum = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
-        int aliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
         int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
         String sshLocalHost = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_LOCAL_HOST));
         int sshLocalPort = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
         String sshRemoteHost = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_REMOTE_HOST));
         int sshRemotePort = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
-        //String aliveCount = properties.get(SSHConstants.PROP_ALIVE_COUNT);
-        if (CommonUtils.isEmpty(sshHost)) {
-            throw new DBException("SSH host not specified");
-        }
-        if (sshPortNum == 0) {
-            throw new DBException("SSH port not specified");
-        }
-        if (CommonUtils.isEmpty(configuration.getUserName())) {
-            configuration.setUserName(System.getProperty(StandardConstants.ENV_USER_NAME));
-        }
+
         if (sshLocalPort == 0) {
             if (savedLocalPort != 0) {
                 sshLocalPort = savedLocalPort;
@@ -103,48 +87,9 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (sshRemotePort == 0 && configuration.getDriver() != null) {
             sshRemotePort = CommonUtils.toInt(connectionInfo.getHostPort());
         }
-
-        SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
-        if (sshAuthType != null) {
-            authType = SSHConstants.AuthType.valueOf(sshAuthType); 
-        }
-        File privKeyFile = null;
-        String privKeyPath = configuration.getStringProperty(SSHConstants.PROP_KEY_PATH);
-        if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
-            if (CommonUtils.isEmpty(privKeyPath)) {
-                throw new DBException("Private key path is empty");
-            }
-            privKeyFile = new File(privKeyPath);
-            if (!privKeyFile.exists()) {
-                throw new DBException("Private key file '" + privKeyFile.getAbsolutePath() + "' doesn't exist");
-            }
-        }
-        if (authType == SSHConstants.AuthType.AGENT) {
-            try {
-                agentProxy = new AgentProxy(new PageantConnector());
-                log.debug("SSH: Connected with pageant");
-            } catch (Exception e) {
-                log.debug("pageant connect exception", e);
-            }
-            if (agentProxy==null) {
-                try {
-                    USocketFactory udsf = new JNAUSocketFactory();
-                    agentProxy = new AgentProxy(new SSHAgentConnector(udsf));
-                    log.debug("SSH: Connected with ssh-agent");
-                } catch (Exception e) {
-                    log.debug("ssh-agent connection exception", e);
-                }
-            }
-            if (agentProxy==null) {
-                throw new DBException("Unable to initialize SSH agent");
-            }
-        }
-
         if (connectTimeout == 0) {
             configuration.setProperty(SSHConstants.PROP_CONNECT_TIMEOUT, SSHConstants.DEFAULT_CONNECT_TIMEOUT);
         }
-
-        monitor.subTask("Initiating tunnel at '" + sshHost + "'");
 
         final SSHPortForwardConfiguration portForwardConfiguration = new SSHPortForwardConfiguration(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
         final List<SSHHostConfiguration> hostConfigurations = new ArrayList<>();
@@ -157,6 +102,32 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             final String prefix = getJumpServerSettingsPrefix(0);
             if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
                 hostConfigurations.add(0, loadConfiguration(configuration, prefix));
+            }
+        }
+
+        for (SSHHostConfiguration host : hostConfigurations) {
+            if (host.getAuthConfiguration().getType() == SSHConstants.AuthType.AGENT) {
+                try {
+                    agentProxy = new AgentProxy(new PageantConnector());
+                    log.debug("SSH: Connected with pageant");
+                } catch (Exception e) {
+                    log.debug("pageant connect exception", e);
+                }
+
+                if (agentProxy == null) {
+                    try {
+                        agentProxy = new AgentProxy(new SSHAgentConnector(new JNAUSocketFactory()));
+                        log.debug("SSH: Connected with ssh-agent");
+                    } catch (Exception e) {
+                        log.debug("ssh-agent connection exception", e);
+                    }
+                }
+
+                if (agentProxy == null) {
+                    throw new DBException("Unable to initialize SSH agent");
+                }
+
+                break;
             }
         }
 
@@ -183,19 +154,21 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         return connectionInfo;
     }
 
-    public byte [] agentSign(byte [] blob, byte [] data) {
+    @NotNull
+    public byte[] agentSign(@NotNull byte [] blob, @NotNull byte[] data) {
         return agentProxy.sign(blob, data);
     }
 
+    @NotNull
     protected List<SSHAgentIdentity> getAgentData() {
-        Identity [] identities = agentProxy.getIdentities();
-        List<SSHAgentIdentity> result = Arrays.asList(identities).stream().map(i -> {
-            SSHAgentIdentity id = new SSHAgentIdentity();
-            id.setBlob(i.getBlob());
-            id.setComment(i.getComment());
-            return id;
-        }).collect(Collectors.toList());
-        return result;
+        return Arrays.stream(agentProxy.getIdentities())
+            .map(i -> {
+                SSHAgentIdentity id = new SSHAgentIdentity();
+                id.setBlob(i.getBlob());
+                id.setComment(i.getComment());
+                return id;
+            })
+            .collect(Collectors.toList());
     }
 
     protected abstract void setupTunnel(
