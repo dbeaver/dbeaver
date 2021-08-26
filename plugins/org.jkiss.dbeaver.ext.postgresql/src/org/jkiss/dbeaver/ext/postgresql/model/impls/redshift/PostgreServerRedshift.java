@@ -33,10 +33,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -377,6 +379,14 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     @Override
     public boolean supportsBackslashStringEscape() {
         return true;
+    }
+
+    @Override
+    public int getParameterBindType(DBSTypedObject type, Object value) {
+        if (value instanceof String) {
+            return Types.VARCHAR;
+        }
+        return super.getParameterBindType(type, value);
     }
 
     @Override

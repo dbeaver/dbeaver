@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 
 /**
  * PostgreDateTimeValueHandler.
@@ -66,7 +66,8 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, Object value) throws DBCException {
         if (value instanceof String) {
             try {
-                ((JDBCPreparedStatement)statement).setObject(index + 1, value.toString(), Types.OTHER);
+                ((JDBCPreparedStatement)statement).setObject(index + 1, value.toString(),
+                    ((PostgreDataSource)session.getDataSource()).getServerType().getParameterBindType(type, value));
             }
             catch (SQLException e) {
                 throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);

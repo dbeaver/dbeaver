@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.List;
 import java.util.Map;
@@ -148,4 +149,6 @@ public interface PostgreServerExtension {
     boolean supportsKeyAndIndexRename();
 
     boolean supportsAlterUserChangePassword();
+
+    int getParameterBindType(DBSTypedObject type, Object value);
 }
