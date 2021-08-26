@@ -130,7 +130,7 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @Nullable PostgreProcedure object,
                                                     @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT p.oid,p.*," +
+                    "SELECT p.oid as poid,p.*," +
                             (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL") + " as arg_defaults,d.description\n" +
                             "FROM pg_catalog.pg_proc p\n" +
                             "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p.oid\n" +
