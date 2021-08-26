@@ -61,7 +61,7 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
         }
 
         private boolean shouldUsePassword() {
-            return configuration.isSavePassword() || CommonUtils.isNotEmpty(configuration.getPassword());
+            return configuration.getType().usesPassword() && (configuration.isSavePassword() || CommonUtils.isNotEmpty(configuration.getPassword()));
         }
     }
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
@@ -97,44 +98,22 @@ public class RedshiftView extends PostgreView
                         String colName = JDBCUtils.safeGetString(dbResult, "col_name");
                         String colType = JDBCUtils.safeGetString(dbResult, "col_type");
                         int colNum = JDBCUtils.safeGetInt(dbResult, "col_num");
-
-                        PostgreTableColumn viewColumn = new PostgreTableColumn(this);
-                        viewColumn.setName(colName);
-                        viewColumn.setPersisted(true);
-
-                        String colTypeName;
-                        int colPrecision = -1, colScale = -1;
-                        int divPos = colType.indexOf("(");
-                        if (divPos != -1) {
-                            colTypeName = colType.substring(0, divPos);
-                            int divPos2 = colType.lastIndexOf(")");
-                            if (divPos2 < 0) {
-                                log.error("Bad column type name '" + colType + "'");
-                                continue;
-                            }
-                            String typeMod = colType.substring(divPos + 1, divPos2).trim();
-                            divPos2 = typeMod.indexOf(",");
-                            if (divPos2 < 0) {
-                                colPrecision = CommonUtils.toInt(typeMod);
-                            } else {
-                                colPrecision = CommonUtils.toInt(typeMod.substring(0, divPos2).trim());
-                                colScale = CommonUtils.toInt(typeMod.substring(divPos2 + 1).trim());
-                            }
-                        } else {
-                            colTypeName = colType;
-                        }
+                        String colTypeName = DBUtils.getTypeModifiers(colType).getFirst();
+                        String resolvedColTypeName = PostgreConstants.DATA_TYPE_ALIASES.get(colTypeName);
+                        colTypeName = resolvedColTypeName == null ? colTypeName : resolvedColTypeName;
 
                         PostgreDataType dataType = (PostgreDataType) getDataSource().resolveDataType(monitor, colTypeName);
                         if (dataType == null) {
                             log.error("Column type name '" + colType + "' not found");
                             continue;
                         }
+                        PostgreTableColumn viewColumn = new PostgreTableColumn(this);
+                        viewColumn.setName(colName);
+                        viewColumn.setFullTypeName(colType);
+                        viewColumn.setPersisted(true);
                         viewColumn.setDataType(dataType);
-                        if (colPrecision >= 0) viewColumn.setPrecision(colPrecision);
-                        if (colScale >= 0) viewColumn.setScale(colScale);
                         viewColumn.setOrdinalPosition(colNum);
                         columns.add(viewColumn);
-
                     }
                     return columns;
                 }
