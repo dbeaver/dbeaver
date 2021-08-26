@@ -31,7 +31,10 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -210,15 +213,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                                              @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        PostgreServerExtension serverType = database.getDataSource().getServerType();
         QueryParams queryParams = new QueryParams(
-            "pp.oid, pp.*",
-            "pg_catalog.pg_proc pp",
+            "pp." + serverType.getProceduresOidColumn() + " as poid, pp.*",
+            "pg_catalog." + serverType.getProceduresSystemTable() + " pp",
             "pp.proname",
             schemas,
             "pp.pronamespace",
             "pp.proname"
         );
-        queryParams.setWhereClause("pp.proname NOT LIKE '\\_%'");
+        //queryParams.setWhereClause("pp.proname NOT LIKE '\\_%'");
         queryParams.setCaseSensitive(params.isCaseSensitive());
         if (params.isSearchInComments()) {
             queryParams.setDescriptionClause("obj_description(pp.oid, 'pg_proc')");
@@ -236,7 +240,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
-                    final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
+                    final long procId = JDBCUtils.safeGetLong(dbResult, "poid");
                     final PostgreSchema procSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (procSchema == null) {
                         log.debug("Procedure's schema '" + schemaId + "' not found");
