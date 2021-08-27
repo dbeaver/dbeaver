@@ -242,7 +242,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
         this.isTemplate = JDBCUtils.safeGetBoolean(dbResult, "datistemplate");
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
-        this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
+        if (dataSource.isServerVersionAtLeast(8, 1)) {
+            this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
+        }
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "dattablespace");
     }
 

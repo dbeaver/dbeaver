@@ -116,7 +116,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             grantedTypedObject = objectType + " " + objectName;
         }
 
-        String grantScript = (grant ? "GRANT " : "REVOKE ") + privName + grantedCols + " ON " + grantedTypedObject + (grant ? " TO " : " FROM ") + roleName;
+        String grantScript = (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
+            " ON " + grantedTypedObject +
+            (grant ? " TO " : " FROM ") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
         }
