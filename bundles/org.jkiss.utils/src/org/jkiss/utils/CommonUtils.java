@@ -983,4 +983,16 @@ public class CommonUtils {
         }
         return grouped;
     }
+
+    /**
+     * Clamps given value to range between lower and upper bounds.
+     *
+     * @param value the value to clamp
+     * @param min   the lower boundary to clamp {@code value} to
+     * @param max   the upper boundary to clamp {@code value} to
+     * @return {@code min} if {@code value} is less than {@code min}, {@code max} if {@code value} is greater than {@code max}, otherwise {@code value}
+     */
+    public static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(value, max));
+    }
 }
