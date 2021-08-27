@@ -422,7 +422,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             if (owner.getDataSource().supportsColumnProperty()) {
                 sql.append(", COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length");
             }
-            sql.append(", dc.definition as default_definition,ep.value as description\nFROM ")
+            sql.append(", dc.definition as default_definition,dc.name as default_constraint_name,ep.value as description\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
                 .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
                 .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
