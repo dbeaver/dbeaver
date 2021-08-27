@@ -113,7 +113,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
                     }
                 }
                 if (radix == 2) {
-                    sb.append(strValue.substring(Math.max(strValue.length() - bits, 1)));
+                    sb.append(strValue, 0, CommonUtils.clamp(strValue.length(), 1, bits));
                 } else {
                     sb.append(strValue);
                 }
