@@ -29,6 +29,14 @@
             name="%content-type.org.jkiss.dbeaver.bookmark.name"
             priority="normal"
             describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
+
+        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="Windows Shortcut" priority="normal">
+            <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
+                <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
+                <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>
+                <parameter name="offset" value="0"/>
+            </describer>
+        </content-type>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -1130,6 +1138,9 @@
         <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="Navigator bookmarks" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">
             <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
+        </handler>
+        <handler id="shortcuts" class="org.jkiss.dbeaver.ui.resources.shortcuts.ShortcutsHandlerImpl">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
         </handler>
     </extension>
 
