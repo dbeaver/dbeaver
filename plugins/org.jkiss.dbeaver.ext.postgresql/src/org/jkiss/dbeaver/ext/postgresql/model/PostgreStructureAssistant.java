@@ -165,7 +165,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             "pc.relnamespace",
             "pc.relname"
         );
-        queryParams.setWhereClause("pc.relkind in('r','v','m','f')");
+        queryParams.setWhereClause("pc.relkind in('r','v','m','f','p')"); // r = ordinary table, v = view, m = materialized view, f = foreign table, p = partitioned table
         queryParams.setCaseSensitive(params.isCaseSensitive());
         if (params.isSearchInComments()) {
             queryParams.setDescriptionClause("obj_description(pc.oid, 'pg_class')");
