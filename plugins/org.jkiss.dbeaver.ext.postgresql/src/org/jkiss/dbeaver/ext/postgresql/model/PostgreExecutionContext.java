@@ -137,6 +137,9 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         if (oldActiveSchema == schema && !force) {
             return false;
         }
+        if (schema.isExternal()) {
+            return false;
+        }
 
         setSearchPath(monitor, schema);
         this.activeSchema = schema;

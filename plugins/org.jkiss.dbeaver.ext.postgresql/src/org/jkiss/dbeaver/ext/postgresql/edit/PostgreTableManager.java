@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -198,14 +199,13 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     {
         PostgreTableBase table = command.getObject();
         final String tableName = DBUtils.getEntityScriptName(table, options);
-        actions.add(
-            new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table,
-                "DROP " + (table instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    " " + tableName +  //$NON-NLS-1$
-                    (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "")//$NON-NLS-1$ //$NON-NLS-2$
-            )
-        );
+        String script = "DROP " + (table instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            " " + tableName +  //$NON-NLS-1$
+            (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "");
+        SQLDatabasePersistAction action = table.getSchema().isExternal() ?
+            new SQLDatabasePersistActionAtomic(ModelMessages.model_jdbc_drop_table, script) :
+            new SQLDatabasePersistAction(ModelMessages.model_jdbc_drop_table, script);
+        actions.add(action);
     }
     
 }
