@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -41,9 +40,6 @@ import java.util.Map;
  * Grant/Revoke privilege command
  */
 public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
-
-    // When this plugin is active, we must use alternate syntax when creating a new user. See #12945
-    private static final String SIMPLE_PASSWORD_CHECK_PLUGIN_NAME = "simple_password_check";
 
     protected MySQLCommandChangeUser(MySQLUser user)
     {
@@ -155,11 +151,8 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         script.append("CREATE USER ").append(object.getFullName());
 
         if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
-            final MySQLPlugin plugin = object.getDataSource().getPlugin(SIMPLE_PASSWORD_CHECK_PLUGIN_NAME);
-            if (plugin != null && plugin.getStatus() == MySQLPlugin.Status.ACTIVE) {
-                generateIdentifiedByClause(script);
-                return false;
-            }
+            generateIdentifiedByClause(script);
+            return false;
         }
 
         return true;
