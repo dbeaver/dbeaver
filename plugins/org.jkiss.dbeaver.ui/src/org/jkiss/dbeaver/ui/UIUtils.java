@@ -1711,6 +1711,17 @@ public class UIUtils {
         }
     }
 
+    public static void timerExec(int milliseconds, @NotNull Runnable runnable) {
+        try {
+            Display display = getDisplay();
+            if (!display.isDisposed()) {
+                display.timerExec(milliseconds, runnable);
+            }
+        } catch (Exception e) {
+            log.debug(e);
+        }
+    }
+
     public static void asyncExec(Runnable runnable) {
         try {
             Display display = getDisplay();
