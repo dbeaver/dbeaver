@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.ui.resources.shortcuts;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
@@ -40,8 +44,11 @@ public class ShortcutsHandlerImpl extends AbstractResourceHandler {
         try {
             final File path = resource.getLocation().toFile();
             final File resolved = resolve(path);
-
-            EditorUtils.openExternalFileEditor(resolved, UIUtils.getActiveWorkbenchWindow());
+            if (resolved.exists()) {
+                EditorUtils.openExternalFileEditor(resolved, UIUtils.getActiveWorkbenchWindow());
+            } else if (DBWorkbench.getPlatformUI().confirmAction(CoreMessages.resource_shortcut_deleted_title, NLS.bind(CoreMessages.resource_shortcut_deleted_message, resolved.getName()))) {
+                resource.delete(true, new NullProgressMonitor());
+            }
         } catch (IOException e) {
             throw new DBException("Error resolving shell link path", e);
         }
