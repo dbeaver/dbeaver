@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 
 public class PostgreTypeHandlerProvider {
 
@@ -31,7 +32,11 @@ public class PostgreTypeHandlerProvider {
     @Nullable
     public static PostgreTypeHandler getTypeHandler(@NotNull PostgreDataType type) {
         if (PostgreUtils.isGISDataType(type.getTypeName().toLowerCase())) {
-            return PostgreGeometryTypeHandler.INSTANCE;
+            if (type.getDataSource().getServerType() instanceof PostgreServerRedshift) {
+                return PostgreEmptyTypeHandler.INSTANCE;
+            } else {
+                return PostgreGeometryTypeHandler.INSTANCE;
+            }
         }
         switch ((int) type.getObjectId()) {
             case PostgreOid.NUMERIC:
