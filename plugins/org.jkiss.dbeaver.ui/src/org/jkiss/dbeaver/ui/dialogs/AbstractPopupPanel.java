@@ -126,7 +126,7 @@ public abstract class AbstractPopupPanel extends Dialog {
 
     private void handleFocusLost(FocusEvent e) {
         Shell shell = getShell();
-        if (shell != null) {
+        if (shell != null && !shell.isDisposed()) {
             Control focusControl = shell.getDisplay().getFocusControl();
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
                 Object dialog = focusControl.getShell().getData();

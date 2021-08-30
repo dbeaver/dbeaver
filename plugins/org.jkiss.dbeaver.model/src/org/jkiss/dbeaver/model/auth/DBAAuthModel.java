@@ -59,4 +59,16 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
 
     void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
 
+    /**
+     * Refresh credentials in current session
+     * @param monitor progress monitor
+     * @param credentials
+     */
+    void refreshCredentials(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull CREDENTIALS credentials)
+        throws DBException;
+
 }

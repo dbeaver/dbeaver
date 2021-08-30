@@ -96,4 +96,9 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
 
     }
 
+    @Override
+    public void refreshCredentials(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) throws DBException {
+        // do nothing
+    }
+
 }

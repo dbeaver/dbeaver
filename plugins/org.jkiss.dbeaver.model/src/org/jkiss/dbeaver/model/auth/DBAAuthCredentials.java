@@ -17,16 +17,11 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.code.Nullable;
-
 /**
  * Auth credentials.
  */
 public interface DBAAuthCredentials {
 
     boolean isComplete();
-
-    @Nullable
-    String[] getMissingProperties();
 
 }

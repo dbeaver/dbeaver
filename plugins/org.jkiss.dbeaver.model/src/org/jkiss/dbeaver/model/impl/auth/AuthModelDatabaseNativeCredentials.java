@@ -54,8 +54,4 @@ public class AuthModelDatabaseNativeCredentials implements DBAAuthCredentials {
         return true;
     }
 
-    @Override
-    public String[] getMissingProperties() {
-        return null;
-    }
 }

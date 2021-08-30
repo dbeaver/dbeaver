@@ -29,8 +29,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBASessionContext {
 
+    /**
+     * Find and opens space session
+     * @param space target space
+     * @param open  if true then new session will be opened if possible
+     */
     @Nullable
-    DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space) throws DBException;
+    DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space, boolean open) throws DBException;
 
     DBAAuthToken[] getSavedTokens();
 

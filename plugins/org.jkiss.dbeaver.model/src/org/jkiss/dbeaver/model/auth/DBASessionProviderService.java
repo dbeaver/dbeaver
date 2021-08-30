@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBASessionProviderService {
 
     @Nullable
-    DBASession acquireSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space) throws DBException;
+    DBASession acquireSession(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBASessionContext context,
+        @NotNull DBAAuthSpace space) throws DBException;
 
 }

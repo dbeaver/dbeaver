@@ -70,6 +70,8 @@ public abstract class JDBCDataSource
 {
     private static final Log log = Log.getLog(JDBCDataSource.class);
 
+    private static final boolean REFRESH_CREDENTIALS_ON_CONNECT = false;
+
     @NotNull
     private final DBPDataSourceContainer container;
     @NotNull
@@ -163,6 +165,11 @@ public abstract class JDBCDataSource
 
             try {
                 DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
+
+                if (REFRESH_CREDENTIALS_ON_CONNECT) {
+                    // Refresh credentials
+                    authModel.refreshCredentials(monitor, getContainer(), connectionInfo, credentials);
+                }
                 authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);

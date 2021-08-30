@@ -48,24 +48,22 @@ public class SessionContextImpl implements DBASessionContext {
 
     @Nullable
     @Override
-    public DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space) throws DBException {
+    public DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space, boolean open) throws DBException {
         for (DBASession session : sessions) {
             if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
                 return session;
             }
         }
-        DBASession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space);
-        if (session == null) {
+        DBASession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
+        if (session == null && open) {
             DBASessionProviderService sessionProviderService = DBWorkbench.getService(DBASessionProviderService.class);
             if (sessionProviderService != null) {
                 try {
-                    session = sessionProviderService.acquireSession(monitor, space);
+                    // Session will be added in this context by itself (if needed)
+                    session = sessionProviderService.acquireSession(monitor, this, space);
                 } catch (Exception e) {
                     throw new DBException("Error acquiring session", e);
                 }
-            }
-            if (session != null) {
-                //sessions.add(session);
             }
         }
         return session;
@@ -77,12 +75,25 @@ public class SessionContextImpl implements DBASessionContext {
     }
 
     public void addSession(@NotNull DBASession session) {
-        sessions.add(session);
+        if (!sessions.contains(session)) {
+            sessions.add(session);
+        } else {
+            log.debug("Session '" + session + "' was added twice");
+        }
     }
 
     @Override
     public boolean removeSession(@NotNull DBASession session) {
-        return sessions.remove(session);
+        if (sessions.remove(session)) {
+            return true;
+        } else {
+            log.debug("Session '" + session + "' was removed twice");
+            return false;
+        }
+    }
+
+    public void close() {
+        this.sessions.clear();
     }
 
 }
