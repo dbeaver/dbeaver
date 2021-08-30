@@ -52,6 +52,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
     public static final int RS_ERROR_CODE_CHANNEL_CLOSE = 500366;
+    public static final int RS_ERROR_CODE_NOT_CONNECTED = 500150;
 
     private Version redshiftVersion;
 
@@ -309,7 +310,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         int errorCode = SQLState.getCodeFromException(error);
-        if (errorCode == RS_ERROR_CODE_CHANNEL_CLOSE) {
+        if (errorCode == RS_ERROR_CODE_CHANNEL_CLOSE || errorCode == RS_ERROR_CODE_NOT_CONNECTED) {
             return ErrorType.CONNECTION_LOST;
         }
         return null;
