@@ -461,6 +461,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsExternalTypes() {
+        return false;
+    }
+
+    @Override
     public boolean supportsBackslashStringEscape() {
         return false;
     }
