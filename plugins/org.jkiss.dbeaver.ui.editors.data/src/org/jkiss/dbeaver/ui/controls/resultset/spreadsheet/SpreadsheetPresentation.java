@@ -619,10 +619,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public void pasteFromClipboard(boolean extended)
+    public void pasteFromClipboard(@Nullable ResultSetPasteSettings settings)
     {
         try {
-            if (extended) {
+            if (settings != null) {
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
                 try {
@@ -641,7 +641,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
-                    String[][] newLines = parseGridLines(strValue);
+                    String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows());
 
                     // FIXME: do not create rows twice! Probably need to delete comment after testing. #9095
                     /*if (overNewRow) {
@@ -672,8 +672,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             if (controller.getAttributeReadOnlyStatus(attr) != null) {
                                 continue;
                             }
-                            Object newValue = attr.getValueHandler().getValueFromObject(
-                                session, attr.getAttribute(), value, true, false);
+                            final Object newValue;
+                            if (settings.isInsertNulls() && settings.getNullValueMark().equalsIgnoreCase(value)) {
+                                newValue = null;
+                            } else {
+                                newValue = attr.getValueHandler().getValueFromObject(session, attr.getAttribute(), value, true, false);
+                            }
                             new SpreadsheetValueController(
                                 controller,
                                 attr,
@@ -750,7 +754,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    private String[][] parseGridLines(String strValue) {
+    private String[][] parseGridLines(String strValue, boolean splitRows) {
         final char columnDelimiter = '\t';
         final char rowDelimiter = '\n';
         final char trashDelimiter = '\r';
@@ -769,14 +773,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             } else {
                 switch (c) {
                     case columnDelimiter:
-                        curLine.add(cellValue.toString());
-                        cellValue.setLength(0);
-                        break;
                     case rowDelimiter:
                         curLine.add(cellValue.toString());
-                        lines.add(curLine.toArray(new String[0]));
-                        curLine.clear();
                         cellValue.setLength(0);
+                        if (c == rowDelimiter && splitRows) {
+                            lines.add(curLine.toArray(new String[0]));
+                            curLine.clear();
+                        }
                         break;
                     case trashDelimiter:
                         // Ignore
