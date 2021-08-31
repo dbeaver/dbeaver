@@ -60,7 +60,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         if (showComments && !CommonUtils.isEmpty(comment)) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON " + (table.isView() ? ((PostgreViewBase)table).getViewType() : "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                "COMMENT ON " + table.getTableTypeName() + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS " + SQLUtils.quoteString(table, CommonUtils.notEmpty(comment))));
         }
         if (isDDL || !table.isPersisted()) {

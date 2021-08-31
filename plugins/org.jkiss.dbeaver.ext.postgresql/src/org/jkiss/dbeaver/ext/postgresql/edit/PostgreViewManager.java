@@ -105,7 +105,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop view", 
-                "DROP " + view.getViewType() + 
+                "DROP " + view.getTableTypeName() +
                     " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : ""))
         );
@@ -123,7 +123,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
             if (!(view instanceof PostgreMaterializedView)) {
                 sqlBuf.append("OR REPLACE ");
             }
-            sqlBuf.append(view.getViewType()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
+            sqlBuf.append(view.getTableTypeName()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
             appendViewDeclarationPrefix(monitor, sqlBuf, view);
             sqlBuf.append("\nAS ").append(sql);
             appendViewDeclarationPostfix(monitor, sqlBuf, view);
@@ -156,7 +156,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename view",
-                "ALTER " + view.getViewType() + " " + DBUtils.getQuotedIdentifier(view.getSchema()) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                "ALTER " + view.getTableTypeName() + " " + DBUtils.getQuotedIdentifier(view.getSchema()) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) + //$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }
@@ -167,7 +167,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment view",
-                    "COMMENT ON " + viewBase.getViewType() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    "COMMENT ON " + viewBase.getTableTypeName() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                             " IS " + SQLUtils.quoteString(viewBase, CommonUtils.notEmpty(viewBase.getDescription()))));
         }
     }
