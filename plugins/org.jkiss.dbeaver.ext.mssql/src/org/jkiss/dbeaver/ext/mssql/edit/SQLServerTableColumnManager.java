@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -162,20 +163,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             totalProps--;
 
             // [Re]create default constraint. Classic MS-style pain in the ass
-            String oldConstraintName = null;
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, column, "Read default constraint")) {
-                oldConstraintName = JDBCUtils.queryString(session, "SELECT name FROM " +
-                    SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), "DEFAULT_CONSTRAINTS") +
-                    " WHERE PARENT_OBJECT_ID = ? AND PARENT_COLUMN_ID = ?", column.getTable().getObjectId(), column.getObjectId());
-            } catch (Exception e) {
-                log.error("Error reading default constraints", e);
-            }
-
-            if (oldConstraintName != null) {
-                actionList.add(new SQLDatabasePersistAction("Drop default constraint",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP CONSTRAINT " + DBUtils.getQuotedIdentifier(column.getDataSource(), oldConstraintName)  //$NON-NLS-1$
-                    ));
-            }
+            addDropConstraintAction(actionList, column);
 
             String defaultValue = column.getDefaultValue();
             if (!CommonUtils.isEmpty(defaultValue)) {
@@ -211,6 +199,12 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<SQLServerTableColumn, SQLServerTableBase>.ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+        addDropConstraintAction(actions, command.getObject());
+        super.addObjectDeleteActions(monitor, executionContext, actions, command, options);
+    }
+
+    @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull SQLServerTableColumn object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
@@ -229,4 +223,12 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         );
     }
 
+    private static void addDropConstraintAction(@NotNull List<DBEPersistAction> actions, @NotNull SQLServerTableColumn column) {
+        if (column.getDefaultConstraintName() != null) {
+            actions.add(new SQLDatabasePersistAction(
+                "Drop default constraint",
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP CONSTRAINT " + DBUtils.getQuotedIdentifier(column.getDataSource(), column.getDefaultConstraintName())
+            ));
+        }
+    }
 }

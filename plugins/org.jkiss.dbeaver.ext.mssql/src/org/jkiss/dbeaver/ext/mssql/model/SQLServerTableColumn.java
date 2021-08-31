@@ -65,6 +65,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private boolean hidden;
     private boolean computedPersisted;
     private String computedDefinition;
+    private String defaultConstraintName;
     private IdentityInfo identityInfo = new IdentityInfo();
 
     private final SQLServerExtendedPropertyCache extendedPropertyCache = new SQLServerExtendedPropertyCache();
@@ -163,6 +164,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
                 dv = dv.substring(1, dv.length() - 1);
             }
             this.setDefaultValue(dv);
+            this.defaultConstraintName = JDBCUtils.safeGetString(dbResult, "default_constraint_name");
         }
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.computedPersisted = JDBCUtils.safeGetInt(dbResult, "is_persisted") != 0;
@@ -252,6 +254,11 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     @Override
     public String getDefaultValue() {
         return super.getDefaultValue();
+    }
+
+    @Nullable
+    public String getDefaultConstraintName() {
+        return defaultConstraintName;
     }
 
     @Override
