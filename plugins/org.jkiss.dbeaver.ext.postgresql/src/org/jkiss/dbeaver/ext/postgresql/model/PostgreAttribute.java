@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandler;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandlerProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -389,7 +389,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public void setTypeName(String typeName) throws DBException {
-        final PostgreDataType dataType = findDataType(getDatabase(), typeName);
+        final PostgreDataType dataType = findDataType(getSchema(), typeName);
         this.typeName = typeName;
         this.typeId = dataType.getTypeID();
         this.dataType = dataType;
@@ -414,7 +414,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();
 
-        final PostgreDataType dataType = findDataType(getDatabase(), typeName);
+        final PostgreDataType dataType = findDataType(getSchema(), typeName);
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
             this.typeMod = handler.getTypeModifiers(dataType, typeName, typeMods);
@@ -431,10 +431,18 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @NotNull
-    private static PostgreDataType findDataType(@NotNull PostgreDatabase database, @NotNull String typeName) throws DBException {
-        PostgreDataType dataType = database.getDataSource().getLocalDataType(typeName);
+    public abstract PostgreSchema getSchema();
+
+    @NotNull
+    private static PostgreDataType findDataType(@NotNull PostgreSchema schema, @NotNull String typeName) throws DBException {
+        PostgreDataType dataType = schema.getDataSource().getLocalDataType(typeName);
         if (dataType == null) {
-            dataType = database.getDataType(null, typeName);
+            dataType = schema.getDatabase().getDataType(null, typeName);
+        }
+        if (dataType == null && schema.getDataSource().getServerType().supportsExternalTypes()) {
+            log.debug("Can't find specified data type by name: '" + typeName + "', creating a fake type");
+            dataType = new PostgreDataType(schema, Types.OTHER, typeName);
+            schema.getDataTypeCache().cacheObject(dataType);
         }
         if (dataType == null) {
             throw new DBException("Can't find specified data type by name: '" + typeName + "'");

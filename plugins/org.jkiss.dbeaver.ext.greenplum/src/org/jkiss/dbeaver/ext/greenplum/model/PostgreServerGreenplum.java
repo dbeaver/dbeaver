@@ -143,4 +143,8 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return true;
     }
 
+    @Override
+    public boolean supportsExternalTypes() {
+        return true;
+    }
 }

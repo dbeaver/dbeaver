@@ -399,4 +399,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsFunctionDefRead() {
         return false;
     }
+
+    @Override
+    public boolean supportsExternalTypes() {
+        return true;
+    }
 }

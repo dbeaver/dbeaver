@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
-import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolGeometryValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -38,7 +38,7 @@ public class ExasolValueHandlerProvider implements DBDValueHandlerProvider {
 
         switch (typeID) {
             case ExasolConstants.TYPE_GEOMETRY:
-                return new GISGeometryValueHandler();
+                return new ExasolGeometryValueHandler();
             default:
                 return null;
         }

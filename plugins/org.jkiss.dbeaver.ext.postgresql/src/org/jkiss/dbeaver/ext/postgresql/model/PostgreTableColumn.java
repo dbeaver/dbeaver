@@ -54,6 +54,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         super(monitor, table, dbResult);
     }
 
+    @NotNull
     @Override
     public PostgreSchema getSchema() {
         return getTable().getSchema();

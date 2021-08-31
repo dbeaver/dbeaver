@@ -140,6 +140,8 @@ public interface PostgreServerExtension {
 
     boolean supportSerialTypes();
 
+    boolean supportsExternalTypes();
+
     boolean supportsBackslashStringEscape();
 
     boolean supportsDisablingAllTriggers();

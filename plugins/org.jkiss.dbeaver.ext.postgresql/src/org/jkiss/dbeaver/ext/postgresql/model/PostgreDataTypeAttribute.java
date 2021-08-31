@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,5 +33,11 @@ public class PostgreDataTypeAttribute extends PostgreAttribute<PostgreDataType>
     @Override
     public int getOrdinalPosition() {
         return super.getOrdinalPosition() - 1;
+    }
+
+    @NotNull
+    @Override
+    public PostgreSchema getSchema() {
+        return getDataType().getParentObject();
     }
 }
