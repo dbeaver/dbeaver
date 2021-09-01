@@ -519,6 +519,9 @@ public class PrefPageDataFormat extends TargetPrefPage
             DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
             if (buttonId == NEW_ID) {
                 String profileName = EnterNameDialog.chooseName(getShell(), ResultSetMessages.dialog_data_format_profiles_dialog_name_chooser_title);
+                if (CommonUtils.isEmpty(profileName)) {
+                    return;
+                }
                 if (registry.getCustomProfile(profileName) != null) {
                     UIUtils.showMessageBox(
                             getShell(),
