@@ -23,14 +23,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,11 +41,11 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     
     private final List<OceanbasePlanNodeJSON> rootNodes;
     
-    private OceanbaseMySQLDataSource dataSource;
+    private JDBCDataSource dataSource;
     private String query;
 
     OceanbasePlanJSON(JDBCSession session, String query) throws DBCException {
-        this.dataSource = (OceanbaseMySQLDataSource) session.getDataSource();
+        this.dataSource = session.getDataSource();
         this.query = query;
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -72,8 +71,8 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
         }
     }
 
-    OceanbasePlanJSON(MySQLDataSource dataSource, String query, List<OceanbasePlanNodeJSON> rootNodes) {
-        this.dataSource = (OceanbaseMySQLDataSource) dataSource;
+    OceanbasePlanJSON(JDBCDataSource dataSource, String query, List<OceanbasePlanNodeJSON> rootNodes) {
+        this.dataSource = dataSource;
         this.query = query;
         this.rootNodes = rootNodes;
     }

@@ -17,24 +17,6 @@
 
 package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.*;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
-import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.utils.CommonUtils;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -43,10 +25,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer implements DBCQueryPlanner {
-    private final OceanbaseMySQLDataSource dataSource;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
-    public OceanbasePlanAnalyzer(OceanbaseMySQLDataSource dataSource) {
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+
+public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer implements DBCQueryPlanner {
+    private final JDBCDataSource dataSource;
+
+    public OceanbasePlanAnalyzer(JDBCDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -61,7 +66,7 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public void serialize(@NotNull Writer planData, @NotNull DBCPlan plan) throws IOException {
+    public void serialize(Writer planData, DBCPlan plan) throws IOException {
         serializeJson(planData, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
@@ -82,8 +87,8 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public DBCPlan deserialize(@NotNull Reader planData) throws InvocationTargetException {
-        JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
+    public DBCPlan deserialize(Reader planData) throws InvocationTargetException {
+        JsonObject jo = JsonParser.parseReader(planData).getAsJsonObject();
 
         String query = getQuery(jo);
 
@@ -109,14 +114,12 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
         return this.dataSource;
     }
 
-    @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
+    public DBCPlan planQueryExecution(DBCSession session, String query, DBCQueryPlannerConfiguration configuration)
             throws DBCException {
         return explain((JDBCSession) session, query);
     }
 
-    @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;

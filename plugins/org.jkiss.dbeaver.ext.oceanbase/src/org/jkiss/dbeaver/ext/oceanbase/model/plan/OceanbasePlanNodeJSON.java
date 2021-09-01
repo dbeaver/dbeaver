@@ -38,7 +38,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
+public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
 
     private final OceanbasePlanNodeJSON parent;
     private final Map<String, String> nodeProps = new LinkedHashMap<>();
@@ -116,10 +116,10 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         return name;
     }
 
-    @Property(order = 1, viewable = true)
+    @Property(order = 1, viewable = true, name = "OPERATOR")
     @Override
     public String getNodeName() {
-        Object nodeName = nodeProps.get("table_name");
+        Object nodeName = nodeProps.get("OPERATOR");
         if (nodeName != null) {
             Object accessType = nodeProps.get("access_type");
             if (accessType != null) {

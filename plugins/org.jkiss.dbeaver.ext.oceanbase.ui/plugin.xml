@@ -20,18 +20,20 @@
 <plugin>
     <extension point="org.eclipse.ui.editors">
         <editor
-                name="%editor.session_manager.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
-                class="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor"
-                id="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor"
-                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor"/>
+            name="%editor.session_manager.name"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+            class="org.jkiss.dbeaver.ext.oceanbase.ui.editors.OceanbaseSessionEditor"
+            id="org.jkiss.dbeaver.ext.oceanbase.ui.editors.OceanbaseSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
     </extension>
-
+    
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution
-                editorId="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor"
-                category="connectionEditor" label="%editor.session_manager.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution 
+        	editorId="org.jkiss.dbeaver.ext.oceanbase.ui.editors.OceanbaseSessionEditor" 
+        	category="connectionEditor" 
+        	label="%editor.session_manager.name" 
+        	icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="oceanbase"/>
         </editorContribution>
     </extension>
@@ -51,6 +53,12 @@
                 label="%dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.oceanbase.ui.views.OceanbaseConnectionPage"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.oceanbase/icons/ob_icon.png"/>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator 
+        	class="org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative" 
+        	uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
     </extension>
 </plugin>
 

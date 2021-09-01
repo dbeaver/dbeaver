@@ -28,6 +28,9 @@ public class OceanbaseMessages extends NLS {
     public static String oceanbase_connection_page_label_url;
     public static String oceanbase_connection_page_label_connection;
     public static String oceanbase_connection_page_label_tenant;
+    public static String oceanbase_connection_page_label_tenant_type;
+    public static String oceanbase_connection_page_label_mysql_mode;
+    public static String oceanbase_connection_page_label_oracle_mode;
     
     static {
         // initialize resource bundle
