@@ -89,7 +89,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager impleme
      * TODO: Vertica is originally based on PG. Maybe we should refactor this stuff somehow.
      */
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException
     {
         final GenericTableColumn column = command.getObject();
 
