@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.Activator;
@@ -43,155 +44,153 @@ import org.jkiss.utils.CommonUtils;
  * OceanbaseConnectionPage
  */
 public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-    private static final Log log = Log.getLog(OceanbaseConnectionPage.class);
-    private static final ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
+	private static final Log log = Log.getLog(OceanbaseConnectionPage.class);
+	private static final ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
 
-    private Text portText;
-    private Text hostText;
-    private Text urlText;
-    private Text databaseText;
-    private Text tenantText;
+	private Text portText;
+	private Text hostText;
+	private Text databaseText;
+	private Text tenantText;
+	private Combo modeCombo;
 
-    @Override
-    public void createControl(Composite composite) {
-        // Composite group = new Composite(composite, SWT.NONE);
-        // group.setLayout(new GridLayout(1, true));
-        setImageDescriptor(logoImage);
+	@Override
+	public void createControl(Composite composite) {
+		// Composite group = new Composite(composite, SWT.NONE);
+		// group.setLayout(new GridLayout(1, true));
+		setImageDescriptor(logoImage);
 
-        ModifyListener textListener = e -> evaluateURL();
+		ModifyListener textListener = e -> evaluateURL();
 
-        Composite addrGroup = new Composite(composite, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
-        addrGroup.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        addrGroup.setLayoutData(gd);
+		Composite addrGroup = new Composite(composite, SWT.NONE);
+		GridLayout gl = new GridLayout(1, false);
+		addrGroup.setLayout(gl);
+		GridData gd = new GridData(GridData.FILL_BOTH);
+		addrGroup.setLayoutData(gd);
 
-        {
-            Group hostGroup = UIUtils.createControlGroup(addrGroup,
-                    OceanbaseMessages.oceanbase_connection_page_label_connection, 4, GridData.FILL_HORIZONTAL, 0);
+		{
+			Group hostGroup = UIUtils.createControlGroup(addrGroup,
+					OceanbaseMessages.oceanbase_connection_page_label_connection, 4, GridData.FILL_HORIZONTAL, 0);
 
-            Label urlLabel = new Label(hostGroup, SWT.NONE);
-            urlLabel.setText(OceanbaseMessages.oceanbase_connection_page_label_url);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            urlLabel.setLayoutData(gd);
+			Label hostLabel = UIUtils.createControlLabel(hostGroup,
+					OceanbaseMessages.oceanbase_connection_page_label_host);
+			hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            urlText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 3;
-            gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 355;
-            urlText.setEditable(false);
-            urlText.setLayoutData(gd);
-            urlText.addModifyListener(e -> site.updateButtons());
+			hostText = new Text(hostGroup, SWT.BORDER);
+			gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.grabExcessHorizontalSpace = true;
+			hostText.setLayoutData(gd);
+			hostText.addModifyListener(textListener);
 
-            Label hostLabel = UIUtils.createControlLabel(hostGroup,
-                    OceanbaseMessages.oceanbase_connection_page_label_host);
-            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+			Label portLabel = UIUtils.createControlLabel(hostGroup,
+					OceanbaseMessages.oceanbase_connection_page_label_port);
+			portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            hostText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            hostText.setLayoutData(gd);
-            hostText.addModifyListener(textListener);
+			portText = new Text(hostGroup, SWT.BORDER);
+			gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.grabExcessHorizontalSpace = true;
+			portText.setLayoutData(gd);
+			portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+			portText.addModifyListener(textListener);
 
-            Label portLabel = UIUtils.createControlLabel(hostGroup,
-                    OceanbaseMessages.oceanbase_connection_page_label_port);
-            portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+			Label databaseLabel = UIUtils.createControlLabel(hostGroup,
+					OceanbaseMessages.oceanbase_connection_page_label_database);
+			databaseLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            portText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            portText.setLayoutData(gd);
-            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            portText.addModifyListener(textListener);
+			databaseText = new Text(hostGroup, SWT.BORDER);
+			gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.grabExcessHorizontalSpace = true;
+			databaseText.setLayoutData(gd);
+			databaseText.addModifyListener(textListener);
 
-            Label databaseLabel = UIUtils.createControlLabel(hostGroup,
-                    OceanbaseMessages.oceanbase_connection_page_label_database);
-            databaseLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+			Label tenantLabel = UIUtils.createControlLabel(hostGroup,
+					OceanbaseMessages.oceanbase_connection_page_label_tenant);
+			tenantLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            databaseText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            databaseText.setLayoutData(gd);
-            databaseText.addModifyListener(textListener);
+			tenantText = new Text(hostGroup, SWT.BORDER);
+			gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.grabExcessHorizontalSpace = true;
+			tenantText.setLayoutData(gd);
+			tenantText.addModifyListener(textListener);
 
-            Label tenantLabel = UIUtils.createControlLabel(hostGroup,
-                    OceanbaseMessages.oceanbase_connection_page_label_tenant);
-            tenantLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+			Label modeLabel = UIUtils.createControlLabel(hostGroup,
+					OceanbaseMessages.oceanbase_connection_page_label_tenant_type);
+			modeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            tenantText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            tenantText.setLayoutData(gd);
-            tenantText.addModifyListener(textListener);
-        }
+			modeCombo = new Combo(hostGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+			modeCombo.add(OceanbaseMessages.oceanbase_connection_page_label_mysql_mode);
+			modeCombo.add(OceanbaseMessages.oceanbase_connection_page_label_oracle_mode);
+			modeCombo.select(1);
+			modeCombo.addModifyListener(textListener);
+		}
 
-        createAuthPanel(addrGroup, 1);
-        createDriverPanel(addrGroup);
-        setControl(addrGroup);
-    }
+		createAuthPanel(addrGroup, 1);
+		createDriverPanel(addrGroup);
+		setControl(addrGroup);
+	}
 
-    @Override
-    public boolean isComplete() {
-        return super.isComplete() && hostText != null && databaseText != null && portText != null && tenantText != null
-                && !CommonUtils.isEmpty(hostText.getText()) && !CommonUtils.isEmpty(databaseText.getText())
-                && !CommonUtils.isEmpty(portText.getText()) && !CommonUtils.isEmpty(tenantText.getText());
-    }
+	@Override
+	public boolean isComplete() {
+		return super.isComplete() && hostText != null && databaseText != null && portText != null && tenantText != null
+				&& !CommonUtils.isEmpty(hostText.getText());
+	}
 
-    @Override
-    public void loadSettings() {
-        // Load values from new connection info
-        DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
-        DBPConnectionConfiguration connectionInfo = activeDataSource.getConnectionConfiguration();
-        if (urlText != null) {
-            if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
-                try {
-                    saveSettings(site.getActiveDataSource());
-                } catch (Exception e) {
-                    log.error(e.getMessage());
-                }
-            }
-            urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
-        }
-        hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
-        portText.setText(CommonUtils.notEmpty(connectionInfo.getHostPort()));
-        databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-        tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+	@Override
+	public void loadSettings() {
+		// Load values from new connection info
+		DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
+		DBPConnectionConfiguration connectionInfo = activeDataSource.getConnectionConfiguration();
+		if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+			hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+		} else {
+			hostText.setText(MySQLConstants.DEFAULT_HOST);
+		}
+		if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+			portText.setText(CommonUtils.notEmpty(connectionInfo.getHostPort()));
+		}
+		if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+			databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+		}
+		if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
+			tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+		}
+		if (!CommonUtils.isEmpty(connectionInfo.getProviderProperty("tenantType"))) {
+			modeCombo.setText(connectionInfo.getProviderProperty("tenantType"));
+		}
+		super.loadSettings();
+	}
 
-        super.loadSettings();
-    }
+	@Override
+	public void saveSettings(DBPDataSourceContainer dataSource) {
+		DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+		if (hostText != null) {
+			connectionInfo.setHostName(hostText.getText().trim());
+		}
+		if (portText != null) {
+			connectionInfo.setHostPort(portText.getText().trim());
+		}
+		if (databaseText != null) {
+			connectionInfo.setDatabaseName(databaseText.getText().trim());
+		}
+		if (tenantText != null) {
+			connectionInfo.setServerName(tenantText.getText().trim());
+		}
+		connectionInfo.setProviderProperty("tenantType", modeCombo.getText());
+		super.saveSettings(dataSource);
+	}
 
-    @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
-        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        if (hostText != null) {
-            connectionInfo.setHostName(hostText.getText().trim());
-        }
-        if (portText != null) {
-            connectionInfo.setHostPort(portText.getText().trim());
-        }
-        if (databaseText != null) {
-            connectionInfo.setDatabaseName(databaseText.getText().trim());
-        }
-        if (tenantText != null) {
-            connectionInfo.setServerName(tenantText.getText().trim());
-        }
-        super.saveSettings(dataSource);
-    }
+	@Override
+	public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+		return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
+	}
 
-    @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
-        return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
-    }
+	@NotNull
+	@Override
+	protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
+		return OceanbaseAuthModelDatabaseNative.ID;
+	}
 
-    @NotNull
-    @Override
-    protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
-        return OceanbaseAuthModelDatabaseNative.ID;
-    }
-
-    private void evaluateURL() {
-        site.updateButtons();
-    }
+	private void evaluateURL() {
+		site.updateButtons();
+	}
 
 }
