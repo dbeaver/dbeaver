@@ -46,11 +46,12 @@ import java.util.Date;
 public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
     public static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
+    public static final SimpleDateFormat DEFAULT_DATETIME_TZ_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_TZ_FORMAT + "''");
     public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
     public static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
+    public static final SimpleDateFormat DEFAULT_TIME_TZ_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_TZ_FORMAT + "''");
 
-    public JDBCDateTimeValueHandler(DBDFormatSettings formatSettings)
-    {
+    public JDBCDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
     }
 
@@ -101,12 +102,10 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             } else {
                 return resultSet.getAttributeValue(index);
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             try {
                 if (e.getCause() instanceof ParseException ||
-                    e.getCause() instanceof UnsupportedOperationException)
-                {
+                    e.getCause() instanceof UnsupportedOperationException) {
                     // [SQLite] workaround.
                     Object objectValue = ((JDBCResultSet) resultSet).getObject(index + 1);
                     if (objectValue instanceof Date) {
@@ -123,9 +122,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     }
                 } else if (
                     SQLState.SQL_42000.getCode().equals(e.getSQLState()) ||
-                    SQLState.SQL_S1009.getCode().equals(e.getSQLState()) ||
-                    SQLState.SQL_HY000.getCode().equals(e.getSQLState()))
-                {
+                        SQLState.SQL_S1009.getCode().equals(e.getSQLState()) ||
+                        SQLState.SQL_HY000.getCode().equals(e.getSQLState())) {
                     // [MySQL, Netezza] workaround. Time value may be interval (should be read as string)
                     return ((JDBCResultSet) resultSet).getString(index + 1);
                 }
@@ -141,7 +139,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, @Nullable Object value) throws DBCException {
         try {
-            JDBCPreparedStatement dbStat = (JDBCPreparedStatement)statement;
+            JDBCPreparedStatement dbStat = (JDBCPreparedStatement) statement;
             // JDBC uses 1-based indexes
             if (value == null) {
                 dbStat.setNull(index + 1, type.getTypeID());
@@ -162,16 +160,14 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                         break;
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
         }
     }
 
     @NotNull
     @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
-    {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (format == DBDDisplayFormat.NATIVE) {
             if (value instanceof Date) {
                 Format nativeFormat = getNativeValueFormat(column);
@@ -203,7 +199,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             case Types.TIME:
                 return DEFAULT_TIME_FORMAT;
             case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_FORMAT;
+                return DEFAULT_TIME_TZ_FORMAT;
             case Types.DATE:
                 return DEFAULT_DATE_FORMAT;
         }
@@ -211,22 +207,23 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @NotNull
-    protected String getFormatterId(DBSTypedObject column)
-    {
+    protected String getFormatterId(DBSTypedObject column) {
         switch (column.getTypeID()) {
             case Types.TIME:
-            case Types.TIME_WITH_TIMEZONE:
                 return DBDDataFormatter.TYPE_NAME_TIME;
             case Types.DATE:
                 return DBDDataFormatter.TYPE_NAME_DATE;
+            case Types.TIME_WITH_TIMEZONE:
+                return DBDDataFormatter.TYPE_NAME_TIME_TZ;
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+                return DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
             default:
                 return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
         }
     }
 
     @Nullable
-    protected static java.sql.Time getTimeValue(Object value)
-    {
+    protected static java.sql.Time getTimeValue(Object value) {
         if (value instanceof java.sql.Time) {
             return (java.sql.Time) value;
         } else if (value instanceof Date) {
@@ -239,8 +236,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @Nullable
-    protected static java.sql.Date getDateValue(Object value)
-    {
+    protected static java.sql.Date getDateValue(Object value) {
         if (value instanceof java.sql.Date) {
             return (java.sql.Date) value;
         } else if (value instanceof Date) {
@@ -253,8 +249,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @Nullable
-    protected static java.sql.Timestamp getTimestampValue(Object value)
-    {
+    protected static java.sql.Timestamp getTimestampValue(Object value) {
         if (value instanceof java.sql.Timestamp) {
             return (java.sql.Timestamp) value;
         } else if (value instanceof Date) {
@@ -266,8 +261,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
         }
     }
 
-    protected static String getTwoDigitValue(int value)
-    {
+    protected static String getTwoDigitValue(int value) {
         if (value < 10) {
             return "0" + value;
         } else {

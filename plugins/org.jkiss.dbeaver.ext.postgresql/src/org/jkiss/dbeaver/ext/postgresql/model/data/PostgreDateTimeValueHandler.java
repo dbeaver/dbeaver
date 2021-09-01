@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -75,5 +77,17 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
             return;
         }
         super.bindValueObject(session, statement, type, index, value);
+    }
+
+    @NotNull
+    @Override
+    protected String getFormatterId(DBSTypedObject column) {
+        switch (column.getTypeName()) {
+            case PostgreConstants.TYPE_TIMETZ:
+                return DBDDataFormatter.TYPE_NAME_TIME_TZ;
+            case PostgreConstants.TYPE_TIMESTAMPTZ:
+                return DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
+        }
+        return super.getFormatterId(column);
     }
 }

@@ -162,7 +162,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                 } else if (value instanceof Time) {
                     return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME, null).formatValue(value));
                 } else {
-                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP, null).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ, null).formatValue(value));
                 }
             } catch (Exception e) {
                 log.debug("Error formatting date [" + value + "]", e);
