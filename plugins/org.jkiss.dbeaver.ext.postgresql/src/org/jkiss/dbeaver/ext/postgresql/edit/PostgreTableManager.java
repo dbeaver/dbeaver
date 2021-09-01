@@ -199,7 +199,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     {
         PostgreTableBase table = command.getObject();
         final String tableName = DBUtils.getEntityScriptName(table, options);
-        String script = "DROP " + (table instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        String script = "DROP " + table.getTableTypeName() +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             " " + tableName +  //$NON-NLS-1$
             (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "");
         SQLDatabasePersistAction action = table.getSchema().isExternal() ?
