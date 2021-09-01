@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -80,6 +81,10 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         if (structType == null) {
             log.debug("Can't resolve struct type '" + type.getTypeName() + "'");
             return object;
+        }
+        if (structType.getTypeType() == PostgreTypeType.d) {
+            // Domains are just wrappers around underlying type.
+            structType = structType.getBaseType(session.getProgressMonitor());
         }
         try {
             if (object == null) {
