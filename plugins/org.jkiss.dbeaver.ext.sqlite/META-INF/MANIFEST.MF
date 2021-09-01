@@ -7,7 +7,8 @@ Bundle-Release-Date: 20210830
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis,
- org.jkiss.dbeaver.model
+ org.jkiss.dbeaver.model,
+ org.jkiss.bundle.gis
 Export-Package: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ext.sqlite.model
 Bundle-ActivationPolicy: lazy
