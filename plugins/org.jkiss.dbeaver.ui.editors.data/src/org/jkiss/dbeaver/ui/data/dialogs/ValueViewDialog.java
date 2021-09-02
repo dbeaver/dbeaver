@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -97,7 +99,9 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
         throws DBException
     {
         IValueEditor editor = valueController.getValueManager().createEditor(
-            new ProxyValueController(valueController, placeholder));
+            valueController instanceof IAttributeController ?
+                new ProxyAttributeValueController((IAttributeController) valueController, placeholder) :
+                new ProxyValueController<>(valueController, placeholder));
         if (editor != null) {
             editor.createControl();
             Control control = editor.getControl();
@@ -286,11 +290,11 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
 
     }
 
-    private static class ProxyValueController implements IValueController {
-        private final IValueController valueController;
-        private final Composite placeholder;
+    private static class ProxyValueController<VC extends IValueController> implements IValueController {
+        protected final VC valueController;
+        protected final Composite placeholder;
 
-        public ProxyValueController(IValueController valueController, Composite placeholder) {
+        ProxyValueController(VC valueController, Composite placeholder) {
             this.valueController = valueController;
             this.placeholder = placeholder;
         }
@@ -379,6 +383,37 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
         @Override
         public void showMessage(String message, DBPMessageType messageType)
         {
+        }
+    }
+
+    private static class ProxyAttributeValueController extends ProxyValueController<IAttributeController> implements IAttributeController {
+
+        public ProxyAttributeValueController(IAttributeController valueController, Composite placeholder) {
+            super(valueController, placeholder);
+        }
+
+        @NotNull
+        @Override
+        public IRowController getRowController() {
+            return valueController.getRowController();
+        }
+
+        @NotNull
+        @Override
+        public DBDAttributeBinding getBinding() {
+            return valueController.getBinding();
+        }
+
+        @NotNull
+        @Override
+        public String getColumnId() {
+            return valueController.getColumnId();
+        }
+
+        @Nullable
+        @Override
+        public DBDRowIdentifier getRowIdentifier() {
+            return valueController.getRowIdentifier();
         }
     }
 }
