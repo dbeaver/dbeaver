@@ -134,6 +134,12 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
         }
         super.cacheStructure(monitor, scope);
     }
+    
+    @Override
+    public boolean isSystem()
+    {
+        return false;
+    }
 
     static class OceanbaseTableCache
             extends JDBCStructLookupCache<OceanbaseMySQLCatalog, MySQLTableBase, MySQLTableColumn> {
