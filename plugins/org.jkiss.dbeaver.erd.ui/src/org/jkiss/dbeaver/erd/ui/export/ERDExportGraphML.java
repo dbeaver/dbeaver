@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Pair;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -127,7 +127,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                 xml.flush();
                 osw.flush();
             }
-            UIUtils.launchProgram(targetFile.getAbsolutePath());
+            ShellUtils.launchProgram(targetFile.getAbsolutePath());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as GraphML", null, e);
         }

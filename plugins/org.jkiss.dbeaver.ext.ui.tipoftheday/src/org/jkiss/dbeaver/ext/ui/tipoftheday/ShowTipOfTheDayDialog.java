@@ -39,6 +39,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -165,7 +166,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         if (href != null) {
             String linkURL = href.toString();
             if (linkURL.startsWith("http:") || linkURL.startsWith("https:")) {
-                UIUtils.launchProgram(linkURL);
+                ShellUtils.launchProgram(linkURL);
             } else if (linkURL.startsWith("prefs:")) {
                 String prefPageId = linkURL.substring(linkURL.indexOf("//") + 2);
                 buttonPressed(IDialogConstants.OK_ID);

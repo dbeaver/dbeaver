@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -200,10 +201,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 public void widgetSelected(SelectionEvent e) {
                     switch (e.text) {
                         case "params":
-                            UIUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameter-bindings"));
+                            ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameter-bindings"));
                             break;
                         case "commands":
-                            UIUtils.launchProgram(HelpUtils.getHelpExternalReference("Client-Side-Scripting"));
+                            ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Client-Side-Scripting"));
                             break;
                         default:
                             break;

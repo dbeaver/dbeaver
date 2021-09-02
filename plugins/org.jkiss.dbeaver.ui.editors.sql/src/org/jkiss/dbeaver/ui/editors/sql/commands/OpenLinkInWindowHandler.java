@@ -11,15 +11,12 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class OpenLinkInWindowHandler extends AbstractHandler implements IElementUpdater {
 
@@ -43,7 +40,7 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
         TextSelection textSelection = (TextSelection) selection;
         String googleLink = SEARCH_WEB_ADDRESS_PREFIX + textSelection.getText().replaceAll(" ", "%20").trim();
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            UIUtils.launchProgram(googleLink);
+            ShellUtils.launchProgram(googleLink);
         } else {
             DBWorkbench.getPlatformUI().showError(TITLE, "Desktop is not supported.");
         }

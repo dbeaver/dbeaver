@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -199,7 +200,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                     + ResultSetMessages.pref_page_data_format_link_patterns + "</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    UIUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
                 }
             });
             urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));

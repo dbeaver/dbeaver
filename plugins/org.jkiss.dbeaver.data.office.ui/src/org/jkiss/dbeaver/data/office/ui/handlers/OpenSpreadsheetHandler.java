@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
@@ -119,7 +120,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     consumer.finishTransfer(monitor, false);
 
                     UIUtils.asyncExec(() -> {
-                        if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
+                        if (!ShellUtils.launchProgram(tempFile.getAbsolutePath())) {
                             DBWorkbench.getPlatformUI().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
                         }
                     });
