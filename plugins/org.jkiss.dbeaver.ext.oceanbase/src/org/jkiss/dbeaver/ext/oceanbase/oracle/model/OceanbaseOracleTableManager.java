@@ -59,66 +59,63 @@ public class OceanbaseOracleTableManager extends SQLTableManager<OceanbaseOracle
 			Object container, Object copyFrom, Map<String, Object> options) throws DBException {
 		OceanbaseOracleSchema schema = (OceanbaseOracleSchema) container;
 
-        OceanbaseOracleTable table = new OceanbaseOracleTable(schema, ""); //$NON-NLS-1$
-        setNewObjectName(monitor, schema, table);
-        return table;
+		OceanbaseOracleTable table = new OceanbaseOracleTable(schema, ""); //$NON-NLS-1$
+		setNewObjectName(monitor, schema, table);
+		return table;
 	}
-	
+
 	@Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
-        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
-            StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-            query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-            appendTableModifiers(monitor, command.getObject(), command, query, true);
-            actionList.add(new SQLDatabasePersistAction(query.toString()));
-        }
-    }
+	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+		if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
+			StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
+			query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
+			appendTableModifiers(monitor, command.getObject(), command, query, true);
+			actionList.add(new SQLDatabasePersistAction(query.toString()));
+		}
+	}
 
-    @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<OceanbaseOracleTable, PropertyHandler> command, Map<String, Object> options) throws DBException {
-        OceanbaseOracleTable table = command.getObject();
-        if (command.getProperty("comment") != null) { //$NON-NLS-1$
-            actions.add(new SQLDatabasePersistAction(
-                "Comment table",
-                "COMMENT ON TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(table, table.getComment())));
-        }
+	@Override
+	protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actions, NestedObjectCommand<OceanbaseOracleTable, PropertyHandler> command,
+			Map<String, Object> options) throws DBException {
+		OceanbaseOracleTable table = command.getObject();
+		if (command.getProperty("comment") != null) { //$NON-NLS-1$
+			actions.add(new SQLDatabasePersistAction("Comment table",
+					"COMMENT ON TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS "
+							+ SQLUtils.quoteString(table, table.getComment())));
+		}
 
-        if (!table.isPersisted()) {
-            // Column comments for the newly created table
-            for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (!CommonUtils.isEmpty(column.getDescription())) {
-                    OceanbaseOracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
-                }
-            }
-        }
-    }
+		if (!table.isPersisted()) {
+			// Column comments for the newly created table
+			for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+				if (!CommonUtils.isEmpty(column.getDescription())) {
+					OceanbaseOracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
+				}
+			}
+		}
+	}
 
-    @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
-        actions.add(
-            new SQLDatabasePersistAction(
-                "Rename table",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
-                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
-        );
-    }
+	@Override
+	protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+		actions.add(new SQLDatabasePersistAction("Rename table",
+				"ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." //$NON-NLS-1$
+						+ DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + " RENAME TO "
+						+ DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())));
+	}
 
-    @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        OceanbaseOracleTable object = command.getObject();
-        actions.add(
-            new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table,
-                "DROP " + (object.isView() ? "VIEW" : "TABLE") +
-                    " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE CONSTRAINTS" : "")
-            )
-        );
-    }
+	@Override
+	protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+		OceanbaseOracleTable object = command.getObject();
+		actions.add(new SQLDatabasePersistAction(ModelMessages.model_jdbc_drop_table,
+				"DROP " + (object.isView() ? "VIEW" : "TABLE") + " "
+						+ object.getFullyQualifiedName(DBPEvaluationContext.DDL)
+						+ (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE)
+								? " CASCADE CONSTRAINTS"
+								: "")));
+	}
 
 	@Override
 	public void renameObject(DBECommandContext commandContext, OceanbaseOracleTable object, Map<String, Object> options,

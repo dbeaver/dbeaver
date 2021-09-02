@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.Activator;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.OceanbaseMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -44,7 +43,6 @@ import org.jkiss.utils.CommonUtils;
  * OceanbaseConnectionPage
  */
 public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-	private static final Log log = Log.getLog(OceanbaseConnectionPage.class);
 	private static final ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
 
 	private Text portText;

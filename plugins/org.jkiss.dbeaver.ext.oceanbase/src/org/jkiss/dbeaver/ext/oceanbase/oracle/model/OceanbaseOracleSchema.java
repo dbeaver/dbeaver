@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.oceanbase.oracle.model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,7 +48,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseOracleSchema extends OracleSchema {
 	final public OceanbaseTableCache oceanbaseTableCache = new OceanbaseTableCache();
@@ -79,36 +77,28 @@ public class OceanbaseOracleSchema extends OracleSchema {
 
 			boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null,
 					"ALL_ALL_TABLES");
-			boolean useAlternativeQuery = CommonUtils
-					.toBoolean(getDataSource().getContainer().getConnectionConfiguration()
-							.getProviderProperty(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
 			String tablesSource = hasAllAllTables ? "ALL_TABLES" : "TABLES";
 			String tableTypeColumns = hasAllAllTables ? "t.TABLE_TYPE_OWNER,t.TABLE_TYPE"
 					: "NULL as TABLE_TYPE_OWNER, NULL as TABLE_TYPE";
 
-			JDBCPreparedStatement dbStat;
-			if (!useAlternativeQuery) {
-				dbStat = session.prepareStatement("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource())
-						+ " O.*,\n" + tableTypeColumns
-						+ ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n"
-						+ "FROM "
-						+ OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS")
-						+ " O\n" + ", "
-						+ OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(),
-								tablesSource)
-						+ " t WHERE t.OWNER(+) = O.OWNER AND t.TABLE_NAME(+) = o.OBJECT_NAME\n"
-						+ "AND O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')"
-						+ (object == null && objectName == null ? "" : " AND O.OBJECT_NAME" + tableOper + "?")
-						+ (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "")
-						+ (object instanceof OracleView ? " AND O.OBJECT_TYPE='VIEW'" : "")
-						+ (object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE='MATERIALIZED VIEW'" : ""));
-				dbStat.setString(1, owner.getName());
-				if (object != null || objectName != null)
-					dbStat.setString(2, object != null ? object.getName() : objectName);
-				return dbStat;
-			} else {
-				return getAlternativeTableStatement(session, owner, object, objectName, tablesSource, tableTypeColumns);
-			}
+			JDBCPreparedStatement dbStat = session.prepareStatement("SELECT "
+					+ OracleUtils.getSysCatalogHint(owner.getDataSource()) + " O.*,\n" + tableTypeColumns
+					+ ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n"
+					+ "FROM "
+					+ OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS")
+					+ " O\n" + ", "
+					+ OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(),
+							tablesSource)
+					+ " t WHERE t.OWNER(+) = O.OWNER AND t.TABLE_NAME(+) = o.OBJECT_NAME\n"
+					+ "AND O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')"
+					+ (object == null && objectName == null ? "" : " AND O.OBJECT_NAME" + tableOper + "?")
+					+ (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "")
+					+ (object instanceof OracleView ? " AND O.OBJECT_TYPE='VIEW'" : "")
+					+ (object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE='MATERIALIZED VIEW'" : ""));
+			dbStat.setString(1, owner.getName());
+			if (object != null || objectName != null)
+				dbStat.setString(2, object != null ? object.getName() : objectName);
+			return dbStat;
 		}
 
 		@Override
@@ -164,7 +154,7 @@ public class OceanbaseOracleSchema extends OracleSchema {
 		@Override
 		protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OceanbaseOracleSchema owner,
 				@NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-			if(table instanceof OceanbaseOracleView) {
+			if (table instanceof OceanbaseOracleView) {
 				return new OceanbaseOracleViewColumn(session.getProgressMonitor(), table, dbResult);
 			}
 			return new OracleTableColumn(session.getProgressMonitor(), table, dbResult);

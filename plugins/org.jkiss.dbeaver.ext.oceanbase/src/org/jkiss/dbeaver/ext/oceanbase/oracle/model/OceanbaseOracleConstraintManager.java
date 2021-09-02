@@ -39,61 +39,48 @@ import java.util.Map;
 
 public class OceanbaseOracleConstraintManager extends SQLConstraintManager<OracleTableConstraint, OracleTableBase> {
 
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
-    {
-        return object.getParentObject().getSchema().constraintCache;
-    }
+	@Nullable
+	@Override
+	public DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object) {
+		return object.getParentObject().getSchema().constraintCache;
+	}
 
-    @Override
-    protected OracleTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
-    {
-        OracleTableBase table = (OracleTableBase) container;
+	@Override
+	protected OracleTableConstraint createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+			final Object container, Object from, Map<String, Object> options) {
+		OracleTableBase table = (OracleTableBase) container;
 
-        return new OracleTableConstraint(
-            table,
-            "",
-            DBSEntityConstraintType.UNIQUE_KEY,
-            null,
-            OracleObjectStatus.ENABLED);
-    }
+		return new OracleTableConstraint(table, "", DBSEntityConstraintType.UNIQUE_KEY, null,
+				OracleObjectStatus.ENABLED);
+	}
 
-    @Override
-    protected String getDropConstraintPattern(OracleTableConstraint constraint)
-    {
-        String clause = "CONSTRAINT"; //$NON-NLS-1$;
+	@Override
+	protected String getDropConstraintPattern(OracleTableConstraint constraint) {
+		String clause = "CONSTRAINT"; //$NON-NLS-1$ ;
 
-        String tableType = constraint.getTable().isView() ? "VIEW" : "TABLE";
+		String tableType = constraint.getTable().isView() ? "VIEW" : "TABLE";
 
-        return "ALTER " + tableType + " " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    }
+		return "ALTER " + tableType + " " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command, Map<String, Object> options)
-    {
-    	OracleTableConstraint constraint = command.getObject();
-        boolean isView = constraint.getTable().isView();
-        String tableType = isView ? "VIEW" : "TABLE";
-    	OracleTableBase table = constraint.getTable();
-        actions.add(
-                new SQLDatabasePersistAction(
-                    ModelMessages.model_jdbc_create_new_constraint,
-                    "ALTER " + tableType + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                        "\nADD " + getNestedDeclaration(monitor, table, command, options) +
-                    (isView ? " NOVALIDATE" : "")
-                	));
-    }
+	@Override
+	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+		OracleTableConstraint constraint = command.getObject();
+		boolean isView = constraint.getTable().isView();
+		String tableType = isView ? "VIEW" : "TABLE";
+		OracleTableBase table = constraint.getTable();
+		actions.add(new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_constraint,
+				"ALTER " + tableType + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\nADD "
+						+ getNestedDeclaration(monitor, table, command, options) + (isView ? " NOVALIDATE" : "")));
+	}
 
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OracleTableConstraint> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append(" (").append((command.getObject()).getSearchCondition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
-        }
-    }
+	@Override
+	protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OracleTableConstraint> command) {
+		if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+			decl.append(" (").append((command.getObject()).getSearchCondition()).append(")");
+		} else {
+			super.appendConstraintDefinition(decl, command);
+		}
+	}
 }

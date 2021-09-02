@@ -20,14 +20,13 @@ package org.jkiss.dbeaver.ext.oceanbase.oracle.model.session;
 import java.sql.ResultSet;
 import java.util.Objects;
 
-import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
-public class OceanbaseOracleServerSession extends AbstractServerSession{
+public class OceanbaseOracleServerSession extends AbstractServerSession {
 	private final String CAT_SESSION = "Session";
-	
+
 	private long sid;
 	private String user;
 	private String tenant;
@@ -39,7 +38,7 @@ public class OceanbaseOracleServerSession extends AbstractServerSession{
 	private String info;
 	private String ip;
 	private int port;
-	
+
 	public OceanbaseOracleServerSession(ResultSet dbResult) {
 		this.sid = JDBCUtils.safeGetLong(dbResult, "ID");
 		this.user = JDBCUtils.safeGetString(dbResult, "USER");
@@ -53,93 +52,83 @@ public class OceanbaseOracleServerSession extends AbstractServerSession{
 		this.ip = JDBCUtils.safeGetString(dbResult, "IP");
 		this.port = JDBCUtils.safeGetInt(dbResult, "PORT");
 	}
-	
 
 	@Override
 	public String getActiveQuery() {
 		return info;
 	}
-	
+
 	@Override
-    public String toString() {
-        return sid + " - " + info;
-    }
-	
+	public String toString() {
+		return sid + " - " + info;
+	}
+
 	@Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        OceanbaseOracleServerSession that = (OceanbaseOracleServerSession) o;
-        return sid == that.sid;
-    }
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		OceanbaseOracleServerSession that = (OceanbaseOracleServerSession) o;
+		return sid == that.sid;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(sid);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(sid);
+	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 1)
+	@Property(category = CAT_SESSION, viewable = true, order = 1)
 	public long getSid() {
 		return sid;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 2)
+	@Property(category = CAT_SESSION, viewable = true, order = 2)
 	public String getUser() {
 		return user;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 3)
+	@Property(category = CAT_SESSION, viewable = true, order = 3)
 	public String getTenant() {
 		return tenant;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 4)
+	@Property(category = CAT_SESSION, viewable = true, order = 4)
 	public String getHost() {
 		return host;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 5)
+	@Property(category = CAT_SESSION, viewable = true, order = 5)
 	public String getDb() {
 		return db;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 6)
+	@Property(category = CAT_SESSION, viewable = true, order = 6)
 	public String getCommand() {
 		return command;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 7)
+	@Property(category = CAT_SESSION, viewable = true, order = 7)
 	public long getTime() {
 		return time;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 8)
+	@Property(category = CAT_SESSION, viewable = true, order = 8)
 	public String getState() {
 		return state;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 9)
+	@Property(category = CAT_SESSION, viewable = true, order = 9)
 	public String getInfo() {
 		return info;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 10)
+	@Property(category = CAT_SESSION, viewable = true, order = 10)
 	public String getIp() {
 		return ip;
 	}
 
-
-    @Property(category = CAT_SESSION, viewable = true, order = 11)
+	@Property(category = CAT_SESSION, viewable = true, order = 11)
 	public int getPort() {
 		return port;
 	}

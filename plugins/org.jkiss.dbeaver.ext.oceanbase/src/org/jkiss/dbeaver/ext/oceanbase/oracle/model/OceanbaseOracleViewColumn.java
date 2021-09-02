@@ -18,50 +18,40 @@
 package org.jkiss.dbeaver.ext.oceanbase.oracle.model;
 
 import java.sql.ResultSet;
-import java.sql.Types;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeModifier;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class OceanbaseOracleViewColumn extends OracleTableColumn{
-	
-	public OceanbaseOracleViewColumn(OracleTableBase table)
-    {
-        super(table);
-    }
+public class OceanbaseOracleViewColumn extends OracleTableColumn {
 
-    public OceanbaseOracleViewColumn(
-        DBRProgressMonitor monitor,
-        OracleTableBase table,
-        ResultSet dbResult)
-        throws DBException
-    {
-        super(monitor, table, dbResult);
-        // Read default value first because it is of LONG type and has to be read before others
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "DEFAULT"));
+	public OceanbaseOracleViewColumn(OracleTableBase table) {
+		super(table);
+	}
 
-        setName(JDBCUtils.safeGetString(dbResult, "FIELD"));
-        this.typeName = JDBCUtils.safeGetString(dbResult, "TYPE");
-        setDataType(OracleDataType.resolveDataType(
-            monitor,
-            getDataSource(),
-            JDBCUtils.safeGetString(dbResult, "DATA_TYPE_OWNER"),
-            this.typeName));
-        OracleDataType type = getDataType();
-        if (type != null) {
-            this.typeName = type.getFullyQualifiedName(DBPEvaluationContext.DDL);
-            this.valueType = type.getTypeID();
-        }
-        String charUsed = JDBCUtils.safeGetString(dbResult, "CHAR_USED");
-        setMaxLength(JDBCUtils.safeGetLong(dbResult, "C".equals(charUsed) ? "CHAR_LENGTH" : "DATA_LENGTH"));
-        setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, "NULL")));
-        setComment(JDBCUtils.safeGetString(dbResult, "EXTRA"));
-    }
+	public OceanbaseOracleViewColumn(DBRProgressMonitor monitor, OracleTableBase table, ResultSet dbResult)
+			throws DBException {
+		super(monitor, table, dbResult);
+		// Read default value first because it is of LONG type and has to be read before
+		// others
+		setDefaultValue(JDBCUtils.safeGetString(dbResult, "DEFAULT"));
+
+		setName(JDBCUtils.safeGetString(dbResult, "FIELD"));
+		this.typeName = JDBCUtils.safeGetString(dbResult, "TYPE");
+		setDataType(OracleDataType.resolveDataType(monitor, getDataSource(),
+				JDBCUtils.safeGetString(dbResult, "DATA_TYPE_OWNER"), this.typeName));
+		OracleDataType type = getDataType();
+		if (type != null) {
+			this.typeName = type.getFullyQualifiedName(DBPEvaluationContext.DDL);
+			this.valueType = type.getTypeID();
+		}
+		String charUsed = JDBCUtils.safeGetString(dbResult, "CHAR_USED");
+		setMaxLength(JDBCUtils.safeGetLong(dbResult, "C".equals(charUsed) ? "CHAR_LENGTH" : "DATA_LENGTH"));
+		setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, "NULL")));
+		setComment(JDBCUtils.safeGetString(dbResult, "EXTRA"));
+	}
 }
