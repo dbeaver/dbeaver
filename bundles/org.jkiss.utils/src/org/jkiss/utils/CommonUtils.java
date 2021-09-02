@@ -915,7 +915,7 @@ public class CommonUtils {
      * @return {@code true} if it is within bounds of the range
      */
     public static boolean isValidIndex(int index, int length) {
-        return index >= 0 || index < length;
+        return 0 <= index && index < length;
     }
 
     @NotNull

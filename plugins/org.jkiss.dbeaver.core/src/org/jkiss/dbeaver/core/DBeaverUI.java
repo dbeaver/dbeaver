@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -37,10 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -59,13 +55,13 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
-import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
-import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
-import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
+import org.jkiss.dbeaver.ui.dialogs.*;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
@@ -239,24 +235,25 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public void showMessageBox(@NotNull String title, String message, boolean error) {
-        UIUtils.syncExec(() -> {
-            UIUtils.showMessageBox(
-                UIUtils.getActiveWorkbenchShell(),
-                title,
-                message,
-                error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
-            });
+        if (error) {
+            showMessageBox(title, message, DBIcon.STATUS_ERROR);
+        } else {
+            showMessageBox(title, message, DBIcon.STATUS_INFO);
+        }
     }
 
     @Override
     public void showWarningMessageBox(@NotNull String title, String message) {
-        UIUtils.syncExec(() -> {
-            UIUtils.showMessageBox(
-                    UIUtils.getActiveWorkbenchShell(),
-                    title,
-                    message,
-                    SWT.ICON_WARNING);
-        });
+        showMessageBox(title, message, DBIcon.STATUS_WARNING);
+    }
+
+    private static void showMessageBox(@NotNull String title, @NotNull String message, @NotNull DBPImage image) {
+        new MessageBoxBuilder(UIUtils.getActiveWorkbenchShell())
+            .setTitle(title)
+            .setMessage(message)
+            .setPrimaryImage(image)
+            .setReplies(Reply.OK)
+            .showMessageBox();
     }
 
     @Override
