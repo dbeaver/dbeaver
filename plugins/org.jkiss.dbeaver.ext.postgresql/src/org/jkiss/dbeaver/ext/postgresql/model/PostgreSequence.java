@@ -218,6 +218,11 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return additionalInfo.incrementBy;
     }
 
+    @Override
+    public String getTableTypeName() {
+        return "SEQUENCE";
+    }
+
     ///////////////////////////////////////////////////////////////////////
     // Entity
 

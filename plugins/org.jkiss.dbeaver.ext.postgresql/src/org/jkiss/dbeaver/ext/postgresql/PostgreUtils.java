@@ -440,7 +440,7 @@ public class PostgreUtils {
             return definition;
         }
         StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-        sql.append(view.getViewType()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sql.append(view.getTableTypeName()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         final DBERegistry editorsRegistry = view.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         final PostgreViewManager entityEditor = editorsRegistry.getObjectManager(view.getClass(), PostgreViewManager.class);
