@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class EnterNameDialog extends Dialog {
 
@@ -71,12 +72,19 @@ public class EnterNameDialog extends Dialog {
         propGroup.setLayoutData(gd);
 
         propNameText = UIUtils.createLabelText(propGroup, propertyName, null);
+        propNameText.addModifyListener(e -> updateButtonsState());
         if (propertyValue != null) {
             propNameText.setText(propertyValue);
             propNameText.selectAll();
         }
 
         return propGroup;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateButtonsState();
     }
 
     @Override
@@ -104,5 +112,9 @@ public class EnterNameDialog extends Dialog {
     {
         EnterNameDialog dialog = new EnterNameDialog(parentShell, propertyName, propertyValue);
         return dialog.chooseName();
+    }
+
+    private void updateButtonsState() {
+        getButton(IDialogConstants.OK_ID).setEnabled(!CommonUtils.isEmptyTrimmed(propNameText.getText()));
     }
 }

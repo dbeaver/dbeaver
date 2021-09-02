@@ -58,6 +58,17 @@ public class CustomTextCellEditor extends TextCellEditor {
         super.doSetValue(CommonUtils.toString(value));
     }
 
+    @Override
+    protected void fireApplyEditorValue() {
+        // Applying the editor value will cause the layout view to refresh,
+        // which will in turn cause the active cell editor to apply its value again.
+        // This can be avoided by deactivating the cell editor, so focusLost
+        // which is causing the issue will not be called.
+
+        super.deactivate();
+        super.fireApplyEditorValue();
+    }
+
     protected int getDoubleClickTimeout() {
         return 0;
     }
