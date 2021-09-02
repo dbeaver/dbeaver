@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
@@ -76,6 +78,14 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
                 ((DBTTaskSettingsInput) wizard.getSettings()).loadSettingsFromInput(inputObjects);
             }
         }
+
+        addPageChangedListener(new IPageChangedListener() {
+            @Override
+            public void pageChanged(PageChangedEvent event) {
+                removePageChangedListener(this);
+                getWizard().onWizardActivation();
+            }
+        });
     }
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window) {
