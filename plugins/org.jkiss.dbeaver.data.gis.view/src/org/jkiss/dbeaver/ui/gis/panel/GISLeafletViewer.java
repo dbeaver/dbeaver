@@ -48,10 +48,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -440,7 +437,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
-                UIUtils.launchProgram(scriptFile.getAbsolutePath());
+                ShellUtils.launchProgram(scriptFile.getAbsolutePath());
             }
         });
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
@@ -501,7 +498,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 } catch (IOException e) {
                     DBWorkbench.getPlatformUI().showError("Image save error", "Error saving as picture", e);
                 }
-                UIUtils.launchProgram(outFile.getAbsolutePath());
+                ShellUtils.launchProgram(outFile.getAbsolutePath());
             }
         });
 

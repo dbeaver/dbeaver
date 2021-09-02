@@ -22,7 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 
 public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
     @Override
@@ -32,7 +32,7 @@ public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
         if (element instanceof DBNResource) {
             final IResource resource = ((DBNResource) element).getResource();
             if (resource != null) {
-                UIUtils.showInSystemExplorer(resource.getLocation().toString());
+                ShellUtils.showInSystemExplorer(resource.getLocation().toString());
             }
         }
         return null;

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.core.commands.*;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -49,12 +48,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.ide.handlers.ShowInSystemExplorerHandler;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -1420,30 +1417,6 @@ public class UIUtils {
                 (bounds.width - ext.x) / 2,
                 bounds.height / 2 + offset);
             offset += ext.y;
-        }
-    }
-
-    public static boolean launchProgram(String path)
-    {
-        return Program.launch(path);
-    }
-
-    /* Adapted from org.eclipse.ui.internal.ide.dialogs.ResourceInfoPage */
-    public static void showInSystemExplorer(@NotNull String path) {
-        final IServiceLocator serviceLocator = getActiveWorkbenchWindow();
-        final ICommandService commandService = serviceLocator.getService(ICommandService.class);
-        final IHandlerService handlerService = serviceLocator.getService(IHandlerService.class);
-        final Command command = commandService.getCommand(ShowInSystemExplorerHandler.ID);
-
-        if (command.isDefined()) {
-            final Map<String, String> params = Collections.singletonMap(ShowInSystemExplorerHandler.RESOURCE_PATH_PARAMETER, path);
-            final ParameterizedCommand pc = ParameterizedCommand.generateCommand(command, params);
-
-            try {
-                handlerService.executeCommand(pc, null);
-            } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error showing path in system explorer", "Can't show '" + path + "' in system explorer", e);
-            }
         }
     }
 

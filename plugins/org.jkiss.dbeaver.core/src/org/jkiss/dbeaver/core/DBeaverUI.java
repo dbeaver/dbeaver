@@ -454,7 +454,7 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public void executeShellProgram(String shellCommand) {
-        UIUtils.asyncExec(() -> UIUtils.launchProgram(shellCommand));
+        UIUtils.asyncExec(() -> ShellUtils.launchProgram(shellCommand));
     }
 
     @Override

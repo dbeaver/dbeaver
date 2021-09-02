@@ -19,6 +19,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -57,7 +58,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (file.getParentFile().isDirectory()) {
-                        UIUtils.launchProgram(file.getParentFile().getAbsolutePath());
+                        ShellUtils.launchProgram(file.getParentFile().getAbsolutePath());
                     }
                 }
             });

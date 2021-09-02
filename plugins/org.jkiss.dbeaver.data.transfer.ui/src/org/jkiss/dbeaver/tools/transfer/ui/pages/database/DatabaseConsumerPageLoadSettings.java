@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.utils.HelpUtils;
@@ -130,7 +131,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     + DTUIMessages.database_consumer_wizard_link_label_replace_method_wiki + "</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    UIUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_TOPIC_REPLACE_METHOD));
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_TOPIC_REPLACE_METHOD));
                 }
             });
             urlLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));

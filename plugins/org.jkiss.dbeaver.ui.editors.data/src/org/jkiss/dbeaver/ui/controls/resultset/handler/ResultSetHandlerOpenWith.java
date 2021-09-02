@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
@@ -214,7 +215,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     consumer.finishTransfer(monitor, false);
 
                     UIUtils.asyncExec(() -> {
-                        if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
+                        if (!ShellUtils.launchProgram(tempFile.getAbsolutePath())) {
                             DBWorkbench.getPlatformUI().showError(
                                 "Open " + processor.getAppName(),
                                 "Can't open " + processor.getAppFileExtension() + " file '" + tempFile.getAbsolutePath() + "'");

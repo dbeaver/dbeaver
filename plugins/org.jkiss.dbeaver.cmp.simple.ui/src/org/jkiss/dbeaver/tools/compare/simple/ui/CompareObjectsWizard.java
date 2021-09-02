@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.tools.compare.simple.CompareReport;
 import org.jkiss.dbeaver.tools.compare.simple.CompareReportRenderer;
 import org.jkiss.dbeaver.tools.compare.simple.ui.internal.CompareUIMessages;
 import org.jkiss.dbeaver.ui.DialogSettingsDelegate;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
@@ -175,7 +176,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                 monitor.done();
             }
             if (settings.getOutputType() == CompareObjectsSettings.OutputType.BROWSER) {
-                UIUtils.launchProgram(reportFile.getAbsolutePath());
+                ShellUtils.launchProgram(reportFile.getAbsolutePath());
             }
         } catch (IOException e) {
             showError(e.getMessage());
