@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public final class MessageBoxBuilder {
     private final MessageBoxModern dialog;
@@ -33,8 +36,16 @@ public final class MessageBoxBuilder {
     @Nullable
     private Reply defaultReply;
 
-    public MessageBoxBuilder(@Nullable Shell shell) {
+    private MessageBoxBuilder(@Nullable Shell shell) {
         dialog = new MessageBoxModern(shell);
+    }
+
+    public static MessageBoxBuilder builder(@Nullable Shell shell) {
+        return new MessageBoxBuilder(shell);
+    }
+
+    public static MessageBoxBuilder builder() {
+        return new MessageBoxBuilder(null);
     }
 
     // ----- Builder methods

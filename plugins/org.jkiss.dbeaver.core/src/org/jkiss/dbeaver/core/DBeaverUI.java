@@ -60,8 +60,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
-import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
-import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
@@ -248,7 +246,7 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     private static void showMessageBox(@NotNull String title, @NotNull String message, @NotNull DBPImage image) {
-        new MessageBoxBuilder(UIUtils.getActiveWorkbenchShell())
+        MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
             .setTitle(title)
             .setMessage(message)
             .setPrimaryImage(image)

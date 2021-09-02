@@ -444,7 +444,7 @@ public class UIUtils {
         }
 
         if (icon != null)  {
-            new MessageBoxBuilder(shell != null ? shell : getActiveWorkbenchShell())
+            MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
                 .setTitle(title)
                 .setMessage(info)
                 .setReplies(Reply.OK)
@@ -473,7 +473,7 @@ public class UIUtils {
     }
 
     public static boolean confirmAction(@Nullable Shell shell, String title, String message, @NotNull DBPImage image) {
-        Reply reply = new MessageBoxBuilder(shell != null ? shell : getActiveWorkbenchShell())
+        Reply reply = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
             .setTitle(title)
             .setMessage(message)
             .setReplies(Reply.YES, Reply.NO)
