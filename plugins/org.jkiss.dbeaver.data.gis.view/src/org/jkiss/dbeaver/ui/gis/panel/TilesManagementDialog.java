@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -410,7 +411,7 @@ class TilesManagementDialog extends BaseDialog {
             UIUtils.createLink(dialogArea, GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    UIUtils.launchProgram(
+                    ShellUtils.launchProgram(
                         HelpUtils.getHelpExternalReference("Working-with-Spatial-GIS-data#defining-custom-tile-layer"));
                 }
             });

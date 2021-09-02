@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -223,7 +224,7 @@ public class AboutBoxDialog extends InformationDialog
         Link siteLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)), new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                UIUtils.launchProgram(e.text);
+                ShellUtils.launchProgram(e.text);
             }
         });
         siteLink.setBackground(background);

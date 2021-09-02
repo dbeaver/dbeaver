@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeExportWizard;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -101,7 +102,7 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
             PostgreMessages.wizard_backup_msgbox_success_title,
             NLS.bind(PostgreMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
             SWT.ICON_INFORMATION);
-        UIUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
+        ShellUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
 	}
 
     @Override

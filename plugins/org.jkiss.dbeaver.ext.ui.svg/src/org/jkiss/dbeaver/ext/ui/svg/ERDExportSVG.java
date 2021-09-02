@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
@@ -84,7 +84,7 @@ public class ERDExportSVG implements ERDExportFormatHandler {
 
             svgGenerator.stream(filePath);
 
-            UIUtils.launchProgram(filePath);
+            ShellUtils.launchProgram(filePath);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as SVG", null, e);
         }

@@ -538,6 +538,9 @@ public class CoreMessages extends NLS {
 
 	public static String transaction_log_dialog_error_not_connected;
 
+	public static String resource_shortcut_deleted_title;
+	public static String resource_shortcut_deleted_message;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

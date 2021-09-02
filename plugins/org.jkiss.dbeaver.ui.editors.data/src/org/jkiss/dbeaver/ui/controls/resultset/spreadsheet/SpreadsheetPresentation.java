@@ -1270,7 +1270,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-            UIUtils.launchProgram(strValue);
+            ShellUtils.launchProgram(strValue);
         }
     }
 

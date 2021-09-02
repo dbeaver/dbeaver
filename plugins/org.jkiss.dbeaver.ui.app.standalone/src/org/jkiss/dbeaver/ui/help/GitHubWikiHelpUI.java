@@ -20,7 +20,7 @@ import org.eclipse.help.IContext;
 import org.eclipse.help.IHelpResource;
 import org.eclipse.ui.help.AbstractHelpUI;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 
 /**
@@ -68,7 +68,7 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
     }
 
     private void showHelpPage(String fileURL) {
-        UIUtils.launchProgram(fileURL);
+        ShellUtils.launchProgram(fileURL);
     }
 
     @Override

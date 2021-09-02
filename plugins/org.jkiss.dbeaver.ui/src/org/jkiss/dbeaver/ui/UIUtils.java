@@ -80,9 +80,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * UI Utils
@@ -1438,12 +1436,6 @@ public class UIUtils {
             offset += ext.y;
         }
     }
-
-    public static boolean launchProgram(String path)
-    {
-        return Program.launch(path);
-    }
-
 
     public static void createTableContextMenu(@NotNull final Table table, @Nullable DBRCreator<Boolean, IContributionManager> menuCreator) {
         MenuManager menuMgr = new MenuManager();
