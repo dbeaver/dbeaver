@@ -2705,9 +2705,9 @@ public class ResultSetViewer extends Viewer
 //            if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
 //                viewMenu.add(new ResetAllColorAction());
 //            }
-            viewMenu.add(new ColorizeDataTypesToggleAction());
-            viewMenu.add(new Separator());
         }
+        viewMenu.add(new ColorizeDataTypesToggleAction());
+        viewMenu.add(new Separator());
         viewMenu.add(new DataFormatsPreferencesAction());
         viewMenu.add(new Separator());
         viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, "Show selected row count"));
