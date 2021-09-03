@@ -108,7 +108,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTask getTaskByName(@NotNull String name) {
         for (DBTTask task : tasks) {
-            if (name.equals(task.getName())) {
+            if (name.equalsIgnoreCase(task.getName())) {
                 return task;
             }
         }
