@@ -53,7 +53,7 @@ public class DBRProcessDescriptor
             GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
         commandLine = CommonUtils.notEmpty(commandLine);
 
-        processBuilder = new ProcessBuilder(RuntimeUtils.splitCommandLine(commandLine));
+        processBuilder = new ProcessBuilder(RuntimeUtils.splitCommandLine(commandLine, !RuntimeUtils.isWindows()));
         // Set working directory
         if (!CommonUtils.isEmpty(command.getWorkingDirectory())) {
             processBuilder.directory(new File(command.getWorkingDirectory()));
