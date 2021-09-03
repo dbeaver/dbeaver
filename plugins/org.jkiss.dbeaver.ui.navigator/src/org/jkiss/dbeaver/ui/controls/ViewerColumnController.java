@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -756,11 +758,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         private void sortViewer(final Item column, final int sortDirection) {
             Collator collator = Collator.getInstance();
             if (viewer instanceof TreeViewer) {
-                ((TreeViewer)viewer).getTree().setSortColumn((TreeColumn) column);
-                ((TreeViewer)viewer).getTree().setSortDirection(sortDirection);
+                ((TreeViewer) viewer).getTree().setSortColumn((TreeColumn) column);
+                ((TreeViewer) viewer).getTree().setSortDirection(sortDirection);
             } else {
-                ((TableViewer)viewer).getTable().setSortColumn((TableColumn) column);
-                ((TableViewer)viewer).getTable().setSortDirection(sortDirection);
+                ((TableViewer) viewer).getTable().setSortColumn((TableColumn) column);
+                ((TableViewer) viewer).getTable().setSortDirection(sortDirection);
             }
             final ILabelProvider labelProvider = (ILabelProvider)columnInfo.labelProvider;
             final ILabelProviderEx exLabelProvider = labelProvider instanceof ILabelProviderEx ? (ILabelProviderEx)labelProvider : null;
@@ -786,6 +788,8 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                         result = -1;
                     } else if (value2 == null) {
                         result = 1;
+                    } else if (e1 instanceof DBTTask && e2 instanceof DBTTaskFolder) { // Folders should always be higher in the tree
+                        return 1;
                     } else {
                         if (columnInfo.numeric) {
                             try {
