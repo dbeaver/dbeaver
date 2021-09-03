@@ -788,8 +788,6 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                         result = -1;
                     } else if (value2 == null) {
                         result = 1;
-                    } else if (e1 instanceof DBTTask && e2 instanceof DBTTaskFolder) { // Folders should always be higher in the tree
-                        return 1;
                     } else {
                         if (columnInfo.numeric) {
                             try {

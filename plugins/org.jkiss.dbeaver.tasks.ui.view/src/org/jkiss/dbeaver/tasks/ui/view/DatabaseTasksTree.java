@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -336,12 +337,12 @@ public class DatabaseTasksTree {
             } else {
                 // Add task folders as parent elements, task from these folders will be added in children list
                 if (!CommonUtils.isEmpty(allTasksFolders)) {
-                    allTasksFolders.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+                    allTasksFolders.sort(DBUtils.nameComparatorIgnoreCase());
                     rootObjects.addAll(allTasksFolders);
                 }
                 List<DBTTask> allTasksWithoutFolders = allTasks.stream()
                     .filter(task -> task.getTaskFolder() == null)
-                    .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                    .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
                 // Now we need to distribute all tasks without folders
                 if (!CommonUtils.isEmpty(allTasksWithoutFolders)) {
@@ -521,12 +522,12 @@ public class DatabaseTasksTree {
                 // First add all tasks folders belonging to this project
                 children.addAll(allTasksFolders.stream()
                     .filter(taskFolder -> taskFolder.getProject() == parentElement)
-                    .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                    .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList()));
                 // Then check all tasks belonging to this project without folder
                 List<DBTTask> thisProjectTasksWithoutFolder = allTasks.stream()
                     .filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement)
-                    .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                    .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
                 if (!CommonUtils.isEmpty(thisProjectTasksWithoutFolder)) {
                     if (groupByCategory) {
@@ -553,7 +554,7 @@ public class DatabaseTasksTree {
                     thisFolderTasks = allTasks.stream().filter(task -> task.getTaskFolder() == taskFolder).collect(Collectors.toList());
                     // folderProject will be null in this case. It's ok
                 }
-                thisFolderTasks.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+                thisFolderTasks.sort(DBUtils.nameComparatorIgnoreCase());
                 if (groupByCategory) {
                     for (DBTTaskCategory category : getTaskCategories(folderProject, null, thisFolderTasks)) {
                         children.add(new TaskCategoryNode(folderProject, null, category, taskFolder));
@@ -580,7 +581,7 @@ public class DatabaseTasksTree {
                 } else {
                     // Tasks
                     List<DBTTask> allTasksThisCategory = getSortedByCategoryTasks(parentCat);
-                    allTasksThisCategory.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+                    allTasksThisCategory.sort(DBUtils.nameComparatorIgnoreCase());
                     if (parentCat.taskFolder != null) {
                         children.addAll(allTasksThisCategory.stream().filter(task -> task.getTaskFolder() == parentCat.taskFolder).collect(Collectors.toList()));
                     } else {
