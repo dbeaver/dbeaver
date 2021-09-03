@@ -50,6 +50,9 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
                 int divPos2 = typeName.indexOf(')', divPos);
                 if (divPos2 != -1) {
                     String length = typeName.substring(divPos + 1, divPos2);
+                    if (length.contains(",")) { // floats, numbers etc.
+                        length = length.split(",")[0];
+                    }
                     try {
                         setMaxLength(Integer.parseInt(length));
                     } catch (NumberFormatException e) {
