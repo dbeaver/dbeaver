@@ -352,6 +352,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return sequences;
     }
 
+    public GenericSequence getSequence(DBRProgressMonitor monitor, String name) throws DBException {
+        if (sequences == null) {
+            loadSequences(monitor);
+        }
+        return DBUtils.findObject(sequences, name);
+    }
+
     @Override
     public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
         if (synonyms == null) {

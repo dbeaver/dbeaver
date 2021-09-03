@@ -16,10 +16,84 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+
 /**
  * VerticaObjectType
  */
-public enum VerticaObjectType  {
-    TABLE,
-    COLUMN
+public enum VerticaObjectType implements DBSObjectType {
+
+    TABLE("TABLE", "Vertica table", VerticaTable.class, DBIcon.TREE_TABLE),
+    SYSTEM_TABLE("SYSTEM TABLE", "Vertica system table", VerticaSystemTable.class, DBIcon.TREE_TABLE),
+    VIEW("VIEW", "Vertica View", VerticaView.class, DBIcon.TREE_VIEW),
+    PROJECTION("PROJECION", "Vertica Projection", VerticaProjection.class, DBIcon.TREE_TABLE_INDEX),
+    NODE("NODE", "Vertica Node", VerticaNode.class, DBIcon.TREE_SERVERS),
+    SEQUENCE("SEQUENCE", "Vertica Sequence", VerticaSequence.class, DBIcon.TREE_SEQUENCE);
+
+    private final String typeName;
+    private final String description;
+    private final Class<? extends DBSObject> theClass;
+    private final DBPImage icon;
+    private static final Log log = Log.getLog(VerticaObjectType.class);
+
+    VerticaObjectType(String type, String description, Class<? extends DBSObject> theClass, DBPImage icon) {
+        this.typeName = type;
+        this.description = description;
+        this.theClass = theClass;
+        this.icon = icon;
+    }
+
+    @Override
+    public String getTypeName() {
+        return typeName;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public DBPImage getImage() {
+        return icon;
+    }
+
+    @Override
+    public Class<? extends DBSObject> getTypeClass() {
+        return theClass;
+    }
+
+    public DBSObject findObject(DBRProgressMonitor monitor, GenericObjectContainer schema, String objectName) throws DBException {
+        if (schema == null) {
+            log.debug("Null schema in table " + objectName + " search (" + objectName + ")");
+            return null;
+        }
+
+        if (GenericTable.class.isAssignableFrom(theClass) || VerticaView.class.isAssignableFrom(theClass)) {
+            return schema.getChild(monitor, objectName);
+        }
+        if (schema instanceof VerticaSchema) {
+            if (VerticaProjection.class.isAssignableFrom(theClass)) {
+                return ((VerticaSchema) schema).getProjection(monitor, objectName);
+            }
+        }
+        GenericDataSource dataSource = schema.getDataSource();
+        if (dataSource instanceof VerticaDataSource) {
+            if (VerticaNode.class.isAssignableFrom(theClass)) {
+                return (((VerticaDataSource) dataSource).getClusterNode(monitor, objectName));
+            }
+        }
+
+        log.debug("Unsupported object for Vertica search: " + name());
+        return null;
+    }
 }
