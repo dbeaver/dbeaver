@@ -77,7 +77,7 @@ public class OceanbaseOracleSchema extends OracleSchema {
 			boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null,
 					"ALL_ALL_TABLES");
 			String tablesSource;
-			Strung tableTypeColumns;
+			String tableTypeColumns;
 			if (hasAllAllTables) {
 				tablesSource = "ALL_TABLES";
 				tableTypeColumns = "t.TABLE_TYPE_OWNER,t.TABLE_TYPE";
