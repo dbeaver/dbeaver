@@ -50,11 +50,21 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
                 int divPos2 = typeName.indexOf(')', divPos);
                 if (divPos2 != -1) {
                     String length = typeName.substring(divPos + 1, divPos2);
+                    boolean numericType = false;
+                    String scale = null;
                     if (length.contains(",")) { // floats, numbers etc.
-                        length = length.split(",")[0];
+                        String[] numbers = length.split(",");
+                        if (numbers.length == 2) {
+                            numericType = true;
+                            length = numbers[0];
+                            scale = numbers[1];
+                        }
                     }
                     try {
                         setMaxLength(Integer.parseInt(length));
+                        if (numericType) {
+                            setScale(Integer.parseInt(scale));
+                        }
                     } catch (NumberFormatException e) {
                         log.warn(e);
                     }
@@ -89,11 +99,6 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
     @Override
     public String getDefaultValue() {
         return super.getDefaultValue();
-    }
-
-    @Override
-    public Integer getScale() {
-        return super.getScale();
     }
 
     @Override
