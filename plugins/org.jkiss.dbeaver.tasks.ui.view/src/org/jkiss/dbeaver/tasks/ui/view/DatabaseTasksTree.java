@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -335,9 +336,13 @@ public class DatabaseTasksTree {
             } else {
                 // Add task folders as parent elements, task from these folders will be added in children list
                 if (!CommonUtils.isEmpty(allTasksFolders)) {
+                    allTasksFolders.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
                     rootObjects.addAll(allTasksFolders);
                 }
-                List<DBTTask> allTasksWithoutFolders = allTasks.stream().filter(task -> task.getTaskFolder() == null).collect(Collectors.toList());
+                List<DBTTask> allTasksWithoutFolders = allTasks.stream()
+                    .filter(task -> task.getTaskFolder() == null)
+                    .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                    .collect(Collectors.toList());
                 // Now we need to distribute all tasks without folders
                 if (!CommonUtils.isEmpty(allTasksWithoutFolders)) {
                     if (groupByCategory) {
@@ -514,9 +519,15 @@ public class DatabaseTasksTree {
             if (parentElement instanceof DBPProject) {
                 DBPProject project = (DBPProject) parentElement;
                 // First add all tasks folders belonging to this project
-                children.addAll(allTasksFolders.stream().filter(taskFolder -> taskFolder.getProject() == parentElement).collect(Collectors.toList()));
+                children.addAll(allTasksFolders.stream()
+                    .filter(taskFolder -> taskFolder.getProject() == parentElement)
+                    .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                    .collect(Collectors.toList()));
                 // Then check all tasks belonging to this project without folder
-                List<DBTTask> thisProjectTasksWithoutFolder = allTasks.stream().filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement).collect(Collectors.toList());
+                List<DBTTask> thisProjectTasksWithoutFolder = allTasks.stream()
+                    .filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement)
+                    .sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()))
+                    .collect(Collectors.toList());
                 if (!CommonUtils.isEmpty(thisProjectTasksWithoutFolder)) {
                     if (groupByCategory) {
                         for (DBTTaskCategory category : getTaskCategories(project, null, thisProjectTasksWithoutFolder)) {
@@ -542,6 +553,7 @@ public class DatabaseTasksTree {
                     thisFolderTasks = allTasks.stream().filter(task -> task.getTaskFolder() == taskFolder).collect(Collectors.toList());
                     // folderProject will be null in this case. It's ok
                 }
+                thisFolderTasks.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
                 if (groupByCategory) {
                     for (DBTTaskCategory category : getTaskCategories(folderProject, null, thisFolderTasks)) {
                         children.add(new TaskCategoryNode(folderProject, null, category, taskFolder));
@@ -568,6 +580,7 @@ public class DatabaseTasksTree {
                 } else {
                     // Tasks
                     List<DBTTask> allTasksThisCategory = getSortedByCategoryTasks(parentCat);
+                    allTasksThisCategory.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
                     if (parentCat.taskFolder != null) {
                         children.addAll(allTasksThisCategory.stream().filter(task -> task.getTaskFolder() == parentCat.taskFolder).collect(Collectors.toList()));
                     } else {
@@ -901,6 +914,11 @@ public class DatabaseTasksTree {
                                 if (task instanceof TaskImpl && task.getProject() == taskFolder.getProject()) { // Do not move tasks into another project
                                     ((TaskImpl)task).setTaskFolder(taskFolder);
                                     taskFolder.addTaskToFolder(task);
+                                    try {
+                                        task.getProject().getTaskManager().updateTaskConfiguration(task);
+                                    } catch (DBException e) {
+                                        DBWorkbench.getPlatformUI().showError("Task save error", "Error saving task configuration", e);
+                                    }
                                 }
                             }
                             TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE)); // Refresh all
