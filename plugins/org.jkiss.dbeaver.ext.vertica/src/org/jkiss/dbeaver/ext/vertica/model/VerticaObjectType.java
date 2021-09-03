@@ -81,16 +81,12 @@ public enum VerticaObjectType implements DBSObjectType {
         if (GenericTable.class.isAssignableFrom(theClass) || VerticaView.class.isAssignableFrom(theClass)) {
             return schema.getChild(monitor, objectName);
         }
-        if (schema instanceof VerticaSchema) {
-            if (VerticaProjection.class.isAssignableFrom(theClass)) {
-                return ((VerticaSchema) schema).getProjection(monitor, objectName);
-            }
+        if (schema instanceof VerticaSchema && VerticaProjection.class.isAssignableFrom(theClass)) {
+            return ((VerticaSchema) schema).getProjection(monitor, objectName);
         }
         GenericDataSource dataSource = schema.getDataSource();
-        if (dataSource instanceof VerticaDataSource) {
-            if (VerticaNode.class.isAssignableFrom(theClass)) {
-                return (((VerticaDataSource) dataSource).getClusterNode(monitor, objectName));
-            }
+        if (dataSource instanceof VerticaDataSource && VerticaNode.class.isAssignableFrom(theClass)) {
+            return (((VerticaDataSource) dataSource).getClusterNode(monitor, objectName));
         }
 
         log.debug("Unsupported object for Vertica search: " + name());
