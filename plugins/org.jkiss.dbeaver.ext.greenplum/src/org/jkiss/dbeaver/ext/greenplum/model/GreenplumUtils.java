@@ -71,7 +71,7 @@ public class GreenplumUtils {
         // Get primary key
         PostgreTableConstraint pk = null;
         for (PostgreTableConstraint tc : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-            if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+            if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY || tc.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
                 pk = tc;
                 break;
             }
