@@ -39,6 +39,11 @@ buildNumber.properties
 .classpath
 .settings/
 
+# Dev executables
+
+.cmd
+.bat
+
 #############
 ## Windows detritus
 #############
