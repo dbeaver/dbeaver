@@ -452,6 +452,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         params.setSearchInComments(searchInComments);
         params.setMaxResults(maxResults);
         params.setSearchInDefinitions(searchInDefinitions);
+        params.setGlobalSearch(true);
 
         return new SearchMetadataQuery(dataSource, assistant, params);
     }
