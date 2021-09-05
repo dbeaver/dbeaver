@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -330,7 +331,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     }
 
     @Override
-    protected void updateTableCheckedStatus(Table table, boolean check) {
+    protected void updateTableCheckedStatus(@NotNull Table table, boolean check) {
         // Handle event from buttons "All" and "None"
         if (table == schemasTable) {
             for (TableItem tableItem : tablesTable.getItems()) {

@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -77,7 +78,8 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
         setPageComplete(true);
     }
 
-    protected void updateTableCheckedStatus(Table table, boolean check) {
+    protected void updateTableCheckedStatus(@NotNull Table table, boolean check) {
+        // Handling "All" and "None" buttons
     }
 
     private class CheckListener extends SelectionAdapter {

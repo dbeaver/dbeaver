@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -293,7 +294,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     }
 
     @Override
-    protected void updateTableCheckedStatus(Table table, boolean check) {
+    protected void updateTableCheckedStatus(@NotNull Table table, boolean check) {
         // Handle event from buttons "All" and "None"
         if (table == catalogTable) {
             for (TableItem tableItem : tablesTable.getItems()) {
