@@ -26,6 +26,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -57,9 +58,9 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
-        super(wizard, "Schemas/tables");
-        setTitle("Choose objects to export");
-        setDescription("Schemas/tables/views which will be exported");
+        super(wizard, MySQLUIMessages.tools_db_export_wizard_page_objects_dialog_wizard_title);
+        setTitle(MySQLUIMessages.tools_db_export_wizard_page_objects_dialog_title_choose_objects);
+        setDescription(MySQLUIMessages.tools_db_export_wizard_page_objects_dialog_description);
     }
 
     @Override
@@ -122,7 +123,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             Composite buttonsPanel = UIUtils.createComposite(tablesPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, "Show views", false);
+            exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, MySQLUIMessages.tools_db_export_wizard_page_settings_group_show_views, false);
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -176,6 +177,10 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         if (dataSource != null) {
             boolean tablesLoaded = false;
             for (MySQLCatalog catalog : dataSource.getCatalogs()) {
+                if (catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
+                    // Dumping "information_schema" DB content is not supported
+                    continue;
+                }
                 TableItem item = new TableItem(catalogTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                 item.setText(0, catalog.getName());
@@ -287,4 +292,14 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         setPageComplete(complete);
     }
 
+    @Override
+    protected void updateTableCheckedStatus(Table table, boolean check) {
+        // Handle event from buttons "All" and "None"
+        if (table == catalogTable) {
+            for (TableItem tableItem : tablesTable.getItems()) {
+                tableItem.setChecked(check);
+            }
+        }
+        updateCheckedTables();
+    }
 }

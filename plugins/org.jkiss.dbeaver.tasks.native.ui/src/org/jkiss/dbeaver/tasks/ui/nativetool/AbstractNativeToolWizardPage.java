@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -49,13 +50,13 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
     }
 
     protected void createCheckButtons(Composite buttonsPanel, final Table table) {
-        UIUtils.createDialogButton(buttonsPanel, "All", new CheckListener(table, true));
-        UIUtils.createDialogButton(buttonsPanel, "None", new CheckListener(table, false));
+        UIUtils.createDialogButton(buttonsPanel, TaskNativeUIMessages.tools_wizard_page_dialog_button_all, new CheckListener(table, true));
+        UIUtils.createDialogButton(buttonsPanel, TaskNativeUIMessages.tools_wizard_page_dialog_button_none, new CheckListener(table, false));
     }
 
     protected void createExtraArgsInput(Composite outputGroup) {
-        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getSettings().getExtraCommandArgs());
-        extraCommandArgsText.setToolTipText("Set extra command args for tool executable.");
+        extraCommandArgsText = UIUtils.createLabelText(outputGroup, TaskNativeUIMessages.tools_wizard_page_dialog_label_extra_command_args, wizard.getSettings().getExtraCommandArgs());
+        extraCommandArgsText.setToolTipText(TaskNativeUIMessages.tools_wizard_page_dialog_tooltip_extra_command_args);
         ContentAssistUtils.installContentProposal(
             extraCommandArgsText,
             new SmartTextContentAdapter(),
@@ -76,6 +77,9 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
         setPageComplete(true);
     }
 
+    protected void updateTableCheckedStatus(Table table, boolean check) {
+    }
+
     private class CheckListener extends SelectionAdapter {
         private final Table table;
         private final boolean check;
@@ -90,6 +94,7 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             for (TableItem item : table.getItems()) {
                 item.setChecked(check);
             }
+            updateTableCheckedStatus(table, check);
             updateState();
         }
     }
