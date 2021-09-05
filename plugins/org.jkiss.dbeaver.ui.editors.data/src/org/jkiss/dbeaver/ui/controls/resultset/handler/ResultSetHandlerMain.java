@@ -364,9 +364,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
                         new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
-            case IActionConstants.CMD_PASTE_SPECIAL:
                 if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).pasteFromClipboard(actionId.equals(IActionConstants.CMD_PASTE_SPECIAL));
+                    ((IResultSetEditor) presentation).pasteFromClipboard(null);
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_CUT:
