@@ -753,6 +753,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.NULLABILITY));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.COMMENTS));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ENTITY_FQN));
+        asMenu.add(new Separator());
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ALPHABETICAL_ORDER));
         menu.add(asMenu);
 
         if (getDiagram().getDecorator().supportsAttributeVisibility()) {
@@ -1000,7 +1002,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private class ChangeAttributePresentationAction extends Action {
         private final ERDViewStyle style;
         public ChangeAttributePresentationAction(ERDViewStyle style) {
-            super("Show " + style.getTitle(), AS_CHECK_BOX);
+            super(style.getActionTitle(), AS_CHECK_BOX);
             this.style = style;
         }
         @Override

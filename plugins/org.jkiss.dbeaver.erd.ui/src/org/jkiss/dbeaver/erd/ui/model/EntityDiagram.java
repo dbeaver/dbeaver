@@ -75,11 +75,13 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     }
 
     @NotNull
+    @Override
     public ERDDecorator getDecorator() {
         return decorator;
     }
 
-    public boolean hasAttributeStyle(ERDViewStyle style) {
+    @Override
+    public boolean hasAttributeStyle(@NotNull ERDViewStyle style) {
         return ArrayUtils.contains(attributeStyles, style);
     }
 
