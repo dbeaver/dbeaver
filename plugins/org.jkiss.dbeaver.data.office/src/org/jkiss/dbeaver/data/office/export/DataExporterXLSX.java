@@ -60,6 +60,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
     private static final String PROP_HEADER_FONT = "headerfont";
+    private static final String PROP_HEADER_FONT_NAME = "headerFontName";
 
     private static final String BINARY_FIXED = "[BINARY]";
 
@@ -114,6 +115,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
+        properties.put(DataExporterXLSX.PROP_HEADER_FONT_NAME, XSSFFont.DEFAULT_FONT_NAME);
         properties.put(DataExporterXLSX.PROP_FALSESTRING, "false");
         properties.put(DataExporterXLSX.PROP_EXPORT_SQL, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
@@ -243,7 +245,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         default:
             break;
         }
-
+      //set font name for header
+        fontBold.setFontName(CommonUtils.toString(properties.get(PROP_HEADER_FONT_NAME),XSSFFont.DEFAULT_FONT_NAME));
+        
         styleHeader.setFont(fontBold);
 
         style = (XSSFCellStyle) wb.createCellStyle();
