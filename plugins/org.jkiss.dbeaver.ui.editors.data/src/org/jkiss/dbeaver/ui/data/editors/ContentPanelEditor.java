@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -282,6 +283,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             if (valueController.getExecutionContext() != null) {
                 final DBPPreferenceStore store = valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore();
                 store.setValue(PROP_VALUE_MANAGER + '.' + makeValueId(false), managerId);
+                PrefUtils.savePreferenceStore(store);
             }
 
             valueToManagerMap.put(valueId, managerId);
