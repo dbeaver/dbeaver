@@ -32,19 +32,19 @@
                 label="OceanBase data source"
                 path="oceanbase">
                 <folder type="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
-                    <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
+                    <items label="%tree.databases.node.name" path="database" property="catalogs" icon="#database">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip" visibleIf="object.dataSource.isMySQLMode()">
-                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                            <items label="%tree.tables.node.name" path="table" property="tables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"></items>
+                                    <items label="%tree.columns.node.name" path="attribute" property="attributes" icon="#column"></items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
-                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                    <items label="%tree.constraints.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true" visibleIf="object.constraintType!='CHECK'"></items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
-                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                    <items label="%tree.foreign_keys.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"></items>
                                     </items>
                                 </folder>
@@ -54,38 +54,38 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
-                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                    <items label="%tree.indexs.node.name" path="index" property="indexes" icon="#index">
                                         <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"></items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
-                                    <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
-                                        <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true"></items>
+                                    <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition">
+                                        <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartitions.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true"></items>
                                     </items>
                                 </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" icon="#folder_view" description="%tree.views.node.tip">
-                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column"></items>
+                            <items label="%tree.views.node.name" path="view" property="views" icon="#view">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.columns.node.name" path="column" property="attributes" icon="#column"></items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" virtual="true">
-                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
+                            <items label="%tree.indexs.node.name" path="index" property="indexes" icon="#index" virtual="true">
                                 <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"></items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
-                            <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                <items label="Parameters" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"></items>
+                            <items label="%tree.procedures.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="Parameters" itemLabel="%tree.columns.node.name" path="column" property="parameters" navigable="false" inline="true"></items>
                             </items>
                         </folder>
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.users.node.tip" visibleIf="object.dataSource.isMySQLMode()">
-                    <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+                    <items label="%tree.users.node.name" path="users" property="users" icon="#user">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLGrant" label="%tree.userGrants.node.name" description="%tree.userGrants.node.tip">
-                            <items label="%tree.user.node.name" path="grants" property="grants"/>
+                            <items label="%tree.users.node.name" path="grants" property="grants"/>
                         </folder>
                     </items>
                 </folder>
@@ -118,34 +118,34 @@
                 </folder>
                 <!-- Oracle -->
                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Database schemas" visibleIf="!object.dataSource.isMySQLMode()">
-                    <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                    <items label="%tree.schemas.node.name" path="schema" property="schemas" icon="#schema">
                         <icon if="object.system" icon="#schema_system"/>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
-                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                            <items label="%tree.tables.node.name" path="table" property="tables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
-                                    <items label="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    <items label="%tree.columns.node.name" path="column" property="attributes" icon="#column">
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
-                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                    <items label="%tree.constraints.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
-                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                    <items label="%tree.foreign_keys.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
-                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                    <items label="%tree.indexs.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
-                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                    <items label="%tree.triggers.node.name" path="trigger" property="triggers" icon="#trigger">
                                         <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
                                         </items>
                                     </items>
@@ -154,20 +154,20 @@
                         </folder>
                         
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleView" label="%tree.views.node.name" icon="#folder_view" description="Views">
-                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                            <items label="%tree.views.node.name" path="view" property="views" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
-                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.columns.node.name" path="column" property="attributes" icon="#column">
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="View constraints">
-                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
-                                        <items label="%tree.constraint.node.name columns" path="column" property="attributeReferences" navigable="false" inline="true">
+                                    <items label="%tree.constraints.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraints.node.name columns" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
-                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
-                                        <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
+                                    <items label="%tree.triggers.node.name" path="trigger" property="triggers" icon="#trigger">
+                                        <items label="%tree.columns.node.name" itemLabel="%tree.columns.node.name" path="column" property="columns" navigable="false" inline="false">
                                         </items>
                                     </items>
                                 </folder>
@@ -178,44 +178,44 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
-                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
-                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                            <items icon="#index" label="%tree.indexs.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.columns.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
-                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
+                            <items label="%tree.sequences.node.name" path="sequence" property="sequences" icon="#sequence">
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
-                            <items label="%tree.type.node.name" path="type" property="dataTypes" icon="#data_type">
+                            <items label="%tree.types.node.name" path="type" property="dataTypes" icon="#data_type">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="%tree.attributes.node.name" icon="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
-                                    <items label="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute"/>
+                                    <items label="%tree.attributes.node.name" path="attribute" property="attributes" icon="#attribute"/>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod" label="%tree.methods.node.name" icon="#procedures" description="Type methods" visibleIf="object.hasMethods()">
-                                    <items label="%tree.method.node.name" path="method" property="methods" icon="#procedure">
-                                        <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false">
+                                    <items label="%tree.methods.node.name" path="method" property="methods" icon="#procedure">
+                                        <items label="%tree.arguments.node.name" itemLabel="%tree.arguments.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false">
                                         </items>
                                     </items>
                                 </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="%tree.packages.node.name" icon="#packages" description="Packages">
-                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                            <items label="%tree.packages.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure" visibleIf="object.dataSource.isAtLeastV10()">
                                     <handler action="open" command="org.jkiss.dbeaver.ext.oracle.code.package.navigate"/>
                                     <!-- Proc arguments. Not inline because arguments reading is expensive -->
-                                    <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
-                                        <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
+                                    <items label="%tree.arguments.node.name" itemLabel="%tree.arguments.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                        <items label="%tree.attributes.node.name" itemLabel="%tree.attributes.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
                                             <items ref="ProcedureArgumentAttributes"/>
                                         </items>
                                     </items>
                                 </items>
-                                <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function" visibleIf="object.dataSource.isAtLeastV10()">
+                                <items label="%tree.functions.node.name" itemLabel="%tree.functions.node.name" path="function" property="functionsOnly" icon="#function" visibleIf="object.dataSource.isAtLeastV10()">
                                     <handler action="open" command="org.jkiss.dbeaver.ext.oracle.code.package.navigate"/>
                                     <!-- Proc arguments. Not inline because arguments reading is expensive -->
-                                    <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
-                                        <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
+                                    <items label="%tree.arguments.node.name" itemLabel="%tree.arguments.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                        <items label="%tree.attributes.node.name" itemLabel="%tree.attributes.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
                                             <items ref="ProcedureArgumentAttributes"/>
                                         </items>
                                     </items>
@@ -223,30 +223,30 @@
                             </items>
                         </folder>
                         <folder id="procedures" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
-                            <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure" id="Procedure">
-                                <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
-                                    <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedures.node.name" path="procedure" property="proceduresOnly" icon="#procedure" id="Procedure">
+                                <items label="%tree.arguments.node.name" itemLabel="%tree.arguments.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                    <items label="%tree.attributes.node.name" itemLabel="%tree.attributes.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
                                         <items ref="ProcedureArgumentAttributes"/>
                                     </items>
                                 </items>
                             </items>
                         </folder>
                         <folder id="functions" type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.functions.node.name" icon="#functions" description="Functions">
-                            <items label="%tree.function.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function" id="Function">
-                                <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
-                                    <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
+                            <items label="%tree.function.node.name" itemLabel="%tree.functions.node.name" path="function" property="functionsOnly" icon="#function" id="Function">
+                                <items label="%tree.arguments.node.name" itemLabel="%tree.arguments.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                    <items label="%tree.attributes.node.name" itemLabel="%tree.attributes.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
                                         <items ref="ProcedureArgumentAttributes"/>
                                     </items>
                                 </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchemaTrigger" label="%tree.schema.triggers.node.name" icon="#triggers" description="Schema and database level triggers">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                            <items label="%tree.triggers.node.name" path="trigger" property="triggers" icon="#trigger">
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.table.triggers.node.name" icon="#triggers" description="Table triggers">
-                            <items label="%tree.table.trigger.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false" virtual="true">
+                            <items label="%tree.table.triggers.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.columns.node.name" path="column" property="columns" navigable="false" inline="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
@@ -259,16 +259,16 @@
                         <items label="%tree.data_type.node.name" path="type" property="localDataTypes" icon="#data_type"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.public_synonyms.node.name" icon="#synonyms" description="Public synonyms">
-                        <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms" icon="#synonym"/>
+                        <items label="%tree.synonyms.node.name" path="synonym" property="publicSynonyms" icon="#synonym"/>
                     </folder>
                 </folder>
                 
                 <!-- Security -->
                 <folder label="%tree.security.node.name" icon="#security" description="Security management" visibleIf="!object.dataSource.isMySQLMode()">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
-                        <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+                        <items label="%tree.users.node.name" path="users" property="users" icon="#user">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
-                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group">
+                                <items label="%tree.roles.node.name" path="roles" property="rolePrivs" icon="#user_group">
                                 </items>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
@@ -278,9 +278,9 @@
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
-                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
+                        <items label="%tree.roles.node.name" path="roles" property="roles" icon="#user_group">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivUser" label="%tree.users.node.name" icon="#folder_user" description="Users" navigable="false">
-                                <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user">
+                                <items label="%tree.users.node.name" path="userPrivs" property="userPrivs" icon="#user">
                                 </items>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
@@ -290,7 +290,7 @@
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUserProfile" label="%tree.profiles.node.name" icon="#folder_profile" description="User profiles">
-                        <items label="%tree.profile.node.name" path="profiles" property="profiles" icon="#profile">
+                        <items label="%tree.profiles.node.name" path="profiles" property="profiles" icon="#profile">
                             <items label="%tree.resource.node.name" path="resource" property="resources" icon="#resource"/>
                         </items>
                     </folder>

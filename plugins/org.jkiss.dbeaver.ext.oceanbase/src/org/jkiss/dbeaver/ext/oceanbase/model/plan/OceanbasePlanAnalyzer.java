@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -66,7 +67,7 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public void serialize(Writer planData, DBCPlan plan) throws IOException {
+    public void serialize(@NotNull Writer planData, @NotNull DBCPlan plan) throws IOException {
         serializeJson(planData, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
@@ -87,7 +88,7 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public DBCPlan deserialize(Reader planData) throws InvocationTargetException {
+    public DBCPlan deserialize(@NotNull Reader planData) throws InvocationTargetException {
         JsonObject jo = JsonParser.parseReader(planData).getAsJsonObject();
 
         String query = getQuery(jo);
@@ -115,7 +116,7 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
     }
 
     @Override
-    public DBCPlan planQueryExecution(DBCSession session, String query, DBCQueryPlannerConfiguration configuration)
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
             throws DBCException {
         return explain((JDBCSession) session, query);
     }

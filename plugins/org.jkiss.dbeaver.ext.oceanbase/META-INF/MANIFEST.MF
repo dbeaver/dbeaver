@@ -12,6 +12,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.oceanbase,
  org.jkiss.dbeaver.ext.oceanbase.model.auth,
