@@ -441,25 +441,28 @@ public class UIUtils {
             icon = DBIcon.STATUS_INFO;
         }
 
+        Runnable messageBoxRunnable;
         if (icon != null)  {
-            MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
+            final DBPImage finalIcon = icon;
+            messageBoxRunnable = () -> MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
                 .setTitle(title)
                 .setMessage(info)
                 .setReplies(Reply.OK)
                 .setDefaultReply(Reply.OK)
-                .setPrimaryImage(icon)
+                .setPrimaryImage(finalIcon)
                 .showMessageBox();
         } else {
             //show legacy message box
-            syncExec(() -> {
+            messageBoxRunnable = () -> {
                 Shell activeShell = shell != null ? shell : getActiveWorkbenchShell();
                 MessageBox messageBox = new MessageBox(activeShell, messageType | SWT.OK);
                 messageBox.setMessage(info);
                 messageBox.setText(title);
                 messageBox.open();
-            });
-
+            };
         }
+
+        syncExec(messageBoxRunnable);
     }
 
     public static boolean confirmAction(final String title, final String question) {
@@ -471,14 +474,17 @@ public class UIUtils {
     }
 
     public static boolean confirmAction(@Nullable Shell shell, String title, String message, @NotNull DBPImage image) {
-        Reply reply = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
+        final Reply[] reply = {null};
+        syncExec(() -> reply[0] = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
             .setTitle(title)
             .setMessage(message)
             .setReplies(Reply.YES, Reply.NO)
             .setDefaultReply(Reply.NO)
             .setPrimaryImage(image)
-            .showMessageBox();
-        return reply == Reply.YES;
+            .showMessageBox()
+        );
+
+        return reply[0] == Reply.YES;
     }
 
     public static int getFontHeight(Control control) {
