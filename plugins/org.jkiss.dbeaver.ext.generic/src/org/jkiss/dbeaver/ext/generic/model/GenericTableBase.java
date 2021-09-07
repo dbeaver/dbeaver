@@ -219,6 +219,15 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return null;
     }
 
+    public GenericUniqueKey getConstraint(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
+        if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
+            // ensure all columns are already cached
+            getAttributes(monitor);
+            return getContainer().getConstraintKeysCache().getObject(monitor, getContainer(), this, name);
+        }
+        return null;
+    }
+
     public void addUniqueKey(GenericUniqueKey constraint) {
         getContainer().getConstraintKeysCache().cacheObject(constraint);
     }
@@ -237,6 +246,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
+        }
+        return null;
+    }
+
+    public GenericTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name)
+        throws DBException {
+        if (getDataSource().getInfo().supportsReferentialIntegrity()) {
+            return getContainer().getForeignKeysCache().getObject(monitor, getContainer(), this, name);
         }
         return null;
     }
