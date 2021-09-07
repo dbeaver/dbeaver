@@ -70,7 +70,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
     private String nameMask;
     private boolean caseSensitive;
-    private boolean searchInComments = true;
+    private boolean searchInComments;
     private boolean searchInDefinitions;
     private int maxResults;
     private int matchTypeIndex;
@@ -221,7 +221,6 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 });
 
                 searchInCommentsCheckbox = UIUtils.createCheckbox(settingsGroup, UISearchMessages.dialog_search_objects_search_in_comments, null, searchInComments, 2);
-                searchInCommentsCheckbox.setSelection(true);
                 searchInCommentsCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -289,7 +288,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private void updateSearchOptionsCheckboxes() {
         DBSStructureAssistant structureAssistant = getSelectedStructureAssistant();
         boolean enableSearchInCommentsCheckbox = false;
-        boolean enableSearchInDefinitionsCheckbox = false;;
+        boolean enableSearchInDefinitionsCheckbox = false;
         for (DBSObjectType objectType: checkedTypes) {
             if (!enableSearchInCommentsCheckbox && structureAssistant.supportsSearchInCommentsFor(objectType)) {
                 enableSearchInCommentsCheckbox = true;
