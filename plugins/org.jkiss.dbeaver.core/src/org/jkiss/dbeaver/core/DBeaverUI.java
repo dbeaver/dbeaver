@@ -246,12 +246,13 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     private static void showMessageBox(@NotNull String title, @NotNull String message, @NotNull DBPImage image) {
-        MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+        UIUtils.syncExec(() -> MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
             .setTitle(title)
             .setMessage(message)
             .setPrimaryImage(image)
             .setReplies(Reply.OK)
-            .showMessageBox();
+            .showMessageBox()
+        );
     }
 
     @Override
