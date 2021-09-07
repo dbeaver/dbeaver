@@ -72,6 +72,7 @@ public class DB2Routine extends DB2Object<DBSObject>
 
     private DB2RoutineType             type;
 
+    @Nullable
     private String                     specificName;
     private Integer                    routineId;
     private DB2RoutineOrigin           origin;
@@ -103,8 +104,7 @@ public class DB2Routine extends DB2Object<DBSObject>
     // Constructors
     // -----------------------
 
-    public DB2Routine(DBSObject owner, ResultSet dbResult)
-    {
+    public DB2Routine(DBSObject owner, ResultSet dbResult) {
         super(owner, JDBCUtils.safeGetString(dbResult, "ROUTINENAME"), true);
 
         DB2DataSource db2DataSource = (DB2DataSource) owner.getDataSource();
@@ -243,6 +243,7 @@ public class DB2Routine extends DB2Object<DBSObject>
         return db2Schema;
     }
 
+    @Nullable
     @Property(viewable = true, order = 3)
     public String getSpecificName() {
         return specificName;
