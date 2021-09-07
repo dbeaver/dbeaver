@@ -47,6 +47,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     protected MavenArtifactVersion localVersion;
     private String preferredVersion;
     private boolean ignoreDependencies;
+    private boolean loadOptionalDependencies;
     private final String originalPreferredVersion;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
@@ -58,6 +59,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public DriverLibraryMavenArtifact(DriverDescriptor driver, IConfigurationElement config) {
         super(driver, config);
         ignoreDependencies = CommonUtils.toBoolean(config.getAttribute("ignore-dependencies"));
+        loadOptionalDependencies = CommonUtils.toBoolean(config.getAttribute("load-optional-dependencies"));
         initArtifactReference(null);
         this.originalPreferredVersion = this.preferredVersion;
     }
@@ -68,6 +70,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         this.localVersion = copyFrom.localVersion;
         this.preferredVersion = copyFrom.preferredVersion;
         this.ignoreDependencies = copyFrom.ignoreDependencies;
+        this.loadOptionalDependencies = copyFrom.loadOptionalDependencies;
 
         this.originalPreferredVersion = copyFrom.originalPreferredVersion;
     }
@@ -94,6 +97,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             }
         }
         this.reference = new MavenArtifactReference(path);
+        if (loadOptionalDependencies) {
+            this.reference.setResolveOptionalDependencies(true);
+        }
+
         this.preferredVersion = preferredVersion;
     }
 
@@ -121,6 +128,14 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public void setIgnoreDependencies(boolean ignoreDependencies) {
         this.ignoreDependencies = ignoreDependencies;
+    }
+
+    public boolean isLoadOptionalDependencies() {
+        return loadOptionalDependencies;
+    }
+
+    public void setLoadOptionalDependencies(boolean loadOptionalDependencies) {
+        this.loadOptionalDependencies = loadOptionalDependencies;
     }
 
     @NotNull
@@ -174,6 +189,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             MavenArtifactReference ref = reference;
             if (preferredVersion != null) {
                 ref = new MavenArtifactReference(reference.getGroupId(), reference.getArtifactId(), reference.getClassifier(), preferredVersion);
+                if (loadOptionalDependencies) {
+                    ref.setResolveOptionalDependencies(true);
+                }
             }
             this.localVersion = MavenRegistry.getInstance().findArtifact(monitor, null, ref);
         }

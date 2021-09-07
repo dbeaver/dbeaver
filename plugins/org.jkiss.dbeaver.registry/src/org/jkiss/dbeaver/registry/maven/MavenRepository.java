@@ -182,7 +182,7 @@ public class MavenRepository
     }
 
     @Nullable
-    public synchronized MavenArtifactVersion findArtifact(DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
+    public synchronized MavenArtifactVersion findArtifact(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
         boolean newArtifact = false;
         MavenArtifact artifact = cachedArtifacts.get(ref.getId());
         if (artifact == null) {
@@ -190,7 +190,7 @@ public class MavenRepository
             newArtifact = true;
         }
         try {
-            MavenArtifactVersion version = artifact.resolveVersion(monitor, ref.getVersion());
+            MavenArtifactVersion version = artifact.resolveVersion(monitor, ref.getVersion(), ref.isResolveOptionalDependencies());
             if (newArtifact) {
                 cachedArtifacts.put(ref.getId(), artifact);
             }
