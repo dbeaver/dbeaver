@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -103,11 +102,10 @@ public final class MessageBoxBuilder {
         dialog.setDefaultAnswerIdx(defaultIdx);
 
         // Open dialog, detect reply
-        final int[] answerIdx = {0};
-        UIUtils.syncExec(() -> answerIdx[0] = dialog.open());
-        if (replies == null || !CommonUtils.isValidIndex(answerIdx[0], replies.size())) {
+        int answerIdx = dialog.open();
+        if (replies == null || !CommonUtils.isValidIndex(answerIdx, replies.size())) {
             return null;
         }
-        return replies.get(answerIdx[0]);
+        return replies.get(0);
     }
 }

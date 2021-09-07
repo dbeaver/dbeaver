@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -196,7 +197,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                         continue;
                     }
                     TableItem item = new TableItem(schemasTable, SWT.NONE);
-                    item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+                    item.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
                     item.setText(0, schema.getName());
                     item.setData(schema);
                     if (activeSchemas.contains(schema)) {
@@ -327,6 +328,17 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             }
         }
         setPageComplete(complete);
+    }
+
+    @Override
+    protected void updateTableCheckedStatus(@NotNull Table table, boolean check) {
+        // Handle event from buttons "All" and "None"
+        if (table == schemasTable) {
+            for (TableItem tableItem : tablesTable.getItems()) {
+                tableItem.setChecked(check);
+            }
+        }
+        updateCheckedTables();
     }
 
 }
