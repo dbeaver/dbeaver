@@ -426,12 +426,22 @@ public class DBNModel implements IResourceChangeListener {
         if (!ArrayUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 if (child instanceof DBNDatabaseFolder) {
-                    Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
-                    if (itemsClass != null && itemsClass.isAssignableFrom(objectToCache.getClass())) {
-                        cached = cacheNodeChildren(monitor, child, objectToCache, addFiltered);
-                        if (cached) {
-                            break;
+                    DBNDatabaseFolder childFolder = (DBNDatabaseFolder) child;
+                    Class<?> itemsClass = childFolder.getChildrenClass();
+                    if (itemsClass == null) {
+                        DBNDatabaseNode[] grandchildren = childFolder.getChildren(monitor);
+                        if (grandchildren != null) {
+                            for (DBNDatabaseNode grandchild: grandchildren) {
+                                if (grandchild instanceof DBNDatabaseFolder) {
+                                    cached = cacheNodeChildren(monitor, grandchild, objectToCache, addFiltered);
+                                }
+                            }
                         }
+                    } else if (itemsClass.isAssignableFrom(objectToCache.getClass())) {
+                        cached = cacheNodeChildren(monitor, child, objectToCache, addFiltered);
+                    }
+                    if (cached) {
+                        break;
                     }
                 } else if (child.getObject() == objectToCache) {
                     cached = true;

@@ -52,7 +52,7 @@ import java.util.Map;
  * @author Denis Forveille
  */
 public class DB2Routine extends DB2Object<DBSObject>
-    implements DBSProcedure, DB2SourceObject, DBPRefreshableObject, DBPUniqueObject, DBPImageProvider {
+    implements DBSProcedure, DB2SourceObject, DBPRefreshableObject, DBPImageProvider {
 
     public enum FunctionType {
         C("Column or aggregate"),
@@ -72,7 +72,7 @@ public class DB2Routine extends DB2Object<DBSObject>
 
     private DB2RoutineType             type;
 
-    private String                     routineName;
+    private String                     specificName;
     private Integer                    routineId;
     private DB2RoutineOrigin           origin;
     private DB2RoutineLanguage         language;
@@ -105,11 +105,11 @@ public class DB2Routine extends DB2Object<DBSObject>
 
     public DB2Routine(DBSObject owner, ResultSet dbResult)
     {
-        super(owner, JDBCUtils.safeGetString(dbResult, "SPECIFICNAME"), true);
+        super(owner, JDBCUtils.safeGetString(dbResult, "ROUTINENAME"), true);
 
         DB2DataSource db2DataSource = (DB2DataSource) owner.getDataSource();
 
-        this.routineName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
+        this.specificName = JDBCUtils.safeGetString(dbResult, "SPECIFICNAME");
         this.routineId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEID");
 
         this.type = CommonUtils.valueOf(DB2RoutineType.class, JDBCUtils.safeGetString(dbResult, "ROUTINETYPE"));
@@ -206,14 +206,6 @@ public class DB2Routine extends DB2Object<DBSObject>
         return db2Schema;
     }
 
-    @NotNull
-    @Override
-    public String getUniqueName()
-    {
-        // unique name is the "specificname" column
-        return super.getName();
-    }
-
     // -----------------
     // Children
     // -----------------
@@ -245,14 +237,6 @@ public class DB2Routine extends DB2Object<DBSObject>
     // Properties
     // -----------------------
 
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName()
-    {
-        return routineName;
-    }
-
     @Property(viewable = true, order = 2)
     public DB2Schema getSchema()
     {
@@ -260,9 +244,8 @@ public class DB2Routine extends DB2Object<DBSObject>
     }
 
     @Property(viewable = true, order = 3)
-    public String getSpecificName()
-    {
-        return super.getName();
+    public String getSpecificName() {
+        return specificName;
     }
 
     @Property(viewable = true, order = 5, category = DB2Constants.CAT_DATETIME)
