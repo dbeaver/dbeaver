@@ -47,6 +47,11 @@ public class TaskNativeUIMessages extends NLS {
     public static String tools_db_export_wizard_file_have_not_been_deleted_title;
     public static String tools_db_export_wizard_file_have_not_been_deleted_message;
 
+    public static String tools_wizard_page_dialog_button_all;
+    public static String tools_wizard_page_dialog_button_none;
+    public static String tools_wizard_page_dialog_label_extra_command_args;
+    public static String tools_wizard_page_dialog_tooltip_extra_command_args;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, TaskNativeUIMessages.class);
