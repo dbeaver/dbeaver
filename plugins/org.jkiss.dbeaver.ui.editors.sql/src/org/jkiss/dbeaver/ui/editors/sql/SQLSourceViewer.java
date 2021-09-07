@@ -24,6 +24,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -83,6 +84,17 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getSourceObject().getObjectDefinitionText(monitor, getSourceOptions());
+    }
+
+    @Override
+    public void activatePart() {
+        super.activatePart();
+
+        if (getEditorSite() instanceof MultiPageEditorSite) {
+            if (((MultiPageEditorSite) getEditorSite()).getMultiPageEditor().isDirty()) {
+                refreshPart(SQLSourceViewer.this, true);
+            }
+        }
     }
 
     protected Map<String, Object> getSourceOptions() {
