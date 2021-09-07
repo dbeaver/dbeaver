@@ -27,7 +27,10 @@
     <plugin id="org.jkiss.dbeaver.ui.app.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Include JNA plugins because they may miss in older Eclipse versions -->
+    <!-- Update: actually this doesn't help because older Eclipse can't load jna bundles properly -->
+<!--
     <plugin id="com.sun.jna" download-size="0" install-size="0" version="4.5.1.v20190425-1842" unpack="false"/>
     <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="4.5.1.v20190425-1842" unpack="false"/>
+-->
 
 </feature>
