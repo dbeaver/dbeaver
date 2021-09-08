@@ -42,6 +42,7 @@ import java.sql.ResultSet;
  * @author Denis Forveille
  */
 public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx {
+    private static final String UNNAMED_PARAM_PREFIX = "parameter#";
 
     private final DB2Routine  procedure;
     private String            name;
@@ -67,7 +68,14 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
 
         DB2DataSource db2DataSource = getDataSource();
 
-        this.name = JDBCUtils.safeGetStringTrimmed(dbResult, "PARMNAME");
+        String parmName = JDBCUtils.safeGetStringTrimmed(dbResult, "PARMNAME");
+        if (parmName == null) {
+            // Some parameters (e.g. all parameters in system-defined routines) may not have a name. Let's name them based on their ordinal
+            name = UNNAMED_PARAM_PREFIX + JDBCUtils.safeGetInt(dbResult, "ORDINAL");
+        } else {
+            name = parmName;
+        }
+
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
         this.remarks = JDBCUtils.safeGetStringTrimmed(dbResult, "REMARKS");
