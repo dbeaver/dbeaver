@@ -64,9 +64,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
         DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.ROUTINE, };
 
-    private static final String SQL_COLS_ALL;
-    private static final String SQL_COLS_SCHEMA;
-
     private final DB2DataSource dataSource;
 
     // -----------------
@@ -129,7 +126,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     // Helpers
     // -----------------
 
-    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema, List<DB2ObjectType> db2ObjectTypes,
+    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, @Nullable DBPNamedObject schema, List<DB2ObjectType> db2ObjectTypes,
                                                       @NotNull ObjectsSearchParams params) throws SQLException, DBException {
         List<DBSObjectReference> objects = new ArrayList<>();
 
@@ -151,7 +148,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
         // Columns
         if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
-            searchColumns(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
+            searchColumns(session, schema, params, objects);
             if (nbResults >= maxResults) {
                 return objects;
             }
@@ -309,23 +306,31 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
     }
 
-    private void searchColumns(JDBCSession session, DB2Schema schema, String searchObjectNameMask, List<DB2ObjectType> objectTypes,
-        int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException, DBException
-    {
-        String sql;
-        if (schema != null) {
-            sql = SQL_COLS_SCHEMA;
-        } else {
-            sql = SQL_COLS_ALL;
+    private void searchColumns(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull ObjectsSearchParams params,
+                               @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT TABSCHEMA, TABNAME, COLNAME FROM SYSCAT.COLUMNS WHERE ");
+        StringJoiner clause = new StringJoiner(" OR ", "(", ")");
+        clause.add("COLNAME LIKE ?");
+        if (params.isSearchInComments()) {
+            clause.add("REMARKS LIKE ?");
         }
+        sql.append(clause);
+        if (schema != null) {
+            sql.append(" AND TABSCHEMA = ?");
+        }
+        sql.append(" " + WITH_UR);
 
-        int n = 1;
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            if (schema != null) {
-                dbStat.setString(n++, schema.getName());
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+            dbStat.setString(1, params.getMask());
+            int paramIdx = 2;
+            if (params.isSearchInComments()) {
+                dbStat.setString(paramIdx, params.getMask());
+                paramIdx++;
             }
-            dbStat.setString(n++, searchObjectNameMask);
-
+            if (schema != null) {
+                dbStat.setString(paramIdx, schema.getName());
+            }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
             String tableSchemaName;
@@ -336,30 +341,23 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             DB2View db2View;
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
-
-                    if (nbResults++ >= maxResults) {
-                        return;
-                    }
-
+                DBRProgressMonitor monitor = session.getProgressMonitor();
+                while (dbResult.next() && !monitor.isCanceled() && objects.size() < params.getMaxResults()) {
                     tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
                     tableOrViewName = JDBCUtils.safeGetString(dbResult, "TABNAME");
                     columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
 
-                    db2Schema = dataSource.getSchema(session.getProgressMonitor(), tableSchemaName);
+                    db2Schema = dataSource.getSchema(monitor, tableSchemaName);
                     if (db2Schema == null) {
                         LOG.debug("Schema '" + tableSchemaName + "' not found. Probably was filtered");
                         continue;
                     }
                     // Try with table, then view
-                    db2Table = db2Schema.getTable(session.getProgressMonitor(), tableOrViewName);
+                    db2Table = db2Schema.getTable(monitor, tableOrViewName);
                     if (db2Table != null) {
                         objects.add(new DB2ObjectReference(columnName, db2Table, DB2ObjectType.COLUMN));
                     } else {
-                        db2View = db2Schema.getView(session.getProgressMonitor(), tableOrViewName);
+                        db2View = db2Schema.getView(monitor, tableOrViewName);
                         if (db2View != null) {
                             objects.add(new DB2ObjectReference(columnName, db2View, DB2ObjectType.COLUMN));
                         }
@@ -477,26 +475,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
     @Override
     public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType type) {
-        return type == DB2ObjectType.ROUTINE;
-    }
-
-    static {
-        StringBuilder sb = new StringBuilder(1024);
-
-        sb.append("SELECT TABSCHEMA,TABNAME,COLNAME");
-        sb.append("  FROM SYSCAT.COLUMNS");
-        sb.append(" WHERE TABSCHEMA = ?");
-        sb.append("   AND COLNAME LIKE ?");
-        sb.append(" WITH UR");
-        SQL_COLS_SCHEMA = sb.toString();
-
-        sb.setLength(0);
-
-        sb.append("SELECT TABSCHEMA,TABNAME,COLNAME");
-        sb.append("  FROM SYSCAT.COLUMNS");
-        sb.append(" WHERE COLNAME LIKE ?");
-        sb.append(" WITH UR");
-        SQL_COLS_ALL = sb.toString();
-
+        return type == DB2ObjectType.ROUTINE
+            || type == DB2ObjectType.COLUMN;
     }
 }
