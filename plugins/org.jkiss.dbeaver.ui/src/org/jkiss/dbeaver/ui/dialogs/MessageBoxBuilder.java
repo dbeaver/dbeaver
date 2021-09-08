@@ -106,6 +106,6 @@ public final class MessageBoxBuilder {
         if (replies == null || !CommonUtils.isValidIndex(answerIdx, replies.size())) {
             return null;
         }
-        return replies.get(0);
+        return replies.get(answerIdx);
     }
 }
