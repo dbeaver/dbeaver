@@ -483,10 +483,11 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            if (selectedColumn == 0) {
-                if (!namesEditable || !(prop.property instanceof DBPNamedObject)) {
-                    return;
-                }
+            final int columnIndex;
+            if (selectedColumn == 0 && (!namesEditable || !(prop.property instanceof DBPNamedObject))) {
+                columnIndex = 1;
+            } else {
+                columnIndex = this.selectedColumn;
             }
             int editStyle = SWT.LEFT;
             if (isHidePropertyValue(prop.property)) {
@@ -496,7 +497,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (cellEditor == null) {
                 return;
             }
-            final Object propertyValue = selectedColumn == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
+            final Object propertyValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
             final ICellEditorListener cellEditorListener = new ICellEditorListener() {
                 @Override
                 public void applyEditorValue()
@@ -504,13 +505,13 @@ public class PropertyTreeViewer extends TreeViewer {
                     try {
                         //editorValueChanged(true, true);
                         final Object value = cellEditor.getValue();
-                        final Object oldValue = selectedColumn == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
+                        final Object oldValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
                         if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
                             // The same empty string
                             return;
                         }
                         if (DBUtils.compareDataValues(oldValue, value) != 0) {
-                            if (selectedColumn == 0) {
+                            if (columnIndex == 0) {
                                 String newName = CommonUtils.toString(value);
                                 String oldPropId = prop.property.getId();
                                 Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
@@ -527,6 +528,8 @@ public class PropertyTreeViewer extends TreeViewer {
                             }
                             handlePropertyChange(prop);
                         }
+
+                        disposeOldEditor();
                     } catch (Exception e) {
                         DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
                     }
@@ -575,7 +578,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 treeEditor.minimumWidth = cellEditor.getLayoutData().minimumWidth;
                 treeEditor.grabHorizontal = cellEditor.getLayoutData().grabHorizontal;
 
-                treeEditor.setEditor(editorControl, item, selectedColumn);
+                treeEditor.setEditor(editorControl, item, columnIndex);
             }
             if (isDef) {
                 // Selected by mouse
