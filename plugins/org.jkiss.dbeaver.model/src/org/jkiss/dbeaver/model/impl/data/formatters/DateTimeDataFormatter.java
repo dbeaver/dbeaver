@@ -53,8 +53,9 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
         final String timezone = CommonUtils.toString(properties.get(PROP_TIMEZONE));
         zone = CommonUtils.isEmptyTrimmed(timezone) ? null : ZoneId.of(timezone);
+        String sdfPattern = pattern.replace("n", "f");
         dateFormat = new ExtendedDateFormat(
-            pattern,
+            sdfPattern,
             locale);
         // We shouldn't use lanient formatter (#7244)
         dateFormat.setLenient(false);
