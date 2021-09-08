@@ -40,6 +40,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * DB2 Structure Assistant
@@ -158,7 +159,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
         // Routines
         if (db2ObjectTypes.contains(DB2ObjectType.ROUTINE)) {
-            searchRoutines(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
+            searchRoutines(session, schema, params, objects);
         }
 
         return objects;
@@ -252,36 +253,38 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
     }
 
-    private void searchRoutines(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
-                                @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, Collection<? super DBSObjectReference> objects,
-                                int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
-
-        StringBuilder baseSQL = new StringBuilder("SELECT ROUTINESCHEMA, ROUTINENAME" + LF + "FROM SYSCAT.ROUTINES" + LF +
-            SQLConstants.KEYWORD_WHERE + LF);
+    private void searchRoutines(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull ObjectsSearchParams params,
+                                @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
+        StringBuilder sql = new StringBuilder("SELECT ROUTINESCHEMA, ROUTINENAME" + LF + "FROM SYSCAT.ROUTINES" + LF +
+            SQLConstants.KEYWORD_WHERE + LF + " ");
+        StringJoiner clause = new StringJoiner(" OR ", "(", ")");
+        clause.add("ROUTINENAME LIKE ?");
+        if (params.isSearchInDefinitions()) {
+            clause.add("TEXT LIKE ?");
+        }
+        if (params.isSearchInComments()) {
+            clause.add("REMARKS LIKE ?");
+        }
+        sql.append(clause);
         if (schema != null) {
-            baseSQL.append("ROUTINESCHEMA = ? AND ");
+            sql.append(" AND ROUTINESCHEMA = ?");
         }
-        if (searchInDefinitions) {
-            baseSQL.append("(TEXT LIKE ? OR ");
-        }
-        baseSQL.append("ROUTINENAME LIKE ?");
-        if (searchInDefinitions) {
-            baseSQL.append(")");
-        }
-        baseSQL.append(LF + WITH_UR);
+        sql.append(LF + WITH_UR);
 
-        String sql = buildTableSQL(baseSQL.toString(), db2ObjectTypes);
-
-        int n = 1;
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+            dbStat.setString(1, params.getMask());
+            int paramIdx = 2;
+            if (params.isSearchInDefinitions()) {
+                dbStat.setString(paramIdx, params.getMask());
+                paramIdx++;
+            }
+            if (params.isSearchInComments()) {
+                dbStat.setString(paramIdx, params.getMask());
+                paramIdx++;
+            }
             if (schema != null) {
-                dbStat.setString(n++, schema.getName());
+                dbStat.setString(paramIdx, schema.getName());
             }
-            dbStat.setString(n++, mask);
-            if (searchInDefinitions) {
-                dbStat.setString(n, mask);
-            }
-
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
             String schemaName;
@@ -289,19 +292,12 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             DB2Schema db2Schema;
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
-
-                    if (nbResults++ >= maxResults) {
-                        break;
-                    }
-
+                DBRProgressMonitor monitor = session.getProgressMonitor();
+                while (dbResult.next() && !monitor.isCanceled() && objects.size() < params.getMaxResults()) {
                     schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "ROUTINESCHEMA");
                     objectName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
 
-                    db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
+                    db2Schema = dataSource.getSchema(monitor, schemaName);
                     if (db2Schema == null) {
                         LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
@@ -477,6 +473,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
         DB2ObjectType db2ObjectType = (DB2ObjectType) objectType;
         return db2ObjectType == DB2ObjectType.ROUTINE || isTable(db2ObjectType);
+    }
+
+    @Override
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType type) {
+        return type == DB2ObjectType.ROUTINE;
     }
 
     static {
