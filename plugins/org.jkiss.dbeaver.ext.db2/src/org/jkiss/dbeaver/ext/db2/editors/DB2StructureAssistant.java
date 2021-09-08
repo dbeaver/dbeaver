@@ -148,6 +148,14 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             }
         }
 
+        // Columns
+        if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
+            searchColumns(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
+            if (nbResults >= maxResults) {
+                return objects;
+            }
+        }
+
         // Routines
         if (db2ObjectTypes.contains(DB2ObjectType.ROUTINE)) {
             searchRoutines(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
