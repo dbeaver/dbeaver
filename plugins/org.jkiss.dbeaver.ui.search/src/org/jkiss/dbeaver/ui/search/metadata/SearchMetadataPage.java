@@ -28,8 +28,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -343,6 +345,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         updateEnablement();
     }
 
+    @Nullable
     private DBNNode getSelectedNode()
     {
         IStructuredSelection selection = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
@@ -404,10 +407,15 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
     @Override
     public SearchMetadataQuery createQuery() {
-        DBNNode selectedNode = getSelectedNode();
-        DBSObjectContainer parentObject = null;
-        if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
-            parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
+        DBSObject parentObject = null;
+        for (DBNNode node = getSelectedNode(); node != null; node = node.getParentNode()) {
+            if (node instanceof DBSWrapper) {
+                DBSObject object = ((DBSWrapper) node).getObject();
+                if (object instanceof DBSStructContainer || object instanceof DBPDataSourceContainer) {
+                    parentObject = object;
+                    break;
+                }
+            }
         }
 
         DBPDataSource dataSource = getSelectedDataSource();
