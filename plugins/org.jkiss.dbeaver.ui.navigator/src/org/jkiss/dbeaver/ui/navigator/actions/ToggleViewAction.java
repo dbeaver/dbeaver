@@ -80,10 +80,15 @@ public class ToggleViewAction extends Action implements IPartListener
             activePage.addPartListener(this);
             listenerRegistered = true;
             IViewReference viewReference = activePage.findViewReference(viewId);
-            setChecked(viewReference != null);
+            super.setChecked(viewReference != null);
         }
 
         return super.isChecked();
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        // Check state is updated via listener, we don't want our state to be modified from outside (e.g. via event).
     }
 
     @Override
@@ -124,7 +129,7 @@ public class ToggleViewAction extends Action implements IPartListener
     public void partOpened(IWorkbenchPart part)
     {
         if (part.getSite().getId().equals(viewId)) {
-            setChecked(true);
+            super.setChecked(true);
         }
     }
 
@@ -132,7 +137,7 @@ public class ToggleViewAction extends Action implements IPartListener
     public void partClosed(IWorkbenchPart part)
     {
         if (part.getSite().getId().equals(viewId)) {
-            setChecked(false);
+            super.setChecked(false);
         }
     }
 
