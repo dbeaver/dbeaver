@@ -42,10 +42,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -419,33 +416,35 @@ public class DBNModel implements IResourceChangeListener {
         return curNode;
     }
 
-    private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered) throws DBException
-    {
-        DBNDatabaseNode[] children = node.getChildren(monitor);
+    private static void cacheNodeChildren(DBRProgressMonitor monitor, @NotNull DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered)
+            throws DBException {
         boolean cached = false;
-        if (!ArrayUtils.isEmpty(children)) {
-            for (DBNDatabaseNode child : children) {
-                if (child instanceof DBNDatabaseFolder) {
-                    Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
-                    if (itemsClass != null && itemsClass.isAssignableFrom(objectToCache.getClass())) {
-                        cached = cacheNodeChildren(monitor, child, objectToCache, addFiltered);
-                        if (cached) {
-                            break;
+
+        Queue<DBNDatabaseNode> nodeQueue = new ArrayDeque<>(ArrayUtils.safeArray(node.getChildren(monitor)));
+        while (!cached && !nodeQueue.isEmpty()) {
+            DBNDatabaseNode curNode = nodeQueue.remove();
+            if (curNode instanceof DBNDatabaseFolder) {
+                DBNDatabaseFolder folder = (DBNDatabaseFolder) curNode;
+                Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
+                if (childrenClass == null) {
+                    for (DBNDatabaseNode grandchild: ArrayUtils.safeArray(folder.getChildren(monitor))) {
+                        if (grandchild instanceof DBNDatabaseFolder) {
+                            nodeQueue.add(grandchild);
                         }
                     }
-                } else if (child.getObject() == objectToCache) {
-                    cached = true;
-                    break;
+                } else if (childrenClass.isAssignableFrom(objectToCache.getClass())) {
+                    nodeQueue.addAll(ArrayUtils.safeArray(curNode.getChildren(monitor)));
                 }
+            } else if (curNode.getObject() == objectToCache) {
+                cached = true;
             }
         }
+
         if (!cached && addFiltered && node.isFiltered()) {
             // It seems this object was filtered out
             // As it was requested explicitly - let's add new node
             node.addChildItem(objectToCache);
-            return true;
         }
-        return false;
     }
 
     @Nullable
