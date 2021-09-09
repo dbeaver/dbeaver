@@ -359,6 +359,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate) {
+        setListData(items, append, forUpdate, false);
+    }
+
+    protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate, boolean forceUpdateItems) {
         final Control itemsControl = itemsViewer.getControl();
         if (itemsControl.isDisposed()) {
             return;
@@ -500,7 +504,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 } else {
                     // Update object list
-                    if (!objectList.equals(items)) {
+                    if (!objectList.equals(items) || forceUpdateItems) {
                         int newListSize = items.size();
                         int itemIndex = 0;
                         for (OBJECT_TYPE newObject : items) {
@@ -509,7 +513,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                 objectList.add(itemIndex, newObject);
                             } else {
                                 OBJECT_TYPE oldObject = objectList.get(itemIndex);
-                                if (!CommonUtils.equalObjects(oldObject, newObject)) {
+                                if (!CommonUtils.equalObjects(oldObject, newObject) || forceUpdateItems) {
                                     // Replace old object
                                     objectList.set(itemIndex, newObject);
                                 }
@@ -1115,9 +1119,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public void completeLoading(Collection<OBJECT_TYPE> items) {
             super.completeLoading(items);
-            setListData(items, false, forUpdate);
+            afterCompleteLoading(items);
         }
 
+        protected void afterCompleteLoading(@NotNull Collection<OBJECT_TYPE> items) {
+            setListData(items, false, forUpdate);
+        }
     }
 
     public class ObjectActionVisualizer extends ProgressVisualizer<Void> {
