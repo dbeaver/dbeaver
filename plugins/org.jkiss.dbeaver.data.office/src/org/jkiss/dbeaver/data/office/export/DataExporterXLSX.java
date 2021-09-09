@@ -60,6 +60,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
     private static final String PROP_HEADER_FONT = "headerfont";
+    private static final String PROP_HEADER_FONT_NAME = "headerfontname";
 
     private static final String BINARY_FIXED = "[BINARY]";
 
@@ -78,6 +79,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private boolean showDescription;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
+    private static String FontName = "Arial";
+    
 
     private static final int ROW_WINDOW = 100;
 
@@ -113,6 +116,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_HEADER, true);
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
+        properties.put(DataExporterXLSX.PROP_HEADER_FONT_NAME,"Arial");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
         properties.put(DataExporterXLSX.PROP_FALSESTRING, "false");
         properties.put(DataExporterXLSX.PROP_EXPORT_SQL, false);
@@ -204,6 +208,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         FontStyleProp fontStyle;
+      
 
         try {
 
@@ -214,6 +219,17 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             fontStyle = FontStyleProp.NONE;
 
         }
+        
+        try {
+
+        	FontName = CommonUtils.toString(properties.get(PROP_HEADER_FONT_NAME), "Arial");
+
+        } catch (Exception e) {
+
+        	FontName = "Arial";
+
+        }
+        
 
         styleHeader.setBorderTop(border);
         styleHeader.setBorderBottom(border);
@@ -243,8 +259,10 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         default:
             break;
         }
-
+        
+        fontBold.setFontName(FontName);
         styleHeader.setFont(fontBold);
+        
 
         style = (XSSFCellStyle) wb.createCellStyle();
         style.setBorderTop(border);
