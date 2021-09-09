@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * DB2 Structure Assistant
@@ -130,18 +127,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                                                       @NotNull ObjectsSearchParams params) throws SQLException, DBException {
         List<DBSObjectReference> objects = new ArrayList<>();
 
-        String searchObjectNameMask = params.getMask();
-        if (!params.isCaseSensitive()) {
-            searchObjectNameMask = searchObjectNameMask.toUpperCase();
-        }
-
-        int nbResults = 0;
-        int maxResults = params.getMaxResults();
-
         // Tables, Alias, Views, Nicknames, MQT
         if (db2ObjectTypes.stream().anyMatch(DB2StructureAssistant::isTable)) {
-            searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
-            if (nbResults >= maxResults) {
+            searchTables(session, schema, db2ObjectTypes, objects, params);
+            if (objects.size() >= params.getMaxResults()) {
                 return objects;
             }
         }
@@ -149,7 +138,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         // Columns
         if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
             searchColumns(session, schema, params, objects);
-            if (nbResults >= maxResults) {
+            if (objects.size() >= params.getMaxResults()) {
                 return objects;
             }
         }
@@ -162,7 +151,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         return objects;
     }
 
-    private static boolean isTable(@Nullable DB2ObjectType objectType) {
+    private static boolean isTable(@Nullable DBSObjectType objectType) {
         return objectType == DB2ObjectType.ALIAS
             || objectType == DB2ObjectType.TABLE
             || objectType == DB2ObjectType.NICKNAME
@@ -170,51 +159,51 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             || objectType == DB2ObjectType.MQT;
     }
 
-    // --------------
-    // Helper Classes
-    // --------------
-
-    private void searchTables(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
-                              @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, @NotNull Collection<? super DBSObjectReference> objects,
-                              int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
-        String sql;
+    private void searchTables(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull Iterable<DB2ObjectType> db2ObjectTypes,
+                              @NotNull Collection<? super DBSObjectReference> objects, @NotNull ObjectsSearchParams params)
+                                throws SQLException, DBException {
+        String typeClause = getTypeClause(db2ObjectTypes);
+        StringBuilder sql = new StringBuilder("SELECT TABSCHEMA,TABNAME, TYPE FROM SYSCAT.TABLES WHERE");
+        StringJoiner whereClause = new StringJoiner(" AND ", " ", " ");
+        whereClause.add(typeClause);
         if (schema != null) {
-            sql =
-                "SELECT TABSCHEMA,TABNAME,TYPE FROM SYSCAT.TABLES\n" +
-                "WHERE TABSCHEMA =? AND TABNAME LIKE ? AND TYPE IN (%s)";
-        } else {
-            sql =
-                "SELECT TABSCHEMA,TABNAME,TYPE FROM SYSCAT.TABLES\n" +
-                "WHERE TABNAME LIKE ? AND TYPE IN (%s)";
+            whereClause.add("TABSCHEMA = ?");
         }
-        sql = buildTableSQL(sql, db2ObjectTypes);
-
-        if (searchInDefinitions) {
-            StringBuilder query = new StringBuilder("\nUNION ALL\nSELECT\n\tt.TABSCHEMA,\n\tt.TABNAME,\n\tt.\"TYPE\"\nFROM\n\t\"SYSIBM\".SYSVIEWS v\n" +
-                "INNER JOIN SYSCAT.TABLES t ON\n\tv.NAME = t.TABNAME\nWHERE\n\tv.TEXT LIKE ?\n\tAND TYPE IN (%s)");
-            if (schema != null) {
-                query.append("\n\tAND TABSCHEMA = ?");
-            }
-            sql += buildTableSQL(query.toString(), db2ObjectTypes);
+        StringJoiner maskClause = new StringJoiner(" OR ", "(", ")");
+        maskClause.add("TABNAME LIKE ?");
+        if (params.isSearchInComments()) {
+            maskClause.add("REMARKS LIKE ?");
         }
-
-        sql += LF + WITH_UR;
-
-        int n = 1;
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        whereClause.add(maskClause.toString());
+        sql.append(whereClause);
+        if (params.isSearchInDefinitions()) {
+            sql.append("\nUNION ALL\nSELECT\n\tt.TABSCHEMA,\n\tt.TABNAME,\n\tt.\"TYPE\"\nFROM\n\t\"SYSIBM\".SYSVIEWS v\n")
+                    .append("INNER JOIN SYSCAT.TABLES t ON\n\tv.NAME = t.TABNAME\nWHERE\n\tv.TEXT LIKE ?\n\tAND ").append(typeClause);
             if (schema != null) {
-                dbStat.setString(n++, schema.getName());
-                //dbStat.setString(n++, DB2Constants.SYSTEM_CATALOG_SCHEMA);
+                sql.append("\n\tAND TABSCHEMA = ?");
             }
-            dbStat.setString(n++, mask);
-            if (searchInDefinitions) {
-                dbStat.setString(n, mask);
-                n++;
+        }
+        sql.append(LF).append(WITH_UR);
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+            int paramIdx = 1;
+            if (schema != null) {
+                dbStat.setString(paramIdx, schema.getName());
+                paramIdx++;
+            }
+            dbStat.setString(paramIdx, params.getMask());
+            paramIdx++;
+            if (params.isSearchInComments()) {
+                dbStat.setString(paramIdx, params.getMask());
+                paramIdx++;
+            }
+            if (params.isSearchInDefinitions()) {
+                dbStat.setString(paramIdx, params.getMask());
+                paramIdx++;
                 if (schema != null) {
-                    dbStat.setString(n, schema.getName());
+                    dbStat.setString(paramIdx, schema.getName());
                 }
             }
-
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
             String schemaName;
@@ -224,20 +213,13 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             DB2ObjectType objectType;
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
-
-                    if (nbResults++ >= maxResults) {
-                        break;
-                    }
-
+                DBRProgressMonitor monitor = session.getProgressMonitor();
+                while (dbResult.next() && !monitor.isCanceled() && objects.size() < params.getMaxResults()) {
                     schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
                     objectName = JDBCUtils.safeGetString(dbResult, "TABNAME");
                     tableType = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
 
-                    db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
+                    db2Schema = dataSource.getSchema(monitor, schemaName);
                     if (db2Schema == null) {
                         LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
@@ -247,6 +229,31 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                     objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
                 }
             }
+        }
+    }
+
+    @NotNull
+    private static String getTypeClause(@NotNull Iterable<DB2ObjectType> types) {
+        StringJoiner joiner = new StringJoiner(", ", "TYPE IN (", ")");
+        for (DB2ObjectType type: types) {
+            if (type == DB2ObjectType.ALIAS) {
+                addTypeVariables(joiner, DB2TableType.A);
+            } else if (type == DB2ObjectType.TABLE) {
+                addTypeVariables(joiner, DB2TableType.G, DB2TableType.H, DB2TableType.L, DB2TableType.T, DB2TableType.U);
+            } else if (type == DB2ObjectType.VIEW) {
+                addTypeVariables(joiner, DB2TableType.V, DB2TableType.W);
+            } else if (type == DB2ObjectType.MQT) {
+                addTypeVariables(joiner, DB2TableType.S);
+            } else if (type == DB2ObjectType.NICKNAME) {
+                addTypeVariables(joiner, DB2TableType.N);
+            }
+        }
+        return joiner.toString();
+    }
+
+    private static void addTypeVariables(@NotNull StringJoiner joiner, @NotNull DB2TableType... types) {
+        for (DB2TableType type: types) {
+            joiner.add("'" + type.name().charAt(0) + "'");
         }
     }
 
@@ -423,59 +430,15 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
     }
 
-    private String buildTableSQL(String baseStatement, List<DB2ObjectType> objectTypes)
-    {
-        List<Character> listChars = new ArrayList<>(objectTypes.size());
-        for (DB2ObjectType objectType : objectTypes) {
-            if (objectType.equals(DB2ObjectType.ALIAS)) {
-                listChars.add(DB2TableType.A.name().charAt(0));
-            }
-            if (objectType.equals(DB2ObjectType.TABLE)) {
-                listChars.add(DB2TableType.G.name().charAt(0));
-                listChars.add(DB2TableType.H.name().charAt(0));
-                listChars.add(DB2TableType.L.name().charAt(0));
-                listChars.add(DB2TableType.T.name().charAt(0));
-                listChars.add(DB2TableType.U.name().charAt(0));
-            }
-            if (objectType.equals(DB2ObjectType.VIEW)) {
-                listChars.add(DB2TableType.V.name().charAt(0));
-                listChars.add(DB2TableType.W.name().charAt(0));
-            }
-            if (objectType.equals(DB2ObjectType.MQT)) {
-                listChars.add(DB2TableType.S.name().charAt(0));
-            }
-            if (objectType.equals(DB2ObjectType.NICKNAME)) {
-                listChars.add(DB2TableType.N.name().charAt(0));
-            }
-
-        }
-        Boolean notFirst = false;
-        StringBuilder sb = new StringBuilder(64);
-        for (Character letter : listChars) {
-            if (notFirst) {
-                sb.append(",");
-            } else {
-                notFirst = true;
-            }
-            sb.append("'");
-            sb.append(letter);
-            sb.append("'");
-        }
-        return String.format(baseStatement, sb.toString());
-    }
-
     @Override
     public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
-        if (!(objectType instanceof DB2ObjectType)) {
-            return false;
-        }
-        DB2ObjectType db2ObjectType = (DB2ObjectType) objectType;
-        return db2ObjectType == DB2ObjectType.ROUTINE || isTable(db2ObjectType);
+        return objectType == DB2ObjectType.ROUTINE || isTable(objectType);
     }
 
     @Override
     public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType type) {
         return type == DB2ObjectType.ROUTINE
-            || type == DB2ObjectType.COLUMN;
+            || type == DB2ObjectType.COLUMN
+            || (isTable(type) && type != DB2ObjectType.ALIAS);
     }
 }
