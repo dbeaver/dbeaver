@@ -72,11 +72,11 @@ public class EnterNameDialog extends Dialog {
         propGroup.setLayoutData(gd);
 
         propNameText = UIUtils.createLabelText(propGroup, propertyName, null);
-        propNameText.addModifyListener(e -> updateButtonsState());
         if (propertyValue != null) {
             propNameText.setText(propertyValue);
             propNameText.selectAll();
         }
+        propNameText.addModifyListener(e -> updateButtonsState());
 
         return propGroup;
     }
