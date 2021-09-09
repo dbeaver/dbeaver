@@ -241,6 +241,18 @@
                 <property id="encoding" label="%BinaryTransformer.property.encoding.label" type="string" description="%BinaryTransformer.property.encoding.description" defaultValue="utf-8" required="false"/>
             </propertyGroup>
         </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.NumericAttributeTransformer"
+                id="org.jkiss.dbeaver.core.NumericAttributeTransformer"
+                name="Numeric"
+                description="Represents string value as number"
+                applyByDefault="false"
+                custom="true">
+            <type kind="STRING"/>
+            <propertyGroup label="Properties">
+                <property id="type" type="string" label="%NumericTransformer.property.type.label" description="%NumericTransformer.property.type.description" defaultValue="double" required="true" validValues="byte,short,int,long,float,double" allowCustomValues="false"/>
+            </propertyGroup>
+        </transformer>
 
     </extension>
 
