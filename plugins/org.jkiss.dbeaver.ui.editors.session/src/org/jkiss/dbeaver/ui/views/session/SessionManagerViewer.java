@@ -589,6 +589,11 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                     onSessionSelect(null);
                 }
             }
+
+            @Override
+            protected void afterCompleteLoading(@NotNull Collection<SESSION_TYPE> items) {
+                setListData(items, false, false, true);
+            }
         }
     }
 
