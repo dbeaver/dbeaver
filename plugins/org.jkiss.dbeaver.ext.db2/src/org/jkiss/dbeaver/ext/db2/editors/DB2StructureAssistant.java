@@ -127,6 +127,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                                                       @NotNull ObjectsSearchParams params) throws SQLException, DBException {
         List<DBSObjectReference> objects = new ArrayList<>();
 
+        if (!params.isCaseSensitive()) {
+            params.setMask(params.getMask().toUpperCase(Locale.ENGLISH));
+        }
+
         // Tables, Alias, Views, Nicknames, MQT
         if (db2ObjectTypes.stream().anyMatch(DB2StructureAssistant::isTable)) {
             searchTables(session, schema, db2ObjectTypes, objects, params);
@@ -159,6 +163,14 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             || objectType == DB2ObjectType.MQT;
     }
 
+    @NotNull
+    private static String getMaskComparisonClause(@NotNull ObjectsSearchParams params, @NotNull String columnName) {
+        if (params.isCaseSensitive()) {
+            return columnName + " LIKE ?";
+        }
+        return "UPPER(" + columnName + ") LIKE ?";
+    }
+
     private void searchTables(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull Iterable<DB2ObjectType> db2ObjectTypes,
                               @NotNull Collection<? super DBSObjectReference> objects, @NotNull ObjectsSearchParams params)
                                 throws SQLException, DBException {
@@ -170,15 +182,16 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             whereClause.add("TABSCHEMA = ?");
         }
         StringJoiner maskClause = new StringJoiner(" OR ", "(", ")");
-        maskClause.add("TABNAME LIKE ?");
+        maskClause.add(getMaskComparisonClause(params, "TABNAME"));
         if (params.isSearchInComments()) {
-            maskClause.add("REMARKS LIKE ?");
+            maskClause.add(getMaskComparisonClause(params, "REMARKS"));
         }
         whereClause.add(maskClause.toString());
         sql.append(whereClause);
         if (params.isSearchInDefinitions()) {
             sql.append("\nUNION ALL\nSELECT\n\tt.TABSCHEMA,\n\tt.TABNAME,\n\tt.\"TYPE\"\nFROM\n\t\"SYSIBM\".SYSVIEWS v\n")
-                    .append("INNER JOIN SYSCAT.TABLES t ON\n\tv.NAME = t.TABNAME\nWHERE\n\tv.TEXT LIKE ?\n\tAND ").append(typeClause);
+                .append("INNER JOIN SYSCAT.TABLES t ON\n\tv.NAME = t.TABNAME\nWHERE\n\t")
+                .append(getMaskComparisonClause(params, "v.TEXT")).append("\n\tAND ").append(typeClause);
             if (schema != null) {
                 sql.append("\n\tAND TABSCHEMA = ?");
             }
@@ -262,12 +275,12 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         StringBuilder sql = new StringBuilder("SELECT ROUTINESCHEMA, ROUTINENAME" + LF + "FROM SYSCAT.ROUTINES" + LF +
             SQLConstants.KEYWORD_WHERE + LF + " ");
         StringJoiner clause = new StringJoiner(" OR ", "(", ")");
-        clause.add("ROUTINENAME LIKE ?");
+        clause.add(getMaskComparisonClause(params, "ROUTINENAME"));
         if (params.isSearchInDefinitions()) {
-            clause.add("TEXT LIKE ?");
+            clause.add(getMaskComparisonClause(params, "TEXT"));
         }
         if (params.isSearchInComments()) {
-            clause.add("REMARKS LIKE ?");
+            clause.add(getMaskComparisonClause(params, "REMARKS"));
         }
         sql.append(clause);
         if (schema != null) {
@@ -318,9 +331,9 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT TABSCHEMA, TABNAME, COLNAME FROM SYSCAT.COLUMNS WHERE ");
         StringJoiner clause = new StringJoiner(" OR ", "(", ")");
-        clause.add("COLNAME LIKE ?");
+        clause.add(getMaskComparisonClause(params, "COLNAME"));
         if (params.isSearchInComments()) {
-            clause.add("REMARKS LIKE ?");
+            clause.add(getMaskComparisonClause(params, "REMARKS"));
         }
         sql.append(clause);
         if (schema != null) {
