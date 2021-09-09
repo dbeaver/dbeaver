@@ -31,12 +31,23 @@ public interface ERDContentProvider {
     boolean allowEntityDuplicates();
 
     /**
-     * Create default entity attributes.
+     * Create default entity attributes according to default settings.
      *
      * @param diagram       Diagram
      * @param otherEntities list of entities if they are added as a batch
+     * @param erdEntity     entity to be filled
      */
-    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity);
+    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity);
+
+    /**
+     * Create default entity attributes according to specified settings.
+     *
+     * @param diagram       Diagram
+     * @param otherEntities list of entities if they are added as a batch
+     * @param erdEntity     entity to be filled
+     * @param settings      attribute settings
+     */
+    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity, @NotNull ERDAttributeSettings settings);
 
     @Nullable
     ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);

@@ -18,10 +18,8 @@ package org.jkiss.dbeaver.erd.ui.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
-import org.jkiss.dbeaver.erd.model.ERDContentProviderDefault;
-import org.jkiss.dbeaver.erd.model.ERDDiagram;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -37,22 +35,25 @@ public class ERDContentProviderDecorated extends ERDContentProviderDefault {
     }
 
     @Override
-    public void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) {
+    public void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) {
         ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.ALL;
+        boolean alphabeticalOrder = false;
         if (diagram instanceof ERDContainerDecorated) {
-            attributeVisibility = ((ERDContainerDecorated) diagram).getDecorator().supportsAttributeVisibility() ?
+            final ERDContainerDecorated decoratedDiagram = (ERDContainerDecorated) diagram;
+            attributeVisibility = decoratedDiagram.getDecorator().supportsAttributeVisibility() ?
                 erdEntity.getAttributeVisibility() : ERDAttributeVisibility.ALL;
             if (attributeVisibility == null) {
-                EntityDiagram.NodeVisualInfo visualInfo = ((ERDContainerDecorated) diagram).getVisualInfo(erdEntity.getObject(), false);
+                EntityDiagram.NodeVisualInfo visualInfo = decoratedDiagram.getVisualInfo(erdEntity.getObject(), false);
                 if (visualInfo != null) {
                     attributeVisibility = visualInfo.attributeVisibility;
                 }
                 if (attributeVisibility == null) {
-                    attributeVisibility = ((ERDContainerDecorated) diagram).getAttributeVisibility();
+                    attributeVisibility = decoratedDiagram.getAttributeVisibility();
                 }
             }
+            alphabeticalOrder = decoratedDiagram.hasAttributeStyle(ERDViewStyle.ALPHABETICAL_ORDER);
         }
-        fillEntityFromObject(monitor, erdEntity, attributeVisibility);
+        fillEntityFromObject(monitor, diagram, otherEntities, erdEntity, new ERDAttributeSettings(attributeVisibility, alphabeticalOrder));
     }
 
 }

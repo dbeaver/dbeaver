@@ -106,6 +106,13 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         }
     }
 
+    public void sortAttributes(@NotNull Comparator<ERDEntityAttribute> comparator, boolean reflect) {
+        attributes.sort(comparator);
+        if (reflect) {
+            firePropertyChange(PROP_REORDER, this, null);
+        }
+    }
+
     public void switchAttribute(ERDEntityAttribute attribute, int index, boolean reflect) {
         attributes.remove(attribute);
         attributes.add(index, attribute);
