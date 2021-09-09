@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,8 @@ import java.util.stream.Collectors;
  * SQLServerStructureAssistant
  */
 public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLServerExecutionContext> {
+    private static final Log log = Log.getLog(SQLServerStructureAssistant.class);
+
     private final SQLServerDataSource dataSource;
 
     public SQLServerStructureAssistant(SQLServerDataSource dataSource)
@@ -121,13 +125,12 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
 
         DBSObject parentObject = params.getParentObject();
         boolean globalSearch = params.isGlobalSearch();
-        Map<String, SQLServerDatabase> databases;
+        Collection<SQLServerDatabase> databases;
         SQLServerSchema schema = null;
 
         if (parentObject instanceof DBPDataSourceContainer) {
             if (globalSearch) {
-                databases = executionContext.getDataSource().getDatabases(monitor).stream()
-                    .collect(Collectors.toMap(SQLServerDatabase::getName, d -> d));
+                databases = executionContext.getDataSource().getDatabases(monitor);
             } else {
                 SQLServerDatabase database = executionContext.getContextDefaults().getDefaultCatalog();
                 if (database == null) {
@@ -137,11 +140,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 if (database == null || schema == null) {
                     return Collections.emptyList();
                 }
-                databases = Collections.singletonMap(database.getName(), database);
+                databases = Collections.singletonList(database);
             }
         } else if (parentObject instanceof SQLServerDatabase) {
             SQLServerDatabase database = (SQLServerDatabase) parentObject;
-            databases = Collections.singletonMap(database.getName(), database);
+            databases = Collections.singletonList(database);
             if (!globalSearch) {
                 schema = executionContext.getContextDefaults().getDefaultSchema();
                 if (schema == null) {
@@ -151,7 +154,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         } else if (parentObject instanceof SQLServerSchema) {
             schema = (SQLServerSchema) parentObject;
             SQLServerDatabase database = schema.getDatabase();
-            databases = Collections.singletonMap(database.getName(), database);
+            databases = Collections.singletonList(database);
         } else {
             return Collections.emptyList();
         }
@@ -187,87 +190,75 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return Collections.emptyList();
         }
 
-        int maxResults = params.getMaxResults();
-        String nameColumnAlias = "all_obj_name";
-        String dbNameAlias = "db_name";
-        StringJoiner subSelects = new StringJoiner(" UNION ALL ");
-        boolean searchInComments = params.isSearchInComments();
-        boolean searchInDefinitions = params.isSearchInDefinitions();
-        for (SQLServerDatabase database: databases.values()) {
-            StringBuilder subSelect = new StringBuilder("(SELECT TOP ").append(maxResults).append(" schema_id, o.name as ").append(nameColumnAlias)
-                .append(", type, '").append(database.getName()).append("' as ").append(dbNameAlias).append(" FROM ")
-                .append(SQLServerUtils.getSystemTableName(database, "all_objects")).append(" o ");
-            if (searchInComments) {
-                subSelect.append("LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
-            }
-            subSelect.append("WHERE o.type IN (").append(objectTypeClause).append(") AND ");
-            boolean addParentheses = searchInComments || searchInDefinitions;
-            if (addParentheses) {
-                subSelect.append("(");
-            }
-            subSelect.append("o.name LIKE ? ");
-            if (searchInComments) {
-                subSelect.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
-            }
-            if (searchInDefinitions) {
-                if (searchInComments) {
-                    subSelect.append(" ");
-                }
-                subSelect.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
-            }
-            if (addParentheses) {
-                subSelect.append(") ");
-            }
-            if (schema != null) {
-                subSelect.append("AND o.schema_id = ?");
-            }
-            subSelect.append(")");
-            subSelects.add(subSelect);
+        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d * FROM %s o");
+        if (params.isSearchInComments()) {
+            sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
-        StringBuilder sql = new StringBuilder("SELECT TOP ").append(maxResults).append(" * FROM (").append(subSelects)
-            .append(") t ORDER BY t.all_obj_name;");
+        sqlBuilder.append("WHERE o.type IN (").append(objectTypeClause).append(") AND ");
+        boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
+        if (addParentheses) {
+            sqlBuilder.append("(");
+        }
+        sqlBuilder.append("o.name LIKE ? ");
+        if (params.isSearchInComments()) {
+            sqlBuilder.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
+        }
+        if (params.isSearchInDefinitions()) {
+            if (params.isSearchInComments()) {
+                sqlBuilder.append(" ");
+            }
+            sqlBuilder.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
+        }
+        if (addParentheses) {
+            sqlBuilder.append(") ");
+        }
+        if (schema != null) {
+            sqlBuilder.append("AND o.schema_id = ? ");
+        }
+        sqlBuilder.append("ORDER BY o.name");
+        String template = sqlBuilder.toString();
 
         List<DBSObjectReference> objects = new ArrayList<>();
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-                int idx = 1;
-                for (int i = 0; i < databases.size(); i++) {
-                    dbStat.setString(idx, params.getMask());
-                    idx++;
-                    if (searchInComments) {
+            for (SQLServerDatabase database: databases) {
+                int rowsToFetch = params.getMaxResults() - objects.size();
+                if (rowsToFetch < 1) {
+                    break;
+                }
+                String sql = String.format(template, rowsToFetch, SQLServerUtils.getSystemTableName(database, "all_objects"));
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                    dbStat.setString(1, params.getMask());
+                    int idx = 2;
+                    if (params.isSearchInComments()) {
                         dbStat.setString(idx, params.getMask());
                         idx++;
                     }
-                    if (searchInDefinitions) {
+                    if (params.isSearchInDefinitions()) {
                         dbStat.setString(idx, params.getMask());
                         idx++;
                     }
                     if (schema != null) {
                         dbStat.setLong(idx, schema.getObjectId());
-                        idx++;
                     }
-                }
-                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
-                        final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
-                        final String objectName = JDBCUtils.safeGetString(dbResult, nameColumnAlias);
-                        final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-                        final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
-                        final SQLServerDatabase database = databases.get(JDBCUtils.safeGetString(dbResult, dbNameAlias));
-                        {
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next() && !session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults()) {
+                            final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
+                            final String objectName = JDBCUtils.safeGetString(dbResult, "name");
+                            final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
+                            final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
                             SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
-                            final SQLServerDatabase finalDatabase = database;
                             objects.add(new AbstractObjectReference(
                                 objectName,
-                                objectSchema != null ? objectSchema : finalDatabase,
+                                objectSchema != null ? objectSchema : database,
                                 null,
                                 objectType.getTypeClass(),
                                 objectType)
                             {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), finalDatabase, objectSchema, objectName);
+                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), database, objectSchema, objectName);
                                     if (object == null) {
                                         throw new DBException(objectTypeName + " '" + objectName + "' not found");
                                     }
@@ -276,10 +267,17 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             });
                         }
                     }
+                } catch (SQLException e) {
+                    // Among other reasons, this can happen if access is denied for the current database
+                    log.debug(
+                    "Unable to perform metadata search in mssql instance. databaseName="
+                            + database.getName()
+                            + ", schema="
+                            + (schema != null ? schema.getName() : "null"),
+                        e
+                    );
                 }
             }
-        } catch (Throwable e) {
-            throw new DBException("Error while searching in mssql instance", e, dataSource);
         }
 
         return objects;
