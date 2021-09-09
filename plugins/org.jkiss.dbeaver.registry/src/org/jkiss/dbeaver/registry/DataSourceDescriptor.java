@@ -1274,7 +1274,7 @@ public class DataSourceDescriptor
                 for (DBSInstance instance : dataSource.getAvailableInstances()) {
                     for (DBCExecutionContext context : instance.getAllContexts()) {
                         conIndex++;
-                        coll.addProperty(CATEGORY_CONNECTIONS, String.valueOf(conIndex), String.valueOf(conIndex), new ContextInfo(context));
+                        coll.addProperty(CATEGORY_CONNECTIONS, "context-" + context.getContextId(), String.valueOf(conIndex), context.getContextName());
                     }
                 }
             }
@@ -1286,7 +1286,7 @@ public class DataSourceDescriptor
                         path = Paths.get(((URL) path).toURI());
                     } catch (Exception ignored) {
                     }
-                    coll.addProperty(CATEGORY_DRIVER_FILES, String.valueOf(urlIndex), String.valueOf(urlIndex), path);
+                    coll.addProperty(CATEGORY_DRIVER_FILES, "driver-file-" + String.valueOf(urlIndex), String.valueOf(urlIndex), path);
                 }
             }
             return adapter.cast(coll);
