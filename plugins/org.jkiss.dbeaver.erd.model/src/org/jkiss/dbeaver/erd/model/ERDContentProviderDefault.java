@@ -128,7 +128,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                         erdEntity.addAttribute(c1, false);
                     }
                     if (settings.isAlphabeticalOrder()) {
-                        erdEntity.sortAttributes(DBUtils.nameComparator(), false);
+                        erdEntity.sortAttributes(DBUtils.nameComparatorIgnoreCase(), false);
                     }
                 }
             } catch (DBException e) {
