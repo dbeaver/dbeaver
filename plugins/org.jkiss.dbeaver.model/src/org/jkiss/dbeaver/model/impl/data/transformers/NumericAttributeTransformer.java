@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.data.transformers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
@@ -38,20 +39,28 @@ import java.util.Map;
  * Transforms string attribute value into numeric value
  */
 public class NumericAttributeTransformer implements DBDAttributeTransformer {
+    private static final Log log = Log.getLog(NumericAttributeTransformer.class);
+
+    private static final String PROP_TYPE = "type";
+    private static final String PROP_LENIENT = "lenient";
+
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
-        final String type = CommonUtils.toString(options.get("type"), "double");
+        final String type = CommonUtils.toString(options.get(PROP_TYPE), "double");
+        final boolean lenient = CommonUtils.getBoolean(options.get(PROP_LENIENT), false);
 
-        attribute.setTransformHandler(new NumericValueHandler(attribute.getValueHandler(), type));
+        attribute.setTransformHandler(new NumericValueHandler(attribute.getValueHandler(), type, lenient));
         attribute.setPresentationAttribute(new TransformerPresentationAttribute(attribute, "numeric", -1, DBPDataKind.NUMERIC));
     }
 
     private static class NumericValueHandler extends ProxyValueHandler {
         private final String type;
+        private final boolean lenient;
 
-        public NumericValueHandler(@NotNull DBDValueHandler target, @NotNull String type) {
+        public NumericValueHandler(@NotNull DBDValueHandler target, @NotNull String type, boolean lenient) {
             super(target);
             this.type = type;
+            this.lenient = lenient;
         }
 
         @NotNull
@@ -69,7 +78,7 @@ public class NumericAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
             if (object instanceof String) {
-                object = parseValue((String) object, this.type);
+                object = parseValue((String) object, this.type, this.lenient);
             }
             if (object instanceof Number) {
                 return object;
@@ -81,7 +90,7 @@ public class NumericAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof String) {
-                value = parseValue((String) value, this.type);
+                value = parseValue((String) value, this.type, this.lenient);
             }
             if (value instanceof Number) {
                 return CommonUtils.toString(value);
@@ -93,22 +102,30 @@ public class NumericAttributeTransformer implements DBDAttributeTransformer {
         }
 
         @Nullable
-        private static Number parseValue(@NotNull String value, @NotNull String type) {
-            switch (type) {
-                case "byte":
-                    return Byte.parseByte(value);
-                case "short":
-                    return Short.parseShort(value);
-                case "int":
-                    return Integer.parseInt(value);
-                case "long":
-                    return Long.parseLong(value);
-                case "float":
-                    return Float.parseFloat(value);
-                case "double":
-                    return Double.parseDouble(value);
-                default:
-                    return null;
+        private static Object parseValue(@NotNull String value, @NotNull String type, boolean lenient) {
+            try {
+                switch (type) {
+                    case "byte":
+                        return Byte.parseByte(value);
+                    case "short":
+                        return Short.parseShort(value);
+                    case "int":
+                        return Integer.parseInt(value);
+                    case "long":
+                        return Long.parseLong(value);
+                    case "float":
+                        return Float.parseFloat(value);
+                    case "double":
+                        return Double.parseDouble(value);
+                    default:
+                        return null;
+                }
+            } catch (NumberFormatException e) {
+                if (lenient) {
+                    log.trace("Error converting string '" + value + "' to " + type, e);
+                    return value;
+                }
+                throw e;
             }
         }
     }
