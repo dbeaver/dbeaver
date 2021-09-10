@@ -13,22 +13,4 @@
     <version>1.0.153-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
-
-
-    <build>
-        <plugins>
-            <!-- Disable warns because of sun.security.util.* dependencies -->
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-compiler-plugin</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <compilerArgument>-warn:none</compilerArgument>
-                    <compilerArgument>-err:none</compilerArgument>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-
 </project>

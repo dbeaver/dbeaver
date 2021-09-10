@@ -48,8 +48,6 @@
 
 								<!-- POI and dependencies -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id></artifact>
-								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
-								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
 								<!-- GIS -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id></artifact>

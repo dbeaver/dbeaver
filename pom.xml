@@ -11,7 +11,7 @@
     <properties>
         <dbeaver-version>21.2.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>2.0.0</tycho-version>
+        <tycho-version>2.1.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
@@ -97,14 +97,22 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
-                    <!--
-                        Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
-                        Otherwise sun.security classes are not accessible.
-                    -->
-                    <compilerArgument>-XDignore.symbol.file=true</compilerArgument>
+                    <source>11</source>
+                    <target>11</target>
+<!--                    <compilerVersion>11</compilerVersion>-->
+                    <compilerArgs>
+<!--                        <compilerArg>-warn:+discouraged,forbidden</compilerArg>-->
+                        <!--
+                            Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
+                            Otherwise sun.security classes are not accessible.
+                        -->
+                        <compilerArg>-XDignore.symbol.file=true</compilerArg>
+
+                        <compilerArg>--add-exports</compilerArg>
+                        <compilerArg>java.base/sun.security.util=ALL-UNNAMED</compilerArg>
+                        <compilerArg>--add-exports</compilerArg>
+                        <compilerArg>java.base/sun.security.x509=ALL-UNNAMED</compilerArg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
