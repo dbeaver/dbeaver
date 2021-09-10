@@ -251,6 +251,7 @@
             <type kind="STRING"/>
             <propertyGroup label="Properties">
                 <property id="type" type="string" label="%NumericTransformer.property.type.label" description="%NumericTransformer.property.type.description" defaultValue="double" required="true" validValues="byte,short,int,long,float,double" allowCustomValues="false"/>
+                <property id="lenient" type="boolean" label="%NumericTransformer.property.lenient.label" description="%NumericTransformer.property.lenient.description" defaultValue="false" required="true"/>
             </propertyGroup>
         </transformer>
 
