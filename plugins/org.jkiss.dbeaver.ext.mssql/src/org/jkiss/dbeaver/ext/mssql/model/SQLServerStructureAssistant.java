@@ -194,7 +194,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         if (params.isSearchInComments()) {
             sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
-        sqlBuilder.append("WHERE o.type IN (").append(objectTypeClause).append(") AND ");
+        sqlBuilder.append(" WHERE o.type IN (").append(objectTypeClause).append(") AND ");
         boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
         if (addParentheses) {
             sqlBuilder.append("(");
