@@ -19,11 +19,17 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,11 +50,13 @@ public class PostgreTableBaseTest {
     @Mock
     DBRProgressMonitor monitor;
 
-    PostgreDataSource testDataSource;
-    PostgreDatabase testDatabase;
-    PostgreRole testUser;
-    PostgreSchema testSchema;
+    private PostgreDataSource testDataSource;
+    private PostgreDatabase testDatabase;
+    private PostgreSchema testSchema;
     private PostgreView testView;
+    private PostgreTableRegular testTableRegular;
+
+    private PostgreExecutionContext postgreExecutionContext;
 
     @Mock
     JDBCResultSet mockResults;
@@ -63,7 +71,7 @@ public class PostgreTableBaseTest {
     public void setUp() throws Exception {
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql"));
 
-        testDataSource = new PostgreDataSource(mockDataSourceContainer,"PG Test", "postgres") {
+        testDataSource = new PostgreDataSource(mockDataSourceContainer, "PG Test", "postgres") {
             @Override
             public boolean isServerVersionAtLeast(int major, int minor) {
                 return major <= 10;
@@ -75,25 +83,36 @@ public class PostgreTableBaseTest {
             }
         };
 
-        testUser = new PostgreRole(null, "tester", "test", true);
+        PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
         testDatabase = testDataSource.createDatabaseImpl(new VoidProgressMonitor(), "testdb", testUser, null, null, null);
-        testSchema = new PostgreSchema(testDatabase, "test", testUser);
+        testSchema = new PostgreSchema(testDatabase, "testSchema", testUser);
 
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
+        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
         Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
         Mockito.when(mockResults.getLong("oid")).thenReturn(sampleId);
         Mockito.when(mockResults.getLong("relowner")).thenReturn(sampleId);
 
+        postgreExecutionContext = new PostgreExecutionContext(testDatabase, "Test");
+
+        // Test Regular table
+        testTableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
+        testTableRegular.setName("testTableRegular");
+        testTableRegular.setPartition(false);
+        addColumn(testTableRegular, "column1", "int4", 1);
+
+        // Test View
         testView = new PostgreView(testSchema);
-        testView.setName("sampleView");
+        testView.setName("testView");
     }
 
-    @Test
-    public void generateChangeOwnerQuery_whenProvidedView_thenShouldGenerateQuerySuccessfully() {
-        Assert.assertEquals("ALTER TABLE " + testSchema.getName() + "." + testView.getName() + " OWNER TO someOwner",
-                testView.generateChangeOwnerQuery("someOwner"));
-    }
+    // Tables DDL tests
 
     @Test
     public void generateTableDDL_whenTableHasOneColumn_returnDDLForASingleColumn() throws Exception {
@@ -103,22 +122,128 @@ public class PostgreTableBaseTest {
                 return false;
             }
         };
+        tableRegular.setName("testTable");
         tableRegular.setPartition(false);
         addColumn(tableRegular, "column1", "int4", 1);
-        addColumn(tableRegular, "column2", "varchar", 1);
 
         String expectedDDL =
             "-- Drop table" + lineBreak +
                 lineBreak +
-                "-- DROP TABLE test;" + lineBreak +
+                "-- DROP TABLE testSchema.testTable;" + lineBreak +
                 lineBreak +
-                "CREATE TABLE test (" + lineBreak +
+                "CREATE TABLE testSchema.testTable (" + lineBreak +
+                "\tcolumn1 int4 NULL" + lineBreak +
+                ");" + lineBreak;
+
+        String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
+        Assert.assertEquals(tableDDL, expectedDDL);
+    }
+
+    @Test
+    public void generateTableDDL_whenTableHasTwoColumns_returnDDLForTableWithTwoColumns() throws Exception {
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
+        tableRegular.setName("testTable");
+        tableRegular.setPartition(false);
+        addColumn(tableRegular, "column1", "int4", 1);
+        addColumn(tableRegular, "column2", "varchar", 2);
+
+        String expectedDDL =
+            "-- Drop table" + lineBreak +
+                lineBreak +
+                "-- DROP TABLE testSchema.testTable;" + lineBreak +
+                lineBreak +
+                "CREATE TABLE testSchema.testTable (" + lineBreak +
                 "\tcolumn1 int4 NULL," + lineBreak +
                 "\tcolumn2 varchar NULL" + lineBreak +
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
         Assert.assertEquals(tableDDL, expectedDDL);
+    }
+
+    // Generation table/view comment statement tests
+
+    @Test
+    public void generateBaseTableCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(postgreExecutionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testTableRegular, testTableRegular);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, DBConstants.PROP_ID_DESCRIPTION, "Test comment");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "COMMENT ON TABLE testSchema.testTableRegular IS 'Test comment';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateForeignTableCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(postgreExecutionContext, false);
+
+        PostgreTableForeign tableForeign = new PostgreTableForeign(testSchema);
+        tableForeign.setName("testForeignTable");
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, tableForeign, tableForeign);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, DBConstants.PROP_ID_DESCRIPTION, "Test comment");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "COMMENT ON FOREIGN TABLE testSchema.testForeignTable IS 'Test comment';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateViewCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(postgreExecutionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testView, testView);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, DBConstants.PROP_ID_DESCRIPTION, "Test comment");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "COMMENT ON VIEW testSchema.testView IS 'Test comment';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateMaterializedViewCommentStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(postgreExecutionContext, false);
+
+        PostgreMaterializedView testMView = new PostgreMaterializedView(testSchema);
+        testMView.setName("testMView");
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testMView, testMView);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, DBConstants.PROP_ID_DESCRIPTION, "Test comment");
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "COMMENT ON MATERIALIZED VIEW testSchema.testMView IS 'Test comment';" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    // Other tests
+
+    @Test
+    public void generateChangeOwnerQuery_whenProvidedView_thenShouldGenerateQuerySuccessfully() {
+        Assert.assertEquals("ALTER TABLE " + testSchema.getName() + "." + testView.getName() + " OWNER TO someOwner",
+            testView.generateChangeOwnerQuery("someOwner"));
     }
 
     @Test
