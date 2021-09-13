@@ -76,8 +76,8 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
             try {
                 if (index > 0) {
-                    final int port = sessions[index - 1].setPortForwardingL(0, host.getHostname(), 22);
-                    monitor.subTask("Instantiate tunnel " + hosts[index - 1].getHostname() + ":" + port + " -> " + host.getHostname() + ":22");
+                    final int port = sessions[index - 1].setPortForwardingL(0, host.getHostname(), host.getPort());
+                    monitor.subTask("Instantiate tunnel " + hosts[index - 1].getHostname() + ":" + port + " -> " + host.getHostname() + ":" + host.getPort());
                     session = jsch.getSession(host.getUsername(), "localhost", port);
                 } else {
                     monitor.subTask("Instantiate tunnel to " + host.getHostname() + ":" + host.getPort());
