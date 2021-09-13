@@ -309,12 +309,12 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             log.error("Dispose error", e);
         }
         wb = null;
-        if (worksheets != null) {
+        if (!CommonUtils.isEmpty(worksheets)) {
             for (Worksheet w : worksheets.values()) {
                 w.dispose();
             }
+            worksheets.clear();
         }
-        worksheets.clear();
 
         super.dispose();
     }
