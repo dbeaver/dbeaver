@@ -17,12 +17,15 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+
+import java.util.Objects;
 
 /**
  * Abstract object reference
@@ -36,12 +39,12 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
     private final DBSObjectType type;
     private final String extraInfo;
 
-    protected AbstractObjectReference(String name, DBSObject container, String description, Class<?> objectClass, DBSObjectType type) {
+    protected AbstractObjectReference(String name, DBSObject container, @Nullable String description, Class<?> objectClass, DBSObjectType type) {
         this(name, container, description, objectClass, type, null);
     }
 
-    protected AbstractObjectReference(String name, DBSObject container, String description, Class<?> objectClass, DBSObjectType type, String extraInfo)
-    {
+    protected AbstractObjectReference(String name, DBSObject container, @Nullable String description, Class<?> objectClass, DBSObjectType type,
+                                      @Nullable String extraInfo) {
         this.name = name;
         this.container = container;
         this.description = description;
@@ -67,6 +70,7 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         return objectClass;
     }
 
+    @Nullable
     @Override
     public String getObjectDescription()
     {
@@ -101,5 +105,27 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
     @Override
     public String toString() {
         return getFullyQualifiedName(DBPEvaluationContext.UI);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AbstractObjectReference that = (AbstractObjectReference) o;
+        return Objects.equals(name, that.name)
+            && Objects.equals(container, that.container)
+            && Objects.equals(description, that.description)
+            && Objects.equals(objectClass, that.objectClass)
+            && Objects.equals(type, that.type)
+            && Objects.equals(extraInfo, that.extraInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, container, description, objectClass, type, extraInfo);
     }
 }

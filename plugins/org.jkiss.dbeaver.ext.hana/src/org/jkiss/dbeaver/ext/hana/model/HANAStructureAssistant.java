@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -25,31 +27,27 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecutionContext> {
+public class HANAStructureAssistant implements DBSStructureAssistant<JDBCExecutionContext> {
+    private static final Log log = Log.getLog(HANAStructureAssistant.class);
+
     private final HANADataSource dataSource;
 
     public HANAStructureAssistant(HANADataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    @Override
-    protected JDBCDataSource getDataSource() {
-        return dataSource;
     }
 
     public DBSObjectType[] getSupportedObjectTypes() {
@@ -64,6 +62,16 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return getSupportedObjectTypes();
+    }
+
+    @Override
+    public DBSObjectType[] getHyperlinkObjectTypes() {
+        return new DBSObjectType[] {RelationalObjectType.TYPE_TABLE,};
+    }
+
+    @Override
     public DBSObjectType[] getAutoCompleteObjectTypes() {
         return new DBSObjectType[]{
                 HANAObjectType.TABLE,
@@ -74,60 +82,63 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     }
 
     @Override
-    protected void findObjectsByMask(@NotNull JDBCExecutionContext executionContext, @NotNull JDBCSession session, @NotNull DBSObjectType objectType,
-                                     @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> references)
-                                        throws SQLException {
-        GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ? (GenericSchema) params.getParentObject() : null;
-
-        if (objectType == RelationalObjectType.TYPE_TABLE)
-            findTablesByMask(session, parentSchema, params, references);
-        if (objectType == RelationalObjectType.TYPE_VIEW)
-            findViewsByMask(session, parentSchema, params, references);
-        if (objectType == RelationalObjectType.TYPE_PROCEDURE)
-            findProceduresByMask(session, parentSchema, params, references);
-        if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN)
-            findTableColumnsByMask(session, parentSchema, params, references);
-        if (objectType == RelationalObjectType.TYPE_VIEW_COLUMN)
-            findViewColumnsByMask(session, parentSchema, params, references);
+    public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType type) {
+        return type == HANAObjectType.TABLE
+            || type == HANAObjectType.VIEW
+            || type == RelationalObjectType.TYPE_TABLE_COLUMN
+            || type == RelationalObjectType.TYPE_VIEW_COLUMN;
     }
 
     @NotNull
     @Override
     public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext executionContext,
                                                       @NotNull ObjectsSearchParams params) throws DBException {
-        List<DBSObjectReference> result = new ArrayList<>();
-        List<DBSObjectType> objectTypesList = Arrays.asList(params.getObjectTypes());
-        StringBuilder objectTypeClause = new StringBuilder(100);
-        GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ?
-                (GenericSchema) params.getParentObject() : (params.isGlobalSearch() || !(executionContext instanceof GenericExecutionContext) ? null : ((GenericExecutionContext) executionContext).getDefaultSchema());
+        Collection<DBSObjectReference> references = new HashSet<>();
+        GenericSchema parentSchema = null;
+        if (params.getParentObject() instanceof GenericSchema) {
+            parentSchema = (GenericSchema) params.getParentObject();
+        } else if (!params.isGlobalSearch() && executionContext instanceof GenericExecutionContext) {
+            parentSchema = ((GenericExecutionContext) executionContext).getDefaultSchema();
+        }
+        DBSObjectType[] objectTypes = params.getObjectTypes();
 
-        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by mask")) {
-            if (objectTypesList.contains(HANAObjectType.TABLE) || objectTypesList.contains(HANAObjectType.VIEW) || objectTypesList.contains(HANAObjectType.PROCEDURE) ||
-                    objectTypesList.contains(HANAObjectType.SYNONYM)) {
-                for (DBSObjectType objectType : params.getObjectTypes()) {
-                    if (objectTypeClause.length() > 0) objectTypeClause.append(",");
-                    objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
+            if (ArrayUtils.contains(objectTypes, HANAObjectType.TABLE, HANAObjectType.VIEW, HANAObjectType.PROCEDURE, HANAObjectType.SYNONYM)) {
+                searchObjectsByNameInObjectsView(session, parentSchema, params, references);
+            }
+            if (params.isSearchInComments()) {
+                if (ArrayUtils.contains(objectTypes, HANAObjectType.TABLE)) {
+                    findTablesByComments(session, parentSchema, params, references);
                 }
-                if (objectTypeClause.length() == 0) {
-                    objectTypeClause.append("'TABLE', 'VIEW', 'SYNONYM', 'PROCEDURE'");
+                if (ArrayUtils.contains(objectTypes, HANAObjectType.VIEW)) {
+                    findViewsByComments(session, parentSchema, params, references);
                 }
-                searchNotColumnObjects(session, parentSchema, params, result, objectTypeClause.toString());
             }
-            if (objectTypesList.contains(RelationalObjectType.TYPE_TABLE_COLUMN)) {
-                findTableColumnsByMask(session, parentSchema, params, result);
+            if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_TABLE_COLUMN)) {
+                findTableColumns(session, parentSchema, params, references);
             }
-            if (objectTypesList.contains(RelationalObjectType.TYPE_VIEW_COLUMN)) {
-                findViewColumnsByMask(session, parentSchema, params, result);
+            if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_VIEW_COLUMN)) {
+                findViewColumns(session, parentSchema, params, references);
             }
-        } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
         }
 
-        return result;
+        return new ArrayList<>(references);
     }
 
-    private void searchNotColumnObjects(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                        List<DBSObjectReference> result, String objectTypeClause) throws SQLException {
+    private void searchObjectsByNameInObjectsView(@NotNull JDBCSession session, @Nullable GenericSchema parentSchema,
+                                                  @NotNull ObjectsSearchParams params, @NotNull Collection<? super DBSObjectReference> result)
+                                                    throws SQLException {
+        if (result.size() >= params.getMaxResults()) {
+            return;
+        }
+
+        StringJoiner objectTypeClause = new StringJoiner(", ");
+        for (DBSObjectType objectType: params.getObjectTypes()) {
+            objectTypeClause.add("'" + objectType.getTypeName() + "'");
+        }
+
         String stmt = "SELECT SCHEMA_NAME, OBJECT_NAME, OBJECT_TYPE FROM SYS.OBJECTS WHERE";
         stmt += params.isCaseSensitive() ? " OBJECT_NAME LIKE ?" : " UPPER(OBJECT_NAME) LIKE ?";
         if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
@@ -141,7 +152,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 dbStat.setString(2, parentSchema.getName());
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (!monitor.isCanceled() && dbResult.next()) {
+                while (!monitor.isCanceled() && dbResult.next() && result.size() < params.getMaxResults()) {
                     final String schemaName = dbResult.getString(1);
                     final String objectName = dbResult.getString(2);
                     final String objectTypeName = dbResult.getString(3);
@@ -178,10 +189,14 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findTablesByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                  List<DBSObjectReference> result) throws SQLException {
-        String stmt = "SELECT SCHEMA_NAME, TABLE_NAME, COMMENTS FROM SYS.TABLES WHERE";
-        stmt += params.isCaseSensitive() ? " TABLE_NAME LIKE ?" : " UPPER(TABLE_NAME) LIKE ?";
+    private void findTablesByComments(@NotNull JDBCSession session, @Nullable GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                      @NotNull Collection<? super DBSObjectReference> result) throws SQLException {
+        if (result.size() >= params.getMaxResults()) {
+            return;
+        }
+
+        String stmt = "SELECT SCHEMA_NAME, TABLE_NAME FROM SYS.TABLES WHERE";
+        stmt += params.isCaseSensitive() ? " COMMENTS LIKE ?" : " UPPER(COMMENTS) LIKE ?";
         if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
         stmt += " ORDER BY SCHEMA_NAME, TABLE_NAME LIMIT " + (params.getMaxResults() - result.size());
 
@@ -192,16 +207,15 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 dbStat.setString(2, parentSchema.getName());
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (!monitor.isCanceled() && dbResult.next()) {
+                while (!monitor.isCanceled() && dbResult.next() && result.size() < params.getMaxResults()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
-                    String description = dbResult.getString(3);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTable.class,
-                            RelationalObjectType.TYPE_TABLE) {
+                    DBSObjectType type = HANAObjectType.TABLE;
+                    result.add(new AbstractObjectReference(objectName, schema, null, type.getTypeClass(), type) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
@@ -219,10 +233,14 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findViewsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                 List<DBSObjectReference> result) throws SQLException {
-        String stmt = "SELECT SCHEMA_NAME, VIEW_NAME, COMMENTS FROM SYS.VIEWS WHERE";
-        stmt += params.isCaseSensitive() ? " VIEW_NAME LIKE ?" : " UPPER(VIEW_NAME) LIKE ?";
+    private void findViewsByComments(@NotNull JDBCSession session, @Nullable GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                     @NotNull Collection<? super DBSObjectReference> result) throws SQLException {
+        if (result.size() >= params.getMaxResults()) {
+            return;
+        }
+
+        String stmt = "SELECT SCHEMA_NAME, VIEW_NAME FROM SYS.VIEWS WHERE";
+        stmt += params.isCaseSensitive() ? " COMMENTS LIKE ?" : " UPPER(COMMENTS) LIKE ?";
         if (parentSchema != null)stmt += " AND SCHEMA_NAME = ?";
         stmt += " ORDER BY SCHEMA_NAME, VIEW_NAME LIMIT " + (params.getMaxResults() - result.size());
 
@@ -233,16 +251,15 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 dbStat.setString(2, parentSchema.getName());
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (!monitor.isCanceled() && dbResult.next()) {
+                while (!monitor.isCanceled() && dbResult.next() && result.size() < params.getMaxResults()) {
                     String schemaName = dbResult.getString(1);
                     String objectName = dbResult.getString(2);
-                    String description = dbResult.getString(3);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTable.class,
-                            RelationalObjectType.TYPE_VIEW) {
+                    HANAObjectType type = HANAObjectType.VIEW;
+                    result.add(new AbstractObjectReference(objectName, schema, null, type.getTypeClass(), type) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
@@ -260,131 +277,127 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                      List<DBSObjectReference> result) throws SQLException {
-        String stmt = "SELECT SCHEMA_NAME, PROCEDURE_NAME FROM SYS.PROCEDURES WHERE";
-        stmt += params.isCaseSensitive() ? " PROCEDURE_NAME LIKE ?" : " UPPER(PROCEDURE_NAME) LIKE ?";
-        if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
-        stmt += " ORDER BY SCHEMA_NAME, PROCEDURE_NAME LIMIT " + (params.getMaxResults() - result.size());
-
-        DBRProgressMonitor monitor = session.getProgressMonitor();
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
-            if (parentSchema != null) {
-                dbStat.setString(2, parentSchema.getName());
-            }
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (!monitor.isCanceled() && dbResult.next()) {
-                    String schemaName = dbResult.getString(1);
-                    String objectName = dbResult.getString(2);
-                    String description = null;
-                    GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
-                    if (schema == null)
-                        continue; // filtered
-
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericProcedure.class,
-                            RelationalObjectType.TYPE_PROCEDURE) {
-                        @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericProcedure object = ((GenericObjectContainer) getContainer()).getProcedure(monitor,
-                                    getName());
-                            if (object == null) {
-                                throw new DBException("Can't find object '" + getName() + "' in '"
-                                        + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
-                            }
-                            return object;
-                        }
-
-                    });
-                }
-            }
+    private void findTableColumns(@NotNull JDBCSession session, @Nullable GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                  @NotNull Collection<? super DBSObjectReference> result) throws SQLException {
+        if (result.size() >= params.getMaxResults()) {
+            return;
         }
-    }
 
-    private void findTableColumnsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                        List<DBSObjectReference> result) throws SQLException {
-        String stmt = "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS FROM SYS.TABLE_COLUMNS WHERE";
-        stmt += params.isCaseSensitive() ? " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
+        String stmt = "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME FROM SYS.TABLE_COLUMNS WHERE";
+        stmt += params.isCaseSensitive() ? " (COLUMN_NAME LIKE ?" : " (UPPER(COLUMN_NAME) LIKE ?";
+        if (params.isSearchInComments()) {
+            stmt += " OR ";
+            if (params.isCaseSensitive()) {
+                stmt += "COMMENTS ";
+            } else {
+                stmt += "UPPER(COMMENTS) ";
+            }
+            stmt += "LIKE ?";
+        }
+        stmt += ")";
         if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
         stmt += " ORDER BY SCHEMA_NAME, TABLE_NAME, COLUMN_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            String mask = params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase();
+            dbStat.setString(1, mask);
+            int paramIdx = 2;
+            if (params.isSearchInComments()) {
+                dbStat.setString(paramIdx, mask);
+                paramIdx++;
+            }
             if (parentSchema != null) {
-                dbStat.setString(2, parentSchema.getName());
+                dbStat.setString(paramIdx, parentSchema.getName());
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (!monitor.isCanceled() && dbResult.next()) {
+                while (!monitor.isCanceled() && dbResult.next() && result.size() < params.getMaxResults()) {
                     String schemaName = dbResult.getString(1);
-                    String objectName = dbResult.getString(2);
+                    String tableName = dbResult.getString(2);
                     String columnName = dbResult.getString(3);
-                    String description = dbResult.getString(4);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null)
                         continue; // filtered
+                    result.add(
+                        new AbstractObjectReference(tableName + "." + columnName, schema, null,
+                            GenericTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTableColumn.class,
-                            RelationalObjectType.TYPE_TABLE_COLUMN) {
-                        @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
-                                    getName());
-                            if (object == null) {
-                                throw new DBException("Can't find object '" + getName() + "' in '"
+                            @Override
+                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                GenericTableBase object = schema.getTable(monitor, tableName);
+                                if (object == null) {
+                                    throw new DBException("Can't find object '" + tableName + "' in '"
                                         + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
-                            }
-                            GenericTableColumn column = object.getAttribute(monitor, columnName);
-                            if (column == null) {
-                                throw new DBException("Column '" + columnName + "' not found in table '"
+                                }
+                                GenericTableColumn column = object.getAttribute(monitor, columnName);
+                                if (column == null) {
+                                    throw new DBException("Column '" + columnName + "' not found in table '"
                                         + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+                                }
+                                return column;
                             }
-                            return column;
-                        }
-
-                    });
+                        });
                 }
             }
         }
     }
 
-    private void findViewColumnsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                       List<DBSObjectReference> result) throws SQLException {
-        String stmt = "SELECT SCHEMA_NAME, VIEW_NAME, COLUMN_NAME, COMMENTS FROM SYS.VIEW_COLUMNS WHERE";
-        stmt += params.isCaseSensitive() ? " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
+    private void findViewColumns(@NotNull JDBCSession session, @Nullable GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                 @NotNull Collection<? super DBSObjectReference> result) throws SQLException {
+        if (result.size() >= params.getMaxResults()) {
+            return;
+        }
+
+        String stmt = "SELECT SCHEMA_NAME, VIEW_NAME, COLUMN_NAME FROM SYS.VIEW_COLUMNS WHERE";
+        stmt += params.isCaseSensitive() ? " (COLUMN_NAME LIKE ?" : " (UPPER(COLUMN_NAME) LIKE ?";
+        if (params.isSearchInComments()) {
+            stmt += " OR ";
+            if (params.isCaseSensitive()) {
+                stmt += "COMMENTS ";
+            } else {
+                stmt += "UPPER(COMMENTS) ";
+            }
+            stmt += "LIKE ?";
+        }
+        stmt += ")";
         if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
         stmt += " ORDER BY SCHEMA_NAME, VIEW_NAME, COLUMN_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            String mask = params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase();
+            dbStat.setString(1, mask);
+            int paramIdx = 2;
+            if (params.isSearchInComments()) {
+                dbStat.setString(paramIdx, mask);
+                paramIdx++;
+            }
             if (parentSchema != null) {
-                dbStat.setString(2, parentSchema.getName());
+                dbStat.setString(paramIdx, parentSchema.getName());
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (!monitor.isCanceled() && dbResult.next()) {
+                while (!monitor.isCanceled() && dbResult.next() && result.size() < params.getMaxResults()) {
                     String schemaName = dbResult.getString(1);
-                    String objectName = dbResult.getString(2);
+                    String viewName = dbResult.getString(2);
                     String columnName = dbResult.getString(3);
-                    String description = dbResult.getString(4);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null)
                         continue; // filtered
+                    result.add(
+                        new AbstractObjectReference(viewName + "." + columnName, schema, null,
+                            GenericTableColumn.class, RelationalObjectType.TYPE_VIEW_COLUMN) {
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTableColumn.class,
-                            RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
-                                    getName());
+                            GenericTableBase object = schema.getTable(monitor, viewName);
                             if (object == null) {
-                                throw new DBException("Can't find object '" + getName() + "' in '"
-                                        + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                                throw new DBException("Can't find object '" + viewName + "' in '"
+                                    + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
                             }
                             GenericTableColumn column = object.getAttribute(monitor, columnName);
                             if (column == null) {
                                 throw new DBException("Column '" + columnName + "' not found in table '"
-                                        + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+                                    + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             }
                             return column;
                         }

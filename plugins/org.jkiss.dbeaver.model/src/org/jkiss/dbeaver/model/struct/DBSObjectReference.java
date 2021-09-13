@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -33,6 +34,7 @@ public interface DBSObjectReference extends DBPNamedObject, DBPQualifiedObject
 
     DBSObjectType getObjectType();
 
+    @Nullable
     String getObjectDescription();
 
     DBSObject resolveObject(DBRProgressMonitor monitor)
