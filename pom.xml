@@ -101,10 +101,10 @@
                     <target>11</target>
                     <compilerVersion>1.8</compilerVersion>
                     <compilerArgs>
-<!--                        <compilerArg>-warn:+discouraged,forbidden</compilerArg>-->
                         <!--
-                            Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
-                            Otherwise sun.security classes are not accessible.
+                            Java 11-compatibility options.
+                            We still need sun.security.
+                            ignore.symbol.file is a legacy flag
                         -->
                         <compilerArg>-XDignore.symbol.file=true</compilerArg>
 
