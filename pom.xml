@@ -11,12 +11,12 @@
     <properties>
         <dbeaver-version>21.2.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>2.0.0</tycho-version>
+        <tycho-version>2.1.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
-        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2021-03/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2021-06/</eclipse-p2-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -97,14 +97,22 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
-                    <!--
-                        Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
-                        Otherwise sun.security classes are not accessible.
-                    -->
-                    <compilerArgument>-XDignore.symbol.file=true</compilerArgument>
+                    <source>11</source>
+                    <target>11</target>
+<!--                    <compilerVersion>11</compilerVersion>-->
+                    <compilerArgs>
+<!--                        <compilerArg>-warn:+discouraged,forbidden</compilerArg>-->
+                        <!--
+                            Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
+                            Otherwise sun.security classes are not accessible.
+                        -->
+                        <compilerArg>-XDignore.symbol.file=true</compilerArg>
+
+                        <compilerArg>--add-exports</compilerArg>
+                        <compilerArg>java.base/sun.security.util=ALL-UNNAMED</compilerArg>
+                        <compilerArg>--add-exports</compilerArg>
+                        <compilerArg>java.base/sun.security.x509=ALL-UNNAMED</compilerArg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -178,6 +186,11 @@
                                     <os>macosx</os>
                                     <ws>cocoa</ws>
                                     <arch>x86_64</arch>
+                                </environment>
+                                <environment>
+                                    <os>macosx</os>
+                                    <ws>cocoa</ws>
+                                    <arch>aarch64</arch>
                                 </environment>
                             </environments>
                         </configuration>
