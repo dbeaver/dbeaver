@@ -45,6 +45,7 @@ public class PostgreTypeHandlerProvider {
                 return PostgreNumericTypeHandler.INSTANCE;
             case PostgreOid.INTERVAL:
                 return PostgreIntervalTypeHandler.INSTANCE;
+            case PostgreOid.CHAR:
             case PostgreOid.BPCHAR:
             case PostgreOid.VARCHAR:
             case PostgreOid.BIT:

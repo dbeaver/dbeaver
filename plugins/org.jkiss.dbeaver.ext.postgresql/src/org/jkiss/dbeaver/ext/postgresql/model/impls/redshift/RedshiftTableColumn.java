@@ -18,7 +18,12 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandler;
+import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreTypeHandlerProvider;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -69,5 +74,21 @@ public class RedshiftTableColumn extends PostgreTableColumn {
     @Override
     public String getAttributeGeometryType(DBRProgressMonitor monitor) {
         return getTypeName();
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
+    public String getFullTypeName() {
+        PostgreDataType dataType = getDataType();
+        if (dataType != null && dataType.getObjectId() == PostgreOid.BPCHAR) {
+            // Redshift stores char columns with bpchar id in pg_type table for some reason.
+            // You can create bpchar column in Redshift but only without type modifiers.
+            final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+            if (handler != null) {
+                return PostgreConstants.TYPE_CHAR + handler.getTypeModifiersString(dataType, getTypeMod());
+            }
+            return PostgreConstants.TYPE_CHAR;
+        }
+        return super.getFullTypeName();
     }
 }

@@ -89,6 +89,7 @@ public class PostgreConstants {
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
 
+    public static final String TYPE_CHAR = "char";
     public static final String TYPE_UUID = "uuid";
     public static final String TYPE_BPCHAR = "bpchar";
     public static final String TYPE_VARCHAR = "varchar";
