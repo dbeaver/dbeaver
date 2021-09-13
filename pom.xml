@@ -97,9 +97,9 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>11</source>
+                    <source>1.8</source>
                     <target>11</target>
-<!--                    <compilerVersion>11</compilerVersion>-->
+                    <compilerVersion>1.8</compilerVersion>
                     <compilerArgs>
 <!--                        <compilerArg>-warn:+discouraged,forbidden</compilerArg>-->
                         <!--
