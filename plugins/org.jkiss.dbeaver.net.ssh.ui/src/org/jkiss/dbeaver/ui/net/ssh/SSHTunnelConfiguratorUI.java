@@ -176,7 +176,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             String hint = "You can use variables in SSH parameters.";
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DataSourceDescriptor.CONNECT_VARIABLES, false);
 
-            UIUtils.createLink(controlGroup, "See how to use <a>SSH</a> in our wiki", new SelectionAdapter() {
+            UIUtils.createLink(controlGroup, "<a>SSH Documentation</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
