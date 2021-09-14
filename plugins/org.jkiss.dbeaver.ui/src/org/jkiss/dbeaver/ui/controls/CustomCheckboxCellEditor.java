@@ -39,6 +39,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     private static final boolean CHANGE_ON_ACTIVATE = false;
 
     private Label checkBox;
+    private boolean initialValue;
     private boolean checked;
 
     public CustomCheckboxCellEditor(Composite parent, int style) {
@@ -78,14 +79,14 @@ public class CustomCheckboxCellEditor extends CellEditor {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.character) {
-                    case SWT.ESC:
-                        dispose();
-                        break;
                     case SWT.SPACE:
                         checked = !checked;
                         setCheckIcon();
                         applyEditorValue();
                         break;
+                    case SWT.ESC:
+                        checked = initialValue;
+                        // fallthrough
                     case SWT.CR:
                         applyEditorValue();
                         fireApplyEditorValue();
@@ -133,7 +134,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     protected void doSetValue(Object value) {
         Assert.isTrue(checkBox != null && (value instanceof Boolean));
-        checked = CommonUtils.toBoolean(value);
+        boolean val = CommonUtils.toBoolean(value);
+        checked = val;
+        initialValue = val;
         //setCheckIcon();
     }
 
