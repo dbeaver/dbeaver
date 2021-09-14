@@ -77,6 +77,19 @@ public class UIMessages extends NLS {
 
     public static String control_label_connection_folder;
 
+    public static String control_boolean_mode_text;
+    public static String control_boolean_mode_text_tip;
+    public static String control_boolean_mode_icon;
+    public static String control_boolean_mode_icon_tip;
+    public static String control_boolean_state_checked;
+    public static String control_boolean_state_unchecked;
+    public static String control_boolean_state_null;
+    public static String control_default_color_selector_reset_default_tip;
+
+    public static String control_alignment_left;
+    public static String control_alignment_center;
+    public static String control_alignment_right;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);

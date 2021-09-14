@@ -51,8 +51,6 @@ public interface IGridContentProvider extends IContentProvider {
 
     ElementState getDefaultState(@NotNull Object element);
 
-    int getColumnAlign(@Nullable Object element);
-
     int getColumnPinIndex(@NotNull Object element);
 
     boolean isElementSupportsFilter(@Nullable Object element);
@@ -68,6 +66,8 @@ public interface IGridContentProvider extends IContentProvider {
      * @param cellText    pre-rendered cell text. Used for cache purposes.
      */
     int getCellState(Object colElement, Object rowElement, @Nullable String cellText);
+
+    int getCellAlign(@Nullable Object colElement, Object rowElement);
 
     /**
      * @param formatString  Format string values or return raw values

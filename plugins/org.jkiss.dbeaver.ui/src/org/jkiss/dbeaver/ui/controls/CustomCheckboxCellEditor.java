@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.swt.SWT;
@@ -26,23 +27,36 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.ui.BooleanRenderer;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyle;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Checkbox cell editor
  */
-public class CustomCheckboxCellEditor extends CellEditor {
+public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyleDecorator {
 
     private static final boolean CHANGE_ON_ACTIVATE = false;
 
     private Label checkBox;
     private boolean checked;
+    private BooleanStyleSet booleanStyles;
+    private UIElementAlignment alignment;
 
-    public CustomCheckboxCellEditor(Composite parent, int style) {
-        super(parent, style);
+    public CustomCheckboxCellEditor(Composite parent) {
+        super(parent);
+
+        final IPropertyChangeListener styleChangeListener = event -> {
+            booleanStyles = BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore());
+        };
+
+        BooleanStyleSet.installStyleChangeListener(parent, styleChangeListener);
+        styleChangeListener.propertyChange(null);
     }
 
     @Override
@@ -55,17 +69,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
         ph.setBackground(parent.getBackground());
         checkBox = new Label(ph, SWT.NONE);
-        GridData gd;
-        if ((getStyle() & SWT.LEFT) == SWT.LEFT) {
-            gd = new GridData(SWT.LEFT, SWT.FILL, true, true);
-            if (BooleanRenderer.getDefaultStyle().isText()) {
-                gd.horizontalIndent = 5;
-            }
-        } else {
-            gd = new GridData(SWT.CENTER, SWT.FILL, true, true);
-        }
-
-        checkBox.setLayoutData(gd);
+        checkBox.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true));
         checkBox.setBackground(ph.getBackground());
 
         ph.addFocusListener(new FocusAdapter() {
@@ -78,12 +82,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.character) {
-                    case SWT.ESC:
-                        dispose();
-                        break;
                     case SWT.SPACE:
                         checked = !checked;
-                        setCheckIcon();
+                        updateCheckVisuals();
                         applyEditorValue();
                         break;
                     case SWT.CR:
@@ -102,7 +103,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
             @Override
             public void mouseDown(MouseEvent e) {
                 checked = !checked;
-                setCheckIcon();
+                updateCheckVisuals();
                 applyEditorValue();
                 //fireApplyEditorValue();
             }
@@ -111,13 +112,18 @@ public class CustomCheckboxCellEditor extends CellEditor {
         return ph;
     }
 
-    private void setCheckIcon() {
-        BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
-        if (booleanStyle.isText()) {
-            checkBox.setText(booleanStyle.getText(checked));
+    private void updateCheckVisuals() {
+        final BooleanStyle style = booleanStyles.getStyle(checked);
+
+        if (style.getMode() == BooleanMode.TEXT) {
+            checkBox.setText(style.getText());
+            checkBox.setForeground(UIUtils.getSharedColor(style.getColor()));
         } else {
-            checkBox.setImage(DBeaverIcons.getImage(booleanStyle.getImage(checked)));
+            checkBox.setImage(DBeaverIcons.getImage(style.getIcon()));
         }
+
+        final UIElementAlignment alignment = this.alignment == null ? style.getAlignment() : this.alignment;
+        ((GridData) checkBox.getLayoutData()).horizontalAlignment = alignment.getStyle();
     }
 
     @Override
@@ -140,13 +146,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     public LayoutData getLayoutData() {
         LayoutData layoutData = super.getLayoutData();
-        if ((getStyle() & SWT.LEFT) == SWT.LEFT) {
-            layoutData.grabHorizontal = true;
-            layoutData.horizontalAlignment = SWT.LEFT;
-        } else {
-            layoutData.grabHorizontal = true;
-            layoutData.horizontalAlignment = SWT.CENTER;
-        }
+        layoutData.grabHorizontal = true;
+        layoutData.horizontalAlignment = SWT.CENTER;
         return layoutData;
     }
 
@@ -156,7 +157,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         markDirty();
         boolean isValid = isCorrect(newValue);
         setValueValid(isValid);
-        setCheckIcon();
+        updateCheckVisuals();
 
         //fireApplyEditorValue();
     }
@@ -170,7 +171,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         if (CHANGE_ON_ACTIVATE) {
             checked = !checked;
         }
-        setCheckIcon();
+        updateCheckVisuals();
         if (CHANGE_ON_ACTIVATE) {
             applyEditorValue();
             // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
@@ -188,4 +189,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
         }
     }
 
+    @Override
+    public void setBooleanAlignment(@NotNull UIElementAlignment alignment) {
+        this.alignment = alignment;
+    }
 }

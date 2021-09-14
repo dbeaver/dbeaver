@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.resource.JFaceColors;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
@@ -25,12 +26,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedValueObject;
-import org.jkiss.dbeaver.ui.BooleanRenderer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIElementAlignment;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyle;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,9 +44,6 @@ import org.jkiss.utils.CommonUtils;
  * ObjectListControl
  */
 public abstract class ObjectViewerRenderer {
-
-    public static final int ES_CENTERED = 1;
-    public static final int ES_LEFT = 2;
 
     private boolean isTree;
     // Current selection coordinates
@@ -54,6 +57,7 @@ public abstract class ObjectViewerRenderer {
     private final Cursor linkCursor;
     private final Cursor arrowCursor;
     private final Color selectionBackgroundColor;
+    private BooleanStyleSet booleanStyles;
 
     // Cache
     private transient int booleanValueWith;
@@ -97,6 +101,13 @@ public abstract class ObjectViewerRenderer {
             itemsViewer.getControl().addMouseMoveListener(actionsListener);
             itemsViewer.getControl().addKeyListener(actionsListener);
         }
+
+        final IPropertyChangeListener styleChangeListener = event -> {
+            booleanStyles = BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore());
+        };
+
+        BooleanStyleSet.installStyleChangeListener(viewer.getControl(), styleChangeListener);
+        styleChangeListener.propertyChange(null);
     }
 
     public boolean isTree()
@@ -167,22 +178,27 @@ public abstract class ObjectViewerRenderer {
         prepareLinkStyle(cellValue, null);
 
         if (cellValue instanceof Boolean && booleanValueWith > 0) {
-            // Centered boolean - move x to center
             Rectangle itemBounds;
             if (isTree) {
                 itemBounds = ((TreeItem)item).getBounds(column);
             } else {
-                itemBounds = ((TableItem)item).getBounds(column);
+                itemBounds = ((TableItem) item).getBounds(column);
             }
+
+            switch (getBooleanAlignment((Boolean) cellValue)) {
+                case LEFT:
+                    itemBounds.x += 4;
+                    break;
+                case CENTER:
+                    itemBounds.x += (itemBounds.width - booleanValueWith) / 2;
+                    break;
+                case RIGHT:
+                    itemBounds.x += itemBounds.width - booleanValueWith - 4;
+                    break;
+            }
+
             itemBounds.width = booleanValueWith;
-            if (getBooleanEditStyle() == ES_CENTERED) {
-                if (isTree) {
-                    itemBounds.x += (getTree().getColumn(column).getWidth() - booleanValueWith) / 2;
-                } else {
-                    itemBounds.x += (getTable().getColumn(column).getWidth() - booleanValueWith) / 2;
-                }
-            }
-            //itemBounds.x -= booleanValueWith / 4;
+
             return itemBounds;
         } else {
             Rectangle itemBounds;
@@ -191,7 +207,6 @@ public abstract class ObjectViewerRenderer {
             } else {
                 itemBounds = ((TableItem)item).getTextBounds(column);
             }
-
 
             Rectangle linkBounds = linkLayout.getBounds();
             linkBounds.x += itemBounds.x;
@@ -210,7 +225,6 @@ public abstract class ObjectViewerRenderer {
             GC gc = event.gc;
             if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
                 booleanValueWith = -1;
-                BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
                 Boolean value;
                 if (cellValue == null) {
                     value = null;
@@ -219,36 +233,50 @@ public abstract class ObjectViewerRenderer {
                 } else {
                     value = CommonUtils.toBoolean(cellValue);
                 }
-                if (booleanStyle.isText()) {
+                final BooleanStyle booleanStyle = booleanStyles.getStyle(value);
+                if (booleanStyles.getMode() == BooleanMode.TEXT) {
                     String cellText = item instanceof TreeItem ? ((TreeItem) item).getText(columnIndex) : "";
                     if (cellText.isEmpty()) {
                         // Paint only if item text is empty
-                        String strValue = booleanStyle.getText(value);
+                        String strValue = booleanStyle.getText();
                         Point textExtent = gc.textExtent(strValue);
                         booleanValueWith = textExtent.x;
                         Rectangle columnBounds = isTree ? ((TreeItem) item).getBounds(columnIndex) : ((TableItem) item).getBounds(columnIndex);
                         //gc.setBackground(getControl().getBackground());
-                        if ((booleanStyle == BooleanRenderer.Style.CHECKBOX || booleanStyle == BooleanRenderer.Style.TEXTBOX) && getBooleanEditStyle() == ES_CENTERED) {
-                            gc.drawString(strValue, event.x + (columnBounds.width - textExtent.x) / 2, event.y, true);
-                        } else {
-                            gc.drawString(strValue, event.x + 4, event.y + (columnBounds.height - textExtent.y) / 2, true);
+                        gc.setForeground(UIUtils.getSharedColor(booleanStyle.getColor()));
+                        switch (getBooleanAlignment(value)) {
+                            case LEFT:
+                                gc.drawString(strValue, event.x + 4, event.y + (columnBounds.height - textExtent.y) / 2, true);
+                                break;
+                            case CENTER:
+                                gc.drawString(strValue, event.x + (columnBounds.width - textExtent.x) / 2, event.y + (columnBounds.height - textExtent.y) / 2, true);
+                                break;
+                            case RIGHT:
+                                gc.drawString(strValue, event.x + columnBounds.width - textExtent.x - 4, event.y + (columnBounds.height - textExtent.y) / 2, true);
+                                break;
                         }
                     }
                 } else {
 //                    Image image = editable ?
 //                        (boolValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
 //                        (boolValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
-                    Image image = DBeaverIcons.getImage(booleanStyle.getImage(value));
+                    Image image = DBeaverIcons.getImage(booleanStyle.getIcon());
                     final Rectangle imageBounds = image.getBounds();
                     booleanValueWith = imageBounds.width;
 
                     Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
 
                     gc.setBackground(getControl().getBackground());
-                    if (getBooleanEditStyle() == ES_CENTERED) {
-                        gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y);
-                    } else {
-                        gc.drawImage(image, event.x/* + 4*/, event.y + (columnBounds.height - imageBounds.height) / 2);
+                    switch (getBooleanAlignment(value)) {
+                        case LEFT:
+                            gc.drawImage(image, event.x + 4, event.y + (columnBounds.height - imageBounds.height) / 2);
+                            break;
+                        case CENTER:
+                            gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y);
+                            break;
+                        case RIGHT:
+                            gc.drawImage(image, event.x + columnBounds.width - imageBounds.width - 4, event.y + (columnBounds.height - imageBounds.height) / 2);
+                            break;
                     }
                 }
 
@@ -268,8 +296,14 @@ public abstract class ObjectViewerRenderer {
         }
     }
 
-    protected int getBooleanEditStyle() {
-        return ES_CENTERED;
+    @NotNull
+    public BooleanStyleSet getBooleanStyles() {
+        return booleanStyles;
+    }
+
+    @NotNull
+    protected UIElementAlignment getBooleanAlignment(@Nullable Boolean value) {
+        return booleanStyles.getStyle(value).getAlignment();
     }
 
     class CellTrackListener implements MouseTrackListener, MouseMoveListener, KeyListener {

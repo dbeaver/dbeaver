@@ -30,12 +30,14 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -48,9 +50,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
-import org.jkiss.dbeaver.ui.BooleanRenderer;
-import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -160,11 +162,6 @@ public class PropertyTreeViewer extends TreeViewer {
             }
 
             @Override
-            protected int getBooleanEditStyle() {
-                return ES_LEFT;
-            }
-
-            @Override
             public boolean isHyperlink(Object cellValue)
             {
                 return cellValue instanceof DBSObject;
@@ -176,6 +173,12 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (cellValue instanceof DBSObject) {
                     DBWorkbench.getPlatformUI().openEntityEditor((DBSObject) cellValue);
                 }
+            }
+
+            @NotNull
+            @Override
+            protected UIElementAlignment getBooleanAlignment(@Nullable Boolean value) {
+                return UIElementAlignment.LEFT;
             }
         };
     }
@@ -496,6 +499,9 @@ public class PropertyTreeViewer extends TreeViewer {
             final CellEditor cellEditor = PropertyEditorUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, editStyle);
             if (cellEditor == null) {
                 return;
+            }
+            if (cellEditor instanceof BooleanStyleDecorator) {
+                ((BooleanStyleDecorator) cellEditor).setBooleanAlignment(UIElementAlignment.LEFT);
             }
             final Object propertyValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
             final ICellEditorListener cellEditorListener = new ICellEditorListener() {
@@ -966,11 +972,14 @@ public class PropertyTreeViewer extends TreeViewer {
 
                     Class<?> propDataType = node.property.getDataType();
                     if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
-                        BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
                         if (propertyValue != null && !(propertyValue instanceof Boolean)) {
                             propertyValue = CommonUtils.toBoolean(propertyValue);
                         }
-                        return booleanStyle.getText((Boolean) propertyValue);
+                        if (renderer.getBooleanStyles().getMode() == BooleanMode.TEXT) {
+                            return renderer.getBooleanStyles().getStyle((Boolean) propertyValue).getText();
+                        } else {
+                            return "";
+                        }
                     } else if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
                     } else if (isHidePropertyValue(node.property)) {
@@ -1001,6 +1010,28 @@ public class PropertyTreeViewer extends TreeViewer {
                     return ""; //$NON-NLS-1$
                 }
             }
+        }
+
+        @Nullable
+        public Color getForeground(Object obj, int columnIndex) {
+            if (obj instanceof TreeNode && columnIndex > 0) {
+                TreeNode node = (TreeNode) obj;
+                if (node.property != null) {
+                    Object propertyValue = getPropertyValue(node);
+                    Class<?> propertyDataType = node.property.getDataType();
+                    if ((Boolean.class == propertyDataType || Boolean.TYPE == propertyDataType)) {
+                        if (propertyValue != null && !(propertyValue instanceof Boolean)) {
+                            propertyValue = CommonUtils.toBoolean(propertyValue);
+                        }
+                        if (renderer.getBooleanStyles().getMode() == BooleanMode.TEXT) {
+                            return UIUtils.getSharedColor(renderer.getBooleanStyles().getStyle((Boolean) propertyValue).getColor());
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         @Override
@@ -1101,6 +1132,7 @@ public class PropertyTreeViewer extends TreeViewer {
         {
             Object element = cell.getElement();
             cell.setText(getText(element, cell.getColumnIndex()));
+            cell.setForeground(getForeground(element, cell.getColumnIndex()));
             if (!(element instanceof TreeNode)) {
                 return;
             }
