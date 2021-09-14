@@ -12,4 +12,8 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.h2.edit.H2RoutineAliasManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2RoutineAlias"/>
+    </extension>
+
 </plugin>
