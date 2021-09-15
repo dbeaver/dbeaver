@@ -53,6 +53,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
     public static final int RS_ERROR_CODE_CHANNEL_CLOSE = 500366;
     public static final int RS_ERROR_CODE_NOT_CONNECTED = 500150;
+    public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
 
     private Version redshiftVersion;
 

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -115,7 +116,8 @@ public class PostgreUtils {
         if (pgObject == null) {
             return null;
         }
-        if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+        if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)
+                && !pgObject.getClass().getName().equals(PostgreServerRedshift.RS_OBJECT_CLASS)) {
             return pgObject;
         }
         try {
