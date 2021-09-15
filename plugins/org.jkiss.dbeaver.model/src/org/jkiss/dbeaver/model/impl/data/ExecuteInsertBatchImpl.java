@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
+import org.eclipse.core.runtime.Assert;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,7 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
 
@@ -110,6 +114,9 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         DBSTable table,
         boolean useMultiRowInsert,
         Map<String, Object> options) throws DBCException {
+        
+        Assert.isLegal(attributes.length == handlers.length);
+        Assert.isLegal(useMultiRowInsert || attributes.length == attributeValues.length);
 
         // Make query
         String tableName = DBUtils.getEntityScriptName(table, options);
@@ -143,6 +150,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
             return query;
         }
         boolean hasKey = false;
+        List<Integer> usedAttributes = new ArrayList<Integer>();
         for (int i = 0; i < attributes.length; i++) {
             DBSAttributeBase attribute = attributes[i];
             if (DBUtils.isPseudoAttribute(attribute) || (!useMultiRowInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
@@ -157,56 +165,33 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                 attributeName = DBUtils.getObjectFullName(table.getDataSource(), attribute, DBPEvaluationContext.DML);
             }
             query.append(attributeName);
+            usedAttributes.add(i);
         }
         query.append(")\n\tVALUES "); //$NON-NLS-1$
-        StringBuilder valuesPart = new StringBuilder(64);
-        valuesPart.append("(");
-        hasKey = false;
+        
+        int usedAttributesArr[] = usedAttributes.stream().mapToInt(Integer::intValue).toArray();
+
+        StringJoiner valuesPart = new StringJoiner(",");
         boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
-        for (int i = 0; i < attributes.length; i++) {
-            DBSAttributeBase attribute = attributes[i];
-            if (DBUtils.isPseudoAttribute(attribute) || (!useMultiRowInsert && (!allNulls && DBUtils.isNullValue(attributeValues[i])))) {
-                continue;
-            }
-            if (hasKey) valuesPart.append(","); //$NON-NLS-1$
-            hasKey = true;
-
-            DBDValueHandler valueHandler = handlers[i];
-            
-            if (valueHandler instanceof DBDValueBinder) {
-                valuesPart.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
-            } else {
-                valuesPart.append("?"); //$NON-NLS-1$
-            }
-        }
-        valuesPart.append(")"); //$NON-NLS-1$
-        if (useMultiRowInsert) {
-            for (int i = 0; i < attributeValues.length / attributes.length; i++) {
-                if (i != 0) {
-                    query.append(",");
+        for (int i = 0; i < attributeValues.length / attributes.length; i++) {
+            StringJoiner rowValuesPart = new StringJoiner(",", "(", ")");
+            for (int j : usedAttributesArr) {
+                DBSAttributeBase attribute = attributes[j];
+                DBDValueHandler valueHandler = handlers[j];
+                int k = i * attributes.length + j;
+                if (valueHandler instanceof DBDValueBinder) {
+                    rowValuesPart.add(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[k]));
+                } else if (skipBindValues) {
+                    rowValuesPart.add(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE));
+                } else {
+                    rowValuesPart.add("?");
                 }
-                query.append(valuesPart);
             }
-        } else {
-            query.append(valuesPart);
+            valuesPart.add(rowValuesPart.toString());
         }
 
-        if (skipBindValues) {
-            // Here we replace all binding marks (?) with real values
-            int curPos = 0;
-            for (int i = 0; i < attributeValues.length; i++) {
-                String sqlValue = SQLUtils.convertValueToSQL(
-                    session.getDataSource(),
-                    attributes[i % attributes.length],
-                    handlers[i % handlers.length],
-                    attributeValues[i],
-                    DBDDisplayFormat.NATIVE);
-
-                int qmPos = query.indexOf("?", curPos);
-                query.replace(qmPos, qmPos + 1, sqlValue);
-            }
-        }
-
+        query.append(valuesPart);
+        
         String trailingClause = method.getTrailingClause(table, session.getProgressMonitor(), attributes);
         if (trailingClause != null) {
             query.append(trailingClause);
