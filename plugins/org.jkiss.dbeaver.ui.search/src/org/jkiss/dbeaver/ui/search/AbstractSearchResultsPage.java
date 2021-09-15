@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
@@ -42,6 +43,8 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.ListMultimap;
+import org.jkiss.utils.collections.Multimap;
 
 import java.util.*;
 
@@ -240,33 +243,21 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
     }
 
-    private static class ResultsNode {
-        DBNNode node;
-        ResultsNode parent;
-        final List<ResultsNode> children = new ArrayList<>();
-
-        ResultsNode(DBNNode node, ResultsNode parent)
-        {
-            this.node = node;
-            this.parent = parent;
-        }
-        DBNNode[] getChildrenNodes()
-        {
-            DBNNode[] nodes = new DBNNode[children.size()];
-            for (int i = 0; i < children.size(); i++) {
-                nodes[i] = children.get(i).node;
-            }
-            return nodes;
-        }
-    }
-
     private class ResultsContentProvider extends TreeContentProvider {
+        // We maintain tree structure using two maps because we need fast lookup for parents and children for a given DBNNode.
+        // Using an explicit tree gives us quadratic complexity.
 
-        private ResultsNode rootResults;
-        private Map<DBNNode,ResultsNode> nodeMap;
+        /**
+         * A map that links nodes with their parents.
+         */
+        private final Map<DBNNode, DBNNode> parentMap = new HashMap<>();
 
-        private ResultsContentProvider() {
-        }
+        /**
+         * A multimap that links nodes with their children.
+         */
+        private final Multimap<DBNNode, DBNNode> childrenMultimap = new ListMultimap<>();
+
+        private DBNNode rootNode;
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
@@ -277,76 +268,55 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
 
         @Override
-        public Object getParent(Object element)
-        {
-            if (element instanceof DBNNode) {
-                ResultsNode results = nodeMap.get(element);
-                if (results != null && results.parent != null) {
-                    return results.parent.node;
-                }
-            }
-            return null;
+        public Object getParent(Object element) {
+            return parentMap.get(element);
         }
 
         @Override
-        public boolean hasChildren(Object parentElement)
-        {
-            if (parentElement instanceof DBNNode) {
-                ResultsNode results = nodeMap.get(parentElement);
-                return results != null && !results.children.isEmpty();
-            }
-            return false;
+        public boolean hasChildren(Object element) {
+            Collection<DBNNode> children = childrenMultimap.get((DBNNode) element);
+            return !CommonUtils.isEmpty(children);
+        }
+
+        @Nullable
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            Collection<DBNNode> children = childrenMultimap.get((DBNNode) parentElement);
+            return CommonUtils.safeCollection(children).toArray();
         }
 
         @Override
-        public Object[] getChildren(Object parentElement)
-        {
-            if (parentElement instanceof DBNNode) {
-                ResultsNode results = nodeMap.get(parentElement);
-                if (results != null) {
-                    return results.getChildrenNodes();
-                }
-            }
-            return null;
+        public Object[] getElements(Object inputElement) {
+            return getChildren(rootNode);
         }
 
-        @Override
-        public Object[] getElements(Object inputElement)
-        {
-            return rootResults.getChildrenNodes();
-        }
+        private void rebuildObjectTree(@NotNull Collection<? extends DBNNode> nodes) {
+            parentMap.clear();
+            childrenMultimap.clear();
+            rootNode = getRootNode();
 
-        private void rebuildObjectTree(Collection<DBNNode> nodeList)
-        {
-            rootResults = new ResultsNode(getRootNode(), null);
-            nodeMap = new IdentityHashMap<>();
-            final List<DBNNode> allParents = new ArrayList<>();
-            for (DBNNode node : nodeList) {
-                // Collect parent nodes
-                allParents.clear();
-                for (DBNNode parent = node.getParentNode(); parent != null && parent != getRootNode(); parent = parent.getParentNode()) {
-                    if (parent instanceof DBNContainer || parent instanceof DBNResource) {
-                        continue;
-                    }
-                    allParents.add(0, parent);
+            // The nodes collection possibly does not contain all the necessary nodes to display.
+            // For example, it may contain a table, but not its container, such as schema.
+            // The root node is not a part of the tree (we don't show it).
+            // Since we maintain the structure of the tree using two maps (see above), we need to populate them.
+            // It means finding a parent for every node and updating the children multimap.
+            Queue<DBNNode> queue = new ArrayDeque<>(nodes);
+            while (!queue.isEmpty()) {
+                DBNNode node = queue.poll();
+                if (node == rootNode || parentMap.get(node) != null) {
+                    continue;
                 }
-                // Construct hierarchy
-                ResultsNode curParentResults = rootResults;
-                for (DBNNode parent : allParents) {
-                    ResultsNode parentResults = nodeMap.get(parent);
-                    if (parentResults == null) {
-                        parentResults = new ResultsNode(parent, curParentResults);
-                        nodeMap.put(parent, parentResults);
-                        curParentResults.children.add(parentResults);
-                    }
-                    curParentResults = parentResults;
+                DBNNode parent = node.getParentNode();
+                while (parent != rootNode && (parent instanceof DBNContainer || parent instanceof DBNResource)) {
+                    parent = parent.getParentNode();
                 }
-                // Make leaf
-                ResultsNode leaf = new ResultsNode(node, curParentResults);
-                nodeMap.put(node, leaf);
-                curParentResults.children.add(leaf);
+                if (parent == null) {
+                    continue;
+                }
+                parentMap.put(node, parent);
+                childrenMultimap.put(parent, node);
+                queue.add(parent);
             }
         }
-
     }
 }
