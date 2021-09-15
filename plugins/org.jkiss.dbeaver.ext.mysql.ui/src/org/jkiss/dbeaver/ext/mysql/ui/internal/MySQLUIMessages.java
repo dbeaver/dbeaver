@@ -146,4 +146,9 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_auth_title;
     public static String tools_db_export_wizard_page_settings_auth_save_password_checkbox;
     public static String tools_db_export_wizard_page_settings_auth_save_password_checkbox_tip;
+	public static String dialog_creation_databasename;
+	public static String dialog_creation_charset;
+	public static String dialog_creation_collation;
+	public static String dialog_creation_title;
+	
 }
