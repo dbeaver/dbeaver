@@ -95,7 +95,7 @@ class GridCellRenderer extends AbstractRenderer {
             }
         }
 
-        int columnAlign = grid.getContentProvider().getColumnAlign(col);
+        int columnAlign = grid.getContentProvider().getCellAlign(col, row);
 
         if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
@@ -204,7 +204,7 @@ class GridCellRenderer extends AbstractRenderer {
             }
         }
         if (isLinkState(state) || isToggle) {
-            int columnAlign = contentProvider.getColumnAlign(colElement);
+            int columnAlign = contentProvider.getCellAlign(colElement, rowElement);
             Point origin = grid.getOrigin(column, row);
             Rectangle imageBounds;
             if (isToggle) {
