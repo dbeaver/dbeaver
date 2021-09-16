@@ -44,6 +44,7 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
     private static final boolean CHANGE_ON_ACTIVATE = false;
 
     private Label checkBox;
+    private boolean initialValue;
     private boolean checked;
     private BooleanStyleSet booleanStyles;
     private UIElementAlignment alignment;
@@ -87,6 +88,9 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
                         updateCheckVisuals();
                         applyEditorValue();
                         break;
+                    case SWT.ESC:
+                        checked = initialValue;
+                        // fallthrough
                     case SWT.CR:
                         applyEditorValue();
                         fireApplyEditorValue();
@@ -139,7 +143,9 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
     @Override
     protected void doSetValue(Object value) {
         Assert.isTrue(checkBox != null && (value instanceof Boolean));
-        checked = CommonUtils.toBoolean(value);
+        boolean val = CommonUtils.toBoolean(value);
+        checked = val;
+        initialValue = val;
         //setCheckIcon();
     }
 
