@@ -21,14 +21,22 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreGeometryValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
+
+import java.sql.SQLException;
 
 public class RedshiftGeometryValueHandler extends PostgreGeometryValueHandler {
     public static final RedshiftGeometryValueHandler INSTANCE = new RedshiftGeometryValueHandler();
 
     private RedshiftGeometryValueHandler() {}
+
+    @Override
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+        return getValueFromObject(session, type, resultSet.getString(index), false, false);
+    }
 
     @Nullable
     @Override
@@ -44,6 +52,9 @@ public class RedshiftGeometryValueHandler extends PostgreGeometryValueHandler {
         }
         if (object instanceof byte[]) {
              return makeGeometryFromWKB((byte[]) object);
+        }
+        if (object instanceof String) {
+            return makeGeometryFromWKB((String) object);
         }
         return null;
     }

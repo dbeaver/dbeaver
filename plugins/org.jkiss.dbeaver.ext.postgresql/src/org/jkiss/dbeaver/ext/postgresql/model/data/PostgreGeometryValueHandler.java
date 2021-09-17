@@ -137,7 +137,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
-    private DBGeometry makeGeometryFromWKB(String hexString) throws DBCException {
+    protected DBGeometry makeGeometryFromWKB(String hexString) throws DBCException {
         return makeGeometryFromWKB(WKBReader.hexToBytes(hexString));
     }
 
