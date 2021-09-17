@@ -116,7 +116,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return makeGeometryFromWKT(session, (String) object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
-        } else if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+        } else if (PostgreUtils.isPGObject(object)) {
             return makeGeometryFromWKB(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
         } else {
             return makeGeometryFromWKT(session, object.toString());
