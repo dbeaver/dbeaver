@@ -634,6 +634,14 @@ public class GenericMetaModel {
         return tableType.toUpperCase(Locale.ENGLISH).contains(GenericConstants.TABLE_TYPE_VIEW);
     }
 
+    public void beforeTableCacheLoading(JDBCSession session, GenericStructContainer owner) throws DBException {
+        // Do nothing
+    }
+
+    public void afterTableCacheLoading(JDBCSession session, GenericStructContainer owner) {
+        // Do nothing
+    }
+
     //////////////////////////////////////////////////////
     // Table columns
 

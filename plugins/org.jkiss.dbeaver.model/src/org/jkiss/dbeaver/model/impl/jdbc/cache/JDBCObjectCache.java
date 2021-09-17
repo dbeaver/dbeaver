@@ -102,6 +102,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             // Load cache from database only for persisted objects
             try {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load objects from " + owner.getName())) {
+                    beforeCacheLoading(session, owner);
                     try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
                         monitor.subTask("Load " + getCacheName());
                         dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -131,6 +132,8 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                                 dbResult.close();
                             }
                         }
+                    } finally {
+                        afterCacheLoading(session, owner);
                     }
                 } catch (SQLException ex) {
                     throw new DBException(ex, dataSource);
@@ -156,6 +159,14 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         detectCaseSensitivity(owner);
         mergeCache(tmpObjectList);
         this.invalidateObjects(monitor, owner, new CacheIterator());
+    }
+
+    public void beforeCacheLoading(JDBCSession session, OWNER owner) throws DBException {
+        // Do nothing
+    }
+
+    public void afterCacheLoading(JDBCSession session, OWNER owner) {
+        // Do nothing
     }
 
     protected String getCacheName() {
