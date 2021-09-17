@@ -47,7 +47,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     final GenericMetaObject tableObject;
     final GenericMetaObject columnObject;
 
-    TableCache(GenericDataSource dataSource)
+    protected TableCache(GenericDataSource dataSource)
     {
         super(GenericUtils.getColumn(dataSource, GenericConstants.OBJECT_TABLE, JDBCConstants.TABLE_NAME));
         this.dataSource = dataSource;
@@ -150,11 +150,11 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 
     @Override
     public void beforeCacheLoading(JDBCSession session, GenericStructContainer owner) throws DBException {
-        dataSource.getMetaModel().beforeTableCacheLoading(session, owner);
+       // Do nothing
     }
 
     @Override
     public void afterCacheLoading(JDBCSession session, GenericStructContainer owner) {
-        dataSource.getMetaModel().afterTableCacheLoading(session, owner);
+        // Do nothing
     }
 }
