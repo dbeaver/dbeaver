@@ -32,12 +32,12 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
  */
 public enum VerticaObjectType implements DBSObjectType {
 
-    TABLE("TABLE", "Vertica table", VerticaTable.class, DBIcon.TREE_TABLE),
-    SYSTEM_TABLE("SYSTEM TABLE", "Vertica system table", VerticaSystemTable.class, DBIcon.TREE_TABLE),
-    VIEW("VIEW", "Vertica View", VerticaView.class, DBIcon.TREE_VIEW),
-    PROJECTION("PROJECION", "Vertica Projection", VerticaProjection.class, DBIcon.TREE_TABLE_INDEX),
-    NODE("NODE", "Vertica Node", VerticaNode.class, DBIcon.TREE_SERVERS),
-    SEQUENCE("SEQUENCE", "Vertica Sequence", VerticaSequence.class, DBIcon.TREE_SEQUENCE);
+    TABLE("Table", "Vertica table", VerticaTable.class, DBIcon.TREE_TABLE),
+    SYSTEM_TABLE("System table", "Vertica system table", VerticaSystemTable.class, DBIcon.TREE_TABLE),
+    VIEW("View", "Vertica View", VerticaView.class, DBIcon.TREE_VIEW),
+    PROJECTION("Projection", "Vertica Projection", VerticaProjection.class, DBIcon.TREE_TABLE_INDEX),
+    NODE("Node", "Vertica Node", VerticaNode.class, DBIcon.TREE_SERVERS),
+    SEQUENCE("Sequence", "Vertica Sequence", VerticaSequence.class, DBIcon.TREE_SEQUENCE);
 
     private final String typeName;
     private final String description;
