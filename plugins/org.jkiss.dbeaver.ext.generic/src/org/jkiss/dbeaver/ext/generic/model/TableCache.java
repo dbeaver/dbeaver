@@ -148,13 +148,4 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         );
     }
 
-    @Override
-    public void beforeCacheLoading(JDBCSession session, GenericStructContainer owner) throws DBException {
-        dataSource.getMetaModel().beforeTableCacheLoading(session, owner);
-    }
-
-    @Override
-    public void afterCacheLoading(JDBCSession session, GenericStructContainer owner) {
-        dataSource.getMetaModel().afterTableCacheLoading(session, owner);
-    }
 }
