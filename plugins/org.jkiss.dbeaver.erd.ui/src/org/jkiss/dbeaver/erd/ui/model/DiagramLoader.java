@@ -164,6 +164,7 @@ public class DiagramLoader extends ERDPersistedState {
                     try {
                         dataSourceContainer.connect(monitor, true, true);
                     } catch (DBException e) {
+                        log.debug(e);
                         diagram.addErrorMessage("Can't connect to '" + dataSourceContainer.getName() + "': " + e.getMessage());
                         continue;
                     }
