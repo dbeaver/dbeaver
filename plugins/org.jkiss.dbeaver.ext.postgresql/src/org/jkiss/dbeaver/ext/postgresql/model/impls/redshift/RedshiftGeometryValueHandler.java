@@ -54,7 +54,13 @@ public class RedshiftGeometryValueHandler extends PostgreGeometryValueHandler {
              return makeGeometryFromWKB((byte[]) object);
         }
         if (object instanceof String) {
-            return makeGeometryFromWKB((String) object);
+            try {
+                // It is WKB when read from server
+                return makeGeometryFromWKB((String) object);
+            } catch (Exception e) {
+                // It may be WKT when edited by user
+                return makeGeometryFromWKT(session, (String) object);
+            }
         }
         return null;
     }

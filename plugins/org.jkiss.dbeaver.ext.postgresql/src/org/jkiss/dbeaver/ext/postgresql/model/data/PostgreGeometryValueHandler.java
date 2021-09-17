@@ -197,7 +197,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    private DBGeometry makeGeometryFromWKT(DBCSession session, String pgString) throws DBCException {
+    protected DBGeometry makeGeometryFromWKT(DBCSession session, String pgString) throws DBCException {
         if (CommonUtils.isEmpty(pgString)) {
             return new DBGeometry();
         }
