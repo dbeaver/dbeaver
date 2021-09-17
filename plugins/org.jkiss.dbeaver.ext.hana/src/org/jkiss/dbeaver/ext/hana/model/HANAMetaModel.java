@@ -380,7 +380,9 @@ public class HANAMetaModel extends GenericMetaModel
         String schemaName = schema.getName();
         return schemaName.startsWith("_SYS_") ||
             schemaName.startsWith("SAP_") ||
-            schemaName.startsWith("HANA_");
+            schemaName.startsWith("HANA_") ||
+            schemaName.equals("SYS") ||
+            schemaName.equals("SYS_DATABASES");
     }
 
     @Override
