@@ -86,6 +86,9 @@ public class PostgreConstants {
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
     public static final String PG_GEOMETRY_CLASS = "org.postgis.PGgeometry";
 
+    // Workaround for Redshift 2.x
+    public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
+
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
 

@@ -108,20 +108,25 @@ public class PostgreUtils {
     }
 
     public static boolean isPGObject(Object object) {
-        return object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS);
+        if (object == null) {
+            return false;
+        }
+        String className = object.getClass().getName();
+        return className.equals(PostgreConstants.PG_OBJECT_CLASS) ||
+            className.equals(PostgreConstants.RS_OBJECT_CLASS);
     }
 
     public static Object extractPGObjectValue(Object pgObject) {
         if (pgObject == null) {
             return null;
         }
-        if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+        if (!isPGObject(pgObject)) {
             return pgObject;
         }
         try {
             return pgObject.getClass().getMethod("getValue").invoke(pgObject);
         } catch (Exception e) {
-            log.debug("Can't extract value from PgObject", e);
+            log.debug("Can't extract value from " + pgObject.getClass().getName(), e);
         }
         return null;
     }
