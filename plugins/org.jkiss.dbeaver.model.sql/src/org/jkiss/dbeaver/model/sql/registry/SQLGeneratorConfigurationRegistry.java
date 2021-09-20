@@ -117,4 +117,12 @@ public class SQLGeneratorConfigurationRegistry
         return null;
     }
 
+    public SQLGeneratorDescriptor getGeneratorDescriptor(SQLGenerator<?> generator) {
+        for (SQLGeneratorDescriptor desc : generators) {
+            if (desc.getGeneratorImplClass().getObjectClass() == generator.getClass()) {
+                return desc;
+            }
+        }
+        return null;
+    }
 }
