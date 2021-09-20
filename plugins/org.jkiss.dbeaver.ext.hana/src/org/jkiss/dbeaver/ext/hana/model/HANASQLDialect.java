@@ -48,7 +48,8 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
     private static final String[][] HANA_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"IF", SQLConstants.BLOCK_END},
-        {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END}
+        {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
+        {"FOR", SQLConstants.BLOCK_END + " FOR"}
     };
 
     public HANASQLDialect() {
