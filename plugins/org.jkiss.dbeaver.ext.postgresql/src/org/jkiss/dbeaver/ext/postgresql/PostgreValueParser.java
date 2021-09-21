@@ -203,7 +203,17 @@ public class PostgreValueParser {
             return new String[0];
         }
         try {
-            return new CSVReader(new StringReader(string)).readNext();
+            final String[] values = new CSVReader(new StringReader(string)).readNext();
+            for (int i = 0; i < values.length; i++) {
+                if (CommonUtils.isEmpty(values[i])) {
+                    // Empty values are NULLs.
+                    // It's a bad assumption since empty strings are allowed too.
+                    // Unfortunately, we can't differentiate between 'a,,c' and 'a,"",c'.
+                    // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6
+                    values[i] = null;
+                }
+            }
+            return values;
         } catch (IOException e) {
             throw new DBCException("Error parsing PGObject", e);
         }
@@ -219,8 +229,10 @@ public class PostgreValueParser {
                         .replace("]", "}")
                         .replace(" ", "");
                 line[i] = arrayPostgreStyle; //Strings are not quoted
-            } else {
-                line[i] = value == null ? "NULL" : value.toString();
+            } else if (value != null) {
+                // Values are simply skipped if they're NULL.
+                // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6
+                line[i] = value.toString();
             }
         }
         StringWriter out = new StringWriter();
