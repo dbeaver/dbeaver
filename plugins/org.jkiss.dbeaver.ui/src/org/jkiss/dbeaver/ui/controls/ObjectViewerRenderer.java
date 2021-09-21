@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyle;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -414,7 +415,12 @@ public abstract class ObjectViewerRenderer {
                 value = ((DBPNamedObject) value).getName();
             }
         }
-        return GeneralUtils.makeDisplayString(value).toString();
+        String displayString = GeneralUtils.makeDisplayString(value).toString();
+        if (RuntimeUtils.isLinux()) {
+            // If we don't do that, cells might be stretched to enormous dimensions.
+            displayString = CommonUtils.getSingleLineString(displayString);
+        }
+        return displayString;
     }
 
     private class MouseListener extends MouseAdapter {
