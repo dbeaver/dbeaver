@@ -62,7 +62,7 @@ public class GenericUniqueKey extends GenericTableConstraint {
         this.columns.add(column);
     }
 
-    void setColumns(List<GenericTableConstraintColumn> columns) {
+    public void setColumns(List<GenericTableConstraintColumn> columns) {
         this.columns = columns;
         if (!CommonUtils.isEmpty(this.columns) && this.columns.size() > 1) {
             columns.sort(Comparator.comparingInt(GenericTableConstraintColumn::getOrdinalPosition));
