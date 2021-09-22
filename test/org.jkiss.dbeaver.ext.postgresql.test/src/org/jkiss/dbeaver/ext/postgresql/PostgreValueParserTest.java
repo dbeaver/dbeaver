@@ -207,7 +207,7 @@ public class PostgreValueParserTest {
 
         List<String> intNullList = new ArrayList<>(intList);
         intNullList.add(null);
-        Assert.assertEquals(intNullList, PostgreValueParser.parseArrayString("{1,22,333,}", ","));
+        Assert.assertEquals(intNullList, PostgreValueParser.parseArrayString("{1,22,333,NULL}", ","));
 
         List<List<String>> int2List = new ArrayList<>();
         int2List.add(intList);
