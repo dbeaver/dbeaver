@@ -23,12 +23,10 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * EntityEditorsRegistry
@@ -37,7 +35,6 @@ public class EntityEditorsRegistry {
 
     private static final String TAG_EDITOR = "editor"; //NON-NLS-1
     private static final String TAG_CONFIGURATOR = "configurator"; //NON-NLS-1
-    private static final String TAG_MANAGER = "manager"; //NON-NLS-1
 
     private static EntityEditorsRegistry instance = null;
 
@@ -48,10 +45,10 @@ public class EntityEditorsRegistry {
         return instance;
     }
 
-    private EntityEditorDescriptor defaultEditor;
-    private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
-    private List<EntityConfiguratorDescriptor> entityConfigurators = new ArrayList<>();
-    private Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<String, List<EntityEditorDescriptor>>();
+    private final EntityEditorDescriptor defaultEditor;
+    private final List<EntityEditorDescriptor> entityEditors = new ArrayList<>();
+    private final List<EntityConfiguratorDescriptor> entityConfigurators = new ArrayList<>();
+    private final Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<>();
 
     public EntityEditorsRegistry(IExtensionRegistry registry) {
         // Create default editor
@@ -62,11 +59,8 @@ public class EntityEditorsRegistry {
             if (TAG_EDITOR.equals(ext.getName())) {
                 EntityEditorDescriptor descriptor = new EntityEditorDescriptor(ext);
                 entityEditors.add(descriptor);
-                List<EntityEditorDescriptor> list = positionsMap.get(descriptor.getPosition());
-                if (list == null) {
-                    list = new ArrayList<>();
-                    positionsMap.put(descriptor.getPosition(), list);
-                }
+                List<EntityEditorDescriptor> list = positionsMap.computeIfAbsent(
+                    descriptor.getPosition(), k -> new ArrayList<>());
                 list.add(descriptor);
             } else if (TAG_CONFIGURATOR.equals(ext.getName())) {
                 EntityConfiguratorDescriptor descriptor = new EntityConfiguratorDescriptor(ext);
@@ -108,10 +102,19 @@ public class EntityEditorsRegistry {
     }
 
     public EntityConfiguratorDescriptor getEntityConfigurator(DBPObject object) {
+        List<EntityConfiguratorDescriptor> allDescriptors = new ArrayList<>();
         for (EntityConfiguratorDescriptor descriptor : entityConfigurators) {
-            if (descriptor.appliesTo(object)) {
-                return descriptor;
+            if (descriptor.appliesTo(object) && descriptor.getObjectTypes().length > 0) {
+                allDescriptors.add(descriptor);
             }
+        }
+        if (!allDescriptors.isEmpty()) {
+            if (allDescriptors.size() > 1) {
+                // Determine the closes one
+                allDescriptors.sort(Comparator.comparingInt(
+                    o -> BeanUtils.getInheritanceDistance(object, o.getObjectTypes()[0].getObjectClass())));
+            }
+            return allDescriptors.get(0);
         }
         return null;
     }
@@ -129,4 +132,5 @@ public class EntityEditorsRegistry {
     public EntityEditorDescriptor getDefaultEditor() {
         return defaultEditor;
     }
+
 }

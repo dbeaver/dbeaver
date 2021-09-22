@@ -26,29 +26,29 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorActivator;
 /**
  * EntityConfiguratorDescriptor
  */
-public class EntityConfiguratorDescriptor extends AbstractContextDescriptor
-{
+public class EntityConfiguratorDescriptor extends AbstractContextDescriptor {
     private static final Log log = Log.getLog(EntityConfiguratorDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseObjectConfigurator"; //NON-NLS-1 //$NON-NLS-1$
 
-    private ObjectType implType;
+    private final ObjectType implType;
 
-    EntityConfiguratorDescriptor()
-    {
+    EntityConfiguratorDescriptor() {
         super(UINavigatorActivator.PLUGIN_ID);
         this.implType = new ObjectType(ObjectPropertiesEditor.class.getName());
     }
 
-    public EntityConfiguratorDescriptor(IConfigurationElement config)
-    {
+    public EntityConfiguratorDescriptor(IConfigurationElement config) {
         super(config);
 
         this.implType = new ObjectType(config.getAttribute("class"));
     }
 
-    public DBEObjectConfigurator createConfigurator()
-    {
+    public Class<?> getConfiguratorClass() {
+        return implType.getObjectClass();
+    }
+
+    public DBEObjectConfigurator<?> createConfigurator() {
         try {
             return implType.createInstance(DBEObjectConfigurator.class);
         } catch (Exception ex) {
