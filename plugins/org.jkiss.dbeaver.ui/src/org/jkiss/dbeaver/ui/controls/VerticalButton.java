@@ -23,6 +23,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
@@ -233,23 +234,33 @@ public class VerticalButton extends Canvas {
             }
         }
 
-        int x = 0;
+        // In fact X and Y offsets are reversed because of transform
+        int xOffset = 0;
+        int yOffset = BORDER_MARGIN;
 
         String text = getText();
         if (!CommonUtils.isEmpty(text)) {
+            boolean shiftOffset = (DPIUtil.getDeviceZoom() >= 200);
+
             Transform tr = new Transform(e.display);
 
             e.gc.setAntialias(SWT.ON);
             if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
                 tr.translate(size.x, 0);
                 tr.rotate(90);
+                if (shiftOffset) {
+                    yOffset -= size.x / 2;
+                }
             } else {
                 tr.translate(0, size.y);
                 tr.rotate(-90);
+                if (shiftOffset) {
+                    xOffset -= size.y / 2;
+                }
             }
             e.gc.setTransform(tr);
 
-            x += VERT_INDENT;
+            xOffset += VERT_INDENT;
         }
 
         if (image != null) {
@@ -258,15 +269,17 @@ public class VerticalButton extends Canvas {
                     imageDisabled = new Image(e.display, image, SWT.IMAGE_GRAY);
                     addDisposeListener(e1 -> imageDisabled.dispose());
                 }
-                e.gc.drawImage(imageDisabled, x, BORDER_MARGIN);
+                e.gc.drawImage(imageDisabled, xOffset, yOffset);
             } else {
-                e.gc.drawImage(image, x, BORDER_MARGIN);
+                e.gc.drawImage(image, xOffset, yOffset);
             }
-            x += image.getBounds().width + BORDER_MARGIN;
+            xOffset += image.getBounds().width + BORDER_MARGIN;
         }
 
-        e.gc.setForeground(UIStyles.getDefaultTextForeground());
-        e.gc.drawString(this.text, x, BORDER_MARGIN);
+        if (!CommonUtils.isEmpty(text)) {
+            e.gc.setForeground(UIStyles.getDefaultTextForeground());
+            e.gc.drawString(this.text, xOffset, yOffset);
+        }
     }
 
     private boolean isSelected() {
