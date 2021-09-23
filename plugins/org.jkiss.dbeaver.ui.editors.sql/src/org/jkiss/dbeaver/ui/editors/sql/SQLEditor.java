@@ -189,6 +189,7 @@ public class SQLEditor extends SQLEditorBase implements
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile DBCExecutionContext lastExecutionContext;
+    private volatile DBPContextProvider executionContextProvider;
     private SQLScriptContext globalScriptContext;
     private volatile boolean syntaxLoaded = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
@@ -269,6 +270,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             return executionContext;
         }
+        if (executionContextProvider != null) {
+            return executionContextProvider.getExecutionContext();
+        }
         if (dataSourceContainer != null && !SQLEditorUtils.isOpenSeparateConnection(dataSourceContainer)) {
             return DBUtils.getDefaultContext(getDataSource(), false);
         }
@@ -348,6 +352,11 @@ public class SQLEditor extends SQLEditorBase implements
             if (savedContainer != container) {
                 EditorUtils.setInputDataSource(input, new SQLNavigatorContext(container, getExecutionContext()));
             }
+            DBCExecutionContext iec = EditorUtils.getInputExecutionContext(input);
+            if (iec != null) {
+                this.executionContextProvider = () -> iec;
+            }
+
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
                 DBNUtils.refreshNavigatorResource(file, container);
@@ -419,12 +428,14 @@ public class SQLEditor extends SQLEditorBase implements
                 // Datasource was changed or instance was changed (PG)
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                DBPDataSourceContainer container = dataSource.getContainer();
-                if (SQLEditorUtils.isOpenSeparateConnection(container)) {
-                    initSeparateConnection(dataSource, onSuccess);
-                } else {
-                    if (onSuccess != null) {
-                        onSuccess.run();
+                if (executionContextProvider == null) {
+                    DBPDataSourceContainer container = dataSource.getContainer();
+                    if (SQLEditorUtils.isOpenSeparateConnection(container)) {
+                        initSeparateConnection(dataSource, onSuccess);
+                    } else {
+                        if (onSuccess != null) {
+                            onSuccess.run();
+                        }
                     }
                 }
             }
@@ -1959,7 +1970,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
-            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
             if (contextDefaults != null) {
                 vars.put(VAR_ACTIVE_DATABASE, contextDefaults.getDefaultCatalog());
                 vars.put(VAR_ACTIVE_SCHEMA, contextDefaults.getDefaultSchema());
@@ -2450,7 +2461,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         DBPDataSource dataSource = ds.getDataSource();
-        if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(ds) && executionContext == null) {
+        if (dataSource != null && executionContextProvider == null && SQLEditorUtils.isOpenSeparateConnection(ds) && executionContext == null) {
             initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS));
             return executionContext != null;
         }
