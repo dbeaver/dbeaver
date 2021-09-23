@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,6 +28,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -83,7 +86,7 @@ class SaveScriptDialog extends BaseDialog {
 
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
-            Composite sqlContainer = new Composite(messageGroup, SWT.NONE);
+            Composite sqlContainer = new Composite(messageGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_BOTH);
             sqlContainer.setLayout(new FillLayout());
             gd.widthHint = 500;
@@ -115,11 +118,10 @@ class SaveScriptDialog extends BaseDialog {
         boolean enableControls,
         Runnable settingsRefreshHandler)
     {
-        GridData gd;
-        Composite settingsComposite = UIUtils.createComposite(messageGroup, 3);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        settingsComposite.setLayoutData(gd);
+        Group settingsComposite = new Group(messageGroup, SWT.NONE);
+        settingsComposite.setText(ResultSetMessages.dialog_save_script_settings_title);
+        settingsComposite.setLayout(GridLayoutFactory.swtDefaults().numColumns(3).create());
+        settingsComposite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
 
         Button useFQNamesCheck = UIUtils.createCheckbox(settingsComposite,
             ResultSetMessages.dialog_save_script_button_use_qualified_names,
