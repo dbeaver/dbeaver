@@ -1804,8 +1804,15 @@ public class SQLEditor extends SQLEditorBase implements
 
         updateResultSetOrientation();
 
+        SQLScriptContext parentContext = null;
+        {
+            DatabaseEditorContext parentEditorContext = EditorUtils.getEditorContext(editorInput);
+            if (parentEditorContext instanceof SQLNavigatorContext) {
+                parentContext = ((SQLNavigatorContext) parentEditorContext).getScriptContext();
+            }
+        }
         this.globalScriptContext = new SQLScriptContext(
-            null,
+            parentContext,
             this,
             EditorUtils.getLocalFileFromInput(getEditorInput()),
             new OutputLogWriter(),

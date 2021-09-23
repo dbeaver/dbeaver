@@ -66,6 +66,7 @@ public class EditorUtils {
     private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema";
 
     private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container";
+    private static final String PROP_EDITOR_CONTEXT = "database-editor-context";
     private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context";
 
     public static final String PROP_NAMESPACE = "org.jkiss.dbeaver";
@@ -139,6 +140,13 @@ public class EditorUtils {
 
     //////////////////////////////////////////////////////////
     // Datasource <-> resource manipulations
+
+    public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
+        if (editorInput instanceof INonPersistentEditorInput) {
+            return (DatabaseEditorContext) ((INonPersistentEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
+        }
+        return null;
+    }
 
     public static DBCExecutionContext getInputExecutionContext(IEditorInput editorInput) {
         if (editorInput instanceof INonPersistentEditorInput) {
@@ -248,6 +256,7 @@ public class EditorUtils {
         @NotNull DatabaseEditorContext context)
     {
         if (editorInput instanceof INonPersistentEditorInput) {
+            ((INonPersistentEditorInput) editorInput).setProperty(PROP_EDITOR_CONTEXT, context);
             DBCExecutionContext executionContext = context.getExecutionContext();
             if (executionContext != null) {
                 ((INonPersistentEditorInput) editorInput).setProperty(PROP_EXECUTION_CONTEXT, executionContext);

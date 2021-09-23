@@ -77,6 +77,11 @@ public class SQLScriptContext implements DBCScriptContext {
         this.parametersProvider = parametersProvider;
     }
 
+    @Nullable
+    public SQLScriptContext getParentContext() {
+        return parentContext;
+    }
+
     @NotNull
     public DBCExecutionContext getExecutionContext() {
         return contextProvider.getExecutionContext();
