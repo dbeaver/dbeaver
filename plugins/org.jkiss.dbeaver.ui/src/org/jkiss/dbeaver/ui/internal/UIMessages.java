@@ -69,6 +69,10 @@ public class UIMessages extends NLS {
 
     public static String edit_text_dialog_title_edit_value;
 
+    public static String dialogs_name_and_password_dialog_group_settings;
+    public static String dialogs_name_and_password_dialog_label_name;
+    public static String dialogs_name_and_password_dialog_label_password;
+
     public static String ui_properties_name;
     public static String ui_properties_value;
     
