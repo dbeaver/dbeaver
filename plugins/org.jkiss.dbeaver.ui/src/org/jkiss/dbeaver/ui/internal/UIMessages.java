@@ -72,6 +72,7 @@ public class UIMessages extends NLS {
     public static String dialogs_name_and_password_dialog_group_settings;
     public static String dialogs_name_and_password_dialog_label_name;
     public static String dialogs_name_and_password_dialog_label_password;
+    public static String dialogs_name_and_password_dialog_label_verify_password;
 
     public static String ui_properties_name;
     public static String ui_properties_value;

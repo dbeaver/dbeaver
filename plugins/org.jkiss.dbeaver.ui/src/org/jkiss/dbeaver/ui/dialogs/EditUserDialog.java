@@ -26,12 +26,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
-public class EnterNameAndPasswordDialog extends BaseDialog {
+public class EditUserDialog extends BaseDialog {
 
     private String name;
     private String password;
+    private String verifyText;
 
-    public EnterNameAndPasswordDialog(Shell parentShell, String title) {
+    public EditUserDialog(Shell parentShell, String title) {
         super(parentShell, title, null);
     }
 
@@ -44,13 +45,19 @@ public class EnterNameAndPasswordDialog extends BaseDialog {
         final Text nameText = UIUtils.createLabelText(groupGeneral, UIMessages.dialogs_name_and_password_dialog_label_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
-            getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty() && CommonUtils.isNotEmpty(password));
+            updateButtons();
         });
 
         final Text passwordText = UIUtils.createLabelText(groupGeneral, UIMessages.dialogs_name_and_password_dialog_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
         passwordText.addModifyListener(e -> {
             password = passwordText.getText();
-            getButton(IDialogConstants.OK_ID).setEnabled(!password.isEmpty() && CommonUtils.isNotEmpty(name));
+            updateButtons();
+        });
+
+        Text verifyPasswordText = UIUtils.createLabelText(groupGeneral, UIMessages.dialogs_name_and_password_dialog_label_verify_password, "", SWT.BORDER | SWT.PASSWORD);
+        verifyPasswordText.addModifyListener(e -> {
+            verifyText = verifyPasswordText.getText();
+            updateButtons();
         });
 
         return composite;
@@ -69,5 +76,12 @@ public class EnterNameAndPasswordDialog extends BaseDialog {
     {
         super.createButtonsForButtonBar(parent);
         getButton(IDialogConstants.OK_ID).setEnabled(false);
+    }
+
+    private void updateButtons() {
+        getButton(IDialogConstants.OK_ID).setEnabled(
+            CommonUtils.isNotEmpty(name) &&
+                CommonUtils.isNotEmpty(password) &&
+                CommonUtils.equalObjects(password, verifyText));
     }
 }

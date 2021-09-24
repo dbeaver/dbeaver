@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.EnterNameAndPasswordDialog;
+import org.jkiss.dbeaver.ui.dialogs.EditUserDialog;
 
 public class SQLServerLoginConfigurator implements DBEObjectConfigurator<SQLServerLogin> {
 
@@ -32,7 +32,7 @@ public class SQLServerLoginConfigurator implements DBEObjectConfigurator<SQLServ
         return new UITask<SQLServerLogin>() {
             @Override
             protected SQLServerLogin runTask() {
-                EnterNameAndPasswordDialog dialog = new EnterNameAndPasswordDialog(UIUtils.getActiveWorkbenchShell(), SQLServerUIMessages.dialog_create_login_shell_title);
+                EditUserDialog dialog = new EditUserDialog(UIUtils.getActiveWorkbenchShell(), SQLServerUIMessages.dialog_create_login_shell_title);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }

@@ -471,7 +471,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                         config.getAttribute(RegistryConstants.ATTR_TYPE),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
-                        config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
+                        config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL)));
                     break;
                 }
                 case RegistryConstants.TAG_ITEMS: {
