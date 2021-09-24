@@ -55,6 +55,24 @@ public class DBDAttributeValue {
         return attribute.getName() + "=" + value;
     }
 
+    @NotNull
+    public static DBSAttributeBase[] getAttributes(@NotNull DBDAttributeValue[] attrValues) {
+        final DBSAttributeBase[] attributes = new DBSAttributeBase[attrValues.length];
+        for (int i = 0; i < attributes.length; i++) {
+            attributes[i] = attrValues[i].getAttribute();
+        }
+        return attributes;
+    }
+
+    @NotNull
+    public static Object[] getValues(@NotNull DBDAttributeValue[] attrValues) {
+        final Object[] values = new Object[attrValues.length];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = attrValues[i].getValue();
+        }
+        return values;
+    }
+
     public static DBSAttributeBase[] getAttributes(List<DBDAttributeValue> attrValues)
     {
         DBSAttributeBase[] attributes = new DBSAttributeBase[attrValues.size()];
