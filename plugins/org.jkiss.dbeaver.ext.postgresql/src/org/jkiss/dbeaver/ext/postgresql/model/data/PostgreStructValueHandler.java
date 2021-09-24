@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.data.DBDComposite;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -34,6 +35,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -103,6 +106,19 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         } catch (DBException e) {
             throw new DBCException("Error converting string to composite type", e, session.getExecutionContext());
         }
+    }
+
+    @NotNull
+    @Override
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE && value instanceof DBDComposite && column instanceof DBSObject) {
+            final DBDComposite struct = (DBDComposite) value;
+            if (!struct.isNull() && struct instanceof JDBCComposite) {
+                final Object[] values = ((JDBCComposite) struct).getValues();
+                return SQLUtils.quoteString((DBSObject) column, PostgreValueParser.generateObjectString(values));
+            }
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     private JDBCCompositeStatic convertStringToStruct(@NotNull DBCSession session, @NotNull PostgreDataType compType, @NotNull String value) throws DBException {
