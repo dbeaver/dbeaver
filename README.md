@@ -35,7 +35,7 @@ You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Earl
 
 Just run an installer (or unzip an archive) and run `dbeaver`.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptopenjdk.net/" target="_blank">Open JDK 11</a> is included in all DBeaver distributions. (since version 7.3.1).  
+Note: DBeaver needs Java to run. OpenJDK 11 is included in all DBeaver distributions. (since version 7.3.1).  
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
@@ -47,7 +47,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 
 #### Prerequisites:
 
- 1. Java (JDK) 11 or later (<a href="https://adoptopenjdk.net/" target="_blank">AdoptOpenJDK 11</a> is our default Java at the moment).
+ 1. JDK 11+. <a href="https://adoptium.net/" target="_blank">Eclipse Temurin JDK 11</a> is our default JDK at the moment.
  2. <a href="https://maven.apache.org/" target="_blank">Apache Maven 3.6+</a>
  3. Internet access
  4. Git client
