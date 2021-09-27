@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -437,6 +438,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         final boolean showSystem = navSettings.isShowSystemObjects();
         final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
         final boolean hideFolders = navSettings.isHideFolders();
+        boolean mergeEntities = navSettings.isMergeEntities();
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
@@ -452,7 +454,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 /*if (hideSchemas && isSchemaItem(item)) {
                     // Merge
                 } else */{
-                    boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, hideFolders, reflect);
+                    boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, hideFolders, mergeEntities, reflect);
                     if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                         // This may occur only if no child nodes was read
                         // Then we try to go on next DBX level
@@ -460,7 +462,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     }
                 }
             } else if (child instanceof DBXTreeFolder) {
-                if (hideFolders) {
+                if (hideFolders || (mergeEntities && ((DBXTreeFolder)child).isOptional())) {
                     if (child.isVirtual()) {
                         continue;
                     }
@@ -565,6 +567,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         Object source,
         boolean showSystem,
         boolean hideFolders,
+        boolean mergeEntities,
         boolean reflect)
         throws DBException {
         if (this.isDisposed())
@@ -631,6 +634,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             if (hideFolders && (childItem instanceof DBAObject || childItem instanceof DBPSystemInfoObject)) {
                 // Skip all DBA objects
+                continue;
+            }
+            if (mergeEntities && childItem instanceof DBSSchema) {
+                // Skip schemas in merge entities mode
                 continue;
             }
             if (filter != null && !filter.matches(((DBSObject) childItem).getName())) {
