@@ -135,7 +135,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
                     char curChar = ' ';
                     try {
-                        request.getDocument().getChar(wordDetector.getCursorOffset() - 1);
+                        curChar = request.getDocument().getChar(wordDetector.getCursorOffset() - 1);
                     } catch (BadLocationException e) {
                         log.debug(e);
                     }
