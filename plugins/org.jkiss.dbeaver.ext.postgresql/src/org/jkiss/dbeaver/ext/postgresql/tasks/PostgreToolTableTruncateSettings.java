@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<PostgreTableBase> {
@@ -39,7 +42,7 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
         isRunning = running;
     }
 
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreSupportTruncateOptionOnlyValidator.class)
     public boolean isOnly() {
         return isOnly;
     }
@@ -48,7 +51,7 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
         isOnly = only;
     }
 
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreSupportTruncateOptionIdentityValidator.class)
     public boolean isRestarting() {
         return isRestarting;
     }
@@ -57,7 +60,7 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
         isRestarting = restarting;
     }
 
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreSupportTruncateOptionCascadeValidator.class)
     public boolean isCascading() {
         return isCascading;
     }
@@ -82,5 +85,41 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
         config.put("only", isOnly);
         config.put("restart_identity", isRestarting);
         config.put("cascade", isCascading);
+    }
+
+    public static class PostgreSupportTruncateOptionOnlyValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
+        @Override
+        public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
+            List<PostgreTableBase> tablesList = settings.getObjectList();
+            if (!CommonUtils.isEmpty(tablesList)) {
+                PostgreTableBase tableBase = tablesList.get(0);
+                return tableBase.getDataSource().getServerType().supportsTruncateOnlyOneTable();
+            }
+            return true;
+        }
+    }
+
+    public static class PostgreSupportTruncateOptionIdentityValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
+        @Override
+        public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
+            List<PostgreTableBase> tablesList = settings.getObjectList();
+            if (!CommonUtils.isEmpty(tablesList)) {
+                PostgreTableBase tableBase = tablesList.get(0);
+                return tableBase.getDataSource().getServerType().supportsTruncateWithIdentityOptions();
+            }
+            return true;
+        }
+    }
+
+    public static class PostgreSupportTruncateOptionCascadeValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
+        @Override
+        public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
+            List<PostgreTableBase> tablesList = settings.getObjectList();
+            if (!CommonUtils.isEmpty(tablesList)) {
+                PostgreTableBase tableBase = tablesList.get(0);
+                return tableBase.getDataSource().getServerType().supportsCascadeTruncate();
+            }
+            return true;
+        }
     }
 }

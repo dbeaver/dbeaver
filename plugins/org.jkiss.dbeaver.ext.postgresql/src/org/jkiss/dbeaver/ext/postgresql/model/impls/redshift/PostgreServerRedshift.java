@@ -404,4 +404,19 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsExternalTypes() {
         return true;
     }
+
+    @Override
+    public boolean supportsTruncateOnlyOneTable() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsTruncateWithIdentityOptions() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsCascadeTruncate() {
+        return false;
+    }
 }

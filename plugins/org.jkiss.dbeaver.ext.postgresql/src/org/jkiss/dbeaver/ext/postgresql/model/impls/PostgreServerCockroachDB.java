@@ -251,4 +251,9 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     public boolean supportsAlterUserChangePassword() {
         return true;
     }
+
+    @Override
+    public boolean supportsTruncateWithIdentityOptions() {
+        return false;
+    }
 }

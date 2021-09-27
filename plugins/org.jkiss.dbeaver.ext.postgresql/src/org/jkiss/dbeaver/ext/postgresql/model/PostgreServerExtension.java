@@ -153,4 +153,10 @@ public interface PostgreServerExtension {
     boolean supportsAlterUserChangePassword();
 
     int getParameterBindType(DBSTypedObject type, Object value);
+
+    public boolean supportsTruncateOnlyOneTable();
+
+    public boolean supportsTruncateWithIdentityOptions();
+
+    public boolean supportsCascadeTruncate();
 }

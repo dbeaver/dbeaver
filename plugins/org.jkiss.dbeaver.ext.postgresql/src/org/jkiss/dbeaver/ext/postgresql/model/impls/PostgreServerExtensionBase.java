@@ -494,4 +494,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public int getParameterBindType(DBSTypedObject type, Object value) {
         return Types.OTHER;
     }
+
+    public boolean supportsTruncateOnlyOneTable() {
+        return true;
+    }
+
+    public boolean supportsTruncateWithIdentityOptions() {
+        return true;
+    }
+
+    public boolean supportsCascadeTruncate() {
+        return true;
+    }
 }
