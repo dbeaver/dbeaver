@@ -300,6 +300,12 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
         return super.getUnquotedString(string);
     }
 
+    @NotNull
+    @Override
+    protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
+        return '[' + str.replace("]", "]]") + ']';
+    }
+
     @Override
     public boolean isWordStart(int ch) {
         return super.isWordStart(ch) || ch == '#';
