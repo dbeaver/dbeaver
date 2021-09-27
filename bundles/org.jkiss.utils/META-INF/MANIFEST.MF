@@ -7,6 +7,7 @@ Bundle-Release-Date: 20210920
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.code,
  org.jkiss.utils,
+ org.jkiss.utils.csv,
  org.jkiss.utils.io,
  org.jkiss.utils.time,
  org.jkiss.utils.xml

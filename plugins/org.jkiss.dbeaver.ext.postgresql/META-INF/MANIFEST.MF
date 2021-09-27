@@ -11,7 +11,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.bundle.gis;visibility:=reexport,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport,
- net.sf.opencsv;visibility:=reexport,
  com.google.gson,
  com.sun.jna.platform,
  org.jkiss.dbeaver.model.sql

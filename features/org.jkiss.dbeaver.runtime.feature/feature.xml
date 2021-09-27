@@ -43,7 +43,6 @@
     <!-- 3rd party -->
     <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>

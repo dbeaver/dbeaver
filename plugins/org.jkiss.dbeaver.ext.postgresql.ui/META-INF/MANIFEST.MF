@@ -32,8 +32,7 @@ Require-Bundle: org.eclipse.osgi.services,
  org.jkiss.dbeaver.ui.editors.session,
  org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.tasks.ui,
- org.jkiss.bundle.gis;visibility:=reexport,
- net.sf.opencsv;visibility:=reexport
+ org.jkiss.bundle.gis;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor

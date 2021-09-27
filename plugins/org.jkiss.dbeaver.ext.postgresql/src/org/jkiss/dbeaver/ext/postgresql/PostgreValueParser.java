@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
@@ -31,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.csv.CSVReader;
+import org.jkiss.utils.csv.CSVWriter;
 
 import java.io.IOException;
 import java.io.StringReader;
