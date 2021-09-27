@@ -133,7 +133,17 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
                     request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
-                    if (!request.isSimpleMode() && CommonUtils.isEmpty(request.getWordPart()) && prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
+                    char curChar = ' ';
+                    try {
+                        request.getDocument().getChar(wordDetector.getCursorOffset() - 1);
+                    } catch (BadLocationException e) {
+                        log.debug(e);
+                    }
+                    if (!request.isSimpleMode() &&
+                        CommonUtils.isEmpty(request.getWordPart()) &&
+                        prevDelimiter.indexOf(curChar) != -1 &&
+                        prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN))
+                    {
                         wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                     }
