@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
@@ -31,6 +29,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.csv.CSVReaderBuilder;
+import org.jkiss.utils.csv.CSVReaderNullFieldIndicator;
+import org.jkiss.utils.csv.CSVWriter;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -203,17 +204,12 @@ public class PostgreValueParser {
             return new String[0];
         }
         try {
-            final String[] values = new CSVReader(new StringReader(string)).readNext();
-            for (int i = 0; i < values.length; i++) {
-                if (CommonUtils.isEmpty(values[i])) {
-                    // Empty values are NULLs.
-                    // It's a bad assumption since empty strings are allowed too.
-                    // Unfortunately, we can't differentiate between 'a,,c' and 'a,"",c'.
-                    // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6
-                    values[i] = null;
-                }
-            }
-            return values;
+            // Empty separators are NULLs, empty quotes are empty strings.
+            // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6
+            return new CSVReaderBuilder(new StringReader(string))
+                .withFieldAsNull(CSVReaderNullFieldIndicator.EMPTY_SEPARATORS)
+                .build()
+                .readNext();
         } catch (IOException e) {
             throw new DBCException("Error parsing PGObject", e);
         }
