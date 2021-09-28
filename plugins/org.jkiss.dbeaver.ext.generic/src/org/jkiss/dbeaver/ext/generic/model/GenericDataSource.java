@@ -333,7 +333,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     public GenericSchema getSchema(String name) {
-        return DBUtils.findObject(getSchemas(), name);
+        return DBUtils.findObject(
+            getSchemas(),
+            name,
+            getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
     }
 
     @NotNull
