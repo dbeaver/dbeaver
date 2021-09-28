@@ -574,6 +574,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private void makeProposalsFromQueryParts() {
+        if (request.getQueryType() == null && request.getWordDetector().getPrevKeyWord().equalsIgnoreCase(SQLConstants.KEYWORD_FROM)) {
+            // Seems to be table alias
+            return;
+        }
         String wordPart = request.getWordPart();
         // Find all aliases matching current word
         SQLScriptElement activeQuery = request.getActiveQuery();
