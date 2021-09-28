@@ -147,9 +147,18 @@
                 <module>test</module>
 
                 <!-- Products -->
-                <module>product/appstore</module>
                 <module>product/community</module>
                 <module>product/repositories</module>
+            </modules>
+        </profile>
+
+        <!-- desktop build: includes UI components and products -->
+        <profile>
+            <id>appstore</id>
+            <activation><activeByDefault>false</activeByDefault></activation>
+            <modules>
+                <!-- Products -->
+                <module>product/appstore</module>
             </modules>
         </profile>
 
