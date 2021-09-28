@@ -59,6 +59,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
+    private static final String PROP_HEADER_FONT_NAME = "headerFontName";
     private static final String PROP_HEADER_FONT = "headerfont";
 
     private static final String BINARY_FIXED = "[BINARY]";
@@ -112,6 +113,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_BORDER, "THIN");
         properties.put(DataExporterXLSX.PROP_HEADER, true);
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
+        properties.put(DataExporterXLSX.PROP_HEADER_FONT_NAME, "Arial");
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
         properties.put(DataExporterXLSX.PROP_FALSESTRING, "false");
@@ -204,6 +206,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         FontStyleProp fontStyle;
+        String fontName = CommonUtils.toString(properties.get(PROP_HEADER_FONT_NAME), "Arial");
 
         try {
 
@@ -221,27 +224,27 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         styleHeader.setBorderRight(border);
 
         XSSFFont fontBold = (XSSFFont) wb.createFont();
-
+        fontBold.setFontName(fontName);
         switch (fontStyle) {
 
-        case BOLD:
-            fontBold.setBold(true);
-            break;
+            case BOLD:
+                fontBold.setBold(true);
+                break;
 
-        case ITALIC:
-            fontBold.setItalic(true);
-            break;
+            case ITALIC:
+                fontBold.setItalic(true);
+                break;
 
-        case STRIKEOUT:
-            fontBold.setStrikeout(true);
-            break;
+            case STRIKEOUT:
+                fontBold.setStrikeout(true);
+                break;
 
-        case UNDERLINE:
-            fontBold.setUnderline((byte) 3);
-            break;
+            case UNDERLINE:
+                fontBold.setUnderline((byte) 3);
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
 
         styleHeader.setFont(fontBold);
@@ -261,8 +264,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (dateFormat == null || dateFormat.length() == 0) {
             styleDate.setDataFormat((short) 14);
         } else {
-           styleDate.setDataFormat(
-                wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
+            styleDate.setDataFormat(
+                    wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
         }
 
         this.rowCount = 0;
@@ -409,7 +412,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         try {
             StringBuilder sb = new StringBuilder();
             char buffer[] = new char[2000];
-            for (;;) {
+            for (; ; ) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
                     break;
@@ -449,7 +452,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row)
-        throws DBException, IOException {
+            throws DBException, IOException {
 
         Worksheet wsh = getWsh(resultSet, row);
 
@@ -520,14 +523,14 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private CellType getCellType(DBDAttributeBinding column) {
         switch (column.getDataKind()) {
-        case NUMERIC:
-            return CellType.NUMERIC;
-        case BOOLEAN:
-            return CellType.BOOLEAN;
-        case STRING:
-            return CellType.STRING;
-        default:
-            return CellType.BLANK;
+            case NUMERIC:
+                return CellType.NUMERIC;
+            case BOOLEAN:
+                return CellType.BOOLEAN;
+            case STRING:
+                return CellType.STRING;
+            default:
+                return CellType.BLANK;
         }
     }
 
