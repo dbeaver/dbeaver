@@ -39,7 +39,7 @@ import java.util.List;
 public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable, DBPProjectListener {
     private final DBNModel model;
     private DBNProject[] projects = new DBNProject[0];
-    private List<DBNNode> extraNodes = new ArrayList<>();
+    private final List<DBNNode> extraNodes = new ArrayList<>();
 
     public DBNRoot(DBNModel model) {
         super();
@@ -55,7 +55,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         if (model.isGlobal()) {
             model.getPlatform().getWorkspace().addProjectListener(this);
         }
-        DBNRegistry.getInstance().extendNode(this);
+        DBNRegistry.getInstance().extendNode(this, false);
     }
 
     @Override
@@ -187,7 +187,9 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             project.getWorkspace().getResourceHandler(project.getEclipseProject()));
         projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
         Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeName));
-        model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
+        if (reflect) {
+            model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
+        }
 
         return projectNode;
     }
@@ -205,7 +207,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Override
-    public void addExtraNode(@NotNull DBNNode node) {
+    public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
         extraNodes.add(node);
         extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
         model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));

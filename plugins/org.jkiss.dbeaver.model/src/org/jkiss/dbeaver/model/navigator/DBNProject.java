@@ -51,7 +51,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
         super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
-        DBNRegistry.getInstance().extendNode(this);
+        DBNRegistry.getInstance().extendNode(this, false);
     }
 
     public DBPProject getProject() {
@@ -245,10 +245,12 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    public void addExtraNode(@NotNull DBNNode node) {
+    public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
         extraNodes.add(node);
         extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
-        getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
+        if (reflect) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
+        }
     }
 
     @Override

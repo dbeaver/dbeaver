@@ -56,7 +56,7 @@ public class DBNRegistry {
         }
     }
 
-    public void extendNode(DBNNodeExtendable parentNode) {
+    public void extendNode(DBNNodeExtendable parentNode, boolean reflect) {
         if (modelExtenders.isEmpty()) {
             return;
         }
@@ -76,7 +76,7 @@ public class DBNRegistry {
         }
         if (!CommonUtils.isEmpty(extraNodes)) {
             for (DBNNode eNode : extraNodes) {
-                parentNode.addExtraNode(eNode);
+                parentNode.addExtraNode(eNode, reflect);
             }
         }
     }

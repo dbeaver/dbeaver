@@ -146,8 +146,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
-
+    protected boolean reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+        return false;
     }
 
     @Override

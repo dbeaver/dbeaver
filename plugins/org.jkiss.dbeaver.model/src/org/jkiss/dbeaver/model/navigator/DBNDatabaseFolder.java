@@ -57,8 +57,9 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     }
 
     @Override
-    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+    protected boolean reloadObject(DBRProgressMonitor monitor, DBSObject object) {
         // do nothing
+        return false;
     }
 
     @Override
