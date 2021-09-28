@@ -53,6 +53,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 //    private Button windowsAuthenticationButton;
 //    private Button adpAuthenticationButton;
     private Button showAllSchemas;
+    private Button encryptPassword;
 
     private boolean activated;
 
@@ -129,7 +130,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         }
 
         {
-            if (SQLServerUtils.isDriverSqlServer(getSite().getDriver())) {
+            if (isSqlServer) {
                 boolean isJtds = SQLServerUtils.isDriverJtds(getSite().getDriver());
 
                 List<SQLServerAuthentication> supportedSchemas = new ArrayList<>();
@@ -203,6 +204,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
             createPasswordControls(secureGroup);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
+
+            if (!isSqlServer) {
+                encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 2);
+            }
         }
 
         createDriverPanel(settingsGroup);
@@ -292,6 +297,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 */
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
+        if (!isSqlServer()) {
+            encryptPassword.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD)));
+        }
+
         activated = true;
     }
 
@@ -357,6 +366,11 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));
+        }
+
+        if (encryptPassword != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD,
+                String.valueOf(encryptPassword.getSelection()));
         }
 
         super.saveSettings(dataSource);
