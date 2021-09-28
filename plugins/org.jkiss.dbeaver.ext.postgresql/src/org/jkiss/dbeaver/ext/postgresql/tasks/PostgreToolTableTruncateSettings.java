@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<PostgreTableBase> {
+
     private boolean isRunning;
     private boolean isOnly;
     private boolean isRestarting;
@@ -87,13 +89,17 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
         config.put("cascade", isCascading);
     }
 
+    private static boolean isTruncateModeSupported(PostgreTableBase tableBase, int mode) {
+        return CommonUtils.isBitSet(tableBase.getDataSource().getServerType().getTruncateToolModes(), mode);
+    }
+
     public static class PostgreSupportTruncateOptionOnlyValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
         public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
             List<PostgreTableBase> tablesList = settings.getObjectList();
             if (!CommonUtils.isEmpty(tablesList)) {
                 PostgreTableBase tableBase = tablesList.get(0);
-                return tableBase.getDataSource().getServerType().supportsTruncateOnlyOneTable();
+                return isTruncateModeSupported(tableBase, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE);
             }
             return true;
         }
@@ -105,7 +111,7 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
             List<PostgreTableBase> tablesList = settings.getObjectList();
             if (!CommonUtils.isEmpty(tablesList)) {
                 PostgreTableBase tableBase = tablesList.get(0);
-                return tableBase.getDataSource().getServerType().supportsTruncateWithIdentityOptions();
+                return isTruncateModeSupported(tableBase, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES);
             }
             return true;
         }
@@ -117,7 +123,7 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
             List<PostgreTableBase> tablesList = settings.getObjectList();
             if (!CommonUtils.isEmpty(tablesList)) {
                 PostgreTableBase tableBase = tablesList.get(0);
-                return tableBase.getDataSource().getServerType().supportsCascadeTruncate();
+                return isTruncateModeSupported(tableBase, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_CASCADE);
             }
             return true;
         }

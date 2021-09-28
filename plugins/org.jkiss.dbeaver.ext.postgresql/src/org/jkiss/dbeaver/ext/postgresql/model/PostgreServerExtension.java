@@ -154,9 +154,5 @@ public interface PostgreServerExtension {
 
     int getParameterBindType(DBSTypedObject type, Object value);
 
-    public boolean supportsTruncateOnlyOneTable();
-
-    public boolean supportsTruncateWithIdentityOptions();
-
-    public boolean supportsCascadeTruncate();
+    int getTruncateToolModes();
 }

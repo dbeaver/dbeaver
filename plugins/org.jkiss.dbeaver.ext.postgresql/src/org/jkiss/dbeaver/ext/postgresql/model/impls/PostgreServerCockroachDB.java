@@ -253,7 +253,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsTruncateWithIdentityOptions() {
-        return false;
+    public int getTruncateToolModes() {
+        return TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE | TRUNCATE_TOOL_MODE_SUPPORT_CASCADE;
     }
 }

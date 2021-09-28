@@ -40,6 +40,11 @@ import java.util.Map;
  * PostgreServerExtensionBase
  */
 public abstract class PostgreServerExtensionBase implements PostgreServerExtension {
+
+    public static final int TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE = 1;
+    public static final int TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES = 1 << 1;
+    public static final int TRUNCATE_TOOL_MODE_SUPPORT_CASCADE = 1 << 2;
+
     private static final Log log = Log.getLog(PostgreServerExtensionBase.class);
 
     protected final PostgreDataSource dataSource;
@@ -495,15 +500,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return Types.OTHER;
     }
 
-    public boolean supportsTruncateOnlyOneTable() {
-        return true;
-    }
-
-    public boolean supportsTruncateWithIdentityOptions() {
-        return true;
-    }
-
-    public boolean supportsCascadeTruncate() {
-        return true;
+    @Override
+    public int getTruncateToolModes() {
+        return TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE | TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES | TRUNCATE_TOOL_MODE_SUPPORT_CASCADE;
     }
 }
