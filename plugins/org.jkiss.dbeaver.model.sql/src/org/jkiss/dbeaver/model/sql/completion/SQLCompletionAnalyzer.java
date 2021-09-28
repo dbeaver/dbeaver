@@ -142,7 +142,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     if (!request.isSimpleMode() &&
                         CommonUtils.isEmpty(request.getWordPart()) &&
                         prevDelimiter.indexOf(curChar) != -1 &&
-                        prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN))
+                        prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN) &&
+                        !CommonUtils.isEmpty(wordDetector.getNextWord()))
                     {
                         wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
