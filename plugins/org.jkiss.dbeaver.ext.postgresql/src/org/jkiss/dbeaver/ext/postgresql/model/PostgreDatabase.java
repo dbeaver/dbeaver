@@ -675,6 +675,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 supportTypColumn = resultSet != null;
             } catch (SQLException e) {
                 log.debug("Error reading system information from pg_attribute", e);
+                supportTypColumn = false;
             }
         }
         return supportTypColumn;
