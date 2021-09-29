@@ -153,4 +153,6 @@ public interface PostgreServerExtension {
     boolean supportsAlterUserChangePassword();
 
     int getParameterBindType(DBSTypedObject type, Object value);
+
+    int getTruncateToolModes();
 }

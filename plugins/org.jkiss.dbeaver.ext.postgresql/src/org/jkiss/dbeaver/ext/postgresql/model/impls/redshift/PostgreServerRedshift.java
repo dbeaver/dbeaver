@@ -404,4 +404,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsExternalTypes() {
         return true;
     }
+
+    @Override
+    public int getTruncateToolModes() {
+        return 0;
+    }
 }
