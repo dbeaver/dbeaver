@@ -350,11 +350,15 @@ public class SQLEditor extends SQLEditorBase implements
         if (input != null) {
             DBPDataSourceContainer savedContainer = EditorUtils.getInputDataSource(input);
             if (savedContainer != container) {
-                EditorUtils.setInputDataSource(input, new SQLNavigatorContext(container, getExecutionContext()));
-            }
-            DBCExecutionContext iec = EditorUtils.getInputExecutionContext(input);
-            if (iec != null) {
-                this.executionContextProvider = () -> iec;
+                // Container was changed. Reset context provider and update input settings
+                DBCExecutionContext newExecutionContext = DBUtils.getDefaultContext(container, false);
+                EditorUtils.setInputDataSource(input, new SQLNavigatorContext(container, newExecutionContext));
+                this.executionContextProvider = null;
+            } else {
+                DBCExecutionContext iec = EditorUtils.getInputExecutionContext(input);
+                if (iec != null) {
+                    this.executionContextProvider = () -> iec;
+                }
             }
 
             IFile file = EditorUtils.getFileFromInput(input);
