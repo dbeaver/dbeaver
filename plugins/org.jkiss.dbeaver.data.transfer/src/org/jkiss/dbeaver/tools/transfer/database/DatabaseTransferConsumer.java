@@ -560,19 +560,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 switch (containerMapping.getMappingType()) {
                     case create:
-                        createTargetTable(session, containerMapping);
-                        return true;
                     case existing:
-                        boolean hasNewObjects = false;
-                        if (!(containerMapping.getTarget() instanceof DBSDocumentContainer)) {
-                            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                if (attr.getMappingType() == DatabaseMappingType.create) {
-                                    createTargetAttribute(session, attr);
-                                    hasNewObjects = true;
-                                }
-                            }
-                        }
-                        return hasNewObjects;
+                        return createTargetTable(session, containerMapping);
                     default:
                         return false;
                 }
@@ -589,7 +578,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException {
+    private boolean createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException {
         DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
         if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
             throw new DBCException("New table creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
@@ -600,27 +589,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
             DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            return true;
         } else {
             DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
             try {
                 DatabaseTransferUtils.executeDDL(session, actions);
             } catch (DBCException e) {
-                throw new DBCException("Can't create target table:\n" + Arrays.toString(actions), e);
+                throw new DBCException("Can't create or update target table:\n" + Arrays.toString(actions), e);
             }
-        }
-    }
-
-    private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
-        DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
-        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
-            throw new DBCException("New attribute creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
-        }
-
-        session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
-        try {
-            DatabaseTransferUtils.executeDDL(session, new DBEPersistAction[] { DatabaseTransferUtils.generateTargetAttributeDDL(session.getDataSource(), attribute) } );
-        } catch (DBCException e) {
-            throw new DBCException("Can't create target column", e);
+            return actions.length > 0;
         }
     }
 

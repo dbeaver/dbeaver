@@ -85,6 +85,11 @@ public class HANAMetaModel extends GenericMetaModel
     }
 
     @Override
+    public HANASchema createSchemaImpl(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) {
+        return new HANASchema(dataSource, catalog, schemaName);
+    }
+
+    @Override
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
         String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
         if (tableType != null && tableType.equals("SYNONYM"))
@@ -98,7 +103,7 @@ public class HANAMetaModel extends GenericMetaModel
         if (tableType != null && isView(tableType)) {
             return new HANAView(container, tableName, tableType, dbResult);
         }
-        return new GenericTable(container, tableName, tableType, dbResult);
+        return new HANATable(container, tableName, tableType, dbResult);
     }
     
     @Override
