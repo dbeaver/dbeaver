@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -26,11 +28,14 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
 public class PostgreToolTableTruncate extends PostgreToolWithStatus<PostgreTableBase, PostgreToolTableTruncateSettings> {
+
     private static final Log log = Log.getLog(PostgreToolTableTruncate.class);
+
     @NotNull
     @Override
     public PostgreToolTableTruncateSettings createToolSettings() {
@@ -38,21 +43,26 @@ public class PostgreToolTableTruncate extends PostgreToolWithStatus<PostgreTable
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, PostgreToolTableTruncateSettings settings, List<DBEPersistAction> queries, PostgreTableBase object) throws DBCException {
-        if(settings.isRunning()){
+    public void generateObjectQueries(DBCSession session, PostgreToolTableTruncateSettings settings, List<DBEPersistAction> queries, PostgreTableBase table) throws DBCException {
+        if (settings.isRunning()) {
             commitChanges(session);
         }
+        PostgreServerExtension serverType = table.getDataSource().getServerType();
         String sql = "TRUNCATE TABLE";
-        if (settings.isOnly()) sql += " ONLY";
-        sql += " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-        if (settings.isRestarting())
-            sql += " RESTART IDENTITY";
-        else
-            sql += " CONTINUE IDENTITY";
-        if (settings.isCascading())
-            sql += " CASCADE";
-        else
-            sql += " RESTRICT";
+        if (settings.isOnly() && CommonUtils.isBitSet(serverType.getTruncateToolModes(), PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE)) sql += " ONLY";
+        sql += " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        if (CommonUtils.isBitSet(serverType.getTruncateToolModes(), PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES)) {
+            if (settings.isRestarting())
+                sql += " RESTART IDENTITY";
+            else
+                sql += " CONTINUE IDENTITY";
+        }
+        if (CommonUtils.isBitSet(serverType.getTruncateToolModes(), PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_CASCADE)) {
+            if (settings.isCascading())
+                sql += " CASCADE";
+            else
+                sql += " RESTRICT";
+        }
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
