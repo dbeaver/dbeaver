@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -30,7 +31,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,6 +42,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SQLServerGenericDataSource extends GenericDataSource {
+
+    private static final Log log = Log.getLog(SQLServerGenericDataSource.class);
+
+    private static final String PROP_ENCRYPT_PASS = "ENCRYPT_PASSWORD";
 
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -63,6 +70,20 @@ public class SQLServerGenericDataSource extends GenericDataSource {
             connectionsProps.put(
                 SQLServerUtils.isDriverJtds(driver) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                 CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
+        }
+        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD))) {
+            try {
+                DBPPropertyDescriptor[] properties = driver.getDataSourceProvider().getConnectionProperties(monitor, driver, connectionInfo);
+                for (DBPPropertyDescriptor descriptor : properties) {
+                    if (descriptor.getId().equals(PROP_ENCRYPT_PASS) && descriptor instanceof PropertyDescriptor) {
+                        connectionInfo.setProperty(PROP_ENCRYPT_PASS, "true"); // To apply changes
+                        context.getDataSource().getContainer().getConnectionConfiguration().setProperty(PROP_ENCRYPT_PASS, "true"); // To see changes in the Driver Properties tab
+                        break;
+                    }
+                }
+            } catch (DBException e) {
+                log.error("Can't read driver properties", e);
+            }
         }
         return connectionsProps;
     }
