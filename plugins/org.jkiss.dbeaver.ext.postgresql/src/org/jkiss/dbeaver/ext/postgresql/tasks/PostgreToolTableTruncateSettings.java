@@ -89,43 +89,33 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
         config.put("cascade", isCascading);
     }
 
-    private static boolean isTruncateModeSupported(PostgreTableBase tableBase, int mode) {
-        return CommonUtils.isBitSet(tableBase.getDataSource().getServerType().getTruncateToolModes(), mode);
+    private static boolean isTruncateModeSupported(PostgreToolTableTruncateSettings settings, int mode) {
+        List<PostgreTableBase> tablesList = settings.getObjectList();
+        if (!CommonUtils.isEmpty(tablesList)) {
+            PostgreTableBase tableBase = tablesList.get(0);
+            return CommonUtils.isBitSet(tableBase.getDataSource().getServerType().getTruncateToolModes(), mode);
+        }
+        return false;
     }
 
     public static class PostgreSupportTruncateOptionOnlyValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
         public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
-            List<PostgreTableBase> tablesList = settings.getObjectList();
-            if (!CommonUtils.isEmpty(tablesList)) {
-                PostgreTableBase tableBase = tablesList.get(0);
-                return isTruncateModeSupported(tableBase, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE);
-            }
-            return true;
+            return isTruncateModeSupported(settings, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE);
         }
     }
 
     public static class PostgreSupportTruncateOptionIdentityValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
         public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
-            List<PostgreTableBase> tablesList = settings.getObjectList();
-            if (!CommonUtils.isEmpty(tablesList)) {
-                PostgreTableBase tableBase = tablesList.get(0);
-                return isTruncateModeSupported(tableBase, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES);
-            }
-            return true;
+            return isTruncateModeSupported(settings, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES);
         }
     }
 
     public static class PostgreSupportTruncateOptionCascadeValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
         public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
-            List<PostgreTableBase> tablesList = settings.getObjectList();
-            if (!CommonUtils.isEmpty(tablesList)) {
-                PostgreTableBase tableBase = tablesList.get(0);
-                return isTruncateModeSupported(tableBase, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_CASCADE);
-            }
-            return true;
+            return isTruncateModeSupported(settings, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_CASCADE);
         }
     }
 }
