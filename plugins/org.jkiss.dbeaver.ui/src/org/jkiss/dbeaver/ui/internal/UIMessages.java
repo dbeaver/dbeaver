@@ -94,6 +94,9 @@ public class UIMessages extends NLS {
     public static String control_alignment_left;
     public static String control_alignment_center;
     public static String control_alignment_right;
+    public static String control_font_normal;
+    public static String control_font_italic;
+    public static String control_font_bold;
 
     static {
         // initialize resource bundle

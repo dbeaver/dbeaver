@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
@@ -262,7 +263,9 @@ public abstract class LightGrid extends Canvas {
 
     final GC sizingGC;
     FontMetrics fontMetrics;
-    Font normalFont, boldFont;
+    Font normalFont;
+    Font boldFont;
+    Font italicFont;
 
     @NotNull
     private Color lineColor;
@@ -378,6 +381,7 @@ public abstract class LightGrid extends Canvas {
         fontMetrics = sizingGC.getFontMetrics();
         normalFont = getFont();
         boldFont = UIUtils.makeBoldFont(normalFont);
+        italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
 
         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
@@ -2981,6 +2985,7 @@ public abstract class LightGrid extends Canvas {
         event.type = SWT.None;
 
         UIUtils.dispose(boldFont);
+        UIUtils.dispose(italicFont);
         UIUtils.dispose(sizingGC);
     }
 
@@ -4470,11 +4475,21 @@ public abstract class LightGrid extends Canvas {
         fontMetrics = sizingGC.getFontMetrics();
         normalFont = font;
         UIUtils.dispose(boldFont);
+        UIUtils.dispose(italicFont);
         boldFont = UIUtils.makeBoldFont(normalFont);
+        italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
     }
 
-    public Font getBoldFont() {
-        return boldFont;
+    @NotNull
+    public Font getFont(@NotNull UIElementFontStyle style) {
+        switch (style) {
+            case ITALIC:
+                return italicFont;
+            case BOLD:
+                return boldFont;
+            default:
+                return normalFont;
+        }
     }
 
     public String getCellText(Object colElement, Object rowElement)

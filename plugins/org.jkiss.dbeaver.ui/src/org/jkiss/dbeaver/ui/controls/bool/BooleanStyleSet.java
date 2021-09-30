@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIElementAlignment;
+import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.utils.CommonUtils;
@@ -47,6 +48,7 @@ public class BooleanStyleSet {
     private static final String PROP_MODE = "mode";
     private static final String PROP_TEXT = "text";
     private static final String PROP_ALIGN = "align";
+    private static final String PROP_FONT = "font";
     private static final String PROP_COLOR = "color";
     private static final String COLOR_DEFAULT = "default";
 
@@ -150,8 +152,9 @@ public class BooleanStyleSet {
         if (mode == BooleanMode.TEXT) {
             final String text = store.getString(namespace + PROP_TEXT);
             final UIElementAlignment alignment = CommonUtils.valueOf(UIElementAlignment.class, store.getString(namespace + PROP_ALIGN), UIElementAlignment.CENTER);
+            final UIElementFontStyle font = CommonUtils.valueOf(UIElementFontStyle.class, store.getString(namespace + PROP_FONT), UIElementFontStyle.NORMAL);
             final RGB color = convertStringToColor(store.getString(namespace + PROP_COLOR), defaultColor);
-            return BooleanStyle.usingText(text.trim(), alignment, color);
+            return BooleanStyle.usingText(text.trim(), alignment, color, font);
         } else {
             final UIElementAlignment alignment = CommonUtils.valueOf(UIElementAlignment.class, store.getString(namespace + PROP_ALIGN), UIElementAlignment.CENTER);
             return BooleanStyle.usingIcon(state.getIcon(), alignment);
@@ -164,14 +167,14 @@ public class BooleanStyleSet {
             case PROP_LEGACY_STYLE_ICON:
                 return BooleanStyle.usingIcon(state.choose(UIIcon.CHECK_ON, UIIcon.CHECK_OFF, UIIcon.CHECK_QUEST), UIElementAlignment.CENTER);
             case PROP_LEGACY_STYLE_CHECKBOX:
-                return BooleanStyle.usingText(state.choose("☑", "☐", "☒"), UIElementAlignment.CENTER, color);
+                return BooleanStyle.usingText(state.choose("☑", "☐", "☒"), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
             case PROP_LEGACY_STYLE_TRUE_FALSE:
-                return BooleanStyle.usingText(state.choose("true", "false", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color);
+                return BooleanStyle.usingText(state.choose("true", "false", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
             case PROP_LEGACY_STYLE_YES_NO:
-                return BooleanStyle.usingText(state.choose("yes", "no", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color);
+                return BooleanStyle.usingText(state.choose("yes", "no", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
             case PROP_LEGACY_STYLE_TEXTBOX:
             default:
-                return BooleanStyle.usingText(state.choose("[v]", "[ ]", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color);
+                return BooleanStyle.usingText(state.choose("[v]", "[ ]", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
         }
     }
 
@@ -181,6 +184,7 @@ public class BooleanStyleSet {
         if (style.getMode() == BooleanMode.TEXT) {
             store.setValue(namespace + PROP_TEXT, style.getText().trim());
             store.setValue(namespace + PROP_ALIGN, style.getAlignment().name());
+            store.setValue(namespace + PROP_FONT, style.getFontStyle().name());
             store.setValue(namespace + PROP_COLOR, convertColorToString(style.getColor(), defaultColor));
         } else {
             store.setValue(namespace + PROP_ALIGN, style.getAlignment().name());
