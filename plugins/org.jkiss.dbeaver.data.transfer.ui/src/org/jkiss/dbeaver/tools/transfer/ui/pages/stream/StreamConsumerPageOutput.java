@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.charset.Charset;
 import java.util.Locale;
 
 public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
@@ -128,10 +129,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 encodingCombo = UIUtils.createEncodingCombo(generalSettings, settings.getOutputEncoding());
                 //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingCombo.addModifyListener(e -> {
-                    int index = encodingCombo.getSelectionIndex();
-                    if (index >= 0) {
-                        settings.setOutputEncoding(encodingCombo.getItem(index));
-                    }
+                    settings.setOutputEncoding(encodingCombo.getText());
                     updatePageCompletion();
                 });
                 timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
@@ -328,17 +326,25 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             return true;
         }
 
-        boolean valid = true;
         if (CommonUtils.isEmpty(settings.getOutputFolder())) {
-            valid = false;
-        }
-        if (CommonUtils.isEmpty(settings.getOutputFilePattern())) {
-            valid = false;
-        }
-        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_output_directory);
             return false;
         }
-        return valid;
+        if (CommonUtils.isEmpty(settings.getOutputFilePattern())) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_output_filename);
+            return false;
+        }
+        try {
+            Charset.forName(settings.getOutputEncoding());
+        } catch (Exception e) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_invalid_charset);
+            return false;
+        }
+        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_finish_command);
+            return false;
+        }
+        return true;
     }
 
 }
