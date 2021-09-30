@@ -2,7 +2,11 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 public enum QuoteStrategy {
 
-    DISABLED("disabled"), ALL("all"), STRINGS("strings"), ALL_BUT_NUMBERS("all but numbers");
+    DISABLED("disabled"),
+    ALL("all"),
+    STRINGS("strings"),
+    ALL_BUT_NUMBERS("all but numbers"),
+    ALL_BUT_NULLS("all but nulls");
 
     private final String value;
 

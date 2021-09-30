@@ -153,11 +153,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     {
         for (int i = 0; i < row.length && i < columns.length; i++) {
             DBDAttributeBinding column = columns[i];
-            if (DBUtils.isNullValue(row[i])) {
-                if (!CommonUtils.isEmpty(nullString)) {
-                    getWriter().write(nullString);
-                }
-            } else if (row[i] instanceof DBDContent) {
+            if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
                 DBDContent content = (DBDContent)row[i];
@@ -193,6 +189,16 @@ public class DataExporterCSV extends StreamExporterAbstract {
                     if (!(row[i] instanceof Number)) {
                         quote = true;
                     }
+                } else if (quoteStrategy == QuoteStrategy.ALL_BUT_NULLS) {
+                    if (!DBUtils.isNullValue(row[i])) {
+                        quote = true;
+                    }
+                }
+                if (DBUtils.isNullValue(row[i])) {
+                    if (CommonUtils.isEmpty(nullString)) {
+                        return;
+                    }
+                    stringValue = nullString;
                 }
                 writeCellValue(stringValue, quote);
             }
