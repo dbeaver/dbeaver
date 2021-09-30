@@ -47,6 +47,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class ObjectBrowserDialog extends Dialog {
+    /** Expands first level of each node */
+    private static final int TREE_EXPANSION_DEPTH = 2;
 
     private String title;
     private DBNNode rootNode;
@@ -214,7 +216,7 @@ public class ObjectBrowserDialog extends Dialog {
                     try {
                         treeViewer.refresh();
                         if (showConnected) {
-                            treeViewer.expandAll();
+                            treeViewer.expandToLevel(TREE_EXPANSION_DEPTH, false);
                         }
                     } finally {
                         treeViewer.getControl().setRedraw(true);
