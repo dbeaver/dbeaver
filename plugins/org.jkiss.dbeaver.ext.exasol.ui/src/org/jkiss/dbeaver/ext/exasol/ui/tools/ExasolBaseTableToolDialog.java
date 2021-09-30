@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -52,9 +53,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public abstract class ExasolBaseTableToolDialog
-		extends GenerateMultiSQLDialog<ExasolTableBase> {
-	
+public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<ExasolTableBase> {
+    private static final Log log = Log.getLog(ExasolBaseTableToolDialog.class);
+
     private static final String VARIABLE_DATE = "date";
     private static final String VARIABLE_TABLE = "table";
     private static final String VARIABLE_SCHEMA = "schema";
@@ -212,6 +213,7 @@ public abstract class ExasolBaseTableToolDialog
                                 }
                             }
                         } catch (Exception e) {
+                            log.warn("Exception caught when executing SQL", e);
                             objectProcessingError = e;
                         } finally {
                             UIUtils.asyncExec(() -> scriptListener.endObjectProcessing(object, objectProcessingError));
