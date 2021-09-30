@@ -141,6 +141,7 @@ public class GenericMetaModel {
         if (dataSource.isOmitSchema()) {
             return null;
         }
+
         try {
             final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
@@ -183,7 +184,36 @@ public class GenericMetaModel {
                 }
             }
             if (dbResult == null) {
-                dbResult = session.getMetaData().getSchemas();
+
+                String oldCatalog = null;
+                if (catalog != null) {
+                    // Try to set catalog explicitly. May be needed for old drivers (Netezza)
+                    try {
+                        oldCatalog = session.getCatalog();
+                    } catch (Throwable ignored) {
+                    }
+                    if (oldCatalog != null && !CommonUtils.equalObjects(oldCatalog, catalog.getName())) {
+                        try {
+                            session.setCatalog(catalog.getName());
+                        } catch (Throwable e) {
+                            oldCatalog = null;
+                        }
+                    } else {
+                        oldCatalog = null;
+                    }
+                }
+
+                try {
+                    dbResult = session.getMetaData().getSchemas();
+                } finally {
+                    if (oldCatalog != null) {
+                        try {
+                            session.setCatalog(oldCatalog);
+                        } catch (Throwable e) {
+                            log.debug("Error while setting active catalog name back to '" + oldCatalog + "'", e);
+                        }
+                    }
+                }
             }
 
             try {
