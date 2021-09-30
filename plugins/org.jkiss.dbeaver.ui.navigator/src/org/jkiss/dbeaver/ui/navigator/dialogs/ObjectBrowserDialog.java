@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.*;
@@ -201,24 +202,26 @@ public class ObjectBrowserDialog extends Dialog {
         });
         treeViewer.getTree().setFocus();
 
-        final Button showConnectedCheck = new Button(group, SWT.CHECK);
-        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
-        showConnectedCheck.setSelection(showConnected);
-        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showConnected = showConnectedCheck.getSelection();
-                treeViewer.getControl().setRedraw(false);
-                try {
-                    treeViewer.refresh();
-                    if (showConnected) {
-                        treeViewer.expandAll();
+        if (rootNode instanceof DBNContainer && ((DBNContainer) rootNode).getChildrenClass() == DBPDataSourceContainer.class) {
+            final Button showConnectedCheck = new Button(group, SWT.CHECK);
+            showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+            showConnectedCheck.setSelection(showConnected);
+            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showConnected = showConnectedCheck.getSelection();
+                    treeViewer.getControl().setRedraw(false);
+                    try {
+                        treeViewer.refresh();
+                        if (showConnected) {
+                            treeViewer.expandAll();
+                        }
+                    } finally {
+                        treeViewer.getControl().setRedraw(true);
                     }
-                } finally {
-                    treeViewer.getControl().setRedraw(true);
                 }
-            }
-        });
+            });
+        }
 
         return group;
     }
