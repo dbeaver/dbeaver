@@ -797,6 +797,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (selection.isEmpty()) {
             return;
         }
+        if (selection.getFirstElement() instanceof IMenuListener) {
+            ((IMenuListener) selection.getFirstElement()).menuAboutToShow(menu);
+        }
         menu.add(new ChangeZOrderAction(this, selection, true));
         menu.add(new ChangeZOrderAction(this, selection, false));
         menu.add(new SetPartColorAction(this, selection));
