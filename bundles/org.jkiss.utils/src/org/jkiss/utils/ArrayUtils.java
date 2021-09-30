@@ -21,10 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Common utils
@@ -258,5 +255,15 @@ public class ArrayUtils {
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(Class<T> type, Collection<? extends T> list) {
         return list.toArray((T[]) Array.newInstance(type, list.size()));
+    }
+
+    public static String[] getFilteredStringArray(String[] array) {
+        List<String> filteredList = new ArrayList<>();
+        for (String token : array) {
+            if (CommonUtils.isNotEmpty(token)) {
+                filteredList.add(token);
+            }
+        }
+        return filteredList.toArray(new String[0]);
     }
 }
