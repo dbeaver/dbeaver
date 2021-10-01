@@ -418,13 +418,17 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             return str;
         }
 
+        return quoteIdentifier(str, quoteStrings);
+    }
+
+    @NotNull
+    protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
         // Escape quote chars
-        for (int i = 0; i < quoteStrings.length; i++) {
-            String q1 = quoteStrings[i][0], q2 = quoteStrings[i][1];
-            if (q1.equals(q2) && (q1.equals("\"") || q1.equals("'"))) {
-                if (str.contains(q1)) {
-                    str = str.replace(q1, q1 + q1);
-                }
+        for (String[] pair : quoteStrings) {
+            final String q1 = pair[0];
+            final String q2 = pair[1];
+            if (q1.equals(q2) && (q1.equals("\"") || q1.equals("'")) && str.contains(q1)) {
+                str = str.replace(q1, q1 + q1);
             }
         }
         // Escape with first (default) quote string
