@@ -72,7 +72,7 @@ Binaries are in `product/community/target/products`
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 17k of stars on GitHub and continue to grow!  
+Hooray, we have reached 20k of stars on GitHub and continue to grow!  
 That's really cool, we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
