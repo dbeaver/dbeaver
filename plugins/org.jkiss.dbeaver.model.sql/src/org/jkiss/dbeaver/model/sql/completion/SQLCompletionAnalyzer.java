@@ -709,7 +709,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
-        String[] tokens = request.getWordDetector().splitWordPart();
+        String[] tokens = Arrays.stream(request.getWordDetector().splitWordPart()).filter(CommonUtils::isNotEmpty).toArray(String[]::new);
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
