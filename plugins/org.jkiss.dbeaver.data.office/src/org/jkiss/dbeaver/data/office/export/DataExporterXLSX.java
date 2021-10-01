@@ -60,6 +60,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
     private static final String PROP_HEADER_FONT = "headerfont";
+    private static final String PROP_HEADER_FONT_NAME = "headerfontname";
 
     private static final String BINARY_FIXED = "[BINARY]";
 
@@ -95,6 +96,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private String dateFormat = "";
+    private String titleFont = "Arial"; 
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -120,6 +122,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
+        properties.put(DataExporterXLSX.PROP_HEADER_FONT_NAME, "Arial");
         return properties;
     }
 
@@ -215,12 +218,24 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         }
 
+        try {
+        	
+        	titleFont = CommonUtils.toString(properties.get(PROP_HEADER_FONT_NAME), "Arial");
+        	
+        } catch (Exception e) {
+        	
+        	titleFont = "Calibri";
+        	
+        }
+        
         styleHeader.setBorderTop(border);
         styleHeader.setBorderBottom(border);
         styleHeader.setBorderLeft(border);
         styleHeader.setBorderRight(border);
 
         XSSFFont fontBold = (XSSFFont) wb.createFont();
+        
+        fontBold.setFontName(titleFont);
 
         switch (fontStyle) {
 
