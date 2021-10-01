@@ -195,12 +195,12 @@ public class DataExporterCSV extends StreamExporterAbstract {
                     }
                 }
                 if (DBUtils.isNullValue(row[i])) {
-                    if (CommonUtils.isEmpty(nullString)) {
-                        return;
+                    if (CommonUtils.isNotEmpty(nullString)) {
+                        writeCellValue(nullString, quote);
                     }
-                    stringValue = nullString;
+                } else {
+                    writeCellValue(stringValue, quote);
                 }
-                writeCellValue(stringValue, quote);
             }
             if (i < row.length - 1) {
                 writeDelimiter();
