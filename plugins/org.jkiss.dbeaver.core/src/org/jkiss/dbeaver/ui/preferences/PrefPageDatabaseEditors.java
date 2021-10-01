@@ -246,6 +246,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
 
         private static final int MENU_PRESET_ID = 1;
         private static final int MENU_FONT_ID = 2;
+        private static final int MENU_RESET_COLOR_ID = 3;
 
         private final Composite parent;
         private final BooleanState state;
@@ -259,6 +260,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         private UIElementAlignment currentAlignment;
         private UIElementFontStyle currentFontStyle;
         private RGB currentColor;
+        private RGB currentDefaultColor;
 
         public BooleanPanel(@NotNull Composite parent, @NotNull BooleanState state) {
             this.parent = parent;
@@ -294,11 +296,16 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         final MenuItem menu = (MenuItem) e.widget;
-                        if (menu.getID() == MENU_PRESET_ID) {
-                            notifyPropertyChanged(e.widget, PROP_TEXT, menu.getText());
-                        }
-                        if (menu.getID() == MENU_FONT_ID) {
-                            notifyPropertyChanged(e.widget, PROP_FONT, menu.getData());
+                        switch (menu.getID()) {
+                            case MENU_PRESET_ID:
+                                notifyPropertyChanged(e.widget, PROP_TEXT, menu.getText());
+                                break;
+                            case MENU_FONT_ID:
+                                notifyPropertyChanged(e.widget, PROP_FONT, menu.getData());
+                                break;
+                            case MENU_RESET_COLOR_ID:
+                                notifyPropertyChanged(e.widget, PROP_COLOR, currentDefaultColor);
+                                break;
                         }
                     }
                 };
@@ -307,8 +314,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                     final TextWithDropDown text = new TextWithDropDown(parent, SWT.BORDER, alignment.getStyle(), menuSelectionListener);
                     text.getTextComponent().addModifyListener(textModifyListener);
                     text.setData(alignment);
-                    text.addMenuItem(CoreMessages.pref_page_ui_general_boolean_presets).setEnabled(false);
-                    text.addMenuSeparator();
                     for (String variant : state.getPresets()) {
                         text.addMenuItem(variant).setID(MENU_PRESET_ID);
                     }
@@ -324,6 +329,15 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                                 }
                             });
                         }
+                    });
+                    text.addMenuItemWithMenu(CoreMessages.pref_page_ui_general_boolean_color, null, menu -> {
+                        final MenuItem item = text.addMenuItem(menu, CoreMessages.pref_page_ui_general_boolean_color_use_theme_color, null, null, SWT.CHECK);
+                        item.setID(MENU_RESET_COLOR_ID);
+                        addPropertyChangeListener(event -> {
+                            if (event.getProperty().equals(PROP_COLOR)) {
+                                item.setSelection(event.getNewValue() == currentDefaultColor);
+                            }
+                        });
                     });
 
                     ((GridData) text.getLayoutData()).widthHint = 120;
@@ -395,7 +409,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             UIUtils.createLabel(parent, UIIcon.SEPARATOR_V);
 
             {
-                final DefaultColorSelector selector = new DefaultColorSelector(parent);
+                final DefaultColorSelector selector = new DefaultColorSelector(parent, false);
                 selector.setColorValue(new RGB(0, 0, 0));
                 selector.setDefaultColorValue(new RGB(0, 0, 0));
                 selector.addListener(e -> notifyPropertyChanged(selector, PROP_COLOR, selector.getColorValue()));
@@ -438,6 +452,9 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                     case PROP_COLOR:
                         this.currentColor = (RGB) event.getNewValue();
                         break;
+                    case PROP_DEFAULT_COLOR:
+                        this.currentDefaultColor = (RGB) event.getNewValue();
+                        break;
                 }
 
                 updateBooleanValidState();
@@ -448,8 +465,8 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             if (style.getMode() == BooleanMode.TEXT) {
                 notifyPropertyChanged(this, PROP_TEXT, style.getText());
                 notifyPropertyChanged(this, PROP_FONT, style.getFontStyle());
-                notifyPropertyChanged(this, PROP_COLOR, style.getColor());
                 notifyPropertyChanged(this, PROP_DEFAULT_COLOR, defaultColor);
+                notifyPropertyChanged(this, PROP_COLOR, style.getColor());
             } else {
                 notifyPropertyChanged(this, PROP_TEXT, "");
             }
