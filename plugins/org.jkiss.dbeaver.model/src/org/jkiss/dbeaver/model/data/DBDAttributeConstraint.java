@@ -91,6 +91,10 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         return originalVisualPosition;
     }
 
+    public void setOriginalVisualPosition(int originalVisualPosition) {
+        this.originalVisualPosition = originalVisualPosition;
+    }
+
     // Disables ordering by column index
     public boolean isPlainNameReference() {
         return plainNameReference;
