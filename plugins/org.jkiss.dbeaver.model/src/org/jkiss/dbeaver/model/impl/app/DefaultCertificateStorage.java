@@ -172,7 +172,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
             saveKeyStore(dataSource, certType, keyStore);
         } catch (Throwable e) {
-            throw new DBException("Error adding self signed certificate to keystore", e);
+            throw new DBException("Error adding self-signed certificate to keystore", e);
         }
     }
 

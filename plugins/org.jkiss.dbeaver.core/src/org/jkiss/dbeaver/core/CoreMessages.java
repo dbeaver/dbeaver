@@ -545,7 +545,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_boolean_label_text;
 	public static String pref_page_ui_general_boolean_label_align;
 	public static String pref_page_ui_general_boolean_label_color;
-	public static String pref_page_ui_general_boolean_predefined_styles;
+	public static String pref_page_ui_general_boolean_styles;
+	public static String pref_page_ui_general_boolean_color;
+	public static String pref_page_ui_general_boolean_color_use_theme_color;
 	public static String pref_page_ui_general_boolean_invalid_values;
 
 	static {

@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.bouncycastle.asn1.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.utils.Base64;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerValue;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -27,35 +27,34 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.RSAPrivateCrtKeySpec;
 
-/**
- * Extracted to a separate class because of usage of internal API.
- */
 class PKCS1Util {
-
-    public static PrivateKey loadPrivateKeyFromPKCS1(String privateKeyPem) throws GeneralSecurityException, IOException {
-        DerInputStream derReader = new DerInputStream(Base64.decode(privateKeyPem));
-
-        DerValue[] seq = derReader.getSequence(0);
-
-        if (seq.length < 9) {
-            throw new GeneralSecurityException("Could not parse a PKCS1 private key.");
-        }
-
-        // skip version seq[0];
-        BigInteger modulus = seq[1].getBigInteger();
-        BigInteger publicExp = seq[2].getBigInteger();
-        BigInteger privateExp = seq[3].getBigInteger();
-        BigInteger prime1 = seq[4].getBigInteger();
-        BigInteger prime2 = seq[5].getBigInteger();
-        BigInteger exp1 = seq[6].getBigInteger();
-        BigInteger exp2 = seq[7].getBigInteger();
-        BigInteger crtCoef = seq[8].getBigInteger();
-
-        RSAPrivateCrtKeySpec keySpec = new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
-
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-
-        return factory.generatePrivate(keySpec);
+    private PKCS1Util() {
+        // avoid instantiation of utility class
     }
 
+    @NotNull
+    public static PrivateKey loadPrivateKeyFromPKCS1(@NotNull String privateKeyPem) throws GeneralSecurityException, IOException {
+        try (ASN1InputStream is = new ASN1InputStream(Base64.decode(privateKeyPem))) {
+            final ASN1Sequence seq = (ASN1Sequence) is.readObject();
+            if (seq.size() < 9) {
+                throw new GeneralSecurityException("Could not parse a PKCS1 private key.");
+            }
+            return KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateCrtKeySpec(
+                // skip version at seq.getObjectAt(0);
+                getInteger(seq.getObjectAt(1)),
+                getInteger(seq.getObjectAt(2)),
+                getInteger(seq.getObjectAt(3)),
+                getInteger(seq.getObjectAt(4)),
+                getInteger(seq.getObjectAt(5)),
+                getInteger(seq.getObjectAt(6)),
+                getInteger(seq.getObjectAt(7)),
+                getInteger(seq.getObjectAt(8))
+            ));
+        }
+    }
+
+    @NotNull
+    private static BigInteger getInteger(@NotNull ASN1Encodable encodable) {
+        return ((ASN1Integer) encodable).getValue();
+    }
 }

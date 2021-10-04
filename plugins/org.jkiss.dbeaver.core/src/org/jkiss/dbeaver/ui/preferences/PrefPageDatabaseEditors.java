@@ -21,6 +21,7 @@ import org.eclipse.core.commands.common.EventManager;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -28,6 +29,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -40,10 +42,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIElementAlignment;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.DefaultColorSelector;
 import org.jkiss.dbeaver.ui.controls.TextWithDropDown;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
@@ -239,22 +238,43 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
 
     private class BooleanPanel extends EventManager {
         private static final String PROP_MODE = "modeValue";
+        private static final String PROP_FONT = "fontValue";
         private static final String PROP_TEXT = "textValue";
         private static final String PROP_ALIGN = "alignValue";
         private static final String PROP_COLOR = "colorValue";
         private static final String PROP_DEFAULT_COLOR = "defaultColorValue";
 
+        private static final int MENU_PRESET_ID = 1;
+        private static final int MENU_FONT_ID = 2;
+        private static final int MENU_RESET_COLOR_ID = 3;
+
         private final Composite parent;
         private final BooleanState state;
+
+        private final Font normalFont;
+        private final Font boldFont;
+        private final Font italicFont;
 
         private BooleanMode currentMode;
         private String currentText;
         private UIElementAlignment currentAlignment;
+        private UIElementFontStyle currentFontStyle;
         private RGB currentColor;
+        private RGB currentDefaultColor;
 
         public BooleanPanel(@NotNull Composite parent, @NotNull BooleanState state) {
             this.parent = parent;
             this.state = state;
+
+            final FontDescriptor fontDescriptor = FontDescriptor.createFrom(parent.getFont());
+            this.normalFont = parent.getFont();
+            this.boldFont = fontDescriptor.setStyle(SWT.BOLD).createFont(parent.getDisplay());
+            this.italicFont = fontDescriptor.setStyle(SWT.ITALIC).createFont(parent.getDisplay());
+
+            parent.addDisposeListener(e -> {
+                UIUtils.dispose(boldFont);
+                UIUtils.dispose(italicFont);
+            });
 
             {
                 final Label icon = UIUtils.createLabel(parent, state.getIcon());
@@ -275,7 +295,18 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                 final SelectionListener menuSelectionListener = new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        notifyPropertyChanged(e.widget, PROP_TEXT, ((MenuItem) e.widget).getText());
+                        final MenuItem menu = (MenuItem) e.widget;
+                        switch (menu.getID()) {
+                            case MENU_PRESET_ID:
+                                notifyPropertyChanged(e.widget, PROP_TEXT, menu.getText());
+                                break;
+                            case MENU_FONT_ID:
+                                notifyPropertyChanged(e.widget, PROP_FONT, menu.getData());
+                                break;
+                            case MENU_RESET_COLOR_ID:
+                                notifyPropertyChanged(e.widget, PROP_COLOR, currentDefaultColor);
+                                break;
+                        }
                     }
                 };
 
@@ -283,11 +314,31 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                     final TextWithDropDown text = new TextWithDropDown(parent, SWT.BORDER, alignment.getStyle(), menuSelectionListener);
                     text.getTextComponent().addModifyListener(textModifyListener);
                     text.setData(alignment);
-                    text.addMenuItem(CoreMessages.pref_page_ui_general_boolean_predefined_styles, null, null, null).setEnabled(false);
-                    text.addMenuSeparator();
-                    for (String variant : state.getPredefinedTextStyles()) {
-                        text.addMenuItem(variant);
+                    for (String variant : state.getPresets()) {
+                        text.addMenuItem(variant).setID(MENU_PRESET_ID);
                     }
+                    text.addMenuSeparator();
+                    text.addMenuItemWithMenu(CoreMessages.pref_page_ui_general_boolean_styles, null, menu -> {
+                        for (UIElementFontStyle value : UIElementFontStyle.values()) {
+                            final MenuItem item = text.addMenuItem(menu, value.getLabel(), null, value, SWT.RADIO);
+                            item.setID(MENU_FONT_ID);
+
+                            addPropertyChangeListener(event -> {
+                                if (event.getProperty().equals(PROP_FONT)) {
+                                    item.setSelection(event.getNewValue() == item.getData());
+                                }
+                            });
+                        }
+                    });
+                    text.addMenuItemWithMenu(CoreMessages.pref_page_ui_general_boolean_color, null, menu -> {
+                        final MenuItem item = text.addMenuItem(menu, CoreMessages.pref_page_ui_general_boolean_color_use_theme_color, null, null, SWT.CHECK);
+                        item.setID(MENU_RESET_COLOR_ID);
+                        addPropertyChangeListener(event -> {
+                            if (event.getProperty().equals(PROP_COLOR)) {
+                                item.setSelection(event.getNewValue() == currentDefaultColor);
+                            }
+                        });
+                    });
 
                     ((GridData) text.getLayoutData()).widthHint = 120;
 
@@ -295,6 +346,19 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                         switch (event.getProperty()) {
                             case PROP_TEXT:
                                 text.getTextComponent().setText((String) event.getNewValue());
+                                break;
+                            case PROP_FONT:
+                                switch ((UIElementFontStyle) event.getNewValue()) {
+                                    case NORMAL:
+                                        text.getTextComponent().setFont(normalFont);
+                                        break;
+                                    case ITALIC:
+                                        text.getTextComponent().setFont(italicFont);
+                                        break;
+                                    case BOLD:
+                                        text.getTextComponent().setFont(boldFont);
+                                        break;
+                                }
                                 break;
                             case PROP_MODE:
                                 UIUtils.enableWithChildren(text, event.getNewValue() == BooleanMode.TEXT);
@@ -345,7 +409,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             UIUtils.createLabel(parent, UIIcon.SEPARATOR_V);
 
             {
-                final DefaultColorSelector selector = new DefaultColorSelector(parent);
+                final DefaultColorSelector selector = new DefaultColorSelector(parent, false);
                 selector.setColorValue(new RGB(0, 0, 0));
                 selector.setDefaultColorValue(new RGB(0, 0, 0));
                 selector.addListener(e -> notifyPropertyChanged(selector, PROP_COLOR, selector.getColorValue()));
@@ -382,8 +446,14 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                         this.currentAlignment = (UIElementAlignment) event.getNewValue();
                         this.parent.layout(true);
                         break;
+                    case PROP_FONT:
+                        this.currentFontStyle = (UIElementFontStyle) event.getNewValue();
+                        break;
                     case PROP_COLOR:
                         this.currentColor = (RGB) event.getNewValue();
+                        break;
+                    case PROP_DEFAULT_COLOR:
+                        this.currentDefaultColor = (RGB) event.getNewValue();
                         break;
                 }
 
@@ -394,8 +464,9 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         public void loadStyle(@NotNull BooleanStyle style, @NotNull RGB defaultColor) {
             if (style.getMode() == BooleanMode.TEXT) {
                 notifyPropertyChanged(this, PROP_TEXT, style.getText());
-                notifyPropertyChanged(this, PROP_COLOR, style.getColor());
+                notifyPropertyChanged(this, PROP_FONT, style.getFontStyle());
                 notifyPropertyChanged(this, PROP_DEFAULT_COLOR, defaultColor);
+                notifyPropertyChanged(this, PROP_COLOR, style.getColor());
             } else {
                 notifyPropertyChanged(this, PROP_TEXT, "");
             }
@@ -407,7 +478,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         @NotNull
         public BooleanStyle saveStyle() {
             if (currentMode == BooleanMode.TEXT) {
-                return BooleanStyle.usingText(currentText, currentAlignment, currentColor);
+                return BooleanStyle.usingText(currentText, currentAlignment, currentColor, currentFontStyle);
             } else {
                 return BooleanStyle.usingIcon(state.getIcon(), currentAlignment);
             }

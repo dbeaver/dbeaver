@@ -103,15 +103,9 @@
                     <compilerArgs>
                         <!--
                             Java 11-compatibility options.
-                            We still need sun.security.
                             ignore.symbol.file is a legacy flag
                         -->
                         <compilerArg>-XDignore.symbol.file=true</compilerArg>
-
-                        <compilerArg>--add-exports</compilerArg>
-                        <compilerArg>java.base/sun.security.util=ALL-UNNAMED</compilerArg>
-                        <compilerArg>--add-exports</compilerArg>
-                        <compilerArg>java.base/sun.security.x509=ALL-UNNAMED</compilerArg>
                     </compilerArgs>
                 </configuration>
             </plugin>

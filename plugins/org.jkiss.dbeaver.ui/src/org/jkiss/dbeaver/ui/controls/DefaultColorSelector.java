@@ -32,20 +32,22 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 public class DefaultColorSelector extends ColorSelector {
     private RGB defaultColorValue;
 
-    public DefaultColorSelector(@NotNull Composite parent) {
+    public DefaultColorSelector(@NotNull Composite parent, boolean rightClickResetsColor) {
         super(parent);
 
-        getButton().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                if ((e.stateMask & SWT.BUTTON3) > 0) {
-                    setColorValue(getDefaultColorValue());
-                    fireColorUpdateEvent(getColorValue(), getDefaultColorValue());
+        if (rightClickResetsColor) {
+            getButton().addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    if ((e.stateMask & SWT.BUTTON3) > 0) {
+                        setColorValue(getDefaultColorValue());
+                        fireColorUpdateEvent(getColorValue(), getDefaultColorValue());
+                    }
                 }
-            }
-        });
+            });
 
-        getButton().setToolTipText(UIMessages.control_default_color_selector_reset_default_tip);
+            getButton().setToolTipText(UIMessages.control_default_color_selector_reset_default_tip);
+        }
     }
 
     @Override

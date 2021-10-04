@@ -19,6 +19,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -68,6 +69,9 @@ public interface IGridContentProvider extends IContentProvider {
     int getCellState(Object colElement, Object rowElement, @Nullable String cellText);
 
     int getCellAlign(@Nullable Object colElement, Object rowElement);
+
+    @Nullable
+    Font getCellFont(@Nullable Object colElement, Object rowElement);
 
     /**
      * @param formatString  Format string values or return raw values
