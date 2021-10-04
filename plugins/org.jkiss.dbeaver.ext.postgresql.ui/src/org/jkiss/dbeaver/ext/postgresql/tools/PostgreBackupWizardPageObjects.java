@@ -223,8 +223,11 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 checkedTables.add((PostgreTableBase) item.getData());
             }
         }
-        TableItem catalogItem = schemasTable.getItem(schemasTable.getSelectionIndex());
-        catalogItem.setChecked(!checkedTables.isEmpty());
+        int selectionIndex = schemasTable.getSelectionIndex();
+        if (selectionIndex > -1) {
+            TableItem catalogItem = schemasTable.getItem(selectionIndex);
+            catalogItem.setChecked(!checkedTables.isEmpty());
+        }
         if (checkedTables.isEmpty() || checkedTables.size() == tableItems.length) {
             checkedObjects.remove(curSchema);
         } else {
@@ -241,15 +244,16 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         return false;
     }
 
-    private void loadTables(final PostgreSchema catalog) {
+    private List<PostgreTableBase> loadTables(final PostgreSchema catalog) {
         if (catalog != null) {
             curSchema = catalog;
         }
         if (curSchema == null) {
-            return;
+            return null;
         }
         final boolean isCatalogChecked = isChecked(curSchema);
         final Set<PostgreTableBase> checkedObjects = this.checkedObjects.get(curSchema);
+        final List<PostgreTableBase> objects = new ArrayList<>();
         new AbstractJob("Load '" + curSchema.getName() + "' tables") {
             {
                 setUser(true);
@@ -259,7 +263,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 monitor.beginTask("Collect tables", 1);
                 try {
                     monitor.subTask("Collect tables to dump");
-                    final List<PostgreTableBase> objects = new ArrayList<>();
                     for (JDBCTable table : curSchema.getTables(monitor)) {
                         if (table instanceof PostgreTableBase) {
                             objects.add((PostgreTableBase) table);
@@ -287,6 +290,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 return Status.OK_STATUS;
             }
         }.schedule();
+        return objects;
     }
 
     public void saveState() {
@@ -334,8 +338,33 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     protected void updateTableCheckedStatus(@NotNull Table table, boolean check) {
         // Handle event from buttons "All" and "None"
         if (table == schemasTable) {
-            for (TableItem tableItem : tablesTable.getItems()) {
-                tableItem.setChecked(check);
+            TableItem[] items = tablesTable.getItems();
+            if (items.length != 0) {
+                for (TableItem tableItem : items) {
+                    tableItem.setChecked(check);
+                }
+            } else {
+                TableItem[] schemasItems = schemasTable.getItems();
+                if (schemasItems.length != 0) {
+                    for (TableItem schemaItem : schemasItems) {
+                        if (schemaItem.getChecked()) {
+                            Object data = schemaItem.getData();
+                            if (data instanceof PostgreSchema) {
+                                PostgreSchema postgreSchema = (PostgreSchema) data;
+                                if (!checkedObjects.containsKey(postgreSchema)) {
+                                    if (check) {
+                                        List<PostgreTableBase> tableBaseList = loadTables(postgreSchema);
+                                        if (!CommonUtils.isEmpty(tableBaseList)) {
+                                            checkedObjects.put(postgreSchema, new HashSet<>(tableBaseList));
+                                        }
+                                    }
+                                } else if (!check) {
+                                    checkedObjects.remove(postgreSchema);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         updateCheckedTables();
