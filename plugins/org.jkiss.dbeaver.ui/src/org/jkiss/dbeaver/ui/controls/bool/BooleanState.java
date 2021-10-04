@@ -30,13 +30,13 @@ public enum BooleanState {
     private final String id;
     private final String label;
     private final DBIcon icon;
-    private final String[] predefinedTextStyles;
+    private final String[] presets;
 
-    BooleanState(@NotNull String id, @NotNull String label, @NotNull DBIcon icon, @NotNull String[] predefinedTextStyles) {
+    BooleanState(@NotNull String id, @NotNull String label, @NotNull DBIcon icon, @NotNull String[] presets) {
         this.id = id;
         this.label = label;
         this.icon = icon;
-        this.predefinedTextStyles = predefinedTextStyles;
+        this.presets = presets;
     }
 
     @NotNull
@@ -55,8 +55,8 @@ public enum BooleanState {
     }
 
     @NotNull
-    public String[] getPredefinedTextStyles() {
-        return predefinedTextStyles;
+    public String[] getPresets() {
+        return presets;
     }
 
     @NotNull

@@ -116,7 +116,8 @@ class GridCellRenderer extends AbstractRenderer {
             // Replace linefeeds with space
             text = CommonUtils.getSingleLineString(text);
 
-            gc.setFont(grid.normalFont);
+            final Font font = grid.getContentProvider().getCellFont(col, row);
+            gc.setFont(font != null ? font : grid.normalFont);
 
             switch (columnAlign) {
                 // Center
