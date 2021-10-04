@@ -30,14 +30,6 @@ public class SQLEditorMessages extends NLS {
     public static String confirm_close_result_tabs_message;
     public static String confirm_close_result_tabs_toggleMessage;
 
-    public static String confirm_dangerous_sql_title;
-    public static String confirm_dangerous_sql_message;
-    public static String confirm_dangerous_sql_toggleMessage;
-
-    public static String confirm_mass_parallel_sql_title;
-    public static String confirm_mass_parallel_sql_message;
-    public static String confirm_mass_parallel_sql_toggleMessage;
-
     public static String dialog_view_sql_button_copy;
     public static String dialog_view_sql_button_persist;
 
@@ -112,7 +104,6 @@ public class SQLEditorMessages extends NLS {
 
     public static String actions_ContentAssistProposal_label;
     public static String actions_ContentAssistProposal_tooltip;
-    public static String actions_ContentAssistProposal_description;
 
     public static String actions_ContentAssistTip_label;
     public static String actions_ContentAssistTip_tooltip;
