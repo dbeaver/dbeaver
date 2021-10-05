@@ -44,6 +44,12 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         setVisualPosition(attribute.getOrdinalPosition());
     }
 
+    public DBDAttributeConstraint(@NotNull DBDAttributeBinding attribute, int visualPosition, int originalVisualPosition) {
+        setAttribute(attribute);
+        setVisualPosition(visualPosition);
+        this.originalVisualPosition = originalVisualPosition; // Can be very important for nested attributes without through ordering
+    }
+
     public DBDAttributeConstraint(@NotNull DBSAttributeBase attribute, int visualPosition) {
         setAttribute(attribute);
         setVisualPosition(visualPosition);
