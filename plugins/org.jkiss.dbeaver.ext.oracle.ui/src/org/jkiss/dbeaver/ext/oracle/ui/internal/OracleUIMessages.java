@@ -22,13 +22,6 @@ import org.eclipse.osgi.util.NLS;
 public final class OracleUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages"; //$NON-NLS-1$
 
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, OracleUIMessages.class);
-    }
-
-    private OracleUIMessages() {
-    }
 
     public static String config_import_wizard_page_sql_developer_label_installation_not_found;
     public static String dialog_connection_advanced_tab;
@@ -139,4 +132,17 @@ public final class OracleUIMessages extends NLS {
     public static String dialog_schema_edit_user_name;
     public static String dialog_schema_edit_user_password;
     public static String dialog_schema_edit_label;
+
+    public static String views_session_manager_viewer_show_background;
+    public static String views_session_manager_viewer_show_background_tasks_tip;
+    public static String views_session_manager_viewer_show_inactive;
+    public static String views_session_manager_viewer_show_inactive_sessions_tip;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, OracleUIMessages.class);
+    }
+
+    private OracleUIMessages() {
+    }
 }
