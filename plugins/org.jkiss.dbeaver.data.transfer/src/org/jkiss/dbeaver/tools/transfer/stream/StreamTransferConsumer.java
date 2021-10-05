@@ -103,6 +103,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private Map<String, Object> processorProperties;
     private StringWriter outputBuffer;
     private boolean initialized = false;
+    private boolean firstRow = true;
     private TransferParameters parameters;
 
     public StreamTransferConsumer() {
@@ -153,6 +154,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
         try {
+            // Check for file split
+            if (settings.isSplitOutFiles() && !parameters.isBinary && !firstRow) {
+                writer.flush();
+                if (bytesWritten >= settings.getMaxOutFileSize()) {
+                    // Make new file
+                    createNewOutFile();
+                }
+            }
+
             // Get values
             Object[] srcRow = fetchRow(session, resultSet, columnMetas);
             Object[] targetRow;
@@ -188,15 +198,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             // Export row
             processor.exportRow(session, resultSet, targetRow);
-
-            // Check for file split
-            if (settings.isSplitOutFiles() && !parameters.isBinary) {
-                writer.flush();
-                if (bytesWritten >= settings.getMaxOutFileSize()) {
-                    // Make new file
-                    createNewOutFile();
-                }
-            }
+            firstRow = false;
         } catch (IOException e) {
             throw new DBCException("IO error", e);
         } catch (Throwable e) {
