@@ -344,23 +344,20 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                     tableItem.setChecked(check);
                 }
             } else {
+                // This is the case when the user selects a backup by pressing the database, and not the scheme. Then tablesTable is empty.
                 TableItem[] schemasItems = schemasTable.getItems();
                 if (schemasItems.length != 0) {
                     for (TableItem schemaItem : schemasItems) {
-                        if (schemaItem.getChecked()) {
-                            Object data = schemaItem.getData();
-                            if (data instanceof PostgreSchema) {
-                                PostgreSchema postgreSchema = (PostgreSchema) data;
-                                if (!checkedObjects.containsKey(postgreSchema)) {
-                                    if (check) {
-                                        List<PostgreTableBase> tableBaseList = loadTables(postgreSchema);
-                                        if (!CommonUtils.isEmpty(tableBaseList)) {
-                                            checkedObjects.put(postgreSchema, new HashSet<>(tableBaseList));
-                                        }
-                                    }
-                                } else if (!check) {
-                                    checkedObjects.remove(postgreSchema);
+                        Object data = schemaItem.getData();
+                        if (data instanceof PostgreSchema) {
+                            PostgreSchema postgreSchema = (PostgreSchema) data;
+                            if (schemaItem.getChecked() && check && !checkedObjects.containsKey(postgreSchema)) {
+                                List<PostgreTableBase> tableBaseList = loadTables(postgreSchema);
+                                if (!CommonUtils.isEmpty(tableBaseList)) {
+                                    checkedObjects.put(postgreSchema, new HashSet<>(tableBaseList));
                                 }
+                            } else if (!schemaItem.getChecked() && !check) {
+                                checkedObjects.remove(postgreSchema);
                             }
                         }
                     }
