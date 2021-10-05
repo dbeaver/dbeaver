@@ -30,12 +30,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Locale;
 
 public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
@@ -95,34 +97,11 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
-            UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern,
-                StreamTransferConsumer.VARIABLE_DATASOURCE,
-                StreamTransferConsumer.VARIABLE_CATALOG,
-                StreamTransferConsumer.VARIABLE_SCHEMA,
-                StreamTransferConsumer.VARIABLE_TABLE,
-                StreamTransferConsumer.VARIABLE_TIMESTAMP,
-                StreamTransferConsumer.VARIABLE_DATE,
-                StreamTransferConsumer.VARIABLE_INDEX,
-                StreamTransferConsumer.VARIABLE_PROJECT,
-                StreamTransferConsumer.VARIABLE_CONN_TYPE);
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(e -> {
                 settings.setOutputFilePattern(fileNameText.getText());
                 updatePageCompletion();
             });
-            ContentAssistUtils.installContentProposal(
-                fileNameText,
-                new SmartTextContentAdapter(),
-                new StringContentProposalProvider(
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATASOURCE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CATALOG),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_SCHEMA),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_INDEX),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CONN_TYPE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)));
 
             {
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_encoding);
@@ -184,6 +163,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 gd.widthHint = UIUtils.getFontHeight(maximumFileSizeText) * 10;
                 maximumFileSizeText.setLayoutData(gd);
             }
+
+            // No resolver - several producers may present.
+            new VariablesHintLabel(
+                generalSettings,
+                DTUIMessages.stream_consumer_page_output_variables_hint_label,
+                DTUIMessages.stream_consumer_page_output_variables_hint_label,
+                StreamTransferConsumer.VARIABLES,
+                true
+            );
         }
 
         {
@@ -213,23 +201,6 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 settings.setFinishProcessCommand(execProcessText.getText());
                 updatePageCompletion();
             });
-            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line,
-                StreamTransferConsumer.VARIABLE_FILE,
-                StreamTransferConsumer.VARIABLE_TABLE,
-                StreamTransferConsumer.VARIABLE_TIMESTAMP,
-                StreamTransferConsumer.VARIABLE_DATE,
-                StreamTransferConsumer.VARIABLE_PROJECT,
-                StreamTransferConsumer.VARIABLE_CONN_TYPE);
-            ContentAssistUtils.installContentProposal(
-                execProcessText,
-                new SmartTextContentAdapter(),
-                new StringContentProposalProvider(
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CONN_TYPE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, null, getWizard().getSettings().isShowFinalMessage(), 4);
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -238,6 +209,34 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
                 }
             });
+        }
+
+        {
+            final String[] variables = {
+                StreamTransferConsumer.VARIABLE_DATASOURCE,
+                StreamTransferConsumer.VARIABLE_CATALOG,
+                StreamTransferConsumer.VARIABLE_SCHEMA,
+                StreamTransferConsumer.VARIABLE_TABLE,
+                StreamTransferConsumer.VARIABLE_TIMESTAMP,
+                StreamTransferConsumer.VARIABLE_DATE,
+                StreamTransferConsumer.VARIABLE_INDEX,
+                StreamTransferConsumer.VARIABLE_PROJECT,
+                StreamTransferConsumer.VARIABLE_CONN_TYPE,
+                StreamTransferConsumer.VARIABLE_FILE
+            };
+
+            final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
+                .stream(variables)
+                .map(GeneralUtils::variablePattern)
+                .toArray(String[]::new));
+
+            UIUtils.setContentProposalToolTip(directoryText, DTUIMessages.stream_consumer_page_output_tooltip_output_directory_pattern, variables);
+            UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern, variables);
+            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line, variables);
+
+            ContentAssistUtils.installContentProposal(directoryText, new SmartTextContentAdapter(), proposalProvider);
+            ContentAssistUtils.installContentProposal(fileNameText, new SmartTextContentAdapter(), proposalProvider);
+            ContentAssistUtils.installContentProposal(execProcessText, new SmartTextContentAdapter(), proposalProvider);
         }
 
         setControl(composite);

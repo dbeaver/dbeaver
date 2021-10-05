@@ -82,6 +82,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_CONN_TYPE = "connectionType";
     public static final String VARIABLE_FILE = "file";
 
+    public static final String[][] VARIABLES = {
+        {VARIABLE_DATASOURCE, "source database datasource"},
+        {VARIABLE_CATALOG, "source database catalog"},
+        {VARIABLE_SCHEMA, "source database schema"},
+        {VARIABLE_TABLE, "source database table"},
+        {VARIABLE_TIMESTAMP, "current timestamp"},
+        {VARIABLE_DATE, "current date"},
+        {VARIABLE_INDEX, "index of current file (if split is used)"},
+        {VARIABLE_PROJECT, "source database project"},
+        {VARIABLE_CONN_TYPE, "source database connection type"},
+        {VARIABLE_FILE, "output file path"}
+    };
+
     public static final int OUT_FILE_BUFFER_SIZE = 100000;
 
     private IStreamDataExporter processor;
@@ -220,7 +233,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             return null;
         }
         if (lobDirectory == null) {
-            lobDirectory = new File(settings.getOutputFolder(), LOB_DIRECTORY_NAME);
+            lobDirectory = new File(getOutputFolder(), LOB_DIRECTORY_NAME);
             if (!lobDirectory.exists()) {
                 if (!lobDirectory.mkdir()) {
                     throw new IOException("Can't create directory for CONTENT files: " + lobDirectory.getAbsolutePath());
@@ -408,7 +421,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 // Last one
-                DBWorkbench.getPlatformUI().executeShellProgram(settings.getOutputFolder());
+                DBWorkbench.getPlatformUI().executeShellProgram(getOutputFolder());
             }
         }
     }
@@ -459,6 +472,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return settings.isOutputClipboard() ? DBIcon.TYPE_TEXT : DBIcon.TREE_FOLDER;
     }
 
+    @NotNull
+    public String getOutputFolder() {
+        return translatePattern(settings.getOutputFolder(), null);
+    }
+
     public String getOutputFileName() {
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
@@ -479,7 +497,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     public File makeOutputFile() {
-        File dir = new File(settings.getOutputFolder());
+        File dir = new File(getOutputFolder());
         if (!dir.exists() && !dir.mkdirs()) {
             log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
         }
