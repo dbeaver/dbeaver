@@ -134,4 +134,9 @@ public final class OracleUIMessages extends NLS {
     public static String pref_page_oracle_legend_execution_plan;
     public static String pref_page_oracle_legend_misc;
     public static String pref_page_oracle_legend_performance;
+
+    public static String dialog_schema_edit_title;
+    public static String dialog_schema_edit_user_name;
+    public static String dialog_schema_edit_user_password;
+    public static String dialog_schema_edit_label;
 }
