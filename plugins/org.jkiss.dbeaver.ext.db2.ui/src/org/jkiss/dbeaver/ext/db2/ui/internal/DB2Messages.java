@@ -131,4 +131,7 @@ public class DB2Messages extends NLS {
     public static String dialog_explain_no_tablespace_found_title;
     public static String dialog_explain_ask_to_create;
 
+    public static String dialog_schema_edit_title;
+    public static String dialog_schema_edit_schema_name;
+
 }
