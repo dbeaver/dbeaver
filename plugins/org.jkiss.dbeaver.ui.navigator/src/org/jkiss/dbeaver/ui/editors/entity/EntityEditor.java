@@ -912,17 +912,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
 
-        if (force && getDatabaseObject().isPersisted()) {
-            // Lists and commands should be refreshed only if we make real refresh from remote storage
-            // Otherwise just update object's properties
-            DBECommandContext commandContext = getCommandContext();
-            if (commandContext != null && commandContext.isDirty()) {
-                // Just clear command context. Do not undo because object state was already refreshed
-                commandContext.resetChanges(true);
+        DBSObject databaseObject = getEditorInput().getDatabaseObject();
+        if (force) {
+            if (databaseObject != null && databaseObject.isPersisted()) {
+                // Lists and commands should be refreshed only if we make real refresh from remote storage
+                // Otherwise just update object's properties
+                DBECommandContext commandContext = getCommandContext();
+                if (commandContext != null && commandContext.isDirty()) {
+                    // Just clear command context. Do not undo because object state was already refreshed
+                    commandContext.resetChanges(true);
+                }
             }
         }
 
-        DBSObject databaseObject = getEditorInput().getDatabaseObject();
         if (databaseObject != null) {
             // Refresh visual content in parts
             for (IEditorPart editor : editorMap.values()) {
