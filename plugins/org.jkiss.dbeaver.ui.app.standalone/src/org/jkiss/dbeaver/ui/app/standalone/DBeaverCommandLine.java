@@ -140,9 +140,14 @@ public class DBeaverCommandLine
     /**
      * @return true if called should exit after CLI processing
      */
-    static boolean executeCommandLineCommands(@NotNull CommandLine commandLine, @Nullable IInstanceController controller, boolean uiActivated) throws Exception {
-        if (commandLine == null) {
+    static boolean executeCommandLineCommands(@Nullable CommandLine commandLine, @Nullable IInstanceController controller, boolean uiActivated) throws Exception {
+        if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
             return false;
+        }
+
+        if (controller == null) {
+            log.warn("Can't connect to running instance, exiting");
+            return true;
         }
 
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
@@ -151,9 +156,6 @@ public class DBeaverCommandLine
             }
         }
 
-        if (controller == null) {
-            return false;
-        }
         boolean exitAfterExecute = false;
         if (!uiActivated) {
             // These command can't be executed locally
@@ -250,13 +252,7 @@ public class DBeaverCommandLine
             return false;
         }
 
-        IInstanceController controller = null;
-        try {
-            controller = InstanceClient.createClient(instanceLoc);
-        } catch (Exception e) {
-            // its ok
-            log.debug("Error detecting DBeaver running instance: " + e.getMessage());
-        }
+        final IInstanceController controller = InstanceClient.createClient(instanceLoc);
         try {
             return executeCommandLineCommands(commandLine, controller, false);
         } catch (RemoteException e) {
