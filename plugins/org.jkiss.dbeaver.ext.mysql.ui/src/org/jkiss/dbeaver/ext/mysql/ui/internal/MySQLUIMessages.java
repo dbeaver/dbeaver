@@ -27,9 +27,6 @@ public final class MySQLUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, MySQLUIMessages.class);
     }
 
-    private MySQLUIMessages() {
-    }
-
     public static String dialog_connection_advanced_tab;
     public static String dialog_connection_advanced_tab_tooltip;
     public static String dialog_connection_general_tab;
@@ -146,4 +143,12 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_auth_title;
     public static String tools_db_export_wizard_page_settings_auth_save_password_checkbox;
     public static String tools_db_export_wizard_page_settings_auth_save_password_checkbox_tip;
+
+    public static String dialog_create_database_title;
+    public static String dialog_create_database_database_name;
+    public static String dialog_create_database_charset;
+    public static String dialog_create_database_collation;
+
+    private MySQLUIMessages() {
+    }
 }
