@@ -134,7 +134,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
             newBorder = new MarginBorder(5);
         } else {
             newBorder = new CompoundBorder(
-                new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND), borderWidth),
+                new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND), borderWidth),
                 new MarginBorder(5)
             );
         }
