@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
+import com.sun.nio.file.ExtendedOpenOption;
 import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -41,11 +42,13 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -68,6 +71,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     private static int portNumber;
     private static Registry registry;
+    private static FileChannel configFileChannel;
 
     private static final RMIClientSocketFactory CSF_DEFAULT = RMISocketFactory.getDefaultSocketFactory();
     private static final RMIServerSocketFactory SSF_LOCAL = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
@@ -203,12 +207,24 @@ public class DBeaverInstanceServer implements IInstanceController {
 
             }
 
-            File rmiFile = new File(GeneralUtils.getMetadataFolder(), RMI_PROP_FILE);
-            Properties props = new Properties();
-            props.setProperty("port", String.valueOf(portNumber));
-            try (OutputStream os = new FileOutputStream(rmiFile)) {
-                props.store(os, "DBeaver instance server properties");
+            try {
+                configFileChannel = FileChannel.open(
+                    GeneralUtils.getMetadataFolder().toPath().resolve(RMI_PROP_FILE),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE,
+                    ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE
+                );
+            } catch (IOException ignored) {
+                log.debug("Can't start RMI server because other instance is already running");
+                return null;
             }
+
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                Properties props = new Properties();
+                props.setProperty("port", String.valueOf(portNumber));
+                props.store(os, "DBeaver instance server properties");
+                configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
+            }
+
             return server;
         } catch (Exception e) {
             log.error("Can't start RMI server", e);
@@ -237,11 +253,9 @@ public class DBeaverInstanceServer implements IInstanceController {
             log.debug("Stop RMI server");
             registry.unbind(CONTROLLER_ID);
 
-            File rmiFile = new File(GeneralUtils.getMetadataFolder(), RMI_PROP_FILE);
-            if (rmiFile.exists()) {
-                if (!rmiFile.delete()) {
-                    log.debug("Can't delete props file");
-                }
+            if (configFileChannel != null) {
+                configFileChannel.close();
+                Files.delete(GeneralUtils.getMetadataFolder().toPath().resolve(RMI_PROP_FILE));
             }
 
         } catch (Exception e) {
