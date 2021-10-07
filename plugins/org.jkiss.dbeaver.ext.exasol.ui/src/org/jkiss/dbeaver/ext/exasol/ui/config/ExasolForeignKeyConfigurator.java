@@ -6,6 +6,7 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -22,7 +23,7 @@ public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<Exaso
         return new UITask<ExasolTableForeignKey>() {
             @Override
             protected ExasolTableForeignKey runTask() {
-                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog("Create Foreign Key", foreignKey);
+                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog(ExasolMessages.dialog_create_foreign_key_title, foreignKey);
 
                 if (!editPage.edit()) {
                     return null;

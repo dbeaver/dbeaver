@@ -97,6 +97,8 @@ public class ExasolMessages extends NLS {
 	public static String dialog_create_role_role_name;
 	public static String dialog_create_role_description;
 
+	public static String dialog_create_foreign_key_title;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
