@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +46,7 @@ public class ExasolConnectionDialog extends BaseDialog {
     
     public ExasolConnectionDialog(Shell parentShell, ExasolDataSource datasource)
     {
-        super(parentShell,"Create Connection",null);
+        super(parentShell, ExasolMessages.dialog_create_connection_title,null);
     }
     
     
@@ -64,15 +65,15 @@ public class ExasolConnectionDialog extends BaseDialog {
         group.setLayoutData(gd);
         group.setLayout(new GridLayout(2, true));  
         group.setLayout(new GridLayout(2, false));
-        final Text nameText = UIUtils.createLabelText(group, "Connection Name", "");
-        final Text urlText = UIUtils.createLabelText(group,"Connection URL", "");
-        final Text commentText = UIUtils.createLabelText(group,"Description", "");
+        final Text nameText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_connection_connection_name, "");
+        final Text urlText = UIUtils.createLabelText(group,ExasolMessages.dialog_create_connection_connection_url, "");
+        final Text commentText = UIUtils.createLabelText(group,ExasolMessages.dialog_create_connection_description, "");
 
 
-        Button saveCred = UIUtils.createCheckbox(group, "Provide Credentials","Credential", false, 2);
-        Text userText = UIUtils.createLabelText(group, "User", "");
+        Button saveCred = UIUtils.createCheckbox(group, ExasolMessages.dialog_create_connection_provide_credentials,ExasolMessages.dialog_create_connection_provide_credentials_tip, false, 2);
+        Text userText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_connection_user, "");
         userText.setEnabled(false);
-        Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.BORDER | SWT.PASSWORD);
+        Text passwordText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_connection_password, "", SWT.BORDER | SWT.PASSWORD);
         passwordText.setEnabled(false);
 
         

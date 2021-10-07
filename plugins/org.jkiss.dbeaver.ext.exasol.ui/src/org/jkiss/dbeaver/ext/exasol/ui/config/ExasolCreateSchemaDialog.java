@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolGrantee;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,7 +53,7 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
 
     
     public ExasolCreateSchemaDialog(Shell parentShell, ExasolDataSource datasource) {
-        super(parentShell,"Create schema",null);
+        super(parentShell, ExasolMessages.dialog_create_schema_title,null);
         this.datasource = datasource;
     }
     
@@ -65,13 +66,13 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         group.setLayoutData(gd);
         group.setLayout(new GridLayout(2, false));
-        final Text nameText = UIUtils.createLabelText(group, "Schema Name", "");
+        final Text nameText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_schema_schema_name, "");
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
             updateButtons();
         });
 
-        final Combo userCombo = UIUtils.createLabelCombo(group, "Owner", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo userCombo = UIUtils.createLabelCombo(group, ExasolMessages.dialog_create_schema_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
 
         userCombo.addSelectionListener(new SelectionAdapter() {
             @Override
