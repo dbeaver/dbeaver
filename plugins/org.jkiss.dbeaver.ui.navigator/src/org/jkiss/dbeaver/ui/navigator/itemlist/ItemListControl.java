@@ -399,6 +399,7 @@ public class ItemListControl extends NodeListControl
                             propMap.put(property.getId(), oldValue);
                         }
                     }
+                    getItemsViewer().update(object, null);
                 }
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + property.getId() + "' value", e);
