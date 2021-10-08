@@ -56,16 +56,11 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         if (this.object == newObject) {
             return false;
         }
-        boolean update = !equalObjects(this.object, newObject);
-        if (update) {
-            unregisterNode(false);
-        }
+        unregisterNode(false);
         this.object = newObject;
-        if (update) {
-            registerNode();
-        }
+        registerNode();
 
-        return update;
+        return true;
     }
 
     @Override
