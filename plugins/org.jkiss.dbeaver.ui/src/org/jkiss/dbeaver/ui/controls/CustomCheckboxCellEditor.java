@@ -29,11 +29,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIElementAlignment;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyle;
-import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -128,6 +130,13 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
 
         final UIElementAlignment alignment = this.alignment == null ? style.getAlignment() : this.alignment;
         ((GridData) checkBox.getLayoutData()).horizontalAlignment = alignment.getStyle();
+        if (alignment == UIElementAlignment.LEFT) {
+            ((GridData) checkBox.getLayoutData()).horizontalIndent = 3;
+        } else {
+            ((GridData) checkBox.getLayoutData()).horizontalIndent = 0;
+        }
+
+        checkBox.getParent().layout(true, true);
     }
 
     @Override
