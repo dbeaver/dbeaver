@@ -1006,7 +1006,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     "Create target objects",
                     "Database metadata will be modified by creating new table(s) and column(s).\nAre you sure you want to proceed?")) {
                     // Create target objects
-                    if (applySchemaChanges(dataSource, mapping, persistActions)) {
+                    if (applySchemaChanges(container, mapping, persistActions)) {
                         autoAssignMappings();
                         updateMappingsAndButtons();
                     }
@@ -1015,11 +1015,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
     }
 
-    private boolean applySchemaChanges(DBPDataSource dataSource, DatabaseMappingContainer mapping, DBEPersistAction[] persistActions) {
+    private boolean applySchemaChanges(DBSObjectContainer targetContainer, DatabaseMappingContainer mapping, DBEPersistAction[] persistActions) {
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 monitor.beginTask("Save schema changes in the database", 1);
-                try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Apply schema changes")) {
+
+                try (DBCSession session = DBUtils.openUtilSession(monitor, targetContainer, "Apply schema changes")) {
                     DatabaseTransferUtils.executeDDL(session, persistActions);
 
                     DatabaseConsumerSettings consumerSettings = getDatabaseConsumerSettings();

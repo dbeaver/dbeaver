@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -368,7 +369,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             do {
                 retryInsert = false;
                 try {
-                    executeBatch.execute(targetSession, options);
+                    DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
+                        try {
+                            executeBatch.execute(targetSession, options);
+                        } catch (Throwable e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
                     if (ignoreErrors) {
