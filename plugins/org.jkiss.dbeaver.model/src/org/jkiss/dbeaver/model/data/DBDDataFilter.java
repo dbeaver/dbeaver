@@ -59,7 +59,7 @@ public class DBDDataFilter {
     @Nullable
     public DBDAttributeConstraint getConstraint(DBDAttributeBinding binding) {
         for (DBDAttributeConstraint co : constraints) {
-            if (co.getAttribute() == binding) {
+            if (binding.equals(co.getAttribute())) {
                 return co;
             }
         }
