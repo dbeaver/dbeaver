@@ -148,8 +148,11 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         if (ownerValue instanceof DBDComposite) {
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         }
+        //return ownerValue;
         DBDAttributeBinding parent = getParent(1);
-        throw new DBCException("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value");
+        //log.debug("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value");
+        throw new DBCException(DBValueFormatting.getDefaultValueDisplayString(ownerValue, DBDDisplayFormat.NATIVE));
+            //("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value");
     }
 
     @Nullable

@@ -1102,6 +1102,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return null;
         }
 
+        Object cellValue = getController().getModel().getCellValue(attr, row);
+        if (cellValue instanceof DBDValueError) {
+            return null;
+        }
+
         if (!inline) {
             for (Iterator<SpreadsheetValueController> iterator = openEditors.keySet().iterator(); iterator.hasNext(); ) {
                 SpreadsheetValueController valueController = iterator.next();

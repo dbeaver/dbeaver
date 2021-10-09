@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,6 +55,9 @@ public final class DBDValueError implements DBDValue {
     }
 
     public String getErrorTitle() {
+        if (error instanceof DBException) {
+            return error.getMessage();
+        }
         return error.getClass().getSimpleName() + ": " + CommonUtils.notEmpty(error.getMessage());
     }
 
