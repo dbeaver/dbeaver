@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * Data type mapper.
@@ -25,6 +26,6 @@ import org.jkiss.code.NotNull;
  */
 public interface DBPDataTypeMapper {
 
-    String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull String externalTypeName);
+    String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull DBSTypedObject typedObject);
 
 }

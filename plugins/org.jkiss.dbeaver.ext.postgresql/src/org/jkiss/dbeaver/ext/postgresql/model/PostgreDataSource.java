@@ -516,14 +516,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBPDataTypeMapp
     }
 
     @Override
-    public String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull String externalTypeName) {
-        externalTypeName = externalTypeName.toLowerCase(Locale.ENGLISH);
+    public String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull DBSTypedObject typedObject) {
+        String externalTypeName = typedObject.getTypeName().toLowerCase(Locale.ENGLISH);
         String localDataType = null, dataTypeModifies = null;
-        int modPos = externalTypeName.indexOf("(");
-        if (modPos != -1) {
-            dataTypeModifies = externalTypeName.substring(modPos);
-            externalTypeName = externalTypeName.substring(0, modPos);
-        }
 
         switch (externalTypeName) {
             case "xml":
@@ -535,6 +530,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBPDataTypeMapp
             case "nchar":
             case "nvarchar":
                 localDataType = "varchar";
+                dataTypeModifies = String.valueOf(typedObject.getMaxLength());
                 break;
             case "json":
             case "jsonb":
@@ -547,6 +543,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBPDataTypeMapp
                 break;
             case "number":
                 localDataType = "numeric";
+                if (typedObject.getPrecision() != null) {
+                    dataTypeModifies = typedObject.getPrecision().toString();
+                    if (typedObject.getScale() != null) {
+                        dataTypeModifies += "," + typedObject.getScale();
+                    }
+                }
+                break;
         }
         if (localDataType == null) {
             return null;
@@ -558,7 +561,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBPDataTypeMapp
         }
         String targetTypeName = dataType.getFullyQualifiedName(DBPEvaluationContext.DDL);
         if (dataTypeModifies != null) {
-            targetTypeName += dataTypeModifies;
+            targetTypeName += "(" + dataTypeModifies + ")";
         }
         return targetTypeName;
     }

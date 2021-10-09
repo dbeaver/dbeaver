@@ -277,21 +277,21 @@ public final class DBStructUtils {
             }
         }
 
-        String typeName = typedObject.getTypeName();
-        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
-        DBPDataKind dataKind = typedObject.getDataKind();
-
         {
             DBPDataTypeMapper dataTypeMapper = DBUtils.getAdapter(DBPDataTypeMapper.class, objectContainer);
             if (dataTypeMapper != null) {
                 String targetTypeName = dataTypeMapper.mapExternalDataType(
                     ((DBSObject) typedObject).getDataSource(),
-                    typedObject.getFullTypeName());
+                    typedObject);
                 if (targetTypeName != null) {
                     return targetTypeName;
                 }
             }
         }
+
+        String typeName = typedObject.getTypeName();
+        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
+        DBPDataKind dataKind = typedObject.getDataKind();
 
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
         if (dataTypeProvider != null) {
