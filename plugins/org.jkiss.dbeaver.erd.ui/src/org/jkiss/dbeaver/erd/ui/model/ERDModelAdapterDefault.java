@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.erd.ui.model;
 
 import org.eclipse.gef3.EditPart;
 import org.eclipse.gef3.Request;
+import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+
+import java.beans.PropertyChangeEvent;
 
 /**
  * Empty model adapter
@@ -36,6 +39,11 @@ public class ERDModelAdapterDefault implements ERDModelAdapter {
 
     @Override
     public void performPartRequest(EditPart editPart, Request request) {
+
+    }
+
+    @Override
+    public void handlePropertyChange(ERDEditorPart editorPart, PropertyChangeEvent event) {
 
     }
 }
