@@ -222,7 +222,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_INDEX,
                 StreamTransferConsumer.VARIABLE_PROJECT,
                 StreamTransferConsumer.VARIABLE_CONN_TYPE,
-                StreamTransferConsumer.VARIABLE_FILE
+                StreamTransferConsumer.VARIABLE_FILE,
+                StreamTransferConsumer.VARIABLE_SCRIPT_FILE
             };
 
             final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
