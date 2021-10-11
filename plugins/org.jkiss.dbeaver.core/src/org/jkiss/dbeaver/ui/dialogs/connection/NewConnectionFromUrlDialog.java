@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -49,6 +47,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NewConnectionFromUrlDialog extends BaseDialog {
     private static final int INPUT_DELAY_BEFORE_REFRESH = 300;
@@ -98,7 +97,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     UIUtils.asyncExec(() -> {
-                        final Set<Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>> drivers = getSuitableDrivers(urlText.getText()).entrySet();
+                        final List<Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>> drivers = getSuitableDrivers(urlText.getText());
 
                         url = urlText.getText();
                         driverViewer.getTree().setRedraw(false);
@@ -107,7 +106,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                         driverViewer.getTree().setRedraw(true);
 
                         if (!drivers.isEmpty()) {
-                            driverViewer.setSelection(new StructuredSelection(drivers.iterator().next().getValue()));
+                            driverViewer.setSelection(new StructuredSelection(drivers.get(0).getValue().get(0)));
                         }
 
                         updateCompletion();
@@ -158,8 +157,9 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
     }
 
     @NotNull
-    private Map<DBPDataSourceProviderDescriptor, List<DBPDriver>> getSuitableDrivers(@NotNull String url) {
+    private List<Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>> getSuitableDrivers(@NotNull String url) {
         final Map<DBPDataSourceProviderDescriptor, List<DBPDriver>> result = new LinkedHashMap<>();
+        final Map<DBPDataSourceProviderDescriptor, Integer> scores = new HashMap<>();
 
         for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
             final List<DBPDriver> drivers = new ArrayList<>();
@@ -170,15 +170,23 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 }
                 if (JDBCURL.getPattern(driver.getSampleURL()).matcher(url).matches()) {
                     drivers.add(driver);
+                    scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                 }
             }
 
             if (!drivers.isEmpty()) {
+                drivers.sort(Comparator
+                    .comparing(DBPDriver::getPromotedScore)
+                    .thenComparing(DBPDriver::getFullName)
+                    .reversed());
+
                 result.put(provider, drivers);
             }
         }
 
-        return result;
+        return result.entrySet().stream()
+            .sorted(Comparator.comparing(x -> scores.get(x.getKey()), Comparator.reverseOrder()))
+            .collect(Collectors.toList());
     }
 
     private void updateCompletion() {
