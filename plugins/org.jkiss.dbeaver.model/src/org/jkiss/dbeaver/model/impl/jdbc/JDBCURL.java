@@ -180,20 +180,10 @@ public class JDBCURL {
     @NotNull
     public static Pattern getPattern(@NotNull String sampleUrl) {
         String pattern = sampleUrl;
-        pattern = pattern.replaceAll("\\[(.*?)]", "\\\\E(?:\\\\Q$1\\\\E)?\\\\Q");
-        pattern = pattern.replaceAll("\\{(.*?)}", "\\\\E(\\?<\\\\Q$1\\\\E>[^?{}\\\\[\\\\]]+)\\\\Q");
+        pattern = CommonUtils.replaceAll(pattern, "\\[(.*?)]", m -> "\\\\E(?:\\\\Q" + m.group(1) + "\\\\E)?\\\\Q");
+        pattern = CommonUtils.replaceAll(pattern, "\\{(.*?)}", m -> "\\\\E(\\?<\\\\Q" + m.group(1) + "\\\\E>" + getPropertyRegex(m.group(1)) + ")\\\\Q");
         pattern = "^\\Q" + pattern + "\\E$";
         return Pattern.compile(pattern);
-    }
-
-    @NotNull
-    public static List<String> getProperties(@NotNull String sampleUrl) {
-        final Matcher matcher = Pattern.compile("\\{(.*?)}").matcher(sampleUrl);
-        final List<String> properties = new ArrayList<>();
-        while (matcher.find()) {
-            properties.add(matcher.group(1));
-        }
-        return properties;
     }
 
     @Nullable
@@ -238,5 +228,26 @@ public class JDBCURL {
             }
         }
         return configuration;
+    }
+
+    @NotNull
+    private static String getPropertyRegex(@NotNull String property) {
+        switch (property) {
+            case JDBCConstants.PROP_FOLDER:
+            case JDBCConstants.PROP_FILE:
+                return ".+?";
+            default:
+                return "[\\\\w\\\\-_.~]+";
+        }
+    }
+
+    @NotNull
+    private static List<String> getProperties(@NotNull String sampleUrl) {
+        final Matcher matcher = Pattern.compile("\\{(.*?)}").matcher(sampleUrl);
+        final List<String> properties = new ArrayList<>();
+        while (matcher.find()) {
+            properties.add(matcher.group(1));
+        }
+        return properties;
     }
 }
