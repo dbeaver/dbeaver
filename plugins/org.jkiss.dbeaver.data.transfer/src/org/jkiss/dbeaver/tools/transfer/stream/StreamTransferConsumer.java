@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -47,6 +48,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.io.ByteOrderMark;
 
@@ -581,6 +583,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         return null;
                     }
                     return dataContainer.getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getId();
+            }
+            if (dataContainer instanceof SQLQueryContainer) {
+                return CommonUtils.toString(((SQLQueryContainer) dataContainer).getQueryParameters().get(name));
             }
             return null;
         });
