@@ -143,27 +143,22 @@ public class GraphAnimation
 		if (!PLAYBACK)
 			return false;
 
-		List<?> children = container.getChildren();
+		List<IFigure> children = container.getChildren();
 		Rectangle rect1, rect2;
-		for (int i = 0; i < children.size(); i++)
-		{
-			IFigure child = (IFigure) children.get(i);
+		for (IFigure child : children) {
 			rect1 = (Rectangle) initialStates.get(child);
 			rect2 = (Rectangle) finalStates.get(child);
 			if (rect2 == null)
 				continue;
 
-			if (rect2.width > rect1.width || rect2.height > rect1.height)
-			{
+			if (rect2.width > rect1.width || rect2.height > rect1.height) {
 				child.setBounds(new Rectangle((int) Math.round(progress * rect2.x + (1 - progress) * rect1.x),
-						(int) Math.round(progress * rect2.y + (1 - progress) * rect1.y), rect2.width, rect2.height));
-			}
-			else
-			{
+					(int) Math.round(progress * rect2.y + (1 - progress) * rect1.y), rect2.width, rect2.height));
+			} else {
 				child.setBounds(new Rectangle((int) Math.round(progress * rect2.x + (1 - progress) * rect1.x),
-						(int) Math.round(progress * rect2.y + (1 - progress) * rect1.y), (int) Math.round(progress
-								* rect2.width + (1 - progress) * rect1.width), (int) Math.round(progress * rect2.height
-								+ (1 - progress) * rect1.height)));
+					(int) Math.round(progress * rect2.y + (1 - progress) * rect1.y), (int) Math.round(progress
+					* rect2.width + (1 - progress) * rect1.width), (int) Math.round(progress * rect2.height
+					+ (1 - progress) * rect1.height)));
 			}
 		}
 		return true;
@@ -277,11 +272,8 @@ public class GraphAnimation
 		if (!RECORDING)
 			return;
 
-		List<?> children = container.getChildren();
-		IFigure child;
-		for (int i = 0; i < children.size(); i++)
-		{
-			child = (IFigure) children.get(i);
+		List<IFigure> children = container.getChildren();
+		for (IFigure child : children) {
 			initialStates.put(child, child.getBounds().getCopy());
 		}
 	}

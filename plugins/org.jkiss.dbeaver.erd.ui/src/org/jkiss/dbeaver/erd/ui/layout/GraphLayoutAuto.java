@@ -49,10 +49,11 @@ public class GraphLayoutAuto extends AbstractLayout
     protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
 	{		
 		container.validate();
-		List<?> children = container.getChildren();
+		List<IFigure> children = container.getChildren();
 		Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
-		for (int i = 0; i < children.size(); i++)
-			result.union(((IFigure) children.get(i)).getBounds());
+		for (IFigure child : children) {
+			result.union(child.getBounds());
+		}
 		result.resize(container.getInsets().getWidth(), container.getInsets().getHeight());
 		return result.getSize();		
 	}
