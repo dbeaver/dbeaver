@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-//import org.jkiss.dbeaver.Log;
-
 public abstract class ExasolObject<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
 
     protected final PARENT parent;

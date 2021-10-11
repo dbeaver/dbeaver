@@ -1,4 +1,3 @@
-package org.jkiss.dbeaver.ext.postgresql.tasks;
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2021 DBeaver Corp and others
@@ -15,6 +14,8 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.postgresql.tasks;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
