@@ -16,24 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizard;
-import org.eclipse.jface.wizard.IWizardContainer;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.ProgressMonitorPart;
+import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -51,7 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * MultiPageWizardDialog
  */
-public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IPreferencePageContainer {
+public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IWizardContainer2, IPageChangeProvider, IPreferencePageContainer {
 
     private IWizard wizard;
     private Composite pageArea;
@@ -61,6 +58,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private ProgressMonitorPart monitorPart;
     private SashForm wizardSash;
     private volatile int runningOperations = 0;
+
+    private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
+    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
+
+    private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -274,6 +276,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         } finally {
             pageArea.setRedraw(true);
         }
+
+        firePageChanged(new PageChangedEvent(this, getCurrentPage()));
     }
 
     protected boolean isAutoLayoutAvailable() {
@@ -288,6 +292,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (!getWizard().performFinish()) {
                 return;
             }
+        } else if (buttonId == IDialogConstants.FINISH_ID) {
+            finishPressed();
+        } else if (buttonId == IDialogConstants.NEXT_ID) {
+            nextPressed();
+        } else if (buttonId == IDialogConstants.BACK_ID) {
+            backPressed();
         }
         super.buttonPressed(buttonId);
     }
@@ -414,4 +424,132 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     protected void showPage(String pageName) {
 
     }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        super.createButtonsForButtonBar(parent);
+
+        Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
+        cancelButton.setText(cancelButtonLabel);
+        Button finishButton = getButton(IDialogConstants.FINISH_ID);
+        finishButton.setText(finishButtonLabel);
+    }
+
+    public void setFinishButtonLabel(String finishButtonLabel) {
+        this.finishButtonLabel = finishButtonLabel;
+    }
+
+    public void setCancelButtonLabel(String cancelButtonLabel) {
+        this.cancelButtonLabel = cancelButtonLabel;
+    }
+
+    @Override
+    public Object getSelectedPage() {
+        return getCurrentPage();
+    }
+
+    protected void finishPressed() {
+
+    }
+
+    protected void nextPressed() {
+
+    }
+
+    protected void backPressed() {
+
+    }
+
+    public void addPageChangedListener(IPageChangedListener listener) {
+        pageChangedListeners.add(listener);
+    }
+
+    public void removePageChangedListener(IPageChangedListener listener) {
+        pageChangedListeners.remove(listener);
+    }
+
+    protected void firePageChanged(final PageChangedEvent event) {
+        for (IPageChangedListener l : pageChangedListeners) {
+            SafeRunnable.run(new SafeRunnable() {
+                @Override
+                public void run() {
+                    l.pageChanged(event);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void updateSize() {
+        updateSize(getCurrentPage());
+    }
+
+    protected void updateSize(IWizardPage page) {
+        if (page == null || page.getControl() == null) {
+            return;
+        }
+        updateSizeForPage(page);
+        pageArea.layout();
+    }
+
+    /**
+     * Computes the correct dialog size for the given page and resizes its shell if necessary.
+     *
+     * @param page the wizard page
+     */
+    private void updateSizeForPage(IWizardPage page) {
+        // ensure the page container is large enough
+        Point delta = calculatePageSizeDelta(page);
+        if (delta.x > 0 || delta.y > 0) {
+            // increase the size of the shell
+            Shell shell = getShell();
+            Point shellSize = shell.getSize();
+            setShellSize(shellSize.x + delta.x, shellSize.y + delta.y);
+            constrainShellSize();
+        }
+    }
+
+    /**
+     * Computes the correct dialog size for the given wizard and resizes its shell if necessary.
+     *
+     * @param sizingWizard the wizard
+     */
+    private void updateSizeForWizard(IWizard sizingWizard) {
+        Point delta = new Point(0, 0);
+        IWizardPage[] pages = sizingWizard.getPages();
+        for (IWizardPage page : pages) {
+            // ensure the page container is large enough
+            Point pageDelta = calculatePageSizeDelta(page);
+            delta.x = Math.max(delta.x, pageDelta.x);
+            delta.y = Math.max(delta.y, pageDelta.y);
+        }
+        if (delta.x > 0 || delta.y > 0) {
+            // increase the size of the shell
+            Shell shell = getShell();
+            Point shellSize = shell.getSize();
+            setShellSize(shellSize.x + delta.x, shellSize.y + delta.y);
+        }
+    }
+
+    private Point calculatePageSizeDelta(IWizardPage page) {
+        Control pageControl = page.getControl();
+        if (pageControl == null) {
+            // control not created yet
+            return new Point(0, 0);
+        }
+        Point contentSize = pageControl.computeSize(SWT.DEFAULT, SWT.DEFAULT,
+            true);
+        Rectangle rect = pageArea.getClientArea();
+        Point containerSize = new Point(rect.width, rect.height);
+        return new Point(Math.max(0, contentSize.x - containerSize.x), Math
+            .max(0, contentSize.y - containerSize.y));
+    }
+
+    private void setShellSize(int width, int height) {
+        Rectangle size = getShell().getBounds();
+        size.height = height;
+        size.width = width;
+        getShell().setBounds(getConstrainedShellBounds(size));
+    }
+
 }

@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
@@ -51,19 +51,19 @@ import java.util.List;
 /**
  * Task configuration wizard dialog
  */
-public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
+public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
-    private TaskConfigurationWizard nestedTaskWizard;
+    private TaskConfigurationWizard<?> nestedTaskWizard;
     private TaskConfigurationWizardPageTask taskEditPage;
     private boolean editMode;
     private boolean selectorMode;
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard) {
         this(window, wizard, null);
     }
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard, IStructuredSelection selection) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
         setFinishButtonLabel(UIMessages.button_start);
 
@@ -98,11 +98,11 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 
     @Override
-    protected TaskConfigurationWizard getWizard() {
+    public TaskConfigurationWizard<?> getWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
-    public TaskConfigurationWizard getTaskWizard() {
+    public TaskConfigurationWizard<?> getTaskWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
@@ -137,12 +137,13 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         {
             taskEditPage = getTaskPage();
             try {
-                TaskConfigurationWizard nextTaskWizard = taskEditPage.getTaskWizard();
+                TaskConfigurationWizard<?> nextTaskWizard = taskEditPage.getTaskWizard();
                 if (nextTaskWizard != nestedTaskWizard) {
                     // Now we need to create real wizard, initialize it and inject in this dialog
                         nestedTaskWizard = nextTaskWizard;
                         nestedTaskWizard.addPages();
-                        setWizard(nestedTaskWizard);
+                        // FIXME!!!!
+                        //setWizard(nestedTaskWizard);
                 }
             } catch (Exception e) {
                 setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_dialog_configuration_error, e.getMessage()));
