@@ -156,7 +156,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             {
                 widgetSelected(e);
                 if (isPageComplete()) {
-                    getWizard().getContainer().showPage(getWizard().getNextPage(DataTransferPagePipes.this));
+                    getWizard().getContainer().nextPressed();
                 }
             }
         });
@@ -183,6 +183,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             }
         }
         updatePageCompletion();
+        getWizard().getContainer().updateNavigationTree();
     }
 
     private void createInputsTable(Composite composite) {

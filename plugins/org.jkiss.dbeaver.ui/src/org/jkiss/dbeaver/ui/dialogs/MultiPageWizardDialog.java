@@ -86,12 +86,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
-    public Tree getPagesTree() {
-        return pagesTree;
-    }
-
     public IWizard getWizard() {
         return wizard;
+    }
+
+    protected Tree getPagesTree() {
+        return pagesTree;
     }
 
     @Override
@@ -350,6 +350,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
+    public void updateNavigationTree() {
+
+    }
+
     @Override
     public void updateButtons() {
         boolean complete = true;
@@ -462,11 +466,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
     }
 
-    public void setFinishButtonLabel(String finishButtonLabel) {
+    protected void setFinishButtonLabel(String finishButtonLabel) {
         this.finishButtonLabel = finishButtonLabel;
     }
 
-    public void setCancelButtonLabel(String cancelButtonLabel) {
+    protected void setCancelButtonLabel(String cancelButtonLabel) {
         this.cancelButtonLabel = cancelButtonLabel;
     }
 
@@ -479,7 +483,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     }
 
-    protected void nextPressed() {
+    public void nextPressed() {
         IWizard wizard = getWizard();
         IWizardPage currentPage = getCurrentPage();
         if (!currentPage.isPageComplete()) {
@@ -491,7 +495,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
-    protected void backPressed() {
+    public void backPressed() {
         IWizard wizard = getWizard();
         IWizardPage currentPage = getCurrentPage();
         IWizardPage prevPage = wizard.getPreviousPage(currentPage);
@@ -508,7 +512,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pageChangedListeners.remove(listener);
     }
 
-    protected void firePageChanged(final PageChangedEvent event) {
+    private void firePageChanged(final PageChangedEvent event) {
         for (IPageChangedListener l : pageChangedListeners) {
             SafeRunnable.run(new SafeRunnable() {
                 @Override
@@ -524,7 +528,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         updateSize(getCurrentPage());
     }
 
-    protected void updateSize(IWizardPage page) {
+    private void updateSize(IWizardPage page) {
         if (page == null || page.getControl() == null) {
             return;
         }

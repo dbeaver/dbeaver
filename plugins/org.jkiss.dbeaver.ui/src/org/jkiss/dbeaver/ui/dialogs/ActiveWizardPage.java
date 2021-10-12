@@ -23,15 +23,15 @@ import org.eclipse.jface.wizard.WizardPage;
 /**
  * ActiveWizardPage
  */
-public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPage
-{
+public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPage implements IWizardPageActive {
+
     protected ActiveWizardPage(String pageName) {
         super(pageName);
     }
 
     @Override
     public WIZARD getWizard() {
-        return (WIZARD)super.getWizard();
+        return (WIZARD) super.getWizard();
     }
 
     /**
@@ -50,21 +50,19 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
     }
 
     @Override
-    public void setVisible(boolean visible)
-    {
+    public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible) {
             activatePage();
         }
-//        else {
-//            deactivatePage();
-//        }
     }
 
+    @Override
     public void activatePage() {
 
     }
 
+    @Override
     public void deactivatePage() {
 
     }
