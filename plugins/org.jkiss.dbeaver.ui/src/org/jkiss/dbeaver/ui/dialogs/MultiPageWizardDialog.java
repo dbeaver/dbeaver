@@ -419,23 +419,32 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Code copied from WizardDialog
         if (monitorPart != null) {
             monitorPart.setVisible(true);
-            monitorPart.layout();
+            //monitorPart.layout();
             monitorPart.attachToCancelComponent(null);
         }
-        ControlEnableState pageEnableState = ControlEnableState.disable(wizardSash);
-        ControlEnableState buttonsEnableState = ControlEnableState.disable(getButtonBar());
+        boolean isDisableControlsOnRun = isDisableControlsOnRun();
+        ControlEnableState pageEnableState = isDisableControlsOnRun ? ControlEnableState.disable(wizardSash) : null;
+        ControlEnableState buttonsEnableState = isDisableControlsOnRun ? ControlEnableState.disable(getButtonBar()) : null;
         try {
             runningOperations++;
             ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
         } finally {
             runningOperations--;
-            buttonsEnableState.restore();
-            pageEnableState.restore();
+            if (buttonsEnableState != null) {
+                buttonsEnableState.restore();
+            }
+            if (pageEnableState != null) {
+                pageEnableState.restore();
+            }
             if (monitorPart != null) {
                 monitorPart.done();
                 monitorPart.setVisible(false);
             }
         }
+    }
+
+    protected boolean isDisableControlsOnRun() {
+        return false;
     }
 
     protected void showPage(String pageName) {

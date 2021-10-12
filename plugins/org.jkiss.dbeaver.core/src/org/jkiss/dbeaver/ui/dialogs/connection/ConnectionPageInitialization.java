@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -130,8 +129,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     private void loadDatabaseSettings(DBPDataSource dataSource) {
         try {
-            getContainer().run(true, true, monitor -> {
-                loadDatabaseSettings(new DefaultProgressMonitor(monitor), dataSource);
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                loadDatabaseSettings(monitor, dataSource);
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Database info reading", "Error reading information from database", e.getTargetException());

@@ -1132,15 +1132,16 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
         if (firstInit) {
             firstInit = false;
-            Tree table = mappingViewer.getTree();
-            int totalWidth = table.getClientArea().width;
-            TreeColumn[] columns = table.getColumns();
-            columns[0].setWidth(totalWidth * 35 / 100);
-            columns[1].setWidth(totalWidth * 35 / 100);
-            columns[2].setWidth(totalWidth * 15 / 100);
-            columns[3].setWidth(totalWidth * 15 / 100);
-
-            UIUtils.asyncExec(this::autoAssignMappings);
+            UIUtils.asyncExec(() -> {
+                Tree table = mappingViewer.getTree();
+                int totalWidth = table.getClientArea().width;
+                TreeColumn[] columns = table.getColumns();
+                columns[0].setWidth(totalWidth * 35 / 100);
+                columns[1].setWidth(totalWidth * 35 / 100);
+                columns[2].setWidth(totalWidth * 15 / 100);
+                columns[3].setWidth(totalWidth * 15 / 100);
+                this.autoAssignMappings();
+            });
         }
     }
 
