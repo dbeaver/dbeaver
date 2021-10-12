@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -46,21 +48,18 @@ import java.util.Map;
 
 public class NewConnectionWizard extends ConnectionWizard
 {
-    private DBPDriver initialDriver;
+    private final DBPDriver initialDriver;
+    private final DBPConnectionConfiguration initialConfiguration;
     private IStructuredSelection selection;
     private List<DBPDataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
     private Map<DBPDataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
 
-
-    public NewConnectionWizard() {
-        this(null);
-    }
-
-    public NewConnectionWizard(DBPDriver initialDriver) {
+    public NewConnectionWizard(@Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
+        this.initialConfiguration = initialConfiguration;
     }
 
     @Override
@@ -228,4 +227,12 @@ public class NewConnectionWizard extends ConnectionWizard
         return true;
     }
 
+    @NotNull
+    @Override
+    protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
+        if (initialConfiguration != null) {
+            return initialConfiguration;
+        }
+        return super.getDefaultConnectionConfiguration();
+    }
 }

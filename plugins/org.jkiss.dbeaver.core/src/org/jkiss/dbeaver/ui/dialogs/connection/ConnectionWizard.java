@@ -118,10 +118,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
             throw new IllegalStateException("No active project");
         }
         if (info == null) {
-            DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+            DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
             info = new DataSourceDescriptor(
                 registry,
-                DataSourceDescriptor.generateNewId(getSelectedDriver()),
+                DataSourceDescriptor.generateNewId(driver),
                 driver,
                 connectionInfo);
             DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
@@ -246,4 +246,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         return false;
     }
 
+    @NotNull
+    protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
+        return new DBPConnectionConfiguration();
+    }
 }

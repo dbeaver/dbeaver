@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public interface SQLQueryContainer extends IDataSourceContainerProvider, DBPContextProvider {
 
+    SQLScriptContext getScriptContext();
+
     SQLScriptElement getQuery();
 
     Map<String, Object> getQueryParameters();
