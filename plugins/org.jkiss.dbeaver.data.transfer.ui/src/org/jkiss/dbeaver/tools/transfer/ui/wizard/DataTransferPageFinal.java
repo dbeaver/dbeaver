@@ -35,11 +35,12 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
+class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> implements IWizardPageNavigable {
 
     private static final Log log = Log.getLog(DataTransferPageFinal.class);
 
@@ -234,6 +235,16 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     protected boolean determinePageCompletion()
     {
         return activated;
+    }
+
+    @Override
+    public boolean isPageNavigable() {
+        return false;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return true;
     }
 
 }

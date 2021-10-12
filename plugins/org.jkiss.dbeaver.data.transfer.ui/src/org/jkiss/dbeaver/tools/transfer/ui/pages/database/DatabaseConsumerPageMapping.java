@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -70,7 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
+public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> implements IWizardPageNavigable {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
@@ -1222,4 +1223,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         return null;
     }
+
+    @Override
+    public boolean isPageNavigable() {
+        return true;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return
+            (getWizard().getSettings().getConsumer() != null &&
+            DatabaseTransferConsumer.class.isAssignableFrom(getWizard().getSettings().getConsumer().getNodeClass()));
+    }
+
+
 }

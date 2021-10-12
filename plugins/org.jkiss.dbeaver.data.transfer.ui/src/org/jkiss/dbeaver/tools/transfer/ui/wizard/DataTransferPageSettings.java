@@ -44,6 +44,21 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
     }
 
     @Override
+    public String getTitle() {
+        DataTransferSettings dtSettings = getWizard().getSettings();
+
+        StringBuilder title = new StringBuilder();
+        String producerName = dtSettings.getProducer() == null ? "null" : dtSettings.getProducer().getName();
+        String consumerName = dtSettings.getConsumer() == null ? "null" : dtSettings.getConsumer().getName();
+        title.append(DTMessages.data_transfer_wizard_settings_title).append(" (").append(producerName).append(" to ").append(consumerName);
+        if (dtSettings.getProcessor() != null) {
+            title.append(", ").append(dtSettings.getProcessor().getName());
+        }
+        title.append(")");
+        return title.toString();
+    }
+
+    @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 

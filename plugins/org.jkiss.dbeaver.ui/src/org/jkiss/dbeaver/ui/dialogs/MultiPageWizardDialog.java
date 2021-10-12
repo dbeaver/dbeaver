@@ -145,15 +145,24 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         wizardSash.setWeights(new int[]{300, 700});
 
-        Point maxSize = new Point(0, 0);
-        IWizardPage[] pages = wizard.getPages();
-        for (IWizardPage page : pages) {
-            addPage(null, page, maxSize);
-        }
+        updateNavigationTree();
 
         pagesTree.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                TreeItem[] selection = pagesTree.getSelection();
+                if (selection.length > 0) {
+                    Object newPage = selection[0].getData();
+                    if (newPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) newPage).isPageNavigable()) {
+                        if (prevPage != null) {
+                            TreeItem prevItem = UIUtils.getTreeItem(pagesTree, prevPage);
+                            if (prevItem != null) {
+                                pagesTree.select(prevItem);
+                            }
+                        }
+                        return;
+                    }
+                }
                 changePage();
             }
         });
@@ -193,27 +202,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     protected void cancelCurrentOperation() {
 
-    }
-
-    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize) {
-        TreeItem item = parentItem == null ?
-            new TreeItem(pagesTree, SWT.NONE) :
-            new TreeItem(parentItem, SWT.NONE);
-        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
-        item.setData(page);
-
-        // Ad sub pages
-        if (page instanceof IDialogPageProvider) {
-            IDialogPage[] subPages = ((IDialogPageProvider) page).getDialogPages(true, resizeHasOccurred);
-            if (!ArrayUtils.isEmpty(subPages)) {
-                for (IDialogPage subPage : subPages) {
-                    addPage(item, subPage, maxSize);
-                }
-                //item.setExpanded(true);
-            }
-        }
-
-        return item;
     }
 
     private void changePage() {
@@ -351,7 +339,56 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     public void updateNavigationTree() {
+        pagesTree.setRedraw(false);
+        try {
+            Object selectedPage = getSelectedPage();
 
+            pagesTree.removeAll();
+
+            Point maxSize = new Point(0, 0);
+
+            IWizardPage[] pages = wizard.getPages();
+            for (IWizardPage page : pages) {
+                addPage(null, page, maxSize);
+            }
+
+            for (TreeItem item : pagesTree.getItems()) {
+                if (item.getData() == selectedPage) {
+                    pagesTree.select(item);
+                    break;
+                }
+            }
+        } finally {
+            pagesTree.setRedraw(true);
+        }
+    }
+
+    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize) {
+        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
+            return null;
+        }
+        TreeItem item = parentItem == null ?
+            new TreeItem(pagesTree, SWT.NONE) :
+            new TreeItem(parentItem, SWT.NONE);
+        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
+        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+            item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        }
+
+        item.setData(page);
+
+        // Ad sub pages
+        if (page instanceof IDialogPageProvider) {
+            IDialogPage[] subPages = ((IDialogPageProvider) page).getDialogPages(true, resizeHasOccurred);
+            if (!ArrayUtils.isEmpty(subPages)) {
+                for (IDialogPage subPage : subPages) {
+                    addPage(item, subPage, maxSize);
+                }
+                //item.setExpanded(true);
+            }
+        }
+
+        return item;
     }
 
     @Override

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,7 +45,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.*;
 
-public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
+public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> implements IWizardPageNavigable {
 
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
@@ -363,5 +364,17 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         return variables.toArray(new String[0]);
+    }
+
+    @Override
+    public boolean isPageNavigable() {
+        return true;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return
+            getWizard().getSettings().getConsumer() != null &&
+            StreamTransferConsumer.class.isAssignableFrom(getWizard().getSettings().getConsumer().getNodeClass());
     }
 }
