@@ -427,7 +427,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 // Last one
-                DBWorkbench.getPlatformUI().executeShellProgram(getOutputFolder());
+                DBWorkbench.getPlatformUI().showInSystemExplorer(outputFile.toString());
             }
         }
     }

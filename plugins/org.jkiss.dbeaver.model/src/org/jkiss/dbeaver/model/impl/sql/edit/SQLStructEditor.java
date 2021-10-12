@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -120,7 +121,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public class StructCreateCommand extends ObjectCreateCommand
         implements DBECommandAggregator<OBJECT_TYPE> {
 
-        private final Map<DBPObject, NestedObjectCommand> objectCommands = new LinkedHashMap<>();
+        private final Map<DBPObject, NestedObjectCommand<?, ?>> objectCommands = new LinkedHashMap<>();
 
         public StructCreateCommand(OBJECT_TYPE object, String table, Map<String, Object> options)
         {
@@ -128,7 +129,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             objectCommands.put(getObject(), this);
         }
 
-        public Map<DBPObject, NestedObjectCommand> getObjectCommands()
+        public Map<DBPObject, NestedObjectCommand<?, ?>> getObjectCommands()
         {
             return objectCommands;
         }
@@ -137,11 +138,13 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public boolean aggregateCommand(DBECommand<?> command)
         {
             if (command instanceof NestedObjectCommand) {
-                objectCommands.put(command.getObject(), (NestedObjectCommand) command);
-                return true;
-            } else {
-                return false;
+                final DBPObject object = command.getObject();
+                if (object instanceof DBSObject && DBUtils.isParentOf((DBSObject) object, getObject())) {
+                    objectCommands.put(object, (NestedObjectCommand<?, ?>) command);
+                    return true;
+                }
             }
+            return false;
         }
 
         @Override

@@ -454,6 +454,11 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
+    public void showInSystemExplorer(@NotNull String path) {
+        UIUtils.asyncExec(() -> ShellUtils.showInSystemExplorer(path));
+    }
+
+    @Override
     public boolean readAndDispatchEvents() {
         Display currentDisplay = Display.getCurrent();
         if (currentDisplay != null) {
