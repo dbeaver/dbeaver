@@ -23,6 +23,8 @@ import org.jkiss.code.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Common utils
@@ -994,5 +996,21 @@ public class CommonUtils {
      */
     public static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(value, max));
+    }
+
+    /**
+     * Replaces every subsequence of the input sequence that matches the
+     * pattern with the result of applying the given replacer function to the
+     * match result of this matcher corresponding to that subsequence.
+     */
+    @NotNull
+    public static String replaceAll(@NotNull String input, @NotNull String regex, @NotNull Function<Matcher, String> replacer) {
+        final Matcher matcher = Pattern.compile(regex).matcher(input);
+        final StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, replacer.apply(matcher));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }
