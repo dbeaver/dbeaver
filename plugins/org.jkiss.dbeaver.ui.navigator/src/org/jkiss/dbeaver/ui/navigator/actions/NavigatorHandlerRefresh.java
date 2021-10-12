@@ -59,6 +59,12 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         //final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart workbenchPart = HandlerUtil.getActivePart(event);
 
+        // If navigator refresh is possible then do not refresh active part directly
+        // Because active part should be refresh in navigator event handler
+        if (refreshInNavigator(event, workbenchPart)) {
+            return null;
+        }
+
         // Try to refresh as refreshable part
         if (workbenchPart instanceof IRefreshablePart) {
             if (((IRefreshablePart) workbenchPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
@@ -67,11 +73,15 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
             //return null;
         }
 
+        return null;
+    }
+
+    private boolean refreshInNavigator(ExecutionEvent event, IWorkbenchPart workbenchPart) {
         // Try to get navigator view and refresh node
         INavigatorModelView navigatorView = GeneralUtils.adapt(workbenchPart, INavigatorModelView.class);
         if (navigatorView == null) {
             // Nothing to refresh
-            return null;
+            return false;
         }
         final List<DBNNode> refreshObjects = new ArrayList<>();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -105,7 +115,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     DBNNode nextNode = iter.next();
                     if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
                         if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
-                            return null;
+                            return true;
                         }
                         iter.remove();
                     }
@@ -115,13 +125,12 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // Refresh objects
         if (!refreshObjects.isEmpty()) {
-            refreshNavigator(refreshObjects);
+            return refreshNavigator(refreshObjects);
         }
-
-        return null;
+        return false;
     }
 
-    public static void refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
+    public static boolean refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
     {
         Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
             @Override
@@ -184,6 +193,8 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         };
         refreshJob.setUser(true);
         refreshJob.schedule();
+
+        return true;
     }
 
     private static boolean showConfirmation(DBNNode node) {
