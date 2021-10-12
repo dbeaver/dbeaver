@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
 import java.io.File;
@@ -34,7 +36,13 @@ public class InstanceClient {
 
     private static final Log log = Log.getLog(InstanceClient.class);
 
-    public static IInstanceController createClient(String location) {
+    @Nullable
+    public static IInstanceController createClient(@NotNull String location) {
+        return createClient(location, false);
+    }
+
+    @Nullable
+    public static IInstanceController createClient(@NotNull String location, boolean quiet) {
         try {
             File rmiFile = new File(location, ".metadata/" + IInstanceController.RMI_PROP_FILE);
             if (!rmiFile.exists()) {
@@ -50,7 +58,9 @@ public class InstanceClient {
                 Integer.parseInt(rmiPort));
             return (IInstanceController) registry.lookup(IInstanceController.CONTROLLER_ID);
         } catch (Exception e) {
-            log.debug("Error instantiating RMI client: " + e.getMessage());
+            if (!quiet) {
+                log.debug("Error instantiating RMI client: " + e.getMessage());
+            }
         }
         return null;
     }
