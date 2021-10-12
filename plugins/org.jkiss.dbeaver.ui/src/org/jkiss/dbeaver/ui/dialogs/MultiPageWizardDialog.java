@@ -227,6 +227,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
 
         pageArea.setRedraw(false);
+        IWizard wizard = getWizard();
         try {
             GridData gd;
             if (prevPage != null) {
@@ -270,7 +271,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             prevPage = page;
             pageArea.layout();
             if (pageCreated && isAutoLayoutAvailable()) {
-                UIUtils.asyncExec(() -> UIUtils.resizeShell(getWizard().getContainer().getShell()));
+                UIUtils.asyncExec(() -> UIUtils.resizeShell(wizard.getContainer().getShell()));
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
@@ -361,9 +362,21 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 }
             }
         }
-        Button button = getButton(IDialogConstants.OK_ID);
-        if (button != null && !button.isDisposed()) {
-            button.setEnabled(complete);
+        Button finishButton = getButton(IDialogConstants.OK_ID);
+        if (finishButton != null && !finishButton.isDisposed()) {
+            finishButton.setEnabled(complete);
+        }
+
+        IWizardPage currentPage = getCurrentPage();
+        if (currentPage != null) {
+            Button nextButton = getButton(IDialogConstants.NEXT_ID);
+            if (nextButton != null) {
+                nextButton.setEnabled(wizard.getNextPage(currentPage) != null);
+            }
+            Button prevButton = getButton(IDialogConstants.BACK_ID);
+            if (prevButton != null) {
+                prevButton.setEnabled(wizard.getPreviousPage(currentPage) != null);
+            }
         }
     }
 
@@ -426,7 +439,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     protected void showPage(String pageName) {
-
+        for (IWizardPage page : getWizard().getPages()) {
+            if (pageName.equals(page.getName())) {
+                showPage(page);
+                break;
+            }
+        }
     }
 
     @Override
@@ -453,11 +471,24 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     protected void nextPressed() {
-
+        IWizard wizard = getWizard();
+        IWizardPage currentPage = getCurrentPage();
+        if (!currentPage.isPageComplete()) {
+            return;
+        }
+        IWizardPage nextPage = wizard.getNextPage(currentPage);
+        if (nextPage != null) {
+            showPage(nextPage);
+        }
     }
 
     protected void backPressed() {
-
+        IWizard wizard = getWizard();
+        IWizardPage currentPage = getCurrentPage();
+        IWizardPage prevPage = wizard.getPreviousPage(currentPage);
+        if (prevPage != null) {
+            showPage(prevPage);
+        }
     }
 
     public void addPageChangedListener(IPageChangedListener listener) {

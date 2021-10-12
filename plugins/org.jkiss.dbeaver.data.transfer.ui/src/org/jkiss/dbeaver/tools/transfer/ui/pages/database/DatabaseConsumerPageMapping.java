@@ -835,10 +835,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     private void autoAssignMappings() {
-        try {
-            getWizard().getRunnableContext().run(true, true, (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
-        } catch (InvocationTargetException | InterruptedException e) {
-            //ignored
+        if (getWizard().getSettings().getDataPipes().size() > 1) {
+            try {
+                getWizard().getRunnableContext().run(true, true,
+                    (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
+            } catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            } catch (InterruptedException ignored) {
+            }
         }
         loadAndUpdateColumnsModel();
         for (TreeItem item : mappingViewer.getTree().getItems()) {
