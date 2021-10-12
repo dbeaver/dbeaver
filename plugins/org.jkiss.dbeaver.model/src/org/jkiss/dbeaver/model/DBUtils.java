@@ -470,6 +470,15 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isParentOf(@NotNull DBSObject child, @NotNull DBSObject parent) {
+        for (DBSObject object = child; object != null; object = object.getParentObject()) {
+            if (parent.equals(object)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Search for virtual entity descriptor
      * @param object object
