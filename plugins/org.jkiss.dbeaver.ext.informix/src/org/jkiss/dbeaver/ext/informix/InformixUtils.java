@@ -1,5 +1,3 @@
-// Sequences, index source, trigger source, constraint syntax
-
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2021 DBeaver Corp and others
