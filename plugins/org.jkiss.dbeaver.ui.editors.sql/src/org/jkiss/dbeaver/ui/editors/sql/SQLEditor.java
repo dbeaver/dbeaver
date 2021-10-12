@@ -3621,6 +3621,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
+        public SQLScriptContext getScriptContext() {
+            return SQLEditor.this.getGlobalScriptContext();
+        }
+
+        @Override
         public SQLScriptElement getQuery() {
             return query;
         }

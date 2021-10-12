@@ -147,6 +147,12 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 	public static String dialog_connection_wizard_title;
 
+	public static String dialog_connection_from_url_title;
+	public static String dialog_connection_from_url_url;
+	public static String dialog_connection_from_url_drivers;
+	public static String dialog_connection_from_url_error_no_drivers_found;
+	public static String dialog_connection_from_url_error_no_driver_selected;
+
 	public static String dialog_migrate_wizard_choose_driver_description;
 	public static String dialog_migrate_wizard_choose_driver_title;
 	public static String dialog_migrate_wizard_name;

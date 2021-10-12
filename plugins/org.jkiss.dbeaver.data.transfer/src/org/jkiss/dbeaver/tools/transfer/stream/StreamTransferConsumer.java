@@ -83,6 +83,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_CONN_TYPE = "connectionType";
     public static final String VARIABLE_FILE = "file";
+    public static final String VARIABLE_SCRIPT_FILE = "scriptFilename";
 
     public static final String[][] VARIABLES = {
         {VARIABLE_DATASOURCE, "source database datasource"},
@@ -94,7 +95,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         {VARIABLE_INDEX, "index of current file (if split is used)"},
         {VARIABLE_PROJECT, "source database project"},
         {VARIABLE_CONN_TYPE, "source database connection type"},
-        {VARIABLE_FILE, "output file path"}
+        {VARIABLE_FILE, "output file path"},
+        {VARIABLE_SCRIPT_FILE, "source script filename"}
     };
 
     public static final int OUT_FILE_BUFFER_SIZE = 100000;
@@ -578,6 +580,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
                 case VARIABLE_FILE:
                     return targetFile == null ? "" : targetFile.getAbsolutePath();
+                case VARIABLE_SCRIPT_FILE: {
+                    final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, dataContainer);
+                    if (container != null) {
+                        final File file = container.getScriptContext().getSourceFile();
+                        if (file != null) {
+                            String filename = file.getName();
+                            if (filename.indexOf('.') >= 0) {
+                                filename = filename.substring(0, filename.lastIndexOf('.'));
+                            }
+                            return filename;
+                        }
+                    }
+                    break;
+                }
                 case VARIABLE_CONN_TYPE:
                     if (dataContainer == null) {
                         return null;

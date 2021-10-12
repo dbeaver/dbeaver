@@ -219,6 +219,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                     entry.getKey().setChildren(entry.getValue());
                 }
                 //editor.getPaletteContents().setChildren(tools);
+                ((DiagramPart) editpart).getDiagram().getModelAdapter().handleContentChange(editor);
             }
         }
         finally {

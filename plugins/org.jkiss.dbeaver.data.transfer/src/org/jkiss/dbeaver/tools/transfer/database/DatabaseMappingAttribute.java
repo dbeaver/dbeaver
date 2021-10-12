@@ -174,12 +174,17 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
                             if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
                                 DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
-                                targetName = targetAttribute.getName();
                                 target = CommonUtils.findBestCaseAwareMatch(
                                     targetAttributes,
                                     DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
                                     DBSEntityAttribute::getName
                                 );
+                                if (target != null && !targetAttribute.getName().equalsIgnoreCase(target.getName())) {
+                                    // In case of violated order (some columns are missing in the source, for example), if it turned out to find a suitable column by name
+                                    targetName = target.getName();
+                                } else {
+                                    targetName = targetAttribute.getName();
+                                }
                             }
                         }
 
