@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -203,7 +204,13 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     DBNDatabaseNode objectNode = nModel.getNodeByObject(element);
                     DBPImage icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
                     cell.setImage(DBeaverIcons.getImage(icon));
-                    cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
+                    String cellText;
+                    if (element instanceof SQLQueryContainer) {
+                        cellText = ((SQLQueryContainer) element).getQuery().getText(); // We don't need extra quotes for queries
+                    } else {
+                        cellText = DBUtils.getObjectFullName(element, DBPEvaluationContext.UI);
+                    }
+                    cell.setText(cellText);
                 } else if (element.getDescription() != null) {
                     cell.setText(element.getDescription());
                 }
