@@ -21,6 +21,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
@@ -37,8 +41,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Locale;
+import java.util.List;
+import java.util.*;
 
 public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
 
@@ -212,19 +216,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         {
-            final String[] variables = {
-                StreamTransferConsumer.VARIABLE_DATASOURCE,
-                StreamTransferConsumer.VARIABLE_CATALOG,
-                StreamTransferConsumer.VARIABLE_SCHEMA,
-                StreamTransferConsumer.VARIABLE_TABLE,
-                StreamTransferConsumer.VARIABLE_TIMESTAMP,
-                StreamTransferConsumer.VARIABLE_DATE,
-                StreamTransferConsumer.VARIABLE_INDEX,
-                StreamTransferConsumer.VARIABLE_PROJECT,
-                StreamTransferConsumer.VARIABLE_CONN_TYPE,
-                StreamTransferConsumer.VARIABLE_FILE
-            };
-
+            final String[] variables = getAvailableVariables();
             final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
                 .stream(variables)
                 .map(GeneralUtils::variablePattern)
@@ -346,4 +338,30 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         return true;
     }
 
+    @NotNull
+    private String[] getAvailableVariables() {
+        final Set<String> variables = new LinkedHashSet<>(Arrays.asList(
+            StreamTransferConsumer.VARIABLE_DATASOURCE,
+            StreamTransferConsumer.VARIABLE_CATALOG,
+            StreamTransferConsumer.VARIABLE_SCHEMA,
+            StreamTransferConsumer.VARIABLE_TABLE,
+            StreamTransferConsumer.VARIABLE_TIMESTAMP,
+            StreamTransferConsumer.VARIABLE_DATE,
+            StreamTransferConsumer.VARIABLE_INDEX,
+            StreamTransferConsumer.VARIABLE_PROJECT,
+            StreamTransferConsumer.VARIABLE_CONN_TYPE,
+            StreamTransferConsumer.VARIABLE_FILE,
+            StreamTransferConsumer.VARIABLE_SCRIPT_FILE
+        ));
+
+        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+        if (pipes.size() == 1) {
+            final DBSObject object = pipes.get(0).getProducer().getDatabaseObject();
+            if (object instanceof SQLQueryContainer) {
+                variables.addAll(((SQLQueryContainer) object).getQueryParameters().keySet());
+            }
+        }
+
+        return variables.toArray(new String[0]);
+    }
 }

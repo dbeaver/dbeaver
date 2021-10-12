@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorParametersProvider;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -41,7 +42,7 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
 
     private static class ExportDataSQLScriptContext extends SQLScriptContext {
         public ExportDataSQLScriptContext(SQLEditor editor) {
-            super(null, new DataSourceContextProvider(editor.getDataSource()), null, new StringWriter(), new SQLEditorParametersProvider(editor.getSite()));
+            super(null, new DataSourceContextProvider(editor.getDataSource()), EditorUtils.getLocalFileFromInput(editor.getEditorInput()), new StringWriter(), new SQLEditorParametersProvider(editor.getSite()));
         }
 
         @Override

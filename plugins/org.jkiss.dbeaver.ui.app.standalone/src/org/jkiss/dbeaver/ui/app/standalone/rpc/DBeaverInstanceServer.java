@@ -42,7 +42,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
@@ -258,6 +260,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 Files.delete(GeneralUtils.getMetadataFolder().toPath().resolve(RMI_PROP_FILE));
             }
 
+            log.debug("RMI controller has been stopped");
         } catch (Exception e) {
             log.error("Can't stop RMI server", e);
         }

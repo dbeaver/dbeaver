@@ -46,4 +46,9 @@ public class ERDModelAdapterDefault implements ERDModelAdapter {
     public void handlePropertyChange(ERDEditorPart editorPart, PropertyChangeEvent event) {
 
     }
+
+    @Override
+    public void handleContentChange(ERDEditorPart editorPart) {
+
+    }
 }
