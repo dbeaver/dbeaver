@@ -882,7 +882,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return RefreshResult.IGNORED;
         }
 
-        if (force && isDirty() && showConfirmation) {
+        DBSObject databaseObject = getEditorInput().getDatabaseObject();
+        boolean isPersistedObject = databaseObject != null && databaseObject.isPersisted();
+
+        if (force && isPersistedObject && isDirty() && showConfirmation) {
             if (ConfirmationDialog.showConfirmDialog(
                 ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
                 null,
@@ -912,9 +915,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
 
-        DBSObject databaseObject = getEditorInput().getDatabaseObject();
         if (force) {
-            if (databaseObject != null && databaseObject.isPersisted()) {
+            if (isPersistedObject) {
                 // Lists and commands should be refreshed only if we make real refresh from remote storage
                 // Otherwise just update object's properties
                 DBECommandContext commandContext = getCommandContext();

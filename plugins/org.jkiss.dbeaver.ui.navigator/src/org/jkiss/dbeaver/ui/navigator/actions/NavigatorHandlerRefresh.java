@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -33,12 +34,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -67,6 +70,16 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // Try to refresh as refreshable part
         if (workbenchPart instanceof IRefreshablePart) {
+            if (workbenchPart instanceof IDatabaseEditor) {
+                IEditorInput editorInput = ((IDatabaseEditor) workbenchPart).getEditorInput();
+                if (editorInput instanceof IDatabaseEditorInput) {
+                    DBSObject databaseObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+                    if (databaseObject == null || !databaseObject.isPersisted()) {
+                        // Do not refresh non-persistent objects
+                        return null;
+                    }
+                }
+            }
             if (((IRefreshablePart) workbenchPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
                 return null;
             }
