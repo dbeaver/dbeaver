@@ -26,6 +26,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -125,6 +126,9 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
             ((GridLayout) parent.getLayout()).numColumns += 1;
         }
+
+        Button backButton = createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
+        Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
 
         super.createButtonsForButtonBar(parent);
     }

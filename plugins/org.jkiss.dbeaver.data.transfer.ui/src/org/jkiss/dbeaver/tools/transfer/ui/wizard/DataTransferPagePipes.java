@@ -65,6 +65,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     DataTransferPagePipes() {
         super(DTMessages.data_transfer_wizard_init_name);
+        setTitle(DTMessages.data_transfer_wizard_init_name);
     }
 
     @Override

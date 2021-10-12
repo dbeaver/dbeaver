@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -198,7 +199,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         TreeItem item = parentItem == null ?
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
-        item.setText(page.getTitle());
+        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
         item.setData(page);
 
         // Ad sub pages
@@ -383,11 +384,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateWindowTitle() {
-        getShell().setText(getWizard().getWindowTitle());
-        // Do not update dialog icon. It can be disposed in the page and this will break connection dialog
-        //getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
+        Shell shell = getShell();
+        if (shell != null) {
+            shell.setText(getWizard().getWindowTitle());
+            // Do not update dialog icon. It can be disposed in the page and this will break connection dialog
+            //getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
-        updateMessage();
+            updateMessage();
+        }
     }
 
     public boolean close() {
@@ -427,12 +431,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        super.createButtonsForButtonBar(parent);
-
-        Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        cancelButton.setText(cancelButtonLabel);
-        Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText(finishButtonLabel);
+        Button finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel, false);
+        Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
     }
 
     public void setFinishButtonLabel(String finishButtonLabel) {
