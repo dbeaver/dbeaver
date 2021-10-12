@@ -966,7 +966,15 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 			return ErrorType.FEATURE_UNSUPPORTED;
 		} else if (errorMessage.contains("insufficient privileges")) {
 			return ErrorType.PERMISSION_DENIED;
-		} else if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )
+		} else if (
+				errorMessage.contains("Connection lost") | 
+				errorMessage.contains("Connection was killed") | 
+				errorMessage.contains("Process does not exist") | 
+				errorMessage.contains("Successfully reconnected") | 
+				errorMessage.contains("Statement handle not found") | 
+				errorMessage.contains("No operations allowed on this connection because it was already closed") |
+				errorMessage.contains("Connection was lost and could not be reestablished")
+				)
     	{
     		return ErrorType.CONNECTION_LOST;
     	}
