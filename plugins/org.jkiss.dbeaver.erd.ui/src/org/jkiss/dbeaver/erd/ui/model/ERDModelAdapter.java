@@ -34,4 +34,6 @@ public interface ERDModelAdapter {
     void performPartRequest(EditPart editPart, Request request);
 
     void handlePropertyChange(ERDEditorPart editorPart, PropertyChangeEvent event);
+
+    void handleContentChange(ERDEditorPart editorPart);
 }

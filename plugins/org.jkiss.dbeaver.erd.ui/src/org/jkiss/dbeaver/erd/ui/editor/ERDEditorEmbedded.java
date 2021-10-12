@@ -209,11 +209,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             return null;
         }
         EntityDiagram oldDiagram = getDiagram();
-        EntityDiagram diagram;
+        EntityDiagram diagram = oldDiagram;
+        diagram.clear();
         if (!dbObject.isPersisted()) {
-            diagram = new EntityDiagram(dbObject, "New Object", getContentProvider(), getDecorator());
+            //diagram = new EntityDiagram(dbObject, "New Object", getContentProvider(), getDecorator());
         } else {
-            diagram = new EntityDiagram(dbObject, dbObject.getName(), getContentProvider(), getDecorator());
+            //diagram = new EntityDiagram(dbObject, dbObject.getName(), getContentProvider(), getDecorator());
 
             // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(
