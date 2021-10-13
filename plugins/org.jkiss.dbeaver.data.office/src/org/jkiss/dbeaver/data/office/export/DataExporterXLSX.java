@@ -75,6 +75,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_DATE_FORMAT = "dateFormat";
 
     private static final int EXCEL2007MAXROWS = 1048575;
+    private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
     private boolean showDescription;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
@@ -416,9 +417,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 }
                 sb.append(buffer, 0, count);
             }
-
-            cell.setCellValue(sb.toString());
-
+            cell.setCellValue(getPreparedString(sb.toString()));
         } finally {
             ContentUtils.close(reader);
         }
@@ -508,9 +507,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 cell.setCellStyle(styleDate);
 
             } else {
-
                 String stringValue = super.getValueDisplayString(column, row[i]);
-                cell.setCellValue(stringValue);
+                cell.setCellValue(getPreparedString(stringValue));
             }
 
         }
@@ -536,6 +534,15 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (rowCount == 0) {
             exportRow(null, null, new Object[columns.length]);
         }
+    }
+
+    private String getPreparedString(String cellValue) {
+        if (cellValue.length() > EXCEL_MAX_CELL_CHARACTERS) {
+            // We must truncate long strings from our side, otherwise we get the error of the insertion from the apache.poi library
+            log.warn("The string value of the row " + (rowCount + 1) + " was more maximum length, so it was cropped.");
+            return CommonUtils.truncateString(cellValue, EXCEL_MAX_CELL_CHARACTERS);
+        }
+        return cellValue;
     }
 
 }
