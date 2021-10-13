@@ -38,11 +38,10 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTransferWizard> {
+public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettings {
 
     private Table mappingTable;
     private DBNDatabaseNode lastSelection;
@@ -295,6 +294,11 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isProducerOfType(DatabaseTransferProducer.class);
     }
 
 }

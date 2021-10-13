@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
- * This page hosts other settings pages
+ * This page hosts other settings pages.
+ * Since 21.2.4 we don't use composite page anymore.
  */
+@Deprecated
 class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
     private IWizardPage producerSettingsPage;

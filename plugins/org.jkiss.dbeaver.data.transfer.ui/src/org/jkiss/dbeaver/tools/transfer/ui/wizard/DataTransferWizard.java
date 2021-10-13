@@ -344,7 +344,10 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
         // Add common settings page
         if (!CommonUtils.isEmpty(settingPages)) {
-            wizard.addPage(new DataTransferPageSettings());
+            for (IWizardPage settingsPage : settingPages) {
+                wizard.addPage(settingsPage);
+            }
+            //wizard.addPage(new DataTransferPageSettings());
         }
         // Add preview pages
         for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
@@ -359,7 +362,6 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     protected boolean isPageValid(IWizardPage page) {
         return isTaskConfigPage(page) ||
             page instanceof DataTransferPagePipes ||
-            page instanceof DataTransferPageSettings ||
             page instanceof DataTransferPageFinal ||
             isPageValid(page, settings.getProducer()) ||
             isPageValid(page, settings.getConsumer());

@@ -42,19 +42,15 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingAttribute;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
+import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
@@ -62,7 +58,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWizard> {
+public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
     private static final Log log = Log.getLog(StreamConsumerPageSettings.class);
 
@@ -484,4 +480,10 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
             monitor.done();
         }
     }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isConsumerOfType(StreamTransferConsumer.class);
+    }
+
 }

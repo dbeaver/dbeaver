@@ -47,10 +47,9 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
@@ -61,7 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWizard> {
+public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
 
     private PropertyTreeViewer propsEditor;
@@ -396,4 +395,10 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
         return name.toString();
     }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isProducerOfType(StreamTransferProducer.class);
+    }
+
 }

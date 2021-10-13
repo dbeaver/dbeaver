@@ -53,14 +53,12 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -71,7 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> implements IWizardPageNavigable {
+public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
@@ -1225,15 +1223,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     @Override
-    public boolean isPageNavigable() {
-        return true;
-    }
-
-    @Override
     public boolean isPageApplicable() {
-        return
-            (getWizard().getSettings().getConsumer() != null &&
-            DatabaseTransferConsumer.class.isAssignableFrom(getWizard().getSettings().getConsumer().getNodeClass()));
+        return isConsumerOfType(DatabaseTransferConsumer.class);
     }
 
 

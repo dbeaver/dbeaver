@@ -26,18 +26,19 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,7 +47,7 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTransferWizard> {
+public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageLoadSettings.class);
 
     private final String HELP_TOPIC_REPLACE_METHOD = "Data-Import-and-Replace";
@@ -325,7 +326,12 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
 
     private void loadInsertMethods() {
         DatabaseConsumerSettings settings = getSettings();
-        DBPDataSource dataSource = settings.getContainerNode().getDataSource();
+        DBNDatabaseNode containerNode = settings.getContainerNode();
+        if (containerNode == null) {
+            return;
+        }
+
+        DBPDataSource dataSource = containerNode.getDataSource();
         List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
         if (dataSource != null) {
             SQLDialectDescriptor dialectDescriptor = SQLDialectRegistry.getInstance().getDialect(dataSource.getSQLDialect().getDialectId());
@@ -384,6 +390,11 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     @Override
     protected boolean determinePageCompletion() {
         return true;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isConsumerOfType(DatabaseTransferConsumer.class);
     }
 
 }

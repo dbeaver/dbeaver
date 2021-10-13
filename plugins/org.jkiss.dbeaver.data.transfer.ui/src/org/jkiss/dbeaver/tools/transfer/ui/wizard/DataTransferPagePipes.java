@@ -192,7 +192,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_group_objects);
 
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-        inputsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        //gd.widthHint = 300;
+        gd.heightHint = 300;
+        inputsTable.getTable().setLayoutData(gd);
         inputsTable.getTable().setLinesVisible(true);
         inputsTable.getTable().setHeaderVisible(true);
         inputsTable.setContentProvider(new ListContentProvider());
@@ -243,12 +246,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private void loadNodeSettings() {
         if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle(DTMessages.data_transfer_wizard_init_title);
+            setTitle("Export target");
             setDescription(DTMessages.data_transfer_wizard_init_description);
 
             loadConsumers();
         } else {
-            setTitle(DTMessages.data_transfer_wizard_producers_title);
+            setTitle("Import source");
             setDescription(DTMessages.data_transfer_wizard_producers_description);
 
             loadProducers();
@@ -257,17 +260,26 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
         DataTransferNodeDescriptor producer = getWizard().getSettings().getProducer();
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
+        List<TransferTarget> targets = (List<TransferTarget>) nodesTable.getInput();
+        TransferTarget currentTarget = null;
         if (consumer != null || producer != null) {
-            Collection<TransferTarget> targets = (Collection<TransferTarget>) nodesTable.getInput();
             for (TransferTarget target : targets) {
                 if ((target.node == consumer || target.node == producer) && target.processor == processor) {
-                    UIUtils.asyncExec(() -> {
-                        nodesTable.setSelection(new StructuredSelection(target));
-                        setSelectedSettings();
-                    });
+                    currentTarget = target;
                     break;
                 }
             }
+        }
+        if (currentTarget == null && !targets.isEmpty()) {
+            currentTarget = targets.get(0);
+        }
+
+        if (currentTarget != null) {
+            StructuredSelection selection = new StructuredSelection(currentTarget);
+            UIUtils.asyncExec(() -> {
+                nodesTable.setSelection(selection);
+                setSelectedSettings();
+            });
         }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
