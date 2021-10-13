@@ -600,8 +600,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     }
                     return dataContainer.getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getId();
             }
-            if (dataContainer instanceof SQLQueryContainer) {
-                return CommonUtils.toString(((SQLQueryContainer) dataContainer).getQueryParameters().get(name));
+            final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, dataContainer);
+            if (container != null) {
+                return CommonUtils.toString(container.getQueryParameters().get(name));
             }
             return null;
         });
