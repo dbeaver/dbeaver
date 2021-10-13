@@ -38,4 +38,6 @@ public interface DBSTypedObjectExt2 extends DBPObject {
 
     void setRequired(boolean required);
 
+    void setValueType(int valueType);
+
 }

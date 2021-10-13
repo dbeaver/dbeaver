@@ -165,6 +165,10 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
         return -1;
     }
 
+    @Override
+    public void setValueType(int valueType) {
+    }
+
     @Property(editable = true)
     @NotNull
     @Override

@@ -243,6 +243,14 @@ public class DatabaseTransferUtils {
                             String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
                             typeModifiersSet = fullTargetTypeName.contains("(");
                             ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
+                            DBSAttributeBase source = attributeMapping.getSource();
+                            if (source != null) {
+                                int sourceTypeID = source.getTypeID();
+                                if (sourceTypeID != newAttribute.getTypeID()) {
+                                    // For the new created columns. They have source data type name, but not the source dataKind
+                                    typedAttr.setValueType(sourceTypeID);
+                                }
+                            }
                         } else {
                             String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
                             typedAttr.setTypeName(targetAttrType);
