@@ -206,13 +206,13 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     DBNDatabaseNode objectNode = nModel.getNodeByObject(element);
                     DBPImage icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
                     cell.setImage(DBeaverIcons.getImage(icon));
-                    String cellText;
-                    if (element instanceof SQLQueryContainer) {
-                        cellText = ((SQLQueryContainer) element).getQuery().getText(); // We don't need extra quotes for queries
+                    final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
+                    if (queryContainer != null) {
+                        // We don't need extra quotes for queries
+                        cell.setText(queryContainer.getQuery().getText());
                     } else {
-                        cellText = DBUtils.getObjectFullName(element, DBPEvaluationContext.UI);
+                        cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
                     }
-                    cell.setText(cellText);
                 } else if (element.getDescription() != null) {
                     cell.setText(element.getDescription());
                 }

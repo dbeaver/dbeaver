@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -358,8 +359,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
         if (pipes.size() == 1) {
             final DBSObject object = pipes.get(0).getProducer().getDatabaseObject();
-            if (object instanceof SQLQueryContainer) {
-                variables.addAll(((SQLQueryContainer) object).getQueryParameters().keySet());
+            final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, object);
+            if (container != null) {
+                variables.addAll(container.getQueryParameters().keySet());
             }
         }
 
