@@ -39,7 +39,7 @@ import java.util.List;
 public class CSVReader implements Closeable {
 
     public static final boolean DEFAULT_KEEP_CR = false;
-    public static final boolean DEFAULT_VERIFY_READER = true;
+    public static final boolean DEFAULT_VERIFY_READER = false;
     /**
      * The default line to start reading.
      */
