@@ -71,10 +71,12 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private static final String PROP_SPLIT_BYROWCOUNT = "splitByRowCount";
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
+    private static final String PROP_MAX_CELL_CHARACTERS = "maxCellCharacters";
 
     private static final String PROP_DATE_FORMAT = "dateFormat";
 
     private static final int EXCEL2007MAXROWS = 1048575;
+    private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain -	32,767 characters
     private boolean showDescription;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
@@ -99,6 +101,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
     private int rowCount = 0;
+    private int maxCellChars;
 
     private XSSFCellStyle style;
     private XSSFCellStyle styleDate;
@@ -119,6 +122,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
+        properties.put(DataExporterXLSX.PROP_MAX_CELL_CHARACTERS, EXCEL_MAX_CELL_CHARACTERS);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         return properties;
     }
@@ -178,6 +182,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         } catch (Exception e) {
             splitByCol = -1;
         }
+
+        maxCellChars = CommonUtils.toInt(properties.get(PROP_MAX_CELL_CHARACTERS), EXCEL_MAX_CELL_CHARACTERS);
 
         try {
             dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
@@ -416,9 +422,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 }
                 sb.append(buffer, 0, count);
             }
-
-            cell.setCellValue(sb.toString());
-
+            if (maxCellChars > 0 && maxCellChars < EXCEL_MAX_CELL_CHARACTERS) {
+                cell.setCellValue(CommonUtils.truncateString(sb.toString(), maxCellChars));
+            } else {
+                cell.setCellValue(sb.toString());
+            }
         } finally {
             ContentUtils.close(reader);
         }
@@ -508,9 +516,12 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 cell.setCellStyle(styleDate);
 
             } else {
-
                 String stringValue = super.getValueDisplayString(column, row[i]);
-                cell.setCellValue(stringValue);
+                if (maxCellChars > 0 && maxCellChars < EXCEL_MAX_CELL_CHARACTERS) {
+                    cell.setCellValue(CommonUtils.truncateString(stringValue, maxCellChars));
+                } else {
+                    cell.setCellValue(stringValue);
+                }
             }
 
         }
