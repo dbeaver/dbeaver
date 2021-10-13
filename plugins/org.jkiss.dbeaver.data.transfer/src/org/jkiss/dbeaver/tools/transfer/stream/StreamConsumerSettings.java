@@ -63,8 +63,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     private static final String SETTING_VALUE_FORMAT = "valueFormat"; //$NON-NLS-1$
 
-    private LobExtractType lobExtractType = LobExtractType.SKIP;
-    private LobEncoding lobEncoding = LobEncoding.HEX;
+    private LobExtractType lobExtractType = LobExtractType.INLINE;
+    private LobEncoding lobEncoding = LobEncoding.BINARY;
 
     private String outputFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
     private String outputFilePattern = GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + "_" + GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP);
@@ -230,8 +230,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
-        lobExtractType = CommonUtils.valueOf(LobExtractType.class, (String) settings.get("lobExtractType"), LobExtractType.SKIP);
-        lobEncoding = CommonUtils.valueOf(LobEncoding.class, (String) settings.get("lobEncoding"), LobEncoding.HEX);
+        lobExtractType = CommonUtils.valueOf(LobExtractType.class, CommonUtils.toString(settings.get("lobExtractType")), LobExtractType.INLINE);
+        lobEncoding = CommonUtils.valueOf(LobEncoding.class, CommonUtils.toString(settings.get("lobEncoding")), LobEncoding.BINARY);
 
         outputFolder = CommonUtils.toString(settings.get("outputFolder"), outputFolder);
         outputFilePattern = CommonUtils.toString(settings.get("outputFilePattern"), outputFilePattern);
