@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDriversClasspath;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -557,8 +558,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_classpath, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ViewClasspathDialog cpDialog = new ViewClasspathDialog(getShell());
-                cpDialog.open();
+                UIUtils.showPreferencesFor(null, null, PrefPageDriversClasspath.PAGE_ID);
             }
         });
 
