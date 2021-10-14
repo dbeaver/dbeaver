@@ -539,7 +539,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     this.catalogs = new ArrayList<>();
                     for (String catalogName : catalogNames) {
                         GenericCatalog catalog = metaModel.createCatalogImpl(this, catalogName);
-                        this.catalogs.add(catalog);
+                        if (catalog != null) {
+                            this.catalogs.add(catalog);
+                        }
                     }
                 }
             }
