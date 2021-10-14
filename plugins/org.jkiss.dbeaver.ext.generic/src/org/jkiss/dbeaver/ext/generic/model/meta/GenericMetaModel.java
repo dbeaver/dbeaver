@@ -186,7 +186,7 @@ public class GenericMetaModel {
             if (dbResult == null) {
 
                 String oldCatalog = null;
-                if (catalog != null) {
+                if (supportsCatalogChange() && catalog != null) {
                     // Try to set catalog explicitly. May be needed for old drivers (Netezza)
                     try {
                         oldCatalog = session.getCatalog();
@@ -293,6 +293,10 @@ public class GenericMetaModel {
                 throw new DBException(ex, dataSource);
             }
         }
+    }
+
+    protected boolean supportsCatalogChange() {
+        return false;
     }
 
     // Schema with NULL name is a valid schema [Phoenix]
