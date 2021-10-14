@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -95,6 +94,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static final String CMD_ROW_EDIT_INLINE = "org.jkiss.dbeaver.core.resultset.row.edit.inline";
     public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
     public static final String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
+    public static final String CMD_ROW_COPY_FROM_ABOVE = "org.jkiss.dbeaver.core.resultset.row.copy.from.above";
+    public static final String CMD_ROW_COPY_FROM_BELOW = "org.jkiss.dbeaver.core.resultset.row.copy.from.below";
     public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
     public static final String CMD_CELL_SET_NULL = "org.jkiss.dbeaver.core.resultset.cell.setNull";
     public static final String CMD_CELL_SET_DEFAULT = "org.jkiss.dbeaver.core.resultset.cell.setDefault";
@@ -226,6 +227,11 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 boolean insertAfter = rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
                 if (shiftPressed) insertAfter = !insertAfter;
                 rsv.addNewRow(copy, insertAfter, true);
+                break;
+            }
+            case CMD_ROW_COPY_FROM_ABOVE:
+            case CMD_ROW_COPY_FROM_BELOW: {
+                rsv.copyRowValues(actionId.equals(CMD_ROW_COPY_FROM_ABOVE), true);
                 break;
             }
             case CMD_ROW_DELETE:
