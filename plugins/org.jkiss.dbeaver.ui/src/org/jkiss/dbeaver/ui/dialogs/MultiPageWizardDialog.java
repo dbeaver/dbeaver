@@ -143,7 +143,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
 
-        wizardSash.setWeights(new int[]{300, 700});
+        wizardSash.setWeights(new int[]{220, 780});
 
         updateNavigationTree();
 

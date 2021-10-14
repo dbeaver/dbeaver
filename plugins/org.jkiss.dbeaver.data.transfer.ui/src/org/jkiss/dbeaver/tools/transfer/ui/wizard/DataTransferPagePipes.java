@@ -80,7 +80,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(new int[]{60, 40});
+        sash.setWeights(new int[]{70, 30});
 
         setControl(composite);
     }
@@ -91,7 +91,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-        nodesTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 400;
+        gd.widthHint = 500;
+        nodesTable.getTable().setLayoutData(gd);
         nodesTable.getTable().setLinesVisible(true);
         nodesTable.setContentProvider(new IStructuredContentProvider() {
             @Override

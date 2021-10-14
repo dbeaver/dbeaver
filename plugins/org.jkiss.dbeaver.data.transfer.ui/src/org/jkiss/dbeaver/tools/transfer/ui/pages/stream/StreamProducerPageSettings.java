@@ -80,7 +80,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
 
         {
-            Composite inputFilesGroup = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_input_files, 1, GridData.FILL_BOTH, 0);
+            Composite inputFilesGroup = UIUtils.createComposite(settingsDivider, 1);
+            inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
 
             filesTable = new Table(inputFilesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             filesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -109,7 +112,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         }
 
         {
-            Composite exporterSettings = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_importer, 1, GridData.FILL_BOTH, 0);
+            Composite exporterSettings = UIUtils.createComposite(settingsDivider, 1);
+            UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }

@@ -21,7 +21,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -70,7 +73,9 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
         DataTransferSettings settings = getWizard().getSettings();
 
         {
-            Group tablesGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_mappings_name, 3, GridData.FILL_BOTH, 0);
+            Composite tablesGroup = UIUtils.createComposite(composite, 1);
+            tablesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(tablesGroup, DTMessages.data_transfer_wizard_mappings_name);
 
             mappingTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             mappingTable.setLayoutData(new GridData(GridData.FILL_BOTH));

@@ -97,7 +97,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
         IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
 
-        if (importer instanceof IStreamDataImporter) {
+        if (entityMapping != null && importer instanceof IStreamDataImporter) {
             IStreamDataImporter sdi = (IStreamDataImporter) importer;
             try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
                 sdi.init(new StreamDataImporterSite(this, entityMapping, processorProperties));

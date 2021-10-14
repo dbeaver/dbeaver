@@ -63,7 +63,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_progress, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
             threadsNumText = new Text(generalSettings, SWT.BORDER);
