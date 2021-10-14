@@ -47,6 +47,11 @@ public class NetezzaMetaModel extends GenericMetaModel
         return new NetezzaDataSource(monitor, container, this);
     }
 
+    @Override
+    protected boolean supportsCatalogChange() {
+        return true;
+    }
+
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         GenericSchema schema = sourceObject.getSchema();
