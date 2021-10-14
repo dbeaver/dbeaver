@@ -41,6 +41,8 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private static final String PROP_HEADER = "tableHeader";
     private static final String PROP_COLUMN_HEADERS = "columnHeaders";
+    private static final String PROP_BACKGROUND_COLOR_HEADER = "backgroundColorHeader";
+    private static final String PROP_BACKGROUND_COLOR_DOCUMENT = "backgroundColorDocument";
 
     private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
@@ -50,7 +52,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private boolean outputHeader = true;
     private boolean outputColumnHeaders = true;
-
+    private String backgroundColorHeader = "#D0E3FA";
+    private String backgroundColorDocument = "#000000";
+    
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
@@ -58,6 +62,8 @@ public class DataExporterHTML extends StreamExporterAbstract {
         Map<String, Object> properties = site.getProperties();
         outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
         outputColumnHeaders = CommonUtils.getBoolean(properties.get(PROP_COLUMN_HEADERS), outputColumnHeaders);
+        backgroundColorHeader = CommonUtils.toString(properties.get(PROP_BACKGROUND_COLOR_HEADER), backgroundColorHeader);
+        backgroundColorDocument = CommonUtils.toString(properties.get(PROP_BACKGROUND_COLOR_DOCUMENT), backgroundColorDocument);
     }
 
     @Override
@@ -78,6 +84,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
         out.write("<head>\n" +
             "<meta charset=\"" + getSite().getOutputEncoding() + "\"/>" +
             "<style>\n" +
+            "body {background-color: " + backgroundColorDocument + "}\n"+
             "table {border: medium solid #6495ed;" +
             "border-collapse: collapse;" +
             "width: 100%;} " +
@@ -85,7 +92,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
             "padding: 5px;" +
-            "background-color: #D0E3FA;}" +
+            "background-color: " + backgroundColorHeader + ";}" +
             "td{font-family: sans-serif;" +
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
