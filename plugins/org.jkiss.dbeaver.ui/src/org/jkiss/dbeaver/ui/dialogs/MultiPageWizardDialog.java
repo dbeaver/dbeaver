@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ICompositeDialogPageContainer;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
@@ -373,7 +374,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             new TreeItem(parentItem, SWT.NONE);
         item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
         if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
-            item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            int nnColor = UIStyles.isDarkTheme() ?
+                SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW;
+            item.setForeground(getShell().getDisplay().getSystemColor(nnColor));
         }
 
         item.setData(page);
@@ -398,6 +401,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() instanceof IWizardPage) {
                 IWizardPage page = (IWizardPage) item.getData();
+                if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+                    continue;
+                }
                 if (page.getControl() == null || !page.isPageComplete()) {
                     complete = false;
                     break;
