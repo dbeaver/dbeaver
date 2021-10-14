@@ -31,10 +31,12 @@ public class GenericDataTypeCache extends JDBCBasicDataTypeCache<GenericStructCo
     public GenericDataTypeCache(GenericStructContainer owner) {
         super(owner);
 
-        // Ignore abstract types. There can be multiple numeric types with the same name
-        // but different scale/precision properties
-        ignoredTypes.add("NUMBER");
-        ignoredTypes.add("NUMERIC");
+        if (!owner.getDataSource().getMetaModel().supportNumericDataTypes()) {
+            // Ignore abstract types. There can be multiple numeric types with the same name
+            // but different scale/precision properties
+            ignoredTypes.add("NUMBER");
+            ignoredTypes.add("NUMERIC");
+        }
     }
 
     @NotNull

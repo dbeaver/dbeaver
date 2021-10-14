@@ -52,6 +52,11 @@ public class SnowflakeMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportNumericDataTypes() {
+        return true;
+    }
+
+    @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         boolean isView = sourceObject.isView();

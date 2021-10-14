@@ -122,6 +122,11 @@ public class GenericMetaModel {
         return true;
     }
 
+    // For properly data type cache reading
+    public boolean supportNumericDataTypes() {
+        return false;
+    }
+
     //////////////////////////////////////////////////////
     // Schema load
 
