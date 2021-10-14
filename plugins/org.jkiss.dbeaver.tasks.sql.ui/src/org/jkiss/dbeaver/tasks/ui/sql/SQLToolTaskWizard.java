@@ -126,8 +126,8 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
             DBTTask task = getCurrentTask();
             saveConfigurationToTask(task);
 
-            pageStatus.clearLog();
             getContainer().showPage(pageStatus);
+            pageStatus.clearLog();
 
             TaskWizardExecutor executor = new SQLTaskExecutor(task);
             executor.executeTask();

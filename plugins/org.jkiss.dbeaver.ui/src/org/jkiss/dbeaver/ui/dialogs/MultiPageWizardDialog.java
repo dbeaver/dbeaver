@@ -358,6 +358,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                     break;
                 }
             }
+
         } finally {
             pagesTree.setRedraw(true);
         }
@@ -397,7 +398,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() instanceof IWizardPage) {
                 IWizardPage page = (IWizardPage) item.getData();
-                if (page.getControl() != null && !page.isPageComplete()) {
+                if (page.getControl() == null || !page.isPageComplete()) {
                     complete = false;
                     break;
                 }
@@ -499,7 +500,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel, false);
+        Button finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
+            getShell().getDefaultButton() == null);
         Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
     }
 
@@ -517,7 +519,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     protected void finishPressed() {
-
+ 
     }
 
     public void nextPressed() {

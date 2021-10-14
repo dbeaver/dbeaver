@@ -183,11 +183,13 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             settings.isProducerProcessor() ? null : settings.getProcessor());
 
         activated = true;
-        int tableWidth = resultTable.getSize().x;
-        TableColumn[] columns = resultTable.getColumns();
-        for (TableColumn column : columns) {
-            column.setWidth(tableWidth / columns.length - 1);
-        }
+        UIUtils.asyncExec(() -> {
+            int tableWidth = resultTable.getSize().x;
+            TableColumn[] columns = resultTable.getColumns();
+            for (TableColumn column : columns) {
+                column.setWidth(tableWidth / columns.length - 1);
+            }
+        });
         updatePageCompletion();
         getWizard().updateSaveTaskButtons();
     }

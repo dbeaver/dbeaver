@@ -50,12 +50,14 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferNodeConfiguratorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -207,6 +209,11 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
+    protected boolean isTaskConfigPage(IWizardPage page) {
+        return page instanceof DataTransferPageNodeSettings || super.isTaskConfigPage(page);
+    }
+
+    @Override
     protected String getDefaultWindowTitle() {
         return DTUIMessages.data_transfer_wizard_name;
     }
@@ -228,8 +235,12 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         if (curIndex != -1) {
             // Return first node config page
             for (int i = curIndex + 1; i < pages.length; i++) {
-                if (isPageValid(pages[i])) {
-                    return pages[i];
+                IWizardPage wizardPage = pages[i];
+                if (wizardPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) wizardPage).isPageApplicable()) {
+                    continue;
+                }
+                if (isPageValid(wizardPage)) {
+                    return wizardPage;
                 }
             }
         }
@@ -253,8 +264,12 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
         if (curIndex != -1) {
             for (int i = curIndex - 1; i > 0; i--) {
-                if (isPageValid(pages[i])) {
-                    return pages[i];
+                IWizardPage wizardPage = pages[i];
+                if (wizardPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) wizardPage).isPageApplicable()) {
+                    continue;
+                }
+                if (isPageValid(wizardPage)) {
+                    return wizardPage;
                 }
             }
         }

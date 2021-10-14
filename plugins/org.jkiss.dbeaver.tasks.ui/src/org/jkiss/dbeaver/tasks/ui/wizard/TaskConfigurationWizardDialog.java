@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +66,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
-        setFinishButtonLabel(UIMessages.button_start);
+        setFinishButtonLabel(IDialogConstants.PROCEED_LABEL);
 
         if (selection != null && !selection.isEmpty()) {
             if (wizard.getSettings() instanceof DBTTaskSettingsInput) {
@@ -127,8 +127,22 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             ((GridLayout) parent.getLayout()).numColumns += 1;
         }
 
-        Button backButton = createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
-        Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
+        {
+            int navPagesNum = 0;
+            for (IWizardPage page2 : getWizard().getPages()) {
+                if (!(page2 instanceof IWizardPageNavigable) ||
+                    ((IWizardPageNavigable) page2).isPageApplicable() &&
+                        ((IWizardPageNavigable) page2).isPageNavigable()) {
+                    navPagesNum++;
+                }
+            }
+
+            if (navPagesNum > 1) {
+                Button backButton = createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
+                Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
+                getShell().setDefaultButton(nextButton);
+            }
+        }
 
         super.createButtonsForButtonBar(parent);
     }
