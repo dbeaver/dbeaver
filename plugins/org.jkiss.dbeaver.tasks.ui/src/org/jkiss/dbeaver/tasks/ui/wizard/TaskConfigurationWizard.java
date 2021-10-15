@@ -73,6 +73,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         this.currentTask = task;
     }
 
+    protected void initializeWizard(Composite parent) {
+
+    }
+
     protected abstract SETTINGS getSettings();
 
     protected abstract String getDefaultWindowTitle();

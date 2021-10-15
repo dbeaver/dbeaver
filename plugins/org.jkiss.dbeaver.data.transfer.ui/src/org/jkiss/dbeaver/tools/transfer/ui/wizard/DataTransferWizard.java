@@ -113,8 +113,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    public void createPageControls(Composite pageContainer) {
-        super.createPageControls(pageContainer);
+    public void initializeWizard(Composite pageContainer) {
+        super.initializeWizard(pageContainer);
         if (settings.getState().hasErrors()) {
             List<Throwable> loadErrors = settings.getState().getLoadErrors();
             if (loadErrors.size() == 1) {

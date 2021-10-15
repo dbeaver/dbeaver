@@ -111,7 +111,11 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     protected Control createDialogArea(Composite parent) {
         setHelpAvailable(false);
 
-        return super.createDialogArea(parent);
+        Control dialogArea = super.createDialogArea(parent);
+
+        getWizard().initializeWizard(parent);
+
+        return dialogArea;
     }
 
     @Override

@@ -119,6 +119,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
+
+        // Select first page
+        pagesTree.select(pagesTree.getItem(0));
+        changePage();
+
+        // Set title and image from first page
+        IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
+        setTitle(firstPage.getTitle());
+        setTitleImage(firstPage.getImage());
+        setMessage(firstPage.getDescription());
+
         updateButtons();
 
         updateWindowTitle();
@@ -171,15 +182,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 changePage();
             }
         });
-        // Select first page
-        pagesTree.select(pagesTree.getItem(0));
-        changePage();
-
-        // Set title and image from first page
-        IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
-        setTitle(firstPage.getTitle());
-        setTitleImage(firstPage.getImage());
-        setMessage(firstPage.getDescription());
 
         // Horizontal separator
         new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR)
@@ -445,11 +447,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateMessage() {
-        String errorMessage = getCurrentPage().getErrorMessage();
+        IWizardPage currentPage = getCurrentPage();
+        if (currentPage == null) {
+            return;
+        }
+        String errorMessage = currentPage.getErrorMessage();
         if (!CommonUtils.isEmpty(errorMessage)) {
             setMessage(errorMessage, IMessageProvider.ERROR);
         } else {
-            setMessage(CommonUtils.notEmpty(getCurrentPage().getDescription()), IMessageProvider.NONE);
+            setMessage(CommonUtils.notEmpty(currentPage.getDescription()), IMessageProvider.NONE);
         }
     }
 
