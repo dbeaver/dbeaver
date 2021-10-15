@@ -1149,36 +1149,53 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
         DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         model.clear();
-        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
-            if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
-                continue;
-            }
-            DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-            DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
-            // Create new mapping for source object
-            DatabaseMappingContainer newMapping;
-            if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
-                try {
-                    newMapping = new DatabaseMappingContainer(
-                            getWizard().getRunnableContext(),
-                            getDatabaseConsumerSettings(),
-                            sourceDataContainer,
-                            ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
-                } catch (DBException e) {
-                    setMessage(e.getMessage(), IMessageProvider.ERROR);
-                    newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
+
+        List<Throwable> errors = new ArrayList<>();
+        try {
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+                    if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
+                        continue;
+                    }
+                    DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+                    DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
+                    // Create new mapping for source object
+                    DatabaseMappingContainer newMapping;
+                    if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
+                        try {
+                            newMapping = new DatabaseMappingContainer(
+                                monitor,
+                                getDatabaseConsumerSettings(),
+                                sourceDataContainer,
+                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
+                        } catch (DBException e) {
+                            errors.add(e);
+                            newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
+                        }
+                    } else {
+                        newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
+                    }
+                    newMapping.getAttributeMappings(getWizard().getRunnableContext());
+                    // Update current mapping if it differs from new one
+                    if (mapping == null || !mapping.isSameMapping(newMapping)) {
+                        mapping = newMapping;
+                        settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
+                    }
+                    model.add(mapping);
                 }
-            } else {
-                newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
-            }
-            newMapping.getAttributeMappings(getWizard().getRunnableContext());
-            // Update current mapping if it differs from new one
-            if (mapping == null || !mapping.isSameMapping(newMapping)) {
-                mapping = newMapping;
-                settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
-            }
-            model.add(mapping);
+            });
+        } catch (InvocationTargetException e) {
+            errors.add(e.getTargetException());
+        } catch (InterruptedException e) {
+            errors.add(e);
         }
+
+        if (!errors.isEmpty()) {
+            Throwable lastError = errors.get(errors.size() - 1);
+            log.error(lastError);
+            setMessage(lastError.getMessage(), IMessageProvider.ERROR);
+        }
+
 
         mappingViewer.getTree().setVisible(false);
         Object[] expandedElements = mappingViewer.getExpandedElements();

@@ -34,4 +34,6 @@ public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
 
     DBPImage getObjectContainerIcon();
 
+    boolean isConfigurationComplete();
+
 }

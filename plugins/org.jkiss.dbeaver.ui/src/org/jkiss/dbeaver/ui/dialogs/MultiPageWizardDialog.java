@@ -430,7 +430,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateMessage() {
-
+        String errorMessage = getCurrentPage().getErrorMessage();
+        if (!CommonUtils.isEmpty(errorMessage)) {
+            setMessage(errorMessage, IMessageProvider.ERROR);
+        } else {
+            setMessage(CommonUtils.notEmpty(getCurrentPage().getDescription()), IMessageProvider.NONE);
+        }
     }
 
     @Override

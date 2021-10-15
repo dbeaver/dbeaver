@@ -78,6 +78,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         initializeDialogUnits(parent);
 
         SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
+        settingsDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             Composite inputFilesGroup = UIUtils.createComposite(settingsDivider, 1);

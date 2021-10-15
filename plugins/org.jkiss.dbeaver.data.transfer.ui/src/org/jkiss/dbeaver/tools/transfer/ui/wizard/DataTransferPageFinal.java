@@ -21,6 +21,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -86,12 +87,12 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             Group sourceSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTUIMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             sourceSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
-            ((GridData)sourceSettingsText.getLayoutData()).heightHint = 30;
+            ((GridData) sourceSettingsText.getLayoutData()).heightHint = 30;
 
             Group targetSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTUIMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
-            ((GridData)targetSettingsText.getLayoutData()).heightHint = 30;
+            ((GridData) targetSettingsText.getLayoutData()).heightHint = 30;
         }
 
         getWizard().createTaskSaveButtons(composite, true, 1);
@@ -100,8 +101,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
     }
 
     @Override
-    public void activatePage()
-    {
+    public void activatePage() {
         resultTable.removeAll();
         DataTransferSettings settings = getWizard().getSettings();
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
@@ -114,12 +114,14 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
                 pipe.initPipe(settings, i, dataPipes.size());
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_page_final_title_error_initializing_transfer_pipe,
-                        DTUIMessages.data_transfer_page_final_message_error_initializing_data_transfer_pipe, e);
+                    DTUIMessages.data_transfer_page_final_message_error_initializing_data_transfer_pipe, e);
                 continue;
             }
 
-            IDataTransferConsumer consumer = pipe.getConsumer();
-            IDataTransferProducer producer = pipe.getProducer();
+            @Nullable
+            IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+            @Nullable
+            IDataTransferProducer<?> producer = pipe.getProducer();
 
             if (consumerSettings == null) {
                 consumerSettings = settings.getNodeSettings(settings.getConsumer());
@@ -130,7 +132,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
 
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            {
+            if (producer != null) {
                 item.setText(0, producer.getObjectContainerName());
                 if (producer.getObjectContainerIcon() != null) {
                     item.setImage(0, DBeaverIcons.getImage(producer.getObjectContainerIcon()));
@@ -149,7 +151,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
                     item.setBackground(1, producerColor);
                 }
             }
-            {
+            if (consumer != null) {
                 item.setText(2, consumer.getObjectContainerName());
                 if (consumer.getObjectContainerIcon() != null) {
                     item.setImage(2, DBeaverIcons.getImage(consumer.getObjectContainerIcon()));
@@ -199,7 +201,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
         return activated;
     }
 
-    private Color getNodeColor(IDataTransferNode node) {
+    private Color getNodeColor(IDataTransferNode<?> node) {
         DBSObject dbObject = node.getDatabaseObject();
         if (dbObject != null) {
             DBPDataSource dataSource = dbObject.getDataSource();
@@ -228,20 +230,28 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
         text.setText(summary.toString());
     }
 
-    public boolean isActivated()
-    {
+    public boolean isActivated() {
         return activated;
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
+    protected boolean determinePageCompletion() {
+        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+            if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                setErrorMessage("Source not specified for " + pipe.getConsumer().getObjectName());
+                return false;
+            }
+            if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                setErrorMessage("Target not specified for " + pipe.getProducer().getObjectName());
+                return false;
+            }
+        }
         return activated;
     }
 
     @Override
     public boolean isPageNavigable() {
-        return false;
+        return true;
     }
 
     @Override

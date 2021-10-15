@@ -64,11 +64,11 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(DBRRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
+    public DatabaseMappingContainer(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(context, DatabaseMappingType.existing, false);
+        refreshMappingType(monitor, DatabaseMappingType.existing, false);
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -102,11 +102,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
+    }
+
+    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
-        final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
+        final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
-                attr.updateMappingType(new VoidProgressMonitor(), forceRefresh);
+                attr.updateMappingType(monitor, forceRefresh);
             }
         }
     }

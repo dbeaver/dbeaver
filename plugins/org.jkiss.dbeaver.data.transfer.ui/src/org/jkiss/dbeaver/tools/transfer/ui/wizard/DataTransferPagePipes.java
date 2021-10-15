@@ -237,14 +237,15 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     public void activatePage() {
+        if (!activated) {
+            UIUtils.asyncExec(this::loadNodeSettings);
+        }
         if (activated && getWizard().getSettings().isPipeChangeRestricted()) {
             // Second activation - we need to disable any selectors
             nodesTable.getTable().setEnabled(false);
             return;
         }
         activated = true;
-
-        UIUtils.asyncExec(this::loadNodeSettings);
     }
 
     private void loadNodeSettings() {

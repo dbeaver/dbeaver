@@ -709,6 +709,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return container != null ? container.getDriver().getIcon() : null;
     }
 
+    @Override
+    public boolean isConfigurationComplete() {
+        return containerMapping != null && containerMapping.getTarget() != null;
+    }
+
     DBPDataSourceContainer getDataSourceContainer() {
         if (targetObjectContainer != null) {
             return targetObjectContainer.getDataSource().getContainer();

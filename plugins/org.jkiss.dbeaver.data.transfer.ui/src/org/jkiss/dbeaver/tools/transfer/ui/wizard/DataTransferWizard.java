@@ -297,6 +297,11 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             return false;
         }
 
+        {
+            IWizardPage[] pages = getPages();
+            getContainer().showPage(pages[pages.length - 1]);
+        }
+
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask == null) {
