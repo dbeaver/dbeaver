@@ -414,22 +414,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateButtons() {
-        boolean complete = true;
-        for (TreeItem item : pagesTree.getItems()) {
-            if (item.getData() instanceof IWizardPage) {
-                IWizardPage page = (IWizardPage) item.getData();
-                if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
-                    continue;
-                }
-                if (page.getControl() == null || !page.isPageComplete()) {
-                    complete = false;
-                    break;
-                }
-            }
-        }
         Button finishButton = getButton(IDialogConstants.OK_ID);
         if (finishButton != null && !finishButton.isDisposed()) {
-            finishButton.setEnabled(complete);
+            finishButton.setEnabled(wizard.canFinish());
         }
 
         IWizardPage currentPage = getCurrentPage();

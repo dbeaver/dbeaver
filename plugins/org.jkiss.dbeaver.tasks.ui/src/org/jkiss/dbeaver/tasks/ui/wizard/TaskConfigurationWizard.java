@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Collections;
@@ -202,6 +203,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     @Override
     public boolean canFinish() {
         for (IWizardPage page : getPages()) {
+            if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
+                continue;
+            }
             if (isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }

@@ -402,6 +402,15 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public boolean isComplete() {
+            for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
+                if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                    return false;
+                }
+                if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                    return false;
+                }
+            }
+
             return objectsTable.getItemCount() > 0;
         }
 
@@ -409,6 +418,14 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         public String getErrorMessage() {
             if (objectsTable.getItemCount() == 0) {
                 return "No objects selected";
+            }
+            for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
+                if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                    return "Source not specified for " + pipe.getConsumer().getObjectName();
+                }
+                if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                    return "Target not specified for " + pipe.getProducer().getObjectName();
+                }
             }
             return null;
         }

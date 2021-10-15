@@ -43,6 +43,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
 
     TaskConfigurationWizardPageSettings(DBTTask task) {
         super(task == null ? TaskUIMessages.task_config_wizard_page_settings_create_task : TaskUIMessages.task_config_wizard_page_settings_edit_task);
+        setTitle(getName());
 
         setPageComplete(true);
     }
@@ -94,7 +95,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
             setTitle(title);
             setDescription(NLS.bind(TaskUIMessages.task_config_wizard_page_settings_config,curTaskType.getName()));
         }
-        setPageComplete(determinePageCompletion());
+        updatePageCompletion();
     }
 
     @Override
