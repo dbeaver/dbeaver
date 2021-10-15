@@ -42,6 +42,9 @@ public class VerticalButton extends Canvas {
 
     private static final Point EMPTY_SIZE = new Point(0, 0);
 
+    // Transform bug in SWT appeared in 2021-06 and was fixed in 2021-09
+    private static final boolean IS_TRANSFORM_BUG_PRESENT = false;
+
     private int mouse = 0;
     private boolean hit = false;
 
@@ -242,7 +245,7 @@ public class VerticalButton extends Canvas {
         String text = getText();
         if (!CommonUtils.isEmpty(text)) {
             // Offset shift. Windows only? (14048)
-            boolean shiftOffset = RuntimeUtils.isWindows() && (DPIUtil.getDeviceZoom() >= 200);
+            boolean shiftOffset = IS_TRANSFORM_BUG_PRESENT && RuntimeUtils.isWindows() && (DPIUtil.getDeviceZoom() >= 200);
 
             Transform tr = new Transform(e.display);
 
