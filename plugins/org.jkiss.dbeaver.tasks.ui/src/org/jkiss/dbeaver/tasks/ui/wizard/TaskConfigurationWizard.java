@@ -22,11 +22,11 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
@@ -201,6 +201,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean canFinish() {
+        if (isCurrentTaskSaved()) {
+            return true;
+        }
         for (IWizardPage page : getPages()) {
             if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
                 continue;
@@ -303,12 +306,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         }
     }
 
-    public void createTaskSaveGroup(Composite parent) {
-        Group taskGroup = UIUtils.createControlGroup(
-            parent, TaskUIMessages.task_config_wizard_group_task_label, 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        createTaskSaveButtons(taskGroup, false, 1);
-    }
-
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
 
         IViewDescriptor tasksViewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID);
@@ -352,8 +349,24 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
                 }
             });
+            IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find("org.jkiss.dbeaver.tasks");
+            if (viewDescriptor != null) {
+                Image viewImage = viewDescriptor.getImageDescriptor().createImage();
+                tasksLink.setImage(viewImage);
+                tasksLink.setText("");
+                tasksLink.addDisposeListener(e -> viewImage.dispose());
+            }
             tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
+    }
+
+    public void createVariablesEditButton(Composite parent) {
+        UIUtils.createDialogButton(parent, TaskUIMessages.task_config_wizard_button_variables + " ...", new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                configureVariables();
+            }
+        });
     }
 
     private void configureVariables() {

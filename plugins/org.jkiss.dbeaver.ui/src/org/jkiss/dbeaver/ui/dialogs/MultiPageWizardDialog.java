@@ -151,10 +151,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
         leftPane.setBackground(pagesTree.getBackground());
         createBottomLeftArea(leftPane);
-//        Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-//        if (size.x > 0) {
-//            ((GridData) pagesTree.getLayoutData()).minimumWidth = size.x;
-//        }
 
         Composite pageContainer = UIUtils.createPlaceholder(wizardSash, 2);
 
@@ -168,6 +164,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pageArea.setLayout(new GridLayout(1, true));
 
         wizardSash.setWeights(new int[]{220, 780});
+
+        Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        if (size.x > 0) {
+            ((GridData) wizardSash.getLayoutData()).widthHint = size.x * 6;
+        }
 
         updateNavigationTree();
 
@@ -278,7 +279,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             prevPage = page;
             pageArea.layout();
             if (pageCreated && isAutoLayoutAvailable()) {
-                UIUtils.asyncExec(() -> UIUtils.resizeShell(wizard.getContainer().getShell()));
+                UIUtils.asyncExec(() -> {
+                    if (wizard.getContainer().getShell() != null) {
+                        UIUtils.resizeShell(wizard.getContainer().getShell());
+                    }
+                });
             }
 
             if (page instanceof ActiveWizardPage) {

@@ -297,7 +297,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             return false;
         }
 
-        {
+        if (!isCurrentTaskSaved()) {
             IWizardPage[] pages = getPages();
             getContainer().showPage(pages[pages.length - 1]);
         }
@@ -307,7 +307,10 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             if (currentTask == null) {
                 // Execute directly - without task serialize/deserialize
                 // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)
-                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), DTMessages.data_transfer_wizard_job_name, getSettings());
+                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(
+                    getRunnableContext(),
+                    DTMessages.data_transfer_wizard_job_name,
+                    getSettings());
                 executor.executeTask();
             }
         } catch (DBException e) {

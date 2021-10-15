@@ -141,7 +141,6 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
-        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }

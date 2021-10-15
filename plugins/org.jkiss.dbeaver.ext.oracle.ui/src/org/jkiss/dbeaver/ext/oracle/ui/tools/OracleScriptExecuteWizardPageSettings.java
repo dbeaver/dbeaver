@@ -57,8 +57,6 @@ class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage
         inputFileText = new TextWithOpenFile(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, new String[] { "*.sql", "*.txt", "*" } );
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        wizard.createTaskSaveGroup(composite);
-
         setControl(composite);
 
         //updateState();

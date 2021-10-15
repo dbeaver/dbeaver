@@ -95,8 +95,6 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             ((GridData) targetSettingsText.getLayoutData()).heightHint = 30;
         }
 
-        getWizard().createTaskSaveButtons(composite, true, 1);
-
         setControl(composite);
     }
 

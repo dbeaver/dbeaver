@@ -188,7 +188,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     @Override
     public void updateButtons() {
         super.updateButtons();
-        //updateSaveTaskButtons();
+        getWizard().updateSaveTaskButtons();
     }
 
     @Override

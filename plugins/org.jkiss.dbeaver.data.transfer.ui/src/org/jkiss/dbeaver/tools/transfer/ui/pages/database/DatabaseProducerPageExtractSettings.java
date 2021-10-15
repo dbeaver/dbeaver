@@ -170,6 +170,10 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 selectedRowsOnlyCheckbox.addSelectionListener(listener);
             }
         }
+        {
+            Composite buttonsPanel = UIUtils.createComposite(composite, 1);
+            getWizard().createVariablesEditButton(buttonsPanel);
+        }
 
         setControl(composite);
 
