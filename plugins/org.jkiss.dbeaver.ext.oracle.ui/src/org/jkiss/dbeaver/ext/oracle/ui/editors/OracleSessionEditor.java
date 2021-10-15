@@ -76,10 +76,10 @@ public class OracleSessionEditor extends AbstractSessionEditor
                 contributionManager.add(new Separator());
 
                 contributionManager.add(ActionUtils.makeActionContribution(
-                    new Action("Show background", Action.AS_CHECK_BOX) {
+                    new Action(OracleUIMessages.views_session_manager_viewer_show_background, Action.AS_CHECK_BOX) {
                         {
                             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-                            setToolTipText("Show background tasks");
+                            setToolTipText(OracleUIMessages.views_session_manager_viewer_show_background_tasks_tip);
                             setChecked(showBackground);
                         }
                         @Override
@@ -90,10 +90,10 @@ public class OracleSessionEditor extends AbstractSessionEditor
                     }, true));
 
                 contributionManager.add(ActionUtils.makeActionContribution(
-                    new Action("Show inactive", Action.AS_CHECK_BOX) {
+                    new Action(OracleUIMessages.views_session_manager_viewer_show_inactive, Action.AS_CHECK_BOX) {
                         {
                             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-                            setToolTipText("Show inactive sessions");
+                            setToolTipText(OracleUIMessages.views_session_manager_viewer_show_inactive_sessions_tip);
                             setChecked(showInactive);
                         }
                         @Override

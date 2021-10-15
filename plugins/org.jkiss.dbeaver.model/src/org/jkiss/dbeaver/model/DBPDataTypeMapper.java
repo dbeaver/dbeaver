@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-
-import java.util.Map;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * SQLQuery container.
+ * Data type mapper.
+ * Finds data type in owner datasource which corresponds to external datasource data type.
  */
-public interface SQLQueryContainer extends IDataSourceContainerProvider, DBPContextProvider {
+public interface DBPDataTypeMapper {
 
-    SQLScriptElement getQuery();
-
-    Map<String, Object> getQueryParameters();
+    String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull DBSTypedObject typedObject);
 
 }

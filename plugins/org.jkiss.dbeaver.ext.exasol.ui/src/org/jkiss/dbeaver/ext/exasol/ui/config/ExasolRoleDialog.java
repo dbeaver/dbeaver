@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -38,7 +39,7 @@ public class ExasolRoleDialog extends BaseDialog {
 
     
     public ExasolRoleDialog(Shell parentShell) {
-        super(parentShell,"Create Role",null);
+        super(parentShell, ExasolMessages.dialog_create_role_title,null);
     }
     
     @Override
@@ -49,8 +50,8 @@ public class ExasolRoleDialog extends BaseDialog {
         final Composite group = new Composite(composite, SWT.NONE);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         group.setLayout(new GridLayout(2, false));
-        final Text nameText = UIUtils.createLabelText(group, "Role Name", "");
-        final Text commentText = UIUtils.createLabelText(group, "Description", "");
+        final Text nameText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_role_role_name, "");
+        final Text commentText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_role_description, "");
         ModifyListener mod = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {

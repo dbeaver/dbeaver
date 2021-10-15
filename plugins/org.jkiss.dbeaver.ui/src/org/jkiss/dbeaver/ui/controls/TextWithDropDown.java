@@ -30,6 +30,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
+import java.util.function.Consumer;
+
 public class TextWithDropDown extends Composite {
     private final Text text;
     private final Menu menu;
@@ -62,14 +64,13 @@ public class TextWithDropDown extends Composite {
 
     @NotNull
     public MenuItem addMenuItem(@NotNull String text) {
-        return addMenuItem(text, null, null, null);
+        return addMenuItem(menu, text, null, null, SWT.NONE);
     }
 
     @NotNull
-    public MenuItem addMenuItem(@NotNull String text, @Nullable String toolTipText, @Nullable DBIcon image, @Nullable Object data) {
-        final MenuItem item = new MenuItem(menu, SWT.NONE);
+    public MenuItem addMenuItem(@NotNull Menu menu, @NotNull String text, @Nullable DBIcon image, @Nullable Object data, int style) {
+        final MenuItem item = new MenuItem(menu, style);
         item.setText(text);
-        item.setToolTipText(toolTipText);
         item.setData(data);
         if (image != null) {
             item.setImage(DBeaverIcons.getImage(image));
@@ -78,6 +79,20 @@ public class TextWithDropDown extends Composite {
             item.addSelectionListener(menuListener);
         }
         return item;
+    }
+
+    @NotNull
+    public MenuItem addMenuItemWithMenu(@NotNull String text, @Nullable DBIcon image, @NotNull Consumer<Menu> contributor) {
+        return addMenuItemWithMenu(menu, text, image, contributor);
+    }
+
+    @NotNull
+    public MenuItem addMenuItemWithMenu(@NotNull Menu parentMenu, @NotNull String text, @Nullable DBIcon image, @NotNull Consumer<Menu> menuContributor) {
+        final MenuItem menuItem = addMenuItem(parentMenu, text, image, null, SWT.CASCADE);
+        final Menu menu = new Menu(parentMenu);
+        menuContributor.accept(menu);
+        menuItem.setMenu(menu);
+        return menuItem;
     }
 
     public void addMenuSeparator() {

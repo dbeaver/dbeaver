@@ -62,6 +62,7 @@ public class DBConstants {
 
     // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
     // Left for backward compatibility. Do not use it for new provider property names
+    @Deprecated
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
 
     // Used for default driver property values redefine

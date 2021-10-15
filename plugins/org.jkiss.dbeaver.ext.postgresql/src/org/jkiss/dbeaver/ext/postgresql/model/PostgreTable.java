@@ -238,7 +238,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
             CommonUtils.safeList(getSubInheritance(monitor)));
         // Obtain a list of schemas containing references to this table to avoid fetching everything
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read referencing schemas")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT connamespace FROM pg_catalog.pg_constraint WHERE confrelid=?")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DISTINCT connamespace FROM pg_catalog.pg_constraint WHERE confrelid=?")) {
                 dbStat.setLong(1, getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {

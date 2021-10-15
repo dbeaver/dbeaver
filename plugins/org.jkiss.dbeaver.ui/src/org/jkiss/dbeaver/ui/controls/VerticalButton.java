@@ -32,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class VerticalButton extends Canvas {
@@ -240,7 +241,8 @@ public class VerticalButton extends Canvas {
 
         String text = getText();
         if (!CommonUtils.isEmpty(text)) {
-            boolean shiftOffset = (DPIUtil.getDeviceZoom() >= 200);
+            // Offset shift. Windows only? (14048)
+            boolean shiftOffset = RuntimeUtils.isWindows() && (DPIUtil.getDeviceZoom() >= 200);
 
             Transform tr = new Transform(e.display);
 

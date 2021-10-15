@@ -621,6 +621,7 @@ public class DBExecUtils {
         try {
             SQLQuery sqlQuery = null;
             DBSEntity entity = null;
+            int queryEntityMetaScore = -1;
             if (sourceEntity != null) {
                 entity = sourceEntity;
             } else if (resultSet != null) {
@@ -644,6 +645,7 @@ public class DBExecUtils {
                         if (entityMeta != null) {
                             entity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMeta);
                             if (entity != null) {
+                                queryEntityMetaScore = entityMeta.getCompleteScore();
                                 entityBindingMap.put(entityMeta, entity);
                             }
                         }
@@ -666,36 +668,42 @@ public class DBExecUtils {
                 // To be editable we need this resultset contain set of columns from the same table
                 // which construct any unique key
                 DBSEntity attrEntity = null;
-                DBCEntityMetaData attrEntityMeta = attrMeta.getEntityMetaData();
-                if (attrEntityMeta == null && sqlQuery != null) {
-                    SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
-                    if (selectItem != null && selectItem.isPlainColumn()) {
-                        attrEntityMeta = selectItem.getEntityMetaData();
-                    }
-                }
-                if (attrEntityMeta != null) {
-                    attrEntity = entityBindingMap.get(attrEntityMeta);
-                    if (attrEntity == null) {
-                        if (entity != null && entity instanceof DBSTable && ((DBSTable) entity).isView()) {
-                            // If this is a view then don't try to detect entity for each attribute
-                            // MySQL returns source table name instead of view name. That's crazy.
-                            attrEntity = entity;
-                        } else {
-                            attrEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), attrEntityMeta);
+                if (sourceEntity == null) {
+                    DBCEntityMetaData attrEntityMeta = attrMeta.getEntityMetaData();
+                    if (attrEntityMeta == null && sqlQuery != null) {
+                        SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                        if (selectItem != null && selectItem.isPlainColumn()) {
+                            attrEntityMeta = selectItem.getEntityMetaData();
                         }
                     }
-                    if (attrEntity != null) {
-                        entityBindingMap.put(attrEntityMeta, attrEntity);
+                    if (attrEntityMeta != null) {
+                        attrEntity = entityBindingMap.get(attrEntityMeta);
+                        if (attrEntity == null) {
+                            if (entity != null &&
+                                (queryEntityMetaScore > attrEntityMeta.getCompleteScore() || DBUtils.isView(entity)))
+                            {
+                                // If query entity score is greater than database provided entity meta score then use base entity (from SQL query)
+
+                                // If this is a view then don't try to detect entity for each attribute
+                                // MySQL returns source table name instead of view name. That's crazy.
+                                attrEntity = entity;
+                            } else {
+                                attrEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), attrEntityMeta);
+
+                                if (attrEntity == null) {
+                                    log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
+                                }
+                            }
+                        }
+                        if (attrEntity != null) {
+                            entityBindingMap.put(attrEntityMeta, attrEntity);
+                        }
                     }
                 }
                 if (attrEntity == null) {
                     attrEntity = entity;
                 }
-                if (attrEntity == null) {
-                    if (attrEntityMeta != null) {
-                        log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
-                    }
-                } else if (binding instanceof DBDAttributeBindingMeta){
+                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta) {
                     DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
 
                     // Table column can be found from results metadata or from SQL query parser

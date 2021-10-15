@@ -14,22 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
@@ -142,7 +126,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
-    private Font italicFont;
 
     private boolean showOddRows = true;
     private boolean highlightRowsWithSelectedCells;
@@ -222,8 +205,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
-
         this.spreadsheet = new Spreadsheet(
             parent,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
@@ -267,8 +248,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         closeEditors();
         clearMetaData();
-
-        UIUtils.dispose(this.italicFont);
 
         UIUtils.dispose(this.cellHeaderSelectionBackground);
         super.dispose();
@@ -1107,6 +1086,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return null;
         }
 
+        Object cellValue = getController().getModel().getCellValue(attr, row);
+        if (cellValue instanceof DBDValueError) {
+            return null;
+        }
+
         if (!inline) {
             for (Iterator<SpreadsheetValueController> iterator = openEditors.keySet().iterator(); iterator.hasNext(); ) {
                 SpreadsheetValueController valueController = iterator.next();
@@ -1883,6 +1867,24 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return ALIGN_LEFT;
         }
 
+        @Nullable
+        @Override
+        public Font getCellFont(@Nullable Object colElement, Object rowElement) {
+            final boolean recordMode = controller.isRecordMode();
+            final ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
+            final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? rowElement : colElement);
+            if (row != null && attr != null && isShowAsCheckbox(attr)) {
+                Object cellValue = controller.getModel().getCellValue(attr, row);
+                if (cellValue instanceof Number) {
+                    cellValue = ((Number) cellValue).byteValue() != 0;
+                }
+                if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                    return spreadsheet.getFont(booleanStyles.getStyle((Boolean) cellValue).getFontStyle());
+                }
+            }
+            return null;
+        }
+
         @Override
         public int getColumnPinIndex(@NotNull Object element) {
             if (!controller.isRecordMode()) {
@@ -2357,10 +2359,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasCondition()) {
-                    return spreadsheet.getBoldFont();
+                    return spreadsheet.getFont(UIElementFontStyle.BOLD);
                 }
                 if (attributeBinding.isTransformed()) {
-                    return italicFont;
+                    return spreadsheet.getFont(UIElementFontStyle.ITALIC);
                 }
             }
             return null;

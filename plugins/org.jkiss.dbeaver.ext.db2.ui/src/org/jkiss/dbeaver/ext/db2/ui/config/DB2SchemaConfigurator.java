@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -83,12 +84,12 @@ public class DB2SchemaConfigurator implements DBEObjectConfigurator<DB2Schema> {
         @Override
         protected Control createDialogArea(Composite parent)
         {
-            getShell().setText("New Schema Name");
+            getShell().setText(DB2Messages.dialog_schema_edit_title);
             Control container = super.createDialogArea(parent);
             Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            nameText = UIUtils.createLabelText(composite, "Schema Name", null);
+            nameText = UIUtils.createLabelText(composite, DB2Messages.dialog_schema_edit_schema_name, null);
             nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             return parent;

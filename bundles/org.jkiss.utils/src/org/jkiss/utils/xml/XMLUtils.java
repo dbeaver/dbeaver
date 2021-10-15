@@ -17,6 +17,7 @@
 
 package org.jkiss.utils.xml;
 
+import javax.xml.XMLConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.w3c.dom.Document;
@@ -62,6 +63,7 @@ public class XMLUtils {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder xmlBuilder = dbf.newDocumentBuilder();
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             return xmlBuilder.parse(source);
         } catch (Exception er) {
             throw new XMLException("Error parsing XML document", er);

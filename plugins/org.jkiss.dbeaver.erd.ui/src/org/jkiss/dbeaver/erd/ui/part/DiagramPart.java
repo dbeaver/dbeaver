@@ -92,6 +92,11 @@ public class DiagramPart extends PropertyAwarePart {
         getViewer().getEditDomain().getCommandStack().addCommandStackEventListener(stackListener);
     }
 
+    @Override
+    protected boolean isListensModelChanges() {
+        return true;
+    }
+
     /**
      * Removes this EditPart as a command stack listener
      */

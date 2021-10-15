@@ -22,33 +22,36 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIElementAlignment;
+import org.jkiss.dbeaver.ui.UIElementFontStyle;
 
 public class BooleanStyle {
     private final BooleanMode mode;
     private final String text;
     private final DBIcon icon;
     private final UIElementAlignment alignment;
+    private final UIElementFontStyle fontStyle;
     private final RGB color;
 
-    private BooleanStyle(@NotNull BooleanMode mode, @Nullable String text, @Nullable DBIcon icon, @NotNull UIElementAlignment alignment, @Nullable RGB color) {
+    private BooleanStyle(@NotNull BooleanMode mode, @Nullable String text, @Nullable DBIcon icon, @NotNull UIElementAlignment alignment, @Nullable UIElementFontStyle fontStyle, @Nullable RGB color) {
         this.mode = mode;
         this.text = text;
         this.icon = icon;
         this.alignment = alignment;
+        this.fontStyle = fontStyle;
         this.color = color;
 
-        Assert.isLegal(mode != BooleanMode.TEXT || (text != null && icon == null && color != null), "Only text and color must be present in text style");
-        Assert.isLegal(mode != BooleanMode.ICON || (text == null && icon != null && color == null), "Only icon must be present in icon style");
+        Assert.isLegal(mode != BooleanMode.TEXT || (text != null && icon == null && fontStyle != null && color != null), "Only text, color and font must be present in text style");
+        Assert.isLegal(mode != BooleanMode.ICON || (text == null && icon != null && fontStyle == null && color == null), "Only icon must be present in icon style");
     }
 
     @NotNull
-    public static BooleanStyle usingText(@NotNull String text, @NotNull UIElementAlignment alignment, @NotNull RGB color) {
-        return new BooleanStyle(BooleanMode.TEXT, text, null, alignment, color);
+    public static BooleanStyle usingText(@NotNull String text, @NotNull UIElementAlignment alignment, @NotNull RGB color, @NotNull UIElementFontStyle font) {
+        return new BooleanStyle(BooleanMode.TEXT, text, null, alignment, font, color);
     }
 
     @NotNull
     public static BooleanStyle usingIcon(@NotNull DBIcon icon, @NotNull UIElementAlignment alignment) {
-        return new BooleanStyle(BooleanMode.ICON, null, icon, alignment, null);
+        return new BooleanStyle(BooleanMode.ICON, null, icon, alignment, null, null);
     }
 
     @NotNull
@@ -71,6 +74,12 @@ public class BooleanStyle {
     @NotNull
     public UIElementAlignment getAlignment() {
         return alignment;
+    }
+
+    @NotNull
+    public UIElementFontStyle getFontStyle() {
+        Assert.isLegal(mode == BooleanMode.TEXT);
+        return fontStyle;
     }
 
     @NotNull

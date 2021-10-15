@@ -106,6 +106,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                 "Load object '" + objectName + "' from " + owner.getName() :
                 "Reload object '" + object + "' from " + owner.getName()))
         {
+            beforeCacheLoading(session, owner);
             try (JDBCStatement dbStat = prepareLookupStatement(session, owner, object, objectName)) {
                 dbStat.setFetchSize(1);
                 dbStat.executeStatement();
@@ -123,6 +124,8 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                     }
                 }
                 return null;
+            } finally {
+                afterCacheLoading(session, owner);
             }
         } catch (SQLException ex) {
             throw new DBException("Error loading object metadata from database", ex, dataSource);

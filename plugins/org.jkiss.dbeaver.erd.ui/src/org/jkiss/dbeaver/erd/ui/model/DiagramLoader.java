@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.erd.ui.model;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2dl.AbsoluteBendpoint;
 import org.eclipse.draw2dl.Bendpoint;
+import org.eclipse.draw2dl.IFigure;
 import org.eclipse.draw2dl.RelativeBendpoint;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.jface.resource.StringConverter;
@@ -366,10 +367,10 @@ public class DiagramLoader extends ERDPersistedState {
     public static String serializeDiagram(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, boolean compact)
         throws IOException
     {
-        List allNodeFigures = diagramPart == null ? new ArrayList() : diagramPart.getFigure().getChildren();
+        List<IFigure> allNodeFigures = diagramPart == null ? new ArrayList<>() : diagramPart.getFigure().getChildren();
         Map<DBPDataSourceContainer, DataSourceObjects> dsMap = createDataSourceObjectMap(diagram);
 
-        Map<ERDElement, ElementSaveInfo> elementInfoMap = new IdentityHashMap<>();
+        Map<ERDElement<?>, ElementSaveInfo> elementInfoMap = new IdentityHashMap<>();
         int elementCounter = ERD_VERSION_1;
 
         // Save as XML

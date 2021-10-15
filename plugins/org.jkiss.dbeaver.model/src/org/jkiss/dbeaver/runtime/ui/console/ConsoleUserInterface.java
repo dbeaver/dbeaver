@@ -214,6 +214,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public void showInSystemExplorer(@NotNull String path) {
+        // do nothing
+    }
+
+    @Override
     public boolean readAndDispatchEvents() {
 
         return false;

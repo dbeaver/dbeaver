@@ -657,7 +657,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                             oldChild.reloadChildren(monitor, source, reflect);
                         }
                         if (updated && reflect) {
-                            getModel().fireNodeUpdate(source, oldChild, DBNEvent.NodeChange.REFRESH);
+                            // FIXME: do not update all refreshed items in (it is too expensive)
+                            //getModel().fireNodeUpdate(source, oldChild, DBNEvent.NodeChange.REFRESH);
                         }
 
                         toList.add(oldChild);

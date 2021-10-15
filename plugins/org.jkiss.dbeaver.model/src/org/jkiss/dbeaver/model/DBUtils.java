@@ -470,6 +470,15 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isParentOf(@NotNull DBSObject child, @NotNull DBSObject parent) {
+        for (DBSObject object = child; object != null; object = object.getParentObject()) {
+            if (parent.equals(object)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Search for virtual entity descriptor
      * @param object object
@@ -1504,6 +1513,9 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
+        } else if (object instanceof IDataSourceContainerProvider) {
+            // No need to wrap in quotes content providers names
+            return object.getName();
         } else if (object instanceof DBSObject) {
             return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {

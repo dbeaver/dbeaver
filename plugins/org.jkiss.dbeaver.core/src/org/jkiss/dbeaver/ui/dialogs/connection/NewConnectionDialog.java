@@ -24,7 +24,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -104,16 +107,16 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         }
     }
 
-    public static boolean openNewConnectionDialog(IWorkbenchWindow window) {
-        return openNewConnectionDialog(window, null);
+    public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window) {
+        return openNewConnectionDialog(window, null, null);
     }
 
-    public static boolean openNewConnectionDialog(IWorkbenchWindow window, DBPDriver initialDriver) {
+    public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window, @Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
         if (dialogInstance != null) {
             dialogInstance.getShell().forceActive();
             return true;
         } else {
-            dialogInstance = new NewConnectionDialog(window, new NewConnectionWizard(initialDriver));
+            dialogInstance = new NewConnectionDialog(window, new NewConnectionWizard(initialDriver, initialConfiguration));
             try {
                 return dialogInstance.open() == IDialogConstants.OK_ID;
             } finally {

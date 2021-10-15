@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="21.2.2.qualifier"
+        version="21.2.3.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -45,4 +45,7 @@
     <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
 
+    <!-- Bouncycastle -->
+    <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 </feature>

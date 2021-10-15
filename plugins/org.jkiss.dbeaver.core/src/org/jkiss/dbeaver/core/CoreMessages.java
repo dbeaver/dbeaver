@@ -147,6 +147,12 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 	public static String dialog_connection_wizard_title;
 
+	public static String dialog_connection_from_url_title;
+	public static String dialog_connection_from_url_url;
+	public static String dialog_connection_from_url_drivers;
+	public static String dialog_connection_from_url_error_no_drivers_found;
+	public static String dialog_connection_from_url_error_no_driver_selected;
+
 	public static String dialog_migrate_wizard_choose_driver_description;
 	public static String dialog_migrate_wizard_choose_driver_title;
 	public static String dialog_migrate_wizard_name;
@@ -545,7 +551,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_boolean_label_text;
 	public static String pref_page_ui_general_boolean_label_align;
 	public static String pref_page_ui_general_boolean_label_color;
-	public static String pref_page_ui_general_boolean_predefined_styles;
+	public static String pref_page_ui_general_boolean_styles;
+	public static String pref_page_ui_general_boolean_color;
+	public static String pref_page_ui_general_boolean_color_use_theme_color;
 	public static String pref_page_ui_general_boolean_invalid_values;
 
 	static {

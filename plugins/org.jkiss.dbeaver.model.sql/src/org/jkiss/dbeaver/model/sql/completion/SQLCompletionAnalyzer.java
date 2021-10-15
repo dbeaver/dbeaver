@@ -574,6 +574,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private void makeProposalsFromQueryParts() {
+        if (request.getQueryType() == null && request.getWordDetector().getPrevKeyWord().equalsIgnoreCase(SQLConstants.KEYWORD_FROM)) {
+            // Seems to be table alias
+            return;
+        }
         String wordPart = request.getWordPart();
         // Find all aliases matching current word
         SQLScriptElement activeQuery = request.getActiveQuery();
@@ -705,7 +709,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
-        String[] tokens = request.getWordDetector().splitWordPart();
+        String[] tokens = Arrays.stream(request.getWordDetector().splitWordPart()).filter(CommonUtils::isNotEmpty).toArray(String[]::new);
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)

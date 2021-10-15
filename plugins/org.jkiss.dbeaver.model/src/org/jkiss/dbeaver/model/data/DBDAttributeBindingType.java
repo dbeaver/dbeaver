@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -31,6 +32,8 @@ import java.util.List;
  * Type attribute value binding info
  */
 public class DBDAttributeBindingType extends DBDAttributeBindingNested implements DBPImageProvider {
+
+    private static final Log log = Log.getLog(DBDAttributeBindingType.class);
 
     @NotNull
     private final DBSAttributeBase attribute;
@@ -148,8 +151,11 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         if (ownerValue instanceof DBDComposite) {
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         }
+
         DBDAttributeBinding parent = getParent(1);
-        throw new DBCException("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value");
+        log.debug("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value (" + ownerValue + ")");
+
+        throw new DBCException(DBValueFormatting.getDefaultValueDisplayString(ownerValue, DBDDisplayFormat.NATIVE));
     }
 
     @Nullable

@@ -21,6 +21,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
@@ -30,12 +35,15 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Locale;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.*;
 
 public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
 
@@ -94,44 +102,18 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
-            UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern,
-                StreamTransferConsumer.VARIABLE_DATASOURCE,
-                StreamTransferConsumer.VARIABLE_CATALOG,
-                StreamTransferConsumer.VARIABLE_SCHEMA,
-                StreamTransferConsumer.VARIABLE_TABLE,
-                StreamTransferConsumer.VARIABLE_TIMESTAMP,
-                StreamTransferConsumer.VARIABLE_DATE,
-                StreamTransferConsumer.VARIABLE_INDEX,
-                StreamTransferConsumer.VARIABLE_PROJECT,
-                StreamTransferConsumer.VARIABLE_CONN_TYPE);
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(e -> {
                 settings.setOutputFilePattern(fileNameText.getText());
                 updatePageCompletion();
             });
-            ContentAssistUtils.installContentProposal(
-                fileNameText,
-                new SmartTextContentAdapter(),
-                new StringContentProposalProvider(
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATASOURCE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CATALOG),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_SCHEMA),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_INDEX),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CONN_TYPE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)));
 
             {
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_encoding);
                 encodingCombo = UIUtils.createEncodingCombo(generalSettings, settings.getOutputEncoding());
                 //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingCombo.addModifyListener(e -> {
-                    int index = encodingCombo.getSelectionIndex();
-                    if (index >= 0) {
-                        settings.setOutputEncoding(encodingCombo.getItem(index));
-                    }
+                    settings.setOutputEncoding(encodingCombo.getText());
                     updatePageCompletion();
                 });
                 timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
@@ -186,6 +168,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 gd.widthHint = UIUtils.getFontHeight(maximumFileSizeText) * 10;
                 maximumFileSizeText.setLayoutData(gd);
             }
+
+            // No resolver - several producers may present.
+            new VariablesHintLabel(
+                generalSettings,
+                DTUIMessages.stream_consumer_page_output_variables_hint_label,
+                DTUIMessages.stream_consumer_page_output_variables_hint_label,
+                StreamTransferConsumer.VARIABLES,
+                true
+            );
         }
 
         {
@@ -215,23 +206,6 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 settings.setFinishProcessCommand(execProcessText.getText());
                 updatePageCompletion();
             });
-            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line,
-                StreamTransferConsumer.VARIABLE_FILE,
-                StreamTransferConsumer.VARIABLE_TABLE,
-                StreamTransferConsumer.VARIABLE_TIMESTAMP,
-                StreamTransferConsumer.VARIABLE_DATE,
-                StreamTransferConsumer.VARIABLE_PROJECT,
-                StreamTransferConsumer.VARIABLE_CONN_TYPE);
-            ContentAssistUtils.installContentProposal(
-                execProcessText,
-                new SmartTextContentAdapter(),
-                new StringContentProposalProvider(
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CONN_TYPE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, null, getWizard().getSettings().isShowFinalMessage(), 4);
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -240,6 +214,22 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
                 }
             });
+        }
+
+        {
+            final String[] variables = getAvailableVariables();
+            final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
+                .stream(variables)
+                .map(GeneralUtils::variablePattern)
+                .toArray(String[]::new));
+
+            UIUtils.setContentProposalToolTip(directoryText, DTUIMessages.stream_consumer_page_output_tooltip_output_directory_pattern, variables);
+            UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern, variables);
+            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line, variables);
+
+            ContentAssistUtils.installContentProposal(directoryText, new SmartTextContentAdapter(), proposalProvider);
+            ContentAssistUtils.installContentProposal(fileNameText, new SmartTextContentAdapter(), proposalProvider);
+            ContentAssistUtils.installContentProposal(execProcessText, new SmartTextContentAdapter(), proposalProvider);
         }
 
         setControl(composite);
@@ -328,17 +318,52 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             return true;
         }
 
-        boolean valid = true;
         if (CommonUtils.isEmpty(settings.getOutputFolder())) {
-            valid = false;
-        }
-        if (CommonUtils.isEmpty(settings.getOutputFilePattern())) {
-            valid = false;
-        }
-        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_output_directory);
             return false;
         }
-        return valid;
+        if (CommonUtils.isEmpty(settings.getOutputFilePattern())) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_output_filename);
+            return false;
+        }
+        try {
+            Charset.forName(settings.getOutputEncoding());
+        } catch (Exception e) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_invalid_charset);
+            return false;
+        }
+        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
+            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_finish_command);
+            return false;
+        }
+        return true;
     }
 
+    @NotNull
+    private String[] getAvailableVariables() {
+        final Set<String> variables = new LinkedHashSet<>(Arrays.asList(
+            StreamTransferConsumer.VARIABLE_DATASOURCE,
+            StreamTransferConsumer.VARIABLE_CATALOG,
+            StreamTransferConsumer.VARIABLE_SCHEMA,
+            StreamTransferConsumer.VARIABLE_TABLE,
+            StreamTransferConsumer.VARIABLE_TIMESTAMP,
+            StreamTransferConsumer.VARIABLE_DATE,
+            StreamTransferConsumer.VARIABLE_INDEX,
+            StreamTransferConsumer.VARIABLE_PROJECT,
+            StreamTransferConsumer.VARIABLE_CONN_TYPE,
+            StreamTransferConsumer.VARIABLE_FILE,
+            StreamTransferConsumer.VARIABLE_SCRIPT_FILE
+        ));
+
+        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+        if (pipes.size() == 1) {
+            final DBSObject object = pipes.get(0).getProducer().getDatabaseObject();
+            final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, object);
+            if (container != null) {
+                variables.addAll(container.getQueryParameters().keySet());
+            }
+        }
+
+        return variables.toArray(new String[0]);
+    }
 }

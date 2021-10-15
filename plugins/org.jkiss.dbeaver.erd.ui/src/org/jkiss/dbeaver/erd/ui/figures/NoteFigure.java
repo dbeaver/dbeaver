@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class NoteFigure extends FlowPage {
 
-    private TextFlow textFlow;
+    private final TextFlow textFlow;
 
     public NoteFigure(ERDNote note) {
         //super(note.getObject());
@@ -48,7 +48,7 @@ public class NoteFigure extends FlowPage {
         setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND));
         setOpaque(true);
         setBorder(new CompoundBorder(
-            new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND), ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
+            new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND), ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
             new MarginBorder(5)
         ));
     }

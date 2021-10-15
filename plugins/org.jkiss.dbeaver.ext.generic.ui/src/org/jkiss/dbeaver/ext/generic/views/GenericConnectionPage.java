@@ -275,6 +275,11 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     }
 
+    public void setPortText(String text) {
+        portText.setText(text);
+        saveAndUpdate();
+    }
+
     @Override
     protected void updateDriverInfo(DBPDriver driver) {
         if (!isCustom) {
