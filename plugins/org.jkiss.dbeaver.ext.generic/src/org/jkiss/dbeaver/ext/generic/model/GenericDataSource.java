@@ -67,6 +67,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     private List<GenericSchema> schemas;
     private final GenericMetaModel metaModel;
     private GenericObjectContainer structureContainer;
+    boolean catalogsFiltered;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
@@ -486,55 +487,13 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
             // Read metadata
             JDBCDatabaseMetaData metaData = session.getMetaData();
-            boolean catalogsFiltered = false;
             if (!omitCatalog) {
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
                 final GenericMetaObject catalogObject = getMetaObject(GenericConstants.OBJECT_CATALOG);
                 final DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null, false);
-                final List<String> catalogNames = new ArrayList<>();
-                try {
-                    try (JDBCResultSet dbResult = metaData.getCatalogs()) {
-                        int totalCatalogs = 0;
-                        while (dbResult.next()) {
-                            String catalogName = GenericUtils.safeGetString(catalogObject, dbResult, JDBCConstants.TABLE_CAT);
-                            if (CommonUtils.isEmpty(catalogName)) {
-                                // Some drivers uses TABLE_QUALIFIER instead of catalog
-                                catalogName = GenericUtils.safeGetStringTrimmed(catalogObject, dbResult, JDBCConstants.TABLE_QUALIFIER);
-                                if (CommonUtils.isEmpty(catalogName)) {
-                                    continue;
-                                }
-                            }
-                            totalCatalogs++;
-                            if (catalogFilters == null || catalogFilters.matches(catalogName)) {
-                                catalogNames.add(catalogName);
-                                monitor.subTask("Extract catalogs - " + catalogName);
-                            } else {
-                                catalogsFiltered = true;
-                            }
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
-                        }
-                        if (totalCatalogs == 1 && omitSingleCatalog) {
-                            // Just one catalog. Looks like DB2 or PostgreSQL
-                            // Let's just skip it and use only schemas
-                            // It's ok to use "%" instead of catalog name anyway
-                            catalogNames.clear();
-                        }
-                    }
-                } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
-                    // Just skip it
-                    log.debug("Catalog list not supported: " + e.getMessage());
-                } catch (Throwable e) {
-                    if (metaModel.isCatalogsOptional()) {
-                        // Error reading catalogs - just warn about it
-                        log.warn("Can't read catalog list", e);
-                    } else {
-                        throw new DBException("Error reading catalog list", e);
-                    }
-                }
+                final List<String> catalogNames = getCatalogsNames(monitor, metaData, catalogObject, catalogFilters);
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();
                     for (String catalogName : catalogNames) {
@@ -543,7 +502,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     }
                 }
             }
-
             if (CommonUtils.isEmpty(catalogs) && !catalogsFiltered) {
                 // Catalogs not supported - try to read root schemas
                 monitor.subTask("Extract schemas");
@@ -575,6 +533,52 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             }
             throw new DBException("Error reading metadata", ex, this);
         }
+    }
+
+    public List<String> getCatalogsNames(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData, GenericMetaObject catalogObject, @Nullable DBSObjectFilter catalogFilters) throws DBException {
+        final List<String> catalogNames = new ArrayList<>();
+        try {
+            try (JDBCResultSet dbResult = metaData.getCatalogs()) {
+                int totalCatalogs = 0;
+                while (dbResult.next()) {
+                    String catalogName = GenericUtils.safeGetString(catalogObject, dbResult, JDBCConstants.TABLE_CAT);
+                    if (CommonUtils.isEmpty(catalogName)) {
+                        // Some drivers uses TABLE_QUALIFIER instead of catalog
+                        catalogName = GenericUtils.safeGetStringTrimmed(catalogObject, dbResult, JDBCConstants.TABLE_QUALIFIER);
+                        if (CommonUtils.isEmpty(catalogName)) {
+                            continue;
+                        }
+                    }
+                    totalCatalogs++;
+                    if (catalogFilters == null || catalogFilters.matches(catalogName)) {
+                        catalogNames.add(catalogName);
+                        monitor.subTask("Extract catalogs - " + catalogName);
+                    } else {
+                        catalogsFiltered = true;
+                    }
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                }
+                if (totalCatalogs == 1 && omitSingleCatalog) {
+                    // Just one catalog. Looks like DB2 or PostgreSQL
+                    // Let's just skip it and use only schemas
+                    // It's ok to use "%" instead of catalog name anyway
+                    catalogNames.clear();
+                }
+            }
+        } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
+            // Just skip it
+            log.debug("Catalog list not supported: " + e.getMessage());
+        } catch (Throwable e) {
+            if (metaModel.isCatalogsOptional()) {
+                // Error reading catalogs - just warn about it
+                log.warn("Can't read catalog list", e);
+            } else {
+                throw new DBException("Error reading catalog list", e);
+            }
+        }
+        return catalogNames;
     }
 
     public boolean isOmitCatalog() {
