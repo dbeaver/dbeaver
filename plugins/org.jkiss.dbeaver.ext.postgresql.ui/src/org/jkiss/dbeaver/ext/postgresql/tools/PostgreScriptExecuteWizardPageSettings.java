@@ -45,8 +45,12 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
     }
 
     @Override
-    public boolean isPageComplete() {
-        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getInputFile() == null) {
+            setErrorMessage("Input file not specified");
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     @Override
@@ -101,6 +105,7 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
     @Override
     protected void updateState() {
         saveState();
+        updatePageCompletion();
         getContainer().updateButtons();
     }
 

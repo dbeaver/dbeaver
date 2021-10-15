@@ -46,7 +46,7 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
     }
 
     protected boolean determinePageCompletion() {
-        return false;
+        return true;
     }
 
     @Override
@@ -59,7 +59,6 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
 
     @Override
     public void activatePage() {
-
     }
 
     @Override

@@ -57,9 +57,12 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete() && wizard.getSettings().getOutputFolder() != null;
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getOutputFolder() == null) {
+            setErrorMessage("Output folder not specified");
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     @Override
@@ -200,7 +203,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     protected void updateState()
     {
         saveState();
-
+        updatePageCompletion();
         getContainer().updateButtons();
     }
 

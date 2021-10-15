@@ -87,6 +87,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
+    protected Point getInitialSize() {
+        return new Point(700, 500);
+    }
+
     public IWizard getWizard() {
         return wizard;
     }
@@ -262,6 +266,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> UIUtils.resizeShell(wizard.getContainer().getShell()));
             }
+
+            if (page instanceof ActiveWizardPage) {
+                ((ActiveWizardPage)page).updatePageCompletion();
+            }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
         } finally {
@@ -393,6 +401,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
 
         return item;
+    }
+
+    protected void updatePageCompletion() {
+        IWizardPage page = getCurrentPage();
+        if (page instanceof ActiveWizardPage) {
+            ((ActiveWizardPage)page).updatePageCompletion();
+        }
     }
 
     @Override

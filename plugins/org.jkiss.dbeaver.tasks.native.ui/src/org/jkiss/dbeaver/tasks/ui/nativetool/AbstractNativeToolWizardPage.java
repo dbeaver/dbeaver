@@ -41,13 +41,17 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
     protected AbstractNativeToolWizardPage(WIZARD wizard, String pageName)
     {
         super(pageName);
+        setPageComplete(false);
         this.wizard = wizard;
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return wizard.getSettings().getClientHome() != null && super.isPageComplete();
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getClientHome() == null) {
+            setErrorMessage(TaskNativeUIMessages.tools_wizard_message_no_client_home);
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     protected void createCheckButtons(Composite buttonsPanel, final Table table) {

@@ -54,9 +54,12 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getInputFile() == null) {
+            setErrorMessage("Input file not specified");
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     @Override
@@ -148,7 +151,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     protected void updateState()
     {
         saveState();
-        getContainer().updateButtons();
+        updatePageCompletion();
     }
 
 }

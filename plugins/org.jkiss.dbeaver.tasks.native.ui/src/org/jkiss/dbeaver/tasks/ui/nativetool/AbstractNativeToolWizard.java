@@ -131,10 +131,10 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
         super.createPageControls(pageContainer);
 
-        updateErrorMessage();
+        readLocalClientInfo();
     }
 
-    void updateErrorMessage() {
+    void readLocalClientInfo() {
         WizardPage currentPage = (WizardPage) getStartingPage();
 
         if (isNativeClientHomeRequired()) {
@@ -168,6 +168,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                 currentPage.setErrorMessage(null);
             }
             getContainer().updateMessage();
+            getContainer().updateButtons();
         }
     }
 
