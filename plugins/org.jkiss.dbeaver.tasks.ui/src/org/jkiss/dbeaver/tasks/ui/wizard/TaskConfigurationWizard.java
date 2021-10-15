@@ -27,7 +27,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
@@ -318,12 +317,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             UIUtils.createEmptyLabel(parent, hSpan, 1);
         } else {
             Composite panel = new Composite(parent, SWT.NONE);
+            panel.setBackground(parent.getBackground());
             if (parent.getLayout() instanceof GridLayout) {
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.horizontalSpan = hSpan;
                 panel.setLayoutData(gd);
             }
-            boolean supportsVariables = getTaskType().supportsVariables();
+            boolean supportsVariables = false;//getTaskType().supportsVariables();
             panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
             if (supportsVariables) {
@@ -341,7 +341,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                     saveTask();
                 }
             });
-            Link tasksLink = UIUtils.createLink(panel, "<a>" + TaskUIMessages.task_config_wizard_link_open_tasks_view + "</a>", new SelectionAdapter() {
+            Button tasksLink = UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_link_open_tasks_view, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
@@ -349,6 +349,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                     } catch (PartInitException e1) {
                         DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
                     }
+
                 }
             });
             tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));

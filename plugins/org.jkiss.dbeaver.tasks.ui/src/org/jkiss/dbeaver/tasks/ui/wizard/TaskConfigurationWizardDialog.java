@@ -119,6 +119,12 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     }
 
     @Override
+    protected void createBottomLeftArea(Composite pane) {
+        // Task management controls
+        getWizard().createTaskSaveButtons(pane, true, 1);
+    }
+
+    @Override
     protected void createButtonsForButtonBar(Composite parent) {
         {
             parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));

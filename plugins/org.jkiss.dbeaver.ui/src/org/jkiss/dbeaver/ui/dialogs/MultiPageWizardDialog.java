@@ -146,8 +146,16 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         wizardSash = new SashForm(composite, SWT.HORIZONTAL);
         wizardSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        pagesTree = new Tree(wizardSash, SWT.SINGLE);
+        Composite leftPane = UIUtils.createComposite(wizardSash, 1);
+        pagesTree = new Tree(leftPane, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        leftPane.setBackground(pagesTree.getBackground());
+        createBottomLeftArea(leftPane);
+//        Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+//        if (size.x > 0) {
+//            ((GridData) pagesTree.getLayoutData()).minimumWidth = size.x;
+//        }
+
         Composite pageContainer = UIUtils.createPlaceholder(wizardSash, 2);
 
         // Vertical separator
@@ -205,6 +213,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         monitorPart.setVisible(false);
 
         return composite;
+    }
+
+    protected void createBottomLeftArea(Composite pane) {
+
     }
 
     protected void cancelCurrentOperation() {
