@@ -711,7 +711,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public boolean isConfigurationComplete() {
-        return containerMapping != null && containerMapping.getTarget() != null;
+        return containerMapping != null &&
+            (containerMapping.getTarget() != null || !CommonUtils.isEmpty(containerMapping.getTargetName()));
     }
 
     DBPDataSourceContainer getDataSourceContainer() {

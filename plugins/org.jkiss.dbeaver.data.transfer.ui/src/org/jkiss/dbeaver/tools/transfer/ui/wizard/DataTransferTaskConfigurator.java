@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanelProvider;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -73,7 +74,7 @@ import java.util.List;
 /**
  * Data transfer task configurator
  */
-public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
+public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTaskConfigPanelProvider {
 
     private static final Log log = Log.getLog(DataTransferTaskConfigurator.class);
 
