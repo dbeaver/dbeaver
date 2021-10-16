@@ -90,7 +90,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     }
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window) {
-        this(window, new TaskConfigurationWizardStub(), null);
+        this(window, new NewTaskConfigurationWizard(), null);
     }
 
     @Override
@@ -138,16 +138,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         }
 
         {
-            int navPagesNum = 0;
-            for (IWizardPage page2 : getWizard().getPages()) {
-                if (!(page2 instanceof IWizardPageNavigable) ||
-                    ((IWizardPageNavigable) page2).isPageApplicable() &&
-                        ((IWizardPageNavigable) page2).isPageNavigable()) {
-                    navPagesNum++;
-                }
-            }
-
-            if (navPagesNum > 1) {
+            if (getWizard().isNewTaskEditor() || getNavPagesCount() > 1) {
                 Button backButton = createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
                 Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
                 getShell().setDefaultButton(nextButton);
@@ -157,11 +148,23 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         super.createButtonsForButtonBar(parent);
     }
 
+    private int getNavPagesCount() {
+        int navPagesNum = 0;
+        for (IWizardPage page2 : getWizard().getPages()) {
+            if (!(page2 instanceof IWizardPageNavigable) ||
+                ((IWizardPageNavigable) page2).isPageApplicable() &&
+                    ((IWizardPageNavigable) page2).isPageNavigable()) {
+                navPagesNum++;
+            }
+        }
+        return navPagesNum;
+    }
+
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.NEXT_ID &&
-            getWizard() instanceof TaskConfigurationWizardStub &&
-            ((TaskConfigurationWizardStub)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
+            getWizard() instanceof NewTaskConfigurationWizard &&
+            ((NewTaskConfigurationWizard)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
         {
             taskEditPage = getTaskPage();
             try {
@@ -170,8 +173,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                     // Now we need to create real wizard, initialize it and inject in this dialog
                         nestedTaskWizard = nextTaskWizard;
                         nestedTaskWizard.addPages();
-                        // FIXME!!!!
-                        //setWizard(nestedTaskWizard);
+                        setWizard(nestedTaskWizard);
                 }
             } catch (Exception e) {
                 setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_dialog_configuration_error, e.getMessage()));
@@ -179,7 +181,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                 return;
             }
             // Show first page of new wizard
-            showPage(nestedTaskWizard.getStartingPage());
+            showPage(nestedTaskWizard.getNextPage(nestedTaskWizard.getStartingPage()));
             return;
         }
         super.buttonPressed(buttonId);

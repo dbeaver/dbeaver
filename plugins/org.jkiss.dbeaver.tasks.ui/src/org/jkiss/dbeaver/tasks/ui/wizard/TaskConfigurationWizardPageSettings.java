@@ -86,10 +86,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
 
     @Override
     public void activatePage() {
-        DBTTask currentTask = getWizard().getCurrentTask();
-        DBTTaskType selectedTaskType = currentTask != null ?
-            currentTask.getType() :
-            getTaskPage().getSelectedTaskType();
+        DBTTaskType selectedTaskType = getSelectedTaskType();
         if (curTaskType == selectedTaskType) {
             return;
         }
@@ -147,15 +144,15 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
 
     @Override
     public boolean isPageNavigable() {
-        return true;
+        return getSelectedTaskType() != null;
     }
 
     @Override
     public boolean isPageApplicable() {
-        DBTTask currentTask = getWizard().getCurrentTask();
-        DBTTaskType selectedTaskType = currentTask != null ?
-            currentTask.getType() :
-            getTaskPage().getSelectedTaskType();
+        if (getWizard().isNewTaskEditor()) {
+            return true;
+        }
+        DBTTaskType selectedTaskType = getSelectedTaskType();
         if (selectedTaskType != null && TaskUIRegistry.getInstance().supportsConfigurator(selectedTaskType)) {
             try {
                 return TaskUIRegistry.getInstance().createConfigurator(selectedTaskType) instanceof DBTTaskConfigPanelProvider;
@@ -166,6 +163,13 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
         } else {
             return false;
         }
+    }
+
+    private DBTTaskType getSelectedTaskType() {
+        DBTTask currentTask = getWizard().getCurrentTask();
+        return currentTask != null ?
+            currentTask.getType() :
+            getTaskPage().getSelectedTaskType();
     }
 
 }

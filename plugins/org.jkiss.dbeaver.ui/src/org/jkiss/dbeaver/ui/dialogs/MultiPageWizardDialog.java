@@ -95,6 +95,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return wizard;
     }
 
+    public void setWizard(IWizard newWizard) {
+        this.wizard = newWizard;
+        this.wizard.setContainer(this);
+        updateNavigationTree();
+        updateButtons();
+    }
+
     protected Tree getPagesTree() {
         return pagesTree;
     }

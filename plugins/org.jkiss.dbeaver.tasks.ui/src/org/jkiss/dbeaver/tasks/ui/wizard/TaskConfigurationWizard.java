@@ -85,10 +85,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return currentTask != null;
     }
 
-    public boolean isNewTaskEditor() {
-        return currentTask != null && getProject().getTaskManager().getTaskById(currentTask.getId()) == null;
-    }
-
     public abstract String getTaskTypeId();
 
     public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
@@ -168,6 +164,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
             addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));
         }
+    }
+
+    public boolean isNewTaskEditor() {
+        return currentTask != null && getProject().getTaskManager().getTaskById(currentTask.getId()) == null;
     }
 
     public boolean isCurrentTaskSaved() {

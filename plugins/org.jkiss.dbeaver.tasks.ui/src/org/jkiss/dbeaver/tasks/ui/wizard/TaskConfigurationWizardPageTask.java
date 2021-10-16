@@ -369,7 +369,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     }
 
     public TaskConfigurationWizard getTaskWizard() throws DBException {
-        if (!(getWizard() instanceof TaskConfigurationWizardStub)) {
+        if (!(getWizard() instanceof NewTaskConfigurationWizard)) {
             // We already have it
             return getWizard();
         }
