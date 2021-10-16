@@ -145,7 +145,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         GenericTableColumn column = command.getObject();
         // Add more or less standard COMMENT ON if comment was actually edited (i.e. it is editable at least).
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {

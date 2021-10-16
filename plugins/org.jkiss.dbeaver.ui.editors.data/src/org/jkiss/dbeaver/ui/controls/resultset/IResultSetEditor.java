@@ -28,6 +28,6 @@ public interface IResultSetEditor {
     @Nullable
     Control openValueEditor(final boolean inline);
 
-    void pasteFromClipboard(boolean extended);
+    void pasteFromClipboard(@Nullable ResultSetPasteSettings settings);
 
 }

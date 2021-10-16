@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.importer;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.csv.CSVReader;
 import org.jkiss.utils.io.BOMInputStream;
 
 import java.io.*;

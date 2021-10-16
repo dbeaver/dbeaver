@@ -40,7 +40,6 @@
         <setEntry value="javax.servlet@default:default"/>
         <setEntry value="javax.xml@default:default"/>
         <setEntry value="net.i2p.crypto.eddsa@default:default"/>
-        <setEntry value="net.sf.opencsv@default:default"/>
         <setEntry value="org.apache.batik.constants@default:default"/>
         <setEntry value="org.apache.batik.css*1.13.0.v20200622-2037@default:default"/>
         <setEntry value="org.apache.batik.i18n@default:default"/>
@@ -238,6 +237,8 @@
         <setEntry value="org.jkiss.dbeaver.ext.bigquery.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.clickhouse@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.datavirtuality.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.datavirtuality@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.i@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.zos@default:default"/>
@@ -253,6 +254,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.greenplum@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.h2@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.h2gis@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.hana.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.hana@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.hive@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.hsqldb@default:default"/>
@@ -264,8 +266,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.mysql.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.mysql@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.netezza@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.oceanbase@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.oceanbase.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ocient@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.opendistro@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle.ui@default:default"/>

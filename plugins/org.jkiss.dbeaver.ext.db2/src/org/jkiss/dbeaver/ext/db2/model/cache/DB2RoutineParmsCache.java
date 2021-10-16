@@ -56,7 +56,7 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
     {
         JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Routine.getSchema().getName());
-        dbStat.setString(2, db2Routine.getUniqueName());
+        dbStat.setString(2, db2Routine.getSpecificName());
         return dbStat;
     }
 

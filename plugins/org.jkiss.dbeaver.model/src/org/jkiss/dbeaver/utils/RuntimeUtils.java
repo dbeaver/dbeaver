@@ -315,11 +315,12 @@ public final class RuntimeUtils {
      * respecting quoted strings and escaped characters, similar to
      * how terminals do that.
      *
-     * @param input input string to be split
+     * @param input            input string to be split
+     * @param escapesSupported whether escapes using {@code \} are supported or not
      * @return a list of separate, unquoted arguments
      */
     @NotNull
-    public static List<String> splitCommandLine(@NotNull String input) {
+    public static List<String> splitCommandLine(@NotNull String input, boolean escapesSupported) {
         final List<String> arguments = new ArrayList<>();
         final StringBuilder argument = new StringBuilder();
         CommandLineState state = CommandLineState.NONE;
@@ -332,46 +333,41 @@ public final class RuntimeUtils {
             if (escaped) {
                 argument.append(ch);
                 escaped = false;
-                break;
+                continue;
             }
 
             switch (state) {
                 case NONE:
                 case NORMAL:
-                    switch (ch) {
-                        case '\\':
+                    if (ch == '\'') {
+                        state = CommandLineState.SINGLE_QUOTE;
+                    } else if (ch == '"') {
+                        state = CommandLineState.DOUBLE_QUOTE;
+                    } else {
+                        if (ch == '\\' && escapesSupported) {
                             escaped = true;
                             state = CommandLineState.NORMAL;
-                            break;
-                        case '\'':
-                            state = CommandLineState.SINGLE_QUOTE;
-                            break;
-                        case '"':
-                            state = CommandLineState.DOUBLE_QUOTE;
-                            break;
-                        default:
-                            if (!Character.isWhitespace(ch)) {
-                                argument.append(ch);
-                                state = CommandLineState.NORMAL;
-                            } else if (state == CommandLineState.NORMAL) {
-                                arguments.add(argument.toString());
-                                argument.setLength(0);
-                                state = CommandLineState.NONE;
-                            }
-                            break;
+                        } else if (!Character.isWhitespace(ch)) {
+                            argument.append(ch);
+                            state = CommandLineState.NORMAL;
+                        } else if (state == CommandLineState.NORMAL) {
+                            arguments.add(argument.toString());
+                            argument.setLength(0);
+                            state = CommandLineState.NONE;
+                        }
                     }
                     break;
                 case SINGLE_QUOTE:
                 case DOUBLE_QUOTE:
-                    if (ch == quote) {
-                        state = CommandLineState.NORMAL;
-                        break;
-                    } else if (ch == '\\') {
+                    if (ch == '\\' && escapesSupported) {
                         final char next = input.charAt(++index);
                         if (next != quote && next != '\\') {
                             argument.append(ch);
                         }
                         argument.append(next);
+                    } else if (ch == quote) {
+                        state = CommandLineState.NORMAL;
+                        break;
                     } else {
                         argument.append(ch);
                     }

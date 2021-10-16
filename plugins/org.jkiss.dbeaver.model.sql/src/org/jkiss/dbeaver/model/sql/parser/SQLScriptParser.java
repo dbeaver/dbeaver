@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -37,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 
 /**
@@ -511,13 +513,25 @@ public class SQLScriptParser
 
     @Nullable
     public static SQLScriptElement extractActiveQuery(SQLParserContext context, int selOffset, int selLength) {
+        return extractActiveQuery(context, new IRegion[]{new Region(selOffset, selLength)});
+    }
+
+    @Nullable
+    public static SQLScriptElement extractActiveQuery(@NotNull SQLParserContext context, @NotNull IRegion[] regions) {
         String selText = null;
-        if (selOffset >= 0 && selLength > 0) {
-            try {
-                selText = context.getDocument().get(selOffset, selLength);
-            } catch (BadLocationException e) {
-                log.debug(e);
+
+        try {
+            final StringJoiner text = new StringJoiner(CommonUtils.getLineSeparator());
+            for (IRegion region : regions) {
+                if (region.getOffset() >= 0 && region.getLength() > 0) {
+                    text.add(context.getDocument().get(region.getOffset(), region.getLength()));
+                }
             }
+            if (text.length() > 0) {
+                selText = text.toString();
+            }
+        } catch (BadLocationException e) {
+            log.debug(e);
         }
 
         if (selText != null && context.getPreferenceStore().getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)) {
@@ -525,21 +539,22 @@ public class SQLScriptParser
             selText = SQLUtils.trimQueryStatement(syntaxManager, selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
         }
 
-        SQLScriptElement element;
+        final IRegion region = regions[0];
+        final SQLScriptElement element;
         if (!CommonUtils.isEmpty(selText)) {
             SQLScriptElement parsedElement = SQLScriptParser.parseQuery(
                 context,
-                selOffset, selOffset + selLength, selOffset, false, false);
+                region.getOffset(), region.getOffset() + region.getLength(), region.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
                 // This is a command
                 element = parsedElement;
             } else {
                 // Use selected query as is
                 selText = SQLUtils.fixLineFeeds(selText);
-                element = new SQLQuery(context.getDataSource(), selText, selOffset, selLength);
+                element = new SQLQuery(context.getDataSource(), selText, region.getOffset(), region.getLength());
             }
-        } else if (selOffset >= 0) {
-            element = extractQueryAtPos(context, selOffset);
+        } else if (region.getOffset() >= 0) {
+            element = extractQueryAtPos(context, region.getOffset());
         } else {
             element = null;
         }

@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSettings> implements IExportWizard, IImportWizard {
@@ -385,6 +386,21 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onWizardActivation() {
+        UIUtils.asyncExec(() -> {
+            try {
+                getRunnableContext().run(true, true, monitor -> {
+                    getSettings().loadNodeSettings(monitor);
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        });
     }
 
     NodePageSettings getNodeInfo(IDataTransferNode<?> node) {

@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -119,4 +121,42 @@ public class H2MetaModel extends GenericMetaModel
 */
     }
 
+    @Override
+    public boolean isTableCommentEditable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableColumnCommentEditable() {
+        return true;
+    }
+
+    @Override
+    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load functions aliases")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.FUNCTION_ALIASES WHERE ALIAS_SCHEMA = ?")) {
+                dbStat.setString(1, container.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.nextRow()) {
+                        String aliasName = JDBCUtils.safeGetString(dbResult, "ALIAS_NAME");
+                        if (CommonUtils.isEmpty(aliasName)) {
+                            continue;
+                        }
+                        String description = JDBCUtils.safeGetString(dbResult, "REMARKS");
+                        int procType = JDBCUtils.safeGetInt(dbResult, "RETURNS_RESULT");
+                        DBSProcedureType type = DBSProcedureType.PROCEDURE;
+                        GenericFunctionResultType resultType = null;
+                        if (procType == 2) {
+                            type = DBSProcedureType.FUNCTION;
+                            resultType = GenericFunctionResultType.UNKNOWN;
+                        }
+                        H2RoutineAlias routineAlias = new H2RoutineAlias(container, aliasName, description, type, resultType, dbResult);
+                        container.addProcedure(routineAlias);
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, container.getDataSource());
+            }
+        }
+    }
 }

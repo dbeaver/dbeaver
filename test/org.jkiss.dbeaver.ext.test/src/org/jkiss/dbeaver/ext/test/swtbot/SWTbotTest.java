@@ -17,14 +17,17 @@
 package org.jkiss.dbeaver.ext.test.swtbot;
 
 
+/*
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
+*/
 
 public class SWTbotTest {
+/*
     private static SWTWorkbenchBot bot;
     @BeforeClass
     public static void initBot() {
@@ -37,7 +40,7 @@ public class SWTbotTest {
     }
  
     //For the script to work correctly, only the "DBeaver Sample Database (SQLite)" database must be connected in dbeaver before it is executed"
-    @Test
+    //@Test
     public void testSampleMenu() throws Exception {
     	assertTrue(true);
     	
@@ -68,5 +71,6 @@ public class SWTbotTest {
 		bot.editorByTitle("Column1").show();
 
     }
-    
+*/
+
 }

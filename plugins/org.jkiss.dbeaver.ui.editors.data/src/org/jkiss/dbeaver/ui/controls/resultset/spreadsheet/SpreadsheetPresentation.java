@@ -14,22 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
@@ -85,6 +69,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
+import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
@@ -140,7 +126,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
-    private Font italicFont;
 
     private boolean showOddRows = true;
     private boolean highlightRowsWithSelectedCells;
@@ -155,7 +140,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
     private boolean showBooleanAsCheckbox;
-    private BooleanRenderer.Style booleanViewStyle;
+    private BooleanStyleSet booleanStyles;
     private int rowBatchSize;
     private IValueEditor activeInlineEditor;
 
@@ -220,8 +205,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
-
         this.spreadsheet = new Spreadsheet(
             parent,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
@@ -265,8 +248,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         closeEditors();
         clearMetaData();
-
-        UIUtils.dispose(this.italicFont);
 
         UIUtils.dispose(this.cellHeaderSelectionBackground);
         super.dispose();
@@ -619,10 +600,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public void pasteFromClipboard(boolean extended)
+    public void pasteFromClipboard(@Nullable ResultSetPasteSettings settings)
     {
         try {
-            if (extended) {
+            if (settings != null) {
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
                 try {
@@ -641,7 +622,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
-                    String[][] newLines = parseGridLines(strValue);
+                    String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows());
 
                     // FIXME: do not create rows twice! Probably need to delete comment after testing. #9095
                     /*if (overNewRow) {
@@ -672,8 +653,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             if (controller.getAttributeReadOnlyStatus(attr) != null) {
                                 continue;
                             }
-                            Object newValue = attr.getValueHandler().getValueFromObject(
-                                session, attr.getAttribute(), value, true, false);
+                            final Object newValue;
+                            if (settings.isInsertNulls() && settings.getNullValueMark().equalsIgnoreCase(value)) {
+                                newValue = null;
+                            } else {
+                                newValue = attr.getValueHandler().getValueFromObject(session, attr.getAttribute(), value, true, false);
+                            }
                             new SpreadsheetValueController(
                                 controller,
                                 attr,
@@ -750,7 +735,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    private String[][] parseGridLines(String strValue) {
+    private String[][] parseGridLines(String strValue, boolean splitRows) {
         final char columnDelimiter = '\t';
         final char rowDelimiter = '\n';
         final char trashDelimiter = '\r';
@@ -769,14 +754,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             } else {
                 switch (c) {
                     case columnDelimiter:
-                        curLine.add(cellValue.toString());
-                        cellValue.setLength(0);
-                        break;
                     case rowDelimiter:
                         curLine.add(cellValue.toString());
-                        lines.add(curLine.toArray(new String[0]));
-                        curLine.clear();
                         cellValue.setLength(0);
+                        if (c == rowDelimiter && splitRows) {
+                            lines.add(curLine.toArray(new String[0]));
+                            curLine.clear();
+                        }
                         break;
                     case trashDelimiter:
                         // Ignore
@@ -850,7 +834,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
-        booleanViewStyle = BooleanRenderer.getDefaultStyle();
+        booleanStyles = BooleanStyleSet.getDefaultStyles(preferenceStore);
         useNativeNumbersFormat = controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
 
         spreadsheet.setColumnScrolling(!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
@@ -1102,6 +1086,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return null;
         }
 
+        Object cellValue = getController().getModel().getCellValue(attr, row);
+        if (cellValue instanceof DBDValueError) {
+            return null;
+        }
+
         if (!inline) {
             for (Iterator<SpreadsheetValueController> iterator = openEditors.keySet().iterator(); iterator.hasNext(); ) {
                 SpreadsheetValueController valueController = iterator.next();
@@ -1270,7 +1259,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-            UIUtils.launchProgram(strValue);
+            ShellUtils.launchProgram(strValue);
         }
     }
 
@@ -1357,6 +1346,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
 
         this.spreadsheet.recalculateSizes();
+
+        this.booleanStyles = BooleanStyleSet.getDefaultStyles(getPreferenceStore());
     }
 
     ///////////////////////////////////////////////
@@ -1840,12 +1831,30 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public int getColumnAlign(@Nullable Object element) {
+        public int getCellAlign(@Nullable Object colElement, Object rowElement) {
             if (!controller.isRecordMode()) {
-                DBDAttributeBinding attr = (DBDAttributeBinding)element;
+                final DBDAttributeBinding attr = (DBDAttributeBinding) colElement;
+                final ResultSetRow row = (ResultSetRow) rowElement;
                 if (attr != null) {
                     if (isShowAsCheckbox(attr)) {
-                        return ALIGN_CENTER;
+                        Object cellValue = controller.getModel().getCellValue(attr, row);
+                        if (row.isChanged(attr)) {
+                            // Use alignment of an original value to prevent unexpected jumping back and forth.
+                            cellValue = row.getOriginalValue(attr);
+                        }
+                        if (cellValue instanceof Number) {
+                            cellValue = ((Number) cellValue).byteValue() != 0;
+                        }
+                        if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                            switch (booleanStyles.getStyle((Boolean) cellValue).getAlignment()) {
+                                case LEFT:
+                                    return ALIGN_LEFT;
+                                case CENTER:
+                                    return ALIGN_CENTER;
+                                case RIGHT:
+                                    return ALIGN_RIGHT;
+                            }
+                        }
                     }
                     DBPDataKind dataKind = attr.getDataKind();
                     if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
@@ -1856,6 +1865,24 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             return ALIGN_LEFT;
+        }
+
+        @Nullable
+        @Override
+        public Font getCellFont(@Nullable Object colElement, Object rowElement) {
+            final boolean recordMode = controller.isRecordMode();
+            final ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
+            final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? rowElement : colElement);
+            if (row != null && attr != null && isShowAsCheckbox(attr)) {
+                Object cellValue = controller.getModel().getCellValue(attr, row);
+                if (cellValue instanceof Number) {
+                    cellValue = ((Number) cellValue).byteValue() != 0;
+                }
+                if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                    return spreadsheet.getFont(booleanStyles.getStyle((Boolean) cellValue).getFontStyle());
+                }
+            }
+            return null;
         }
 
         @Override
@@ -1909,7 +1936,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
                 Object value = controller.getModel().getCellValue(attr, row);
                 if (isShowAsCheckbox(attr)) {
-                    state |= booleanViewStyle.isText() ? STATE_TOGGLE : STATE_LINK;
+                    state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                 } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                     state |= STATE_LINK;
                 } else {
@@ -1976,14 +2003,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (isShowAsCheckbox(attr)) {
                 if (formatString) {
-                    if (!booleanViewStyle.isText()) {
+                    if (booleanStyles.getMode() != BooleanMode.TEXT) {
                         return "";
                     }
                     if (value instanceof Number) {
                         value = ((Number) value).byteValue() != 0;
                     }
-                    if (booleanViewStyle.isText() && (DBUtils.isNullValue(value) || value instanceof Boolean)) {
-                        return booleanViewStyle.getText((Boolean) value);
+                    if (booleanStyles.getMode() == BooleanMode.TEXT && (DBUtils.isNullValue(value) || value instanceof Boolean)) {
+                        return booleanStyles.getStyle((Boolean) value).getText();
                     }
                 }
                 return value;
@@ -2014,7 +2041,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public DBPImage getCellImage(Object colElement, Object rowElement)
         {
-            if (!booleanViewStyle.isText()) {
+            if (booleanStyles.getMode() != BooleanMode.TEXT) {
                 DBDAttributeBinding attr = (DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
                 if (isShowAsCheckbox(attr)) {
                     ResultSetRow row = (ResultSetRow) (colElement instanceof ResultSetRow ? colElement : rowElement);
@@ -2023,7 +2050,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         cellValue = ((Number) cellValue).byteValue() != 0;
                     }
                     if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
-                        return booleanViewStyle.getImage((Boolean) cellValue);
+                        return booleanStyles.getStyle((Boolean) cellValue).getIcon();
                     }
                     return null;
                 }
@@ -2048,6 +2075,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
+            if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
+                Object cellValue = controller.getModel().getCellValue(attribute, row);
+                if (cellValue instanceof Number) {
+                    cellValue = ((Number) cellValue).byteValue() != 0;
+                }
+                if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                    return UIUtils.getSharedColor(booleanStyles.getStyle((Boolean) cellValue).getColor());
+                }
+                return null;
+            }
             Color fg = controller.getLabelProvider().getCellForeground(attribute, row);
             if (fg != null) {
                 return fg;
@@ -2322,10 +2359,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasCondition()) {
-                    return spreadsheet.getBoldFont();
+                    return spreadsheet.getFont(UIElementFontStyle.BOLD);
                 }
                 if (attributeBinding.isTransformed()) {
-                    return italicFont;
+                    return spreadsheet.getFont(UIElementFontStyle.ITALIC);
                 }
             }
             return null;

@@ -753,6 +753,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.NULLABILITY));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.COMMENTS));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ENTITY_FQN));
+        asMenu.add(new Separator());
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ALPHABETICAL_ORDER));
         menu.add(asMenu);
 
         if (getDiagram().getDecorator().supportsAttributeVisibility()) {
@@ -794,6 +796,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public void fillPartContextMenu(IMenuManager menu, IStructuredSelection selection) {
         if (selection.isEmpty()) {
             return;
+        }
+        if (selection.getFirstElement() instanceof IMenuListener) {
+            ((IMenuListener) selection.getFirstElement()).menuAboutToShow(menu);
         }
         menu.add(new ChangeZOrderAction(this, selection, true));
         menu.add(new ChangeZOrderAction(this, selection, false));
@@ -1000,7 +1005,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private class ChangeAttributePresentationAction extends Action {
         private final ERDViewStyle style;
         public ChangeAttributePresentationAction(ERDViewStyle style) {
-            super("Show " + style.getTitle(), AS_CHECK_BOX);
+            super(style.getActionTitle(), AS_CHECK_BOX);
             this.style = style;
         }
         @Override

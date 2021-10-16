@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
@@ -175,10 +176,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             String hint = "You can use variables in SSH parameters.";
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DataSourceDescriptor.CONNECT_VARIABLES, false);
 
-            UIUtils.createLink(controlGroup, "See how to use <a>SSH</a> in our wiki", new SelectionAdapter() {
+            UIUtils.createLink(controlGroup, "<a>SSH Documentation</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    UIUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
                 }
             });
         }

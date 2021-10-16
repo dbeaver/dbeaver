@@ -20,11 +20,11 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.jface.action.Action;
 import org.eclipse.osgi.service.datalocation.Location;
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
@@ -46,7 +46,7 @@ public class ResetWorkspaceStateAction extends Action
             window == null ? null : window.getShell(),
             CoreApplicationMessages.actions_menu_reset_workspace_state_title,
             CoreApplicationMessages.actions_menu_reset_workspace_state_message,
-            SWT.ICON_WARNING))
+            DBIcon.STATUS_WARNING))
         {
             DBeaverApplication.getInstance().setResetWorkspaceOnRestart(true);
             IWorkbench workbench = PlatformUI.getWorkbench();

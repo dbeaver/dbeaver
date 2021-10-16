@@ -398,4 +398,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return startingPage;
     }
 
+    public void onWizardActivation() {
+
+    }
 }

@@ -133,7 +133,18 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
                     request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
-                    if (!request.isSimpleMode() && CommonUtils.isEmpty(request.getWordPart()) && prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
+                    char curChar = ' ';
+                    try {
+                        curChar = request.getDocument().getChar(wordDetector.getCursorOffset() - 1);
+                    } catch (BadLocationException e) {
+                        log.debug(e);
+                    }
+                    if (!request.isSimpleMode() &&
+                        CommonUtils.isEmpty(request.getWordPart()) &&
+                        prevDelimiter.indexOf(curChar) != -1 &&
+                        prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN) &&
+                        !CommonUtils.isEmpty(wordDetector.getNextWord()))
+                    {
                         wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                     }
@@ -563,6 +574,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private void makeProposalsFromQueryParts() {
+        if (request.getQueryType() == null && request.getWordDetector().getPrevKeyWord().equalsIgnoreCase(SQLConstants.KEYWORD_FROM)) {
+            // Seems to be table alias
+            return;
+        }
         String wordPart = request.getWordPart();
         // Find all aliases matching current word
         SQLScriptElement activeQuery = request.getActiveQuery();
@@ -694,7 +709,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
-        String[] tokens = request.getWordDetector().splitWordPart();
+        String[] tokens = Arrays.stream(request.getWordDetector().splitWordPart()).filter(CommonUtils::isNotEmpty).toArray(String[]::new);
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)

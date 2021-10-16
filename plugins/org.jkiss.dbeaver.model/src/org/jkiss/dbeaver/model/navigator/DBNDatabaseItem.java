@@ -52,13 +52,15 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     }
 
     @Override
-    protected void reloadObject(DBRProgressMonitor monitor, DBSObject newObject) {
+    protected boolean reloadObject(DBRProgressMonitor monitor, DBSObject newObject) {
         if (this.object == newObject) {
-            return;
+            return false;
         }
         unregisterNode(false);
         this.object = newObject;
         registerNode();
+
+        return true;
     }
 
     @Override

@@ -208,10 +208,10 @@
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="%tree.roles.node.tip" visibleIf="object.dataSource.serverType.supportsRoles()">
                         <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
                             <icon if="!object.canLogin" icon="#user_group"/>
-                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="%tree.role.members.node.tip" visibleIf="!object.canLogin"  navigable="false">
+                            <folder id="members" type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="%tree.role.members.node.tip" visibleIf="!object.canLogin"  navigable="false">
                                 <items label="%tree.role.members.node.name" itemLabel="%tree.role.member.node.name" path="members" property="members" visibleIf="!object.canLogin"/>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.belongs.node.name" icon="#folder_user" description="%tree.role.belongs.node.tip" navigable="false">
+                            <folder id="belongs" type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.belongs.node.name" icon="#folder_user" description="%tree.role.belongs.node.tip" navigable="false">
                                 <items label="%tree.role.belongs.node.name" itemLabel="%tree.role.belongs.node.name" path="members" property="belongs" icon="#folder_user"/>
                             </folder>
                         </items>
@@ -450,7 +450,8 @@
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
                     <!-- Drivers after 1.2.45 seems to be broken -->
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>
+<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.0.0.7]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
                     <parameter name="serverType" value="redshift"/>
@@ -546,7 +547,6 @@
             <scope group="com.amazon.redshift"/>
         </repository>
     </extension>
-
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>

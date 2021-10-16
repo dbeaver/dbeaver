@@ -83,14 +83,15 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) throws DBException{
         String statement = "CREATE " + getCreateTableType(table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
         if (table.isPartition() && table instanceof PostgreTable) {
-            PostgreTable postgreTable = (PostgreTable)table;
+            PostgreTable postgreTable = (PostgreTable) table;
             List<PostgreTableBase> superTables = postgreTable.getSuperTables(monitor);
-            if (superTables.size() != 1) {
-                throw new DBException("There can only be one parent");
+            if (superTables == null || superTables.size() != 1) {
+                log.error("Cant't read partition parent table name for table " + table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            } else {
+                String parent = superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                String range = postgreTable.getPartitionRange(monitor);
+                return statement + tableName + " PARTITION OF " + parent + " " + range;//$NON-NLS-1$ //$NON-NLS-2$
             }
-            String parent = superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
-            String range = postgreTable.getPartitionRange(monitor);
-            return statement + tableName + " PARTITION OF " + parent + " " + range;//$NON-NLS-1$ //$NON-NLS-2$
         }
         return statement + tableName + " (" + GeneralUtils.getDefaultLineSeparator();//$NON-NLS-1$
     }
@@ -151,7 +152,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
-        final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
+        final PostgreTable table = (PostgreTable) command.getObject();
         final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";//$NON-NLS-1$ //$NON-NLS-2$
 
         if (command.hasProperty("partitionKey")) {//$NON-NLS-1$
@@ -199,7 +200,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     {
         PostgreTableBase table = command.getObject();
         final String tableName = DBUtils.getEntityScriptName(table, options);
-        String script = "DROP " + (table instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        String script = "DROP " + table.getTableTypeName() +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             " " + tableName +  //$NON-NLS-1$
             (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "");
         SQLDatabasePersistAction action = table.getSchema().isExternal() ?

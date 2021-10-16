@@ -62,6 +62,7 @@ public class DBConstants {
 
     // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
     // Left for backward compatibility. Do not use it for new provider property names
+    @Deprecated
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
 
     // Used for default driver property values redefine
@@ -98,7 +99,7 @@ public class DBConstants {
     public static final String DEFAULT_TIME_TZ_FORMAT = "HH:mm:ss Z";
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
     public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-    public static final String DEFAULT_TIMESTAMP_TZ_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS'Z'";
+    public static final String DEFAULT_TIMESTAMP_TZ_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS Z";
 
     public static final String DEFAULT_ISO_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 

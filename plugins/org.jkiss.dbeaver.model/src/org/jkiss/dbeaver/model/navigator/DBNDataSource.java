@@ -130,7 +130,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.database.getPrefix() + dataSource.getId();
+        return makeDataSourceItemPath(dataSource);
     }
 
     @Override
@@ -146,8 +146,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
-
+    protected boolean reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+        return false;
     }
 
     @Override
@@ -303,6 +303,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
             }
         }
         return null;
+    }
+
+    @NotNull
+    public static String makeDataSourceItemPath(DBPDataSourceContainer dataSource) {
+        return NodePathType.database.getPrefix() + dataSource.getId();
     }
 
 }

@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -246,7 +247,7 @@ public class VersionUpdateDialog extends Dialog {
             CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
         }
         if (buttonId == INFO_ID) {
-            UIUtils.launchProgram(newVersion.getBaseURL());
+            ShellUtils.launchProgram(newVersion.getBaseURL());
         } else if (buttonId == UPGRADE_ID) {
             final PlatformInstaller installer = getPlatformInstaller();
             if (installer != null) {
@@ -303,11 +304,11 @@ public class VersionUpdateDialog extends Dialog {
 
                                 if (!workbench.isClosing()) {
                                     workbench.removeWorkbenchListener(listener);
-                                    UIUtils.launchProgram(folder.toString());
+                                    ShellUtils.launchProgram(folder.toString());
                                 }
                             });
                         } else {
-                            UIUtils.launchProgram(folder.toString());
+                            ShellUtils.showInSystemExplorer(file.toAbsolutePath().toString());
                         }
 
                         return Status.OK_STATUS;
@@ -316,11 +317,11 @@ public class VersionUpdateDialog extends Dialog {
                 job.setUser(true);
                 job.schedule();
             } else {
-                UIUtils.launchProgram(getDownloadPageURL(newVersion));
+                ShellUtils.launchProgram(getDownloadPageURL(newVersion));
             }
         } else if (buttonId == CHECK_EA_ID) {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
-                UIUtils.launchProgram(earlyAccessURL);
+                ShellUtils.launchProgram(earlyAccessURL);
             }
         } else if (buttonId == IDialogConstants.PROCEED_ID) {
             final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();

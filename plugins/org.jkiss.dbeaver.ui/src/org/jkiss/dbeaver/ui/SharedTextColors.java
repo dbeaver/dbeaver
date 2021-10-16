@@ -36,14 +36,12 @@ public class SharedTextColors implements ISharedTextColors {
     private final Map<Display, Map<RGB, Color>> fDisplayTable = new HashMap<>();
     private final Map<String, RGB> rgbMap = new HashMap<>();
 
-    public SharedTextColors()
-    {
+    public SharedTextColors() {
         super();
     }
 
     @NotNull
-    public Color getColor(String rgbString)
-    {
+    public Color getColor(String rgbString) {
         RGB rgb;
         synchronized (rgbMap) {
             rgb = rgbMap.get(rgbString);
@@ -57,8 +55,7 @@ public class SharedTextColors implements ISharedTextColors {
 
     @NotNull
     @Override
-    public Color getColor(@NotNull RGB rgb)
-    {
+    public Color getColor(@NotNull RGB rgb) {
         Display display = Display.getCurrent();
         if (display == null) {
             display = Display.getDefault();
@@ -90,23 +87,20 @@ public class SharedTextColors implements ISharedTextColors {
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         for (Map<RGB, Color> rgbColorMap : fDisplayTable.values()) {
             dispose(rgbColorMap);
         }
         fDisplayTable.clear();
     }
 
-    private void dispose(Display display)
-    {
+    private void dispose(Display display) {
         if (fDisplayTable != null) {
             dispose(fDisplayTable.remove(display));
         }
     }
 
-    private void dispose(Map<RGB, Color> colorTable)
-    {
+    private void dispose(Map<RGB, Color> colorTable) {
         if (colorTable == null)
             return;
 

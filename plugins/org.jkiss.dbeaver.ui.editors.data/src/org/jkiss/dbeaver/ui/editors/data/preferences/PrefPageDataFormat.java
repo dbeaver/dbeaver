@@ -26,16 +26,20 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -187,7 +191,6 @@ public class PrefPageDataFormat extends TargetPrefPage
             Label propsLabel = UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_settingt);
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             propertiesControl = new PropertyTreeViewer(formatGroup, SWT.BORDER);
-            propertiesControl.getControl().addListener(SWT.Modify, event -> saveFormatterProperties());
 
             UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_sample);
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
@@ -197,7 +200,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                     + ResultSetMessages.pref_page_data_format_link_patterns + "</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    UIUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
                 }
             });
             urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
@@ -322,7 +325,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         Map<String,Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
         Map<String, Object> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
-        propertySource = new PropertySourceCustom(
+        propertySource = new VerifyingPropertySourceCustom(
             formatterDescriptor.getProperties(),
             formatterProps);
         propertySource.setDefaultValues(defaultProps);
@@ -330,42 +333,44 @@ public class PrefPageDataFormat extends TargetPrefPage
         reloadSample();
     }
 
-    private void reloadSample()
-    {
+    private void reloadSampleThrowable() throws Exception {
         DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
         if (formatterDescriptor == null) {
             return;
         }
+        DBDDataFormatter formatter = formatterDescriptor.createFormatter();
+        Map<String, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
+        Map<String, Object> props = profileProperties.get(formatterDescriptor.getId());
+        Map<String, Object> formatterProps = new HashMap<>();
+        if (defProps != null && !defProps.isEmpty()) {
+            formatterProps.putAll(defProps);
+        }
+        if (props != null && !props.isEmpty()) {
+            formatterProps.putAll(props);
+        }
+        formatter.init(null, profileLocale, formatterProps);
+
+        String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
+        sampleText.setText(CommonUtils.notEmpty(sampleValue));
+    }
+
+    private void reloadSample() {
         try {
-            DBDDataFormatter formatter = formatterDescriptor.createFormatter();
-
-            Map<String, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
-            Map<String, Object> props = profileProperties.get(formatterDescriptor.getId());
-            Map<String, Object> formatterProps = new HashMap<>();
-            if (defProps != null && !defProps.isEmpty()) {
-                formatterProps.putAll(defProps);
-            }
-            if (props != null && !props.isEmpty()) {
-                formatterProps.putAll(props);
-            }
-            formatter.init(null, profileLocale, formatterProps);
-
-            String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
-            sampleText.setText(CommonUtils.notEmpty(sampleValue));
+            reloadSampleThrowable();
         } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Data formats", "Can't apply formatter values to the sample", e);
             log.warn("Can't render sample value", e); //$NON-NLS-1$
         }
     }
 
-    private void saveFormatterProperties()
-    {
+    private void saveFormatterProperties() throws Exception {
         DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
         if (formatterDescriptor == null) {
             return;
         }
         Map<String, Object> props = propertySource.getPropertyValues();
         profileProperties.put(formatterDescriptor.getId(), props);
-        reloadSample();
+        reloadSampleThrowable();
     }
 
     private void onLocaleChange(Locale locale)
@@ -519,6 +524,9 @@ public class PrefPageDataFormat extends TargetPrefPage
             DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
             if (buttonId == NEW_ID) {
                 String profileName = EnterNameDialog.chooseName(getShell(), ResultSetMessages.dialog_data_format_profiles_dialog_name_chooser_title);
+                if (CommonUtils.isEmpty(profileName)) {
+                    return;
+                }
                 if (registry.getCustomProfile(profileName) != null) {
                     UIUtils.showMessageBox(
                             getShell(),
@@ -557,6 +565,40 @@ public class PrefPageDataFormat extends TargetPrefPage
             Button deleteButton = getButton(DELETE_ID);
             if (deleteButton != null) {
                 deleteButton.setEnabled(false);
+            }
+        }
+    }
+
+    /**
+     * Attempts to apply formatter setting and rollbacks it to the previous value if error occurs
+     */
+    private class VerifyingPropertySourceCustom extends PropertySourceCustom {
+        public VerifyingPropertySourceCustom(DBPPropertyDescriptor[] properties, Map<String, ?> values) {
+            super(properties, values);
+        }
+
+        @Override
+        public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
+            final Object previousValue = getPropertyValue(monitor, id);
+
+            super.setPropertyValue(monitor, id, value);
+
+            try {
+                saveFormatterProperties();
+            } catch (Exception e) {
+                super.setPropertyValue(monitor, id, previousValue);
+                throw new IllegalArgumentException(e);
+            }
+        }
+
+        @Override
+        public void resetPropertyValueToDefault(String id) {
+            super.resetPropertyValueToDefault(id);
+
+            try {
+                saveFormatterProperties();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
             }
         }
     }

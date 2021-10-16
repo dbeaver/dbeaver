@@ -70,6 +70,10 @@ public class SQLGeneratorDescriptor extends AbstractContextDescriptor {
         return multiObject;
     }
 
+    public ObjectType getGeneratorImplClass() {
+        return generatorImplClass;
+    }
+
     @NotNull
     public <T> SQLGenerator<T> createGenerator(List<T> objects)
         throws DBException

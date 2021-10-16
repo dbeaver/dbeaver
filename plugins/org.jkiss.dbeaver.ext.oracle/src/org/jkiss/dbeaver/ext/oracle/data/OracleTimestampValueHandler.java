@@ -164,6 +164,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
         }
     }
 
+    @NotNull
     protected String getFormatterId(DBSTypedObject column)
     {
 /*

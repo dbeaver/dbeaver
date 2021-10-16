@@ -86,11 +86,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         }
     };
 
-    MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version) throws IOException {
+    MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version, boolean resolveOptionalDependencies) throws IOException {
         this.artifact = artifact;
         this.version = CommonUtils.trim(version);
 
-        loadPOM(monitor);
+        loadPOM(monitor, resolveOptionalDependencies);
         this.version = evaluateString(this.version);
 
     }
@@ -250,7 +250,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         }
     }
 
-    private void loadPOM(DBRProgressMonitor monitor) throws IOException {
+    private void loadPOM(DBRProgressMonitor monitor, boolean resolveOptionalDependencies) throws IOException {
         monitor.subTask("Load POM " + this);
 
         File localPOM = getLocalPOM();
@@ -319,7 +319,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         MavenProfile defaultProfile = new MavenProfile(DEFAULT_PROFILE_ID);
         defaultProfile.active = true;
         profiles.add(defaultProfile);
-        parseProfile(monitor, defaultProfile, root, true);
+        parseProfile(monitor, defaultProfile, root, true, resolveOptionalDependencies);
 
         {
             // Profiles
@@ -328,7 +328,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 for (Element profElement : XMLUtils.getChildElementList(licensesElement, "profile")) {
                     MavenProfile profile = new MavenProfile(XMLUtils.getChildElementBody(profElement, "id"));
                     profiles.add(profile);
-                    parseProfile(monitor, profile, profElement, false);
+                    parseProfile(monitor, profile, profElement, false, resolveOptionalDependencies);
                 }
             }
         }
@@ -336,7 +336,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         monitor.worked(1);
     }
 
-    private void parseProfile(DBRProgressMonitor monitor, MavenProfile profile, Element element, boolean isDefault) {
+    private void parseProfile(DBRProgressMonitor monitor, MavenProfile profile, Element element, boolean isDefault, boolean resolveOptionalDependencies) {
         {
             // Activation
             Element activationElement = XMLUtils.getChildElement(element, "activation");
@@ -387,9 +387,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             // Dependencies
             Element dmElement = XMLUtils.getChildElement(element, "dependencyManagement");
             if (dmElement != null) {
-                profile.dependencyManagement = parseDependencies(monitor, dmElement, true);
+                profile.dependencyManagement = parseDependencies(monitor, dmElement, true, resolveOptionalDependencies);
             }
-            profile.dependencies = parseDependencies(monitor, element, false);
+            profile.dependencies = parseDependencies(monitor, element, false, resolveOptionalDependencies);
         }
     }
 
@@ -421,7 +421,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return repositories;
     }
 
-    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean depManagement) {
+    private List<MavenArtifactDependency> parseDependencies(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Element element,
+        boolean depManagement,
+        boolean resolveOptionalDependencies) {
         List<MavenArtifactDependency> result = new ArrayList<>();
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
@@ -454,9 +458,10 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 }
 
                 String optionalString = XMLUtils.getChildElementBody(dep, "optional");
-                boolean optional = optionalString == null ?
-                    (dmInfo != null && dmInfo.isOptional()) :
-                    CommonUtils.getBoolean(optionalString);
+                boolean optional = !resolveOptionalDependencies &&
+                    (optionalString == null ?
+                        (dmInfo != null && dmInfo.isOptional()) :
+                        CommonUtils.getBoolean(optionalString));
 
                 // Resolve version
                 String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
@@ -472,6 +477,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                         artifactId,
                         classifier,
                         version);
+                    if (resolveOptionalDependencies) {
+                        importReference.setResolveOptionalDependencies(true);
+                    }
                     MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(monitor, this, importReference);
                     if (importedVersion == null) {
                         log.error("Imported artifact [" + importReference + "] not found. Skip.");

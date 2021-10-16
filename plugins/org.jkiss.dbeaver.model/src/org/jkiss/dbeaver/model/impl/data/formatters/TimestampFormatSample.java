@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
 import java.sql.Timestamp;
@@ -27,18 +28,14 @@ import java.util.Random;
 public class TimestampFormatSample implements DBDDataFormatterSample {
 
     @Override
-    public Map<String, Object> getDefaultProperties(Locale locale)
-    {
-//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, locale);
-//        String pattern = tmp.toPattern();
+    public Map<String, Object> getDefaultProperties(Locale locale) {
         return Collections.singletonMap(
             DateTimeDataFormatter.PROP_PATTERN,
-            (DateFormatSample.DEFAULT_DATE_PATTERN + " " + TimeFormatSample.DEFAULT_TIME_PATTERN));
+            DBConstants.DEFAULT_TIMESTAMP_FORMAT);
     }
 
     @Override
-    public Object getSampleValue()
-    {
+    public Object getSampleValue() {
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         ts.setNanos(ts.getNanos() + new Random(System.currentTimeMillis()).nextInt(99999));
         return ts;

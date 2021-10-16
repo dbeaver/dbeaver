@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.csv.CSVReader;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Attr;

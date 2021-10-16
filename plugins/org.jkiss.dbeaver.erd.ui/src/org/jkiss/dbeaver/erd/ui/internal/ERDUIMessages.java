@@ -85,10 +85,17 @@ public class ERDUIMessages extends NLS {
     public static String erd_tool_set_text_tip_text_send_to_back;
 
 	public static String erd_view_style_selection_item_comments;
+	public static String erd_view_style_selection_item_comments_action;
 	public static String erd_view_style_selection_item_data_types;
+	public static String erd_view_style_selection_item_data_types_action;
 	public static String erd_view_style_selection_item_fully_qualified_names;
+	public static String erd_view_style_selection_item_fully_qualified_names_action;
 	public static String erd_view_style_selection_item_icons;
+	public static String erd_view_style_selection_item_icons_action;
 	public static String erd_view_style_selection_item_nullability;
+	public static String erd_view_style_selection_item_nullability_action;
+	public static String erd_view_style_selection_item_alphabetical_order;
+	public static String erd_view_style_selection_item_alphabetical_order_action;
 	public static String menu_view_style;
 	public static String menu_attribute_visibility;
 	public static String menu_attribute_visibility_default;

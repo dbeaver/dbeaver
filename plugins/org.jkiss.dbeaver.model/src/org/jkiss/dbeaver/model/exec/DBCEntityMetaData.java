@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -44,4 +45,17 @@ public interface DBCEntityMetaData {
     @NotNull
     List<? extends DBCAttributeMetaData> getAttributes();
 
+    default int getCompleteScore() {
+        int score = 0;
+        if (!CommonUtils.isEmptyTrimmed(this.getCatalogName())) {
+            score++;
+        }
+        if (!CommonUtils.isEmptyTrimmed(this.getSchemaName())) {
+            score++;
+        }
+        if (!CommonUtils.isEmptyTrimmed(this.getEntityName())) {
+            score++;
+        }
+        return score;
+    }
 }

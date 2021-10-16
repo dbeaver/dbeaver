@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
 import java.util.Collections;
@@ -25,19 +26,15 @@ import java.util.Map;
 
 public class TimeFormatSample implements DBDDataFormatterSample {
 
-    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss";
+    public static final String DEFAULT_TIME_PATTERN = DBConstants.DEFAULT_TIME_FORMAT;
 
     @Override
-    public Map<String, Object> getDefaultProperties(Locale locale)
-    {
-//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
-//        String pattern = tmp.toPattern();
+    public Map<String, Object> getDefaultProperties(Locale locale) {
         return Collections.singletonMap(DateTimeDataFormatter.PROP_PATTERN, DEFAULT_TIME_PATTERN);
     }
 
     @Override
-    public Object getSampleValue()
-    {
+    public Object getSampleValue() {
         return new Date();
     }
 

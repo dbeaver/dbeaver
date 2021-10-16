@@ -66,6 +66,11 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
         this.foreignServerName = foreignServerName;
     }
 
+    @Override
+    public String getTableTypeName() {
+        return "FOREIGN TABLE";
+    }
+
     @Property(viewable = false, order = 201)
     public String[] getForeignOptions(DBRProgressMonitor monitor) throws DBException {
         readForeignInfo(monitor);

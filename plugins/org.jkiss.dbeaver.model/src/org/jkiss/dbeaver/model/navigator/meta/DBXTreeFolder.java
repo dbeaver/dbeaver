@@ -43,6 +43,8 @@ public class DBXTreeFolder extends DBXTreeNode {
     private String description;
     private String optionalItem;
 
+    private boolean isOptional;
+
     private List<String> contributedCategories = null;
     private ItemType[] itemTypes = null;
 
@@ -70,12 +72,13 @@ public class DBXTreeFolder extends DBXTreeNode {
         }
     }
 
-    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String type, boolean navigable, boolean virtual, String visibleIf) {
+    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String type, boolean navigable, boolean virtual, String visibleIf, boolean isOptional) {
         super(source, parent, config, navigable, false, virtual, false, visibleIf, null);
         this.type = type;
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.optionalItem = config.getAttribute("optionalItem");
+        this.isOptional = isOptional;
 
         IConfigurationElement[] itemTypesConfig = config.getChildren("itemType");
         if (!ArrayUtils.isEmpty(itemTypesConfig)) {
@@ -120,6 +123,10 @@ public class DBXTreeFolder extends DBXTreeNode {
 
     public String getOptionalItem() {
         return optionalItem;
+    }
+
+    public boolean isOptional() {
+        return isOptional;
     }
 
     @Override

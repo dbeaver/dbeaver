@@ -36,7 +36,7 @@ import java.io.Writer;
 public class OracleCLOBValueHandler extends JDBCContentValueHandler {
 
     public static final OracleCLOBValueHandler INSTANCE = new OracleCLOBValueHandler();
-    public static final int MAX_PART_SIZE = 4000;
+    public static final int MAX_PART_SIZE = 2000;
 
     @Override
     public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
@@ -46,13 +46,15 @@ public class OracleCLOBValueHandler extends JDBCContentValueHandler {
             return;
         }
         String strValue = ContentUtils.getContentStringValue(monitor, object);
-        String[] parts = splitString(strValue);
-        for (int i = 0; i < parts.length; i++) {
-            String part = parts[i];
-            if (i > 0) writer.write("||");
-            writer.write("TO_CLOB('");
-            writer.write(part.replace("'", "''"));
-            writer.write("')");
+        if (strValue != null) {
+            String[] parts = splitString(strValue);
+            for (int i = 0; i < parts.length; i++) {
+                String part = parts[i];
+                if (i > 0) writer.write("||");
+                writer.write("TO_CLOB('");
+                writer.write(part.replace("'", "''"));
+                writer.write("')");
+            }
         }
     }
 
@@ -62,7 +64,7 @@ public class OracleCLOBValueHandler extends JDBCContentValueHandler {
         String[] parts = new String[partCount];
         for (int i = 0; i < partCount; i++) {
             int startOffset = i * MAX_PART_SIZE;
-            int endOffset = strValue.length() < startOffset + MAX_PART_SIZE ? strValue.length() : startOffset + MAX_PART_SIZE;
+            int endOffset = Math.min(strValue.length(), startOffset + MAX_PART_SIZE);
             parts[i] = strValue.substring(startOffset, endOffset);
         }
         return parts;

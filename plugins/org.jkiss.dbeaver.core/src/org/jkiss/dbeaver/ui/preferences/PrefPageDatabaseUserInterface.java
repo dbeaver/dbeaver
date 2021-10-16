@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -120,7 +121,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 languageChangeLink.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        UIUtils.launchProgram(HelpUtils.getHelpExternalReference("UI-Language"));
+                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("UI-Language"));
                     }
                 });
                 languageChangeLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));

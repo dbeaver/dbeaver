@@ -22,15 +22,14 @@ import org.eclipse.draw2dl.IFigure;
 import org.eclipse.draw2dl.SWTGraphics;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ImageUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -69,6 +68,8 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                     Image image = new Image(null, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                     try {
                         gc = new GC(image);
+                        gc.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+                        gc.fillRectangle(image.getBounds());
                         //gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                         graphics = new SWTGraphics(gc);
                         graphics.translate(contentBounds.x * -1 + MARGIN_X, contentBounds.y * -1 + MARGIN_Y);
@@ -96,7 +97,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                 fos.flush();
             }
 
-            UIUtils.launchProgram(targetFile.getAbsolutePath());
+            ShellUtils.launchProgram(targetFile.getAbsolutePath());
 
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as image", null, e);

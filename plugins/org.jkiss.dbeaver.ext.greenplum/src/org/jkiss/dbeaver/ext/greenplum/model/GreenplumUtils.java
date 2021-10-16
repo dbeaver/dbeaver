@@ -36,7 +36,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class GreenplumUtils {
 
@@ -70,10 +72,16 @@ public class GreenplumUtils {
     static List<PostgreTableColumn> getDistributionTableColumns(@NotNull DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns, @NotNull PostgreTableReal table) throws DBException {
         // Get primary key
         PostgreTableConstraint pk = null;
-        for (PostgreTableConstraint tc : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-            if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                pk = tc;
-                break;
+        Collection<PostgreTableConstraint> tableConstraints = CommonUtils.safeCollection(table.getConstraints(monitor));
+        // First - search PK in table
+        Optional<PostgreTableConstraint> constraint = tableConstraints.stream().filter(key -> key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY).findFirst();
+        if (constraint.isPresent()) {
+            pk = constraint.get();
+        } else {
+            // If no PK in the table - then search first UK for distribution
+            Optional<PostgreTableConstraint> tableConstraint = tableConstraints.stream().filter(key -> key.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY).findFirst();
+            if (tableConstraint.isPresent()) {
+                pk = tableConstraint.get();
             }
         }
         if (pk != null) {

@@ -122,6 +122,11 @@ public class HiveSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public char getStringEscapeCharacter() {
+        return '\\';
+    }
+
+    @Override
     public boolean supportsAlterTableStatement() {
         return false;
     }

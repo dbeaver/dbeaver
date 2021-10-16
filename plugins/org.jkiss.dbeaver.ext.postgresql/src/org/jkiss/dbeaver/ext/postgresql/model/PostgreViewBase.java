@@ -116,7 +116,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
             if (getDescription() != null) {
                 actions.add(
                     new SQLDatabasePersistAction("Comment",
-                        "COMMENT ON " + getViewType() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
+                        "COMMENT ON " + getTableTypeName() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
             }
 
             for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
@@ -147,8 +147,6 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     public void setObjectDefinitionText(String sourceText) {
         this.source = sourceText;
     }
-
-    public abstract String getViewType();
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {

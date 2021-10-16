@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUser;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -81,18 +82,18 @@ public class OracleSchemaConfigurator implements DBEObjectConfigurator<OracleSch
         @Override
         protected Control createDialogArea(Composite parent)
         {
-            getShell().setText("Set schema/user properties");
+            getShell().setText(OracleUIMessages.dialog_schema_edit_title);
 
             Control container = super.createDialogArea(parent);
             Composite composite = UIUtils.createPlaceholder((Composite) container, 2, 5);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            nameText = UIUtils.createLabelText(composite, "Schema/User Name", null);
+            nameText = UIUtils.createLabelText(composite, OracleUIMessages.dialog_schema_edit_user_name, null);
             nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            passwordText = UIUtils.createLabelText(composite, "User Password", null, SWT.BORDER | SWT.PASSWORD);
+            passwordText = UIUtils.createLabelText(composite, OracleUIMessages.dialog_schema_edit_user_password, null, SWT.BORDER | SWT.PASSWORD);
             passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createInfoLabel(composite, "Creating a schema is the same as creating a user.\nYou need to specify a password.", GridData.FILL_HORIZONTAL, 2);
+            UIUtils.createInfoLabel(composite, OracleUIMessages.dialog_schema_edit_label, GridData.FILL_HORIZONTAL, 2);
 
             return parent;
         }

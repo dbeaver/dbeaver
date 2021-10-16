@@ -97,7 +97,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     public void activate() {
         super.activate();
         ERDObject<?> erdObject = (ERDObject<?>) getModel();
-        if (isLayoutEnabled() || isEditEnabled()) {
+        if (isListensModelChanges()) {
             erdObject.addPropertyChangeListener(this);
         }
     }
@@ -105,10 +105,14 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     @Override
     public void deactivate() {
         super.deactivate();
-        if (isLayoutEnabled() || isEditEnabled()) {
+        if (isListensModelChanges()) {
             ERDObject<?> erdObject = (ERDObject<?>) getModel();
             erdObject.removePropertyChangeListener(this);
         }
+    }
+
+    protected boolean isListensModelChanges() {
+        return isLayoutEnabled() || isEditEnabled();
     }
 
     @Override
@@ -158,6 +162,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             partFigure.getUpdateManager().performUpdate();
         }
 
+        getDiagram().getModelAdapter().handlePropertyChange(getEditor(), evt);
     }
 
     /**

@@ -23,6 +23,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
@@ -31,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class VerticalButton extends Canvas {
@@ -39,6 +41,9 @@ public class VerticalButton extends Canvas {
     public static final int VERT_INDENT = 8;
 
     private static final Point EMPTY_SIZE = new Point(0, 0);
+
+    // Transform bug in SWT appeared in 2021-06 and was fixed in 2021-09
+    private static final boolean IS_TRANSFORM_BUG_PRESENT = false;
 
     private int mouse = 0;
     private boolean hit = false;
@@ -233,23 +238,34 @@ public class VerticalButton extends Canvas {
             }
         }
 
-        int x = 0;
+        // In fact X and Y offsets are reversed because of transform
+        int xOffset = 0;
+        int yOffset = BORDER_MARGIN;
 
         String text = getText();
         if (!CommonUtils.isEmpty(text)) {
+            // Offset shift. Windows only? (14048)
+            boolean shiftOffset = IS_TRANSFORM_BUG_PRESENT && RuntimeUtils.isWindows() && (DPIUtil.getDeviceZoom() >= 200);
+
             Transform tr = new Transform(e.display);
 
             e.gc.setAntialias(SWT.ON);
             if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
                 tr.translate(size.x, 0);
                 tr.rotate(90);
+                if (shiftOffset) {
+                    yOffset -= size.x / 2;
+                }
             } else {
                 tr.translate(0, size.y);
                 tr.rotate(-90);
+                if (shiftOffset) {
+                    xOffset -= size.y / 2;
+                }
             }
             e.gc.setTransform(tr);
 
-            x += VERT_INDENT;
+            xOffset += VERT_INDENT;
         }
 
         if (image != null) {
@@ -258,15 +274,17 @@ public class VerticalButton extends Canvas {
                     imageDisabled = new Image(e.display, image, SWT.IMAGE_GRAY);
                     addDisposeListener(e1 -> imageDisabled.dispose());
                 }
-                e.gc.drawImage(imageDisabled, x, BORDER_MARGIN);
+                e.gc.drawImage(imageDisabled, xOffset, yOffset);
             } else {
-                e.gc.drawImage(image, x, BORDER_MARGIN);
+                e.gc.drawImage(image, xOffset, yOffset);
             }
-            x += image.getBounds().width + BORDER_MARGIN;
+            xOffset += image.getBounds().width + BORDER_MARGIN;
         }
 
-        e.gc.setForeground(UIStyles.getDefaultTextForeground());
-        e.gc.drawString(this.text, x, BORDER_MARGIN);
+        if (!CommonUtils.isEmpty(text)) {
+            e.gc.setForeground(UIStyles.getDefaultTextForeground());
+            e.gc.drawString(this.text, xOffset, yOffset);
+        }
     }
 
     private boolean isSelected() {

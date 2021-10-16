@@ -70,7 +70,7 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
 
         @Override
         public void run() {
-            NewConnectionDialog.openNewConnectionDialog(window, driver);
+            NewConnectionDialog.openNewConnectionDialog(window, driver, null);
         }
     }
 

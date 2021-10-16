@@ -287,16 +287,20 @@ public class MavenArtifact implements IMavenIdentifier
         return null;
     }
 
-    private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
+    private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive, boolean resolveOptionalDependencies) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
-            version = new MavenArtifactVersion(monitor, this, versionStr);
+            version = new MavenArtifactVersion(monitor, this, versionStr, resolveOptionalDependencies);
             localVersions.add(version);
         }
         return version;
     }
 
-    public MavenArtifactVersion resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
+    public MavenArtifactVersion resolveVersion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String versionRef,
+        boolean resolveOptionalDependencies) throws IOException
+    {
         if (CommonUtils.isEmpty(versionRef)) {
             throw new IOException("Empty artifact " + this + " version");
         }
@@ -362,7 +366,7 @@ public class MavenArtifact implements IMavenIdentifier
         MavenArtifactVersion localVersion = getVersion(versionInfo);
         if (localVersion == null) {
             try {
-                localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion);
+                localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion, resolveOptionalDependencies);
             } catch (IOException e) {
                 // Some IO error - not fatal
                 log.debug("Error loading version info: " + e.getMessage());

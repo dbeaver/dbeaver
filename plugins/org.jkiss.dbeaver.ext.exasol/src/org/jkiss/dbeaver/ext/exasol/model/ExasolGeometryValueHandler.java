@@ -18,13 +18,23 @@ package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
 
 import java.sql.SQLException;
 
 public class ExasolGeometryValueHandler extends GISGeometryValueHandler {
+	
+	@Override
+	protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
+			throws DBCException, SQLException {
+		return resultSet.getString(index);
+	}	
 
     protected void bindGeometryParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, int paramIndex, @NotNull Geometry value) throws SQLException {
         statement.setString(paramIndex, value.toString()); // Just convert to string for Exasol (doesn't work with bytes)

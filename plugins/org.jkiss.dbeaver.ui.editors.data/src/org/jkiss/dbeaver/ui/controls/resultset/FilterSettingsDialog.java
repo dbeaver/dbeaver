@@ -144,7 +144,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }, new EditingSupport(columnsViewer) {
                 @Override
                 protected CellEditor getCellEditor(Object element) {
-                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree(), SWT.NONE);
+                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree());
                 }
 
                 @Override
@@ -177,7 +177,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }, new EditingSupport(columnsViewer) {
                 @Override
                 protected CellEditor getCellEditor(Object element) {
-                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree(), SWT.NONE);
+                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree());
                 }
 
                 @Override

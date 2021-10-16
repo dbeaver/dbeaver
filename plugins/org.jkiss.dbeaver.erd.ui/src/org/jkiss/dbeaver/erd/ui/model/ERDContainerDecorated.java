@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.model.ERDContainer;
+import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
@@ -78,6 +79,8 @@ public interface ERDContainerDecorated extends ERDContainer {
     ERDDecorator getDecorator();
 
     ERDAttributeVisibility getAttributeVisibility();
+
+    boolean hasAttributeStyle(@NotNull ERDViewStyle style);
 
     NodeVisualInfo getVisualInfo(DBSEntity entity, boolean create);
 }

@@ -1,14 +1,40 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2021 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.model.impl.app;
 
-import sun.security.x509.*;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /**
@@ -42,47 +68,24 @@ public class CertificateGenHelper {
      * @param algorithm the signing algorithm, eg "SHA1withRSA"
      */
     public static Certificate generateCertificate(String dn, KeyPair pair, int days, String algorithm)
-        throws GeneralSecurityException, IOException
+        throws GeneralSecurityException, OperatorCreationException
     {
-        PrivateKey privkey = pair.getPrivate();
-        X509CertInfo info = new X509CertInfo();
-        Date from = new Date();
-        Date to = new Date(from.getTime() + days * 86400000l);
-        CertificateValidity interval = new CertificateValidity(from, to);
+        Instant from = Instant.now();
+        Instant until = from.plus(days, ChronoUnit.DAYS);
         BigInteger sn = new BigInteger(64, new SecureRandom());
         X500Name owner = new X500Name(dn);
 
-        info.set(X509CertInfo.VALIDITY, interval);
-        info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
-        try {
-            info.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
-        } catch (Exception e) {
-            info.set(X509CertInfo.SUBJECT, owner);
-        }
-        try {
-            info.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
-        } catch (Exception e) {
-            info.set(X509CertInfo.ISSUER, owner);
-        }
-        info.set(X509CertInfo.KEY, new CertificateX509Key(pair.getPublic()));
-        info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
-        AlgorithmId algo = AlgorithmId.get("MD5withRSA");
-        info.set(X509CertInfo.ALGORITHM_ID, new CertificateAlgorithmId(algo));
+        JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(owner, sn, Date.from(from), Date.from(until), owner, pair.getPublic());
+        ContentSigner signer = new JcaContentSignerBuilder(algorithm).build(pair.getPrivate());
+        X509CertificateHolder holder = builder.build(signer);
+        X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
+        cert.verify(pair.getPublic());
 
-        // Sign the cert to identify the algorithm that's used.
-        X509CertImpl cert = new X509CertImpl(info);
-        cert.sign(privkey, algorithm);
-
-        // Update the algorith, and resign.
-        algo = (AlgorithmId)cert.get(X509CertImpl.SIG_ALG);
-        info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
-        cert = new X509CertImpl(info);
-        cert.sign(privkey, algorithm);
         return cert;
     }
 
     public static Certificate generateCertificate(String dn)
-        throws GeneralSecurityException, IOException
+        throws GeneralSecurityException, OperatorCreationException
     {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         KeyPair keyPair = keyPairGenerator.generateKeyPair();

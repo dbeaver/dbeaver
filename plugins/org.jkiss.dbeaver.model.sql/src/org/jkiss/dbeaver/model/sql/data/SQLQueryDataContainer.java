@@ -63,6 +63,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return DATA_SELECT;
     }
 
+    @Override
     public SQLScriptContext getScriptContext() {
         return scriptContext;
     }

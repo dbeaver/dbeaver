@@ -68,6 +68,13 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             throw new DBException("File '" + fileName + "' not found");
         }
 
+        // Check for nested inclusion
+        for (SQLScriptContext sc = scriptContext; sc != null ;sc = sc.getParentContext()) {
+            if (sc.getSourceFile() != null && sc.getSourceFile().equals(incFile)) {
+                throw new DBException("File '" + fileName + "' recursive inclusion");
+            }
+        }
+
         final String fileContents;
         try (InputStream is = new FileInputStream(incFile)) {
             Reader reader = new InputStreamReader(is, getResourceEncoding());
@@ -83,9 +90,12 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
                 SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
                         workbenchWindow,
-                        new SQLNavigatorContext(scriptContext.getExecutionContext()),
+                        new SQLNavigatorContext(scriptContext),
                         input);
-                final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
+                final IncludeScriptListener scriptListener = new IncludeScriptListener(
+                    workbenchWindow,
+                    sqlEditor,
+                    statusFlag);
                 boolean execResult = sqlEditor.processSQL(false, true, null, scriptListener);
                 if (!execResult) {
                     statusFlag[0] = true;

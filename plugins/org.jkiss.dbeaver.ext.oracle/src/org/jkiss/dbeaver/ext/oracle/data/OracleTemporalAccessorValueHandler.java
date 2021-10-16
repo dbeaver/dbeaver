@@ -34,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 public class OracleTemporalAccessorValueHandler extends JDBCTemporalAccessorValueHandler {
 
     private static final DateTimeFormatter DEFAULT_DATETIME_FORMAT = DateTimeFormatter.ofPattern("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.nnnnnn''");
+    private static final DateTimeFormatter DEFAULT_DATETIME_TZ_FORMAT = DateTimeFormatter.ofPattern("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.nnnnnn X''");
     private static final DateTimeFormatter DEFAULT_DATE_FORMAT = DateTimeFormatter.ofPattern("'DATE '''yyyy-MM-dd''");
     private static final DateTimeFormatter DEFAULT_TIME_FORMAT = DateTimeFormatter.ofPattern("'TIME '''HH:mm:ss.SSS''");
 
@@ -64,23 +65,24 @@ public class OracleTemporalAccessorValueHandler extends JDBCTemporalAccessorValu
             case Types.TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE:
-                return DEFAULT_DATETIME_FORMAT;
+                return DEFAULT_DATETIME_TZ_FORMAT;
             case Types.TIME:
                 return DEFAULT_TIME_FORMAT;
             case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_FORMAT;
+                return DEFAULT_TIME_TZ_FORMAT;
             case Types.DATE:
                 return DEFAULT_DATE_FORMAT;
         }
         return super.getNativeValueFormat(type);
     }
 
+    @NotNull
     @Override
     protected String getFormatterId(DBSTypedObject column) {
         switch (column.getTypeID()) {
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE:
-                return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
+                return DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
             default:
                 return super.getFormatterId(column);
         }

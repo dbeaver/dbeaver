@@ -27,9 +27,6 @@ public final class MySQLUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, MySQLUIMessages.class);
     }
 
-    private MySQLUIMessages() {
-    }
-
     public static String dialog_connection_advanced_tab;
     public static String dialog_connection_advanced_tab_tooltip;
     public static String dialog_connection_general_tab;
@@ -96,6 +93,9 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_message_export_completed;
     public static String tools_db_export_wizard_monitor_bytes;
     public static String tools_db_export_wizard_monitor_export_db;
+    public static String tools_db_export_wizard_page_objects_dialog_wizard_title;
+    public static String tools_db_export_wizard_page_objects_dialog_title_choose_objects;
+    public static String tools_db_export_wizard_page_objects_dialog_description;
     public static String tools_db_export_wizard_page_settings_checkbox_add_drop;
     public static String tools_db_export_wizard_page_settings_checkbox_addnl_comments;
     public static String tools_db_export_wizard_page_settings_checkbox_remove_definer;
@@ -111,6 +111,7 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_file_selector_title;
     public static String tools_db_export_wizard_page_settings_group_exe_method;
     public static String tools_db_export_wizard_page_settings_group_objects;
+    public static String tools_db_export_wizard_page_settings_group_show_views;
     public static String tools_db_export_wizard_page_settings_group_output;
     public static String tools_db_export_wizard_page_settings_group_settings;
     public static String tools_db_export_wizard_page_settings_label_out_text;
@@ -142,4 +143,12 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_auth_title;
     public static String tools_db_export_wizard_page_settings_auth_save_password_checkbox;
     public static String tools_db_export_wizard_page_settings_auth_save_password_checkbox_tip;
+
+    public static String dialog_create_database_title;
+    public static String dialog_create_database_database_name;
+    public static String dialog_create_database_charset;
+    public static String dialog_create_database_collation;
+
+    private MySQLUIMessages() {
+    }
 }

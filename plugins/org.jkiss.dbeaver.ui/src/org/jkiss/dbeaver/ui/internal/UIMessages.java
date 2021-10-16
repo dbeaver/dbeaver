@@ -69,6 +69,11 @@ public class UIMessages extends NLS {
 
     public static String edit_text_dialog_title_edit_value;
 
+    public static String dialogs_name_and_password_dialog_group_settings;
+    public static String dialogs_name_and_password_dialog_label_name;
+    public static String dialogs_name_and_password_dialog_label_password;
+    public static String dialogs_name_and_password_dialog_label_verify_password;
+
     public static String ui_properties_name;
     public static String ui_properties_value;
     
@@ -76,6 +81,22 @@ public class UIMessages extends NLS {
     public static String load_execution_plan;
 
     public static String control_label_connection_folder;
+
+    public static String control_boolean_mode_text;
+    public static String control_boolean_mode_text_tip;
+    public static String control_boolean_mode_icon;
+    public static String control_boolean_mode_icon_tip;
+    public static String control_boolean_state_checked;
+    public static String control_boolean_state_unchecked;
+    public static String control_boolean_state_null;
+    public static String control_default_color_selector_reset_default_tip;
+
+    public static String control_alignment_left;
+    public static String control_alignment_center;
+    public static String control_alignment_right;
+    public static String control_font_normal;
+    public static String control_font_italic;
+    public static String control_font_bold;
 
     static {
         // initialize resource bundle

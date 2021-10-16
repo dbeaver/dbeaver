@@ -109,9 +109,11 @@ public class DTUIMessages extends NLS {
 	public static String stream_consumer_page_output_checkbox_execute_process;
 	public static String stream_consumer_page_output_label_maximum_file_size;
 	public static String stream_consumer_page_output_label_show_finish_message;
+	public static String stream_consumer_page_output_tooltip_output_directory_pattern;
 	public static String stream_consumer_page_output_tooltip_output_file_name_pattern;
 	public static String stream_consumer_page_output_label_results;
 	public static String stream_consumer_page_output_tooltip_process_command_line;
+	public static String stream_consumer_page_output_variables_hint_label;
 	public static String stream_consumer_page_settings_title;
 	public static String stream_consumer_page_settings_description;
 	public static String stream_consumer_page_settings_item_text_none;

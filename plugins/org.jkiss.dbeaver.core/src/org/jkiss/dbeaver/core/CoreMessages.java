@@ -147,6 +147,12 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 	public static String dialog_connection_wizard_title;
 
+	public static String dialog_connection_from_url_title;
+	public static String dialog_connection_from_url_url;
+	public static String dialog_connection_from_url_drivers;
+	public static String dialog_connection_from_url_error_no_drivers_found;
+	public static String dialog_connection_from_url_error_no_driver_selected;
+
 	public static String dialog_migrate_wizard_choose_driver_description;
 	public static String dialog_migrate_wizard_choose_driver_title;
 	public static String dialog_migrate_wizard_name;
@@ -410,8 +416,6 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_show_full_name_in_editor;
 	public static String pref_page_ui_general_show_table_grid;
 	public static String pref_page_ui_general_show_preview_on_save;
-	public static String pref_page_ui_general_boolean_style;
-	public static String pref_page_ui_general_boolean_style_tip;
 	// DatabaseGeneral
 	public static String pref_page_ui_general_group_task_bar;
 	public static String pref_page_ui_general_label_enable_long_operations;
@@ -537,6 +541,20 @@ public class CoreMessages extends NLS {
 	// Driver download
 
 	public static String transaction_log_dialog_error_not_connected;
+
+	public static String resource_shortcut_deleted_title;
+	public static String resource_shortcut_deleted_message;
+
+	public static String pref_page_ui_general_boolean;
+	public static String pref_page_ui_general_boolean_label_mode;
+	public static String pref_page_ui_general_boolean_label_state;
+	public static String pref_page_ui_general_boolean_label_text;
+	public static String pref_page_ui_general_boolean_label_align;
+	public static String pref_page_ui_general_boolean_label_color;
+	public static String pref_page_ui_general_boolean_styles;
+	public static String pref_page_ui_general_boolean_color;
+	public static String pref_page_ui_general_boolean_color_use_theme_color;
+	public static String pref_page_ui_general_boolean_invalid_values;
 
 	static {
 		// initialize resource bundle

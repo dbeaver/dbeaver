@@ -599,7 +599,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         String sql = getChangeReferentialIntegrityStatement(monitor, enable);
-        sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
         try {
             DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
         } catch (SQLException e) {

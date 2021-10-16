@@ -50,8 +50,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-//import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
-
 public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler implements IElementUpdater {
 
     NavigatorHandlerCopyAbstract() {

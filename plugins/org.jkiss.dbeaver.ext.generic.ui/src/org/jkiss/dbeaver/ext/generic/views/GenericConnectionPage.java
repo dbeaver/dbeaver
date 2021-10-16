@@ -265,8 +265,19 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_LOGIN, getAuthPanelComposite());
         }
 
+        createAdvancedSettingsGroup(addrGroup);
+
         createDriverPanel(addrGroup);
         setControl(addrGroup);
+    }
+
+    public void createAdvancedSettingsGroup(Composite composite) {
+
+    }
+
+    public void setPortText(String text) {
+        portText.setText(text);
+        saveAndUpdate();
     }
 
     @Override

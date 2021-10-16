@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -31,15 +33,18 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * SQLServerStructureAssistant
  */
 public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLServerExecutionContext> {
+    private static final Log log = Log.getLog(SQLServerStructureAssistant.class);
+
     private final SQLServerDataSource dataSource;
 
     public SQLServerStructureAssistant(SQLServerDataSource dataSource)
@@ -104,43 +109,61 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
     @Override
     public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerExecutionContext executionContext,
                                                       @NotNull ObjectsSearchParams params) throws DBException {
-        DBSObject parentObject = params.getParentObject();
-        SQLServerDatabase database = parentObject instanceof SQLServerDatabase ?
-                (SQLServerDatabase) parentObject :
-                (parentObject instanceof SQLServerSchema ? ((SQLServerSchema) parentObject).getDatabase() : null);
-        if (database == null) {
-            database = executionContext.getContextDefaults().getDefaultCatalog();
-        }
-        if (database == null) {
-            database = executionContext.getDataSource().getDefaultDatabase(monitor);
-        }
-        if (database == null) {
-            return Collections.emptyList();
-        }
-        SQLServerSchema schema = parentObject instanceof SQLServerSchema ? (SQLServerSchema) parentObject : null;
-
-        if (schema == null && !params.isGlobalSearch()) {
-            schema = executionContext.getContextDefaults().getDefaultSchema();
-        }
-
-        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
-            List<DBSObjectReference> objects = new ArrayList<>();
-
-            if (params.getMask().startsWith("%#") || params.getMask().startsWith("#")) {
-                // Search temp tables
+        if (params.getMask().startsWith("%#") || params.getMask().startsWith("#")) {
+            try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find temp tables by name")) {
+                List<DBSObjectReference> objects = new ArrayList<>();
                 searchTempTables(session, params, objects);
-            } else {
-                // Search all objects
-                searchAllObjects(session, database, schema, params, objects);
+                return objects;
             }
-
-            return objects;
         }
+
+        return findAllObjects(monitor, executionContext, params);
     }
 
-    private void searchAllObjects(final JDBCSession session, final SQLServerDatabase database, final SQLServerSchema schema,
-                                  @NotNull ObjectsSearchParams params, List<DBSObjectReference> objects) throws DBException {
-        final List<SQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
+    private List<DBSObjectReference> findAllObjects(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerExecutionContext executionContext,
+                                                    @NotNull ObjectsSearchParams params) throws DBException {
+
+        DBSObject parentObject = params.getParentObject();
+        boolean globalSearch = params.isGlobalSearch();
+        Collection<SQLServerDatabase> databases;
+        SQLServerSchema schema = null;
+
+        if (parentObject instanceof DBPDataSourceContainer || parentObject instanceof SQLServerDataSource) {
+            if (globalSearch) {
+                databases = executionContext.getDataSource().getDatabases(monitor);
+            } else {
+                SQLServerDatabase database = executionContext.getContextDefaults().getDefaultCatalog();
+                if (database == null) {
+                    database = executionContext.getDataSource().getDefaultDatabase(monitor);
+                }
+                schema = executionContext.getContextDefaults().getDefaultSchema();
+                if (database == null || schema == null) {
+                    return Collections.emptyList();
+                }
+                databases = Collections.singletonList(database);
+            }
+        } else if (parentObject instanceof SQLServerDatabase) {
+            SQLServerDatabase database = (SQLServerDatabase) parentObject;
+            databases = Collections.singletonList(database);
+            if (!globalSearch) {
+                schema = executionContext.getContextDefaults().getDefaultSchema();
+                if (schema == null) {
+                    return Collections.emptyList();
+                }
+            }
+        } else if (parentObject instanceof SQLServerSchema) {
+            schema = (SQLServerSchema) parentObject;
+            SQLServerDatabase database = schema.getDatabase();
+            databases = Collections.singletonList(database);
+        } else {
+            return Collections.emptyList();
+        }
+
+        if (CommonUtils.isEmpty(databases)) {
+            return Collections.emptyList();
+        }
+
+        Collection<SQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
         for (DBSObjectType objectType : params.getObjectTypes()) {
             if (objectType instanceof SQLServerObjectType) {
                 supObjectTypes.add((SQLServerObjectType) objectType);
@@ -156,7 +179,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             }
         }
         if (supObjectTypes.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
         StringBuilder objectTypeClause = new StringBuilder(100);
         for (SQLServerObjectType objectType : supObjectTypes) {
@@ -164,89 +187,103 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             objectTypeClause.append("'").append(objectType.getTypeID()).append("'");
         }
         if (objectTypeClause.length() == 0) {
-            return;
+            return Collections.emptyList();
         }
 
-        StringBuilder sql = new StringBuilder("SELECT TOP ")
-                .append(params.getMaxResults() - objects.size())
-                .append(" * FROM ")
-                .append(SQLServerUtils.getSystemTableName(database, "all_objects"))
-                .append(" o ");
+        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d * FROM %s o");
         if (params.isSearchInComments()) {
-            sql.append("LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
+            sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
-        sql.append("WHERE o.type IN (").append(objectTypeClause.toString()).append(") AND ");
+        sqlBuilder.append(" WHERE o.type IN (").append(objectTypeClause).append(") AND ");
         boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
         if (addParentheses) {
-            sql.append("(");
+            sqlBuilder.append("(");
         }
-        sql.append("o.name LIKE ? ");
+        sqlBuilder.append("o.name LIKE ? ");
         if (params.isSearchInComments()) {
-            sql.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
+            sqlBuilder.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
         }
         if (params.isSearchInDefinitions()) {
             if (params.isSearchInComments()) {
-                sql.append(" ");
+                sqlBuilder.append(" ");
             }
-            sql.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
+            sqlBuilder.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
         }
         if (addParentheses) {
-            sql.append(") ");
+            sqlBuilder.append(") ");
         }
         if (schema != null) {
-            sql.append("AND o.schema_id = ? ");
+            sqlBuilder.append("AND o.schema_id = ? ");
         }
-        sql.append("ORDER BY o.name");
+        sqlBuilder.append("ORDER BY o.name");
+        String template = sqlBuilder.toString();
 
-        // Seek for objects (join with public synonyms)
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
-            dbStat.setString(1, params.getMask());
-            int idx = 2;
-            if (params.isSearchInComments()) {
-                dbStat.setString(idx, params.getMask());
-                idx++;
-            }
-            if (params.isSearchInDefinitions()) {
-                dbStat.setString(idx, params.getMask());
-                idx++;
-            }
-            if (schema != null) {
-                dbStat.setLong(idx, schema.getObjectId());
-            }
-            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (dbResult.next() && !session.getProgressMonitor().isCanceled()) {
-                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
-                    final String objectName = JDBCUtils.safeGetString(dbResult, "name");
-                    final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-                    final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
-                    {
-                        SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
-                        objects.add(new AbstractObjectReference(
-                            objectName,
-                            objectSchema != null ? objectSchema : database,
-                            null,
-                            objectType.getTypeClass(),
-                            objectType)
-                        {
-                            @Override
-                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                DBSObject object = objectType.findObject(session.getProgressMonitor(), database, objectSchema, objectName);
-                                if (object == null) {
-                                    throw new DBException(objectTypeName + " '" + objectName + "' not found");
-                                }
-                                return object;
-                            }
-                        });
+        List<DBSObjectReference> objects = new ArrayList<>();
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
+            for (SQLServerDatabase database: databases) {
+                int rowsToFetch = params.getMaxResults() - objects.size();
+                if (rowsToFetch < 1) {
+                    break;
+                }
+                String sql = String.format(template, rowsToFetch, SQLServerUtils.getSystemTableName(database, "all_objects"));
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                    dbStat.setString(1, params.getMask());
+                    int idx = 2;
+                    if (params.isSearchInComments()) {
+                        dbStat.setString(idx, params.getMask());
+                        idx++;
                     }
+                    if (params.isSearchInDefinitions()) {
+                        dbStat.setString(idx, params.getMask());
+                        idx++;
+                    }
+                    if (schema != null) {
+                        dbStat.setLong(idx, schema.getObjectId());
+                    }
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next() && !session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults()) {
+                            final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
+                            final String objectName = JDBCUtils.safeGetString(dbResult, "name");
+                            final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
+                            final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
+                            SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
+                            objects.add(new AbstractObjectReference(
+                                objectName,
+                                objectSchema != null ? objectSchema : database,
+                                null,
+                                objectType.getTypeClass(),
+                                objectType)
+                            {
+                                @Override
+                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), database, objectSchema, objectName);
+                                    if (object == null) {
+                                        throw new DBException(objectTypeName + " '" + objectName + "' not found");
+                                    }
+                                    return object;
+                                }
+                            });
+                        }
+                    }
+                } catch (SQLException e) {
+                    // Among other reasons, this can happen if access is denied for the current database
+                    log.debug(
+                    "Unable to perform metadata search in mssql instance. databaseName="
+                            + database.getName()
+                            + ", schema="
+                            + (schema != null ? schema.getName() : "null"),
+                        e
+                    );
                 }
             }
-        } catch (Throwable e) {
-            throw new DBException("Error while searching in system catalog", e, dataSource);
         }
+
+        return objects;
     }
 
-  @Override
+    @Override
     public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
         return true;
     }

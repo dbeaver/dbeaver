@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -233,7 +234,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             sql.append("SELECT ");
             for (int i = 0; i < groupAttributes.size(); i++) {
                 if (i > 0) sql.append(", ");
-                sql.append(DBUtils.getQuotedIdentifier(dataSource, groupAttributes.get(i)));
+                sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
             }
             for (String func : groupFunctions) {
                 sql.append(", ").append(func);
@@ -254,7 +255,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
                         selectItems.add(
                             new SelectExpressionItem(
                                 new Column(
-                                    DBUtils.getQuotedIdentifier(dataSource, groupAttribute))));
+                                    quotedGroupingString(dataSource, groupAttribute))));
                     }
                     for (String func : groupFunctions) {
                         Expression expression = CCJSqlParserUtil.parseExpression(func);
@@ -271,7 +272,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         sql.append("\nGROUP BY ");
         for (int i = 0; i < groupAttributes.size(); i++) {
             if (i > 0) sql.append(", ");
-            sql.append(DBUtils.getQuotedIdentifier(dataSource, groupAttributes.get(i)));
+            sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
         }
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
 
@@ -307,7 +308,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         //groupingViewer.refresh();
     }
 
-    public void setGrouping(List<String> attributes, List<String> functions) {
+    void setGrouping(List<String> attributes, List<String> functions) {
         groupAttributes.clear();
         addGroupingAttributes(attributes);
 
@@ -319,5 +320,17 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     private void resetDataFilters() {
         groupingViewer.getModel().createDataFilter();
+    }
+
+    private String quotedGroupingString(DBPDataSource dataSource, String string) {
+        try {
+            Expression expression = CCJSqlParserUtil.parseExpression(string);
+            if (!(expression instanceof Column)) {
+                return string;
+            }
+        } catch (JSQLParserException e) {
+            log.debug("Can't parse expression " + string, e);
+        }
+        return DBUtils.getQuotedIdentifier(dataSource, string);
     }
 }

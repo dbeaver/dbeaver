@@ -120,6 +120,8 @@ public interface DBPPlatformUI {
 
     void executeShellProgram(String shellCommand);
 
+    void showInSystemExplorer(@NotNull String path);
+
     boolean readAndDispatchEvents();
 
 }

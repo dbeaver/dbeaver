@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -42,7 +43,6 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -204,7 +204,13 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     DBNDatabaseNode objectNode = nModel.getNodeByObject(element);
                     DBPImage icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
                     cell.setImage(DBeaverIcons.getImage(icon));
-                    cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
+                    final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
+                    if (queryContainer != null) {
+                        // We don't need extra quotes for queries
+                        cell.setText(queryContainer.getQuery().getText());
+                    } else {
+                        cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
+                    }
                 } else if (element.getDescription() != null) {
                     cell.setText(element.getDescription());
                 }
@@ -234,16 +240,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     }
 
     private void loadNodeSettings() {
-        try {
-            getWizard().getRunnableContext().run(true, true, monitor -> {
-                getWizard().getSettings().loadNodeSettings(monitor);
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-
         if (getWizard().getSettings().isConsumerOptional()) {
             setTitle(DTMessages.data_transfer_wizard_init_title);
             setDescription(DTMessages.data_transfer_wizard_init_description);

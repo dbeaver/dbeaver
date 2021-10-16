@@ -32,7 +32,9 @@ public interface DBDDataFormatter {
     String TYPE_NAME_NUMBER = "number"; //$NON-NLS-1$
     String TYPE_NAME_DATE = "date"; //$NON-NLS-1$
     String TYPE_NAME_TIME = "time"; //$NON-NLS-1$
+    String TYPE_NAME_TIME_TZ = "timetz"; //$NON-NLS-1$
     String TYPE_NAME_TIMESTAMP = "timestamp"; //$NON-NLS-1$
+    String TYPE_NAME_TIMESTAMP_TZ = "timestamptz"; //$NON-NLS-1$
 
     void init(@Nullable DBSTypedObject type, Locale locale, Map<String, Object> properties);
 

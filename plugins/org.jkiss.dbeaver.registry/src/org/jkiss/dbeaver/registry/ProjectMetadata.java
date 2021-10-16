@@ -61,7 +61,7 @@ public class ProjectMetadata implements DBPProject {
         MODERN,     // 6.1+ version
     }
 
-    private static Gson METADATA_GSON = new GsonBuilder()
+    private static final Gson METADATA_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .create();

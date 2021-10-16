@@ -41,12 +41,91 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     //Exasol does not support prepareCall
     public static final String[] EXEC_KEYWORDS = new String[]{};
 
+    private static final String[] ADVANCED_FUNCTIONS = {
+        "BIT_AND",
+        "BIT_CHECK",
+        "BIT_LENGTH",
+        "BIT_NOT",
+        "BIT_OR",
+        "BIT_SET",
+        "BIT_TO_NUM",
+        "CONVERT_TZ",
+        "DATE_TRUNC",
+        "DECODE",
+        "EDIT_DISTANCE",
+        "GROUPING_ID",
+        "HASH_MD5",
+        "HASH_SHA",
+        "HASH_TIGER",
+        "HASHTYPE_MD5",
+        "HASHTYPE_SHA",
+        "HASHTYPE_TIGER",
+        "IS_DATE",
+        "IS_TIMESTAMP",
+        "IS_BOOLEAN",
+        "IS_DSINTERVAL",
+        "IS_YMINTERVAL",
+        "JSON_EXTRACT",
+        "JSON_VALUE",
+        "LAG",
+        "LAST_VALUE",
+        "LEAD",
+        "LISTAGG",
+        "MUL",
+        "NTILE",
+        "NULLIFZERO",
+        "NVL",
+        "RATIO_TO_REPORT",
+        "REGR_FUNCTIONS",
+        "ROWNUM",
+        "ROWID",
+        "SESSION_PARAMETER",
+        "ST_BOUNDARY",
+        "ST_BUFFER",
+        "ST_CENTROID",
+        "ST_CONTAINS",
+        "ST_CONVEXHULL",
+        "ST_CROSSES",
+        "ST_DIFFERENCE",
+        "ST_DIMENSION",
+        "ST_DISJOINT",
+        "ST_DISTANCE",
+        "ST_ENDPOINT",
+        "ST_ENVELOPE",
+        "ST_EQUALS",
+        "ST_EXTERIORRING",
+        "ST_FORCE2D",
+        "ST_GEOMETRYN",
+        "ST_GEOMETRYTYPE",
+        "ST_ISEMPTY",
+        "ST_ISRING",
+        "ST_ISSIMPLE",
+        "ST_LENGTH",
+        "ST_MAX_DECIMAL_DIGITS",
+        "ST_NUMGEOMETRIES",
+        "ST_NUMINTERIORRINGS",
+        "ST_NUMPOINTS",
+        "ST_OVERLAPS",
+        "ST_POINTN",
+        "ST_SETSRID",
+        "ST_STARTPOINT",
+        "ST_SYMDIFFERENCE",
+        "ST_TOUCHES",
+        "ST_TRANSFORM",
+        "ST_UNION",
+        "ST_WITHIN",
+        "ST_X",
+        "ST_Y",
+        "SYS_CONNECT_BY_PATH",
+        "SYS_GUID",
+        "ZEROIFNULL"
+    };
 
     public ExasolSQLDialect() {
         super("Exasol", "exasol");
     }
     
-    public void addExtraFunctions(String... functions) {
+    private void addExtraFunctions(String... functions) {
         super.addFunctions(Arrays.asList(functions));
     }
     
@@ -54,11 +133,13 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
         
         Collections.addAll(tableQueryWords, "DESC");
+
+        addFunctions(Arrays.asList(ADVANCED_FUNCTIONS));
         
         try {
 			try (JDBCStatement stmt = session.createStatement()) {
         		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT \"VALUE\" FROM \"$ODBCJDBC\".DB_METADATA WHERE name = 'aggregateFunctions'")) {
-        			if (dbResult.next()) {
+        			if (dbResult != null && dbResult.next()) {
         				String keyWord = dbResult.getString(1);
         				
         				String[] aggregateFunctions = keyWord.split(",");
@@ -67,7 +148,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         			}
         		}
         		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT keyword FROM sys.EXA_SQL_KEYWORDS esk WHERE RESERVED")) {
-        			while(dbResult.next()) {
+        			while(dbResult != null && dbResult.next()) {
         				String keyWord = dbResult.getString("KEYWORD");
         				super.addSQLKeyword(keyWord);
         			}

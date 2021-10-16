@@ -199,9 +199,16 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             throw new IllegalStateException("Can't create page control while substitution control already set"); //$NON-NLS-1$
         }
         if (showDivider) {
-            Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
-            separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Label separator = new Label(container, SWT.NONE);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.heightHint = 1;
+            separator.setLayoutData(gd);
+            separator.addPaintListener(e ->  {
+                e.gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.drawLine(e.x, e.y, e.x + e.width, e.y);
+            });
         }
+
         Composite infoGroup = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoGroup.setLayoutData(gd);

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
@@ -466,7 +467,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
         switch (typeName) {
             case OracleConstants.TYPE_NUMBER:
             case OracleConstants.TYPE_DECIMAL:
-                OracleDataType dataType = (OracleDataType) DBUtils.getDataType(column);
+                DBSDataType dataType = DBUtils.getDataType(column);
                 scale = column.getScale();
                 int precision = CommonUtils.toInt(column.getPrecision());
                 if (precision == 0 && dataType != null && scale != null && scale == dataType.getMinScale()) {

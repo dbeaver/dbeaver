@@ -98,7 +98,7 @@ public class PropertyEditorUtils {
             if (isPropertySheet) {
                 return new CustomComboBoxCellEditor(parent, new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString()} , SWT.DROP_DOWN | SWT.READ_ONLY);
             } else {
-                return new CustomCheckboxCellEditor(parent, style);
+                return new CustomCheckboxCellEditor(parent);
             }
             //return new CheckboxCellEditor(parent);
         } else if (propertyType.isEnum()) {

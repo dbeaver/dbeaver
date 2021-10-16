@@ -34,6 +34,8 @@ public class SQLServerUIMessages extends NLS {
     public static String dialog_connection_user_name_label;
     public static String dialog_setting_show_all_schemas;
     public static String dialog_setting_show_all_schemas_tip;
+    public static String dialog_setting_encrypt_password;
+    public static String dialog_setting_encrypt_password_tip;
     public static String dialog_setting_trust_server_certificate;
     public static String dialog_setting_trust_server_certificate_tip;
     public static String dialog_setting_ssl_advanced_hostname_label;
@@ -44,9 +46,6 @@ public class SQLServerUIMessages extends NLS {
     public static String dialog_create_db_title;
 
     public static String dialog_create_login_shell_title;
-    public static String dialog_create_login_group;
-    public static String dialog_create_login_label_name;
-    public static String dialog_create_login_label_password;
 
     static {
         // initialize resource bundle

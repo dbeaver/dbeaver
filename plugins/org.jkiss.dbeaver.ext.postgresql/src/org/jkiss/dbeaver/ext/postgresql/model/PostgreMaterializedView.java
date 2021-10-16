@@ -77,7 +77,7 @@ public class PostgreMaterializedView extends PostgreViewBase
         return null;
     }
 
-    public String getViewType() {
+    public String getTableTypeName() {
         return "MATERIALIZED VIEW";
     }
 

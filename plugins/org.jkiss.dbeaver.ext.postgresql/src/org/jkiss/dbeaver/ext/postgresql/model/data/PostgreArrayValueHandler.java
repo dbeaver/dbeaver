@@ -58,7 +58,10 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     {
         if (object != null) {
             String className = object.getClass().getName();
-            if (object instanceof String || className.equals(PostgreConstants.PG_OBJECT_CLASS) || className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
+            if (object instanceof String ||
+                PostgreUtils.isPGObject(object) ||
+                className.equals(PostgreConstants.PG_ARRAY_CLASS))
+            {
                 final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
                 if (arrayType == null) {
                     throw new DBCException("Can't resolve data type " + type.getFullTypeName());
@@ -76,7 +79,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
                     String strValue = object.toString();
                     return convertStringArrayToCollection(session, arrayType, itemType, strValue);
-                } else if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                } else if (PostgreUtils.isPGObject(object)) {
                     final Object value = PostgreUtils.extractPGObjectValue(object);
                     if (value instanceof String) {
                         return convertStringToCollection(session, type, itemType, (String) value);

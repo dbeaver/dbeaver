@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
@@ -84,7 +84,7 @@ public class ERDExportSVG implements ERDExportFormatHandler {
 
             svgGenerator.stream(filePath);
 
-            UIUtils.launchProgram(filePath);
+            ShellUtils.launchProgram(filePath);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as SVG", null, e);
         }
@@ -103,14 +103,13 @@ public class ERDExportSVG implements ERDExportFormatHandler {
             // Iterate over the children to check whether a child is a(nother) layer or an actual figure
             // Not painting the layers themselves is likely to get rid of borders and graphics settings that are not
             // supported (like Graphics#setTextAntiAliassing())
-            for (Object childObject : figure.getChildren()) {
-                if (childObject instanceof Layer) {
+            for (IFigure child : figure.getChildren()) {
+                if (child instanceof Layer) {
                     // Found another layer, process it to search for actual figures
-                    paintDiagram(g, (IFigure) childObject);
+                    paintDiagram(g, child);
                 } else {
                     // Found something to draw
                     // Use same/similar method as being using in Figure#paintChildren() in order to get clipping right
-                    IFigure child = (IFigure) childObject;
                     if (child.isVisible()) {
                         // determine clipping areas for child
                         Rectangle[] clipping = null;
@@ -132,14 +131,13 @@ public class ERDExportSVG implements ERDExportFormatHandler {
                 }
             }
 
-            for (Object childObject : figure.getChildren()) {
-                if (childObject instanceof Layer) {
+            for (IFigure child : figure.getChildren()) {
+                if (child instanceof Layer) {
                     // Found another layer, process it to search for actual figures
-                    paintDiagram(g, (IFigure) childObject);
+                    paintDiagram(g, child);
                 } else {
                     // Found something to draw
                     // Use same/similar method as being using in Figure#paintChildren() in order to get clipping right
-                    IFigure child = (IFigure) childObject;
                     if (child.isVisible()) {
                         // determine clipping areas for child
                         Rectangle[] clipping = null;

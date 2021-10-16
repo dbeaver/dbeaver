@@ -54,6 +54,9 @@ public class DatabaseTransferUtils {
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         DBSObjectContainer container = consumerSettings.getContainer();
+        if (container == null) {
+            throw new DBException("Null target container");
+        }
         {
             monitor.subTask("Refresh navigator model");
             consumerSettings.getContainerNode().refreshNode(monitor, containerMapping);

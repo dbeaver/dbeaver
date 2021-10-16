@@ -9,14 +9,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>21.2.0</dbeaver-version>
+        <dbeaver-version>21.2.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>2.0.0</tycho-version>
+        <tycho-version>2.1.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
-        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2021-03/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2021-09/</eclipse-p2-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -98,13 +98,15 @@
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
                     <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
-                    <!--
-                        Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
-                        Otherwise sun.security classes are not accessible.
-                    -->
-                    <compilerArgument>-XDignore.symbol.file=true</compilerArgument>
+                    <target>11</target>
+                    <compilerVersion>1.8</compilerVersion>
+                    <compilerArgs>
+                        <!--
+                            Java 11-compatibility options.
+                            ignore.symbol.file is a legacy flag
+                        -->
+                        <compilerArg>-XDignore.symbol.file=true</compilerArg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -139,9 +141,18 @@
                 <module>test</module>
 
                 <!-- Products -->
-                <module>product/appstore</module>
                 <module>product/community</module>
                 <module>product/repositories</module>
+            </modules>
+        </profile>
+
+        <!-- desktop build: includes UI components and products -->
+        <profile>
+            <id>appstore</id>
+            <activation><activeByDefault>false</activeByDefault></activation>
+            <modules>
+                <!-- Products -->
+                <module>product/appstore</module>
             </modules>
         </profile>
 
@@ -178,6 +189,11 @@
                                     <os>macosx</os>
                                     <ws>cocoa</ws>
                                     <arch>x86_64</arch>
+                                </environment>
+                                <environment>
+                                    <os>macosx</os>
+                                    <ws>cocoa</ws>
+                                    <arch>aarch64</arch>
                                 </environment>
                             </environments>
                         </configuration>

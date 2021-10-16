@@ -402,4 +402,31 @@ public class BeanUtils {
         }
         return null;
     }
+
+    /**
+     * Determines the distance of the given object to the given class in the
+     * inheritance tree.
+     * <p>
+     * @param object the root object
+     * @param clazz the class to determine the distance to
+     * @return the distance of the object to the class. If the object is not an
+     * instance of the class {@code -1} will return.
+     */
+    public static int getInheritanceDistance(Object object, Class<?> clazz) {
+        if (clazz.isInstance(object)) {
+            int distance = 0;
+            Class<?> compared = object.getClass();
+            while (compared != clazz) {
+                compared = compared.getSuperclass();
+                distance++;
+                if (compared == Object.class) {
+                    break;
+                }
+            }
+            return distance;
+        } else {
+            return -1;
+        }
+    }
+
 }

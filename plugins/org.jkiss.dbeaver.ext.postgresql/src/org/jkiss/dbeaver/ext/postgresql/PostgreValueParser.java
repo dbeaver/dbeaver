@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
@@ -31,6 +29,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.csv.CSVReaderBuilder;
+import org.jkiss.utils.csv.CSVReaderNullFieldIndicator;
+import org.jkiss.utils.csv.CSVWriter;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -203,7 +204,12 @@ public class PostgreValueParser {
             return new String[0];
         }
         try {
-            return new CSVReader(new StringReader(string)).readNext();
+            // Empty separators are NULLs, empty quotes are empty strings.
+            // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6
+            return new CSVReaderBuilder(new StringReader(string))
+                .withFieldAsNull(CSVReaderNullFieldIndicator.EMPTY_SEPARATORS)
+                .build()
+                .readNext();
         } catch (IOException e) {
             throw new DBCException("Error parsing PGObject", e);
         }
@@ -219,8 +225,10 @@ public class PostgreValueParser {
                         .replace("]", "}")
                         .replace(" ", "");
                 line[i] = arrayPostgreStyle; //Strings are not quoted
-            } else {
-                line[i] = value == null ? "NULL" : value.toString();
+            } else if (value != null) {
+                // Values are simply skipped if they're NULL.
+                // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6
+                line[i] = value.toString();
             }
         }
         StringWriter out = new StringWriter();

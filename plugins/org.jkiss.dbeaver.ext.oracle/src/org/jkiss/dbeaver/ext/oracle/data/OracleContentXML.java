@@ -63,6 +63,10 @@ public class OracleContentXML extends JDBCContentXML {
                         paramIndex,
                         xmlObject);
                 }
+            } else if (xml != null) {
+                preparedStatement.setObject(
+                    paramIndex,
+                    xml);
             } else {
                 preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML, columnType.getTypeName());
             }
@@ -75,18 +79,18 @@ public class OracleContentXML extends JDBCContentXML {
         }
     }
 
-    private Object createXmlObject(JDBCSession session, InputStream stream) throws DBCException
+    static Object createXmlObject(JDBCSession session, InputStream stream) throws DBCException
     {
         try {
             return BeanUtils.invokeStaticMethod(
-                DBUtils.getDriverClass(executionContext.getDataSource(), OracleConstants.XMLTYPE_CLASS_NAME),
+                DBUtils.getDriverClass(session.getExecutionContext().getDataSource(), OracleConstants.XMLTYPE_CLASS_NAME),
                 "createXML",
                 new Class[] {java.sql.Connection.class, java.io.InputStream.class},
                 new Object[] {session.getOriginal(), stream});
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         } catch (Throwable e) {
-            throw new DBCException("Internal error when creating XMLType", e, executionContext);
+            throw new DBCException("Internal error when creating XMLType", e, session.getExecutionContext());
         }
     }
 

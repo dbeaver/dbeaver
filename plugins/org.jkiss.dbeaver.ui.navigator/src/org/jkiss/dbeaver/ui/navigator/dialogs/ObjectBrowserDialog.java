@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.*;
@@ -46,6 +47,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class ObjectBrowserDialog extends Dialog {
+    /** Expands first level of each node */
+    private static final int TREE_EXPANSION_DEPTH = 2;
 
     private String title;
     private DBNNode rootNode;
@@ -201,24 +204,26 @@ public class ObjectBrowserDialog extends Dialog {
         });
         treeViewer.getTree().setFocus();
 
-        final Button showConnectedCheck = new Button(group, SWT.CHECK);
-        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
-        showConnectedCheck.setSelection(showConnected);
-        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showConnected = showConnectedCheck.getSelection();
-                treeViewer.getControl().setRedraw(false);
-                try {
-                    treeViewer.refresh();
-                    if (showConnected) {
-                        treeViewer.expandAll();
+        if (rootNode instanceof DBNContainer && ((DBNContainer) rootNode).getChildrenClass() == DBPDataSourceContainer.class) {
+            final Button showConnectedCheck = new Button(group, SWT.CHECK);
+            showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+            showConnectedCheck.setSelection(showConnected);
+            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showConnected = showConnectedCheck.getSelection();
+                    treeViewer.getControl().setRedraw(false);
+                    try {
+                        treeViewer.refresh();
+                        if (showConnected) {
+                            treeViewer.expandToLevel(TREE_EXPANSION_DEPTH, false);
+                        }
+                    } finally {
+                        treeViewer.getControl().setRedraw(true);
                     }
-                } finally {
-                    treeViewer.getControl().setRedraw(true);
                 }
-            }
-        });
+            });
+        }
 
         return group;
     }

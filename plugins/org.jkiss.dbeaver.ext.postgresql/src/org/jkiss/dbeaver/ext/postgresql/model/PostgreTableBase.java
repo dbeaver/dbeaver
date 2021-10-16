@@ -152,6 +152,10 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.description = description;
     }
 
+    public String getTableTypeName() {
+        return "TABLE";
+    }
+
     @Property(viewable = true, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
         return getDatabase().getRoleById(monitor, ownerId);

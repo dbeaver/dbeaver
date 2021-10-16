@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.teradata.model;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -30,13 +36,14 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Date;
 import java.util.Map;
 
-public class TeradataTrigger extends GenericTableTrigger {
+public class TeradataTrigger extends GenericTableTrigger implements DBPQualifiedObject {
 
     private DBSActionTiming actionTime;
     private DBSManipulationType eventType;
     private String enabledStatus;
     private String triggerType;
     private Date createDate;
+    private String description;
 
     private String definition;
 
@@ -81,6 +88,7 @@ public class TeradataTrigger extends GenericTableTrigger {
         this.createDate = JDBCUtils.safeGetTimestamp(dbResult, "createDate");
 
         this.definition = JDBCUtils.safeGetString(dbResult, "definition");
+        this.description = description;
     }
 
     @Property(viewable = true, order = 3)
@@ -109,7 +117,31 @@ public class TeradataTrigger extends GenericTableTrigger {
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) {
         return definition;
+    }
+
+    public GenericSchema getSchema() {
+        return getTable().getSchema();
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getSchema(),
+            this);
     }
 }

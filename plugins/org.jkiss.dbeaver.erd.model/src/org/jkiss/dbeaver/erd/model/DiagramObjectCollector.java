@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -206,6 +205,7 @@ public class DiagramObjectCollector {
                 try {
                     ((DBPDataSourceContainer) object).connect(monitor, true, true);
                 } catch (DBException e) {
+                    log.debug(e);
                     diagram.addErrorMessage("Can't connect to '" + object.getName() + "': " + e.getMessage());
                     continue;
                 }

@@ -45,6 +45,7 @@ class EditMavenArtifactDialog extends Dialog
     private Text classifierText;
     private Combo versionText;
     private boolean ignoreDependencies;
+    private boolean loadOptionalDependencies;
 
     public EditMavenArtifactDialog(Shell shell, DriverDescriptor driver, DriverLibraryMavenArtifact library)
     {
@@ -96,6 +97,14 @@ class EditMavenArtifactDialog extends Dialog
             }
         });
 
+        Button loadOptionalDependenciesCheckbox = UIUtils.createCheckbox(composite, "Load optional dependencies", "Include all optional dependencies", library.isLoadOptionalDependencies(), 2);
+        ignoreDependenciesCheckbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                loadOptionalDependencies = loadOptionalDependenciesCheckbox.getSelection();
+            }
+        });
+
         ModifyListener ml = e -> updateButtons();
         groupText.addModifyListener(ml);
         artifactText.addModifyListener(ml);
@@ -129,6 +138,7 @@ class EditMavenArtifactDialog extends Dialog
                 CommonUtils.isEmpty(classifier) ? null : classifier,
                 versionText.getText()));
         library.setIgnoreDependencies(ignoreDependencies);
+        library.setLoadOptionalDependencies(loadOptionalDependencies);
         super.okPressed();
     }
 

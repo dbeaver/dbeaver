@@ -63,7 +63,7 @@ public class PostgreView extends PostgreViewBase
         return null;
     }
 
-    public String getViewType() {
+    public String getTableTypeName() {
         return "VIEW";
     }
 

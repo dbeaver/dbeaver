@@ -19,9 +19,13 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -827,8 +831,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-        if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS) || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
-        || attribute.getTypeID() == Types.OTHER) {
+        if (PostgreUtils.isPGObject(value) ||
+            PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) ||
+            PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName()) ||
+            attribute.getTypeID() == Types.OTHER)
+        {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';

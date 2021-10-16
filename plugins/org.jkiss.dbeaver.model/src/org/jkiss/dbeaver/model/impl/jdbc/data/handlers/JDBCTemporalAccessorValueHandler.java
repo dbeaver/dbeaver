@@ -138,10 +138,13 @@ public class JDBCTemporalAccessorValueHandler extends TemporalAccessorValueHandl
     {
         switch (column.getTypeID()) {
             case Types.TIME:
-            case Types.TIME_WITH_TIMEZONE:
                 return DBDDataFormatter.TYPE_NAME_TIME;
             case Types.DATE:
                 return DBDDataFormatter.TYPE_NAME_DATE;
+            case Types.TIME_WITH_TIMEZONE:
+                return DBDDataFormatter.TYPE_NAME_TIME_TZ;
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+                return DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
             default:
                 return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
         }

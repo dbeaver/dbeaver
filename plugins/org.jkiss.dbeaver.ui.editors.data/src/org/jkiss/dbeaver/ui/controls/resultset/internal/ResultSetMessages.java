@@ -214,6 +214,14 @@ public class ResultSetMessages extends NLS {
     public static String dialog_copy_as_configuration_error_saving_processor_properties_title;
     public static String dialog_copy_as_configuration_error_saving_processor_properties_message;
 
+    public static String dialog_paste_as_title;
+    public static String dialog_paste_as_insert_multiple_rows_text;
+    public static String dialog_paste_as_insert_multiple_rows_tip;
+    public static String dialog_paste_as_insert_nulls_text;
+    public static String dialog_paste_as_insert_nulls_tip;
+    public static String dialog_paste_as_null_value_mark_text;
+    public static String dialog_paste_as_null_value_mark_tip;
+
     // Pref pages
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
     public static String pref_page_content_editor_checkbox_commit_on_value_apply;

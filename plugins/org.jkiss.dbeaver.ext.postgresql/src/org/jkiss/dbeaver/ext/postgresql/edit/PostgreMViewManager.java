@@ -89,7 +89,7 @@ public class PostgreMViewManager extends PostgreViewManager {
             super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
         }
         if (command.hasProperty("tablespace")) {
-            final String alterPrefix = "ALTER " + mView.getViewType() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
+            final String alterPrefix = "ALTER " + mView.getTableTypeName() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + mView.getTablespace(monitor).getName()));
         }
     }

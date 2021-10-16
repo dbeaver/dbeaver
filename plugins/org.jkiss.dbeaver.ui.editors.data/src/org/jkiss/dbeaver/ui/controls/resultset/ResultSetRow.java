@@ -104,7 +104,7 @@ public class ResultSetRow {
         this.state = state;
     }
 
-    boolean isChanged(DBDAttributeBinding attr) {
+    public boolean isChanged(DBDAttributeBinding attr) {
         return changes != null && changes.containsKey(attr);
     }
 
@@ -113,6 +113,14 @@ public class ResultSetRow {
             changes = new IdentityHashMap<>();
         }
         changes.put(attr, oldValue);
+    }
+
+    @Nullable
+    public Object getOriginalValue(@NotNull DBDAttributeBinding attr) {
+        if (changes != null) {
+            return changes.get(attr);
+        }
+        return null;
     }
 
     public void resetChange(DBDAttributeBinding attr) {

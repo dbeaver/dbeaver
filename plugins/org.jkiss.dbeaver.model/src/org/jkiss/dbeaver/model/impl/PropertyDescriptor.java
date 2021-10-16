@@ -86,16 +86,16 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @NotNull
     private final String id;
     private String name;
-    private String description;
-    private String category;
+    private final String description;
+    private final String category;
     private Class<?> type;
-    private boolean required;
+    private final boolean required;
     private Object defaultValue;
     private Object[] validValues;
     private boolean allowCustomValues = true;
-    private boolean editable;
+    private final boolean editable;
     @NotNull
-    private PropertyLength length;
+    private final PropertyLength length;
     private String[] features;
 
     public static DBPPropertyDescriptor[] extractPropertyGroups(IConfigurationElement config) {
@@ -122,7 +122,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return properties;
     }
 
-    public PropertyDescriptor(String category, String id, String name, String description,
+    public PropertyDescriptor(String category, @NotNull String id, String name, String description,
                               boolean required, Class<?> type, Object defaultValue, Object[] validValues) {
         this.category = category;
         this.id = id;
@@ -138,9 +138,6 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
 
     public PropertyDescriptor(String category, IConfigurationElement config) {
         this.category = category;
-        for (String attrName : config.getAttributeNames()) {
-
-        }
         this.id = config.getAttribute(ATTR_ID);
         this.name = config.getAttribute(ATTR_LABEL);
         if (CommonUtils.isEmpty(this.name)) {
@@ -188,7 +185,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         }
     }
 
-    public PropertyDescriptor(String category, String id, String name, String description, Class<?> type, boolean required, Object defaultValue, String[] validValues, boolean editable) {
+    public PropertyDescriptor(String category, @NotNull String id, String name, String description, Class<?> type, boolean required, Object defaultValue, String[] validValues, boolean editable) {
         this.category = category;
         this.id = id;
         this.name = name;
@@ -198,6 +195,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.defaultValue = defaultValue;
         this.validValues = validValues;
         this.editable = editable;
+        this.length = PropertyLength.LONG;
     }
 
     @NotNull

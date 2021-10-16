@@ -84,6 +84,11 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = UIUtils.getFontHeight(functionCombo) * 30;
             functionCombo.setLayoutData(gd);
+
+            // On macOS, the combo's down arrow is not shown unless you manually resize the page. The solution is to call layout()
+            // https://github.com/dbeaver/dbeaver/issues/12651
+            UIUtils.asyncExec(functionCombo::layout);
+
             return pageContents;
         }
 

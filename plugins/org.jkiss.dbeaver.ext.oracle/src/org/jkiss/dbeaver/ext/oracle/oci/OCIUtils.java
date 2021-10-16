@@ -229,9 +229,8 @@ public class OCIUtils
      */
     public static String getFullOraVersion(String oraHome, boolean isInstantClient)
     {
-        String sqlplus =
-                (isInstantClient ? CommonUtils.makeDirectoryName(oraHome) : CommonUtils.makeDirectoryName(oraHome) + "bin/") +
-                        "sqlplus -version";
+        String ociBinPath = isInstantClient ? CommonUtils.makeDirectoryName(oraHome) : CommonUtils.makeDirectoryName(oraHome) + "bin/";
+        String sqlplus = ociBinPath + "sqlplus -version";
         try {
             Process p = Runtime.getRuntime().exec(sqlplus);
             try {
