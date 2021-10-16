@@ -97,10 +97,10 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.FILL_HORIZONTAL, 0);
+            Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             {
                 formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
-                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.horizontalSpan = 3;
                 formatProfilesCombo.setLayoutData(gd);
                 formatProfilesCombo.addSelectionListener(new SelectionAdapter() {

@@ -25,10 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -127,9 +124,11 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             }
         });
 
-        Button browseButton = new Button(this, SWT.PUSH);
+        ToolBar buttonToolbar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
+        final ToolItem browseButton = new ToolItem(buttonToolbar, SWT.NONE);
         browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        browseButton.setText("...");
+        browseButton.setText("Choose ...");
+        browseButton.setToolTipText("Choose target catalog/schema");
         Runnable containerSelector = () -> {
             if (project != null) {
                 final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
