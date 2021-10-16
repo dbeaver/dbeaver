@@ -143,7 +143,9 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     @Override
     public String getSettingsSummary() {
-        return "";
+        StringBuilder summary = new StringBuilder();
+
+        return summary.toString();
     }
 
 }
