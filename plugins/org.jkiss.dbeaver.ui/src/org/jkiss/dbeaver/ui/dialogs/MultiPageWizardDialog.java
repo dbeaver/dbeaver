@@ -65,6 +65,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
+    private Composite leftBottomPanel;
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -98,6 +99,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     public void setWizard(IWizard newWizard) {
         this.wizard = newWizard;
         this.wizard.setContainer(this);
+        UIUtils.disposeChildControls(leftBottomPanel);
+        createBottomLeftArea(leftBottomPanel);
+        leftBottomPanel.getParent().layout(true, true);
         updateNavigationTree();
         updateButtons();
     }
@@ -157,7 +161,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pagesTree = new Tree(leftPane, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
         leftPane.setBackground(pagesTree.getBackground());
-        createBottomLeftArea(leftPane);
+        leftBottomPanel = UIUtils.createComposite(leftPane, 1);
+        leftBottomPanel.setBackground(pagesTree.getBackground());
+        createBottomLeftArea(leftBottomPanel);
 
         Composite pageContainer = UIUtils.createPlaceholder(wizardSash, 2);
 
@@ -447,7 +453,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (currentPage != null) {
             Button nextButton = getButton(IDialogConstants.NEXT_ID);
             if (nextButton != null) {
-                nextButton.setEnabled(wizard.getNextPage(currentPage) != null);
+                nextButton.setEnabled(getCurrentPage().isPageComplete() && wizard.getNextPage(currentPage) != null);
             }
             Button prevButton = getButton(IDialogConstants.BACK_ID);
             if (prevButton != null) {

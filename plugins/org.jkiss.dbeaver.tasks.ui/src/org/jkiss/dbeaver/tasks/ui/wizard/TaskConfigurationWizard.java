@@ -159,7 +159,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     protected void addTaskConfigPages() {
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
-        if (isCurrentTaskSaved()) {
+        if (isTaskEditor()) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
             addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));
@@ -205,10 +205,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             return true;
         }
         for (IWizardPage page : getPages()) {
-            if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
-                continue;
-            }
-            if (isPageValid(page) && !page.isPageComplete()) {
+            if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }
         }
@@ -217,6 +214,16 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             return false;
         }
 
+        return true;
+    }
+
+    protected boolean isPageNeedsCompletion(IWizardPage page) {
+        if (page instanceof TaskConfigurationWizardPageTask) {
+            return false;
+        }
+        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
+            return false;
+        }
         return true;
     }
 

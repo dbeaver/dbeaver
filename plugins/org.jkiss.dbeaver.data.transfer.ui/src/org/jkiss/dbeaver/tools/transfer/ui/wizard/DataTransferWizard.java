@@ -278,6 +278,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
+    protected boolean isPageNeedsCompletion(IWizardPage page) {
+        if (page instanceof DataTransferPageFinal) {
+            return false;
+        }
+        return super.isPageNeedsCompletion(page);
+    }
+
+    @Override
     public boolean performCancel() {
 /*
         // Save settings if we have task

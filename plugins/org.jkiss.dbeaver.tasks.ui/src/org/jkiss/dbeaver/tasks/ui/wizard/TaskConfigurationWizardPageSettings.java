@@ -149,7 +149,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
 
     @Override
     public boolean isPageApplicable() {
-        if (getWizard().isNewTaskEditor()) {
+        if (getWizard() instanceof NewTaskConfigurationWizard) {
             return true;
         }
         DBTTaskType selectedTaskType = getSelectedTaskType();
