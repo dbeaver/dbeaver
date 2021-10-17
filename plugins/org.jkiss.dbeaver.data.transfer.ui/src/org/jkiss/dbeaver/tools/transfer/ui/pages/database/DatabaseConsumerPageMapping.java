@@ -92,6 +92,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         super(DTUIMessages.database_consumer_page_mapping_name_and_title);
         setTitle(DTUIMessages.database_consumer_page_mapping_name_and_title);
         setDescription(DTUIMessages.database_consumer_page_mapping_description);
+        setPageComplete(false);
     }
 
     private DatabaseConsumerSettings getDatabaseConsumerSettings() {

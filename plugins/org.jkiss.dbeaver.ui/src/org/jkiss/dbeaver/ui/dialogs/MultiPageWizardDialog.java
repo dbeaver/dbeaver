@@ -29,6 +29,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -66,6 +67,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
+    private Font boldFont;
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -160,6 +162,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         Composite leftPane = UIUtils.createComposite(wizardSash, 1);
         pagesTree = new Tree(leftPane, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.boldFont = UIUtils.makeBoldFont(pagesTree.getFont());
+        pagesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
+
         leftPane.setBackground(pagesTree.getBackground());
         leftBottomPanel = UIUtils.createComposite(leftPane, 1);
         leftBottomPanel.setBackground(pagesTree.getBackground());
@@ -309,6 +314,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
 
         firePageChanged(new PageChangedEvent(this, getCurrentPage()));
+        updatePageCompleteMark(null);
     }
 
     protected boolean isAutoLayoutAvailable() {
@@ -390,7 +396,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             IWizardPage[] pages = wizard.getPages();
             for (IWizardPage page : pages) {
-                addPage(null, page, maxSize);
+                addNavigationItem(null, page);
             }
 
             for (TreeItem item : pagesTree.getItems()) {
@@ -400,12 +406,26 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 }
             }
 
+            updatePageCompleteMark(null);
+
         } finally {
             pagesTree.setRedraw(true);
         }
     }
 
-    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize) {
+    private void updatePageCompleteMark(TreeItem parent) {
+        for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
+            Object page = item.getData();
+            if (page instanceof IWizardPage && !((IWizardPage) page).isPageComplete()) {
+                item.setFont(boldFont);
+            } else {
+                item.setFont(null);
+            }
+            updatePageCompleteMark(item);
+        }
+    }
+
+    private TreeItem addNavigationItem(TreeItem parentItem, IDialogPage page) {
         if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
             return null;
         }
@@ -426,7 +446,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             IDialogPage[] subPages = ((IDialogPageProvider) page).getDialogPages(true, resizeHasOccurred);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage subPage : subPages) {
-                    addPage(item, subPage, maxSize);
+                    addNavigationItem(item, subPage);
                 }
                 //item.setExpanded(true);
             }
@@ -460,6 +480,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 prevButton.setEnabled(wizard.getPreviousPage(currentPage) != null);
             }
         }
+        updatePageCompleteMark(null);
     }
 
     @Override

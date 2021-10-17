@@ -67,6 +67,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     	super(DTUIMessages.database_consumer_wizard_name);
         setTitle(DTUIMessages.database_consumer_wizard_title);
         setDescription(DTUIMessages.database_consumer_wizard_description);
+        setPageComplete(false);
     }
 
     @Override

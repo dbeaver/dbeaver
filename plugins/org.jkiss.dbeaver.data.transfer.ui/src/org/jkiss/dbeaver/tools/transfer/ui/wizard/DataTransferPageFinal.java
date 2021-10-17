@@ -54,7 +54,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
         super(DTUIMessages.data_transfer_wizard_final_name);
         setTitle(DTUIMessages.data_transfer_wizard_final_title);
         setDescription(DTUIMessages.data_transfer_wizard_final_description);
-        setPageComplete(false);
+        setPageComplete(true);
     }
 
     @Override

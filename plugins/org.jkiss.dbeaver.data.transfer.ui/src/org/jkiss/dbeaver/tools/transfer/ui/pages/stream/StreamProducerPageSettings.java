@@ -71,6 +71,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         super(DTMessages.data_transfer_wizard_page_input_files_name);
         setTitle(DTMessages.data_transfer_wizard_page_input_files_title);
         setDescription(DTMessages.data_transfer_wizard_page_input_files_description);
+        setPageComplete(false);
     }
 
     @Override

@@ -147,30 +147,33 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         if (CommonUtils.isEmpty(targetTableName)) {
             if (target != null) {
                 targetTableName = target.getName();
-            } else if (source != null) {
-                if (source instanceof IAdaptable) {
-                    DBSDataContainer adapterSource = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
-                    if (adapterSource != null) {
-                        source = adapterSource;
+            } else {
+                DBSDataContainer theSource = this.source;
+                if (theSource != null) {
+                    if (theSource instanceof IAdaptable) {
+                        DBSDataContainer adapterSource = ((IAdaptable) theSource).getAdapter(DBSDataContainer.class);
+                        if (adapterSource != null) {
+                            theSource = adapterSource;
+                        }
                     }
-                }
-                if (source instanceof SQLQueryContainer) {
-                    final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) source;
-                    if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
-                        final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
-                        if (sqlQuery.getStatement() instanceof Select) {
-                            final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
-                            if (table != null) {
-                                targetTableName = table.getName();
+                    if (theSource instanceof SQLQueryContainer) {
+                        final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) theSource;
+                        if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
+                            final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
+                            if (sqlQuery.getStatement() instanceof Select) {
+                                final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
+                                if (table != null) {
+                                    targetTableName = table.getName();
+                                }
                             }
                         }
                     }
+                    if (CommonUtils.isEmpty(targetTableName)) {
+                        targetTableName = theSource.getName();
+                    }
+                } else {
+                    targetTableName = "";
                 }
-                if (CommonUtils.isEmpty(targetTableName)) {
-                    targetTableName = source.getName();
-                }
-            } else {
-                targetTableName = "";
             }
         }
         switch (mappingType) {
