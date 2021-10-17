@@ -237,6 +237,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     public void activatePage() {
+        inputsTable.setInput(getWizard().getSettings().getSourceObjects());
         if (!activated) {
             UIUtils.asyncExec(this::loadNodeSettings);
         }
@@ -335,6 +336,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     @Override
     protected boolean determinePageCompletion() {
         DataTransferSettings settings = getWizard().getSettings();
+        if (settings.getDataPipes().isEmpty()) {
+            setErrorMessage("No objects selected");
+            return false;
+        }
         if (settings.getConsumer() == null || settings.getProducer() == null) {
             return false;
         }

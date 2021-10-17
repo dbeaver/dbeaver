@@ -403,12 +403,17 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
 
         @Override
         public boolean isComplete() {
+            if (objectsTable.getItemCount() == 0) {
+                return false;
+            }
             for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
                 if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
                     return false;
                 }
-                if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
-                    return false;
+                if (!dtWizard.isNewTaskEditor()) {
+                    if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                        return false;
+                    }
                 }
             }
 
@@ -424,8 +429,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
                     return "Source not specified for " + pipe.getConsumer().getObjectName();
                 }
-                if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
-                    return "Target not specified for " + pipe.getProducer().getObjectName();
+                if (!dtWizard.isNewTaskEditor()) {
+                    if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                        return "Target not specified for " + pipe.getProducer().getObjectName();
+                    }
                 }
             }
             return null;

@@ -166,6 +166,9 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             getWizard() instanceof NewTaskConfigurationWizard &&
             ((NewTaskConfigurationWizard)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
         {
+            if (!getCurrentPage().isPageComplete()) {
+                return;
+            }
             taskEditPage = getTaskPage();
             try {
                 TaskConfigurationWizard<?> nextTaskWizard = taskEditPage.getTaskWizard();
@@ -181,7 +184,16 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                 return;
             }
             // Show first page of new wizard
-            showPage(nestedTaskWizard.getNextPage(nestedTaskWizard.getStartingPage()));
+            for (IWizardPage page : nestedTaskWizard.getPages()) {
+                if (page instanceof TaskConfigurationWizardPageSettings) {
+                    IWizardPage nextPage = nestedTaskWizard.getNextPage(page);
+                    if (nextPage != null) {
+                        showPage(nextPage);
+                        return;
+                    }
+                }
+            }
+            showPage(nestedTaskWizard.getStartingPage());
             return;
         }
         super.buttonPressed(buttonId);
