@@ -14,26 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer;
-
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+package org.jkiss.dbeaver.ui.dialogs;
 
 /**
- * Abstract node
+ * Active wizard page
  */
-public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
+public interface IWizardPageNavigable {
 
-    DBSObject getDatabaseObject();
+    /**
+     * Page can be navigated directly thru navigation tree.
+     */
+    boolean isPageNavigable();
 
-    String getObjectName();
-
-    DBPImage getObjectIcon();
-
-    String getObjectContainerName();
-
-    DBPImage getObjectContainerIcon();
-
-    boolean isConfigurationComplete();
-
+    /**
+     * Page is applicable to active wizard state.
+     * Non-applicable pages are not visible in navigation tree.
+     */
+    boolean isPageApplicable();
+    
 }

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -40,9 +41,12 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     private static final Log log = Log.getLog(StreamProducerSettings.class);
 
-    private Map<String, StreamEntityMapping> entityMapping = new LinkedHashMap<>();
+    private final Map<String, StreamEntityMapping> entityMapping = new LinkedHashMap<>();
     private Map<String, Object> processorProperties;
     private int maxRows;
+
+    private transient Map<String, Object> lastProcessorProperties;
+    private transient StreamTransferProducer lastProducer;
 
     public StreamProducerSettings() {
     }
@@ -90,17 +94,25 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     public void updateProducerSettingsFromStream(DBRProgressMonitor monitor, @NotNull StreamTransferProducer producer, DataTransferSettings dataTransferSettings) {
         monitor.beginTask("Update data produces settings from import stream", 1);
-        final Map<String, Object> processorProperties = dataTransferSettings.getProcessorProperties();
+        final Map<String, Object> procProps = dataTransferSettings.getProcessorProperties();
 
-        List<StreamDataImporterColumnInfo> columnInfos = null;
+        if (CommonUtils.equalObjects(lastProcessorProperties, procProps) && CommonUtils.equalObjects(lastProducer, producer)) {
+            // Nothing has changed
+            return;
+        }
+
+        lastProcessorProperties = new LinkedHashMap<>(procProps);
+        lastProducer = producer;
+
+        List<StreamDataImporterColumnInfo> columnInfos;
         StreamEntityMapping entityMapping = producer.getEntityMapping();
 
         IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
 
-        if (importer instanceof IStreamDataImporter) {
+        if (entityMapping != null && importer instanceof IStreamDataImporter) {
             IStreamDataImporter sdi = (IStreamDataImporter) importer;
             try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
-                sdi.init(new StreamDataImporterSite(this, entityMapping, processorProperties));
+                sdi.init(new StreamDataImporterSite(this, entityMapping, procProps));
                 try {
                     columnInfos = sdi.readColumnsInfo(entityMapping, is);
                     entityMapping.setStreamColumns(columnInfos);
@@ -131,7 +143,9 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     @Override
     public String getSettingsSummary() {
-        return "";
+        StringBuilder summary = new StringBuilder();
+
+        return summary.toString();
     }
 
 }

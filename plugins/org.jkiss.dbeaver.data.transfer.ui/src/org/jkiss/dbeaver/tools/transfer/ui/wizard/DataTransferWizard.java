@@ -50,12 +50,14 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferNodeConfiguratorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -111,8 +113,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    public void createPageControls(Composite pageContainer) {
-        super.createPageControls(pageContainer);
+    public void initializeWizard(Composite pageContainer) {
+        super.initializeWizard(pageContainer);
         if (settings.getState().hasErrors()) {
             List<Throwable> loadErrors = settings.getState().getLoadErrors();
             if (loadErrors.size() == 1) {
@@ -207,6 +209,11 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
+    protected boolean isTaskConfigPage(IWizardPage page) {
+        return page instanceof DataTransferPageNodeSettings || super.isTaskConfigPage(page);
+    }
+
+    @Override
     protected String getDefaultWindowTitle() {
         return DTUIMessages.data_transfer_wizard_name;
     }
@@ -228,8 +235,12 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         if (curIndex != -1) {
             // Return first node config page
             for (int i = curIndex + 1; i < pages.length; i++) {
-                if (isPageValid(pages[i])) {
-                    return pages[i];
+                IWizardPage wizardPage = pages[i];
+                if (wizardPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) wizardPage).isPageApplicable()) {
+                    continue;
+                }
+                if (isPageValid(wizardPage)) {
+                    return wizardPage;
                 }
             }
         }
@@ -253,13 +264,25 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
         if (curIndex != -1) {
             for (int i = curIndex - 1; i > 0; i--) {
-                if (isPageValid(pages[i])) {
-                    return pages[i];
+                IWizardPage wizardPage = pages[i];
+                if (wizardPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) wizardPage).isPageApplicable()) {
+                    continue;
+                }
+                if (isPageValid(wizardPage)) {
+                    return wizardPage;
                 }
             }
         }
         // First page
         return pages[0];
+    }
+
+    @Override
+    protected boolean isPageNeedsCompletion(IWizardPage page) {
+        if (page instanceof DataTransferPageFinal) {
+            return false;
+        }
+        return super.isPageNeedsCompletion(page);
     }
 
     @Override
@@ -282,12 +305,20 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             return false;
         }
 
+        if (!isCurrentTaskSaved()) {
+            IWizardPage[] pages = getPages();
+            getContainer().showPage(pages[pages.length - 1]);
+        }
+
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask == null) {
                 // Execute directly - without task serialize/deserialize
                 // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)
-                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), DTMessages.data_transfer_wizard_job_name, getSettings());
+                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(
+                    getRunnableContext(),
+                    DTMessages.data_transfer_wizard_job_name,
+                    getSettings());
                 executor.executeTask();
             }
         } catch (DBException e) {
@@ -344,7 +375,10 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
         // Add common settings page
         if (!CommonUtils.isEmpty(settingPages)) {
-            wizard.addPage(new DataTransferPageSettings());
+            for (IWizardPage settingsPage : settingPages) {
+                wizard.addPage(settingsPage);
+            }
+            //wizard.addPage(new DataTransferPageSettings());
         }
         // Add preview pages
         for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
@@ -359,7 +393,6 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     protected boolean isPageValid(IWizardPage page) {
         return isTaskConfigPage(page) ||
             page instanceof DataTransferPagePipes ||
-            page instanceof DataTransferPageSettings ||
             page instanceof DataTransferPageFinal ||
             isPageValid(page, settings.getProducer()) ||
             isPageValid(page, settings.getConsumer());

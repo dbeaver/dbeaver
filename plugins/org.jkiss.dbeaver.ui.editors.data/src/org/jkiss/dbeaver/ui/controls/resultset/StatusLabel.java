@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -86,8 +88,9 @@ class StatusLabel extends Composite {
 //        }
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusText.setLayoutData(gd);
-        statusText.addTraverseListener(e -> {
-            if (e.detail == SWT.TRAVERSE_RETURN) {
+        statusText.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
                 showDetails();
             }
         });

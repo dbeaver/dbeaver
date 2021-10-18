@@ -70,12 +70,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete();
-    }
-
-    @Override
     public void createControl(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -140,6 +134,22 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         }
 
         setControl(composite);
+    }
+
+    @Override
+    protected boolean determinePageCompletion() {
+        boolean complete = false;
+        if (!checkedObjects.isEmpty()) {
+            complete = true;
+        }
+        for (TableItem item : schemasTable.getItems()) {
+            if (item.getChecked()) {
+                complete = true;
+                break;
+            }
+        }
+
+        return complete && super.determinePageCompletion();
     }
 
     @Override
@@ -321,17 +331,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     @Override
     protected void updateState()
     {
-        boolean complete = false;
-        if (!checkedObjects.isEmpty()) {
-            complete = true;
-        }
-        for (TableItem item : schemasTable.getItems()) {
-            if (item.getChecked()) {
-                complete = true;
-                break;
-            }
-        }
-        setPageComplete(complete);
+        determinePageCompletion();
+        getContainer().updateButtons();
     }
 
     @Override

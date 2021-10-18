@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanelProvider;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolConfigPanel;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
@@ -32,7 +33,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 /**
  * Oracle task configurator
  */
-public class OracleTaskConfigurator implements DBTTaskConfigurator {
+public class OracleTaskConfigurator implements DBTTaskConfigurator, DBTTaskConfigPanelProvider {
 
     private static final Log log = Log.getLog(OracleTaskConfigurator.class);
 

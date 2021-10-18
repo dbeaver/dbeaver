@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 
 import java.io.PrintStream;
@@ -56,7 +57,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
+class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> implements IWizardPageNavigable {
 
     private static final Log log = Log.getLog(SQLToolTaskWizardPageStatus.class);
 
@@ -168,6 +169,16 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
             };
         }
         statusUpdateJob.schedule(100);
+    }
+
+    @Override
+    public boolean isPageNavigable() {
+        return false;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return true;
     }
 
     private class LogConsoleViewer extends TextConsoleViewer implements IDocumentListener {

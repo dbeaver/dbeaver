@@ -62,7 +62,6 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     private static final Log log = Log.getLog(DatabaseTransferProducer.class);
 
-    @NotNull
     private DBSDataContainer dataContainer;
     @Nullable
     private DBDDataFilter dataFilter;
@@ -118,6 +117,11 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public DBPImage getObjectContainerIcon() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getDriver().getIcon() : null;
+    }
+
+    @Override
+    public boolean isConfigurationComplete() {
+        return dataContainer != null;
     }
 
     private DBPDataSourceContainer getDataSourceContainer() {

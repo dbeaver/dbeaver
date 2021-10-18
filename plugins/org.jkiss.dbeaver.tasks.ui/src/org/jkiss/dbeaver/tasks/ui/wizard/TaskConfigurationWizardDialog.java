@@ -26,6 +26,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -41,8 +42,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
+import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,21 +52,21 @@ import java.util.List;
 /**
  * Task configuration wizard dialog
  */
-public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
+public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
-    private TaskConfigurationWizard nestedTaskWizard;
+    private TaskConfigurationWizard<?> nestedTaskWizard;
     private TaskConfigurationWizardPageTask taskEditPage;
     private boolean editMode;
     private boolean selectorMode;
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard) {
         this(window, wizard, null);
     }
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard, IStructuredSelection selection) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
-        setFinishButtonLabel(UIMessages.button_start);
+        setFinishButtonLabel(IDialogConstants.PROCEED_LABEL);
 
         if (selection != null && !selection.isEmpty()) {
             if (wizard.getSettings() instanceof DBTTaskSettingsInput) {
@@ -89,7 +90,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window) {
-        this(window, new TaskConfigurationWizardStub(), null);
+        this(window, new NewTaskConfigurationWizard(), null);
     }
 
     @Override
@@ -98,11 +99,11 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 
     @Override
-    protected TaskConfigurationWizard getWizard() {
+    public TaskConfigurationWizard<?> getWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
-    public TaskConfigurationWizard getTaskWizard() {
+    public TaskConfigurationWizard<?> getTaskWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
@@ -110,7 +111,17 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     protected Control createDialogArea(Composite parent) {
         setHelpAvailable(false);
 
-        return super.createDialogArea(parent);
+        Control dialogArea = super.createDialogArea(parent);
+
+        getWizard().initializeWizard(parent);
+
+        return dialogArea;
+    }
+
+    @Override
+    protected void createBottomLeftArea(Composite pane) {
+        // Task management controls
+        getWizard().createTaskSaveButtons(pane, true, 1);
     }
 
     @Override
@@ -126,18 +137,41 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
             ((GridLayout) parent.getLayout()).numColumns += 1;
         }
 
+        {
+            if (getWizard().isNewTaskEditor() || getNavPagesCount() > 1) {
+                Button backButton = createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
+                Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
+                getShell().setDefaultButton(nextButton);
+            }
+        }
+
         super.createButtonsForButtonBar(parent);
+    }
+
+    private int getNavPagesCount() {
+        int navPagesNum = 0;
+        for (IWizardPage page2 : getWizard().getPages()) {
+            if (!(page2 instanceof IWizardPageNavigable) ||
+                ((IWizardPageNavigable) page2).isPageApplicable() &&
+                    ((IWizardPageNavigable) page2).isPageNavigable()) {
+                navPagesNum++;
+            }
+        }
+        return navPagesNum;
     }
 
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.NEXT_ID &&
-            getWizard() instanceof TaskConfigurationWizardStub &&
-            ((TaskConfigurationWizardStub)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
+            getWizard() instanceof NewTaskConfigurationWizard &&
+            ((NewTaskConfigurationWizard)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
         {
+            if (!getCurrentPage().isPageComplete()) {
+                return;
+            }
             taskEditPage = getTaskPage();
             try {
-                TaskConfigurationWizard nextTaskWizard = taskEditPage.getTaskWizard();
+                TaskConfigurationWizard<?> nextTaskWizard = taskEditPage.getTaskWizard();
                 if (nextTaskWizard != nestedTaskWizard) {
                     // Now we need to create real wizard, initialize it and inject in this dialog
                         nestedTaskWizard = nextTaskWizard;
@@ -150,6 +184,15 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
                 return;
             }
             // Show first page of new wizard
+            for (IWizardPage page : nestedTaskWizard.getPages()) {
+                if (page instanceof TaskConfigurationWizardPageSettings) {
+                    IWizardPage nextPage = nestedTaskWizard.getNextPage(page);
+                    if (nextPage != null) {
+                        showPage(nextPage);
+                        return;
+                    }
+                }
+            }
             showPage(nestedTaskWizard.getStartingPage());
             return;
         }
@@ -159,7 +202,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     @Override
     public void updateButtons() {
         super.updateButtons();
-        //updateSaveTaskButtons();
+        getWizard().updateSaveTaskButtons();
     }
 
     @Override

@@ -24,15 +24,15 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDCellValue;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.Locale;
 
-public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTransferWizard> {
+public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSettings {
 
     private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
     private static final int EXTRACT_TYPE_SEGMENTS = 1;
@@ -63,7 +63,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_progress, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
             threadsNumText = new Text(generalSettings, SWT.BORDER);
@@ -112,6 +112,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                     }
                 });
                 segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
+                ((GridData)segmentSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(segmentSizeText) * 10;
             }
 
             newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
@@ -131,6 +132,8 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             });
 
             fetchSizeText = UIUtils.createLabelText(generalSettings, DTUIMessages.database_producer_page_extract_settings_text_fetch_size_label, "", SWT.BORDER);
+            fetchSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            ((GridData)fetchSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(fetchSizeText) * 10;
             fetchSizeText.setToolTipText(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip);
             fetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             fetchSizeText.addModifyListener(e -> {
@@ -166,6 +169,10 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 selectedColumnsOnlyCheckbox.addSelectionListener(listener);
                 selectedRowsOnlyCheckbox.addSelectionListener(listener);
             }
+        }
+        {
+            Composite buttonsPanel = UIUtils.createComposite(composite, 1);
+            getWizard().createVariablesEditButton(buttonsPanel);
         }
 
         setControl(composite);
@@ -225,6 +232,11 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isProducerOfType(DatabaseTransferProducer.class);
     }
 
 }

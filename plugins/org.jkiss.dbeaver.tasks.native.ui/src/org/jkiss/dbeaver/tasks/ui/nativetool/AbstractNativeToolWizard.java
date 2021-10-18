@@ -122,19 +122,19 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
     }
 
     @Override
-    public void createPageControls(Composite pageContainer) {
+    public void initializeWizard(Composite pageContainer) {
         try {
             settings.loadSettings(UIUtils.getDefaultRunnableContext(), getPreferenceStore());
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Settings load", "Error loading wizard settings", e);
         }
 
-        super.createPageControls(pageContainer);
+        super.initializeWizard(pageContainer);
 
-        updateErrorMessage();
+        readLocalClientInfo();
     }
 
-    void updateErrorMessage() {
+    void readLocalClientInfo() {
         WizardPage currentPage = (WizardPage) getStartingPage();
 
         if (isNativeClientHomeRequired()) {
@@ -168,6 +168,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                 currentPage.setErrorMessage(null);
             }
             getContainer().updateMessage();
+            getContainer().updateButtons();
         }
     }
 

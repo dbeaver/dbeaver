@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanelProvider;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -73,7 +74,7 @@ import java.util.List;
 /**
  * Data transfer task configurator
  */
-public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
+public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTaskConfigPanelProvider {
 
     private static final Log log = Log.getLog(DataTransferTaskConfigurator.class);
 
@@ -402,6 +403,20 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public boolean isComplete() {
+            if (objectsTable.getItemCount() == 0) {
+                return false;
+            }
+            for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
+                if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                    return false;
+                }
+                if (!dtWizard.isNewTaskEditor()) {
+                    if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                        return false;
+                    }
+                }
+            }
+
             return objectsTable.getItemCount() > 0;
         }
 
@@ -409,6 +424,16 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         public String getErrorMessage() {
             if (objectsTable.getItemCount() == 0) {
                 return "No objects selected";
+            }
+            for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
+                if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                    return "Source not specified for " + pipe.getConsumer().getObjectName();
+                }
+                if (!dtWizard.isNewTaskEditor()) {
+                    if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
+                        return "Target not specified for " + pipe.getProducer().getObjectName();
+                    }
+                }
             }
             return null;
         }

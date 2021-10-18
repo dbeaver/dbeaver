@@ -59,9 +59,12 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete() && wizard.getSettings().getOutputFolder() != null;
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getOutputFolder() == null) {
+            setErrorMessage("Output folder not configured");
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     @Override
@@ -132,11 +135,12 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             outputFolderText.setText(wizard.getSettings().getOutputFolder().getAbsolutePath());
         }
 
-        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
+        outputFileText.addModifyListener(e -> {
+            wizard.getSettings().setOutputFilePattern(outputFileText.getText());
+        });
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
-        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }
@@ -177,6 +181,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     protected void updateState()
     {
         saveState();
+        updatePageCompletion();
         getContainer().updateButtons();
     }
 

@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
- * This page hosts other settings pages
+ * This page hosts other settings pages.
+ * Since 21.2.4 we don't use composite page anymore.
  */
+@Deprecated
 class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
     private IWizardPage producerSettingsPage;
@@ -41,6 +43,21 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
         super(DTMessages.data_transfer_wizard_settings_name);
         setTitle(DTMessages.data_transfer_wizard_settings_title);
         setDescription(DTMessages.data_transfer_wizard_settings_description);
+    }
+
+    @Override
+    public String getTitle() {
+        DataTransferSettings dtSettings = getWizard().getSettings();
+
+        StringBuilder title = new StringBuilder();
+        String producerName = dtSettings.getProducer() == null ? "null" : dtSettings.getProducer().getName();
+        String consumerName = dtSettings.getConsumer() == null ? "null" : dtSettings.getConsumer().getName();
+        title.append(DTMessages.data_transfer_wizard_settings_title).append(" (").append(producerName).append(" to ").append(consumerName);
+        if (dtSettings.getProcessor() != null) {
+            title.append(", ").append(dtSettings.getProcessor().getName());
+        }
+        title.append(")");
+        return title.toString();
     }
 
     @Override

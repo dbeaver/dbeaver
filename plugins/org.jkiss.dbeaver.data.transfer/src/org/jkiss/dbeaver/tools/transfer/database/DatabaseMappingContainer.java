@@ -64,11 +64,11 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(DBRRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
+    public DatabaseMappingContainer(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(context, DatabaseMappingType.existing, false);
+        refreshMappingType(monitor, DatabaseMappingType.existing, false);
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -102,11 +102,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
+    }
+
+    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
-        final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
+        final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
-                attr.updateMappingType(new VoidProgressMonitor(), forceRefresh);
+                attr.updateMappingType(monitor, forceRefresh);
             }
         }
     }
@@ -143,30 +147,33 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         if (CommonUtils.isEmpty(targetTableName)) {
             if (target != null) {
                 targetTableName = target.getName();
-            } else if (source != null) {
-                if (source instanceof IAdaptable) {
-                    DBSDataContainer adapterSource = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
-                    if (adapterSource != null) {
-                        source = adapterSource;
+            } else {
+                DBSDataContainer theSource = this.source;
+                if (theSource != null) {
+                    if (theSource instanceof IAdaptable) {
+                        DBSDataContainer adapterSource = ((IAdaptable) theSource).getAdapter(DBSDataContainer.class);
+                        if (adapterSource != null) {
+                            theSource = adapterSource;
+                        }
                     }
-                }
-                if (source instanceof SQLQueryContainer) {
-                    final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) source;
-                    if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
-                        final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
-                        if (sqlQuery.getStatement() instanceof Select) {
-                            final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
-                            if (table != null) {
-                                targetTableName = table.getName();
+                    if (theSource instanceof SQLQueryContainer) {
+                        final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) theSource;
+                        if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
+                            final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
+                            if (sqlQuery.getStatement() instanceof Select) {
+                                final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
+                                if (table != null) {
+                                    targetTableName = table.getName();
+                                }
                             }
                         }
                     }
+                    if (CommonUtils.isEmpty(targetTableName)) {
+                        targetTableName = theSource.getName();
+                    }
+                } else {
+                    targetTableName = "";
                 }
-                if (CommonUtils.isEmpty(targetTableName)) {
-                    targetTableName = source.getName();
-                }
-            } else {
-                targetTableName = "";
             }
         }
         switch (mappingType) {

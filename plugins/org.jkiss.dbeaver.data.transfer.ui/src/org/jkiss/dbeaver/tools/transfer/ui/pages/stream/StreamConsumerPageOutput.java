@@ -30,13 +30,12 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +44,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.*;
 
-public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
+public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
@@ -365,5 +364,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         return variables.toArray(new String[0]);
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isConsumerOfType(StreamTransferConsumer.class);
     }
 }

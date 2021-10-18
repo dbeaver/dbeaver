@@ -21,7 +21,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -38,11 +41,10 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTransferWizard> {
+public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettings {
 
     private Table mappingTable;
     private DBNDatabaseNode lastSelection;
@@ -71,7 +73,9 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
         DataTransferSettings settings = getWizard().getSettings();
 
         {
-            Group tablesGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_mappings_name, 3, GridData.FILL_BOTH, 0);
+            Composite tablesGroup = UIUtils.createComposite(composite, 1);
+            tablesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(tablesGroup, DTMessages.data_transfer_wizard_mappings_name);
 
             mappingTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             mappingTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -295,6 +299,11 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isProducerOfType(DatabaseTransferProducer.class);
     }
 
 }

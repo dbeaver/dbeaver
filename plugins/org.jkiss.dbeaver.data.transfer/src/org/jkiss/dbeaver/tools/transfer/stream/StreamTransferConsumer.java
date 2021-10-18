@@ -478,6 +478,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return settings.isOutputClipboard() ? DBIcon.TYPE_TEXT : DBIcon.TREE_FOLDER;
     }
 
+    @Override
+    public boolean isConfigurationComplete() {
+        return true;
+    }
+
     @NotNull
     public String getOutputFolder() {
         return translatePattern(settings.getOutputFolder(), null);

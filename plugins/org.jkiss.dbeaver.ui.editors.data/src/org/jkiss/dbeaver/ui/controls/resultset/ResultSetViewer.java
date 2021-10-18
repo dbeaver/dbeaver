@@ -1745,13 +1745,13 @@ public class ResultSetViewer extends Viewer
             selectionStatLabel.setToolTipText("Selected rows/columns/cells");
             CSSUtils.setCSSClass(selectionStatLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-            Label filler = new Label(statusComposite, SWT.NONE);
-            filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//            Label filler = new Label(statusComposite, SWT.NONE);
+//            filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            statusLabel = new StatusLabel(statusComposite, SWT.NONE, this);
-            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
-            gd.widthHint = 30 * fontHeight;
-            statusLabel.setLayoutData(gd);
+            statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
+            RowData rd = new RowData();
+            rd.width = 30 * fontHeight;
+            statusLabel.setLayoutData(rd);
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             statusBar.addListener(SWT.Resize, event -> {

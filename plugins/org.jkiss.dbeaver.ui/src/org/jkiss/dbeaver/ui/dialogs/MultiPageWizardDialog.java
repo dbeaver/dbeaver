@@ -16,24 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizard;
-import org.eclipse.jface.wizard.IWizardContainer;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.ProgressMonitorPart;
+import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -42,16 +40,18 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ICompositeDialogPageContainer;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * MultiPageWizardDialog
  */
-public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IPreferencePageContainer {
+public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IWizardContainer2, IPageChangeProvider, IPreferencePageContainer {
 
     private IWizard wizard;
     private Composite pageArea;
@@ -61,6 +61,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private ProgressMonitorPart monitorPart;
     private SashForm wizardSash;
     private volatile int runningOperations = 0;
+
+    private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
+    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
+
+    private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
+    private Composite leftBottomPanel;
+    private Font boldFont;
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -83,12 +90,26 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
-    public Tree getPagesTree() {
-        return pagesTree;
+    protected Point getInitialSize() {
+        return new Point(700, 500);
     }
 
     public IWizard getWizard() {
         return wizard;
+    }
+
+    public void setWizard(IWizard newWizard) {
+        this.wizard = newWizard;
+        this.wizard.setContainer(this);
+        UIUtils.disposeChildControls(leftBottomPanel);
+        createBottomLeftArea(leftBottomPanel);
+        leftBottomPanel.getParent().layout(true, true);
+        updateNavigationTree();
+        updateButtons();
+    }
+
+    protected Tree getPagesTree() {
+        return pagesTree;
     }
 
     @Override
@@ -111,6 +132,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
+
+        // Select first page
+        pagesTree.select(pagesTree.getItem(0));
+        changePage();
+
+        // Set title and image from first page
+        IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
+        setTitle(firstPage.getTitle());
+        setTitleImage(firstPage.getImage());
+        setMessage(firstPage.getDescription());
+
         updateButtons();
 
         updateWindowTitle();
@@ -127,8 +159,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         wizardSash = new SashForm(composite, SWT.HORIZONTAL);
         wizardSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        pagesTree = new Tree(wizardSash, SWT.SINGLE);
+        Composite leftPane = UIUtils.createComposite(wizardSash, 1);
+        pagesTree = new Tree(leftPane, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.boldFont = UIUtils.makeBoldFont(pagesTree.getFont());
+        pagesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
+
+        leftPane.setBackground(pagesTree.getBackground());
+        leftBottomPanel = UIUtils.createComposite(leftPane, 1);
+        leftBottomPanel.setBackground(pagesTree.getBackground());
+        createBottomLeftArea(leftBottomPanel);
+
         Composite pageContainer = UIUtils.createPlaceholder(wizardSash, 2);
 
         // Vertical separator
@@ -140,29 +181,34 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
 
-        wizardSash.setWeights(new int[]{300, 700});
+        wizardSash.setWeights(new int[]{220, 780});
 
-        Point maxSize = new Point(0, 0);
-        IWizardPage[] pages = wizard.getPages();
-        for (IWizardPage page : pages) {
-            addPage(null, page, maxSize);
+        Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        if (size.x > 0) {
+            ((GridData) wizardSash.getLayoutData()).widthHint = size.x * 6;
         }
+
+        updateNavigationTree();
 
         pagesTree.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                TreeItem[] selection = pagesTree.getSelection();
+                if (selection.length > 0) {
+                    Object newPage = selection[0].getData();
+                    if (newPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) newPage).isPageNavigable()) {
+                        if (prevPage != null) {
+                            TreeItem prevItem = UIUtils.getTreeItem(pagesTree, prevPage);
+                            if (prevItem != null) {
+                                pagesTree.select(prevItem);
+                            }
+                        }
+                        return;
+                    }
+                }
                 changePage();
             }
         });
-        // Select first page
-        pagesTree.select(pagesTree.getItem(0));
-        changePage();
-
-        // Set title and image from first page
-        IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
-        setTitle(firstPage.getTitle());
-        setTitleImage(firstPage.getImage());
-        setMessage(firstPage.getDescription());
 
         // Horizontal separator
         new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR)
@@ -188,29 +234,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return composite;
     }
 
-    protected void cancelCurrentOperation() {
+    protected void createBottomLeftArea(Composite pane) {
 
     }
 
-    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize) {
-        TreeItem item = parentItem == null ?
-            new TreeItem(pagesTree, SWT.NONE) :
-            new TreeItem(parentItem, SWT.NONE);
-        item.setText(page.getTitle());
-        item.setData(page);
+    protected void cancelCurrentOperation() {
 
-        // Ad sub pages
-        if (page instanceof IDialogPageProvider) {
-            IDialogPage[] subPages = ((IDialogPageProvider) page).getDialogPages(true, resizeHasOccurred);
-            if (!ArrayUtils.isEmpty(subPages)) {
-                for (IDialogPage subPage : subPages) {
-                    addPage(item, subPage, maxSize);
-                }
-                //item.setExpanded(true);
-            }
-        }
-
-        return item;
     }
 
     private void changePage() {
@@ -224,6 +253,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
 
         pageArea.setRedraw(false);
+        IWizard wizard = getWizard();
         try {
             GridData gd;
             if (prevPage != null) {
@@ -267,13 +297,24 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             prevPage = page;
             pageArea.layout();
             if (pageCreated && isAutoLayoutAvailable()) {
-                UIUtils.asyncExec(() -> UIUtils.resizeShell(getWizard().getContainer().getShell()));
+                UIUtils.asyncExec(() -> {
+                    if (wizard.getContainer().getShell() != null) {
+                        UIUtils.resizeShell(wizard.getContainer().getShell());
+                    }
+                });
+            }
+
+            if (page instanceof ActiveWizardPage) {
+                ((ActiveWizardPage)page).updatePageCompletion();
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
         } finally {
             pageArea.setRedraw(true);
         }
+
+        firePageChanged(new PageChangedEvent(this, getCurrentPage()));
+        updatePageCompleteMark(null);
     }
 
     protected boolean isAutoLayoutAvailable() {
@@ -288,6 +329,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (!getWizard().performFinish()) {
                 return;
             }
+        } else if (buttonId == IDialogConstants.FINISH_ID) {
+            finishPressed();
+        } else if (buttonId == IDialogConstants.NEXT_ID) {
+            nextPressed();
+        } else if (buttonId == IDialogConstants.BACK_ID) {
+            backPressed();
         }
         super.buttonPressed(buttonId);
     }
@@ -338,27 +385,116 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
-    @Override
-    public void updateButtons() {
-        boolean complete = true;
-        for (TreeItem item : pagesTree.getItems()) {
-            if (item.getData() instanceof IWizardPage) {
-                IWizardPage page = (IWizardPage) item.getData();
-                if (page.getControl() != null && !page.isPageComplete()) {
-                    complete = false;
+    public void updateNavigationTree() {
+        pagesTree.setRedraw(false);
+        try {
+            Object selectedPage = getSelectedPage();
+
+            pagesTree.removeAll();
+
+            Point maxSize = new Point(0, 0);
+
+            IWizardPage[] pages = wizard.getPages();
+            for (IWizardPage page : pages) {
+                addNavigationItem(null, page);
+            }
+
+            for (TreeItem item : pagesTree.getItems()) {
+                if (item.getData() == selectedPage) {
+                    pagesTree.select(item);
                     break;
                 }
             }
+
+            updatePageCompleteMark(null);
+
+        } finally {
+            pagesTree.setRedraw(true);
         }
-        Button button = getButton(IDialogConstants.OK_ID);
-        if (button != null && !button.isDisposed()) {
-            button.setEnabled(complete);
+    }
+
+    private void updatePageCompleteMark(TreeItem parent) {
+        for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
+            Object page = item.getData();
+            if (page instanceof IWizardPage && !((IWizardPage) page).isPageComplete()) {
+                item.setFont(boldFont);
+            } else {
+                item.setFont(null);
+            }
+            updatePageCompleteMark(item);
+        }
+    }
+
+    private TreeItem addNavigationItem(TreeItem parentItem, IDialogPage page) {
+        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
+            return null;
+        }
+        TreeItem item = parentItem == null ?
+            new TreeItem(pagesTree, SWT.NONE) :
+            new TreeItem(parentItem, SWT.NONE);
+        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
+        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+            int nnColor = UIStyles.isDarkTheme() ?
+                SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW;
+            item.setForeground(getShell().getDisplay().getSystemColor(nnColor));
+        }
+
+        item.setData(page);
+
+        // Ad sub pages
+        if (page instanceof IDialogPageProvider) {
+            IDialogPage[] subPages = ((IDialogPageProvider) page).getDialogPages(true, resizeHasOccurred);
+            if (!ArrayUtils.isEmpty(subPages)) {
+                for (IDialogPage subPage : subPages) {
+                    addNavigationItem(item, subPage);
+                }
+                //item.setExpanded(true);
+            }
+        }
+
+        return item;
+    }
+
+    protected void updatePageCompletion() {
+        IWizardPage page = getCurrentPage();
+        if (page instanceof ActiveWizardPage) {
+            ((ActiveWizardPage)page).updatePageCompletion();
         }
     }
 
     @Override
-    public void updateMessage() {
+    public void updateButtons() {
+        Button finishButton = getButton(IDialogConstants.OK_ID);
+        if (finishButton != null && !finishButton.isDisposed()) {
+            finishButton.setEnabled(wizard.canFinish());
+        }
 
+        IWizardPage currentPage = getCurrentPage();
+        if (currentPage != null) {
+            Button nextButton = getButton(IDialogConstants.NEXT_ID);
+            if (nextButton != null) {
+                nextButton.setEnabled(getCurrentPage().isPageComplete() && wizard.getNextPage(currentPage) != null);
+            }
+            Button prevButton = getButton(IDialogConstants.BACK_ID);
+            if (prevButton != null) {
+                prevButton.setEnabled(wizard.getPreviousPage(currentPage) != null);
+            }
+        }
+        updatePageCompleteMark(null);
+    }
+
+    @Override
+    public void updateMessage() {
+        IWizardPage currentPage = getCurrentPage();
+        if (currentPage == null) {
+            return;
+        }
+        String errorMessage = currentPage.getErrorMessage();
+        if (!CommonUtils.isEmpty(errorMessage)) {
+            setMessage(errorMessage, IMessageProvider.ERROR);
+        } else {
+            setMessage(CommonUtils.notEmpty(currentPage.getDescription()), IMessageProvider.NONE);
+        }
     }
 
     @Override
@@ -373,11 +509,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateWindowTitle() {
-        getShell().setText(getWizard().getWindowTitle());
-        // Do not update dialog icon. It can be disposed in the page and this will break connection dialog
-        //getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
+        Shell shell = getShell();
+        if (shell != null) {
+            shell.setText(getWizard().getWindowTitle());
+            // Do not update dialog icon. It can be disposed in the page and this will break connection dialog
+            //getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
-        updateMessage();
+            updateMessage();
+        }
     }
 
     public boolean close() {
@@ -392,18 +531,23 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Code copied from WizardDialog
         if (monitorPart != null) {
             monitorPart.setVisible(true);
-            monitorPart.layout();
+            //monitorPart.layout();
             monitorPart.attachToCancelComponent(null);
         }
-        ControlEnableState pageEnableState = ControlEnableState.disable(wizardSash);
-        ControlEnableState buttonsEnableState = ControlEnableState.disable(getButtonBar());
+        boolean isDisableControlsOnRun = isDisableControlsOnRun();
+        ControlEnableState pageEnableState = isDisableControlsOnRun ? ControlEnableState.disable(wizardSash) : null;
+        ControlEnableState buttonsEnableState = isDisableControlsOnRun ? ControlEnableState.disable(getButtonBar()) : null;
         try {
             runningOperations++;
             ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
         } finally {
             runningOperations--;
-            buttonsEnableState.restore();
-            pageEnableState.restore();
+            if (buttonsEnableState != null) {
+                buttonsEnableState.restore();
+            }
+            if (pageEnableState != null) {
+                pageEnableState.restore();
+            }
             if (monitorPart != null) {
                 monitorPart.done();
                 monitorPart.setVisible(false);
@@ -411,7 +555,154 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
-    protected void showPage(String pageName) {
-
+    protected boolean isDisableControlsOnRun() {
+        return false;
     }
+
+    protected void showPage(String pageName) {
+        for (IWizardPage page : getWizard().getPages()) {
+            if (pageName.equals(page.getName())) {
+                showPage(page);
+                break;
+            }
+        }
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        Button finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
+            getShell().getDefaultButton() == null);
+        Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
+    }
+
+    protected void setFinishButtonLabel(String finishButtonLabel) {
+        this.finishButtonLabel = finishButtonLabel;
+    }
+
+    protected void setCancelButtonLabel(String cancelButtonLabel) {
+        this.cancelButtonLabel = cancelButtonLabel;
+    }
+
+    @Override
+    public Object getSelectedPage() {
+        return getCurrentPage();
+    }
+
+    protected void finishPressed() {
+ 
+    }
+
+    public void nextPressed() {
+        IWizard wizard = getWizard();
+        IWizardPage currentPage = getCurrentPage();
+        if (!currentPage.isPageComplete()) {
+            return;
+        }
+        IWizardPage nextPage = wizard.getNextPage(currentPage);
+        if (nextPage != null) {
+            showPage(nextPage);
+        }
+    }
+
+    public void backPressed() {
+        IWizard wizard = getWizard();
+        IWizardPage currentPage = getCurrentPage();
+        IWizardPage prevPage = wizard.getPreviousPage(currentPage);
+        if (prevPage != null) {
+            showPage(prevPage);
+        }
+    }
+
+    public void addPageChangedListener(IPageChangedListener listener) {
+        pageChangedListeners.add(listener);
+    }
+
+    public void removePageChangedListener(IPageChangedListener listener) {
+        pageChangedListeners.remove(listener);
+    }
+
+    private void firePageChanged(final PageChangedEvent event) {
+        for (IPageChangedListener l : pageChangedListeners) {
+            SafeRunnable.run(new SafeRunnable() {
+                @Override
+                public void run() {
+                    l.pageChanged(event);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void updateSize() {
+        updateSize(getCurrentPage());
+    }
+
+    private void updateSize(IWizardPage page) {
+        if (page == null || page.getControl() == null) {
+            return;
+        }
+        updateSizeForPage(page);
+        pageArea.layout();
+    }
+
+    /**
+     * Computes the correct dialog size for the given page and resizes its shell if necessary.
+     *
+     * @param page the wizard page
+     */
+    private void updateSizeForPage(IWizardPage page) {
+        // ensure the page container is large enough
+        Point delta = calculatePageSizeDelta(page);
+        if (delta.x > 0 || delta.y > 0) {
+            // increase the size of the shell
+            Shell shell = getShell();
+            Point shellSize = shell.getSize();
+            setShellSize(shellSize.x + delta.x, shellSize.y + delta.y);
+            constrainShellSize();
+        }
+    }
+
+    /**
+     * Computes the correct dialog size for the given wizard and resizes its shell if necessary.
+     *
+     * @param sizingWizard the wizard
+     */
+    private void updateSizeForWizard(IWizard sizingWizard) {
+        Point delta = new Point(0, 0);
+        IWizardPage[] pages = sizingWizard.getPages();
+        for (IWizardPage page : pages) {
+            // ensure the page container is large enough
+            Point pageDelta = calculatePageSizeDelta(page);
+            delta.x = Math.max(delta.x, pageDelta.x);
+            delta.y = Math.max(delta.y, pageDelta.y);
+        }
+        if (delta.x > 0 || delta.y > 0) {
+            // increase the size of the shell
+            Shell shell = getShell();
+            Point shellSize = shell.getSize();
+            setShellSize(shellSize.x + delta.x, shellSize.y + delta.y);
+        }
+    }
+
+    private Point calculatePageSizeDelta(IWizardPage page) {
+        Control pageControl = page.getControl();
+        if (pageControl == null) {
+            // control not created yet
+            return new Point(0, 0);
+        }
+        Point contentSize = pageControl.computeSize(SWT.DEFAULT, SWT.DEFAULT,
+            true);
+        Rectangle rect = pageArea.getClientArea();
+        Point containerSize = new Point(rect.width, rect.height);
+        return new Point(Math.max(0, contentSize.x - containerSize.x), Math
+            .max(0, contentSize.y - containerSize.y));
+    }
+
+    private void setShellSize(int width, int height) {
+        Rectangle size = getShell().getBounds();
+        size.height = height;
+        size.width = width;
+        getShell().setBounds(getConstrainedShellBounds(size));
+    }
+
 }

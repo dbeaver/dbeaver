@@ -228,7 +228,6 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 }
             }
         });
-        getWizard().createTaskSaveButtons(controlsPanel, true, 1);
 
         loadSettings();
 
