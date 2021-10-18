@@ -25,7 +25,51 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.Arrays;
+
 public class ClickhouseSQLDialect extends GenericSQLDialect {
+
+    private static final String[] CLICKHOUSE_FUNCTIONS = {
+        "quantile",
+        "quantileExact",
+        "uniq",
+        "concat",
+        "replaceOne",
+        "replaceAll",
+        "toStartOfFifteenMinutes",
+        "toStartOfFiveMinute",
+        "toStartOfInterval",
+        "toTimezone",
+        "formatDateTime",
+        "now",
+        "multiIf",
+        "geoToS2",
+        "s2ToGeo",
+        "greatCircleDistance",
+        "greatCircleAngle",
+        "plus",
+        "minus",
+        "multiply",
+        "divide",
+        "arrayConcat",
+        "hasAll",
+        "hasAny",
+        "indexOf",
+        "mapKeys",
+        "mapValues",
+        "UUIDNumToString",
+        "UUIDStringToNum",
+        "visitParamHas",
+        "IPv4StringToNum",
+        "randConstant",
+        "javaHash",
+        "bitmapBuild",
+        "bitCount",
+        "splitByChar",
+        "splitByWhitespace",
+        "toLowCardinality",
+        "formatRow"
+    };
 
     public ClickhouseSQLDialect() {
         super("Clickhouse SQL", "clickhouse");
@@ -40,6 +84,7 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
         removeSQLKeyword("DEFAULT");
         removeSQLKeyword("SYSTEM");
+        addFunctions(Arrays.asList(CLICKHOUSE_FUNCTIONS));
     }
 
     @Override
