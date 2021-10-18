@@ -28,13 +28,20 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 public class GenericDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, GenericDataType>
 {
 
+    private static final boolean IGNORE_NUMERIC_TYPES = false;
+
     public GenericDataTypeCache(GenericStructContainer owner) {
         super(owner);
 
-        // Ignore abstract types. There can be multiple numeric types with the same name
-        // but different scale/precision properties
-        ignoredTypes.add("NUMBER");
-        ignoredTypes.add("NUMERIC");
+        if (IGNORE_NUMERIC_TYPES) {
+            // The code below was added for a long time ago. Perhaps it is still relevant for some databases.
+            // But there are databases like Netezza or Snowflake, which actually contain such data types as NUMBER and NUMERIC.
+
+            // Ignore abstract types. There can be multiple numeric types with the same name
+            // but different scale/precision properties
+            ignoredTypes.add("NUMBER");
+            ignoredTypes.add("NUMERIC");
+        }
     }
 
     @NotNull
