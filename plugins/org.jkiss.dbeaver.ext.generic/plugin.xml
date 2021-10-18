@@ -966,7 +966,7 @@
                     <file type="jar" path="https://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
                 </driver>
 
-                <!-- Solr -->`
+                <!-- Solr -->
                 <driver
                         id="apache_solrj"
                         label="Solr"
