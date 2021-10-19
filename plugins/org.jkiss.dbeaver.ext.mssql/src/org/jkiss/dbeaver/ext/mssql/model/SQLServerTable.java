@@ -225,18 +225,13 @@ public class SQLServerTable extends SQLServerTableBase
             return;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT t.name, p.rows, SUM(a.total_pages) * 8 AS totalSize, SUM(a.used_pages) * 8 AS usedSize\n" +
-                    "FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " t\n" +
-                    "INNER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "indexes") + " i ON t.OBJECT_ID = i.object_id\n" +
-                    "INNER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "partitions") + " p ON i.object_id = p.OBJECT_ID AND i.index_id = p.index_id\n" +
-                    "INNER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "allocation_units") +  " a ON p.partition_id = a.container_id\n" +
-                    "LEFT OUTER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "schemas") +  " s ON t.schema_id = s.schema_id\n" +
-                    "WHERE t.schema_id = ?\n AND t.object_id=?\n" +
-                    "GROUP BY t.name, p.rows"))
-            {
-                dbStat.setLong(1, getSchema().getObjectId());
-                dbStat.setLong(2, getObjectId());
+            try (JDBCPreparedStatement dbStat = SQLServerUtils.prepareTableStatisticLoadStatement(
+                session,
+                getDataSource(),
+                getDatabase(),
+                getSchema().getObjectId(),
+                this,
+                true)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         fetchTableStats(dbResult);

@@ -19,17 +19,25 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ByteNumberFormat;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -37,10 +45,33 @@ import java.util.List;
 /**
 * SQL Server table
 */
-public class SQLServerGenericTable extends GenericTable implements DBPObjectWithLazyDescription {
+public class SQLServerGenericTable extends GenericTable implements DBPObjectWithLazyDescription, DBPObjectStatistics {
+
+    private static final Log log = Log.getLog(SQLServerGenericTable.class);
+
+    private long tableSize = -1;
+    private long rowCount;
+    private long pages;
 
     public SQLServerGenericTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+    }
+
+    @Property(category = DBConstants.CAT_STATISTICS, order = 3, formatter = ByteNumberFormat.class)
+    public long getTableSize(DBRProgressMonitor monitor) {
+        readTableStats(monitor);
+        return tableSize;
+    }
+
+    @Property(category = DBConstants.CAT_STATISTICS, order = 4)
+    public Long getRowCount(DBRProgressMonitor monitor) {
+        readTableStats(monitor);
+        return rowCount;
+    }
+
+    @Property(category = DBConstants.CAT_STATISTICS, order = 5)
+    public long getPages() {
+        return pages;
     }
 
     @Nullable
@@ -103,6 +134,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
         return description;
     }
 
+    @NotNull
     @Override
     public SQLServerGenericDataSource getDataSource() {
         return (SQLServerGenericDataSource)super.getDataSource();
@@ -115,5 +147,54 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
     @Override
     protected boolean isTruncateSupported() {
         return true;
+    }
+
+    void fetchTableStats(JDBCResultSet dbResult) {
+        tableSize = JDBCUtils.safeGetLong(dbResult,"totalSize");
+        if (isSqlServer()) {
+            tableSize = tableSize * 1024;
+        } else {
+            pages = JDBCUtils.safeGetLong(dbResult,"pages");
+        }
+        rowCount = JDBCUtils.safeGetLong(dbResult,"rows");
+    }
+
+    @Override
+    public boolean hasStatistics() {
+        return tableSize != -1;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return tableSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+    private void readTableStats(DBRProgressMonitor monitor) {
+        if (hasStatistics()) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
+            try (JDBCPreparedStatement dbStat = SQLServerUtils.prepareTableStatisticLoadStatement(
+                session,
+                getDataSource(),
+                getCatalog(),
+                ((SQLServerGenericSchema) getSchema()).getSchemaId(),
+                this,
+                isSqlServer())) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        fetchTableStats(dbResult);
+                    }
+                }
+            }
+        } catch (SQLException | DBCException e) {
+            log.error("Error reading table statistics", e);
+        }
     }
 }
