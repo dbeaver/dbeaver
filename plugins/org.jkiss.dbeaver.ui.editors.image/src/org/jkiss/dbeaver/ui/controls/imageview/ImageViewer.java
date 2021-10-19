@@ -54,7 +54,7 @@ public class ImageViewer extends Composite {
         gl.marginWidth = 0;
         setLayout(gl);
 
-        canvas = new ImageViewCanvas(this, SWT.NONE);
+        canvas = new ImageViewCanvas(this, SWT.DOUBLE_BUFFERED);
         canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Add DND support
