@@ -418,10 +418,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     public void updateSaveTaskButtons() {
         if (saveAsTaskButton != null) {
-            // TODO: we should be able to save/run task immediately if it was saved before.
-            // TODO: There is a bug in DT wizard which doesn't let to do it (producers/consumers are initialized only on the last page).
-            // TODO: init transfer for all deserialized producers/consumers
-            saveAsTaskButton.setEnabled(/*(getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || */canFinish());
+            saveAsTaskButton.setEnabled(canFinish() && getTaskType() != null);
         }
     }
 
