@@ -14,26 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer;
+package org.jkiss.dbeaver.ext.exasol.tasks;
 
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
-/**
- * Abstract node
- */
-public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
-
-    DBSObject getDatabaseObject();
-
-    String getObjectName();
-
-    DBPImage getObjectIcon();
-
-    String getObjectContainerName();
-
-    DBPImage getObjectContainerIcon();
-
-    boolean isConfigurationComplete();
-
+class ExasolToolTableTruncateSettings extends SQLToolExecuteSettings<ExasolTable> {
 }

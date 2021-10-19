@@ -315,10 +315,10 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             this.selectProducer(savedProducer, savedProcessor, false);
         }
 
-        if (processorNode == producer) {
-            producerProcessor = true;
-        } else if (processorNode == consumer) {
+        if (processorNode == consumer) {
             producerProcessor = false;
+        } else {
+            producerProcessor = true;
         }
 
         // Load processor properties

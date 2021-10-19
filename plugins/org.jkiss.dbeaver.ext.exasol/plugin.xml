@@ -533,4 +533,13 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="exasol" name="Exasol" description="Exasol database task" icon="icons/exasol_icon.png"/>
+        <category id="exasolTool" parent="exasol" name="Tools" description="Exasol database tools" icon="icons/exasol_icon.png"/>
+        <task id="exasolToolTruncateTable" name="Truncate table" description="Truncate table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="exasolTool" handler="org.jkiss.dbeaver.ext.exasol.tasks.ExasolToolTableTruncate">
+            <datasource id="exasol"/>
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+        </task>
+    </extension>
+
 </plugin>

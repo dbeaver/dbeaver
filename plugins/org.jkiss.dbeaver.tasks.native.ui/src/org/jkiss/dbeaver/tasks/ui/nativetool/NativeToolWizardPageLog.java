@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
@@ -40,12 +41,12 @@ import java.util.Date;
 import java.util.List;
 
 
-public class NativeToolWizardPageLog extends WizardPage {
+public class NativeToolWizardPageLog extends WizardPage implements IWizardPageNavigable {
 
     private static final Log log = Log.getLog(NativeToolWizardPageLog.class);
 
     private TextConsoleViewer consoleViewer;
-    private String task;
+    private final String task;
     private PrintStream writer;
     private MessageConsole console;
 
@@ -55,12 +56,6 @@ public class NativeToolWizardPageLog extends WizardPage {
         this.task = task;
         setTitle(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_progress, task));
         setDescription(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_progress_log, task));
-    }
-
-    @Override
-    public boolean isPageComplete()
-    {
-        return true;
     }
 
     @Override
@@ -122,9 +117,19 @@ public class NativeToolWizardPageLog extends WizardPage {
         new NullReaderJob(stream).start();
     }
 
+    @Override
+    public boolean isPageNavigable() {
+        return false;
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return true;
+    }
+
     private class LogReaderJob extends Thread {
-        private ProcessBuilder processBuilder;
-        private InputStream input;
+        private final ProcessBuilder processBuilder;
+        private final InputStream input;
         LogReaderJob(ProcessBuilder processBuilder, InputStream stream)
         {
             super(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_log_reader, task));
@@ -136,7 +141,7 @@ public class NativeToolWizardPageLog extends WizardPage {
         @Override
         public void run()
         {
-            AbstractNativeToolWizard wizard = (AbstractNativeToolWizard) getWizard();
+            AbstractNativeToolWizard<?,?,?> wizard = (AbstractNativeToolWizard) getWizard();
 
             String lf = GeneralUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
@@ -156,8 +161,7 @@ public class NativeToolWizardPageLog extends WizardPage {
             appendLog(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_started_at, task, new Date()) + lf);
 
             try {
-                InputStream in = input;
-                try (Reader reader = new InputStreamReader(in, GeneralUtils.getDefaultConsoleEncoding())) {
+                try (Reader reader = new InputStreamReader(input, GeneralUtils.getDefaultConsoleEncoding())) {
                     StringBuilder buf = new StringBuilder();
                     for (; ; ) {
                         int b = reader.read();
@@ -183,7 +187,7 @@ public class NativeToolWizardPageLog extends WizardPage {
     }
 
     private class NullReaderJob extends Thread {
-        private InputStream input;
+        private final InputStream input;
         protected NullReaderJob(InputStream stream)
         {
             super(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_log_reader, task));

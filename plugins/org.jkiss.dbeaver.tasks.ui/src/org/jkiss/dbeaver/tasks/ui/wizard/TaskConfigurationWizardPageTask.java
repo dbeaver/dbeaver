@@ -86,7 +86,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             this.selectedCategory = selectedTaskType.getCategory();
         }
         this.selectedProject = NavigatorUtils.getSelectedProject();
-        setPageComplete(false);
+        setPageComplete(this.task != null);
     }
 
     public DBTTaskCategory getSelectedCategory() {
@@ -369,7 +369,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     }
 
     public TaskConfigurationWizard getTaskWizard() throws DBException {
-        if (!(getWizard() instanceof TaskConfigurationWizardStub)) {
+        if (!(getWizard() instanceof NewTaskConfigurationWizard)) {
             // We already have it
             return getWizard();
         }

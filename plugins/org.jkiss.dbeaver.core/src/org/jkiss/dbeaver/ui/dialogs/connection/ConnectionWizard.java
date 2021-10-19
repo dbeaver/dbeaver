@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -159,9 +158,9 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
             });
 
             try {
-                getContainer().run(true, true, monitor -> {
+                getRunnableContext().run(true, true, monitor -> {
                     // Wait for job to finish
-                    op.setOwnerMonitor(RuntimeUtils.makeMonitor(monitor));
+                    op.setOwnerMonitor(monitor);
                     op.schedule();
                     while (op.getState() == Job.WAITING || op.getState() == Job.RUNNING) {
                         if (monitor.isCanceled()) {

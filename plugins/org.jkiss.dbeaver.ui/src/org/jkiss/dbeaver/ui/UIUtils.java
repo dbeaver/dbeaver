@@ -1368,11 +1368,27 @@ public class UIUtils {
         });
     }
 
-    public static TreeItem getTreeItem(Tree tree, Object data)
-    {
+    public static TreeItem getTreeItem(Tree tree, Object data) {
         for (TreeItem item : tree.getItems()) {
             if (item.getData() == data) {
                 return item;
+            }
+            TreeItem child = getTreeItem(item, data);
+            if (child != null) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    private static TreeItem getTreeItem(TreeItem parent, Object data) {
+        for (TreeItem item : parent.getItems()) {
+            if (item.getData() == data) {
+                return item;
+            }
+            TreeItem child = getTreeItem(item, data);
+            if (child != null) {
+                return child;
             }
         }
         return null;

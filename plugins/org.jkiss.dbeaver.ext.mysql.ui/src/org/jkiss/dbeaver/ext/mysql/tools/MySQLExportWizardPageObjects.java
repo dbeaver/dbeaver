@@ -65,12 +65,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete();
-    }
-
-    @Override
     public void createControl(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);

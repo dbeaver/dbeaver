@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanelProvider;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolConfigPanel;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
@@ -32,7 +33,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 /**
  * MySQL task configurator
  */
-public class MySQLTaskConfigurator implements DBTTaskConfigurator {
+public class MySQLTaskConfigurator implements DBTTaskConfigurator, DBTTaskConfigPanelProvider {
 
     private static final Log log = Log.getLog(MySQLTaskConfigurator.class);
 

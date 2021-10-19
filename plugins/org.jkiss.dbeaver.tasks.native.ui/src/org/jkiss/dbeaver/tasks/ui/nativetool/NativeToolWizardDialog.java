@@ -86,13 +86,17 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
     }
 
     private void openClientConfiguration() {
-        AbstractNativeToolWizard toolWizard = (AbstractNativeToolWizard) getWizard();
+        AbstractNativeToolWizard<?,?,?> toolWizard = (AbstractNativeToolWizard) getWizard();
         DBPDataSourceContainer dataSource = toolWizard.getSettings().getDataSourceContainer();
         if (dataSource != null) {
             NativeClientConfigDialog dialog = new NativeClientConfigDialog(getShell(), dataSource);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                toolWizard.updateErrorMessage();
+                if (toolWizard instanceof AbstractNativeToolWizard) {
+                    toolWizard.readLocalClientInfo();
+                }
                 updateButtons();
+
+                updatePageCompletion();
             }
         }
     }

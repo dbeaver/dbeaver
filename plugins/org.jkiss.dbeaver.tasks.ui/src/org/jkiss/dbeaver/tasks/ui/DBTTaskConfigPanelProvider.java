@@ -14,22 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.tasks.ui.sql.script;
+package org.jkiss.dbeaver.tasks.ui;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
-import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 
 /**
- * SQL task configurator
+ * Task configurator.
+ * Usually some UI dialog/wizard for task configuration.
  */
-public class SQLScriptTaskConfigurator implements DBTTaskConfigurator {
+public interface DBTTaskConfigPanelProvider {
 
-    @Override
-    public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
-        return new SQLScriptTaskConfigurationWizard(taskConfiguration);
-    }
+    /**
+     * Creates a panel for task input objects configure.
+     *
+     * @param runnableContext runnable context
+     * @param taskType task type
+     * @return null if config panel not supported/disabled. Otherwise IObjectPropertyConfigurator implementation (see UI modules).
+     */
+    DBTTaskConfigPanel createInputConfigurator(
+        DBRRunnableContext runnableContext,
+        @NotNull DBTTaskType taskType);
 
 }

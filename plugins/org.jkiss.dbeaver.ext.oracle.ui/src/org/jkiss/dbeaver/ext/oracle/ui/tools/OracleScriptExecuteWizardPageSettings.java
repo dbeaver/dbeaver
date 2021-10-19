@@ -40,8 +40,12 @@ class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage
     }
 
     @Override
-    public boolean isPageComplete() {
-        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getInputFile() == null) {
+            setErrorMessage("Input file not specified");
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     @Override
@@ -52,8 +56,6 @@ class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage
         outputGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText = new TextWithOpenFile(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, new String[] { "*.sql", "*.txt", "*" } );
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        wizard.createTaskSaveGroup(composite);
 
         setControl(composite);
 

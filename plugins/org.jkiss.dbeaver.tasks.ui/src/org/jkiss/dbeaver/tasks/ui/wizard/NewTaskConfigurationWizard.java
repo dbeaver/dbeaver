@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 
 import java.util.Map;
 
@@ -33,9 +34,9 @@ import java.util.Map;
  * We need it because there is no wizard before user select some particular task type.
  * Once he does we "replace" this wizard with real one om wizard dialog.
  */
-class TaskConfigurationWizardStub extends TaskConfigurationWizard<TaskConfigurationSettingsStub> {
+class NewTaskConfigurationWizard extends TaskConfigurationWizard<TaskConfigurationSettingsStub> {
 
-    protected TaskConfigurationWizardStub() {
+    NewTaskConfigurationWizard() {
     }
 
     @Override
@@ -46,6 +47,11 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard<TaskConfigurat
     @Override
     protected String getDefaultWindowTitle() {
         return TaskUIMessages.task_config_wizard_stub_title_create_task;
+    }
+
+    @Override
+    public boolean isNewTaskEditor() {
+        return true;
     }
 
     @Override
@@ -80,6 +86,9 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard<TaskConfigurat
 
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
+        if (page instanceof TaskConfigurationWizardPageTask && getPageCount() == 2) {
+            return getPages()[1];
+        }
         return super.getNextPage(page);
     }
 
@@ -93,7 +102,7 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard<TaskConfigurat
         return false;//wizard.performFinish();
     }
 
-    public boolean isLastTaskPreconfigPage(IWizardPage page) {
+    boolean isLastTaskPreconfigPage(IWizardPage page) {
         return page instanceof TaskConfigurationWizardPageSettings ||
             (page instanceof TaskConfigurationWizardPageTask &&
                 ((TaskConfigurationWizardPageTask) page).getSelectedTaskType() != null &&
@@ -101,16 +110,26 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard<TaskConfigurat
 
     }
 
-    class TaskConfigurationVoidPage extends ActiveWizardPage
+    class TaskConfigurationVoidPage extends ActiveWizardPage implements IWizardPageNavigable
     {
 
-        protected TaskConfigurationVoidPage() {
+        TaskConfigurationVoidPage() {
             super(TaskUIMessages.task_config_wizard_stub_page_name_void);
         }
 
         @Override
         public void createControl(Composite parent) {
             setControl(new Label(parent, SWT.NONE));
+        }
+
+        @Override
+        public boolean isPageNavigable() {
+            return false;
+        }
+
+        @Override
+        public boolean isPageApplicable() {
+            return false;
         }
     }
 

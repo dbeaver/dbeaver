@@ -131,6 +131,11 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     }
 
     @Override
+    protected boolean isDisableControlsOnRun() {
+        return true;
+    }
+
+    @Override
     public void updateButtons() {
         if (testButton != null) {
             ConnectionPageSettings settings = getWizard().getPageSettings();

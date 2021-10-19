@@ -94,6 +94,9 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     @Override
     public String getObjectContainerName() {
+        if (entityMapping == null) {
+            return "";
+        }
         File inputFile = entityMapping.getInputFile();
         return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
     }
@@ -101,6 +104,11 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     @Override
     public DBPImage getObjectContainerIcon() {
         return DBIcon.TREE_FOLDER;
+    }
+
+    @Override
+    public boolean isConfigurationComplete() {
+        return entityMapping != null;
     }
 
     public File getInputFile() {

@@ -27,6 +27,8 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
 
     public static final PostgreGeometryTypeHandler INSTANCE = new PostgreGeometryTypeHandler();
 
+    private static final int EMPTY_GEOMETRY                         = 0xffff_ffff;
+
     private static final int GEOMETRY_TYPE_GEOMETRY                 = 0x0000_0000;
     private static final int GEOMETRY_TYPE_POINT                    = 0x0000_0004;
     private static final int GEOMETRY_TYPE_LINESTRING               = 0x0000_0008;
@@ -47,7 +49,7 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     private static final int GEOMETRY_DIMENSION_Z                   = 0x0000_0002;
     private static final int GEOMETRY_DIMENSION_ZM                  = 0x0000_0003;
     private static final int GEOMETRY_MASK_TYPE                     = 0x0000_00fc;
-    private static final int GEOMETRY_MASK_SRID                     = 0x00ff_ff00;
+    private static final int GEOMETRY_MASK_SRID                     = 0xffff_ff00;
     private static final int GEOMETRY_MASK_DIMENSION                = 0x0000_0003;
 
     private static final String GEOMETRY_NAME_GEOMETRY              = "geometry";
@@ -89,7 +91,7 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     @Override
     public String getTypeModifiersString(@NotNull PostgreDataType type, int typmod) {
         final StringBuilder sb = new StringBuilder();
-        if (typmod >= 0) {
+        if (typmod != EMPTY_GEOMETRY) {
             sb.append('(').append(getGeometryType(typmod));
             final DBGeometryDimension dimension = getGeometryDimension(typmod);
             if (dimension.hasZ()) {
@@ -109,7 +111,7 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
 
     @Nullable
     public static String getGeometryType(int typmod) {
-        if (typmod < 0) {
+        if (typmod == EMPTY_GEOMETRY) {
             return null;
         }
         switch ((typmod & GEOMETRY_MASK_TYPE)) {
@@ -165,11 +167,11 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     }
 
     public static int getGeometrySRID(int typmod) {
-        return (typmod & GEOMETRY_MASK_SRID) >> 8;
+        return (typmod & GEOMETRY_MASK_SRID) >>> 8;
     }
 
     private static int getGeometryModifiers(@NotNull String name, int srid) throws DBException {
-        int typmod = (srid & 0xffff) << 8;
+        int typmod = (srid & (GEOMETRY_MASK_SRID >>> 8)) << 8;
         if (name.endsWith("zm")) {
             typmod |= GEOMETRY_DIMENSION_ZM;
             name = name.substring(0, name.length() - 2);

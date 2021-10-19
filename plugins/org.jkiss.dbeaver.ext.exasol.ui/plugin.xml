@@ -142,6 +142,16 @@
                   name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
             </objectType>
          </tool>
+
+          <tool
+               class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolToolTruncate"
+               description="Truncate table(s)"
+               id="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolToolTruncate"
+               group="org.jkiss.dbeaver.ext.exasol.ui.tools"
+               label="Truncate"
+               singleton="false">
+              <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+          </tool>
       </tools>
     </extension>
 

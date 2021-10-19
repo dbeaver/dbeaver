@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
-import org.jkiss.utils.CommonUtils;
 
 
 class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<PostgreRestoreWizard> {
@@ -42,9 +41,12 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete() && !CommonUtils.isEmpty(wizard.getSettings().getInputFile());
+    protected boolean determinePageCompletion() {
+        if (wizard.getSettings().getInputFile() == null) {
+            setErrorMessage("Input file not specified");
+            return false;
+        }
+        return super.determinePageCompletion();
     }
 
     @Override
@@ -90,7 +92,6 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
-        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }
@@ -110,7 +111,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         saveState();
 
         inputFileText.setOpenFolder(wizard.getSettings().getFormat() == PostgreDatabaseBackupSettings.ExportFormat.DIRECTORY);
-
+        updatePageCompletion();
         getContainer().updateButtons();
     }
 

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
 
@@ -203,7 +204,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
                 }
             }
         } else if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.BINARY) {
-            switch (typeName) {
+            String lowerTypeName = typeName.toLowerCase(Locale.ENGLISH); // Workaround for generic data types
+            switch (lowerTypeName) {
                 case SQLServerConstants.TYPE_CHAR:
                 case SQLServerConstants.TYPE_NCHAR:
                 case SQLServerConstants.TYPE_VARCHAR:
@@ -228,7 +230,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
         } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES , typeName)) {
             return null;
         } else if (dataKind == DBPDataKind.NUMERIC &&
-                (SQLServerConstants.TYPE_NUMERIC.equals(typeName) || SQLServerConstants.TYPE_DECIMAL.equals(typeName))) {
+                (SQLServerConstants.TYPE_NUMERIC.equalsIgnoreCase(typeName) || SQLServerConstants.TYPE_DECIMAL.equalsIgnoreCase(typeName))) {
             // numeric and decimal - are synonyms in sql server
             // The numeric precision has a range from 1 to 38. The default precision is 38.
             // The scale has a range from 0 to p (precision). The scale can be specified only if the precision is specified. By default, the scale is zero

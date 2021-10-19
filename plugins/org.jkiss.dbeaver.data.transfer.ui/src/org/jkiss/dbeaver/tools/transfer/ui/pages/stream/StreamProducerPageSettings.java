@@ -47,10 +47,9 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
@@ -61,7 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWizard> {
+public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
 
     private PropertyTreeViewer propsEditor;
@@ -72,6 +71,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         super(DTMessages.data_transfer_wizard_page_input_files_name);
         setTitle(DTMessages.data_transfer_wizard_page_input_files_title);
         setDescription(DTMessages.data_transfer_wizard_page_input_files_description);
+        setPageComplete(false);
     }
 
     @Override
@@ -79,9 +79,13 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         initializeDialogUnits(parent);
 
         SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
+        settingsDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite inputFilesGroup = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_input_files, 1, GridData.FILL_BOTH, 0);
+            Composite inputFilesGroup = UIUtils.createComposite(settingsDivider, 1);
+            inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
 
             filesTable = new Table(inputFilesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             filesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -110,7 +114,8 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         {
-            Composite exporterSettings = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_importer, 1, GridData.FILL_BOTH, 0);
+            Composite exporterSettings = UIUtils.createComposite(settingsDivider, 1);
+            UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }
@@ -396,4 +401,10 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
         return name.toString();
     }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isProducerOfType(StreamTransferProducer.class);
+    }
+
 }

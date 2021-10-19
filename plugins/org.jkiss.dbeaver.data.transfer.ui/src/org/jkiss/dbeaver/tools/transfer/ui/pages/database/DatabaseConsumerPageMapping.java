@@ -53,12 +53,11 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -70,7 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
+public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
@@ -93,6 +92,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         super(DTUIMessages.database_consumer_page_mapping_name_and_title);
         setTitle(DTUIMessages.database_consumer_page_mapping_name_and_title);
         setDescription(DTUIMessages.database_consumer_page_mapping_description);
+        setPageComplete(false);
     }
 
     private DatabaseConsumerSettings getDatabaseConsumerSettings() {
@@ -835,10 +835,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     private void autoAssignMappings() {
-        try {
-            getWizard().getRunnableContext().run(true, true, (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
-        } catch (InvocationTargetException | InterruptedException e) {
-            //ignored
+        if (getWizard().getSettings().getDataPipes().size() > 1) {
+            try {
+                getWizard().getRunnableContext().run(true, true,
+                    (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
+            } catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            } catch (InterruptedException ignored) {
+            }
         }
         loadAndUpdateColumnsModel();
         for (TreeItem item : mappingViewer.getTree().getItems()) {
@@ -1128,15 +1132,16 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
         if (firstInit) {
             firstInit = false;
-            Tree table = mappingViewer.getTree();
-            int totalWidth = table.getClientArea().width;
-            TreeColumn[] columns = table.getColumns();
-            columns[0].setWidth(totalWidth * 35 / 100);
-            columns[1].setWidth(totalWidth * 35 / 100);
-            columns[2].setWidth(totalWidth * 15 / 100);
-            columns[3].setWidth(totalWidth * 15 / 100);
-
-            UIUtils.asyncExec(this::autoAssignMappings);
+            UIUtils.asyncExec(() -> {
+                Tree table = mappingViewer.getTree();
+                int totalWidth = table.getClientArea().width;
+                TreeColumn[] columns = table.getColumns();
+                columns[0].setWidth(totalWidth * 35 / 100);
+                columns[1].setWidth(totalWidth * 35 / 100);
+                columns[2].setWidth(totalWidth * 15 / 100);
+                columns[3].setWidth(totalWidth * 15 / 100);
+                this.autoAssignMappings();
+            });
         }
     }
 
@@ -1145,36 +1150,53 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
         DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         model.clear();
-        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
-            if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
-                continue;
-            }
-            DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-            DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
-            // Create new mapping for source object
-            DatabaseMappingContainer newMapping;
-            if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
-                try {
-                    newMapping = new DatabaseMappingContainer(
-                            getWizard().getRunnableContext(),
-                            getDatabaseConsumerSettings(),
-                            sourceDataContainer,
-                            ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
-                } catch (DBException e) {
-                    setMessage(e.getMessage(), IMessageProvider.ERROR);
-                    newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
+
+        List<Throwable> errors = new ArrayList<>();
+        try {
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+                    if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
+                        continue;
+                    }
+                    DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+                    DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
+                    // Create new mapping for source object
+                    DatabaseMappingContainer newMapping;
+                    if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
+                        try {
+                            newMapping = new DatabaseMappingContainer(
+                                monitor,
+                                getDatabaseConsumerSettings(),
+                                sourceDataContainer,
+                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
+                        } catch (DBException e) {
+                            errors.add(e);
+                            newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
+                        }
+                    } else {
+                        newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
+                    }
+                    newMapping.getAttributeMappings(getWizard().getRunnableContext());
+                    // Update current mapping if it differs from new one
+                    if (mapping == null || !mapping.isSameMapping(newMapping)) {
+                        mapping = newMapping;
+                        settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
+                    }
+                    model.add(mapping);
                 }
-            } else {
-                newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
-            }
-            newMapping.getAttributeMappings(getWizard().getRunnableContext());
-            // Update current mapping if it differs from new one
-            if (mapping == null || !mapping.isSameMapping(newMapping)) {
-                mapping = newMapping;
-                settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
-            }
-            model.add(mapping);
+            });
+        } catch (InvocationTargetException e) {
+            errors.add(e.getTargetException());
+        } catch (InterruptedException e) {
+            errors.add(e);
         }
+
+        if (!errors.isEmpty()) {
+            Throwable lastError = errors.get(errors.size() - 1);
+            log.error(lastError);
+            setMessage(lastError.getMessage(), IMessageProvider.ERROR);
+        }
+
 
         mappingViewer.getTree().setVisible(false);
         Object[] expandedElements = mappingViewer.getExpandedElements();
@@ -1217,4 +1239,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         return null;
     }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isConsumerOfType(DatabaseTransferConsumer.class);
+    }
+
+
 }
