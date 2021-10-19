@@ -106,6 +106,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         updateButtons();
     }
 
+    protected boolean isNavigableWizard() {
+        return false;
+    }
+
     protected Tree getPagesTree() {
         return pagesTree;
     }
@@ -415,6 +419,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
+        if (!isNavigableWizard()) {
+            return;
+        }
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
             Object page = item.getData();
             if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {

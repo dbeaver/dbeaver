@@ -103,6 +103,11 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         return (TaskConfigurationWizard) super.getWizard();
     }
 
+    @Override
+    protected boolean isNavigableWizard() {
+        return !getWizard().isCurrentTaskSaved();
+    }
+
     public TaskConfigurationWizard<?> getTaskWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
