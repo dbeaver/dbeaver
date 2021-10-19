@@ -86,7 +86,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             this.selectedCategory = selectedTaskType.getCategory();
         }
         this.selectedProject = NavigatorUtils.getSelectedProject();
-        setPageComplete(false);
+        setPageComplete(this.task != null);
     }
 
     public DBTTaskCategory getSelectedCategory() {

@@ -194,7 +194,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 TreeItem[] selection = pagesTree.getSelection();
                 if (selection.length > 0) {
                     Object newPage = selection[0].getData();
-                    if (newPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) newPage).isPageNavigable()) {
+                    // If we are in long operation or target page is not navigable - flip back
+                    if (runningOperations > 0 ||
+                        (newPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) newPage).isPageNavigable()))
+                    {
                         if (prevPage != null) {
                             TreeItem prevItem = UIUtils.getTreeItem(pagesTree, prevPage);
                             if (prevItem != null) {
@@ -414,6 +417,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private void updatePageCompleteMark(TreeItem parent) {
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
             Object page = item.getData();
+            if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
+                continue;
+            }
             if (page instanceof IWizardPage && !((IWizardPage) page).isPageComplete()) {
                 //item.setFont(boldFont);
                 item.setImage((Image)null);

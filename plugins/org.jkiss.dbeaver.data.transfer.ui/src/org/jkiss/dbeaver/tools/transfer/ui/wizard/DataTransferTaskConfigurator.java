@@ -407,10 +407,12 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 return false;
             }
             for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
-                if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
-                    return false;
+                if (!dtWizard.getSettings().isProducerOptional()) {
+                    if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                        return false;
+                    }
                 }
-                if (!dtWizard.isNewTaskEditor()) {
+                if (!dtWizard.getSettings().isConsumerOptional()) {
                     if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
                         return false;
                     }
@@ -426,12 +428,14 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 return "No objects selected";
             }
             for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
-                if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
-                    return "Source not specified for " + pipe.getConsumer().getObjectName();
+                if (!dtWizard.getSettings().isProducerOptional()) {
+                    if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
+                        return "Source not specified for " + (pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName());
+                    }
                 }
-                if (!dtWizard.isNewTaskEditor()) {
+                if (!dtWizard.getSettings().isConsumerOptional()) {
                     if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
-                        return "Target not specified for " + pipe.getProducer().getObjectName();
+                        return "Target not specified for " + (pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName());
                     }
                 }
             }
