@@ -33,12 +33,15 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.StringJoiner;
 
 /**
  * PrefPageDrivers
@@ -97,10 +100,12 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
 
         {
             Group repoGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_group_file_repositories, 2, GridData.FILL_HORIZONTAL, 300);
-            sourceList = new List(repoGroup, SWT.BORDER | SWT.SINGLE);
+            sourceList = new List(repoGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             sourceList.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Composite buttonsPH = UIUtils.createPlaceholder(repoGroup, 1);
-            UIUtils.createToolButton(buttonsPH, UIConnectionMessages.pref_page_drivers_button_add, new SelectionAdapter() {
+
+            final ToolBar toolbar = new ToolBar(repoGroup, SWT.VERTICAL);
+            toolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_add, UIIcon.ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
@@ -110,11 +115,13 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                     }
                 }
             });
-            final Button removeButton = UIUtils.createToolButton(buttonsPH, UIConnectionMessages.pref_page_drivers_button_remove, new SelectionAdapter() {
+            final ToolItem removeButton = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_remove, UIIcon.DELETE, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    sourceList.remove(sourceList.getSelectionIndices());
+                    final int index = sourceList.getSelectionIndex();
+                    sourceList.remove(index);
+                    sourceList.select(CommonUtils.clamp(index, 0, sourceList.getItemCount() - 1));
                     sourceList.notifyListeners(SWT.Selection, new Event());
                 }
             });
@@ -160,6 +167,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         proxyPasswordText.setText(passwordString);
         customDriversHome.setText(DriverDescriptor.getCustomDriversHome().getAbsolutePath());
 
+        sourceList.removeAll();
         for (String source : DriverDescriptor.getDriversSources()) {
             sourceList.add(source);
         }
@@ -188,10 +196,9 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         store.setValue(ModelPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
 
         {
-            StringBuilder sources = new StringBuilder();
+            final StringJoiner sources = new StringJoiner("|");
             for (String item : sourceList.getItems()) {
-                if (sources.length() > 0) sources.append('|');
-                sources.append(item);
+                sources.add(item);
             }
             store.setValue(ModelPreferences.UI_DRIVERS_SOURCES, sources.toString());
         }
