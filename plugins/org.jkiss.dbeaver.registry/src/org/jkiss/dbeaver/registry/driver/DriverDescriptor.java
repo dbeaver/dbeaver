@@ -72,11 +72,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public static final DriverDescriptor NULL_DRIVER = new DriverDescriptor("NULL");
 
     /**
-     * Parent classloader of every driver classloader.
+     * Parent classloader of every driver classloader that loads global libraries.
      * <p>
-     * Loads global libraries upon initialization
+     * Initializes upon the initialization of the very first driver.
      */
-    private static final ClassLoader ROOT_CLASS_LOADER;
+    private static ClassLoader rootClassLoader;
 
     public static class DriverFileInfo {
         private final String id;
@@ -187,16 +187,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     static {
         File driversHome = DriverDescriptor.getCustomDriversHome();
         System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
-
-        final List<URL> libraries = new ArrayList<>();
-        for (String library : getGlobalLibraries()) {
-            try {
-                libraries.add(new File(library).toURI().toURL());
-            } catch (Exception e) {
-                log.error("Can't load global library '" + library + "'", e);
-            }
-        }
-        ROOT_CLASS_LOADER = new URLClassLoader(libraries.toArray(new URL[0]));
     }
 
     private DriverDescriptor(String id) {
@@ -1033,6 +1023,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
         isLoaded = false;
 
+        loadGlobalLibraries();
         loadLibraries();
 
         if (licenseRequired) {
@@ -1084,7 +1075,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             libraryURLs.add(url);
         }
         // Make class loader
-        this.classLoader = new DriverClassLoader(this, libraryURLs.toArray(new URL[0]), ROOT_CLASS_LOADER);
+        this.classLoader = new DriverClassLoader(this, libraryURLs.toArray(new URL[0]), rootClassLoader);
+    }
+
+    private static synchronized void loadGlobalLibraries() {
+        if (rootClassLoader == null) {
+            final List<URL> libraries = new ArrayList<>();
+            for (String library : getGlobalLibraries()) {
+                try {
+                    libraries.add(new File(library).toURI().toURL());
+                } catch (Exception e) {
+                    log.error("Can't load global library '" + library + "'", e);
+                }
+            }
+            rootClassLoader = new URLClassLoader(libraries.toArray(new URL[0]));
+        }
+    }
+
+    @Nullable
+    public static ClassLoader getRootClassLoader() {
+        return rootClassLoader;
     }
 
     public List<File> getAllLibraryFiles() {

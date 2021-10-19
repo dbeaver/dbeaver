@@ -171,7 +171,7 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
 
         PrefUtils.savePreferenceStore(store);
 
-        if (!Arrays.equals(currentGlobalLibraries, globalLibrariesList.getItems())) {
+        if (!Arrays.equals(currentGlobalLibraries, globalLibrariesList.getItems()) && DriverDescriptor.getRootClassLoader() != null) {
             final boolean restart = UIUtils.confirmAction(
                 getShell(),
                 NLS.bind(UIConnectionMessages.pref_page_drivers_classpath_global_libraries_restart_prompt_title, GeneralUtils.getProductName()),
