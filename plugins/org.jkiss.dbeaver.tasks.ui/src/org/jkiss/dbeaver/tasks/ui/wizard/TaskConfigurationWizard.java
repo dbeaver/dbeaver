@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
+import org.jkiss.dbeaver.ui.dialogs.IWizardPageActive;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -270,6 +271,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     private void saveTask() {
+        IWizardPage currentPage = getContainer().getCurrentPage();
+        // Save current page settings
+        if (currentPage instanceof IWizardPageActive) {
+            ((IWizardPageActive) currentPage).deactivatePage();
+            ((IWizardPageActive) currentPage).activatePage();
+        }
+        // Save task
         DBTTask currentTask = getCurrentTask();
         if (currentTask == null || currentTask.isTemporary()) {
             // Create new task
