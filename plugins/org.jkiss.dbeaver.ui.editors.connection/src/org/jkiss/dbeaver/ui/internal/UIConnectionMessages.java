@@ -88,8 +88,6 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_network_socket_label_username;
     public static String dialog_connection_network_socket_label_password;
 
-    public static String dialog_view_classpath_title;
-
     public static String dialog_edit_driver_button_add_file;
     public static String dialog_edit_driver_button_add_folder;
     public static String dialog_edit_driver_button_add_artifact;
@@ -228,6 +226,14 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_button_add;
     public static String pref_page_drivers_label_enter_drivers_location_url;
     public static String pref_page_drivers_button_remove;
+
+    // Drivers Classpath
+    public static String pref_page_drivers_classpath_system_classpath_group;
+    public static String pref_page_drivers_classpath_global_libraries_group;
+    public static String pref_page_drivers_classpath_global_libraries_choose_files;
+    public static String pref_page_drivers_classpath_global_libraries_info;
+    public static String pref_page_drivers_classpath_global_libraries_restart_prompt_title;
+    public static String pref_page_drivers_classpath_global_libraries_restart_prompt_body;
 
     // DriversMaven
     public static String pref_page_drivers_maven_group_repositories;

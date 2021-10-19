@@ -50,8 +50,11 @@ import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,6 +70,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private static final String LICENSE_ACCEPT_KEY = "driver.license.accept.";
 
     public static final DriverDescriptor NULL_DRIVER = new DriverDescriptor("NULL");
+
+    /**
+     * Parent classloader of every driver classloader that loads global libraries.
+     * <p>
+     * Initializes upon the initialization of the very first driver.
+     */
+    private static ClassLoader rootClassLoader;
 
     public static class DriverFileInfo {
         private final String id;
@@ -1013,6 +1023,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
         isLoaded = false;
 
+        loadGlobalLibraries();
         loadLibraries();
 
         if (licenseRequired) {
@@ -1064,10 +1075,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             libraryURLs.add(url);
         }
         // Make class loader
-        this.classLoader = new DriverClassLoader(
-                this,
-                libraryURLs.toArray(new URL[0]),
-                getDataSourceProvider().getClass().getClassLoader());
+        this.classLoader = new DriverClassLoader(this, libraryURLs.toArray(new URL[0]), rootClassLoader);
+    }
+
+    private static synchronized void loadGlobalLibraries() {
+        if (rootClassLoader == null) {
+            final List<URL> libraries = new ArrayList<>();
+            for (String library : getGlobalLibraries()) {
+                try {
+                    libraries.add(new File(library).toURI().toURL());
+                } catch (Exception e) {
+                    log.error("Can't load global library '" + library + "'", e);
+                }
+            }
+            rootClassLoader = new URLClassLoader(libraries.toArray(new URL[0]));
+        }
+    }
+
+    @Nullable
+    public static ClassLoader getRootClassLoader() {
+        return rootClassLoader;
     }
 
     public List<File> getAllLibraryFiles() {
@@ -1359,16 +1386,32 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return homeFolder;
     }
 
+    @NotNull
     public static String[] getDriversSources() {
         String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[0]);
     }
 
+    @NotNull
     public static String getDriversPrimarySource() {
         String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
+    }
+
+    @NotNull
+    public static String[] getGlobalLibraries() {
+        final String librariesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_GLOBAL_LIBRARIES);
+        final List<String> libraries = new ArrayList<>();
+        for (String library : CommonUtils.splitString(librariesString, '|')) {
+            try {
+                libraries.add(URLDecoder.decode(library, GeneralUtils.UTF8_ENCODING));
+            } catch (UnsupportedEncodingException e) {
+                log.error(e);
+            }
+        }
+        return libraries.toArray(new String[0]);
     }
 
     @Override
