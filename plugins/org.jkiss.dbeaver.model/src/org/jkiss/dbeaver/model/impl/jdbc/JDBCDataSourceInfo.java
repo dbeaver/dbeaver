@@ -43,6 +43,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     public static final String TERM_CATALOG = ModelMessages.model_jdbc_Database;
 
     private boolean readOnly;
+    private boolean readOnlyMetaData;
     private String databaseProductName;
     private String databaseProductVersion;
     private String driverName;
@@ -208,7 +209,11 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     @Override
     public boolean isReadOnlyMetaData()
     {
-        return readOnly;
+        return readOnlyMetaData;
+    }
+
+    protected void setReadOnlyMetaData(boolean readOnlyMetaData) {
+        this.readOnlyMetaData = readOnlyMetaData;
     }
 
     @Override
