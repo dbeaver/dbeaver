@@ -145,15 +145,15 @@ public class DBeaverCommandLine
             return false;
         }
 
-        if (controller == null) {
-            log.warn("Can't connect to running instance, exiting");
-            return true;
-        }
-
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
             if (DBeaverApplication.instance != null) {
                 DBeaverApplication.instance.setReuseWorkspace(true);
             }
+        }
+
+        if (controller == null) {
+            log.debug("Can't process commands because no running instance is present");
+            return false;
         }
 
         boolean exitAfterExecute = false;
