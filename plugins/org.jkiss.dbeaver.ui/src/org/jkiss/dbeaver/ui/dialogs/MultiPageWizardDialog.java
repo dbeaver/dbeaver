@@ -60,7 +60,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private SashForm wizardSash;
     private volatile int runningOperations = 0;
 
-    private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
+    private String finishButtonLabel = IDialogConstants.OK_LABEL;
     private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
