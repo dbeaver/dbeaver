@@ -64,6 +64,11 @@ public class SQLServerGenericSchema extends GenericSchema implements DBPObjectSt
         if (hasStatistics && !forceRefresh) {
             return;
         }
+        boolean isSQLServer = ((SQLServerMetaModel) getDataSource().getMetaModel()).isSqlServer();
+        if (!isSQLServer && !getDataSource().isServerVersionAtLeast(15, 0)) {
+            hasStatistics = true;
+            return;
+        }
         GenericCatalog catalog = getCatalog();
         if (catalog == null) {
             log.debug("Can't read tables statistics due to lack of schemas catalog");
@@ -76,7 +81,7 @@ public class SQLServerGenericSchema extends GenericSchema implements DBPObjectSt
                 catalog,
                 getSchemaId(),
                 null,
-                ((SQLServerMetaModel) getDataSource().getMetaModel()).isSqlServer())) {
+                isSQLServer)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String tableName = dbResult.getString("name");

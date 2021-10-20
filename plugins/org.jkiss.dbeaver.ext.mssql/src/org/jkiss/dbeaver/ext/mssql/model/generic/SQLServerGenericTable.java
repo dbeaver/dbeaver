@@ -179,6 +179,10 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
         if (hasStatistics()) {
             return;
         }
+        if (!isSqlServer() && !getDataSource().isServerVersionAtLeast(15, 0)) {
+            tableSize = 0;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
             try (JDBCPreparedStatement dbStat = SQLServerUtils.prepareTableStatisticLoadStatement(
                 session,
