@@ -59,7 +59,7 @@ public class RequestResult {
         when(executionContext.getDataSource()).thenReturn(dataSource);
 
         final SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dataSource);
+        syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
 
         final SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);

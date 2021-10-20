@@ -140,7 +140,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
 
     private void processScript(DBRProgressMonitor monitor, DBTTask task, SQLScriptExecuteSettings settings, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log, PrintStream logStream) throws DBException {
         PrintWriter logWriter = new PrintWriter(logStream, true);
-        List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(executionContext, sqlScriptContent);
+        List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(executionContext.getDataSource(), sqlScriptContent);
         SQLScriptContext scriptContext = new SQLScriptContext(null, () -> executionContext, null, logWriter, null);
         scriptContext.setVariables(DBTaskUtils.getVariables(task));
         SQLScriptDataReceiver dataReceiver = new SQLScriptDataReceiver();

@@ -605,7 +605,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
         ruleScanner.refreshRules(getDataSource(), ruleManager);
-        parserContext = new SQLParserContext(SQLEditorBase.this, syntaxManager, ruleManager, document != null ? document : new Document());
+        parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
@@ -720,7 +720,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (parserContext == null) {
             return null;
         }
-        SQLParserContext context = new SQLParserContext(SQLEditorBase.this, parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+        SQLParserContext context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         return SQLScriptParser.parseParameters(context, 0, query.getLength());
     }
 

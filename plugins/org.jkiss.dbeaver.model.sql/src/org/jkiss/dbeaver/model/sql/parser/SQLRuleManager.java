@@ -29,7 +29,10 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.*;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.text.parser.*;
-import org.jkiss.dbeaver.model.text.parser.rules.*;
+import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
+import org.jkiss.dbeaver.model.text.parser.rules.MultiLineRule;
+import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
+import org.jkiss.dbeaver.model.text.parser.rules.WhitespaceRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -76,6 +79,10 @@ public class SQLRuleManager {
             }
         }
         return rules.toArray(new TPRule[0]);
+    }
+
+    public void loadRules() {
+        loadRules(null, false);
     }
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {

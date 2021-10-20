@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -131,10 +130,6 @@ public class SQLSyntaxManager {
 
     public boolean isVariablesEnabled() {
         return variablesEnabled;
-    }
-
-    public void init(@NotNull DBPDataSource dataSource) {
-        init(SQLUtils.getDialectFromObject(dataSource), dataSource.getContainer().getPreferenceStore());
     }
 
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)

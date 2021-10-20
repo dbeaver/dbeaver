@@ -612,7 +612,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         DBPDataSource dataSource = viewer.getDataSource();
         if (dataSource != null) {
-            syntaxManager.init(dataSource);
+            syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         }
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
         String word = wordDetector.getFullWord();
