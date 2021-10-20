@@ -2089,7 +2089,9 @@ public final class DBUtils {
             return true;
         }
         DBPDataSource dataSource = object.getDataSource();
-        return dataSource == null || !dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA) || dataSource.getInfo().isReadOnlyMetaData();
+        return dataSource == null ||
+            !dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA) ||
+            dataSource.getInfo().isReadOnlyMetaData();
     }
 
     public static <T> T createNewAttributeValue(DBCExecutionContext context, DBDValueHandler valueHandler, DBSTypedObject valueType, Class<T> targetType) throws DBCException {
