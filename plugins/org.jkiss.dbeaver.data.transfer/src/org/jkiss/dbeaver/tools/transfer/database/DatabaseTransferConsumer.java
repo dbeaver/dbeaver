@@ -30,6 +30,9 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
@@ -627,8 +630,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
-            if (getTargetObject() != null) {
-                DBWorkbench.getPlatformUI().openEntityEditor(getTargetObject());
+            DBSDataManipulator targetObject = getTargetObject();
+            if (targetObject != null) {
+                // Refresh node first (this will refresh table data as well)
+                try {
+                    DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
+                    if (objectNode != null) {
+                        objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                    }
+                } catch (Exception e) {
+                    log.error("Error refreshing object '" + targetObject.getName() + "'", e);
+                }
+
+                DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
             }
         }
     }
