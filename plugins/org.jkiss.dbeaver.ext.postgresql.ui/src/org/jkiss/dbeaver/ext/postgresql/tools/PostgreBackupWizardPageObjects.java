@@ -331,7 +331,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     @Override
     protected void updateState()
     {
-        determinePageCompletion();
+        updatePageCompletion();
         getContainer().updateButtons();
     }
 

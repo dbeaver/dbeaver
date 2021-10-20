@@ -264,7 +264,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             }
         }
 
-        setPageComplete(determinePageCompletion());
+        updatePageCompletion();
         setControl(composite);
     }
 
