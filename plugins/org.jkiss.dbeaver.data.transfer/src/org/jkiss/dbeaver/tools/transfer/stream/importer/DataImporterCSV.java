@@ -55,6 +55,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    public static final int READ_BUFFER_SIZE = 255 * 1024;
 
     public enum HeaderPosition {
         none,
@@ -75,7 +76,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
 
-        try (Reader reader = openStreamReader(inputStream, processorProperties)) {
+        try (Reader reader = openStreamReader(inputStream, processorProperties, false)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
                 String[] header = getNextLine(csvReader);
                 if (header == null) {
@@ -170,9 +171,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
         return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
     }
 
-    private InputStreamReader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties) throws UnsupportedEncodingException {
+    private Reader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties, boolean useBufferedStream) throws UnsupportedEncodingException {
         final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
         final Charset charset = Charset.forName(encoding);
+        if (useBufferedStream) {
+            inputStream = new BufferedInputStream(inputStream, READ_BUFFER_SIZE);
+        }
         try {
             inputStream = new BOMInputStream(inputStream, charset);
         } catch (IllegalArgumentException ignored) {
@@ -212,7 +216,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
             applyTransformHints(resultSet, consumer, properties, PROP_TIMESTAMP_FORMAT, PROP_TIMESTAMP_ZONE);
 
-            try (Reader reader = openStreamReader(inputStream, properties)) {
+            try (Reader reader = openStreamReader(inputStream, properties, true)) {
                 try (CSVReader csvReader = openCSVReader(reader, properties)) {
 
                     int maxRows = site.getSettings().getMaxRows();

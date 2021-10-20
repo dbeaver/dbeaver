@@ -345,26 +345,32 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return;
         }
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
-        Map<String, Object> options = new HashMap<>();
         boolean disableUsingBatches = settings.isDisableUsingBatches();
-        boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodId() != null && !settings.getOnDuplicateKeyInsertMethodId().equals(DBSDataManipulator.INSERT_NONE_METHOD);
-        options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
-        options.put(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE, settings.getMultiRowInsertBatch());
-        options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
-        if (onDuplicateKeyCaseOn) {
-            String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
-            SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
-            if (insertReplaceMethod != null) {
-                try {
-                    DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();
-                    options.put(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD, insertMethod);
-                } catch (DBException e) {
-                    log.debug("Can't get insert replace method", e);
-                }
-            }
-        }
         if ((needCommit || disableUsingBatches) && executeBatch != null) {
             targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
+
+            Map<String, Object> options = new HashMap<>();
+            options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
+            options.put(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE, settings.getMultiRowInsertBatch());
+            options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
+
+            boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodId() != null &&
+                !settings.getOnDuplicateKeyInsertMethodId().equals(DBSDataManipulator.INSERT_NONE_METHOD);
+            if (onDuplicateKeyCaseOn) {
+                String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
+                if (!CommonUtils.isEmpty(insertMethodId)) {
+                    SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                    if (insertReplaceMethod != null) {
+                        try {
+                            DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();
+                            options.put(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD, insertMethod);
+                        } catch (DBException e) {
+                            log.debug("Can't get insert replace method", e);
+                        }
+                    }
+                }
+            }
+
             boolean retryInsert;
             do {
                 retryInsert = false;
