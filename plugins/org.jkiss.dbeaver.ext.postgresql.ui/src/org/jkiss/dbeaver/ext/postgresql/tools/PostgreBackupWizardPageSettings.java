@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Objects;
 
 
@@ -146,23 +147,11 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             outputGroup,
             PostgreMessages.wizard_backup_page_setting_label_file_name_pattern,
             wizard.getSettings().getOutputFilePattern());
-        UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output,
-            NativeToolUtils.VARIABLE_HOST,
-            NativeToolUtils.VARIABLE_DATABASE,
-            NativeToolUtils.VARIABLE_TABLE,
-            NativeToolUtils.VARIABLE_DATE,
-            NativeToolUtils.VARIABLE_TIMESTAMP,
-            NativeToolUtils.VARIABLE_CONN_TYPE);
+        UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output, NativeToolUtils.ALL_VARIABLES);
         ContentAssistUtils.installContentProposal(
             outputFileText,
             new SmartTextContentAdapter(),
-            new StringContentProposalProvider(
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_HOST),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_CONN_TYPE)));
+            new StringContentProposalProvider(Arrays.stream(NativeToolUtils.ALL_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
         outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
         fixOutputFileExtension();
 

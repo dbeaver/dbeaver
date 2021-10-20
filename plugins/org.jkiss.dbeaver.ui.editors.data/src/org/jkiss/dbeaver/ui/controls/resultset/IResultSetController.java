@@ -157,6 +157,15 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     @NotNull
     ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation);
 
+    /**
+     * Fills rows in current selection with values from row above/below it.
+     * <p>
+     * Depending on selection, source row may literally be the row before or
+     * after target row if selection covers only a single row. If selection spreads
+     * across several rows, source row is the first or last row inside selected region.
+     */
+    void copyRowValues(boolean copyFromRowAbove, boolean updatePresentation);
+
     ////////////////////////////////////////
     // Navigation & history
 
