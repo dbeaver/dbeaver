@@ -85,18 +85,29 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_FILE = "file";
     public static final String VARIABLE_SCRIPT_FILE = "scriptFilename";
 
+    public static final String VARIABLE_YEAR = "year";
+    public static final String VARIABLE_MONTH = "month";
+    public static final String VARIABLE_DAY = "day";
+    public static final String VARIABLE_HOUR = "hour";
+    public static final String VARIABLE_MINUTE = "minute";
+
     public static final String[][] VARIABLES = {
         {VARIABLE_DATASOURCE, "source database datasource"},
         {VARIABLE_CATALOG, "source database catalog"},
         {VARIABLE_SCHEMA, "source database schema"},
         {VARIABLE_TABLE, "source database table"},
-        {VARIABLE_TIMESTAMP, "current timestamp"},
-        {VARIABLE_DATE, "current date"},
         {VARIABLE_INDEX, "index of current file (if split is used)"},
         {VARIABLE_PROJECT, "source database project"},
         {VARIABLE_CONN_TYPE, "source database connection type"},
         {VARIABLE_FILE, "output file path"},
-        {VARIABLE_SCRIPT_FILE, "source script filename"}
+        {VARIABLE_SCRIPT_FILE, "source script filename"},
+        {VARIABLE_TIMESTAMP, "current timestamp"},
+        {VARIABLE_DATE, "current date"},
+        {VARIABLE_YEAR, "current year"},
+        {VARIABLE_MONTH, "current month"},
+        {VARIABLE_DAY, "current day"},
+        {VARIABLE_HOUR, "current hour"},
+        {VARIABLE_MINUTE, "current minute"},
     };
 
     public static final int OUT_FILE_BUFFER_SIZE = 100000;
@@ -520,6 +531,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private String translatePattern(String pattern, final File targetFile) {
+        final Date ts;
+        if (parameters.startTimestamp != null) {
+            // Use saved timestamp (#7352)
+            ts = parameters.startTimestamp;
+        } else {
+            ts = new Date();
+        }
+
         return GeneralUtils.replaceVariables(pattern, name -> {
             switch (name) {
                 case VARIABLE_DATASOURCE: {
@@ -558,13 +577,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     return stripObjectName(tableName);
                 }
                 case VARIABLE_TIMESTAMP:
-                    Date ts;
-                    if (parameters.startTimestamp != null) {
-                        // Use saved timestamp (#7352)
-                        ts = parameters.startTimestamp;
-                    } else {
-                        ts = new Date();
-                    }
                     try {
                         SimpleDateFormat sdf = new SimpleDateFormat(settings.getOutputTimestampPattern());
                         return sdf.format(ts);
@@ -574,6 +586,16 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     }
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+                case VARIABLE_YEAR:
+                    return new SimpleDateFormat("yyyy").format(ts);
+                case VARIABLE_MONTH:
+                    return new SimpleDateFormat("MM").format(ts);
+                case VARIABLE_DAY:
+                    return new SimpleDateFormat("dd").format(ts);
+                case VARIABLE_HOUR:
+                    return new SimpleDateFormat("HH").format(ts);
+                case VARIABLE_MINUTE:
+                    return new SimpleDateFormat("mm").format(ts);
                 case VARIABLE_INDEX:
                     return String.valueOf(parameters.orderNumber + 1);
                 case VARIABLE_PROJECT: {

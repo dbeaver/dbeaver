@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
@@ -340,19 +341,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     @NotNull
     private String[] getAvailableVariables() {
-        final Set<String> variables = new LinkedHashSet<>(Arrays.asList(
-            StreamTransferConsumer.VARIABLE_DATASOURCE,
-            StreamTransferConsumer.VARIABLE_CATALOG,
-            StreamTransferConsumer.VARIABLE_SCHEMA,
-            StreamTransferConsumer.VARIABLE_TABLE,
-            StreamTransferConsumer.VARIABLE_TIMESTAMP,
-            StreamTransferConsumer.VARIABLE_DATE,
-            StreamTransferConsumer.VARIABLE_INDEX,
-            StreamTransferConsumer.VARIABLE_PROJECT,
-            StreamTransferConsumer.VARIABLE_CONN_TYPE,
-            StreamTransferConsumer.VARIABLE_FILE,
-            StreamTransferConsumer.VARIABLE_SCRIPT_FILE
-        ));
+        final Set<String> variables = Arrays.stream(StreamTransferConsumer.VARIABLES)
+            .map(x -> x[0])
+            .collect(Collectors.toCollection(LinkedHashSet::new));
 
         final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
         if (pipes.size() == 1) {
