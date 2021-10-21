@@ -418,6 +418,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     }
                 }
                 sizeText = format.format(statObjectSize);
+            } else if (statsWasRead) {
+                // Statistic is not available
+                return;
             } else {
                 sizeText = "...";
                 percentFull = 0;

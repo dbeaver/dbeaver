@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -59,7 +61,7 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 composite,
                 CoreMessages.pref_page_ui_general_group_general,
                 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            miscGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            miscGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
             showSystemObjects = UIUtils.createCheckbox(
                 miscGroup,
@@ -89,10 +91,27 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 navigatorSettings.isMergeEntities(),
                 1);
 
+
+            boolean mergeEntitiesEnabled;
             if (dataSourceDescriptor != null) {
-                mergeEntities.setEnabled(
-                    dataSourceDescriptor.getDriver().getProviderDescriptor().getTreeDescriptor().supportsEntityMerge());
+                mergeEntitiesEnabled = dataSourceDescriptor.getDriver().getProviderDescriptor().getTreeDescriptor().supportsEntityMerge();
+                mergeEntities.setEnabled(mergeEntitiesEnabled);
+            } else {
+                mergeEntitiesEnabled = false;
             }
+
+            mergeEntities.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (hideFolders != null) {
+                        if (mergeEntities.getSelection()) {
+                            hideFolders.setEnabled(false);
+                        } else if (!hideFolders.getEnabled()) {
+                            hideFolders.setEnabled(true);
+                        }
+                    }
+                }
+            });
 
             hideFolders = UIUtils.createCheckbox(
                 miscGroup,
@@ -100,6 +119,17 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 CoreMessages.dialog_connection_wizard_final_checkbox_hide_folders_tip,
                 navigatorSettings.isHideFolders(),
                 1);
+
+            hideFolders.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (hideFolders.getSelection()) {
+                        mergeEntities.setEnabled(false);
+                    } else if (mergeEntitiesEnabled) {
+                        mergeEntities.setEnabled(true);
+                    }
+                }
+            });
         }
 
         return composite;

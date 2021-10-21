@@ -384,7 +384,12 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         continue;
                     }
 
-                    long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
+                    long schemaId;
+                    if (isSqlServer()) {
+                        schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
+                    } else {
+                        schemaId = JDBCUtils.safeGetLong(dbResult, "uid");
+                    }
                     SQLServerGenericSchema schema = new SQLServerGenericSchema(
                         dataSource, catalog, name, schemaId);
                     result.add(schema);
