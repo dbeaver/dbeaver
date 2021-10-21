@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -227,6 +228,10 @@ public class ObjectPropertyTester extends PropertyTester
         if (node instanceof DBNDatabaseNode) {
             if (((DBNDatabaseNode)node).isVirtual()) {
                 // Can't create virtual objects
+                return false;
+            }
+            DBPDataSource dataSource = ((DBNDatabaseNode) node).getDataSource();
+            if (dataSource != null && dataSource.getInfo().isReadOnlyMetaData()) {
                 return false;
             }
             if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(((DBNDatabaseNode)node))) {

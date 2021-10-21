@@ -146,6 +146,7 @@
                     <property id="supports-truncate" label="Driver supports TRUNCATE operation" description="Driver supports TRUNCATE command. It is much faster than DELETE without criteria." type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-set-array" label="Driver supports setArray JDBC API" description="Driver supports setArray JDBC API for binding array values. Some drivers may not support setArray in favor of setObject." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
+                    <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -569,6 +570,8 @@
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
@@ -597,6 +600,8 @@
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="repo:/drivers/dbf/dans-dbf-lib-1.0.0-beta-10.jar" bundle="!drivers.csvjdbc"/>
@@ -801,6 +806,7 @@
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
                 <!-- Virtuoso  -->
