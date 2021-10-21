@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.IEncodingSupport;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -75,16 +76,30 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     private StringEditorInput.StringStorage stringStorage;
 
     public ContentEditorInput(
-        IValueController valueController,
-        IEditorPart[] editorParts,
-        IEditorPart defaultPart,
-        DBRProgressMonitor monitor)
+        @NotNull IValueController valueController,
+        @Nullable IEditorPart[] editorParts,
+        @Nullable IEditorPart defaultPart,
+        @NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.defaultPart = defaultPart;
         this.fileCharset = getDefaultEncoding();
+        this.prepareContent(monitor);
+    }
+    public ContentEditorInput(
+        @NotNull IValueController valueController,
+        @Nullable IEditorPart[] editorParts,
+        @Nullable IEditorPart defaultPart,
+        @Nullable String charset,
+        @NotNull DBRProgressMonitor monitor)
+        throws DBException
+    {
+        this.valueController = valueController;
+        this.editorParts = editorParts;
+        this.defaultPart = defaultPart;
+        this.fileCharset = CommonUtils.isEmpty(charset) ? getDefaultEncoding() : charset;
         this.prepareContent(monitor);
     }
 
