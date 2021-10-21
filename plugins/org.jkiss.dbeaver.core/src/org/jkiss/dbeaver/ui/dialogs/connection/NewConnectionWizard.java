@@ -51,10 +51,14 @@ public class NewConnectionWizard extends ConnectionWizard
     private final DBPDriver initialDriver;
     private final DBPConnectionConfiguration initialConfiguration;
     private IStructuredSelection selection;
-    private List<DBPDataSourceProviderDescriptor> availableProvides = new ArrayList<>();
+    private final List<DBPDataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
-    private Map<DBPDataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
+    private final Map<DBPDataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
+
+    public NewConnectionWizard() {
+        this(null, null);
+    }
 
     public NewConnectionWizard(@Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
