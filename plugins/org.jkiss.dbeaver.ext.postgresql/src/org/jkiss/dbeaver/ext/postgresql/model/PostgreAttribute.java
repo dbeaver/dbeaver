@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
-import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -243,7 +245,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public void setMaxLength(long maxLength) {
-        log.warn("Attribute does not support updating its max length");
+        log.debug("Attribute does not support updating its max length");
     }
 
     @Override
@@ -257,7 +259,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public void setPrecision(Integer precision) {
-        log.warn("Attribute does not support updating its precision");
+        log.debug("Attribute does not support updating its precision");
     }
 
     @Override
@@ -271,7 +273,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public void setScale(Integer scale) {
-        log.warn("Attribute does not support updating its scale");
+        log.debug("Attribute does not support updating its scale");
     }
 
     @Nullable
