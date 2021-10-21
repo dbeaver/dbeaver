@@ -86,6 +86,8 @@ public class StandardErrorDialog extends ErrorDialog implements BlockingPopupDia
         } else {
             this.message = CommonUtils.cutExtraLines(JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
         }
+        // Truncate message to 64kb
+        this.message = CommonUtils.truncateString(this.message, 64000);
     }
 
     @Override
