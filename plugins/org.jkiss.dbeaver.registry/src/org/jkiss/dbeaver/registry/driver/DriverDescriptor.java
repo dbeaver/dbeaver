@@ -1088,7 +1088,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     log.error("Can't load global library '" + library + "'", e);
                 }
             }
-            rootClassLoader = new URLClassLoader(libraries.toArray(new URL[0]));
+            rootClassLoader = new URLClassLoader(libraries.toArray(new URL[0]), DriverDescriptor.class.getClassLoader());
         }
     }
 
