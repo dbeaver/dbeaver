@@ -1075,7 +1075,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             libraryURLs.add(url);
         }
         // Make class loader
-        this.classLoader = new DriverClassLoader(this, libraryURLs.toArray(new URL[0]), rootClassLoader);
+        this.classLoader = new DriverClassLoader(
+            this,
+            libraryURLs.toArray(new URL[0]),
+            rootClassLoader != null ? rootClassLoader : getDataSourceProvider().getClass().getClassLoader()
+        );
     }
 
     private static synchronized void loadGlobalLibraries() {
@@ -1087,6 +1091,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 } catch (Exception e) {
                     log.error("Can't load global library '" + library + "'", e);
                 }
+            }
+            if (libraries.isEmpty()) {
+                // No point in creating redundant classloader
+                return;
             }
             rootClassLoader = new URLClassLoader(libraries.toArray(new URL[0]), DriverDescriptor.class.getClassLoader());
         }
