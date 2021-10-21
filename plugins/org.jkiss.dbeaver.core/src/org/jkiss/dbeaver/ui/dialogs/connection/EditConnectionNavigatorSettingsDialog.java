@@ -92,10 +92,12 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 1);
 
 
-            boolean mergeEntitiesEnabled = false;
+            boolean mergeEntitiesEnabled;
             if (dataSourceDescriptor != null) {
                 mergeEntitiesEnabled = dataSourceDescriptor.getDriver().getProviderDescriptor().getTreeDescriptor().supportsEntityMerge();
                 mergeEntities.setEnabled(mergeEntitiesEnabled);
+            } else {
+                mergeEntitiesEnabled = false;
             }
 
             mergeEntities.addSelectionListener(new SelectionAdapter() {
@@ -118,13 +120,12 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 navigatorSettings.isHideFolders(),
                 1);
 
-            boolean finalMergeEntitiesEnabled = mergeEntitiesEnabled;
             hideFolders.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (hideFolders.getSelection()) {
                         mergeEntities.setEnabled(false);
-                    } else if (finalMergeEntitiesEnabled) {
+                    } else if (mergeEntitiesEnabled) {
                         mergeEntities.setEnabled(true);
                     }
                 }
