@@ -290,6 +290,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             if (srid == GisConstants.SRID_SIMPLE) {
                 srid = attributeSrid;
             }
+            if (srid == 0) {
+                srid = GeometryDataUtils.getDefaultSRID();
+            }
             if (srid == GisConstants.SRID_SIMPLE) {
                 showMap = false;
                 actualSourceSRID = srid;
