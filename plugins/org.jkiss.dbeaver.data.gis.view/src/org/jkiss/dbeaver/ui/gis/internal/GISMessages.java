@@ -31,11 +31,10 @@ public class GISMessages extends NLS {
 	public static String panel_leaflet_viewer_tool_bar_action_text_show_hide;
 	
 	public static String panel_gis_panel_editor_viewer_action_tool_tip_text_settings;
-	
-	public static String panel_gis_viewer_config_dialog_title_configure;
-	public static String panel_gis_viewer_config_dialog_control_group_label;
-	public static String panel_gis_viewer_config_dialog_label_text_srid;
-	public static String panel_gis_viewer_config_dialog_label_tixi_max_objects;
+
+	public static String pref_page_gis_viewer_group;
+	public static String pref_page_gis_viewer_label_srid;
+	public static String pref_page_gis_viewer_label_max_objects;
 	
 	public static String panel_manage_crs_dialog_title_select_system;
 	public static String panel_manage_crs_dialog_tree_column_text_name;

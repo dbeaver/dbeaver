@@ -91,4 +91,15 @@
         </presentation>
     </extension>
 
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.gis.preferences.PrefPageGIS" id="org.jkiss.dbeaver.preferences.gis" name="%pref.page.name.gis">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.gis"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.gis" label="%keyword.org.jkiss.dbeaver.preferences.gis"/>
+    </extension>
+
 </plugin>
