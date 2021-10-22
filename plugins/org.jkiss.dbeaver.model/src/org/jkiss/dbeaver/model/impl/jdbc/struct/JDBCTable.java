@@ -661,6 +661,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         Collection<DBSEntityAttribute> descAttributes = null;
         if (descColumns != null) {
             descAttributes = DBVEntity.getDescriptionColumns(monitor, this, descColumns);
+            if (DBUtils.findObject(descAttributes, keyColumn.getName(), true) != null) {
+                // Add alias for value column to avoid ambiguity
+                query.append(" dbvrvalue");
+            }
             query.append(", ").append(descColumns);
         }
         query.append(" FROM ").append(DBUtils.getObjectFullName(this, DBPEvaluationContext.DML));
