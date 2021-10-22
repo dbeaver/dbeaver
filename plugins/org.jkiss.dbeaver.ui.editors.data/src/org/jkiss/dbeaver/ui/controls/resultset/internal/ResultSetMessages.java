@@ -348,6 +348,12 @@ public class ResultSetMessages extends NLS {
     public static String validate_unique_key_usage_dialog_use_all_columns_no_valid_columns_found;
     public static String validate_unique_key_usage_dialog_use_all_columns_cannot_reload_unique_columns;
 
+    public static String panel_editor_text_loading_placeholder_label;
+    public static String panel_editor_text_word_wrap_name;
+    public static String panel_editor_text_auto_format_name;
+    public static String panel_editor_text_encoding_name;
+    public static String panel_editor_text_encoding_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);

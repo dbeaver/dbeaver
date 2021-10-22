@@ -26,6 +26,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -138,7 +140,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     public void contributeSettings(@NotNull IContributionManager manager, @NotNull final StyledText editorControl) {
         manager.add(new Separator());
         {
-            Action wwAction = new Action("Word Wrap", Action.AS_CHECK_BOX) {
+            Action wwAction = new Action(ResultSetMessages.panel_editor_text_word_wrap_name, Action.AS_CHECK_BOX) {
                 @Override
                 public void run() {
                     boolean newWW = !editorControl.getWordWrap();
@@ -159,7 +161,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         }
 
         if (textEditor != null) {
-            manager.add(new Action("Encoding ...") {
+            manager.add(new Action(ResultSetMessages.panel_editor_text_encoding_name) {
                 @Override
                 public void run() {
                     final ChangeEncodingDialog dialog = new ChangeEncodingDialog(getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING));
@@ -267,7 +269,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
                     if (textWidget != null && longContent) {
                         GC gc = new GC(textWidget);
                         try {
-                            UIUtils.drawMessageOverControl(textWidget, gc, "Loading content ... (" + textInput.getContentLength() + ")", 0);
+                            UIUtils.drawMessageOverControl(textWidget, gc, NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
                             editor.setInput(textInput);
                         } finally {
                             gc.dispose();
@@ -321,7 +323,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         return viewerSettings;
     }
 
-    private class WordWrapAction extends StyledTextUtils.StyledTextActionEx {
+    private static class WordWrapAction extends StyledTextUtils.StyledTextActionEx {
 
         private final StyledText text;
         WordWrapAction(StyledText text) {
@@ -342,7 +344,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
 
     private class AutoFormatAction extends Action {
         AutoFormatAction() {
-            super("Auto Format", Action.AS_CHECK_BOX);
+            super(ResultSetMessages.panel_editor_text_auto_format_name, Action.AS_CHECK_BOX);
         }
 
         @Override
@@ -363,7 +365,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         private String encoding;
 
         public ChangeEncodingDialog(@NotNull String defaultEncoding) {
-            super(UIUtils.getActiveShell(), "Change encoding", null);
+            super(UIUtils.getActiveShell(), ResultSetMessages.panel_editor_text_encoding_title, null);
             this.encoding = defaultEncoding;
             this.setShellStyle(SWT.DIALOG_TRIM);
         }
