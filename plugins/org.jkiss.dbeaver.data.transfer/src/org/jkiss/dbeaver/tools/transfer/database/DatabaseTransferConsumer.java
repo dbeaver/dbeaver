@@ -414,7 +414,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
             } while (retryInsert);
         }
-        if (settings.isUseTransactions() && needCommit) {
+        if (settings.isUseTransactions() && needCommit && !targetSession.getProgressMonitor().isCanceled()) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
             if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 targetSession.getProgressMonitor().subTask("Commit changes");
