@@ -46,7 +46,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
             Object driverInstance = session.getDataSource().getContainer().getDriver().getDriverInstance(session.getProgressMonitor());
             Object copyManager = Class.forName("CopyManager", true, driverInstance.getClass().getClassLoader()).getConstructor().newInstance();
         } catch (Exception e) {
-
+            throw new DBCException("Can't instantiate CopyManager", e);
         }
         return this;
 //        new CopyManager((BaseConnection) conn)
