@@ -68,6 +68,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBCExecutionContext targetContext;
     private DBCSession targetSession;
     private DBSDataManipulator.ExecuteBatch executeBatch;
+    private DBSDataBulkLoader.BulkLoadManager bulkLoadManager;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
 
@@ -257,15 +258,21 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
 
         if (!isPreview) {
-            if (targetObject instanceof DBSDataManipulatorExt) {
-                ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
+            DBSDataBulkLoader bulkLoader = DBUtils.getAdapter(DBSDataBulkLoader.class, targetObject);
+            if (bulkLoader != null) {
+                bulkLoadManager = bulkLoader.createBulkLoad(targetSession, attributes, executionSource, settings.getCommitAfterRows(), options);
             }
-            executeBatch = targetObject.insertData(
-                targetSession,
-                attributes,
-                null,
-                executionSource,
-                options);
+            if (bulkLoadManager == null) {
+                if (targetObject instanceof DBSDataManipulatorExt) {
+                    ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
+                }
+                executeBatch = targetObject.insertData(
+                    targetSession,
+                    attributes,
+                    null,
+                    executionSource,
+                    options);
+            }
         } else {
             previewRows = new ArrayList<>();
             executeBatch = new PreviewBatch();
@@ -333,8 +340,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-
-        executeBatch.add(rowValues);
+        if (bulkLoadManager != null) {
+            bulkLoadManager.addRow(session, rowValues);
+        } else {
+            executeBatch.add(rowValues);
+        }
 
         rowsExported++;
         // No need. monitor is incremented in data reader
@@ -348,73 +358,79 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return;
         }
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
-        boolean disableUsingBatches = settings.isDisableUsingBatches();
-        if ((needCommit || disableUsingBatches) && executeBatch != null) {
-            if (DBFetchProgress.monitorFetchProgress(rowsExported)) {
-                targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
+        if (bulkLoadManager != null) {
+            if (needCommit) {
+                bulkLoadManager.flushRows(targetSession);
             }
+        } else {
+            boolean disableUsingBatches = settings.isDisableUsingBatches();
+            if ((needCommit || disableUsingBatches) && executeBatch != null) {
+                if (DBFetchProgress.monitorFetchProgress(rowsExported)) {
+                    targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
+                }
 
-            Map<String, Object> options = new HashMap<>();
-            options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
-            options.put(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE, settings.getMultiRowInsertBatch());
-            options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
+                Map<String, Object> options = new HashMap<>();
+                options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
+                options.put(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE, settings.getMultiRowInsertBatch());
+                options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
 
-            boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodId() != null &&
-                !settings.getOnDuplicateKeyInsertMethodId().equals(DBSDataManipulator.INSERT_NONE_METHOD);
-            if (onDuplicateKeyCaseOn) {
-                String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
-                if (!CommonUtils.isEmpty(insertMethodId)) {
-                    SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
-                    if (insertReplaceMethod != null) {
-                        try {
-                            DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();
-                            options.put(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD, insertMethod);
-                        } catch (DBException e) {
-                            log.debug("Can't get insert replace method", e);
+                boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodId() != null &&
+                    !settings.getOnDuplicateKeyInsertMethodId().equals(DBSDataManipulator.INSERT_NONE_METHOD);
+                if (onDuplicateKeyCaseOn) {
+                    String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
+                    if (!CommonUtils.isEmpty(insertMethodId)) {
+                        SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                        if (insertReplaceMethod != null) {
+                            try {
+                                DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();
+                                options.put(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD, insertMethod);
+                            } catch (DBException e) {
+                                log.debug("Can't get insert replace method", e);
+                            }
                         }
                     }
                 }
-            }
 
-            boolean retryInsert;
-            do {
-                retryInsert = false;
-                try {
-                    DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
-                        try {
-                            executeBatch.execute(targetSession, options);
-                        } catch (Throwable e) {
-                            throw new InvocationTargetException(e);
+                boolean retryInsert;
+                do {
+                    retryInsert = false;
+                    try {
+                        DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
+                            try {
+                                executeBatch.execute(targetSession, options);
+                            } catch (Throwable e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        });
+                    } catch (Throwable e) {
+                        log.error("Error inserting row", e);
+                        if (ignoreErrors) {
+                            break;
                         }
-                    });
-                } catch (Throwable e) {
-                    log.error("Error inserting row", e);
-                    if (ignoreErrors) {
-                        break;
+                        String message;
+                        if (disableUsingBatches) {
+                            message = DTMessages.database_transfer_consumer_task_error_occurred_during_data_load;
+                        } else {
+                            message = DTMessages.database_transfer_consumer_task_error_occurred_during_batch_insert;
+                        }
+                        DBPPlatformUI.UserResponse response = DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(message, e, true);
+                        switch (response) {
+                            case STOP:
+                                throw new DBCException("Can't insert row", e);
+                            case RETRY:
+                                retryInsert = true;
+                                break;
+                            case IGNORE:
+                                retryInsert = false;
+                                break;
+                            case IGNORE_ALL:
+                                ignoreErrors = true;
+                                retryInsert = false;
+                                break;
+                        }
                     }
-                    String message;
-                    if (disableUsingBatches) {
-                        message = DTMessages.database_transfer_consumer_task_error_occurred_during_data_load;
-                    } else {
-                        message = DTMessages.database_transfer_consumer_task_error_occurred_during_batch_insert;
-                    }
-                    DBPPlatformUI.UserResponse response = DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(message, e, true);
-                    switch (response) {
-                        case STOP:
-                            throw new DBCException("Can't insert row", e);
-                        case RETRY:
-                            retryInsert = true;
-                            break;
-                        case IGNORE:
-                            retryInsert = false;
-                            break;
-                        case IGNORE_ALL:
-                            ignoreErrors = true;
-                            retryInsert = false;
-                            break;
-                    }
-                }
-            } while (retryInsert);
+                } while (retryInsert);
+            }
         }
         if (settings.isUseTransactions() && needCommit && !targetSession.getProgressMonitor().isCanceled()) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
@@ -431,7 +447,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (rowsExported > 0) {
                 insertBatch(true);
             }
-            if (executeBatch != null) {
+            if (bulkLoadManager != null) {
+                bulkLoadManager.close();
+                bulkLoadManager = null;
+            } else if (executeBatch != null) {
                 executeBatch.close();
                 executeBatch = null;
             }

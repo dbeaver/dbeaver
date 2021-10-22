@@ -14,36 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 
 import java.util.Map;
 
 /**
- * Data bulk loader
+ * Bulk loader based on CopyManager
  */
-public interface DBSDataBulkLoader {
+public class PostgreCopyLoader implements DBSDataBulkLoader {
 
-    interface BulkLoadManager extends AutoCloseable {
-        void addRow(@NotNull DBCSession session, @NotNull Object[] attributeValues) throws DBCException;
-
-        void flushRows(@NotNull DBCSession session);
-
-        void close();
-    }
+    private static final Log log = Log.getLog(PostgreCopyLoader.class);
 
     @NotNull
-    BulkLoadManager createBulkLoad(
-        @NotNull DBCSession session,
-        @NotNull DBSAttributeBase[] attributes,
-        @NotNull DBCExecutionSource source,
-        int batchSize,
-        Map<String, Object> options)
-        throws DBCException;
-
+    @Override
+    public BulkLoadManager createBulkLoad(@NotNull DBCSession session, @NotNull DBSAttributeBase[] attributes, @NotNull DBCExecutionSource source, int batchSize, Map<String, Object> options) throws DBCException {
+        throw new DBCException("Not implemented");
+    }
 }
