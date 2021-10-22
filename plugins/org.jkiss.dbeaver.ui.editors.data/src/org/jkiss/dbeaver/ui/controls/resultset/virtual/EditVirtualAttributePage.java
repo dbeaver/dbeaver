@@ -147,7 +147,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
             new SmartTextContentAdapter(),
             new StringContentProposalProvider(expressionProposals.toArray(new String[0])));
 
-        previewText = UIUtils.createLabelText(panel, "Preview", "", SWT.BORDER | SWT.READ_ONLY);
+        previewText = UIUtils.createLabelText(panel, "Preview", "", SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
         previewText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         expressionText.addModifyListener(e -> generatePreviewValue());
@@ -158,10 +158,16 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
     }
 
     private void generatePreviewValue() {
+        String expression = expressionText.getText();
         if (viewer == null) {
+            try {
+                DBVUtils.parseExpression(expression);
+                previewText.setText("You can see the result of expression in the data viewer");
+            } catch (Exception e) {
+                previewText.setText(GeneralUtils.getExpressionParseMessage(e));
+            }
             return;
         }
-        String expression = expressionText.getText();
 
         ResultSetRow currentRow = viewer.getCurrentRow();
         if (currentRow == null) {
@@ -189,6 +195,6 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
 
     @Override
     public String getHelpContextId() {
-        return "virtual-column-expressions";
+        return "Virtual-column-expressions";
     }
 }
