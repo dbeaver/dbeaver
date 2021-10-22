@@ -29,13 +29,45 @@ import java.util.Map;
 /**
  * Bulk loader based on CopyManager
  */
-public class PostgreCopyLoader implements DBSDataBulkLoader {
+public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.BulkLoadManager {
 
     private static final Log log = Log.getLog(PostgreCopyLoader.class);
+
+    private final PostgreTableReal table;
+
+    public PostgreCopyLoader(PostgreTableReal table) {
+        this.table = table;
+    }
 
     @NotNull
     @Override
     public BulkLoadManager createBulkLoad(@NotNull DBCSession session, @NotNull DBSAttributeBase[] attributes, @NotNull DBCExecutionSource source, int batchSize, Map<String, Object> options) throws DBCException {
-        throw new DBCException("Not implemented");
+        try {
+            Object driverInstance = session.getDataSource().getContainer().getDriver().getDriverInstance(session.getProgressMonitor());
+            Object copyManager = Class.forName("CopyManager", true, driverInstance.getClass().getClassLoader()).getConstructor().newInstance();
+        } catch (Exception e) {
+
+        }
+        return this;
+//        new CopyManager((BaseConnection) conn)
+//            .copyIn(
+//                "COPY table1 FROM STDIN (FORMAT csv, HEADER)",
+//                new BufferedReader(new FileReader("data.csv"))
+//            );        throw new DBCException("Not implemented");
+    }
+
+    @Override
+    public void addRow(@NotNull DBCSession session, @NotNull Object[] attributeValues) throws DBCException {
+
+    }
+
+    @Override
+    public void flushRows(@NotNull DBCSession session) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
 }

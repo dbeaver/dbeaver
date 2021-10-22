@@ -260,7 +260,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (!isPreview) {
             DBSDataBulkLoader bulkLoader = DBUtils.getAdapter(DBSDataBulkLoader.class, targetObject);
             if (bulkLoader != null) {
-                bulkLoadManager = bulkLoader.createBulkLoad(targetSession, attributes, executionSource, settings.getCommitAfterRows(), options);
+                try {
+                    bulkLoadManager = bulkLoader.createBulkLoad(targetSession, attributes, executionSource, settings.getCommitAfterRows(), options);
+                } catch (Exception e) {
+                    log.debug("Error creating bulk loader", e);
+                }
             }
             if (bulkLoadManager == null) {
                 if (targetObject instanceof DBSDataManipulatorExt) {
