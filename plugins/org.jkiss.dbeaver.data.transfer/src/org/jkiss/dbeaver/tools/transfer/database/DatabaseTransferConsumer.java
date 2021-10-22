@@ -350,7 +350,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         boolean disableUsingBatches = settings.isDisableUsingBatches();
         if ((needCommit || disableUsingBatches) && executeBatch != null) {
-            targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
+            if (DBFetchProgress.monitorFetchProgress(rowsExported)) {
+                targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
+            }
 
             Map<String, Object> options = new HashMap<>();
             options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
