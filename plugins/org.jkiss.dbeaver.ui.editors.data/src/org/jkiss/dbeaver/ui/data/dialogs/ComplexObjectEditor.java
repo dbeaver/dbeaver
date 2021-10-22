@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
+import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
@@ -162,6 +163,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private CopyAction copyNameAction;
     private CopyAction copyValueAction;
+    private SetToNullAction setToNullAction;
     private Action addElementAction;
     private Action removeElementAction;
     private Action moveElementUpAction;
@@ -260,6 +262,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
         this.copyNameAction = new CopyAction(true);
         this.copyValueAction = new CopyAction(false);
+        this.setToNullAction = new SetToNullAction();
         this.addElementAction = new AddElementAction();
         this.removeElementAction = new RemoveElementAction();
         this.moveElementUpAction = new MoveElementAction(SWT.UP);
@@ -306,6 +309,7 @@ public class ComplexObjectEditor extends TreeViewer {
             if (!getSelection().isEmpty()) {
                 manager.add(copyNameAction);
                 manager.add(copyValueAction);
+                manager.add(setToNullAction);
                 manager.add(new Separator());
             }
             try {
@@ -818,6 +822,32 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (text != null) {
                     UIUtils.setClipboardContents(getTree().getDisplay(), TextTransfer.getInstance(), text);
                 }
+            }
+        }
+    }
+
+    private class SetToNullAction extends Action {
+        public SetToNullAction() {
+            super(DataEditorsMessages.complex_object_editor_dialog_menu_set_element_to_null);
+        }
+
+        @Override
+        public void run() {
+            final ITreeSelection selection = getStructuredSelection();
+            if (selection.isEmpty()) {
+                return;
+            }
+            try {
+                final IValueController valueController = new ComplexValueController(
+                    (ComplexElement) selection.getFirstElement(),
+                    IValueController.EditType.NONE
+                );
+                valueController.updateValue(
+                    BaseValueManager.makeNullValue(valueController),
+                    true
+                );
+            } catch (DBCException e) {
+                log.error("Error setting value attribute to NULL", e);
             }
         }
     }

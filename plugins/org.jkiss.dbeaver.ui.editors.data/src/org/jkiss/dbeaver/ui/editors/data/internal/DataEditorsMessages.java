@@ -106,6 +106,7 @@ public class DataEditorsMessages extends NLS {
 
     public static String complex_object_editor_dialog_menu_copy_element;
     public static String complex_object_editor_dialog_menu_add_element;
+    public static String complex_object_editor_dialog_menu_set_element_to_null;
     public static String complex_object_editor_dialog_menu_remove_element;
     public static String complex_object_editor_dialog_menu_move_up_element;
     public static String complex_object_editor_dialog_menu_move_down_element;
