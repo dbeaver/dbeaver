@@ -262,6 +262,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_data_format_profiles_title;
 
     public static String dialog_save_script_title;
+    public static String dialog_save_script_settings_title;
     public static String dialog_save_script_button_use_qualified_names;
     public static String dialog_save_script_button_use_qualified_names_tip;
     public static String dialog_save_script_button_delete_cascade;
