@@ -21,15 +21,21 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -37,16 +43,20 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -55,6 +65,7 @@ import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -64,6 +75,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
 
     private static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
+    private static final String PREF_TEXT_EDITOR_ENCODING = "content.text.editor.encoding";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
     public static final int LONG_CONTENT_LENGTH = 10000;
@@ -128,7 +140,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     public void contributeSettings(@NotNull IContributionManager manager, @NotNull final StyledText editorControl) {
         manager.add(new Separator());
         {
-            Action wwAction = new Action("Word Wrap", Action.AS_CHECK_BOX) {
+            Action wwAction = new Action(ResultSetMessages.panel_editor_text_word_wrap_name, Action.AS_CHECK_BOX) {
                 @Override
                 public void run() {
                     boolean newWW = !editorControl.getWordWrap();
@@ -146,6 +158,33 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             final Action afAction = new AutoFormatAction();
             afAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
             manager.add(afAction);
+        }
+
+        if (textEditor != null) {
+            manager.add(new Action(ResultSetMessages.panel_editor_text_encoding_name) {
+                @Override
+                public void run() {
+                    final ChangeEncodingDialog dialog = new ChangeEncodingDialog(getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING));
+                    if (dialog.open() != IDialogConstants.OK_ID) {
+                        return;
+                    }
+                    getPanelSettings().put(PREF_TEXT_EDITOR_ENCODING, dialog.getEncoding());
+                    final EDITOR editor = getTextEditor();
+                    if (editor != null) {
+                        final TextViewer viewer = editor.getTextViewer();
+                        if (viewer != null) {
+                            final StyledText control = viewer.getTextWidget();
+                            if (control != null && !control.isDisposed()) {
+                                try {
+                                    primeEditorValue(new VoidProgressMonitor(), control, null);
+                                } catch (DBException e) {
+                                    log.error("Can't refresh editor", e);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -210,12 +249,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
+    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @Nullable DBDContent value) throws DBException
     {
         try {
             // Load contents in two steps (empty + real in async mode). Workaround for some strange bug in StyledText in E4.13 (#6701)
-            TextViewer textViewer = editor.getTextViewer();
-            final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, monitor);
+            final TextViewer textViewer = editor.getTextViewer();
+            final String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
+            final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
             boolean longContent = textInput.getContentLength() > LONG_CONTENT_LENGTH;
             if (longContent) {
                 UIUtils.asyncExec(() -> {
@@ -229,7 +269,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
                     if (textWidget != null && longContent) {
                         GC gc = new GC(textWidget);
                         try {
-                            UIUtils.drawMessageOverControl(textWidget, gc, "Loading content ... (" + textInput.getContentLength() + ")", 0);
+                            UIUtils.drawMessageOverControl(textWidget, gc, NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
                             editor.setInput(textInput);
                         } finally {
                             gc.dispose();
@@ -283,7 +323,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         return viewerSettings;
     }
 
-    private class WordWrapAction extends StyledTextUtils.StyledTextActionEx {
+    private static class WordWrapAction extends StyledTextUtils.StyledTextActionEx {
 
         private final StyledText text;
         WordWrapAction(StyledText text) {
@@ -304,7 +344,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
 
     private class AutoFormatAction extends Action {
         AutoFormatAction() {
-            super("Auto Format", Action.AS_CHECK_BOX);
+            super(ResultSetMessages.panel_editor_text_auto_format_name, Action.AS_CHECK_BOX);
         }
 
         @Override
@@ -318,6 +358,56 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             //setChecked(newAF);
             getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
             applyEditorStyle();
+        }
+    }
+
+    private static class ChangeEncodingDialog extends BaseDialog {
+        private String encoding;
+
+        public ChangeEncodingDialog(@NotNull String defaultEncoding) {
+            super(UIUtils.getActiveShell(), ResultSetMessages.panel_editor_text_encoding_title, null);
+            this.encoding = defaultEncoding;
+            this.setShellStyle(SWT.DIALOG_TRIM);
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            final Composite composite = super.createDialogArea(parent);
+
+            {
+                final Composite innerComposite = UIUtils.createComposite(composite, 1);
+                innerComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                final Combo encodingCombo = UIUtils.createEncodingCombo(innerComposite, encoding);
+                encodingCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                encodingCombo.addModifyListener(event -> {
+                    encoding = encodingCombo.getText();
+                    updateCompletion();
+                });
+            }
+
+            return composite;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            super.createButtonsForButtonBar(parent);
+            updateCompletion();
+        }
+
+        private void updateCompletion() {
+            final Button button = getButton(IDialogConstants.OK_ID);
+            try {
+                Charset.forName(encoding);
+                button.setEnabled(true);
+            } catch (Exception ignored) {
+                button.setEnabled(false);
+            }
+        }
+
+        @NotNull
+        public String getEncoding() {
+            return encoding;
         }
     }
 }
