@@ -130,7 +130,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsResultSetLimits() {
-        return false;
+        return true;
     }
 
     @Override
