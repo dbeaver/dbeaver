@@ -665,7 +665,7 @@ public class PostgreUtils {
     }
 
     public static String getRealSchemaName(PostgreDatabase database, String name) {
-        return name.replace("$user", database.getMetaContext().getActiveUser());
+        return name.replace(PostgreConstants.USER_VARIABLE, database.getMetaContext().getActiveUser());
     }
 
 }

@@ -193,6 +193,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             }
 
             if (defaultSearchPath.isEmpty()) {
+                setUserInTheEndOfThePath(searchPath);
                 defaultSearchPath = new ArrayList<>(searchPath);
             }
 
@@ -243,9 +244,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 // Remove from previous position
                 newSearchPath.remove(schemaIndex);
             }
-            // Add it first (or after $user)
-            int newIndex = isUserFirstInPath(newSearchPath) ? 1 : 0;
-            newSearchPath.add(newIndex, defSchemaName);
+            // Add it first
+            newSearchPath.add(0, defSchemaName);
         }
 
         StringBuilder spString = new StringBuilder();
@@ -261,7 +261,29 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals("$user");
+        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
+    }
+
+    private void setUserInTheEndOfThePath(List<String> searchPath) {
+        if (CommonUtils.isEmpty(searchPath)) {
+            return;
+        }
+        if (isUserFirstInPath(searchPath)) {
+            searchPath.remove(0);
+            searchPath.add(PostgreConstants.USER_VARIABLE);
+        } else {
+            int userIndex = -1;
+            for (int i = 0; i < searchPath.size(); i++) {
+                if (searchPath.get(i).equals(PostgreConstants.USER_VARIABLE)) {
+                    userIndex = i;
+                    break;
+                }
+            }
+            if (userIndex != -1) {
+                searchPath.remove(userIndex);
+                searchPath.add(PostgreConstants.USER_VARIABLE);
+            }
+        }
     }
 
     private void setSearchPath(String path) {
