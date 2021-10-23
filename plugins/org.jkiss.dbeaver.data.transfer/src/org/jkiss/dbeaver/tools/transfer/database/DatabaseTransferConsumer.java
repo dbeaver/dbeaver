@@ -345,7 +345,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (bulkLoadManager != null) {
-            bulkLoadManager.addRow(session, rowValues);
+            bulkLoadManager.addRow(targetSession, rowValues);
         } else {
             executeBatch.add(rowValues);
         }
@@ -452,7 +452,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 insertBatch(true);
             }
             if (bulkLoadManager != null) {
-                bulkLoadManager.close();
+                try {
+                    bulkLoadManager.finishBulkLoad(targetSession);
+                } finally {
+                    bulkLoadManager.close();
+                }
                 bulkLoadManager = null;
             } else if (executeBatch != null) {
                 executeBatch.close();
