@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -54,7 +55,8 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
     private static final Log log = Log.getLog(PostgreCopyLoader.class);
 
-    private final PostgreTableReal table;
+    private final PostgreDataSource dataSource;
+    private PostgreTableReal table;
     private Object copyManager;
     private Method copyInMethod;
     private Writer csvWriter;
@@ -76,13 +78,21 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
         }
     }
 
-    public PostgreCopyLoader(PostgreTableReal table) {
-        this.table = table;
+    public PostgreCopyLoader(PostgreDataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @NotNull
     @Override
-    public BulkLoadManager createBulkLoad(@NotNull DBCSession session, @NotNull DBSAttributeBase[] attributes, @NotNull DBCExecutionSource source, int batchSize, Map<String, Object> options) throws DBCException {
+    public BulkLoadManager createBulkLoad(
+        @NotNull DBCSession session,
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull DBSAttributeBase[] attributes,
+        @NotNull DBCExecutionSource source,
+        int batchSize,
+        Map<String, Object> options) throws DBCException
+    {
+        this.table = (PostgreTableReal) dataContainer;
         try {
             // Use reflection to create copy manager
             Connection pgConnection = ((JDBCSession) session).getOriginal();

@@ -42,6 +42,7 @@ public interface DBSDataBulkLoader {
     @NotNull
     BulkLoadManager createBulkLoad(
         @NotNull DBCSession session,
+        @NotNull DBSDataContainer dataContainer,
         @NotNull DBSAttributeBase[] attributes,
         @NotNull DBCExecutionSource source,
         int batchSize,

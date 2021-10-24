@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
@@ -50,7 +48,7 @@ import java.util.List;
 /**
  * PostgreTable base
  */
-public abstract class PostgreTableReal extends PostgreTableBase implements DBPObjectStatistics, IAdaptable
+public abstract class PostgreTableReal extends PostgreTableBase implements DBPObjectStatistics
 {
     private static final Log log = Log.getLog(PostgreTableReal.class);
 
@@ -269,16 +267,6 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
             return new PostgreTrigger(session.getProgressMonitor(), owner, dbResult);
         }
 
-    }
-
-    @Override
-    public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == DBSDataBulkLoader.class) {
-            if (getDataSource().getServerType().supportsCopyFromStdIn()) {
-                return adapter.cast(new PostgreCopyLoader(this));
-            }
-        }
-        return null;
     }
 
     class RuleCache extends JDBCObjectCache<PostgreTableReal, PostgreRule> {
