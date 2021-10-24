@@ -15,7 +15,7 @@ Require-Bundle: org.jkiss.dbeaver.model,
  com.sun.jna.platform,
  org.jkiss.dbeaver.model.sql
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.postgresql,

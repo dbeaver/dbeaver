@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
@@ -59,9 +61,11 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private Group loadSettings;
     private String disableReferentialIntegrityCheckboxTooltip;
     private boolean isDisablingReferentialIntegritySupported;
-    private Spinner multiRowInsertBatch;
+    private Text multiRowInsertBatch;
     private Button skipBindValues;
     private Button useBatchCheck;
+    private Button useBulkLoadCheck;
+    private List<SQLInsertReplaceMethodDescriptor> availableInsertMethodsDescriptors;
 
     public DatabaseConsumerPageLoadSettings() {
     	super(DTUIMessages.database_consumer_wizard_name);
@@ -125,7 +129,19 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
             UIUtils.createControlLabel(loadSettings, DTUIMessages.database_consumer_wizard_on_duplicate_key_insert_method_text);
             onDuplicateKeyInsertMethods = new Combo(loadSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
-            onDuplicateKeyInsertMethods.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            onDuplicateKeyInsertMethods.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            onDuplicateKeyInsertMethods.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    int selIndex = onDuplicateKeyInsertMethods.getSelectionIndex();
+                    if (selIndex > 0 && !CommonUtils.isEmpty(availableInsertMethodsDescriptors)) {
+                        SQLInsertReplaceMethodDescriptor methodDescriptor = availableInsertMethodsDescriptors.get(selIndex - 1);
+                        settings.setOnDuplicateKeyInsertMethodId(methodDescriptor.getId());
+                    } else {
+                        settings.setOnDuplicateKeyInsertMethodId(onDuplicateKeyInsertMethods.getText());
+                    }
+                }
+            });
 
             Link urlLabel = UIUtils.createLink(loadSettings, "<a href=\"" + HelpUtils.getHelpExternalReference(HELP_TOPIC_REPLACE_METHOD) + "\">"
                     + DTUIMessages.database_consumer_wizard_link_label_replace_method_wiki + "</a>", new SelectionAdapter() {
@@ -179,18 +195,17 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 }
             });
 
-            final Spinner commitAfterEdit = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_commit_spinner_label, settings.getCommitAfterRows(), 1, Integer.MAX_VALUE);
-            commitAfterEdit.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setCommitAfterRows(commitAfterEdit.getSelection());
-                }
-            });
-            commitAfterEdit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+            final Text commitAfterEdit = UIUtils.createLabelText(performanceSettings, DTUIMessages.database_consumer_wizard_commit_spinner_label, String.valueOf(settings.getCommitAfterRows()), SWT.BORDER);
+            commitAfterEdit.addModifyListener(e -> settings.setCommitAfterRows(CommonUtils.toInt(commitAfterEdit.getText())));
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1);
+            gd.widthHint = UIUtils.getFontHeight(commitAfterEdit) * 6;
+            commitAfterEdit.setLayoutData(gd);
 
-            final Button useMultiRowInsert = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_description, settings.isUseMultiRowInsert(), 4);
-            if (useBatchCheck != null && ((!useBatchCheck.isDisposed() && useBatchCheck.getSelection())
-            || (useBatchCheck.isDisposed() && settings.isDisableUsingBatches()))) {
+            final Button useMultiRowInsert = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_description, settings.isUseMultiRowInsert(), 1);
+            if (useBatchCheck != null && (
+                (!useBatchCheck.isDisposed() && useBatchCheck.getSelection()) ||
+                (useBatchCheck.isDisposed() && settings.isDisableUsingBatches())))
+            {
                 useMultiRowInsert.setEnabled(false);
             }
             useMultiRowInsert.addSelectionListener(new SelectionAdapter() {
@@ -207,17 +222,16 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 }
             });
 
-            multiRowInsertBatch = UIUtils.createLabelSpinner(performanceSettings, DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size, settings.getMultiRowInsertBatch(), 2, Integer.MAX_VALUE);
+            multiRowInsertBatch = new Text(performanceSettings, SWT.BORDER);
+            multiRowInsertBatch.setToolTipText(DTUIMessages.database_consumer_wizard_spinner_multi_insert_batch_size);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            multiRowInsertBatch.setLayoutData(gd);
+            multiRowInsertBatch.setText(String.valueOf(settings.getMultiRowInsertBatch()));
             if (!useMultiRowInsert.getSelection() || useBatchCheck != null && !useBatchCheck.isDisposed() && useBatchCheck.getSelection()) {
                 multiRowInsertBatch.setEnabled(false);
             }
-            multiRowInsertBatch.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setMultiRowInsertBatch(multiRowInsertBatch.getSelection());
-                }
-            });
-            multiRowInsertBatch.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+            multiRowInsertBatch.addModifyListener(e -> settings.setMultiRowInsertBatch(CommonUtils.toInt(multiRowInsertBatch.getText())));
 
             skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
             skipBindValues.addSelectionListener(new SelectionAdapter() {
@@ -227,7 +241,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 }
             });
 
-            useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
+            useBatchCheck = UIUtils.createCheckbox(
+                performanceSettings,
+                DTUIMessages.database_consumer_wizard_disable_import_batches_label,
+                DTUIMessages.database_consumer_wizard_disable_import_batches_description,
+                settings.isDisableUsingBatches(),
+                4);
             useBatchCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -240,6 +259,19 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                     } else if (!useBatchCheck.getSelection() && !useMultiRowInsert.getEnabled()) {
                         useMultiRowInsert.setEnabled(true);
                     }
+                }
+            });
+
+            useBulkLoadCheck = UIUtils.createCheckbox(
+                performanceSettings,
+                DTUIMessages.database_consumer_wizard_use_bulk_load_label,
+                DTUIMessages.database_consumer_wizard_use_bulk_load_description,
+                settings.isUseBulkLoad(),
+                4);
+            useBulkLoadCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setUseBulkLoad(useBulkLoadCheck.getSelection());
                 }
             });
         }
@@ -309,11 +341,20 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             truncateTargetTable.setSelection(false);
             settings.setTruncateBeforeLoad(false);
         }
+
+        if (useBulkLoadCheck != null && !useBulkLoadCheck.isDisposed()) {
+            DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
+            useBulkLoadCheck.setEnabled(DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) != null);
+        }
+
         loadInsertMethods();
     }
 
     private boolean confirmDataTruncate() {
         Shell shell = getContainer().getShell();
+        if (shell == null) {
+            return true;
+        }
         if (shell.isVisible() || getSettings().isTruncateBeforeLoad()) {
             String tableNames = getWizard().getSettings().getDataPipes().stream().map(pipe -> pipe.getConsumer() == null ? "" : pipe.getConsumer().getObjectName()).collect(Collectors.joining(","));
             String checkbox_question = NLS.bind(DTUIMessages.database_consumer_wizard_truncate_checkbox_question, tableNames);
@@ -333,12 +374,14 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         DBPDataSource dataSource = containerNode.getDataSource();
+
         List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
         if (dataSource != null) {
             SQLDialectDescriptor dialectDescriptor = SQLDialectRegistry.getInstance().getDialect(dataSource.getSQLDialect().getDialectId());
             insertMethodsDescriptors = dialectDescriptor.getSupportedInsertReplaceMethodsDescriptors();
         }
 
+        onDuplicateKeyInsertMethods.removeAll();
         onDuplicateKeyInsertMethods.add(DBSDataManipulator.INSERT_NONE_METHOD);
         if (!CommonUtils.isEmpty(insertMethodsDescriptors)) {
             boolean emptyButton = true;
@@ -359,28 +402,9 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         } else {
             onDuplicateKeyInsertMethods.setText(DBSDataManipulator.INSERT_NONE_METHOD);
             onDuplicateKeyInsertMethods.setEnabled(false);
-            Label descLabel = new Label(loadSettings, SWT.NONE);
-            descLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
-            descLabel.setText(DTUIMessages.database_consumer_wizard_label_replace_method_not_supported);
-            if (!CommonUtils.isEmpty(settings.getOnDuplicateKeyInsertMethodId())) {
-                // May be this setting was used for another database
-                settings.setOnDuplicateKeyInsertMethodId(null);
-            }
         }
 
-        List<SQLInsertReplaceMethodDescriptor> finalInsertMethodsDescriptors = insertMethodsDescriptors;
-        onDuplicateKeyInsertMethods.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int selIndex = onDuplicateKeyInsertMethods.getSelectionIndex();
-                if (selIndex > 0 && !CommonUtils.isEmpty(finalInsertMethodsDescriptors)) {
-                    SQLInsertReplaceMethodDescriptor methodDescriptor = finalInsertMethodsDescriptors.get(selIndex - 1);
-                    settings.setOnDuplicateKeyInsertMethodId(methodDescriptor.getId());
-                } else {
-                    settings.setOnDuplicateKeyInsertMethodId(onDuplicateKeyInsertMethods.getText());
-                }
-            }
-        });
+        availableInsertMethodsDescriptors = insertMethodsDescriptors;
     }
 
     @Override

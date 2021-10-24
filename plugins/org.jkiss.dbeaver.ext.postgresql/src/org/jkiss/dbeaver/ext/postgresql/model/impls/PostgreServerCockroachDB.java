@@ -253,6 +253,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsCopyFromStdIn() {
+        return true;
+    }
+
+    @Override
     public int getTruncateToolModes() {
         return TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE | TRUNCATE_TOOL_MODE_SUPPORT_CASCADE;
     }

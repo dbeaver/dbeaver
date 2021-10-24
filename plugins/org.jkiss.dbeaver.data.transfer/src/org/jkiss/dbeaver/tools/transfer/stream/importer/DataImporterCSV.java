@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.importer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBFetchProgress;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -270,8 +271,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         consumer.fetchRow(producerSession, resultSet);
                         lineNum++;
 
-                        if (lineNum % 1000 == 0) {
-                            monitor.subTask(String.valueOf(lineNum) + " rows processed");
+                        if (DBFetchProgress.monitorFetchProgress(lineNum)) {
+                            monitor.subTask(lineNum + " rows processed");
                         }
                     }
                 }

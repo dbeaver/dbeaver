@@ -32,7 +32,9 @@ public interface DBSDataBulkLoader {
     interface BulkLoadManager extends AutoCloseable {
         void addRow(@NotNull DBCSession session, @NotNull Object[] attributeValues) throws DBCException;
 
-        void flushRows(@NotNull DBCSession session);
+        void flushRows(@NotNull DBCSession session) throws DBCException;
+
+        void finishBulkLoad(@NotNull DBCSession session) throws DBCException;
 
         void close();
     }
@@ -40,6 +42,7 @@ public interface DBSDataBulkLoader {
     @NotNull
     BulkLoadManager createBulkLoad(
         @NotNull DBCSession session,
+        @NotNull DBSDataContainer dataContainer,
         @NotNull DBSAttributeBase[] attributes,
         @NotNull DBCExecutionSource source,
         int batchSize,

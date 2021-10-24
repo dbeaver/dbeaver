@@ -144,6 +144,11 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsCopyFromStdIn() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExternalTypes() {
         return true;
     }
