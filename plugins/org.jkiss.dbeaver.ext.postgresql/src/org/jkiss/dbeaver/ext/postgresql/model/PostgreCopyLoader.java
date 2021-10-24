@@ -168,8 +168,11 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
         }
         csvWriter = null;
 
-        String queryText = "COPY " + table.getFullyQualifiedName(DBPEvaluationContext.DML) +
-            " FROM STDIN (FORMAT csv)";
+        String tableFQN = table.getFullyQualifiedName(DBPEvaluationContext.DML);
+
+        session.getProgressMonitor().subTask("Copy into " + tableFQN);
+
+        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT csv)";
 
         try {
             Reader csvReader = new FileReader(csvFile, StandardCharsets.UTF_8);
@@ -178,6 +181,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
             // Commit changes
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
             if (txnManager != null && !txnManager.isAutoCommit()) {
+                session.getProgressMonitor().subTask("Commit COPY");
                 txnManager.commit(session);
             }
 
@@ -191,6 +195,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     }
 
     @Override
+
     public void close() {
         if (csvFile != null && csvFile.exists()) {
             if (!csvFile.delete()) {

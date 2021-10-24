@@ -70,8 +70,10 @@ public final class DBFetchProgress {
             return fetchedRows % 100 == 0;
         } else if (fetchedRows < 100000) {
             return fetchedRows % 1000 == 0;
-        } else {
+        } else if (fetchedRows < 1000000) {
             return fetchedRows % 10000 == 0;
+        } else {
+            return fetchedRows % 100000 == 0;
         }
     }
 

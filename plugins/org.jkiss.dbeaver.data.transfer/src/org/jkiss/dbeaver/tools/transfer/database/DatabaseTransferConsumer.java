@@ -366,6 +366,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (needCommit) {
                 bulkLoadManager.flushRows(targetSession);
             }
+            return;
         } else {
             boolean disableUsingBatches = settings.isDisableUsingBatches();
             if ((needCommit || disableUsingBatches) && executeBatch != null) {
@@ -452,12 +453,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 insertBatch(true);
             }
             if (bulkLoadManager != null) {
-                try {
-                    bulkLoadManager.finishBulkLoad(targetSession);
-                } finally {
-                    bulkLoadManager.close();
-                }
-                bulkLoadManager = null;
+                bulkLoadManager.finishBulkLoad(targetSession);
             } else if (executeBatch != null) {
                 executeBatch.close();
                 executeBatch = null;
@@ -514,7 +510,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
+    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
         DBSDataManipulator targetObject = getTargetObject();
         if (targetObject == null) {
             if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
@@ -552,6 +548,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (targetContext != null && useIsolatedConnection) {
             targetContext.close();
             targetContext = null;
+        }
+
+        if (bulkLoadManager != null) {
+            bulkLoadManager.close();
+            bulkLoadManager = null;
         }
     }
 

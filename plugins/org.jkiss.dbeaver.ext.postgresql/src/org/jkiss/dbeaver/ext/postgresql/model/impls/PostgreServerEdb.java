@@ -35,6 +35,11 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsCopyFromStdIn() {
+        return true;
+    }
+
+    @Override
     public String getServerTypeName() {
         return "EnterpriseDB";
     }

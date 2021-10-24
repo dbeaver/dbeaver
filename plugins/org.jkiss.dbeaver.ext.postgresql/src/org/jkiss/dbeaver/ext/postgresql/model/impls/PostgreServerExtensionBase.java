@@ -496,6 +496,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsCopyFromStdIn() {
+        return false;
+    }
+
+    @Override
     public int getParameterBindType(DBSTypedObject type, Object value) {
         return Types.OTHER;
     }

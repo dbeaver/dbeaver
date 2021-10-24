@@ -80,4 +80,9 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsAlterUserChangePassword() {
         return true;
     }
+
+    @Override
+    public boolean supportsCopyFromStdIn() {
+        return true;
+    }
 }

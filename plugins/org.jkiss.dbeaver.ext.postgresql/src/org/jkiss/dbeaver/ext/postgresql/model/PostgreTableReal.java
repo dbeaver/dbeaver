@@ -274,7 +274,9 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSDataBulkLoader.class) {
-            return adapter.cast(new PostgreCopyLoader(this));
+            if (getDataSource().getServerType().supportsCopyFromStdIn()) {
+                return adapter.cast(new PostgreCopyLoader(this));
+            }
         }
         return null;
     }
