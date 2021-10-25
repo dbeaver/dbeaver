@@ -2101,7 +2101,15 @@ public class SQLEditor extends SQLEditorBase implements
             item.setControl(planView.getControl());
             item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title + " - " + maxPlanNumber);
             if (sqlQuery != null) {
-                item.setToolTipText(sqlQuery.getText());
+                // Prepare query for tooltip
+                String preparedText = sqlQuery.getText()
+                    .replaceAll(CommonUtils.getLineSeparator() + "\t" + CommonUtils.getLineSeparator(), "")
+                    .replaceAll(CommonUtils.getLineSeparator() + CommonUtils.getLineSeparator(), "");
+                if (preparedText.length() > 300) {
+                    item.setToolTipText(preparedText.substring(0, 300) + "...");
+                } else {
+                    item.setToolTipText(preparedText);
+                }
             }
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
