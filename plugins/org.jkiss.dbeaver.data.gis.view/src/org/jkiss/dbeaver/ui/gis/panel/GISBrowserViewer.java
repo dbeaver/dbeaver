@@ -113,9 +113,6 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                             }
                         }
                     }
-                    if (geometry.getProperties() == null) {
-                        geometry.setProperties(Collections.singletonMap("Object", geometry.getSRID()));
-                    }
                 }
             }
         }

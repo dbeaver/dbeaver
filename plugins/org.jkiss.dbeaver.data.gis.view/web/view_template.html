@@ -80,15 +80,17 @@
                     if (color == null) color = "black";
                     tipText += "<h3 style='color:" + color + "'>" + tip.id + "</h3>";
                 }
-                tipText += "<table>";
                 var objInfo = tip.info;
                 if (objInfo == null) objInfo = tip;
-                if (objInfo != null) {
+                if (objInfo != null && Object.keys(objInfo).length > 0) {
+                    tipText += "<table>";
                     for (var propName in objInfo) {
                         tipText += "<tr><td>" + propName + "</td><td>" + objInfo[propName] + "</td></tr>";
                     }
+                    tipText += "</table>";
+                } else {
+                    tipText += "<i>No information present</i>";
                 }
-                tipText += "</table>";
                 layer.bindPopup(tipText, popupOption);
             }
         }
