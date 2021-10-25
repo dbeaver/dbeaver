@@ -96,6 +96,7 @@ public class UINavigatorMessages extends NLS {
 
     // DatabaseNavigator
     public static String pref_page_database_general_label_expand_navigator_tree;
+    public static String pref_page_database_general_label_restore_filter;
     public static String pref_page_database_general_label_restore_state_depth;
     public static String pref_page_database_general_label_restore_state_depth_tip;
     public static String pref_page_database_general_label_show_tips_in_tree;

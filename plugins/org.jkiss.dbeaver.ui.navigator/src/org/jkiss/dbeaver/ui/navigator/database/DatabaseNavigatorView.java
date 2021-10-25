@@ -26,13 +26,14 @@ import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersister;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
@@ -46,14 +47,24 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
 
     @Override
     public void saveState(IMemento memento) {
-        if (DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH) > 0)
-            new NavigatorStatePersistor().saveState(getNavigatorViewer().getExpandedElements(), memento);
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+        if (preferences.getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH) > 0) {
+            NavigatorStatePersister.saveExpandedState(getNavigatorViewer().getExpandedElements(), memento);
+        }
+        if (preferences.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)) {
+            NavigatorStatePersister.saveFilterState(getNavigatorTree(), memento);
+        }
     }
 
     private void restoreState() {
-        int maxDepth = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH);
-        if (maxDepth > 0)
-            new NavigatorStatePersistor().restoreState(getNavigatorViewer(), getRootNode(), maxDepth, memento);
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+        final int maxDepth = preferences.getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH);
+        if (maxDepth > 0) {
+            NavigatorStatePersister.restoreExpandedState(getNavigatorViewer(), getRootNode(), maxDepth, memento);
+        }
+        if (preferences.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)) {
+            NavigatorStatePersister.restoreFilterState(getNavigatorTree(), memento);
+        }
     }
 
     @Override
