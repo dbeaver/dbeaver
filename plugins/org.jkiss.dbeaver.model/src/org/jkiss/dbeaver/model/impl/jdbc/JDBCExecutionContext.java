@@ -88,7 +88,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         connect(monitor, null, null, null, true);
     }
 
-    protected void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, JDBCExecutionContext initFrom, boolean addContext) throws DBCException {
+    protected synchronized void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, JDBCExecutionContext initFrom, boolean addContext) throws DBCException {
         if (connection != null && addContext) {
             log.error("Reopening not-closed connection");
             close();
