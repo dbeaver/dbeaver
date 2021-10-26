@@ -617,7 +617,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="postgres_pgpass"
-            label="PgPass"
+            label="PostgreSQL PgPass"
             description="PostgreSQL PGPASS password"
             class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass">
             <datasource id="postgresql"/>
