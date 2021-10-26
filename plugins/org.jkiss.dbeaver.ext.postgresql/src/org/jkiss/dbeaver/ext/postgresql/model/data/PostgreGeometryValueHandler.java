@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -69,6 +70,9 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
         int valueSRID = 0;
+        if (paramType instanceof DBDAttributeBinding) {
+            paramType = ((DBDAttributeBinding) paramType).getAttribute();
+        }
         if (value instanceof DBGeometry) {
             valueSRID = ((DBGeometry) value).getSRID();
             value = ((DBGeometry) value).getRawValue();
