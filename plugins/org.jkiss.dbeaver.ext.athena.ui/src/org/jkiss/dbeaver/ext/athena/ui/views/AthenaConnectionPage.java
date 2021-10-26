@@ -32,17 +32,41 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * AthenaConnectionPage
  */
 public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
+    private static final String VARIABLE_DATE = "date";
+    private static final String VARIABLE_TIMESTAMP = "timestamp";
+    private static final String VARIABLE_YEAR = "year";
+    private static final String VARIABLE_MONTH = "month";
+    private static final String VARIABLE_DAY = "day";
+
+    private static final String[] ALL_VARIABLES = {
+        VARIABLE_DATE,
+        VARIABLE_TIMESTAMP,
+        VARIABLE_YEAR,
+        VARIABLE_MONTH,
+        VARIABLE_DAY
+    };
+
     private Combo awsRegionCombo;
     private Text s3LocationText;
+    private Date startTimestamp;
 
     private static final ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
@@ -75,6 +99,15 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             s3LocationText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_s3_location, ""); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
             s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);
+
+            final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
+                .stream(ALL_VARIABLES)
+                .map(GeneralUtils::variablePattern)
+                .toArray(String[]::new));
+
+            UIUtils.setContentProposalToolTip(s3LocationText, "S3 location pattern", ALL_VARIABLES);
+
+            ContentAssistUtils.installContentProposal(s3LocationText, new SmartTextContentAdapter(), proposalProvider);
         }
 
         createAuthPanel(settingsGroup, 1);
@@ -127,7 +160,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
         }
         if (s3LocationText != null) {
-            connectionInfo.setDatabaseName(s3LocationText.getText().trim());
+            connectionInfo.setDatabaseName(replaceVariables(s3LocationText.getText().trim()));
         }
         super.saveSettings(dataSource);
     }
@@ -139,4 +172,29 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         };
     }
 
+    private String replaceVariables(String input) {
+        final Date ts;
+        if (startTimestamp != null) {
+            ts = startTimestamp;
+        } else {
+            ts = new Date();
+        }
+
+        return GeneralUtils.replaceVariables(input, name -> {
+            switch (name) {
+                case VARIABLE_DATE:
+                    return RuntimeUtils.getCurrentDate();
+                case VARIABLE_TIMESTAMP:
+                    return RuntimeUtils.getCurrentTimeStamp();
+                case VARIABLE_YEAR:
+                    return new SimpleDateFormat("yyyy").format(ts);
+                case VARIABLE_MONTH:
+                    return new SimpleDateFormat("MM").format(ts);
+                case VARIABLE_DAY:
+                    return new SimpleDateFormat("dd").format(ts);
+                default:
+                    return null;
+            }
+        });
+    }
 }
