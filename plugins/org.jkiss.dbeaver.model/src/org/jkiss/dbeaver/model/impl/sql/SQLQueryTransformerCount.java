@@ -114,8 +114,9 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                     if (!exprs.isEmpty()) {
                         countFunc.setParameters(new ExpressionList(exprs));
                     }
+                } else {
+                    countFunc.setAllColumns(true);
                 }
-                countFunc.setAllColumns(true);
 
                 List<SelectItem> selectItems = new ArrayList<>();
                 selectItems.add(new SelectExpressionItem(countFunc));
