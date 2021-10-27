@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -30,8 +31,10 @@ public class SQLServerStandardValueHandlerProvider extends JDBCStandardValueHand
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         String typeName = typedObject.getTypeName();
-        if (typeName.equals("money") || typeName.equals("smallmoney")) {
+        if (typeName.equals(SQLServerConstants.TYPE_MONEY) || typeName.equals(SQLServerConstants.TYPE_SMALLMONEY)) {
             return SQLServerMoneyValueHandler.INSTANCE;
+        } else if (typeName.equals(SQLServerConstants.TYPE_SQL_VARIANT)) {
+            return SQLServerSQLVariantValueHandler.INSTANCE;
         } else {
             return null;
         }
