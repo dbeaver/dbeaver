@@ -145,6 +145,18 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 log.warn("Error while running context bootstrap", e);
             }
 
+            if (addContext) {
+                // Add self to context list
+                currentInstance.addContext(this);
+            }
+        } finally {
+            DBExecUtils.finishContextInitiation(dataSource.getContainer());
+            currentInstance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
+        }
+
+        // Now initialize context state
+        // Do it outside of exclusive lock to avoid dead locks
+        {
             try {
                 // Init (or copy) context state
                 this.dataSource.initializeContextState(monitor, this, initFrom);
@@ -164,15 +176,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             } catch (Throwable e) {
                 log.error("Error ending transaction after context initialize", e);
             }
-
-            if (addContext) {
-                // Add self to context list
-                currentInstance.addContext(this);
-            }
-        } finally {
-            DBExecUtils.finishContextInitiation(dataSource.getContainer());
-            currentInstance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
         }
+
     }
 
     protected void disconnect() {

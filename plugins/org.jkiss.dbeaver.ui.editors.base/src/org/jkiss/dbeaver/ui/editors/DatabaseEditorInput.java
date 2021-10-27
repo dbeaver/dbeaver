@@ -54,7 +54,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private final DBECommandContext commandContext;
     private String defaultPageId;
     private String defaultFolderId;
-    private Map<String, Object> attributes = new LinkedHashMap<>();
+    private final Map<String, Object> attributes = new LinkedHashMap<>();
 
     protected DatabaseEditorInput(@Nullable NODE node)
     {
@@ -68,7 +68,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         if (object != null) {
             this.executionContext = DBUtils.getDefaultContext(object, false);
             if (this.executionContext == null) {
-                log.error("Database object is not associated with any execution context");
+                log.error("Database object '" + object.getName() + "' is not associated with any execution context");
             }
             this.commandContext = commandContext != null ?
                 commandContext :
