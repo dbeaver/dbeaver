@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
+import org.jkiss.dbeaver.ui.gis.preferences.PrefPageGIS;
 
 import java.util.List;
 
@@ -78,7 +79,7 @@ class SelectCRSAction extends Action {
                 menuManager.add(new Action(GISMessages.panel_select_crs_action_menu_manager_config) {
                     @Override
                     public void run() {
-                        new GISViewerConfigurationDialog(valueEditor.getEditorControl().getShell()).open();
+                        UIUtils.showPreferencesFor(null, null, PrefPageGIS.PAGE_ID);
                     }
                 });
             });
