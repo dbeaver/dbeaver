@@ -171,6 +171,6 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
 
     @Override
     public String getHelpContextId() {
-        return "virtual-column-expressions";
+        return "Virtual-column-expressions";
     }
 }

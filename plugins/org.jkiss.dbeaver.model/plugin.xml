@@ -36,6 +36,7 @@
 
     <extension point="org.jkiss.dbeaver.expressions">
         <namespace id="math" class="java.lang.Math" description="Math functions"/>
+        <namespace id="content" class="org.jkiss.dbeaver.registry.expressions.ContentExpressionFunctions" description="Content handling functions"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">

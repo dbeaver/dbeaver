@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
     private Text previewText;
 
     public EditVirtualAttributePage(ResultSetViewer viewer, DBVEntityAttribute vAttr) {
-        super("Add virtual column", DBIcon.TREE_COLUMN);
+        super(ResultSetMessages.virtual_edit_attribute_viewer_title, DBIcon.TREE_COLUMN);
         this.viewer = viewer;
         this.vAttr = vAttr;
     }
@@ -82,8 +83,12 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
             index++;
             name = vAttr.getName() + index;
         }
-        nameText = UIUtils.createLabelText(panel, "Column Name", name);
-        typeCombo = UIUtils.createLabelCombo(panel, "Type Name", "Column type name", SWT.BORDER | SWT.DROP_DOWN);
+        nameText = UIUtils.createLabelText(panel, ResultSetMessages.virtual_edit_attribute_label_text_column_name, name);
+        typeCombo = UIUtils.createLabelCombo(
+            panel,
+            ResultSetMessages.virtual_edit_attribute_label_combo_type_name,
+            ResultSetMessages.virtual_edit_attribute_label_combo_type_name_tip,
+            SWT.BORDER | SWT.DROP_DOWN);
 
         {
             DBPDataTypeProvider dataTypeProvider = DBUtils.getAdapter(DBPDataTypeProvider.class, dataSource);
@@ -121,7 +126,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
                 new StringContentProposalProvider(typeCombo.getItems()));
         }
 
-        kindCombo = UIUtils.createLabelCombo(panel, "Data Kind", "Column data kind", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        kindCombo = UIUtils.createLabelCombo(panel, ResultSetMessages.virtual_edit_attribute_label_combo_data_kind, ResultSetMessages.virtual_edit_attribute_label_combo_data_kind_tip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         for (DBPDataKind dataKind : DBPDataKind.values()) {
             if (dataKind != DBPDataKind.UNKNOWN) {
                 kindCombo.add(dataKind.name());
@@ -129,7 +134,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
         }
         kindCombo.setText(vAttr.getDataKind().name());
 
-        expressionText = UIUtils.createLabelText(panel, "Expression", CommonUtils.notEmpty(vAttr.getExpression()), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
+        expressionText = UIUtils.createLabelText(panel, ResultSetMessages.virtual_edit_attribute_label_text_expression, CommonUtils.notEmpty(vAttr.getExpression()), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 300;
         gd.heightHint = expressionText.getLineHeight() * 5;
@@ -147,8 +152,8 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
             new SmartTextContentAdapter(),
             new StringContentProposalProvider(expressionProposals.toArray(new String[0])));
 
-        previewText = UIUtils.createLabelText(panel, "Preview", "", SWT.BORDER | SWT.READ_ONLY);
-        previewText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        previewText = UIUtils.createLabelText(panel, ResultSetMessages.virtual_edit_attribute_label_text_preview, "", SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
+        previewText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         expressionText.addModifyListener(e -> generatePreviewValue());
 
@@ -158,14 +163,20 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
     }
 
     private void generatePreviewValue() {
+        String expression = expressionText.getText();
         if (viewer == null) {
+            try {
+                DBVUtils.parseExpression(expression);
+                previewText.setText(ResultSetMessages.virtual_edit_attribute_preview_message_editor);
+            } catch (Exception e) {
+                previewText.setText(GeneralUtils.getExpressionParseMessage(e));
+            }
             return;
         }
-        String expression = expressionText.getText();
 
         ResultSetRow currentRow = viewer.getCurrentRow();
         if (currentRow == null) {
-            previewText.setText("Select a row in data viewer to see expression results");
+            previewText.setText(ResultSetMessages.virtual_edit_attribute_preview_message_current_text);
             return;
         }
         try {
@@ -189,6 +200,6 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
 
     @Override
     public String getHelpContextId() {
-        return "virtual-column-expressions";
+        return "Virtual-column-expressions";
     }
 }
