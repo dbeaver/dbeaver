@@ -265,7 +265,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         bulkLoadManager = bulkLoader.createBulkLoad(
                             targetSession, targetObject, attributes, executionSource, settings.getCommitAfterRows(), options);
                     } catch (Exception e) {
-                        log.debug("Error creating bulk loader", e);
+                        throw new DBCException("Error creating bulk loader", e);
                     }
                 }
             }
