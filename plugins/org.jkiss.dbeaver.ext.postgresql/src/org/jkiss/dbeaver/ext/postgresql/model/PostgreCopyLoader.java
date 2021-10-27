@@ -140,15 +140,24 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     @Override
     public void addRow(@NotNull DBCSession session, @NotNull Object[] attributeValues) throws DBCException {
         StringBuilder line = new StringBuilder();
-        for (int i = 0; i < mappings.length; i++) {
-            if (i > 0) {
-                line.append(",");
-            }
-            AttrMapping attr = mappings[i];
-            if (attr.srcPos >= 0) {
-                String strValue = attr.valueHandler.getValueDisplayString(
-                    attr.tableAttr, attributeValues[attr.srcPos], DBDDisplayFormat.NATIVE);
-                line.append(strValue);
+        boolean hasCell = false;
+        for (AttrMapping mapping : mappings) {
+            if (mapping.srcPos >= 0) {
+                if (hasCell) {
+                    line.append(",");
+                }
+                Object srcValue = attributeValues[mapping.srcPos];
+                if (!DBUtils.isNullValue(srcValue)) {
+                    if (srcValue instanceof Number) {
+                        line.append(srcValue);
+                    } else {
+                        String strValue = mapping.valueHandler.getValueDisplayString(
+                            mapping.tableAttr, srcValue, DBDDisplayFormat.NATIVE);
+                        strValue = convertStringValueToCell(strValue);
+                        line.append(strValue);
+                    }
+                }
+                hasCell = true;
             }
         }
         line.append("\n");
@@ -157,6 +166,12 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
         } catch (IOException e) {
             throw new DBCException("Error writing CSV line", e);
         }
+    }
+
+    private String convertStringValueToCell(String strValue) {
+        return '"' +
+            strValue.replace("\"", "\\\"") +
+            '"';
     }
 
     @Override
@@ -182,7 +197,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
         session.getProgressMonitor().subTask("Copy into " + tableFQN);
 
-        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT csv)";
+        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV)";
 
         try {
             Reader csvReader = new FileReader(csvFile, StandardCharsets.UTF_8);
