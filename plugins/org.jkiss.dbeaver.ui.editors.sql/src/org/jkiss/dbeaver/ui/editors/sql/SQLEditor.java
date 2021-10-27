@@ -2102,9 +2102,7 @@ public class SQLEditor extends SQLEditorBase implements
             item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title + " - " + maxPlanNumber);
             if (sqlQuery != null) {
                 // Prepare query for tooltip
-                String preparedText = sqlQuery.getText()
-                    .replaceAll(CommonUtils.getLineSeparator() + "\t" + CommonUtils.getLineSeparator(), "")
-                    .replaceAll(CommonUtils.getLineSeparator() + CommonUtils.getLineSeparator(), "");
+                String preparedText = sqlQuery.getText().replaceAll("[\n\r\t]{3,}", "");
                 if (preparedText.length() > 300) {
                     item.setToolTipText(preparedText.substring(0, 300) + "...");
                 } else {
