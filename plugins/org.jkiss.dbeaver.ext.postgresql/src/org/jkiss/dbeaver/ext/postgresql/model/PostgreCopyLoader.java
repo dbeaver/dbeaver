@@ -200,8 +200,10 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
         String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV)";
 
         try {
-            Reader csvReader = new FileReader(csvFile, StandardCharsets.UTF_8);
-            Object rowCount = copyInMethod.invoke(copyManager, queryText, csvReader, copyBufferSize);
+            Object rowCount;
+            try (Reader csvReader = new FileReader(csvFile, StandardCharsets.UTF_8)) {
+                rowCount = copyInMethod.invoke(copyManager, queryText, csvReader, copyBufferSize);
+            }
 
             // Commit changes
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
