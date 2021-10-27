@@ -117,7 +117,7 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
                     "max(max_date) AS max_date," +
                     "any(engine) as engine\n" +
                     "FROM system.parts\n" +
-                    "WHERE database=? AND table=?\n" +
+                    "WHERE active AND database=? AND table=?\n" +
                     "GROUP BY table"))
             {
                 dbStat.setString(1, getContainer().getName());
