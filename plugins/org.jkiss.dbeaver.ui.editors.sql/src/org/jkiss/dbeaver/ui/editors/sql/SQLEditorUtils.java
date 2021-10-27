@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -33,10 +34,12 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -138,9 +141,9 @@ public class SQLEditorUtils {
             scriptsFolder.create(true, true, new NullProgressMonitor());
         }
 
+        final DBPDataSourceContainer dataSourceContainer = navigatorContext.getDataSourceContainer();
         if (CommonUtils.equalObjects(scriptsRootFolder, scriptsFolder)) {
             // We are in the root folder
-            DBPDataSourceContainer dataSourceContainer = navigatorContext.getDataSourceContainer();
             if (dataSourceContainer != null) {
                 if (dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS)) {
                     // Create script folders according to connection folders
@@ -176,7 +179,7 @@ public class SQLEditorUtils {
 
         // Make new script file
         IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
-        tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
+        tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);
 
         // Save ds container reference
         if (navigatorContext.getDataSourceContainer() != null) {
@@ -195,6 +198,25 @@ public class SQLEditorUtils {
                 description = "<empty>";
             }
             return description;
+        }
+        return "";
+    }
+
+    @NotNull
+    public static String getNewScriptTemplate(@NotNull DBPPreferenceStore store) {
+        return store.getString(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE);
+    }
+
+    @NotNull
+    public static String getResolvedNewScriptTemplate(@Nullable DBPDataSourceContainer container) {
+        if (container != null) {
+            final DBPPreferenceStore store = container.getPreferenceStore();
+            if (store.getBoolean(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED)) {
+                return GeneralUtils.replaceVariables(
+                    getNewScriptTemplate(store),
+                    new SQLNewScriptTemplateVariablesResolver(container, container.getConnectionConfiguration())
+                );
+            }
         }
         return "";
     }

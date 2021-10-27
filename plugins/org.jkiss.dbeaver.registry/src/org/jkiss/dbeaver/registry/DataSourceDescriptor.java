@@ -94,6 +94,7 @@ public class DataSourceDescriptor
         {DBPConnectionConfiguration.VARIABLE_PASSWORD, "database password (plain)"},
         {DBPConnectionConfiguration.VARIABLE_URL, "connection URL"},
         {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
+        {DBPConnectionConfiguration.VARIABLE_DATASOURCE, "datasource"},
 
         {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
         {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},

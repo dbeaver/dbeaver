@@ -830,17 +830,21 @@ public final class SQLUtils {
         return alias;
     }
 
-        @NotNull
-    public static String generateCommentLine(DBPDataSource dataSource, String comment)
-    {
-        String slComment = SQLConstants.ML_COMMENT_END;
+    @NotNull
+    public static String generateCommentLine(@Nullable DBPDataSource dataSource, @NotNull String comment) {
+        final String separator = GeneralUtils.getDefaultLineSeparator();
+        String slComment = SQLConstants.SL_COMMENT;
         if (dataSource != null) {
             String[] slComments = dataSource.getSQLDialect().getSingleLineComments();
             if (!ArrayUtils.isEmpty(slComments)) {
                 slComment = slComments[0];
             }
         }
-        return slComment + " " + comment + GeneralUtils.getDefaultLineSeparator();
+        final StringBuilder sb = new StringBuilder();
+        for (String line : comment.split("\n|\r|\r\n")) {
+            sb.append(slComment).append(" ").append(line).append(separator);
+        }
+        return sb.toString();
     }
 
     public static String generateParamList(int paramCount) {
