@@ -438,7 +438,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
                 id="oracle_native"
-                label="Database Native"
+                label="Oracle Database Native"
                 description="Oracle native authentication (name/password)"
                 class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative"
                 default="true">

@@ -342,6 +342,17 @@ public class ResultSetMessages extends NLS {
     public static String virtual_edit_columns_page_confirm_action_delete;
     public static String virtual_edit_columns_page_confirm_action_question_delete_column;
 
+    public static String virtual_edit_attribute_viewer_title;
+    public static String virtual_edit_attribute_label_text_column_name;
+    public static String virtual_edit_attribute_label_combo_type_name;
+    public static String virtual_edit_attribute_label_combo_type_name_tip;
+    public static String virtual_edit_attribute_label_combo_data_kind;
+    public static String virtual_edit_attribute_label_combo_data_kind_tip;
+    public static String virtual_edit_attribute_label_text_expression;
+    public static String virtual_edit_attribute_label_text_preview;
+    public static String virtual_edit_attribute_preview_message_editor;
+    public static String virtual_edit_attribute_preview_message_current_text;
+
     public static String validate_unique_key_usage_dialog_title;
     public static String validate_unique_key_usage_dialog_main_question;
     public static String validate_unique_key_usage_dialog_use_all_columns;

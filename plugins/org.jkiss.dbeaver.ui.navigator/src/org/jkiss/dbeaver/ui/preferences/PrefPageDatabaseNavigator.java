@@ -54,6 +54,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.navigator"; //$NON-NLS-1$
 
     private Button expandOnConnectCheck;
+    private Button restoreFilterCheck;
     private Text restoreStateDepthText;
     private Button sortCaseInsensitiveCheck;
     private Button sortFoldersFirstCheck;
@@ -132,6 +133,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             Group miscGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             expandOnConnectCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree, "", false, 2);
+            restoreFilterCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_restore_filter, "", false, 2);
 
             longListFetchSizeText = UIUtils.createLabelText(miscGroup, UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size, "", SWT.BORDER);
             longListFetchSizeText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size_tip);
@@ -153,6 +155,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         expandOnConnectCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
+        restoreFilterCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER));
         restoreStateDepthText.setText(store.getString(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH));
         showObjectTipsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS));
         showToolTipsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS));
@@ -194,6 +197,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER, restoreFilterCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH, restoreStateDepthText.getText());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, showObjectTipsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS, showToolTipsCheck.getSelection());

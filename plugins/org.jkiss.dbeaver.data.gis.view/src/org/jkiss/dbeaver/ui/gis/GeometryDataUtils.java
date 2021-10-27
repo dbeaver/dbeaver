@@ -17,11 +17,17 @@
 
 package org.jkiss.dbeaver.ui.gis;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
@@ -77,21 +83,28 @@ public class GeometryDataUtils {
         return result;
     }
 
-    public static void setGeometryProperties(IResultSetController controller, GeomAttrs geomAttrs, DBGeometry geometry, ResultSetRow row) {
-        // Now extract all geom values from data
-        ResultSetModel model = controller.getModel();
-        if (row != null) {
-            // Now get description
-            if (!geomAttrs.descAttrs.isEmpty()) {
-                Map<String, Object> properties = new LinkedHashMap<>();
-                for (DBDAttributeBinding da : geomAttrs.descAttrs) {
-                    Object descValue = model.getCellValue(da, row);
-                    if (!DBUtils.isNullValue(descValue)) {
-                        properties.put(da.getName(), descValue);
-                    }
-                }
-                geometry.setProperties(properties);
+    public static void setGeometryProperties(@NotNull IResultSetController controller, @NotNull GeomAttrs geomAttrs, @NotNull DBGeometry geometry, @NotNull RGB geometryColor, @NotNull ResultSetRow row) {
+        final ResultSetModel model = controller.getModel();
+        final Map<String, Object> info = new LinkedHashMap<>();
+        for (DBDAttributeBinding binding : geomAttrs.descAttrs) {
+            final Object description = model.getCellValue(binding, row);
+            if (!DBUtils.isNullValue(description) && !(description instanceof String && ((String) description).isEmpty())) {
+                info.put(binding.getName(), description);
             }
+        }
+        final Map<String, Object> properties = new LinkedHashMap<>();
+        properties.put("id", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
+        properties.put("color", String.format("#%02x%02x%02x", geometryColor.red, geometryColor.green, geometryColor.blue));
+        properties.put("info", info);
+        geometry.setProperties(properties);
+    }
+
+    @NotNull
+    public static RGB makeGeometryColor(int index) {
+        if (index == 0) {
+            return Display.getCurrent().getSystemColor(SWT.COLOR_BLUE).getRGB();
+        } else {
+            return UIColors.getColor(index).getRGB();
         }
     }
 
