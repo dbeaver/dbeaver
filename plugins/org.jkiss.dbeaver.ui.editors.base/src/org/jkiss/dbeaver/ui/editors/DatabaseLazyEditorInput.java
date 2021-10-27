@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -36,6 +37,8 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -265,6 +268,12 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
                 throw new DBException("Navigator node '" + nodePath + "' not found");
             }
             if (node instanceof DBNDatabaseNode) {
+                DBSObject object = ((DBNDatabaseNode) node).getObject();
+                DBSInstance instance = DBUtils.getObjectOwnerInstance(object);
+                if (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected()) {
+                    ((DBSInstanceLazy) instance).checkInstanceConnection(monitor);
+                }
+
                 DatabaseNodeEditorInput realInput = new DatabaseNodeEditorInput((DBNDatabaseNode) node);
                 realInput.setDefaultFolderId(activeFolderId);
                 realInput.setDefaultPageId(activePageId);
