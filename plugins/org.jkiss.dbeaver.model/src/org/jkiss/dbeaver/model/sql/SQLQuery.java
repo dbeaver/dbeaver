@@ -209,7 +209,7 @@ public class SQLQuery implements SQLScriptElement {
 
     private boolean isPotentiallySingleSourceSelect(PlainSelect plainSelect) {
         return CommonUtils.isEmpty(plainSelect.getJoins()) &&
-            (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
+            (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressionList().getExpressions())) &&
             CommonUtils.isEmpty(plainSelect.getIntoTables());
     }
 
