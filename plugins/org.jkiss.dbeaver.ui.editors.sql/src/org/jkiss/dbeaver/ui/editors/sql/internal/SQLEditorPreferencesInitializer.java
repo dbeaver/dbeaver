@@ -18,9 +18,12 @@ package org.jkiss.dbeaver.ui.editors.sql.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -116,6 +119,9 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
 
         // Text editor default preferences
         PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
+
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE, SQLUtils.generateCommentLine(null, SQLEditorMessages.pref_page_sql_editor_new_script_template_template));
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED, false);
     }
 
 }

@@ -146,6 +146,11 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_results_orientation;
     public static String pref_page_sql_editor_label_results_orientation_tip;
     public static String pref_page_sql_editor_link_text_editor;
+    public static String pref_page_sql_editor_new_script_template_group;
+    public static String pref_page_sql_editor_new_script_template_enable_checkbox;
+    public static String pref_page_sql_editor_new_script_template_variables;
+    public static String pref_page_sql_editor_new_script_template_variables_tip;
+    public static String pref_page_sql_editor_new_script_template_template;
     // SQLExecute
     public static String pref_page_sql_editor_label_sql_timeout_tip;
     public static String pref_page_sql_editor_enable_parameters_in_ddl;
