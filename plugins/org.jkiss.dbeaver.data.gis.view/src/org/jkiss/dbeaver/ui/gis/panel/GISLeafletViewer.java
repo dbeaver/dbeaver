@@ -324,19 +324,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 if (CommonUtils.isEmpty(value.getProperties())) {
                     geomTipValues.add("null");
                 } else {
-                    Map<String, Object> simplifiedProperties = new LinkedHashMap<>();
-                    for (Map.Entry<String, Object> pe : value.getProperties().entrySet()) {
-                        Object pv = pe.getValue();
-                        if (pv instanceof String || pv instanceof Number || pv instanceof Boolean || pv == null) {
-                            // No changes
-                        } else if (pv instanceof Map) {
-                            simplifiedProperties.putAll((Map<? extends String, ?>) pv);
-                        } else {
-                            pv = CommonUtils.toString(pv);
-                        }
-                        simplifiedProperties.put(pe.getKey(), pv);
-                    }
-                    geomTipValues.add(gson.toJson(simplifiedProperties));
+                    geomTipValues.add(gson.toJson(value.getProperties()));
                 }
             } catch (Exception e) {
                 log.debug(e);
