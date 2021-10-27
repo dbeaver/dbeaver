@@ -21,12 +21,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreGeometryValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKBWriter;
 
 import java.sql.SQLException;
+import java.sql.Types;
 
 public class RedshiftGeometryValueHandler extends PostgreGeometryValueHandler {
     public static final RedshiftGeometryValueHandler INSTANCE = new RedshiftGeometryValueHandler();
@@ -36,6 +41,28 @@ public class RedshiftGeometryValueHandler extends PostgreGeometryValueHandler {
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         return getValueFromObject(session, type, resultSet.getString(index), false, false);
+    }
+
+    @Override
+    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+        int valueSRID = 0;
+        if (value instanceof DBGeometry) {
+            valueSRID = ((DBGeometry) value).getSRID();
+            value = ((DBGeometry) value).getRawValue();
+        }
+        if (valueSRID == 0 && paramType instanceof GisAttribute) {
+            valueSRID = ((GisAttribute) paramType).getAttributeGeometrySRID(session.getProgressMonitor());
+        }
+        if (value == null) {
+            statement.setNull(paramIndex, paramType.getTypeID());
+        } else if (value instanceof Geometry) {
+            if (((Geometry) value).getSRID() == 0) {
+                ((Geometry) value).setSRID(valueSRID);
+            }
+            statement.setString(paramIndex, WKBWriter.toHex(new WKBWriter(3).write((Geometry) value)));
+        } else {
+            throw new DBCException("Can't bind geometry value " + value);
+        }
     }
 
     @Nullable
