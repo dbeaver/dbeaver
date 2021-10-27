@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -254,8 +256,14 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
         }
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
-            JDBCUtils.executeSQL(session, "SET search_path = " + spString);
-        } catch (SQLException e) {
+            DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
+                try {
+                    JDBCUtils.executeSQL(session, "SET search_path = " + spString);
+                } catch (SQLException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (DBException e) {
             throw new DBCException("Error setting search path", e, this);
         }
     }
