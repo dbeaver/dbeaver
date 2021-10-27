@@ -146,7 +146,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
         }
         if (s3LocationText != null) {
-            connectionInfo.setDatabaseName(GeneralUtils.replaceVariables(s3LocationText.getText().trim(), new DataSourceVariableResolver(dataSource, connectionInfo)));
+            connectionInfo.setDatabaseName(s3LocationText.getText().trim());
         }
         super.saveSettings(dataSource);
     }
