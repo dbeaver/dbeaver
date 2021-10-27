@@ -25,16 +25,25 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
 
 /**
  * AthenaConnectionPage
@@ -75,6 +84,16 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             s3LocationText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_s3_location, ""); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
             s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);
+
+            final String[] variables = getAvailableVariables();
+            final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
+                .stream(variables)
+                .map(GeneralUtils::variablePattern)
+                .toArray(String[]::new));
+
+            UIUtils.setContentProposalToolTip(s3LocationText, "S3 location pattern", variables);
+
+            ContentAssistUtils.installContentProposal(s3LocationText, new SmartTextContentAdapter(), proposalProvider);
         }
 
         createAuthPanel(settingsGroup, 1);
@@ -127,7 +146,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
         }
         if (s3LocationText != null) {
-            connectionInfo.setDatabaseName(s3LocationText.getText().trim());
+            connectionInfo.setDatabaseName(GeneralUtils.replaceVariables(s3LocationText.getText().trim(), new DataSourceVariableResolver(dataSource, connectionInfo)));
         }
         super.saveSettings(dataSource);
     }
@@ -137,6 +156,12 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         return new IDialogPage[]{
             driverPropsPage
         };
+    }
+
+    @NotNull
+    private String[] getAvailableVariables() {
+        return Arrays.stream(DataSourceDescriptor.CONNECT_VARIABLES)
+            .map(x -> x[0]).distinct().toArray(String[]::new);
     }
 
 }

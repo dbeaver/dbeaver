@@ -49,6 +49,8 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
 
+    public static final String VARIABLE_DATE = "date";
+
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
     private String hostName;

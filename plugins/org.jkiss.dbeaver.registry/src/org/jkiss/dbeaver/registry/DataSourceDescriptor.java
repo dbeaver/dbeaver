@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,6 +98,8 @@ public class DataSourceDescriptor
 
         {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
         {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
+
+        {DBPConnectionConfiguration.VARIABLE_DATE, "current date"},
 
         {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
         {SystemVariablesResolver.VAR_HOME, "OS user home path"},
@@ -1450,7 +1453,7 @@ public class DataSourceDescriptor
             return false;
         }
         DataSourceDescriptor source = (DataSourceDescriptor) obj;
-        return 
+        return
             CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
             CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
             CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
@@ -1504,6 +1507,7 @@ public class DataSourceDescriptor
                 case DBPConnectionConfiguration.VARIABLE_PASSWORD: return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL: return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE: return configuration.getConnectionType().getId();
+                case DBPConnectionConfiguration.VARIABLE_DATE: return RuntimeUtils.getCurrentDate();
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
