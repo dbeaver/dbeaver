@@ -28,6 +28,7 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     public static final PostgreGeometryTypeHandler INSTANCE = new PostgreGeometryTypeHandler();
 
     private static final int EMPTY_GEOMETRY                         = 0xffff_ffff;
+    private static final int EMPTY_SRID                             = 0x00ff_ffff;
 
     private static final int GEOMETRY_TYPE_GEOMETRY                 = 0x0000_0000;
     private static final int GEOMETRY_TYPE_POINT                    = 0x0000_0004;
@@ -167,7 +168,8 @@ public class PostgreGeometryTypeHandler extends PostgreTypeHandler {
     }
 
     public static int getGeometrySRID(int typmod) {
-        return (typmod & GEOMETRY_MASK_SRID) >>> 8;
+        final int srid = (typmod & GEOMETRY_MASK_SRID) >>> 8;
+        return srid == EMPTY_SRID ? 0 : srid;
     }
 
     private static int getGeometryModifiers(@NotNull String name, int srid) throws DBException {
