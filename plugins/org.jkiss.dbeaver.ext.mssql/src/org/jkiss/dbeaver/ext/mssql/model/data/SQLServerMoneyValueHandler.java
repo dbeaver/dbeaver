@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.data;
 
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,6 +38,9 @@ public class SQLServerMoneyValueHandler extends JDBCStringValueHandler {
             int index)
             throws SQLException
     {
+        if (type.getTypeName().equals(SQLServerConstants.TYPE_SQL_VARIANT)) {
+            return resultSet.getObject(index);
+        }
         return resultSet.getString(index);
     }
 
@@ -44,6 +48,8 @@ public class SQLServerMoneyValueHandler extends JDBCStringValueHandler {
     public void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
+        } else if (paramType.getTypeName().equals(SQLServerConstants.TYPE_SQL_VARIANT)) {
+            statement.setObject(paramIndex, value);
         } else {
             statement.setObject(paramIndex, value.toString());
         }
