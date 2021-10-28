@@ -30,7 +30,7 @@ public class SQLServerSQLVariantValueHandler extends JDBCStringValueHandler {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {
-            statement.setObject(paramIndex, value.toString());
+            statement.setObject(paramIndex, value);
         }
     }
 }
