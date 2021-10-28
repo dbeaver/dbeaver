@@ -54,6 +54,7 @@ public class ExasolMessages extends NLS {
 
 	public static String dialog_table_tools_progress;
 	public static String dialog_table_tools_success_title;
+	public static String dialog_table_open_input_directory;
 	public static String dialog_table_open_output_directory;
 	public static String dialog_table_tools_export_title;
 	public static String dialog_table_tools_export_compress;
