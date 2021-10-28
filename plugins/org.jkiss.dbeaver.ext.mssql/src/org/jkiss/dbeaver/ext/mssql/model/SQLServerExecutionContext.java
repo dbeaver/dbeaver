@@ -142,43 +142,50 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+        boolean refreshed = false;
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema and database")) {
             String currentDatabase = null;
+            String currentSchema = null;
             try {
                 try (JDBCStatement dbStat = session.createStatement()) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT db_name(), schema_name(), original_login()")) {
                         dbResult.next();
                         currentDatabase = dbResult.getString(1);
-                        activeSchemaName = dbResult.getString(2);
+                        currentSchema = dbResult.getString(2);
                         currentUser = dbResult.getString(3);
                     }
                 }
             } catch (Throwable e) {
                 log.debug("Error getting current user: " + e.getMessage());
             }
-            if (CommonUtils.isEmpty(activeSchemaName)) {
-                activeSchemaName = SQLServerConstants.DEFAULT_SCHEMA_NAME;
+            if (!CommonUtils.isEmpty(currentDatabase) && (activeDatabaseName == null || !CommonUtils.equalObjects(currentDatabase, activeDatabaseName))) {
+                activeDatabaseName = currentDatabase;
+                refreshed = true;
+            }
+            if (CommonUtils.isEmpty(currentSchema)) {
+                currentSchema = SQLServerConstants.DEFAULT_SCHEMA_NAME;
+            }
+            if (activeSchemaName == null || !CommonUtils.equalObjects(currentSchema, activeSchemaName)) {
+                activeSchemaName = currentSchema;
+                refreshed = true;
             }
             if (useBootstrapSettings) {
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) && supportsCatalogChange()) {
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) && supportsCatalogChange() && !CommonUtils.equalObjects(bootstrap.getDefaultCatalogName(), activeDatabaseName)) {
                     setCurrentDatabase(monitor, bootstrap.getDefaultCatalogName());
+                    refreshed = true;
                 }
 /*
                 if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && supportsSchemaChange()) {
                     setCurrentSchema(monitor, bootstrap.getDefaultSchemaName());
+                    refreshed = true;
                 }
 */
             }
-
-            if (!CommonUtils.isEmpty(currentDatabase) && !CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
-                activeDatabaseName = currentDatabase;
-                return true;
-            }
         }
 
-        return false;
+        return refreshed;
     }
 
     boolean setCurrentDatabase(DBRProgressMonitor monitor, SQLServerDatabase object) throws DBCException {
