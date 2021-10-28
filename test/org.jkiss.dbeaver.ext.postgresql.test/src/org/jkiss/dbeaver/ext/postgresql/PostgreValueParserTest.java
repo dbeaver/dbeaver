@@ -183,7 +183,7 @@ public class PostgreValueParserTest {
     }
 
     @Test
-    public void parseArrayString() {
+    public void parseArrayString() throws DBCException {
         List<String> stringList = new ArrayList<>();
         stringList.add("A");
         stringList.add("B");

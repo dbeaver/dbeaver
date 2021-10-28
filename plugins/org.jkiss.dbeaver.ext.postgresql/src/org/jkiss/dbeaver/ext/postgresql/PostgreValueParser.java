@@ -109,7 +109,6 @@ public class PostgreValueParser {
                 return string;
             } else {
                 if (componentType instanceof PostgreDataType) {
-                    checkAmountOfBrackets(string);
                     List<Object> itemStrings = parseArrayString(string, ",");
                     return startTransformListOfValuesIntoArray(session, (PostgreDataType)componentType, itemStrings);
                 } else {
@@ -119,44 +118,6 @@ public class PostgreValueParser {
             }
         } catch (Exception e) {
             throw new DBCException("Error extracting array '" + arrayType.getFullTypeName() + "' items", e);
-        }
-    }
-
-    private static void checkAmountOfBrackets(String string) throws DBCException {
-        int mostLeftMustacheCount = 0;
-        for (int i = 0; i < string.length(); i++) {
-            if (string.charAt(i) == '{') {
-                mostLeftMustacheCount++;
-            } else {
-                break;
-            }
-        }
-        int mostRightMustacheCount = 0;
-        for (int i = string.length() - 1; i > string.length() - 1 - mostLeftMustacheCount; i--) {
-            if (string.charAt(i) == '}') {
-                mostRightMustacheCount++;
-            } else {
-                break;
-            }
-        }
-        if (mostLeftMustacheCount != mostRightMustacheCount) {
-            throw new DBCException("Amount of most left and most right array's brackets is not equal");
-        }
-
-        int leftMustacheCount = 0;
-        for (int i = 0; i < string.length(); i++) {
-            if (string.charAt(i) == '{') {
-                leftMustacheCount++;
-            }
-        }
-        int rightMustacheCount = 0;
-        for (int i = 0; i < string.length(); i++) {
-            if (string.charAt(i) == '}') {
-                rightMustacheCount++;
-            }
-        }
-        if (leftMustacheCount != rightMustacheCount) {
-            throw new DBCException("Amount of array's brackets is not equal");
         }
     }
 
@@ -244,7 +205,7 @@ public class PostgreValueParser {
 
     // Copied from pgjdbc array parser class
     // https://github.com/pgjdbc/pgjdbc/blob/master/pgjdbc/src/main/java/org/postgresql/jdbc/PgArray.java
-    public static List<Object> parseArrayString(String fieldString, String delimiter) {
+    public static List<Object> parseArrayString(String fieldString, String delimiter) throws DBCException {
         List<Object> arrayList = new ArrayList<>();
         if (CommonUtils.isEmpty(fieldString)) {
             return arrayList;
@@ -254,7 +215,7 @@ public class PostgreValueParser {
         char delim = delimiter.charAt(0);//connection.getTypeInfo().getArrayDelimiter(oid);
 
         if (fieldString != null) {
-
+            int bracePairsCount = 0;
             char[] chars = fieldString.toCharArray();
             StringBuilder buffer = null;
             boolean insideString = false;
@@ -298,6 +259,7 @@ public class PostgreValueParser {
                         p.add(a);
                         dims.add(a);
                     }
+                    bracePairsCount++;
                     curArray = dims.get(dims.size() - 1);
 
                     // number of dimensions
@@ -344,6 +306,7 @@ public class PostgreValueParser {
                     // when end of an array
                     if (chars[i] == '}') {
                         dims.remove(dims.size() - 1);
+                        bracePairsCount--;
 
                         // when multi-dimension
                         if (!dims.isEmpty()) {
@@ -359,6 +322,9 @@ public class PostgreValueParser {
                 if (buffer != null) {
                     buffer.append(chars[i]);
                 }
+            }
+            if (bracePairsCount != 0) {
+                throw new DBCException("Amount of array's braces is not equal");
             }
         }
         return arrayList;
