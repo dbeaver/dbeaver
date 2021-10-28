@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 public class DataSourceVariableResolver extends SystemVariablesResolver {
@@ -55,6 +56,8 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 return dataSourceContainer == null ? null : dataSourceContainer.getProject().getAbsolutePath().getAbsolutePath();
             case DBPConnectionConfiguration.VAR_PROJECT_NAME:
                 return dataSourceContainer == null ? null : dataSourceContainer.getProject().getName();
+            case DBPConnectionConfiguration.VARIABLE_DATE:
+                return RuntimeUtils.getCurrentDate();
             default:
                 String var = super.get(name);
                 if (var != null) {
