@@ -1013,4 +1013,12 @@ public class CommonUtils {
         matcher.appendTail(sb);
         return sb.toString();
     }
+
+    @Nullable
+    public static <T> T tryCast(@Nullable Object obj, Class<T> tClass) {
+        if (tClass.isInstance(obj)) {
+            return tClass.cast(obj);
+        }
+        return null;
+    }
 }
