@@ -150,7 +150,7 @@ public class SQLSyntaxManager {
             }
         }
 
-        String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
+        String extraDelimiters = CommonUtils.toString(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER), SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
         while (st.hasMoreTokens()) {
             String delim = st.nextToken();

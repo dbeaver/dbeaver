@@ -426,4 +426,13 @@
         <initializer class="org.jkiss.dbeaver.ui.app.standalone.DBeaverApplicationPreferenceInitializer"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.commandLine">
+        <parameter name="translateSQL"
+            longName="translate-sql-script"
+            description="Translates sql script from one dialect to another."
+            exitAfterExecute="true"
+            hasArg="true"
+            handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
+    </extension>
+
 </plugin>

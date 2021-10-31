@@ -222,7 +222,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     public String getString(String name)
     {
         String value = properties.get(name);
-        if (value == null) {
+        if (value == null && parentStore != null) {
             if (parentStore.isDefault(name)) {
                 value = defaultProperties.get(name);
             }
@@ -237,7 +237,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     public String getDefaultString(String name)
     {
         String value = defaultProperties.get(name);
-        if (value == null) {
+        if (value == null && parentStore != null) {
             if (parentStore.isDefault(name)) {
                 return parentStore.getDefaultString(name);
             } else {
@@ -250,7 +250,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     @Override
     public boolean isDefault(String name)
     {
-        return (!properties.containsKey(name) && (defaultProperties.containsKey(name) || parentStore.isDefault(name)));
+        return (!properties.containsKey(name) && (defaultProperties.containsKey(name) || (parentStore != null && parentStore.isDefault(name))));
     }
 
     public boolean isSet(String name)
@@ -266,7 +266,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
 
     public String[] preferenceNames()
     {
-        return properties.keySet().toArray(new String[properties.size()]);
+        return properties.keySet().toArray(new String[0]);
     }
 
     @Override

@@ -107,7 +107,7 @@ public class SQLFormatterConfiguration {
     }
 
     public boolean isFunction(String name) {
-        return syntaxManager.getDialect().getFunctions(dataSource).contains(name.toUpperCase(Locale.ENGLISH));
+        return syntaxManager.getDialect().getFunctions().contains(name.toUpperCase(Locale.ENGLISH));
     }
 
     public Object getProperty(String name) {

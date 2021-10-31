@@ -23,7 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -747,20 +746,16 @@ public class SQLScriptParser
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
-    public static List<SQLScriptElement> parseScript(SQLDialect dialect, String sqlScriptContent) {
+    public static List<SQLScriptElement> parseScript(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dialect, new SimplePreferenceStore() {
-            @Override
-            public void save() throws IOException {
-                // Noop
-            }
-        });
+        syntaxManager.init(dialect, preferenceStore);
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules();
 
         Document sqlDocument = new Document(sqlScriptContent);
 
         SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
+        parserContext.setPreferenceStore(preferenceStore);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 

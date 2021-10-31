@@ -20,7 +20,6 @@ import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
@@ -281,11 +280,13 @@ public class DBeaverCommandLine
                 if (param.hasArg) {
                     for (String optValue : commandLine.getOptionValues(param.name)) {
                         param.handler.handleParameter(
+                            commandLine,
                             param.name,
                             optValue);
                     }
                 } else {
                     param.handler.handleParameter(
+                        commandLine,
                         param.name,
                         null);
                 }

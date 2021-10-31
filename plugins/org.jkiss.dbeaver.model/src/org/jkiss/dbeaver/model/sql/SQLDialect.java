@@ -115,7 +115,7 @@ public interface SQLDialect {
     @NotNull
     Set<String> getReservedWords();
     @NotNull
-    Set<String> getFunctions(@Nullable DBPDataSource dataSource);
+    Set<String> getFunctions();
     @NotNull
     Set<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable

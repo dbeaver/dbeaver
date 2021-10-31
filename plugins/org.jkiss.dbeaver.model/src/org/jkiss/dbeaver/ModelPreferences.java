@@ -152,6 +152,10 @@ public final class ModelPreferences
         return preferences;
     }
 
+    public static void setPreferences(DBPPreferenceStore preferences) {
+        ModelPreferences.preferences = preferences;
+    }
+
     public static void setMainBundle(Bundle mainBundle) {
         ModelPreferences.mainBundle = mainBundle;
         ModelPreferences.preferences = new BundlePreferenceStore(mainBundle);

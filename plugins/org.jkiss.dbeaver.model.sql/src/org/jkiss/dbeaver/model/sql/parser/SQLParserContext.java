@@ -43,6 +43,9 @@ public class SQLParserContext {
     private final IDocument document;
     private TPRuleBasedScanner scanner;
 
+    @Nullable
+    private DBPPreferenceStore preferenceStore;
+
     public SQLParserContext(@Nullable DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
         this.dataSource = dataSource;
         this.syntaxManager = syntaxManager;
@@ -83,10 +86,17 @@ public class SQLParserContext {
     }
 
     public DBPPreferenceStore getPreferenceStore() {
+        if (preferenceStore != null) {
+            return preferenceStore;
+        }
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ?
             DBWorkbench.getPlatform().getPreferenceStore() :
             dataSource.getContainer().getPreferenceStore();
+    }
+
+    public void setPreferenceStore(@Nullable DBPPreferenceStore preferenceStore) {
+        this.preferenceStore = preferenceStore;
     }
 
     void startScriptEvaluation() {
