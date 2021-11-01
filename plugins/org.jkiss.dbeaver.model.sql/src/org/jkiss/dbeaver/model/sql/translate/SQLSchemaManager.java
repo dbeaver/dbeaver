@@ -17,7 +17,9 @@
 
 package org.jkiss.dbeaver.model.sql.translate;
 
-import org.osgi.framework.Version;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.io.File;
 
@@ -35,16 +37,46 @@ public final class SQLSchemaManager {
             "SCHEMA_VERSION INTEGER NOT NULL," +
             "UPDATE_TIME VARCHAR(32) NOT NULL)";
 
-    private File schemaCreateScriptPath;
-    private String schemaUpdateScriptPrefix;
+    private final String schemaId;
 
+    private final File schemaCreateScriptPath;
+    private final String schemaUpdateScriptPrefix;
+
+    private SQLDialect targetDatabaseDialect;
     private String targetDatabaseURL;
     private String targetDatabaseUser;
     private String targetDatabasePassword;
 
-    private String targetSchemaName;
-    private String versionTableName;
+    private String targetDatabaseName;
 
-    private Version obsoleteVersionNumber;
+    private int schemaVersionStart;
+
+    public SQLSchemaManager(String schemaId, File schemaCreateScriptPath, String schemaUpdateScriptPrefix) {
+        this.schemaId = schemaId;
+        this.schemaCreateScriptPath = schemaCreateScriptPath;
+        this.schemaUpdateScriptPrefix = schemaUpdateScriptPrefix;
+    }
+
+    public void initTargetDatabase(
+        SQLDialect targetDatabaseDialect,
+        String targetDatabaseURL,
+        String targetDatabaseUser,
+        String targetDatabasePassword,
+        String targetDatabaseName) {
+
+        this.targetDatabaseDialect = targetDatabaseDialect;
+        this.targetDatabaseURL = targetDatabaseURL;
+        this.targetDatabaseUser = targetDatabaseUser;
+        this.targetDatabasePassword = targetDatabasePassword;
+        this.targetDatabaseName = targetDatabaseName;
+    }
+
+    public void setSchemaVersionStart(int schemaVersionStart) {
+        this.schemaVersionStart = schemaVersionStart;
+    }
+
+    public void updateSchema(DBRProgressMonitor monitor) throws DBException {
+
+    }
 
 }
