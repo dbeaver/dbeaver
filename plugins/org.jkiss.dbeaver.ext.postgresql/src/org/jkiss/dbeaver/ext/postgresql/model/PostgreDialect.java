@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -34,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
@@ -50,11 +48,12 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * PostgreSQL dialect
  */
-public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
+public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter {
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
@@ -928,4 +927,59 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
     }
+
+    @Override
+    public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
+        String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+        String localDataType = null, dataTypeModifies = null;
+
+        switch (externalTypeName) {
+            case "xml":
+            case "xmltype":
+            case "sys.xmltype":
+                localDataType = "xml";
+                break;
+            case "varchar2":
+            case "nchar":
+            case "nvarchar":
+                localDataType = "varchar";
+                dataTypeModifies = String.valueOf(sourceTypedObject.getMaxLength());
+                break;
+            case "json":
+            case "jsonb":
+                localDataType = "jsonb";
+                break;
+            case "geometry":
+            case "sdo_geometry":
+            case "mdsys.sdo_geometry":
+                localDataType = "geometry";
+                break;
+            case "number":
+                localDataType = "numeric";
+                if (sourceTypedObject.getPrecision() != null) {
+                    dataTypeModifies = sourceTypedObject.getPrecision().toString();
+                    if (sourceTypedObject.getScale() != null) {
+                        dataTypeModifies += "," + sourceTypedObject.getScale();
+                    }
+                }
+                break;
+        }
+        if (localDataType == null) {
+            return null;
+        }
+        if (targetTypeProvider == null) {
+            return localDataType;
+        } else {
+            DBSDataType dataType = targetTypeProvider.getLocalDataType(localDataType);
+            if (dataType == null) {
+                return null;
+            }
+            String targetTypeName = DBUtils.getObjectFullName(dataType, DBPEvaluationContext.DDL);
+            if (dataTypeModifies != null) {
+                targetTypeName += "(" + dataTypeModifies + ")";
+            }
+            return targetTypeName;
+        }
+    }
+
 }

@@ -14,18 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * Data type mapper.
- * Finds data type in owner datasource which corresponds to external datasource data type.
+ * SQL data type converter.
+ * May be implemented by SQL dialect
  */
-public interface DBPDataTypeMapper {
+public interface SQLDataTypeConverter {
 
-    String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull DBSTypedObject typedObject);
+    String convertExternalDataType(
+        @NotNull SQLDialect sourceDialect,
+        @NotNull DBSTypedObject sourceTypedObject,
+        @Nullable DBPDataTypeProvider targetTypeProvider);
 
 }

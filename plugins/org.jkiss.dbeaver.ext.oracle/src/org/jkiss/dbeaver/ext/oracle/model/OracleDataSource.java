@@ -39,10 +39,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
@@ -58,7 +60,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, DBPDataTypeMapper, IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -594,55 +596,6 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 return null;
             }
             return schema.getDataType(monitor, typeName);
-        }
-    }
-
-    @Override
-    public String mapExternalDataType(@NotNull DBPDataSource externalDataSource, @NotNull DBSTypedObject typedObject) {
-        String externalTypeName = typedObject.getTypeName().toUpperCase(Locale.ENGLISH);
-        String localDataType = null, dataTypeModifies = null;
-
-        switch (externalTypeName) {
-            case "XML":
-            case "XMLTYPE":
-                localDataType = OracleConstants.TYPE_FQ_XML;
-                break;
-            case "JSON":
-            case "JSONB":
-                localDataType = "JSON";
-                break;
-            case "GEOMETRY":
-            case "GEOGRAPHY":
-            case "SDO_GEOMETRY":
-                localDataType = OracleConstants.TYPE_FQ_GEOMETRY;
-                break;
-            case "NUMERIC":
-                localDataType = OracleConstants.TYPE_NUMBER;
-                if (typedObject.getPrecision() != null) {
-                    dataTypeModifies = typedObject.getPrecision().toString();
-                    if (typedObject.getScale() != null) {
-                        dataTypeModifies += "," + typedObject.getScale();
-                    }
-                }
-                break;
-        }
-        if (localDataType == null) {
-            return null;
-        }
-        try {
-            OracleDataType dataType = resolveDataType(new VoidProgressMonitor(), localDataType);
-            if (dataType == null) {
-                return null;
-
-            }
-            String targetTypeName = dataType.getFullyQualifiedName(DBPEvaluationContext.DDL);
-            if (dataTypeModifies != null) {
-                targetTypeName += "(" + dataTypeModifies + ")";
-            }
-            return targetTypeName;
-        } catch (DBException e) {
-            log.debug("Error resolving local data type", e);
-            return null;
         }
     }
 

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -260,38 +261,42 @@ public final class DBStructUtils {
         monitor.done();
     }
 
-    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
+    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject srcTypedObject, boolean addModifiers) {
         boolean isBindingWithEntityAttr = false;
-        if (typedObject instanceof DBDAttributeBinding) {
-            DBDAttributeBinding attributeBinding = (DBDAttributeBinding) typedObject;
+        if (srcTypedObject instanceof DBDAttributeBinding) {
+            DBDAttributeBinding attributeBinding = (DBDAttributeBinding) srcTypedObject;
             if (attributeBinding.getEntityAttribute() != null) {
                 isBindingWithEntityAttr = true;
             }
         }
-        if (objectContainer != null && (typedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr)) {
+        if (objectContainer != null && (srcTypedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr)) {
             // If source and target datasources have the same type then just return the same type name
-            DBPDataSource srcDataSource = ((DBSObject) typedObject).getDataSource();
+            DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
             DBPDataSource tgtDataSource = objectContainer.getDataSource();
             if (srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
-                return typedObject.getFullTypeName();
+                return srcTypedObject.getFullTypeName();
             }
         }
 
         {
-            DBPDataTypeMapper dataTypeMapper = DBUtils.getAdapter(DBPDataTypeMapper.class, objectContainer);
-            if (dataTypeMapper != null) {
-                String targetTypeName = dataTypeMapper.mapExternalDataType(
-                    ((DBSObject) typedObject).getDataSource(),
-                    typedObject);
+            SQLDataTypeConverter dataTypeConverter = objectContainer == null ? null :
+                DBUtils.getAdapter(SQLDataTypeConverter.class, objectContainer.getDataSource().getSQLDialect());
+            if (dataTypeConverter != null) {
+                DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
+                DBPDataSource tgtDataSource = objectContainer.getDataSource();
+                String targetTypeName = dataTypeConverter.convertExternalDataType(
+                    srcDataSource.getSQLDialect(),
+                    srcTypedObject, DBUtils.getAdapter(DBPDataTypeProvider.class, tgtDataSource)
+                );
                 if (targetTypeName != null) {
                     return targetTypeName;
                 }
             }
         }
 
-        String typeName = typedObject.getTypeName();
+        String typeName = srcTypedObject.getTypeName();
         String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
-        DBPDataKind dataKind = typedObject.getDataKind();
+        DBPDataKind dataKind = srcTypedObject.getDataKind();
 
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
         if (dataTypeProvider != null) {
@@ -326,8 +331,8 @@ public final class DBStructUtils {
                     if (targetType == null && dataKind == DBPDataKind.NUMERIC) {
                         // Try to find appropriate type with the same scale/precision
                         for (DBSDataType type : possibleTypes.values()) {
-                            if (CommonUtils.equalObjects(type.getScale(), typedObject.getScale()) &&
-                                CommonUtils.equalObjects(type.getPrecision(), typedObject.getPrecision()))
+                            if (CommonUtils.equalObjects(type.getScale(), srcTypedObject.getScale()) &&
+                                CommonUtils.equalObjects(type.getPrecision(), srcTypedObject.getPrecision()))
                             {
                                 targetType = type;
                                 break;
@@ -336,7 +341,7 @@ public final class DBStructUtils {
                         if (targetType == null) {
                             if (typeNameLower.contains("float") ||
                                 typeNameLower.contains("real") ||
-                                (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 6))
+                                (srcTypedObject.getScale() != null && srcTypedObject.getScale() > 0 && srcTypedObject.getScale() <= 6))
                             {
                                 for (String psn : possibleTypes.keySet()) {
                                     if (psn.contains("float") || psn.contains("real")) {
@@ -345,7 +350,7 @@ public final class DBStructUtils {
                                     }
                                 }
                             } else if (typeNameLower.contains("double") ||
-                                (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 15))
+                                (srcTypedObject.getScale() != null && srcTypedObject.getScale() > 0 && srcTypedObject.getScale() <= 15))
                             {
                                 for (String psn : possibleTypes.keySet()) {
                                     if (psn.contains("double")) {
@@ -399,7 +404,7 @@ public final class DBStructUtils {
         // Get type modifiers from target datasource
         if (addModifiers && objectContainer != null) {
             SQLDialect dialect = objectContainer.getDataSource().getSQLDialect();
-            String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, typedObject, typeName, dataKind);
+            String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, srcTypedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
             }
