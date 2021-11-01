@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainerHolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,7 +38,7 @@ import java.util.List;
  * Client-side data container.
  * Wraps RSV model and original data container.
  */
-public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, IAdaptable, DBDAttributeFilter {
+public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, IAdaptable, DBDAttributeFilter, DBSDataContainerHolder {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 
@@ -67,6 +68,11 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     @Override
     public DBPDataSource getDataSource() {
         return dataContainer.getDataSource();
+    }
+
+    @Override
+    public DBSDataContainer getDataContainer() {
+        return dataContainer;
     }
 
     @Override

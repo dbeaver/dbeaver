@@ -23,13 +23,19 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDCellValue;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainerHolder;
+import org.jkiss.dbeaver.model.struct.DBSDocumentContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Locale;
 
 public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSettings {
@@ -144,13 +150,27 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             boolean hasSelection = curSelection != null && !curSelection.isEmpty() && curSelection.getFirstElement() instanceof DBDCellValue;
 
             if (hasSelection) {
-                selectedColumnsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, null, false, 4);
-                selectedColumnsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        settings.setSelectedColumnsOnly(selectedColumnsOnlyCheckbox.getSelection());
+                boolean supportsColumnsExport = true;
+                List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
+                if (!CommonUtils.isEmpty(sourceObjects)) {
+                    DBSObject sourceObject = sourceObjects.get(0);
+                    if (sourceObject instanceof DBSDataContainerHolder) {
+                        DBSDataContainer dataContainer = ((DBSDataContainerHolder) sourceObject).getDataContainer();
+                        if (dataContainer instanceof DBSDocumentContainer) {
+                            supportsColumnsExport = false;
+                        }
                     }
-                });
+
+                }
+                if (supportsColumnsExport) {
+                    selectedColumnsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, null, false, 4);
+                    selectedColumnsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            settings.setSelectedColumnsOnly(selectedColumnsOnlyCheckbox.getSelection());
+                        }
+                    });
+                }
 
                 selectedRowsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, null, false, 4);
                 selectedRowsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -166,7 +186,9 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                         enableNewConnectionCheckbox();
                     }
                 };
-                selectedColumnsOnlyCheckbox.addSelectionListener(listener);
+                if (supportsColumnsExport) {
+                    selectedColumnsOnlyCheckbox.addSelectionListener(listener);
+                }
                 selectedRowsOnlyCheckbox.addSelectionListener(listener);
             }
         }
