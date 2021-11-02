@@ -87,6 +87,10 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.permission;
             if (permission.getGrantee() != null) {
                 roleName = permission.getGrantee();
+                if (!roleName.startsWith("group ")) {
+                    // Group names already can be quoted
+                    roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
+                }
             } else {
                 roleName = "";
             }
