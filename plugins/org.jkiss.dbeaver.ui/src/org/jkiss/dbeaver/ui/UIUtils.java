@@ -65,6 +65,9 @@ import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
@@ -80,6 +83,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
@@ -1882,6 +1886,17 @@ public class UIUtils {
 
     public static ImageDescriptor getShardImageDescriptor(String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(id);
+    }
+
+    public static void addVariablesToControl(@NotNull Control controlForTip, @NotNull String[] variables, String toolTipPattern) {
+        final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
+            .stream(variables)
+            .map(GeneralUtils::variablePattern)
+            .toArray(String[]::new));
+
+        UIUtils.setContentProposalToolTip(controlForTip, toolTipPattern, variables);
+
+        ContentAssistUtils.installContentProposal(controlForTip, new SmartTextContentAdapter(), proposalProvider);
     }
 
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
