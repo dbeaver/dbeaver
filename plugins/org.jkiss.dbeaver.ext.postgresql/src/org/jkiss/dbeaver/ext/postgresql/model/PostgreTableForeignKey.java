@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -153,7 +154,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     @NotNull
     @Override
-    @Property(viewable = true, specific = true, order = 55)
+    @Property(viewable = true, specific = true, updatable = true, editable = true, listProvider = PostgreConstraintModifyRuleListProvider.class, order = 55)
     public DBSForeignKeyModifyRule getDeleteRule() {
         return deleteRule;
     }
@@ -164,7 +165,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     @NotNull
     @Override
-    @Property(viewable = true, specific = true, order = 56)
+    @Property(viewable = true, specific = true, updatable = true, editable = true, listProvider = PostgreConstraintModifyRuleListProvider.class, order = 56)
     public DBSForeignKeyModifyRule getUpdateRule() {
         return updateRule;
     }
@@ -202,5 +203,25 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     public void addColumn(PostgreTableForeignKeyColumn column) {
         this.columns.add(column);
+    }
+
+    public static class PostgreConstraintModifyRuleListProvider implements IPropertyValueListProvider<PostgreTableForeignKey> {
+
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(PostgreTableForeignKey foreignKey)
+        {
+            return new DBSForeignKeyModifyRule[] {
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE,
+                DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT };
+        }
     }
 }

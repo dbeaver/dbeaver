@@ -109,9 +109,8 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            PostgreConstraintManager.addConstraintCommentAction(actionList, command.getObject());
-        }
+        addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(command.getObject(), command.getTitle()), options);
+        addObjectCreateActions(monitor, executionContext, actionList, makeCreateCommand(command.getObject(), options), options);
     }
 
     @Override
@@ -134,5 +133,12 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                         "ALTER TABLE " + foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
                                 " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(foreignKey) + " TO " + DBUtils.getQuotedIdentifier(foreignKey.getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
+    }
+
+    @Override
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableForeignKey, PropertyHandler> command, Map<String, Object> options) throws DBException {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            PostgreConstraintManager.addConstraintCommentAction(actions, command.getObject());
+        }
     }
 }
