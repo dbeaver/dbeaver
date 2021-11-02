@@ -535,7 +535,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         for (DataSourceAuthModelDescriptor amd : authModels.values()) {
             if (amd.appliesTo(driver)) {
                 models.add(amd);
-                replaced.addAll(amd.getReplaces());
+                replaced.addAll(amd.getReplaces(driver));
             }
         }
         if (!replaced.isEmpty()) {

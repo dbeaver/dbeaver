@@ -30,10 +30,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Auth model descriptor
@@ -48,7 +48,8 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String description;
     private DBPImage icon;
     private boolean defaultModel;
-    private final List<String> replaces = new ArrayList<>();
+    private final Map<String, String[]> replaces = new HashMap<>();
+    private boolean hasCondReplaces = false;
 
     private DBAAuthModel instance;
 
@@ -66,7 +67,10 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
-            this.replaces.add(dsConfig.getAttribute("model"));
+            String replModel = dsConfig.getAttribute("model");
+            String[] replFor = CommonUtils.notEmpty(dsConfig.getAttribute("for")).split(",");
+            this.replaces.put(replModel, replFor);
+            this.hasCondReplaces = hasCondReplaces || !ArrayUtils.isEmpty(replFor);
         }
     }
 
@@ -112,7 +116,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Override
     public DBPAuthModelDescriptor getReplacedBy(@NotNull DBPDriver driver) {
         for (DataSourceAuthModelDescriptor amd : DataSourceProviderRegistry.getInstance().getAllAuthModels()) {
-            if (amd.getReplaces().contains(id) && amd.isDriverApplicable(driver)) {
+            if (amd.getReplaces(driver).contains(id) && amd.isDriverApplicable(driver)) {
                 return amd;
             }
         }
@@ -149,8 +153,24 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         return isDriverApplicable(driver);
     }
 
-    public List<String> getReplaces() {
-        return replaces;
+    public Collection<String> getReplaces(DBPDriver driver) {
+        if (hasCondReplaces) {
+            List<String> replList = new ArrayList<>();
+            for (Map.Entry<String, String[]> re : replaces.entrySet()) {
+                String[] forList = re.getValue();
+                if (!ArrayUtils.isEmpty(forList)) {
+                    if (!ArrayUtils.contains(forList, driver.getId()) &&
+                        !ArrayUtils.contains(forList, driver.getProviderId()))
+                    {
+                        continue;
+                    }
+                }
+                replList.add(re.getKey());
+            }
+            return replList;
+        } else {
+            return replaces.keySet();
+        }
     }
 
     @Override
