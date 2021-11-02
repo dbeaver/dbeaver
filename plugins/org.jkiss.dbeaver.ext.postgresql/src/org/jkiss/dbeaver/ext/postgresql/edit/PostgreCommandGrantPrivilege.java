@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -87,7 +88,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.permission;
             if (permission.getGrantee() != null) {
                 roleName = permission.getGrantee();
-                if (!roleName.startsWith("group ")) {
+                if (!roleName.toLowerCase(Locale.ENGLISH).startsWith("group ")) {
                     // Group names already can be quoted
                     roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
                 }
