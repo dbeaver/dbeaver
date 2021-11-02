@@ -41,9 +41,13 @@
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="postgresql"/>
+            <supports dataSource="greenplum"/>
+            <supports dataSource="redshift"/>
         </editorContribution>
         <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
             <supports dataSource="postgresql"/>
+            <supports dataSource="greenplum"/>
+            <supports dataSource="redshift"/>
         </editorContribution>
     </extension>
 
