@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -32,7 +31,7 @@ public class SQLNewScriptTemplateVariablesResolver extends DataSourceVariableRes
     public static final String VAR_USER = "user";
 
     public static final String[][] ALL_VARIABLES_INFO = ArrayUtils.concatArrays(
-        DataSourceDescriptor.CONNECT_VARIABLES,
+        DBPConnectionConfiguration.CONNECT_VARIABLES,
         new String[][]{
             {VAR_DATE, "current date"},
             {VAR_TIME, "current time"},

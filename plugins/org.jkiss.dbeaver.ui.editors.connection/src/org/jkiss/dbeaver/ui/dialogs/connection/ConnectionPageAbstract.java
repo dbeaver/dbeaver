@@ -138,7 +138,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             variablesHintLabel = new VariablesHintLabel(panel,
                 UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
                 UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
-                DataSourceDescriptor.CONNECT_VARIABLES,
+                DBPConnectionConfiguration.CONNECT_VARIABLES,
                 false);
             ((GridData)variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = site.isNew() ? 3 : 4;
         } else {

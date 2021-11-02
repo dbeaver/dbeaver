@@ -86,30 +86,6 @@ public class DataSourceDescriptor
 {
     private static final Log log = Log.getLog(DataSourceDescriptor.class);
 
-    public static final String[][] CONNECT_VARIABLES = new String[][]{
-        {DBPConnectionConfiguration.VARIABLE_HOST, "target database host"},
-        {DBPConnectionConfiguration.VARIABLE_PORT, "target database port"},
-        {DBPConnectionConfiguration.VARIABLE_SERVER, "target server name"},
-        {DBPConnectionConfiguration.VARIABLE_DATABASE, "target database name"},
-        {DBPConnectionConfiguration.VARIABLE_USER, "database user name"},
-        {DBPConnectionConfiguration.VARIABLE_PASSWORD, "database password (plain)"},
-        {DBPConnectionConfiguration.VARIABLE_URL, "connection URL"},
-        {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
-        {DBPConnectionConfiguration.VARIABLE_DATASOURCE, "datasource"},
-
-        {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
-        {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
-
-        {DBPConnectionConfiguration.VARIABLE_DATE, "current date"},
-
-        {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
-        {SystemVariablesResolver.VAR_HOME, "OS user home path"},
-        {SystemVariablesResolver.VAR_DBEAVER_HOME, "application install path"},
-        {SystemVariablesResolver.VAR_APP_PATH, "application install path"},
-        {SystemVariablesResolver.VAR_APP_NAME, "application name"},
-        {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
-        {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
-    };
     public static final String CATEGORY_CONNECTIONS = "Connections";
     public static final String CATEGORY_SERVER = "Server";
     public static final String CATEGORY_DRIVER = "Driver";

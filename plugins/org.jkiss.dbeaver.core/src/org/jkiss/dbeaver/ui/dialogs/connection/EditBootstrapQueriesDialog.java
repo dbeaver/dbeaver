@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -153,7 +154,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             composite,
             CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
             CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
-            DataSourceDescriptor.CONNECT_VARIABLES);
+            DBPConnectionConfiguration.CONNECT_VARIABLES);
         if (dataSourceDescriptor != null) {
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor, dataSourceDescriptor.getConnectionConfiguration()));
         }
