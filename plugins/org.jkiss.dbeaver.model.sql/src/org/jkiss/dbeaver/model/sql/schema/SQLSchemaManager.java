@@ -114,7 +114,7 @@ public final class SQLSchemaManager {
             if (ddlStream != null) {
                 log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
                 try {
-                    executeScript(monitor, connection, ddlStream);
+                    executeScript(monitor, connection, ddlStream, true);
                 } catch (Exception e) {
                     log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
                 } finally {
@@ -130,16 +130,16 @@ public final class SQLSchemaManager {
     private void createNewSchema(DBRProgressMonitor monitor, Connection connection) throws IOException, DBException, SQLException {
         log.debug("Create new schema " + schemaId);
         try (Reader ddlStream = scriptSource.openSchemaCreateScript(monitor)) {
-            executeScript(monitor, connection, ddlStream);
+            executeScript(monitor, connection, ddlStream, false);
         }
     }
 
     private void dropSchema(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException, IOException {
         log.debug("Drop schema " + schemaId);
-        executeScript(monitor, connection, new StringReader("DROP ALL OBJECTS"));
+        executeScript(monitor, connection, new StringReader("DROP ALL OBJECTS"), true);
     }
 
-    private void executeScript(DBRProgressMonitor monitor, Connection connection, Reader ddlStream) throws SQLException, IOException, DBException {
+    private void executeScript(DBRProgressMonitor monitor, Connection connection, Reader ddlStream, boolean logQueries) throws SQLException, IOException, DBException {
         // Read DDL script
         String ddlText = IOUtils.readToString(ddlStream);
 
@@ -160,10 +160,13 @@ public final class SQLSchemaManager {
         String[] ddl = ddlText.split(";");
         for (String line : ddl) {
             line = line.trim();
+
             if (line.isEmpty()) {
                 continue;
             }
-            log.debug("Process [" + line + "]");
+            if (logQueries) {
+                log.debug("Process [" + line + "]");
+            }
             try (Statement dbStat = connection.createStatement()) {
                 dbStat.execute(line);
             }
