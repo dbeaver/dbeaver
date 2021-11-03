@@ -86,9 +86,15 @@ public final class SQLSchemaManager {
                 int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
                 if (currentSchemaVersion < 0) {
                     createNewSchema(monitor, dbCon);
+
+                    // Update schema version
+                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName, currentSchemaVersion);
                 } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
                     dropSchema(monitor, dbCon);
                     createNewSchema(monitor, dbCon);
+
+                    // Update schema version
+                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName, currentSchemaVersion);
                 } else if (schemaVersionActual > currentSchemaVersion) {
                     upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
                 }
