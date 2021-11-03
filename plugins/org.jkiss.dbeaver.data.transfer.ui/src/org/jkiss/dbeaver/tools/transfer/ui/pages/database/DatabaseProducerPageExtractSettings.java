@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDCellValue;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDocumentContainer;
@@ -158,6 +159,11 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                         DBSDataContainer adapter = ((IAdaptable) sourceObject).getAdapter(DBSDataContainer.class);
                         if (adapter instanceof DBSDocumentContainer) {
                             supportsColumnsExport = false;
+                        } else if (adapter != null) {
+                            DBPDataSource dataSource = adapter.getDataSource();
+                            if (dataSource != null && dataSource.getInfo().isDynamicMetadata()) {
+                                supportsColumnsExport = false;
+                            }
                         }
                     }
                 }
