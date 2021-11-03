@@ -17,40 +17,13 @@
 
 package org.jkiss.dbeaver.model.access;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
-
 /**
- * Access session
+ * Session principal (user)
  */
-public interface DBASession extends DBPObject {
+public interface DBASessionPrincipal {
 
-    /**
-     * Session space
-     */
-    @NotNull
-    DBAAuthSpace getSessionSpace();
+    String getUserDomain();
 
-    DBASessionPrincipal getSessionPrincipal();
-
-    /**
-     * Session unique ID
-     */
-    @NotNull
-    String getSessionId();
-
-    /**
-     * Application session is a global singleton session
-     */
-    boolean isApplicationSession();
-
-    /**
-     * Singleton session project
-     */
-    @Nullable
-    DBPProject getSingletonProject();
+    String getUserName();
 
 }

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.sun.security.auth.module.NTSystem;
+import com.sun.security.auth.module.UnixSystem;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.access.DBASession;
+import org.jkiss.dbeaver.model.access.DBASessionPrincipal;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
@@ -38,9 +41,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.util.*;
@@ -724,11 +729,49 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         }
     }
 
-    private class WorkspaceSession implements DBASession {
+    private class WorkspaceSession implements DBASession, DBASessionPrincipal {
+        private String userName;
+        private String domainName;
+
+        public WorkspaceSession() {
+            try {
+                if (RuntimeUtils.isWindows()) {
+                    NTSystem ntSystem = new NTSystem();
+                    userName = ntSystem.getName();
+                    domainName = ntSystem.getDomain();
+                } else {
+                    UnixSystem unixSystem = new UnixSystem();
+                    userName = unixSystem.getUsername();
+                }
+            } catch (Exception e) {
+                // Not supported on this system
+            }
+            if (CommonUtils.isEmpty(userName)) {
+                userName = System.getProperty(StandardConstants.ENV_USER_NAME);
+            }
+            if (CommonUtils.isEmpty(userName)) {
+                userName = "unknown";
+            }
+
+            if (CommonUtils.isEmpty(domainName)) {
+                if (RuntimeUtils.isWindows()) {
+                    domainName = System.getenv("USERDOMAIN");
+                }
+                if (CommonUtils.isEmpty(domainName)) {
+                    domainName = DBConstants.LOCAL_DOMAIN_NAME;
+                }
+            }
+        }
+
         @NotNull
         @Override
         public DBAAuthSpace getSessionSpace() {
             return BaseWorkspaceImpl.this;
+        }
+
+        @Override
+        public DBASessionPrincipal getSessionPrincipal() {
+            return this;
         }
 
         @NotNull
@@ -746,6 +789,16 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         @Override
         public DBPProject getSingletonProject() {
             return null;
+        }
+
+        @Override
+        public String getUserDomain() {
+            return domainName;
+        }
+
+        @Override
+        public String getUserName() {
+            return userName;
         }
     }
 
