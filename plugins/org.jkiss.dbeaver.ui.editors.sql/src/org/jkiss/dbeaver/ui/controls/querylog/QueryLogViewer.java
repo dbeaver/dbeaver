@@ -316,7 +316,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return contextName;
         }
     };
-    private LogColumn[] ALL_COLUMNS = new LogColumn[]{
+    private final LogColumn[] ALL_COLUMNS = new LogColumn[]{
         COLUMN_TIME,
         COLUMN_TYPE,
         COLUMN_TEXT,
@@ -369,7 +369,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         boolean inDialog = UIUtils.isInDialog(parent);
         // Search field
-        this.searchText = new Text(parent, SWT.BORDER);
+        this.searchText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
         this.searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         this.searchText.addPaintListener(e -> {
             if (searchText.isEnabled() && searchText.getCharCount() == 0) {
