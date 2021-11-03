@@ -846,8 +846,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             StringBuilder schemasQuery = new StringBuilder();
+            DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
+            boolean showOnlyOneSchema = CommonUtils.toBoolean(configuration.getProviderProperty(OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA));
             // PROP_CHECK_SCHEMA_CONTENT set to true when option "Hide empty schemas" is set
-            boolean showAllSchemas = ! CommonUtils.toBoolean(owner.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
+            boolean showAllSchemas = !showOnlyOneSchema && !CommonUtils.toBoolean(configuration.getProviderProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
             schemasQuery.append("SELECT U.* FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "USERS")).append(" U\n");
 
 //                if (owner.isAdmin() && false) {
@@ -857,7 +859,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             
             schemasQuery.append(
                 "WHERE (");
-            if (showAllSchemas) {
+            if (showOnlyOneSchema) {
+                schemasQuery.append("U.USERNAME = ?");
+            } else if (showAllSchemas) {
                 schemasQuery.append("U.USERNAME IS NOT NULL");
             } else {
                 schemasQuery.append("U.USERNAME IN (SELECT DISTINCT OWNER FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "OBJECTS")).append(")");
@@ -865,7 +869,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 //                }
 
             DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null, false);
-            if (schemaFilters != null) {
+            if (!showOnlyOneSchema && schemaFilters != null) {
                 JDBCUtils.appendFilterClause(schemasQuery, schemaFilters, "U.USERNAME", false);
             }
             schemasQuery.append(")");
@@ -876,7 +880,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             JDBCPreparedStatement dbStat = session.prepareStatement(schemasQuery.toString());
 
-            if (schemaFilters != null) {
+            if (showOnlyOneSchema) {
+                dbStat.setString(1, configuration.getUserName().toUpperCase(Locale.ENGLISH));
+            } else if (schemaFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
             }
             return dbStat;
