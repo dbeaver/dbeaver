@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.schema;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -81,12 +82,7 @@ public final class SQLSchemaManager {
     public void updateSchema(DBRProgressMonitor monitor) throws DBException {
         try {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
-            boolean switchToAC = false;
-            try {
-                if (dbCon.getAutoCommit()) {
-                    dbCon.setAutoCommit(false);
-                    switchToAC = true;
-                }
+            try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
                 if (currentSchemaVersion < 0) {
                     createNewSchema(monitor, dbCon);
@@ -97,15 +93,10 @@ public final class SQLSchemaManager {
                     upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
                 }
 
-                dbCon.commit();
-            } catch (IOException e) {
-                throw new DBException("IO error while updating " + schemaId + " schema version", e);
-            }
-            if (switchToAC) {
-                dbCon.setAutoCommit(true);
+                txn.commit();
             }
         }
-        catch (SQLException e) {
+        catch (IOException | SQLException e) {
             throw new DBException("Error updating " + schemaId + " schema version", e);
         }
     }
@@ -166,6 +157,7 @@ public final class SQLSchemaManager {
             if (line.isEmpty()) {
                 continue;
             }
+            log.debug("Process [" + line + "]");
             try (Statement dbStat = connection.createStatement()) {
                 dbStat.execute(line);
             }
