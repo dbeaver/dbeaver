@@ -405,7 +405,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                 if (!CommonUtils.isEmpty(info.pkName)) {
                     pk = DBUtils.findObject(this.getConstraints(monitor), info.pkName);
                     if (pk == null) {
-                        log.debug("Unique key '" + info.pkName + "' not found in table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                        log.debug("Unique key '" + info.pkName + "' not found in table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " for FK " + info.fkName);
                     }
                 }
                 if (pk == null) {

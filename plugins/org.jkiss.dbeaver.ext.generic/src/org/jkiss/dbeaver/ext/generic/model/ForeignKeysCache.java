@@ -140,7 +140,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         if (!CommonUtils.isEmpty(pkName)) {
             pk = DBUtils.findObject(pkTable.getConstraints(session.getProgressMonitor()), pkName);
             if (pk == null) {
-                log.debug("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                log.debug("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " for foreign key " + fkName + " in table " + parent.getName());
             }
         }
         if (pk == null) {
