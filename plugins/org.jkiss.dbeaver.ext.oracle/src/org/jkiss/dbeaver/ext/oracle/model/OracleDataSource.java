@@ -860,7 +860,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             schemasQuery.append(
                 "WHERE (");
             if (showOnlyOneSchema) {
-                schemasQuery.append("U.USERNAME = ?");
+                schemasQuery.append("UPPER(U.USERNAME) = ?");
             } else if (showAllSchemas) {
                 schemasQuery.append("U.USERNAME IS NOT NULL");
             } else {
@@ -881,7 +881,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             JDBCPreparedStatement dbStat = session.prepareStatement(schemasQuery.toString());
 
             if (showOnlyOneSchema) {
-                dbStat.setString(1, configuration.getUserName().toUpperCase(Locale.ENGLISH));
+                dbStat.setString(1, DBUtils.getUnQuotedIdentifier(owner, configuration.getUserName().toUpperCase(Locale.ENGLISH))); // Unquoted + upper = all this things only for lower-named users
             } else if (schemaFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
             }
