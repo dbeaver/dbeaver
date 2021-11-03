@@ -47,6 +47,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Text nlsTimestampFormat;
     private Text nlsLengthFormat;
     private Text nlsCurrencyFormat;
+    private Button showOnlyOneSchema;
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
     private Button useDBAViewsCheckbox;
@@ -107,21 +108,21 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group performanceGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            useRuleHint = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
+            useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
 
-            useOptimizerHint = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
+            useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
 
-            useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
+            useSimpleConstraints = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
 
-            useAlternativeTableMetadataQuery = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query, false);
+            useAlternativeTableMetadataQuery = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query, false);
             useAlternativeTableMetadataQuery.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query_description);
 
             searchInSynonyms = UIUtils.createCheckbox(
-                contentGroup,
+                performanceGroup,
                 OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms,
                 false
             );
@@ -136,6 +137,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
                 0
             );
+
+            showOnlyOneSchema = UIUtils.createCheckbox(
+                contentGroup,
+                OracleUIMessages.connection_extra_page_checkbox_show_only_one_schema,
+                OracleUIMessages.connection_extra_page_checkbox_show_only_one_schema_tip,
+                false,
+                1);
 
             hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_hide_empty_schemas, false);
             hideEmptySchemasCheckbox.setToolTipText(OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
@@ -181,6 +189,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         nlsTimestampFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT)));
         nlsLengthFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT)));
         nlsCurrencyFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT)));
+
+        showOnlyOneSchema.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA)));
 
         final Object checkSchemaContent = providerProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
         if (checkSchemaContent != null) {
@@ -237,6 +247,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             setOrRemoveProperty(nlsLengthFormat, OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT, providerProperties);
             setOrRemoveProperty(nlsCurrencyFormat, OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT, providerProperties);
 
+            providerProperties.put(
+                OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA,
+                String.valueOf(showOnlyOneSchema.getSelection()));
             providerProperties.put(
                 OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
                 String.valueOf(hideEmptySchemasCheckbox.getSelection()));
