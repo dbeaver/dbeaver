@@ -122,6 +122,7 @@
                     <property id="tableHeader" label="%dataTransfer.processor.html.property.header.name" type="boolean" description="%dataTransfer.processor.html.property.header.description" defaultValue="true"/>
                     <property id="columnHeaders" label="%dataTransfer.processor.html.property.columnHeaders.name" type="boolean" description="%dataTransfer.processor.html.property.columnHeaders.description" defaultValue="true"/>
                     <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
+                    <property id="backgroundColor" label="%dataTransfer.processor.html.property.backgroundColor.name" type="String" description="%dataTransfer.processor.html.property.backgroundColor.description" defaultValue="White" required="true" validValues="White,Black,Red,Green,Blue" allowCustomValues="false"/>
                 </propertyGroup>
             </processor>
             <processor
