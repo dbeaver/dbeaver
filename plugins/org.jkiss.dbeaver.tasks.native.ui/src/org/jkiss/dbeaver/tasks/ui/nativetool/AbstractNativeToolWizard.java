@@ -223,6 +223,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), temporaryTask, log, logPage.getLogWriter());
             executor.executeTask();
             container.enableButtonsAfterProgress();
+            container.setCompleteMarkAfterProgress();
             return false;
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), "Error running task", e);

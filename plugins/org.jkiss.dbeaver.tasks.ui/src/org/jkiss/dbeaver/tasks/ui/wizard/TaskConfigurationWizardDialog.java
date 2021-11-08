@@ -59,7 +59,6 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     private TaskConfigurationWizardPageTask taskEditPage;
     private boolean editMode;
     private boolean selectorMode;
-    private Button backButton;
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard) {
         this(window, wizard, null);
@@ -145,7 +144,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
         {
             if (getWizard().isNewTaskEditor() || getNavPagesCount() > 1) {
-                backButton = createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
+                createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
                 Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
                 getShell().setDefaultButton(nextButton);
             }
@@ -168,13 +167,19 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     @Override
     public void disableButtonsOnProgress() {
-        backButton.setEnabled(false);
+        Button button = getButton(IDialogConstants.BACK_ID);
+        if (button != null) {
+            button.setEnabled(false);
+        }
         super.disableButtonsOnProgress();
     }
 
     @Override
     public void enableButtonsAfterProgress() {
-        backButton.setEnabled(true);
+        Button button = getButton(IDialogConstants.BACK_ID);
+        if (button != null) {
+            button.setEnabled(true);
+        }
         super.enableButtonsAfterProgress();
     }
 

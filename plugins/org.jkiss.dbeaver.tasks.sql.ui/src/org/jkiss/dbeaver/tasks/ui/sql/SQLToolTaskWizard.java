@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.sql.internal.TasksSQLUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -126,7 +127,10 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
             DBTTask task = getCurrentTask();
             saveConfigurationToTask(task);
 
-            getContainer().showPage(pageStatus);
+            TaskConfigurationWizardDialog container = getContainer();
+            container.disableButtonsOnProgress();
+
+            container.showPage(pageStatus);
             pageStatus.clearLog();
 
             TaskWizardExecutor executor = new SQLTaskExecutor(task);
@@ -134,6 +138,8 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
             if (taskHandler.needsRefreshOnFinish()) {
                 refreshOnFinish();
             }
+            container.enableButtonsAfterProgress();
+            container.setCompleteMarkAfterProgress();
             return false;
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), TasksSQLUIMessages.sql_tool_task_wizard_message_error_running_task, e);
