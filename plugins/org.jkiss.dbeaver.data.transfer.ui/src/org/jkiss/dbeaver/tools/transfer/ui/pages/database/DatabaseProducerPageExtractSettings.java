@@ -175,6 +175,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                             settings.setSelectedColumnsOnly(selectedColumnsOnlyCheckbox.getSelection());
                         }
                     });
+                } else {
+                    settings.setSelectedColumnsOnly(false);
                 }
 
                 selectedRowsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, null, false, 4);
