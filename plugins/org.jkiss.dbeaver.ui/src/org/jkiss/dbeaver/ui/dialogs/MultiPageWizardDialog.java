@@ -60,6 +60,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private SashForm wizardSash;
     private volatile int runningOperations = 0;
 
+    private Button finishButton;
+    private Button cancelButton;
+
     private String finishButtonLabel = IDialogConstants.OK_LABEL;
     private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
@@ -326,6 +329,16 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return true;
     }
 
+    public void disableButtonsOnProgress() {
+        finishButton.setEnabled(false);
+        cancelButton.setEnabled(false);
+    }
+
+    public void enableButtonsAfterProgress() {
+        finishButton.setEnabled(true);
+        cancelButton.setEnabled(true);
+    }
+
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.CANCEL_ID) {
@@ -583,9 +596,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
+        finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
             getShell().getDefaultButton() == null);
-        Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
+        cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
     }
 
     protected void setFinishButtonLabel(String finishButtonLabel) {
