@@ -1291,7 +1291,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             resultsFound = false;
             ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
             graphicalViewer.deselectAll();
-            List<?> nodes = getDiagramPart().getChildren();
+            List nodes = getDiagramPart().getChildren();
+            List allNodesChildren = new ArrayList();
+            for (Object node : nodes) {
+                if (node instanceof EntityPart) {
+                    List children = ((EntityPart) node).getChildren();
+                    if (!CommonUtils.isEmpty(children)) {
+                        allNodesChildren.addAll(children);
+                    }
+                }
+            }
+            if (!CommonUtils.isEmpty(allNodesChildren)) {
+                nodes.addAll(allNodesChildren);
+            }
             if (!CommonUtils.isEmpty(nodes)) {
                 Object obj = nodes.get(0);
                 if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
