@@ -27,6 +27,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
@@ -121,16 +122,18 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // Check for open editors with selected objects
         if (!refreshObjects.isEmpty()) {
-            final IEditorPart editorPart = HandlerUtil.getActiveEditor(event);
-            if (editorPart instanceof IRefreshablePart && editorPart.getEditorInput() instanceof DatabaseEditorInput && editorPart.isDirty()) {
-                DBNDatabaseNode editorNode = ((DatabaseEditorInput<?>) editorPart.getEditorInput()).getNavigatorNode();
-                for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
-                    DBNNode nextNode = iter.next();
-                    if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
-                        if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
-                            return true;
+            for (IEditorReference er : UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {
+                IEditorPart editorPart = er.getEditor(false);
+                if (editorPart instanceof IRefreshablePart && editorPart.getEditorInput() instanceof DatabaseEditorInput && editorPart.isDirty()) {
+                    DBNDatabaseNode editorNode = ((DatabaseEditorInput<?>) editorPart.getEditorInput()).getNavigatorNode();
+                    for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
+                        DBNNode nextNode = iter.next();
+                        if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
+                            if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
+                                return true;
+                            }
+                            iter.remove();
                         }
-                        iter.remove();
                     }
                 }
             }
