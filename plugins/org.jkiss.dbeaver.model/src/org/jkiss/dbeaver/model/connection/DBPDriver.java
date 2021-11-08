@@ -170,6 +170,12 @@ public interface DBPDriver extends DBPNamedObject
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
 
+    /**
+     * Create copy of
+     * @return
+     */
+    DBPDriver createOriginalCopy();
+
     default String getFullId() {
         return getProviderId() + ":" + getId();
     }
