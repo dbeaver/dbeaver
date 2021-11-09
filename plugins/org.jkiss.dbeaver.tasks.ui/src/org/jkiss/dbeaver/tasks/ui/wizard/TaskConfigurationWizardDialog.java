@@ -171,6 +171,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         if (button != null) {
             button.setEnabled(false);
         }
+        getWizard().updateSaveTaskButton(false);
         super.disableButtonsOnProgress();
     }
 
@@ -180,6 +181,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         if (button != null) {
             button.setEnabled(true);
         }
+        getWizard().updateSaveTaskButton(true);
         super.enableButtonsAfterProgress();
     }
 

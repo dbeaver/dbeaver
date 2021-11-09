@@ -78,6 +78,24 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
     }
 
     @Override
+    public void disableButtonsOnProgress() {
+        Button button = getButton(CLIENT_CONFIG_ID);
+        if (button != null) {
+            button.setEnabled(false);
+        }
+        super.disableButtonsOnProgress();
+    }
+
+    @Override
+    public void enableButtonsAfterProgress() {
+        Button button = getButton(CLIENT_CONFIG_ID);
+        if (button != null) {
+            button.setEnabled(true);
+        }
+        super.enableButtonsAfterProgress();
+    }
+
+    @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == CLIENT_CONFIG_ID) {
             openClientConfiguration();
