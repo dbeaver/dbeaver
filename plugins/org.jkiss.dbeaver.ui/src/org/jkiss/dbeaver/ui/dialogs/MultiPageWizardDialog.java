@@ -326,6 +326,25 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return true;
     }
 
+    public void disableButtonsOnProgress() {
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+        getButton(IDialogConstants.CANCEL_ID).setEnabled(false);
+    }
+
+    public void enableButtonsAfterProgress() {
+        getButton(IDialogConstants.OK_ID).setEnabled(true);
+        getButton(IDialogConstants.CANCEL_ID).setEnabled(true);
+    }
+
+    public void setCompleteMarkAfterProgress() {
+        TreeItem[] selection = pagesTree.getSelection();
+        if (selection.length != 1) {
+            return;
+        }
+        TreeItem selectedItem = selection[0];
+        selectedItem.setImage(DBeaverIcons.getImage(UIIcon.OK_MARK));
+    }
+
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.CANCEL_ID) {
@@ -583,9 +602,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button finishButton = createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
+        createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
             getShell().getDefaultButton() == null);
-        Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
     }
 
     protected void setFinishButtonLabel(String finishButtonLabel) {
