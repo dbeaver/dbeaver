@@ -37112,7 +37112,7 @@
          21.2 Information Schema
 
 
-         21.2.4  SCHEMATA view
+         21.2.5  SCHEMATA view
 
          Function
 
