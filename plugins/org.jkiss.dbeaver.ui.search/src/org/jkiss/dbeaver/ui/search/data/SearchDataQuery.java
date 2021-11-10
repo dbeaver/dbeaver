@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.DataFilterRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
@@ -288,7 +288,6 @@ public class SearchDataQuery implements ISearchQuery {
             if (constraints.isEmpty()) {
                 return null;
             }
-            DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
             if (dataFilter != null) {
                 dataReceiver.filter = dataFilter;
             } else {
@@ -296,7 +295,6 @@ public class SearchDataQuery implements ISearchQuery {
             }
             dataReceiver.filter.setAnyConstraint(true);
             DBCExecutionSource searchSource = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this);
-            DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
             return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0, 0);
         } catch (DBException e) {
             throw new DBCException("Error finding rows", e);
@@ -328,26 +326,9 @@ public class SearchDataQuery implements ISearchQuery {
         }
         if (dataFilter == null) {
             // Now we try to find saved data filters for container
-            dataFilter = restoreDataFilter(dataContainer, monitor);
+            dataFilter = ResultSetUtils.restoreDataFilter(dataContainer, monitor);
         }
         return dataFilter;
-    }
-
-    private DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {
-        // Restore data filter
-        final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
-        if (savedConfig != null) {
-            final DBDDataFilter dataFilter = new DBDDataFilter();
-            try {
-                savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
-            } catch (DBException e) {
-                log.warn("Can't restore table data filters for " + dataContainer.getName(), e);
-            }
-            if (dataFilter.hasFilters()) {
-                return dataFilter;
-            }
-        }
-        return null;
     }
 
     private class SearchTableMonitor extends VoidProgressMonitor {

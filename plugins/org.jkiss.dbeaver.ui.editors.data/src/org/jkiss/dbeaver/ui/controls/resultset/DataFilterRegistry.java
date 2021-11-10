@@ -51,7 +51,7 @@ import java.util.Map;
 /**
  * Viewer columns registry
  */
-public class DataFilterRegistry {
+class DataFilterRegistry {
 
     private static final Log log = Log.getLog(DataFilterRegistry.class);
     private static final String CONFIG_FILE = "saved-data-filter.xml";
@@ -67,7 +67,7 @@ public class DataFilterRegistry {
         return instance;
     }
 
-    public static class SavedDataFilter {
+    static class SavedDataFilter {
 
         private Map<String, DBDAttributeConstraintBase> constraints = new LinkedHashMap<>();
         private boolean anyConstraint; // means OR condition
@@ -89,7 +89,7 @@ public class DataFilterRegistry {
             this.where = dataFilter.getWhere();
         }
 
-        public void restoreDataFilter(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter dataFilter) throws DBException {
+        void restoreDataFilter(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter dataFilter) throws DBException {
             dataFilter.setAnyConstraint(anyConstraint);
             dataFilter.setOrder(this.order);
             dataFilter.setWhere(this.where);
