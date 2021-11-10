@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -51,11 +50,9 @@ import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -188,7 +185,7 @@ public class SearchDataQuery implements ISearchQuery {
         try {
 
             List<DBDAttributeConstraint> constraints = new ArrayList<>();
-            DBDDataFilter dataFilter = searchDataFilterForContainer(dataContainer);
+            DBDDataFilter dataFilter = searchDataFilterForContainer(dataContainer, session.getProgressMonitor());
             for (DBSEntityAttribute attribute : CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
                 if (params.fastSearch) {
                     if (DBUtils.findAttributeIndex(session.getProgressMonitor(), attribute) == null) {
@@ -311,7 +308,7 @@ public class SearchDataQuery implements ISearchQuery {
     }
 
     @Nullable
-    private DBDDataFilter searchDataFilterForContainer(@NotNull DBSDataContainer dataContainer) {
+    private DBDDataFilter searchDataFilterForContainer(@NotNull DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {
         DBDDataFilter dataFilter = null;
         // First let's search in open editors
         for (IEditorReference er : UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {
@@ -331,24 +328,21 @@ public class SearchDataQuery implements ISearchQuery {
         }
         if (dataFilter == null) {
             // Now we try to find saved data filters for container
-            dataFilter = restoreDataFilter(dataContainer);
+            dataFilter = restoreDataFilter(dataContainer, monitor);
         }
         return dataFilter;
     }
 
-    private DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer) {
+    private DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {
         // Restore data filter
         final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
         if (savedConfig != null) {
             final DBDDataFilter dataFilter = new DBDDataFilter();
-            DBRRunnableWithProgress restoreTask = monitor -> {
-                try {
-                    savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            };
-            RuntimeUtils.runTask(restoreTask, "Restore data filter", 10000);
+            try {
+                savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
+            } catch (DBException e) {
+                log.warn("Can't restore table data filters for " + dataContainer.getName(), e);
+            }
             if (dataFilter.hasFilters()) {
                 return dataFilter;
             }
