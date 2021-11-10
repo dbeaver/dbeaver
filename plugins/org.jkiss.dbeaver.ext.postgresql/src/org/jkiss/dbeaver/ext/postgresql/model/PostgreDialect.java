@@ -810,7 +810,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
-    public String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute, String attrName) {
+    public String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute) {
+        String attrName = attribute.getName();
+        if (attribute instanceof DBSObject) {
+            attrName = DBUtils.isPseudoAttribute(attribute) ?
+                attribute.getName() :
+                DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+        }
         return getCastedString(attribute, attrName, true, true);
     }
 
