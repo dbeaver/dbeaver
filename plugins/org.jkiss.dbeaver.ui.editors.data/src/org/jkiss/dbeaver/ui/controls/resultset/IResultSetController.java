@@ -211,6 +211,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void updatePanelsContent(boolean forceRefresh);
 
+    DBDDataFilter getDataFilter();
+
     void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData);
 
     void setSegmentFetchSize(Integer segmentFetchSize);

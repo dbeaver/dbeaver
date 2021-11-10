@@ -51,7 +51,7 @@ import java.util.Map;
 /**
  * Viewer columns registry
  */
-class DataFilterRegistry {
+public class DataFilterRegistry {
 
     private static final Log log = Log.getLog(DataFilterRegistry.class);
     private static final String CONFIG_FILE = "saved-data-filter.xml";
@@ -89,7 +89,7 @@ class DataFilterRegistry {
             this.where = dataFilter.getWhere();
         }
 
-        void restoreDataFilter(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter dataFilter) throws DBException {
+        public void restoreDataFilter(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter dataFilter) throws DBException {
             dataFilter.setAnyConstraint(anyConstraint);
             dataFilter.setOrder(this.order);
             dataFilter.setWhere(this.where);
@@ -125,7 +125,7 @@ class DataFilterRegistry {
         }
     }
 
-    SavedDataFilter getSavedConfig(DBSDataContainer object) {
+    public SavedDataFilter getSavedConfig(DBSDataContainer object) {
         String objectId = makeObjectId(object);
         synchronized (savedFilters) {
             return savedFilters.get(objectId);
