@@ -156,6 +156,10 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             throw new IOException("Target resource '" + targetName + "' already exists");
         }
         if (resource instanceof IFile) {
+            if (targetFolder instanceof IFolder && !targetFolder.exists()) {
+                ((IFolder) targetFolder).create(true, true, nestedMonitor);
+            }
+
             // Copy single file
             final IFile targetFile = targetFolder.getFile(new Path(targetName));
             if (!targetFile.exists()) {
