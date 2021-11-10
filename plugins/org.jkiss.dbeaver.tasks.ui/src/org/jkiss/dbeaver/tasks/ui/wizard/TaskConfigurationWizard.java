@@ -416,6 +416,15 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         taskContext = DBTaskUtils.extractContext(executionContext);
     }
 
+    void updateSaveTaskButton(boolean enable) {
+        if (saveAsTaskButton != null) {
+            saveAsTaskButton.setEnabled(enable);
+        }
+        if (enable) {
+            updateSaveTaskButtons();
+        }
+    }
+
     public void updateSaveTaskButtons() {
         if (saveAsTaskButton != null) {
             saveAsTaskButton.setEnabled(canFinish() && getTaskType() != null);
