@@ -287,7 +287,7 @@ public interface SQLDialect {
      * @param attrName    attribute name for casting
      * @return            casted string
      */
-    String getAttributeTypeCastClause(@NotNull DBSAttributeBase attribute, String attrName);
+    String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute, String attrName);
 
     /**
      * Enables to call particular cast operator or function for special data types.
@@ -297,7 +297,7 @@ public interface SQLDialect {
      * @return            casted string
      */
     @NotNull
-    String getTypeCastClause(DBSTypedObject attribute, String expression, boolean isInCondition);
+    String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition);
 
     /**
      * Quoting functions

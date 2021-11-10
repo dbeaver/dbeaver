@@ -810,40 +810,27 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
-    public String getAttributeTypeCastClause(@NotNull DBSAttributeBase attribute, String attrName) {
-        if (CommonUtils.isEmpty(attrName)) {
-            return attrName;
-        }
-        String typeName = attribute.getTypeName();
-        if (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName)) {
-            // Convert column and value in text for json or xml columns (value will be converted in getTypeCastClause)
-            // This strange case only for tables without keys
-            return attrName + "::text";
-        }
-        return attrName;
+    public String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute, String attrName) {
+        return getCastedString(attribute, attrName, true, true);
     }
 
     @NotNull
     @Override
-    public String getTypeCastClause(DBSTypedObject attribute, String expression, boolean isInCondition) {
-        String typeName = attribute.getTypeName();
-        if (isInCondition && (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName))) {
-            // Convert value in text for json or xml columns in where condition
-            return expression + "::text";
-        }
-        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
-            if (attribute instanceof DBDAttributeBinding) {
-                DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
-                if (dataType != null) {
-                    DBSObject parentObject = dataType.getParentObject();
-                    if (parentObject instanceof PostgreSchema && dataType instanceof PostgreDataType) {
-                        typeName = ((PostgreDataType) dataType).getFullyQualifiedName(DBPEvaluationContext.DDL);
-                    }
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+        return getCastedString(attribute, expression, isInCondition, false);
+    }
+
+    private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
+        if (attribute instanceof DBDAttributeBinding) {
+            DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
+            if (dataType instanceof PostgreDataType) {
+                String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
+                if (CommonUtils.isNotEmpty(typeCasting)) {
+                    return string + typeCasting;
                 }
             }
-            return expression + "::" + typeName;
         }
-        return expression;
+        return string;
     }
 
     @NotNull
