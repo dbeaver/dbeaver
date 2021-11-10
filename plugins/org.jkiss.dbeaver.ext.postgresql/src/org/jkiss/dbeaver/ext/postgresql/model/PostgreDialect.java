@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -808,10 +809,28 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return BLOCK_BOUND_KEYWORDS;
     }
 
+    @Override
+    public String getAttributeTypeCastClause(@NotNull DBSAttributeBase attribute, String attrName) {
+        if (CommonUtils.isEmpty(attrName)) {
+            return attrName;
+        }
+        String typeName = attribute.getTypeName();
+        if (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName)) {
+            // Convert column and value in text for json or xml columns (value will be converted in getTypeCastClause)
+            // This strange case only for tables without keys
+            return attrName + "::text";
+        }
+        return attrName;
+    }
+
     @NotNull
     @Override
-    public String getTypeCastClause(DBSTypedObject attribute, String expression) {
+    public String getTypeCastClause(DBSTypedObject attribute, String expression, boolean isInCondition) {
         String typeName = attribute.getTypeName();
+        if (isInCondition && (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName))) {
+            // Convert value in text for json or xml columns in where condition
+            return expression + "::text";
+        }
         if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
             if (attribute instanceof DBDAttributeBinding) {
                 DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();

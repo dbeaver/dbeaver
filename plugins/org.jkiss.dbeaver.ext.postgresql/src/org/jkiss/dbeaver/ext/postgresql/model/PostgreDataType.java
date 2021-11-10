@@ -982,7 +982,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                             case "bytea":
                                 valueType = Types.BINARY;
                                 break;
-                            case "xml":
+                            case PostgreConstants.TYPE_XML:
                                 valueType = Types.SQLXML;
                                 break;
                             case "int1":
