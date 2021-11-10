@@ -62,6 +62,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             final SSHAuthConfiguration auth = host.getAuthConfiguration();
             final Session session;
 
+            if (monitor.isCanceled()) {
+                break;
+            }
+
             if (auth.getType() == AuthType.PUBLIC_KEY) {
                 log.debug("Adding identity key");
                 try {

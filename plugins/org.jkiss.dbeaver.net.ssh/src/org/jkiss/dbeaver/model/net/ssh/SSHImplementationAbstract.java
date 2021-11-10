@@ -20,6 +20,8 @@ import com.jcraft.jsch.agentproxy.AgentProxy;
 import com.jcraft.jsch.agentproxy.connector.PageantConnector;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,8 +33,11 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -131,7 +136,33 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             }
         }
 
-        setupTunnel(monitor, configuration, hostConfigurations.toArray(new SSHHostConfiguration[0]), portForwardConfiguration);
+        {
+            // Perform connection in a separate job to allow cancelling it via monitor
+            final AbstractJob job = new AbstractJob("Setup tunnel") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor1) {
+                    try {
+                        setupTunnel(monitor, configuration, hostConfigurations.toArray(new SSHHostConfiguration[0]), portForwardConfiguration);
+                    } catch (Exception e) {
+                        if (!isCanceled()) {
+                            // Even if the job was canceled connection may still be ongoing
+                            return GeneralUtils.makeExceptionStatus(e);
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            job.setUser(false);
+            job.setSystem(true);
+            job.schedule();
+            try {
+                job.join(0, new ProxyProgressMonitor(monitor));
+            } catch (Exception e) {
+                job.cancel();
+                throw new DBException("Connection to tunnel host was interrupted");
+            }
+        }
+
         savedLocalPort = sshLocalPort;
         savedConfiguration = configuration;
         savedConnectionInfo = connectionInfo;
