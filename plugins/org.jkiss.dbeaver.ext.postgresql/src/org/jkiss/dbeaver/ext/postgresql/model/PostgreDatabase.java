@@ -1168,7 +1168,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 } else {
                     catalogFilters = new DBSObjectFilter(catalogFilters);
                     // Always read catalog schema
-                    catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
+                    List<String> includeFilters = catalogFilters.getInclude();
+                    if (!CommonUtils.isEmpty(includeFilters) && !includeFilters.contains(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+                        catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
+                    }
                 }
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
             }
