@@ -68,7 +68,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private List<SQLInsertReplaceMethodDescriptor> availableInsertMethodsDescriptors;
 
     public DatabaseConsumerPageLoadSettings() {
-    	super(DTUIMessages.database_consumer_wizard_name);
+        super(DTUIMessages.database_consumer_wizard_name);
         setTitle(DTUIMessages.database_consumer_wizard_title);
         setDescription(DTUIMessages.database_consumer_wizard_description);
         setPageComplete(false);
