@@ -342,9 +342,16 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             settings.setTruncateBeforeLoad(false);
         }
 
+        boolean supportsBulkLoad = false;
+        DBNDatabaseNode containerNode = settings.getContainerNode();
+        if (containerNode != null) {
+            supportsBulkLoad = DBUtils.getAdapter(DBSDataBulkLoader.class, containerNode.getDataSource()) != null;
+        }
+        if (!supportsBulkLoad) {
+            settings.setUseBulkLoad(false);
+        }
         if (useBulkLoadCheck != null && !useBulkLoadCheck.isDisposed()) {
-            DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
-            useBulkLoadCheck.setEnabled(DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) != null);
+            useBulkLoadCheck.setEnabled(supportsBulkLoad);
         }
 
         loadInsertMethods();
