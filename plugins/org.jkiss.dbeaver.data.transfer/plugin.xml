@@ -7,9 +7,10 @@
 
     <extension point="org.jkiss.dbeaver.dataTransfer.streamFinalizer">
         <finalizer id="showInExplorer"
-                   class="org.jkiss.dbeaver.tools.transfer.stream.finalizer.ShowInExplorerFinalizer"
                    label="Show exported file in system explorer"
-                   description="Shows exported file in system explorer"/>
+                   description="Shows exported file in system explorer"
+                   class="org.jkiss.dbeaver.tools.transfer.stream.finalizer.ShowInExplorerFinalizer"
+                   configurator="org.jkiss.dbeaver.tools.transfer.stream.finalizer.ShowInExplorerFinalizer"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">

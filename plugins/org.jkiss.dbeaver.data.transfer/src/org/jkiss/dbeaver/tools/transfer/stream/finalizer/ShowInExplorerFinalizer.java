@@ -21,12 +21,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizer;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 import java.io.File;
 
-public class ShowInExplorerFinalizer implements IStreamTransferFinalizer {
+public class ShowInExplorerFinalizer implements IStreamTransferFinalizer, IStreamTransferFinalizerConfigurator {
     @Override
     public void finish(@NotNull DBRProgressMonitor monitor, @NotNull StreamTransferConsumer consumer, @NotNull StreamConsumerSettings settings) throws DBException {
         // TODO: Figure a way to visualize availability in UI (dynamically disable checkbox if output is clipboard)
@@ -37,5 +38,10 @@ public class ShowInExplorerFinalizer implements IStreamTransferFinalizer {
             final String filename = consumer.getOutputFileName();
             DBWorkbench.getPlatformUI().showInSystemExplorer(new File(folder, filename).getAbsolutePath());
         }
+    }
+
+    @Override
+    public boolean isApplicable(@NotNull StreamConsumerSettings settings) {
+        return !settings.isOutputClipboard();
     }
 }

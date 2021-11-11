@@ -66,6 +66,16 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="configurator" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator"/>
+               </appinfo>
+            </annotation>
+         </attribute>
          <attribute name="label" type="string" use="required">
             <annotation>
                <documentation>

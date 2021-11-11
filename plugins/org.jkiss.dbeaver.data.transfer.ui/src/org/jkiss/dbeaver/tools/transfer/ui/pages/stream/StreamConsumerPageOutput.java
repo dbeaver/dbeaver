@@ -16,21 +16,28 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.IStreamTransferFinalizerConfiguratorUI;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -49,6 +56,8 @@ import java.util.stream.Collectors;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
+    private static final Log log = Log.getLog(StreamConsumerPageOutput.class);
+
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
     private Text timestampPattern;
@@ -64,7 +73,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Button splitFilesCheckbox;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
-    private Map<String, Button> finalizerCheckboxes = new HashMap<>();
+    private final Map<String, FinalizerComposite> finalizers = new HashMap<>();
 
     public StreamConsumerPageOutput() {
         super(DTMessages.data_transfer_wizard_output_name);
@@ -99,7 +108,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 settings.setOutputFolder(directoryText.getText());
                 updatePageCompletion();
             });
-            ((GridData)directoryText.getParent().getLayoutData()).horizontalSpan = 4;
+            ((GridData) directoryText.getParent().getLayoutData()).horizontalSpan = 4;
 
             UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
@@ -222,21 +231,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         {
             final Group group = UIUtils.createControlGroup(composite, "Actions after finish", 1, GridData.FILL_HORIZONTAL, 0);
 
-            for (StreamFinalizerDescriptor finalizer : StreamFinalizerRegistry.getInstance().getFinalizers()) {
-                final Button checkbox = UIUtils.createCheckbox(group, finalizer.getLabel(), finalizer.getDescription(), false, 1);
-                final String id = finalizer.getId();
-                checkbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
-                        if (checkbox.getSelection()) {
-                            settings.getFinalizers().add(id);
-                        } else {
-                            settings.getFinalizers().remove(id);
-                        }
-                    }
-                });
-                finalizerCheckboxes.put(id, checkbox);
+            for (StreamFinalizerDescriptor descriptor : StreamFinalizerRegistry.getInstance().getFinalizers()) {
+                finalizers.put(descriptor.getId(), new FinalizerComposite(group, descriptor));
             }
         }
 
@@ -280,11 +276,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         showFolderCheckbox.setEnabled(!clipboard);
         execProcessCheckbox.setEnabled(!clipboard);
         execProcessText.setEnabled(!clipboard);
+
+        for (FinalizerComposite finalizer : finalizers.values()) {
+            UIUtils.enableWithChildren(finalizer, finalizer.isApplicable());
+        }
     }
 
     @Override
-    public void activatePage()
-    {
+    public void activatePage() {
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
 
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
@@ -310,8 +309,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
-        for (Map.Entry<String, Button> entry : finalizerCheckboxes.entrySet()) {
-            entry.getValue().setSelection(settings.getFinalizers().contains(entry.getKey()));
+        for (FinalizerComposite finalizer : finalizers.values()) {
+            // TODO: Load settings
+            finalizer.loadSettings(getWizard().getRunnableContext(), Collections.emptyMap());
         }
 
         updatePageCompletion();
@@ -319,29 +319,19 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
+    public void deactivatePage() {
+        for (FinalizerComposite finalizer : finalizers.values()) {
+            // TODO: Save settings
+            finalizer.saveSettings(new HashMap<>());
+        }
+    }
+
+    @Override
+    protected boolean determinePageCompletion() {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
         if (settings == null) {
             return false;
         }
-        /*
-        int selectionIndex = encodingCombo.getSelectionIndex();
-
-        String encoding = null;
-        if (selectionIndex >= 0) {
-            encoding = encodingCombo.getItem(selectionIndex);
-        }
-
-        if (settings.isOutputClipboard() || encoding == null || GeneralUtils.getCharsetBOM(encoding) == null) {
-            encodingBOMLabel.setEnabled(false);
-            encodingBOMCheckbox.setEnabled(false);
-        } else {
-            encodingBOMLabel.setEnabled(true);
-            encodingBOMCheckbox.setEnabled(true);
-        }
-*/
-
         if (settings.isOutputClipboard()) {
             return true;
         }
@@ -364,6 +354,13 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_finish_command);
             return false;
         }
+
+        for (FinalizerComposite finalizer : finalizers.values()) {
+            if (!finalizer.isComplete()) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -388,5 +385,70 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     @Override
     public boolean isPageApplicable() {
         return isConsumerOfType(StreamTransferConsumer.class);
+    }
+
+    private class FinalizerComposite extends Composite {
+        private IStreamTransferFinalizerConfigurator configurator;
+        private Composite container;
+
+        public FinalizerComposite(@NotNull Composite parent, @NotNull StreamFinalizerDescriptor descriptor) {
+            super(parent, SWT.NONE);
+
+            setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
+            setLayout(GridLayoutFactory.fillDefaults().create());
+
+            final Button enabledCheckbox = UIUtils.createCheckbox(this, descriptor.getLabel(), descriptor.getDescription(), false, 1);
+
+            try {
+                configurator = descriptor.createConfigurator();
+            } catch (DBException e) {
+                log.error("Error constructing finalizer configurator", e);
+            }
+
+            if (configurator instanceof IStreamTransferFinalizerConfiguratorUI) {
+                container = new Composite(this, SWT.NONE);
+                container.setLayout(GridLayoutFactory.fillDefaults().create());
+                container.setLayoutData(GridDataFactory.fillDefaults().create());
+
+                ((IStreamTransferFinalizerConfiguratorUI) configurator).createControl(container);
+            }
+
+            enabledCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
+                    if (enabledCheckbox.getSelection()) {
+                        settings.getFinalizers().add(descriptor.getId());
+                    } else {
+                        settings.getFinalizers().remove(descriptor.getId());
+                    }
+                    if (container != null) {
+                        UIUtils.enableWithChildren(container, enabledCheckbox.getSelection());
+                    }
+                    updatePageCompletion();
+                }
+            });
+        }
+
+        public void loadSettings(@NotNull DBRRunnableContext context, @NotNull Map<String, Object> settings) {
+            configurator.loadSettings(context, settings);
+        }
+
+        public void saveSettings(@NotNull Map<String, Object> settings) {
+            configurator.saveSettings(settings);
+        }
+
+        public boolean isComplete() {
+            if (configurator instanceof IStreamTransferFinalizerConfiguratorUI) {
+                final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
+                return ((IStreamTransferFinalizerConfiguratorUI) configurator).isComplete(settings);
+            }
+            return true;
+        }
+
+        public boolean isApplicable() {
+            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
+            return configurator.isApplicable(settings);
+        }
     }
 }
