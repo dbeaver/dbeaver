@@ -44,6 +44,8 @@ import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -439,6 +441,21 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 // Last one
                 DBWorkbench.getPlatformUI().showInSystemExplorer(outputFile.toString());
+            }
+        }
+
+        final StreamFinalizerRegistry registry = StreamFinalizerRegistry.getInstance();
+        for (String id : settings.getFinalizers()) {
+            final StreamFinalizerDescriptor descriptor = registry.getFinalizerById(id);
+            if (descriptor == null) {
+                log.debug("Can't find finalizer '" + id + "'");
+                continue;
+            }
+            try {
+                final IStreamTransferFinalizer finalizer = descriptor.create();
+                finalizer.finish(monitor, this, settings);
+            } catch (DBException e) {
+                log.error("Error executing finalizer '" + id + "'", e);
             }
         }
     }

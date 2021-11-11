@@ -3,6 +3,14 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTransfer.streamFinalizer" name="Data Transfer Stream Finalizer" schema="schema/org.jkiss.dbeaver.dataTransfer.streamFinalizer.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.dataTransfer.streamFinalizer">
+        <finalizer id="showInExplorer"
+                   class="org.jkiss.dbeaver.tools.transfer.stream.finalizer.ShowInExplorerFinalizer"
+                   label="Show exported file in system explorer"
+                   description="Shows exported file in system explorer"/>
+    </extension>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">
         <node type="producer"

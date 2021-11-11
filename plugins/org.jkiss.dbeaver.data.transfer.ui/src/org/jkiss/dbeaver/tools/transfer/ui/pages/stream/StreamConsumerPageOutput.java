@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,6 +64,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Button splitFilesCheckbox;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
+    private Map<String, Button> finalizerCheckboxes = new HashMap<>();
 
     public StreamConsumerPageOutput() {
         super(DTMessages.data_transfer_wizard_output_name);
@@ -217,6 +220,27 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         {
+            final Group group = UIUtils.createControlGroup(composite, "Actions after finish", 1, GridData.FILL_HORIZONTAL, 0);
+
+            for (StreamFinalizerDescriptor finalizer : StreamFinalizerRegistry.getInstance().getFinalizers()) {
+                final Button checkbox = UIUtils.createCheckbox(group, finalizer.getLabel(), finalizer.getDescription(), false, 1);
+                final String id = finalizer.getId();
+                checkbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
+                        if (checkbox.getSelection()) {
+                            settings.getFinalizers().add(id);
+                        } else {
+                            settings.getFinalizers().remove(id);
+                        }
+                    }
+                });
+                finalizerCheckboxes.put(id, checkbox);
+            }
+        }
+
+        {
             final String[] variables = getAvailableVariables();
             final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
                 .stream(variables)
@@ -285,6 +309,10 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             settings.setOutputClipboard(false);
         }
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
+
+        for (Map.Entry<String, Button> entry : finalizerCheckboxes.entrySet()) {
+            entry.getValue().setSelection(settings.getFinalizers().contains(entry.getKey()));
+        }
 
         updatePageCompletion();
         updateControlsEnablement();

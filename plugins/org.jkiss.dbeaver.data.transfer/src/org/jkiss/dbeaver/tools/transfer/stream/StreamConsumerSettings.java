@@ -34,9 +34,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer settings
@@ -85,6 +83,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
+
+    private final Set<String> finalizers = new HashSet<>();
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -220,6 +220,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dataMappings.put(container.getSource(), container);
     }
 
+    public Set<String> getFinalizers() {
+        return finalizers;
+    }
+
     public DBDDataFormatterProfile getFormatterProfile() {
         return formatterProfile;
     }
@@ -289,6 +293,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
                 log.debug("Canceled by user", e);
             }
         }
+
+        finalizers.addAll(JSONUtils.getStringList(settings, "finalizers"));
     }
 
     @Override
@@ -327,6 +333,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
                 mappings.put(DBUtils.getObjectFullId(container.getSource()), containerSettings);
             }
             settings.put("mappings", mappings);
+        }
+
+        if (!finalizers.isEmpty()) {
+            settings.put("finalizers", new ArrayList<>(finalizers));
         }
     }
 
