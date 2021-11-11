@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerConfiguratorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.IStreamTransferFinalizerConfiguratorUI;
@@ -231,8 +233,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         {
             final Group group = UIUtils.createControlGroup(composite, "Actions after finish", 1, GridData.FILL_HORIZONTAL, 0);
 
-            for (StreamFinalizerDescriptor descriptor : StreamFinalizerRegistry.getInstance().getFinalizers()) {
-                finalizers.put(descriptor.getId(), new FinalizerComposite(group, descriptor));
+            final StreamFinalizerRegistry registry = StreamFinalizerRegistry.getInstance();
+            for (StreamFinalizerDescriptor descriptor : registry.getFinalizers()) {
+                finalizers.put(descriptor.getId(), new FinalizerComposite(group, descriptor, registry.getConfiguratorById(descriptor.getId())));
             }
         }
 
@@ -391,7 +394,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         private IStreamTransferFinalizerConfigurator configurator;
         private Composite container;
 
-        public FinalizerComposite(@NotNull Composite parent, @NotNull StreamFinalizerDescriptor descriptor) {
+        public FinalizerComposite(@NotNull Composite parent, @NotNull StreamFinalizerDescriptor descriptor, @Nullable StreamFinalizerConfiguratorDescriptor configuratorDescriptor) {
             super(parent, SWT.NONE);
 
             setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
@@ -399,18 +402,20 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
             final Button enabledCheckbox = UIUtils.createCheckbox(this, descriptor.getLabel(), descriptor.getDescription(), false, 1);
 
-            try {
-                configurator = descriptor.createConfigurator();
-            } catch (DBException e) {
-                log.error("Error constructing finalizer configurator", e);
-            }
+            if (configuratorDescriptor != null) {
+                try {
+                    configurator = configuratorDescriptor.create();
+                } catch (DBException e) {
+                    log.error("Error constructing finalizer configurator", e);
+                }
 
-            if (configurator instanceof IStreamTransferFinalizerConfiguratorUI) {
-                container = new Composite(this, SWT.NONE);
-                container.setLayout(GridLayoutFactory.fillDefaults().create());
-                container.setLayoutData(GridDataFactory.fillDefaults().create());
+                if (configurator instanceof IStreamTransferFinalizerConfiguratorUI) {
+                    container = new Composite(this, SWT.NONE);
+                    container.setLayout(GridLayoutFactory.fillDefaults().create());
+                    container.setLayoutData(GridDataFactory.fillDefaults().create());
 
-                ((IStreamTransferFinalizerConfiguratorUI) configurator).createControl(container);
+                    ((IStreamTransferFinalizerConfiguratorUI) configurator).createControl(container);
+                }
             }
 
             enabledCheckbox.addSelectionListener(new SelectionAdapter() {

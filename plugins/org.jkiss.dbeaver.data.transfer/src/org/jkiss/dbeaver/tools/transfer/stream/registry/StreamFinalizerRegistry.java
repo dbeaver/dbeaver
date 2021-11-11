@@ -29,22 +29,30 @@ public class StreamFinalizerRegistry {
 
     private static StreamFinalizerRegistry instance = null;
 
-    public static synchronized StreamFinalizerRegistry getInstance() {
-        if (instance == null) {
-            instance = new StreamFinalizerRegistry(Platform.getExtensionRegistry());
-        }
-        return instance;
-    }
-
     private final Map<String, StreamFinalizerDescriptor> finalizers = new HashMap<>();
+    private final Map<String, StreamFinalizerConfiguratorDescriptor> configurators = new HashMap<>();
 
     public StreamFinalizerRegistry(@NotNull IExtensionRegistry registry) {
         final IConfigurationElement[] elements = registry.getConfigurationElementsFor(EXTENSION_ID);
 
         for (IConfigurationElement element : elements) {
-            final StreamFinalizerDescriptor descriptor = new StreamFinalizerDescriptor(element);
-            finalizers.put(descriptor.getId(), descriptor);
+            if ("finalizer".equals(element.getName())) {
+                final StreamFinalizerDescriptor descriptor = new StreamFinalizerDescriptor(element);
+                finalizers.put(descriptor.getId(), descriptor);
+            }
+            if ("configurator".equals(element.getName())) {
+                final StreamFinalizerConfiguratorDescriptor descriptor = new StreamFinalizerConfiguratorDescriptor(element);
+                configurators.put(descriptor.getId(), descriptor);
+            }
         }
+    }
+
+    @NotNull
+    public static synchronized StreamFinalizerRegistry getInstance() {
+        if (instance == null) {
+            instance = new StreamFinalizerRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
     }
 
     @NotNull
@@ -55,5 +63,15 @@ public class StreamFinalizerRegistry {
     @Nullable
     public StreamFinalizerDescriptor getFinalizerById(@NotNull String id) {
         return finalizers.get(id);
+    }
+
+    @NotNull
+    public Collection<StreamFinalizerConfiguratorDescriptor> getConfigurators() {
+        return Collections.unmodifiableCollection(configurators.values());
+    }
+
+    @Nullable
+    public StreamFinalizerConfiguratorDescriptor getConfiguratorById(@NotNull String id) {
+        return configurators.get(id);
     }
 }

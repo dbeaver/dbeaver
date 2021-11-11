@@ -19,6 +19,7 @@
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="finalizer" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="configurator" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -66,16 +67,6 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="configurator" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator"/>
-               </appinfo>
-            </annotation>
-         </attribute>
          <attribute name="label" type="string" use="required">
             <annotation>
                <documentation>
@@ -93,6 +84,28 @@
                </documentation>
                <appinfo>
                   <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="configurator">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator"/>
                </appinfo>
             </annotation>
          </attribute>

@@ -20,21 +20,17 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizer;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
 
-public class StreamFinalizerDescriptor extends AbstractDescriptor {
+public class StreamFinalizerConfiguratorDescriptor extends AbstractDescriptor {
     private final String id;
     private final ObjectType type;
-    private final String label;
-    private final String description;
 
-    protected StreamFinalizerDescriptor(@NotNull IConfigurationElement config) {
+    protected StreamFinalizerConfiguratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
         this.type = new ObjectType(config.getAttribute("class"));
-        this.label = config.getAttribute("label");
-        this.description = config.getAttribute("description");
     }
 
     @NotNull
@@ -43,25 +39,15 @@ public class StreamFinalizerDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public IStreamTransferFinalizer create() throws DBException {
-        type.checkObjectClass(IStreamTransferFinalizer.class);
+    public IStreamTransferFinalizerConfigurator create() throws DBException {
+        type.checkObjectClass(IStreamTransferFinalizerConfigurator.class);
         try {
             return type
-                .getObjectClass(IStreamTransferFinalizer.class)
+                .getObjectClass(IStreamTransferFinalizerConfigurator.class)
                 .getDeclaredConstructor()
                 .newInstance();
         } catch (Throwable e) {
-            throw new DBException("Can't create finalizer", e);
+            throw new DBException("Can't create finalizer configurator", e);
         }
-    }
-
-    @NotNull
-    public String getLabel() {
-        return label;
-    }
-
-    @NotNull
-    public String getDescription() {
-        return description;
     }
 }
