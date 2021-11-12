@@ -20,6 +20,7 @@ import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
@@ -127,7 +128,7 @@ public class DBeaverCommandLine
         }
     }
 
-    public static List<CommandLineParameterHandler> getRemoteParameterHandlers(CommandLine commandLine) {
+    public static List<CommandLineParameterHandler> getRemoteParameterHandlers(@NotNull CommandLine commandLine) {
         List<CommandLineParameterHandler> handlers = new ArrayList<>();
         for (ParameterDescriptor param : customParameters.values()) {
             if (commandLine.hasOption(param.name) && !(param.handler instanceof Remote)) {
