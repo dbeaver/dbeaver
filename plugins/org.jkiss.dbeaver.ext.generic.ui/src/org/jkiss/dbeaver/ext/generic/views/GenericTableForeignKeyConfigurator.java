@@ -28,12 +28,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
+import java.util.Map;
+
 /**
  * Generic table foreign key configurator
  */
 public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator<GenericTableForeignKey> {
     @Override
-    public GenericTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, GenericTableForeignKey foreignKey) {
+    public GenericTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, GenericTableForeignKey foreignKey, Map<String, Object> options) {
         return new UITask<GenericTableForeignKey>() {
             @Override
             protected GenericTableForeignKey runTask() {
@@ -44,7 +46,7 @@ public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator
                         DBSForeignKeyModifyRule.NO_ACTION,
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                         DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                        DBSForeignKeyModifyRule.SET_DEFAULT }, options);
                 if (!editPage.edit()) {
                     return null;
                 }

@@ -25,13 +25,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 /**
  * MySQL database configurator
  */
 public class MySQLCatalogConfigurator implements DBEObjectConfigurator<MySQLCatalog> {
 
     @Override
-    public MySQLCatalog configureObject(DBRProgressMonitor monitor, Object dataSource, MySQLCatalog database) {
+    public MySQLCatalog configureObject(DBRProgressMonitor monitor, Object dataSource, MySQLCatalog database, Map<String, Object> options) {
         return UITask.run(() -> {
             MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database);
             if (dialog.open() != IDialogConstants.OK_ID) {

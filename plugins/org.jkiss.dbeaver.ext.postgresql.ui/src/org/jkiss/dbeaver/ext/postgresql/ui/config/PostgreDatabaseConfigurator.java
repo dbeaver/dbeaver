@@ -25,13 +25,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 /**
  * Postgre database configurator
  */
 public class PostgreDatabaseConfigurator implements DBEObjectConfigurator<PostgreDatabase> {
 
     @Override
-    public PostgreDatabase configureObject(DBRProgressMonitor monitor, Object dataSource, PostgreDatabase database) {
+    public PostgreDatabase configureObject(DBRProgressMonitor monitor, Object dataSource, PostgreDatabase database, Map<String, Object> options) {
         return new UITask<PostgreDatabase>() {
             @Override
             protected PostgreDatabase runTask() {

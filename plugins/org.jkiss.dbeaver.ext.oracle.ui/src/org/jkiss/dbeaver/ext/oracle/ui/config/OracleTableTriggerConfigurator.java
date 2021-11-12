@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 /**
  * OracleTableTriggerConfigurator
  */
 public class OracleTableTriggerConfigurator implements DBEObjectConfigurator<OracleTableTrigger> {
 
     @Override
-    public OracleTableTrigger configureObject(DBRProgressMonitor monitor, Object container, OracleTableTrigger newTrigger) {
+    public OracleTableTrigger configureObject(DBRProgressMonitor monitor, Object container, OracleTableTrigger newTrigger, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(newTrigger.getDataSource(), DBSEntityType.TRIGGER);
             if (!editPage.edit()) {

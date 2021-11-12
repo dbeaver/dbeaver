@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 
+import java.util.Map;
+
 public class SQLServerColumnConfigurator implements DBEObjectConfigurator<SQLServerTableColumn> {
     @Override
-    public SQLServerTableColumn configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableColumn column) {
+    public SQLServerTableColumn configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableColumn column, Map<String, Object> options) {
         return new UITask<SQLServerTableColumn>() {
             @Override
             protected SQLServerTableColumn runTask() {

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Postgre index configurator
@@ -39,7 +40,7 @@ public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreIn
 
 
     @Override
-    public PostgreIndex configureObject(DBRProgressMonitor monitor, Object parent, PostgreIndex index) {
+    public PostgreIndex configureObject(DBRProgressMonitor monitor, Object parent, PostgreIndex index, Map<String, Object> options) {
         return new UITask<PostgreIndex>() {
             @Override
             protected PostgreIndex runTask() {

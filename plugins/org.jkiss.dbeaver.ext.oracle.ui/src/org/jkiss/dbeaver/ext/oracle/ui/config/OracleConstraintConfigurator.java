@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * OracleConstraintConfigurator
  */
@@ -34,7 +36,7 @@ public class OracleConstraintConfigurator implements DBEObjectConfigurator<Oracl
 
 
     @Override
-    public OracleTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, OracleTableConstraint constraint) {
+    public OracleTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, OracleTableConstraint constraint, Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 OracleUIMessages.edit_oracle_constraint_manager_dialog_title,

@@ -23,9 +23,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 public class ExasolConsumerGroupConfigurator implements DBEObjectConfigurator<ExasolConsumerGroup> {
     @Override
-    public ExasolConsumerGroup configureObject(DBRProgressMonitor monitor, Object container, ExasolConsumerGroup group) {
+    public ExasolConsumerGroup configureObject(DBRProgressMonitor monitor, Object container, ExasolConsumerGroup group, Map<String, Object> options) {
         return new UITask<ExasolConsumerGroup>() {
             @Override
             protected ExasolConsumerGroup runTask() {

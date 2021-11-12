@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 public class MySQLSequenceConfigurator implements DBEObjectConfigurator<MySQLSequence> {
 
     @Override
-    public MySQLSequence configureObject(DBRProgressMonitor monitor, Object container, MySQLSequence sequence) {
+    public MySQLSequence configureObject(DBRProgressMonitor monitor, Object container, MySQLSequence sequence, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
             if (!editPage.edit()) {

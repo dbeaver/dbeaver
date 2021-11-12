@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 
+import java.util.Map;
+
 /**
  * MySQL procedure configurator
  */
 public class MySQLProcedureConfigurator implements DBEObjectConfigurator<MySQLProcedure> {
 
     @Override
-    public MySQLProcedure configureObject(DBRProgressMonitor monitor, Object parent, MySQLProcedure newProcedure) {
+    public MySQLProcedure configureObject(DBRProgressMonitor monitor, Object parent, MySQLProcedure newProcedure, Map<String, Object> options) {
         return UITask.run(() -> {
             CreateProcedurePage editPage = new CreateProcedurePage(newProcedure);
             if (!editPage.edit()) {

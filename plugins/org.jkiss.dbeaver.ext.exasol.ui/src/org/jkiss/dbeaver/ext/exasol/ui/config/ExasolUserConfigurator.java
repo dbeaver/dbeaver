@@ -24,9 +24,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 public class ExasolUserConfigurator implements DBEObjectConfigurator<ExasolUser> {
     @Override
-    public ExasolUser configureObject(DBRProgressMonitor monitor, Object container, ExasolUser user) {
+    public ExasolUser configureObject(DBRProgressMonitor monitor, Object container, ExasolUser user, Map<String, Object> options) {
         return new UITask<ExasolUser>() {
             @Override
             protected ExasolUser runTask() {

@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
+import java.util.Map;
+
 
 public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBCQueryPlannerConfiguration> {
 
@@ -41,7 +43,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
     private static boolean analyse;
 
     @Override
-    public DBCQueryPlannerConfiguration configureObject(DBRProgressMonitor monitor, Object container, DBCQueryPlannerConfiguration configuration) {
+    public DBCQueryPlannerConfiguration configureObject(DBRProgressMonitor monitor, Object container, DBCQueryPlannerConfiguration configuration, Map<String, Object> options) {
         return new UITask<DBCQueryPlannerConfiguration>() {
             @Override
             protected DBCQueryPlannerConfiguration runTask() {

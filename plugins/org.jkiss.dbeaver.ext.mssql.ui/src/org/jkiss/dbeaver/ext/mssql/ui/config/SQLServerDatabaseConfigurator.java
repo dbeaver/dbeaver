@@ -24,10 +24,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 public class SQLServerDatabaseConfigurator implements DBEObjectConfigurator<SQLServerDatabase> {
 
     @Override
-    public SQLServerDatabase configureObject(DBRProgressMonitor monitor, Object container, SQLServerDatabase database) {
+    public SQLServerDatabase configureObject(DBRProgressMonitor monitor, Object container, SQLServerDatabase database, Map<String, Object> options) {
         return UITask.run(() -> {
             SQLServerCreateDatabaseDialog dialog = new SQLServerCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database.getDataSource());
 

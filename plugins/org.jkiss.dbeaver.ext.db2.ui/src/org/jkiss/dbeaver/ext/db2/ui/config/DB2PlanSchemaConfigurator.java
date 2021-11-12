@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 Explain Schema configurator
@@ -43,7 +44,7 @@ public class DB2PlanSchemaConfigurator implements DBEObjectConfigurator<DB2PlanC
     protected static final Log log = Log.getLog(DB2PlanSchemaConfigurator.class);
 
     @Override
-    public DB2PlanConfig configureObject(DBRProgressMonitor monitor, Object db2dataSource, DB2PlanConfig object) {
+    public DB2PlanConfig configureObject(DBRProgressMonitor monitor, Object db2dataSource, DB2PlanConfig object, Map<String, Object> options) {
         DB2DataSource db2source = (DB2DataSource) db2dataSource;
         try {
             JDBCSession session = DBUtils.openMetaSession(monitor, db2source, "Read EXPLAIN tables");

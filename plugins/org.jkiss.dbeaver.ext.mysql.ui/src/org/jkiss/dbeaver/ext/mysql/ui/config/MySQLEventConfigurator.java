@@ -24,13 +24,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 /**
  * MySQLEventConfigurator
  */
 public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLEvent> {
 
     @Override
-    public MySQLEvent configureObject(DBRProgressMonitor monitor, Object parent, MySQLEvent event) {
+    public MySQLEvent configureObject(DBRProgressMonitor monitor, Object parent, MySQLEvent event, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(event.getDataSource(), DBSEntityType.EVENT);
             if (!editPage.edit()) {

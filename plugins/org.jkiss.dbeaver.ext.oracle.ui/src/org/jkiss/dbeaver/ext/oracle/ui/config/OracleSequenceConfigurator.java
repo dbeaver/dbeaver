@@ -24,11 +24,12 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 public class OracleSequenceConfigurator implements DBEObjectConfigurator<OracleSequence> {
 
     @Override
-    public OracleSequence configureObject(DBRProgressMonitor monitor, Object container, OracleSequence sequence) {
+    public OracleSequence configureObject(DBRProgressMonitor monitor, Object container, OracleSequence sequence, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage page = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
             if (!page.edit()) {

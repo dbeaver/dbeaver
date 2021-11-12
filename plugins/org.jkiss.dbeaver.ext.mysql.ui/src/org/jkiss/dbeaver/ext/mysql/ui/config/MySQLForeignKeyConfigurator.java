@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
+import java.util.Map;
+
 /**
  * MySQL index configurator
  */
@@ -35,7 +37,7 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
 
 
     @Override
-    public MySQLTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, MySQLTableForeignKey foreignKey) {
+    public MySQLTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, MySQLTableForeignKey foreignKey, Map<String, Object> options) {
         return UITask.run(() -> {
             EditForeignKeyPage editPage = new EditForeignKeyPage(
                 MySQLUIMessages.edit_foreign_key_manager_title,
@@ -44,7 +46,8 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                     DBSForeignKeyModifyRule.NO_ACTION,
                     DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                     DBSForeignKeyModifyRule.SET_NULL,
-                    DBSForeignKeyModifyRule.SET_DEFAULT });
+                    DBSForeignKeyModifyRule.SET_DEFAULT },
+                options);
             if (!editPage.edit()) {
                 return null;
             }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 foreign key configurator
@@ -46,12 +47,12 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
     }
 
     @Override
-    public DB2TableForeignKey configureObject(DBRProgressMonitor monitor, Object container, DB2TableForeignKey foreignKey) {
+    public DB2TableForeignKey configureObject(DBRProgressMonitor monitor, Object container, DB2TableForeignKey foreignKey, Map<String, Object> options) {
         return new UITask<DB2TableForeignKey>() {
             @Override
             protected DB2TableForeignKey runTask() {
             	EditForeignKeyPage editDialog = new EditForeignKeyPage(
-                        DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES);
+                        DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
                     if (!editDialog.edit()) {
                         return null;
                     }

@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * Generic table primary key configurator
  */
@@ -35,7 +37,7 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
 
     @Override
-    public GenericUniqueKey configureObject(DBRProgressMonitor monitor, Object table, GenericUniqueKey primaryKey) {
+    public GenericUniqueKey configureObject(DBRProgressMonitor monitor, Object table, GenericUniqueKey primaryKey, Map<String, Object> options) {
         boolean isSupportCheckConstraint = primaryKey.getDataSource().getMetaModel().supportsCheckConstraints();
         return new UITask<GenericUniqueKey>() {
             @Override

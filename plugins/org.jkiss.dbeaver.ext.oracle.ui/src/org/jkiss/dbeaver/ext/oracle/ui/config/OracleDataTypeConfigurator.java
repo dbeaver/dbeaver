@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 /**
  * OracleDataTypeConfigurator
  */
 public class OracleDataTypeConfigurator implements DBEObjectConfigurator<OracleDataType> {
 
     @Override
-    public OracleDataType configureObject(DBRProgressMonitor monitor, Object parent, OracleDataType dataType) {
+    public OracleDataType configureObject(DBRProgressMonitor monitor, Object parent, OracleDataType dataType, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(dataType.getDataSource(), DBSEntityType.TYPE);
             if (!editPage.edit()) {

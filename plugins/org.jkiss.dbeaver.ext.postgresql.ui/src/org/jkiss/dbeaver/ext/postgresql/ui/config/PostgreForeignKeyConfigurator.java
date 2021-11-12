@@ -34,6 +34,9 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Postgre index configurator
  */
@@ -41,7 +44,7 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
 
 
     @Override
-    public PostgreTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, PostgreTableForeignKey foreignKey) {
+    public PostgreTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, PostgreTableForeignKey foreignKey, Map<String, Object> options) {
         return new UITask<PostgreTableForeignKey>() {
             @Override
             protected PostgreTableForeignKey runTask() {
@@ -82,7 +85,8 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 DBSForeignKeyModifyRule.NO_ACTION,
                 DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                 DBSForeignKeyModifyRule.SET_NULL,
-                DBSForeignKeyModifyRule.SET_DEFAULT });
+                DBSForeignKeyModifyRule.SET_DEFAULT },
+                Collections.emptyMap());
         }
 
         @Override

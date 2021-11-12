@@ -73,7 +73,7 @@ import java.util.*;
  */
 public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IAdaptable, DBPObjectStatisticsCollector {
 
-    private static final Log                                     LOG                = Log.getLog(DB2DataSource.class);
+    private static final Log log = Log.getLog(DB2DataSource.class);
 
     private static final String                                  GET_SESSION_USER   = "VALUES(SESSION_USER)";
 
@@ -164,13 +164,13 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             }
 
         } catch (SQLException e) {
-            LOG.warn("Error reading active schema", e);
+            log.warn("Error reading active schema", e);
         }
 
         try {
             this.dataTypeCache.getAllObjects(monitor, this);
         } catch (DBException e) {
-            LOG.warn("Error reading types info", e);
+            log.warn("Error reading types info", e);
             this.dataTypeCache.setCache(Collections.<DB2DataType> emptyList());
         }
     }
@@ -230,10 +230,10 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             version = Integer.valueOf(metaData.getDatabaseMajorVersion()).doubleValue();
             version += Integer.valueOf(metaData.getDatabaseMinorVersion()).doubleValue() / 10;
         } catch (SQLException e) {
-            LOG.warn("SQLException when reading database version. Set it to lowest supported version : " + DB2Constants.DB2v9_1
+            log.warn("SQLException when reading database version. Set it to lowest supported version : " + DB2Constants.DB2v9_1
                 + " : " + e.getMessage());
         }
-        LOG.debug(getName() + " is version v" + version);
+        log.debug(getName() + " is version v" + version);
 
         // disable result set scroll
         // (it doesn't work for some queries and some column types so I have to disable it for ALL queries).
@@ -321,7 +321,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         try {
             return getDataTypes(new VoidProgressMonitor());
         } catch (DBException e) {
-            LOG.error("DBException occurred when reading system dataTypes: ", e);
+            log.error("DBException occurred when reading system dataTypes: ", e);
             return null;
         }
     }
@@ -332,7 +332,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         try {
             return getDataType(new VoidProgressMonitor(), typeName);
         } catch (DBException e) {
-            LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
+            log.error("DBException occurred when reading system dataTYpe : " + typeName, e);
             return null;
         }
     }
@@ -406,7 +406,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         }
         Boolean ok = DB2Utils.checkExplainTables(monitor, this, sessionUserSchema);
         if (ok) {
-            LOG.debug("Valid explain tables found in " + sessionUserSchema);
+            log.debug("Valid explain tables found in " + sessionUserSchema);
             schemaForExplainTables = sessionUserSchema;
             return schemaForExplainTables;
         }
@@ -414,14 +414,14 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         // Verify explain table from SYSTOOLS
         ok = DB2Utils.checkExplainTables(monitor, this, DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
         if (ok) {
-            LOG.debug("Valid explain tables found in " + DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
+            log.debug("Valid explain tables found in " + DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
             schemaForExplainTables = DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT;
             return schemaForExplainTables;
         }
         
         DB2PlanConfig cfg = new DB2PlanConfig();
         DBEObjectConfigurator configurator = GeneralUtils.adapt(cfg, DBEObjectConfigurator.class);
-        if (configurator == null || configurator.configureObject(monitor, this, cfg) == null) {
+        if (configurator == null || configurator.configureObject(monitor, this, cfg, Collections.emptyMap()) == null) {
             return null;
         }
 
@@ -586,7 +586,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Database Parameters")) {
                 listDBParameters = DB2Utils.readDBCfg(monitor, session);
             } catch (SQLException e) {
-                LOG.warn(e);
+                log.warn(e);
             }
         }
         return listDBParameters;
@@ -598,7 +598,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Instance Parameters")) {
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
             } catch (SQLException e) {
-                LOG.warn(e);
+                log.warn(e);
             }
         }
         return listDBMParameters;
@@ -610,7 +610,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Global XMLStrings")) {
                 listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
             } catch (SQLException e) {
-                LOG.warn(e);
+                log.warn(e);
             }
         }
         return listXMLStrings;

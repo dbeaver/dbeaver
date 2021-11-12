@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Generic table index configurator
@@ -38,7 +39,7 @@ import java.util.Collection;
 public class GenericTableIndexConfigurator implements DBEObjectConfigurator<GenericTableIndex> {
 
     @Override
-    public GenericTableIndex configureObject(DBRProgressMonitor monitor, Object table, GenericTableIndex index) {
+    public GenericTableIndex configureObject(DBRProgressMonitor monitor, Object table, GenericTableIndex index, Map<String, Object> options) {
         GenericTableBase tableBase = (GenericTableBase) table;
         boolean supportUniqueIndexes = tableBase.supportUniqueIndexes();
         Collection<DBSIndexType> tableIndexTypes = tableBase.getTableIndexTypes();

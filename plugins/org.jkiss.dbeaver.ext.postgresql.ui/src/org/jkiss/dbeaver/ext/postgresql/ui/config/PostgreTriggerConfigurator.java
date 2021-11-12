@@ -41,6 +41,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 /**
  * Postgre sequence configurator
  */
@@ -49,7 +51,7 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
     //protected static final Log log = Log.getLog(PostgreTriggerConfigurator.class);
 
     @Override
-    public PostgreTrigger configureObject(DBRProgressMonitor monitor, Object parent, PostgreTrigger trigger) {
+    public PostgreTrigger configureObject(DBRProgressMonitor monitor, Object parent, PostgreTrigger trigger, Map<String, Object> options) {
         return new UITask<PostgreTrigger>() {
 
             @Override

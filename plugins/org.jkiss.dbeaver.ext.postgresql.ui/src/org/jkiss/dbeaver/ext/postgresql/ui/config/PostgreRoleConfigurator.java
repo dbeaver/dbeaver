@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 /**
  * Postgre role configurator
  */
 public class PostgreRoleConfigurator implements DBEObjectConfigurator<PostgreRole> {
     @Override
-    public PostgreRole configureObject(DBRProgressMonitor monitor, Object parent, PostgreRole role) {
+    public PostgreRole configureObject(DBRProgressMonitor monitor, Object parent, PostgreRole role, Map<String, Object> options) {
         return new UITask<PostgreRole>() {
             @Override
             protected PostgreRole runTask() {

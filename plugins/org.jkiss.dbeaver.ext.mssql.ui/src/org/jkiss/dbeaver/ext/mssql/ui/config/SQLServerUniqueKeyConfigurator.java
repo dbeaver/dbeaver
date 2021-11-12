@@ -26,13 +26,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * SQL server unique constraint configurator
  */
 public class SQLServerUniqueKeyConfigurator implements DBEObjectConfigurator<SQLServerTableUniqueKey> {
 
     @Override
-    public SQLServerTableUniqueKey configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableUniqueKey primaryKey) {
+    public SQLServerTableUniqueKey configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableUniqueKey primaryKey, Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 "Create constraint",

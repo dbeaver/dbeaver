@@ -32,6 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -52,10 +53,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.*;
 
 /**
  * EditForeignKeyPage
@@ -84,7 +83,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private String fkName;
 
     private DBSEntityConstraint curConstraint;
-    private List<? extends DBSEntityAttribute> ownColumns;
+    private List<? extends DBSEntityAttribute> ownAttributes;
+    private List<DBSEntityAttribute> sourceAttributes;
+    private List<DBSEntityAttribute> refAttributes;
     private final List<FKColumnInfo> fkColumns = new ArrayList<>();
     private DBSForeignKeyModifyRule onDeleteRule;
     private DBSForeignKeyModifyRule onUpdateRule;
@@ -95,9 +96,6 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private FKType[] allowedKeyTypes = new FKType[] {  FK_TYPE_PHYSICAL };
     private FKType preferredKeyType = FK_TYPE_PHYSICAL;
     private FKType selectedKeyType = FK_TYPE_PHYSICAL;
-
-    private List<DBSEntityAttribute> sourceAttributes;
-    private List<DBSEntityAttribute> refAttributes;
 
     private final List<Control> physicalKeyComponents = new ArrayList<>();
 
@@ -144,7 +142,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     public EditForeignKeyPage(
         String title,
         DBSEntityAssociation foreignKey,
-        DBSForeignKeyModifyRule[] supportedModifyRules)
+        DBSForeignKeyModifyRule[] supportedModifyRules, Map<String, Object> options)
     {
         super(title);
         this.foreignKey = foreignKey;
@@ -186,6 +184,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 curConstraint = refConstraint;
             }
         }
+
+        sourceAttributes = (List<DBSEntityAttribute>) options.get(SQLForeignKeyManager.OPTION_OWN_ATTRIBUTES);
     }
 
     public boolean isEnableCustomKeys() {
@@ -769,7 +769,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private void handleUniqueKeySelect()
     {
         fkColumns.clear();
-        ownColumns = null;
+        ownAttributes = null;
         columnsTable.removeAll();
         int ukSelectionIndex = uniqueKeyCombo.getSelectionIndex();
         if ((curConstraints.isEmpty() || ukSelectionIndex < 0) && !enableCustomKeys) {
@@ -782,25 +782,33 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         DBRProgressMonitor monitor = new VoidProgressMonitor();
         try {
             Collection<? extends DBSEntityAttribute> tmpColumns = curEntity.getAttributes(monitor);
-            ownColumns = tmpColumns == null ?
+            ownAttributes = tmpColumns == null ?
                 Collections.<DBSTableColumn>emptyList() :
                 new ArrayList<>(getValidAttributes(curEntity));
 
             if (curConstraint instanceof DBSEntityReferrer) {
                 // Read column nodes with void monitor because we already cached them above
-                for (DBSEntityAttributeRef pkColumn : ((DBSEntityReferrer)curConstraint).getAttributeReferences(monitor)) {
+                List<? extends DBSEntityAttributeRef> attributeReferences =
+                    CommonUtils.safeList(((DBSEntityReferrer) curConstraint).getAttributeReferences(monitor));
+                for (int i = 0; i < attributeReferences.size(); i++) {
+                    DBSEntityAttributeRef pkColumn = attributeReferences.get(i);
                     DBSEntityAttribute pkAttribute = pkColumn.getAttribute();
                     if (pkAttribute == null) {
                         log.debug("Constraint " + curConstraint.getName() + " column attribute not found");
                         continue;
                     }
                     FKColumnInfo fkColumnInfo = new FKColumnInfo(pkAttribute);
-                    // Try to find matched column in own table
-                    if (!CommonUtils.isEmpty(ownColumns)) {
-                        for (DBSEntityAttribute ownColumn : ownColumns) {
-                            if (ownColumn.getName().equals(pkAttribute.getName()) && curEntity != pkAttribute.getParentObject()) {
-                                fkColumnInfo.ownColumn = ownColumn;
-                                break;
+                    if (!CommonUtils.isEmpty(sourceAttributes) && sourceAttributes.size() > i) {
+                        fkColumnInfo.ownColumn = sourceAttributes.get(i);
+                    }
+                    if (fkColumnInfo.ownColumn == null) {
+                        // Try to find matched column in own table
+                        if (!CommonUtils.isEmpty(ownAttributes)) {
+                            for (DBSEntityAttribute ownColumn : ownAttributes) {
+                                if (ownColumn.getName().equals(pkAttribute.getName()) && curEntity != pkAttribute.getParentObject()) {
+                                    fkColumnInfo.ownColumn = ownColumn;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -935,8 +943,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
             // Identify the selected row
             final CCombo columnsCombo = new CCombo(columnsTable, SWT.DROP_DOWN | SWT.READ_ONLY);
-            if (!CommonUtils.isEmpty(ownColumns)) {
-                for (DBSEntityAttribute ownColumn : ownColumns) {
+            if (!CommonUtils.isEmpty(ownAttributes)) {
+                for (DBSEntityAttribute ownColumn : ownAttributes) {
                     columnsCombo.add(ownColumn.getName());
                     if (fkInfo.ownColumn == ownColumn) {
                         columnsCombo.select(columnsCombo.getItemCount() - 1);
@@ -972,7 +980,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private void assignForeignKeyRefConstraint(FKColumnInfo fkInfo, CCombo columnsCombo, TableItem item) {
-        fkInfo.ownColumn = ownColumns.get(columnsCombo.getSelectionIndex());
+        fkInfo.ownColumn = ownAttributes.get(columnsCombo.getSelectionIndex());
         item.setText(0, fkInfo.ownColumn.getName());
         item.setImage(0, getColumnIcon(fkInfo.ownColumn));
         item.setText(1, fkInfo.ownColumn.getFullTypeName());
@@ -1020,7 +1028,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         EditForeignKeyPage editDialog = new EditForeignKeyPage(
             "Define virtual foreign keys",
             virtualFK,
-            new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION});
+            new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION},
+            Collections.emptyMap());
         editDialog.setEnableCustomKeys(true);
         if (allowedKeyTypes != null) {
             editDialog.setAllowedKeyTypes(allowedKeyTypes);

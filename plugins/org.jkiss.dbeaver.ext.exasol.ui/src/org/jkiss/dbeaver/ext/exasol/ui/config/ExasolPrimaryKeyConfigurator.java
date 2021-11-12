@@ -31,12 +31,13 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ExasolPrimaryKeyConfigurator implements DBEObjectConfigurator<ExasolTableUniqueKey> {
     protected static final Log log = Log.getLog(ExasolPrimaryKeyConfigurator.class);
 
     @Override
-    public ExasolTableUniqueKey configureObject(DBRProgressMonitor monitor, Object container, ExasolTableUniqueKey constraint) {
+    public ExasolTableUniqueKey configureObject(DBRProgressMonitor monitor, Object container, ExasolTableUniqueKey constraint, Map<String, Object> options) {
         return new UITask<ExasolTableUniqueKey>() {
             @Override
             protected ExasolTableUniqueKey runTask()

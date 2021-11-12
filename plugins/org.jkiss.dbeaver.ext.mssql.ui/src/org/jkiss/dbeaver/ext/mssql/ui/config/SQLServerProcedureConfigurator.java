@@ -22,12 +22,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 
+import java.util.Map;
+
 /**
  * SQLServerProcedureConfigurator
  */
 public class SQLServerProcedureConfigurator implements DBEObjectConfigurator<SQLServerProcedure> {
     @Override
-    public SQLServerProcedure configureObject(DBRProgressMonitor monitor, Object container, SQLServerProcedure newProcedure) {
+    public SQLServerProcedure configureObject(DBRProgressMonitor monitor, Object container, SQLServerProcedure newProcedure, Map<String, Object> options) {
         return UITask.run(() -> {
             CreateProcedurePage editPage = new CreateProcedurePage(newProcedure);
             if (!editPage.edit()) {

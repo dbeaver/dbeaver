@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 
+import java.util.Map;
+
 /**
  * Base table column configurator
  */
 public class BaseTableColumnConfigurator implements DBEObjectConfigurator<DBSEntityAttribute> {
     @Override
-    public DBSEntityAttribute configureObject(DBRProgressMonitor monitor, Object table, DBSEntityAttribute column) {
+    public DBSEntityAttribute configureObject(DBRProgressMonitor monitor, Object table, DBSEntityAttribute column, Map<String, Object> options) {
         return UITask.run(() -> {
             AttributeEditPage page = new AttributeEditPage(null, column);
             if (!page.edit()) {

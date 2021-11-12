@@ -25,10 +25,12 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditUserDialog;
 
+import java.util.Map;
+
 public class SQLServerLoginConfigurator implements DBEObjectConfigurator<SQLServerLogin> {
 
     @Override
-    public SQLServerLogin configureObject(DBRProgressMonitor monitor, Object container, SQLServerLogin login) {
+    public SQLServerLogin configureObject(DBRProgressMonitor monitor, Object container, SQLServerLogin login, Map<String, Object> options) {
         return new UITask<SQLServerLogin>() {
             @Override
             protected SQLServerLogin runTask() {

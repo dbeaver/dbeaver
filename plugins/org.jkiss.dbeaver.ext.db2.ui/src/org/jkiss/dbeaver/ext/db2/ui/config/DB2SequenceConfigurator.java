@@ -24,10 +24,12 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 public class DB2SequenceConfigurator implements DBEObjectConfigurator<DB2Sequence> {
 
     @Override
-    public DB2Sequence configureObject(DBRProgressMonitor monitor, Object container, DB2Sequence sequence) {
+    public DB2Sequence configureObject(DBRProgressMonitor monitor, Object container, DB2Sequence sequence, Map<String, Object> options) {
     	DB2Schema schema = (DB2Schema) container;
         return new UITask<DB2Sequence>() {
             @Override
