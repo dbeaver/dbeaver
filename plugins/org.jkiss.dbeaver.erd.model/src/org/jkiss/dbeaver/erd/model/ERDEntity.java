@@ -153,6 +153,18 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         return null;
     }
 
+    public ERDAssociation getReferenceAssociation(DBSEntityAssociation association) {
+        if (association == null) {
+            return null;
+        }
+        for (ERDAssociation assoc : getReferences()) {
+            if (assoc.getObject() == association) {
+                return assoc;
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public List<ERDEntityAttribute> getCheckedAttributes() {
         List<ERDEntityAttribute> result = new ArrayList<>();

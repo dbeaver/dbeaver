@@ -393,11 +393,13 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 } else if (entityAssociation != null) {
                     ERDEntity erdEntity = diagram.getEntity(entity);
                     ERDEntity targetEntity = diagram.getEntity(entityAssociation.getAssociatedEntity());
-                    if (erdEntity != null) {
+                    if (erdEntity != null &&
+                        erdEntity.getAssociation(entityAssociation) == null &&
+                        erdEntity.getReferenceAssociation(entityAssociation) == null)
+                    {
                         DBSEntityAssociation addedAssociation = entityAssociation;
                         UIUtils.asyncExec(() -> {
                             new ERDAssociation(addedAssociation, erdEntity, targetEntity, true);
-                            erdEntity.firePropertyChange(ERDEntity.PROP_OUTPUT, null, null);
                         });
                     }
                 } else {
@@ -466,7 +468,15 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                             ERDAssociation erdAssociation = erdEntity.getAssociation(removedAssociation);
                             if (erdAssociation != null) {
                                 erdEntity.removeAssociation(erdAssociation, true);
+
+                                if (erdAssociation.getTargetEntity() instanceof ERDEntity) {
+                                    ERDEntity refEntity = (ERDEntity) erdAssociation.getTargetEntity();
+                                    if (refEntity != null) {
+                                        refEntity.removeReferenceAssociation(erdAssociation, true);
+                                    }
+                                }
                             }
+
                         } else {
                             // Entity delete
                             diagram.removeEntity(erdEntity, true);
