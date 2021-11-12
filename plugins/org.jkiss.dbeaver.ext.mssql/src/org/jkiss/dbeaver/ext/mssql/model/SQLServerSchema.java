@@ -324,6 +324,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         if (hasTableStatistics && !forceRefresh) {
             return;
         }
+        if (SQLServerUtils.isDriverBabelfish(getDataSource().getContainer().getDriver())) {
+            hasTableStatistics = true;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
             try (JDBCPreparedStatement dbStat = SQLServerUtils.prepareTableStatisticLoadStatement(
                 session,
