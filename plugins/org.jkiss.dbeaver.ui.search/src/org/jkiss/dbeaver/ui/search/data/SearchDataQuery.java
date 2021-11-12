@@ -22,7 +22,10 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -40,6 +43,11 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -177,6 +185,7 @@ public class SearchDataQuery implements ISearchQuery {
         try {
 
             List<DBDAttributeConstraint> constraints = new ArrayList<>();
+            DBDDataFilter dataFilter = searchDataFilterForContainer(dataContainer, session.getProgressMonitor());
             for (DBSEntityAttribute attribute : CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
                 if (params.fastSearch) {
                     if (DBUtils.findAttributeIndex(session.getProgressMonitor(), attribute) == null) {
@@ -264,16 +273,26 @@ public class SearchDataQuery implements ISearchQuery {
                         }
                     }
                 }
-                DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, constraints.size());
+                DBDAttributeConstraint constraint = null;
+                if (dataFilter != null) {
+                    constraint = dataFilter.getConstraint(attribute, true);
+                }
+                if (constraint == null) {
+                    constraint = new DBDAttributeConstraint(attribute, constraints.size());
+                    constraint.setVisible(true);
+                }
                 constraint.setOperator(operator);
                 constraint.setValue(value);
-                constraint.setVisible(true);
                 constraints.add(constraint);
             }
             if (constraints.isEmpty()) {
                 return null;
             }
-            dataReceiver.filter = new DBDDataFilter(constraints);
+            if (dataFilter != null) {
+                dataReceiver.filter = dataFilter;
+            } else {
+                dataReceiver.filter = new DBDDataFilter(constraints);
+            }
             dataReceiver.filter.setAnyConstraint(true);
             DBCExecutionSource searchSource = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this);
             return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0, 0);
@@ -282,10 +301,34 @@ public class SearchDataQuery implements ISearchQuery {
         }
     }
 
-    public static SearchDataQuery createQuery(SearchDataParams params)
-        throws DBException
-    {
+    static SearchDataQuery createQuery(SearchDataParams params) throws DBException {
         return new SearchDataQuery(params);
+    }
+
+    @Nullable
+    private DBDDataFilter searchDataFilterForContainer(@NotNull DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {
+        DBDDataFilter dataFilter = null;
+        // First let's search in open editors
+        for (IEditorReference er : UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {
+            IEditorPart editor = er.getEditor(false);
+            if (editor instanceof EntityEditor) {
+                IEditorPart pageEditor = ((EntityEditor) editor).getPageEditor(DatabaseDataEditor.class.getName());
+                if (pageEditor != null) {
+                    IResultSetController rsc = pageEditor.getAdapter(IResultSetController.class);
+                    if (rsc != null) {
+                        DBSDataContainer rscDataContainer = rsc.getDataContainer();
+                        if (rscDataContainer == dataContainer) {
+                            dataFilter = rsc.getDataFilter();
+                        }
+                    }
+                }
+            }
+        }
+        if (dataFilter == null) {
+            // Now we try to find saved data filters for container
+            dataFilter = ResultSetUtils.restoreDataFilter(dataContainer, monitor);
+        }
+        return dataFilter;
     }
 
     private class SearchTableMonitor extends VoidProgressMonitor {

@@ -618,6 +618,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Override
+    public DBDDataFilter getDataFilter() {
+        return model.getDataFilter();
+    }
+
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
         //if (!model.getDataFilter().equals(dataFilter))

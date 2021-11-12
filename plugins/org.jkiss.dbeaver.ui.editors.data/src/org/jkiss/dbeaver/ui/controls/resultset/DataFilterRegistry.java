@@ -67,7 +67,7 @@ class DataFilterRegistry {
         return instance;
     }
 
-    public static class SavedDataFilter {
+    static class SavedDataFilter {
 
         private Map<String, DBDAttributeConstraintBase> constraints = new LinkedHashMap<>();
         private boolean anyConstraint; // means OR condition
@@ -125,7 +125,7 @@ class DataFilterRegistry {
         }
     }
 
-    SavedDataFilter getSavedConfig(DBSDataContainer object) {
+    public SavedDataFilter getSavedConfig(DBSDataContainer object) {
         String objectId = makeObjectId(object);
         synchronized (savedFilters) {
             return savedFilters.get(objectId);
