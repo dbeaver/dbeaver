@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -631,15 +630,15 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
+    public static String queryString(Connection session, String sql, Object... args) throws SQLException
     {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
                     dbStat.setObject(i + 1, args[i]);
                 }
             }
-            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+            try (ResultSet resultSet = dbStat.executeQuery()) {
                 if (resultSet.next()) {
                     return resultSet.getString(1);
                 } else {
@@ -650,15 +649,15 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static <T> T queryObject(JDBCSession session, String sql, Object... args) throws SQLException
+    public static <T> T queryObject(Connection session, String sql, Object... args) throws SQLException
     {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
                     dbStat.setObject(i + 1, args[i]);
                 }
             }
-            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+            try (ResultSet resultSet = dbStat.executeQuery()) {
                 if (resultSet.next()) {
                     return (T) resultSet.getObject(1);
                 } else {
