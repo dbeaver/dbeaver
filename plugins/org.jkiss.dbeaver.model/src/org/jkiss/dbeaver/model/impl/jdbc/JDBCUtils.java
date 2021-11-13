@@ -795,4 +795,30 @@ public class JDBCUtils {
     }
 
 
+    public static Long queryLong(Connection session, String sql, Object... params) throws SQLException {
+        final Number result = executeQuery(session, sql, params);
+        if (result != null) {
+            return result.longValue();
+        }
+        return null;
+    }
+
+    public static long executeInsertAutoIncrement(Connection session, String sql, Object... params) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            dbStat.execute();
+            return getGeneratedKey(dbStat);
+        }
+    }
+
+    public static long getGeneratedKey(PreparedStatement dbStat) throws SQLException {
+        try (final ResultSet keysRS = dbStat.getGeneratedKeys()) {
+            keysRS.next();
+            return keysRS.getLong(1);
+        }
+    }
 }
