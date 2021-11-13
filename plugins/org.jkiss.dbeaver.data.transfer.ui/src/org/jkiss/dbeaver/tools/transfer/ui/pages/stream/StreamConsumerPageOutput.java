@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,21 +27,20 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferFinalizerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerConfiguratorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerRegistry;
-import org.jkiss.dbeaver.tools.transfer.ui.IStreamTransferFinalizerConfiguratorUI;
+import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferFinalizerConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,6 +48,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -230,12 +232,20 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             });
         }
 
-        {
+        final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
+        final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
+
+        if (!dataTransferRegistry.getFinalizers().isEmpty()) {
             final Group group = UIUtils.createControlGroup(composite, "Actions after finish", 1, GridData.FILL_HORIZONTAL, 0);
 
-            final StreamFinalizerRegistry registry = StreamFinalizerRegistry.getInstance();
-            for (StreamFinalizerDescriptor descriptor : registry.getFinalizers()) {
-                finalizers.put(descriptor.getId(), new FinalizerComposite(group, descriptor, registry.getConfiguratorById(descriptor.getId())));
+            for (DataTransferFinalizerDescriptor descriptor : dataTransferRegistry.getFinalizers()) {
+                try {
+                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
+                    final IDataTransferFinalizerConfigurator configurator = configuratorDescriptor.createConfigurator();
+                    finalizers.put(descriptor.getId(), new FinalizerComposite(group, settings, descriptor, configurator));
+                } catch (Exception e) {
+                    log.error("Can't create finalizer", e);
+                }
             }
         }
 
@@ -281,7 +291,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         execProcessText.setEnabled(!clipboard);
 
         for (FinalizerComposite finalizer : finalizers.values()) {
-            UIUtils.enableWithChildren(finalizer, finalizer.isApplicable());
+            finalizer.setFinalizerAvailable(finalizer.isFinalizerApplicable());
         }
     }
 
@@ -359,7 +369,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         for (FinalizerComposite finalizer : finalizers.values()) {
-            if (!finalizer.isComplete()) {
+            if (finalizer.isFinalizerApplicable() && finalizer.isFinalizerEnabled() && !finalizer.isFinalizerComplete()) {
+                setErrorMessage(NLS.bind("Configuration for ''{0}'' is incomplete", finalizer.descriptor.getLabel()));
                 return false;
             }
         }
@@ -391,69 +402,117 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     }
 
     private class FinalizerComposite extends Composite {
-        private IStreamTransferFinalizerConfigurator configurator;
-        private Composite container;
+        private final DataTransferFinalizerDescriptor descriptor;
+        private final IDataTransferFinalizerConfigurator configurator;
+        private final StreamConsumerSettings settings;
+        private final Button enabledCheckbox;
+        private Link configureLink;
 
-        public FinalizerComposite(@NotNull Composite parent, @NotNull StreamFinalizerDescriptor descriptor, @Nullable StreamFinalizerConfiguratorDescriptor configuratorDescriptor) {
+        public FinalizerComposite(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull DataTransferFinalizerDescriptor descriptor, @Nullable IDataTransferFinalizerConfigurator configurator) {
             super(parent, SWT.NONE);
+            this.descriptor = descriptor;
+            this.configurator = configurator;
+            this.settings = settings;
+
+            final boolean hasControl = configurator != null && configurator.hasControl();
 
             setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
-            setLayout(GridLayoutFactory.fillDefaults().create());
+            setLayout(GridLayoutFactory.fillDefaults().numColumns(hasControl ? 2 : 1).create());
 
-            final Button enabledCheckbox = UIUtils.createCheckbox(this, descriptor.getLabel(), descriptor.getDescription(), false, 1);
-
-            if (configuratorDescriptor != null) {
-                try {
-                    configurator = configuratorDescriptor.create();
-                } catch (DBException e) {
-                    log.error("Error constructing finalizer configurator", e);
-                }
-
-                if (configurator instanceof IStreamTransferFinalizerConfiguratorUI) {
-                    container = new Composite(this, SWT.NONE);
-                    container.setLayout(GridLayoutFactory.fillDefaults().create());
-                    container.setLayoutData(GridDataFactory.fillDefaults().create());
-
-                    ((IStreamTransferFinalizerConfiguratorUI) configurator).createControl(container);
-                }
-            }
-
+            enabledCheckbox = UIUtils.createCheckbox(this, descriptor.getLabel(), descriptor.getDescription(), false, 1);
             enabledCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
-                    if (enabledCheckbox.getSelection()) {
-                        settings.getFinalizers().add(descriptor.getId());
-                    } else {
-                        settings.getFinalizers().remove(descriptor.getId());
-                    }
-                    if (container != null) {
-                        UIUtils.enableWithChildren(container, enabledCheckbox.getSelection());
-                    }
-                    updatePageCompletion();
+                    setFinalizerEnabled(enabledCheckbox.getSelection());
                 }
             });
+
+            if (hasControl) {
+                configureLink = UIUtils.createLink(this, "<a>Configure</a>", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        final ConfigureDialog dialog = new ConfigureDialog(getShell(), descriptor, configurator);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            // TODO: Persist configuration
+                            updatePageCompletion();
+                        }
+                    }
+                });
+            }
+
+            UIUtils.asyncExec(() -> setFinalizerEnabled(settings.getFinalizers().contains(descriptor.getId())));
         }
 
         public void loadSettings(@NotNull DBRRunnableContext context, @NotNull Map<String, Object> settings) {
-            configurator.loadSettings(context, settings);
+//            configurator.loadSettings(context, settings);
         }
 
         public void saveSettings(@NotNull Map<String, Object> settings) {
-            configurator.saveSettings(settings);
+//            configurator.saveSettings(settings);
         }
 
-        public boolean isComplete() {
-            if (configurator instanceof IStreamTransferFinalizerConfiguratorUI) {
-                final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
-                return ((IStreamTransferFinalizerConfiguratorUI) configurator).isComplete(settings);
+        public boolean isFinalizerEnabled() {
+            return enabledCheckbox.getEnabled() && enabledCheckbox.getSelection();
+        }
+
+        public boolean isFinalizerApplicable() {
+            return configurator != null && configurator.isApplicable(settings);
+        }
+
+        public boolean isFinalizerComplete() {
+            return configurator.isComplete();
+        }
+
+        public void setFinalizerAvailable(boolean available) {
+            setFinalizerEnabled(enabledCheckbox.getSelection(), available);
+        }
+
+        public void setFinalizerEnabled(boolean enabled) {
+            setFinalizerEnabled(enabled, enabledCheckbox.getEnabled());
+        }
+
+        private void setFinalizerEnabled(boolean enabled, boolean available) {
+            enabledCheckbox.setSelection(enabled);
+            enabledCheckbox.setEnabled(available);
+
+            if (configurator.hasControl()) {
+                configureLink.setEnabled(enabled && available);
             }
-            return true;
+
+            if (enabled && available) {
+                settings.getFinalizers().add(descriptor.getId());
+            } else {
+                settings.getFinalizers().remove(descriptor.getId());
+            }
+
+            updatePageCompletion();
+        }
+    }
+
+    private static class ConfigureDialog extends BaseDialog {
+        private final IDataTransferFinalizerConfigurator configurator;
+
+        public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferFinalizerDescriptor descriptor, @NotNull IDataTransferFinalizerConfigurator configurator) {
+            super(shell, NLS.bind("Configure ''{0}''", descriptor.getLabel()), null);
+            this.configurator = configurator;
+            setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }
 
-        public boolean isApplicable() {
-            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageOutput.this, StreamConsumerSettings.class);
-            return configurator.isApplicable(settings);
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            final Composite composite = super.createDialogArea(parent);
+            configurator.createControl(composite, this::updateCompletion);
+            return composite;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            super.createButtonsForButtonBar(parent);
+            updateCompletion();
+        }
+
+        private void updateCompletion() {
+            getButton(IDialogConstants.OK_ID).setEnabled(configurator.isComplete());
         }
     }
 }

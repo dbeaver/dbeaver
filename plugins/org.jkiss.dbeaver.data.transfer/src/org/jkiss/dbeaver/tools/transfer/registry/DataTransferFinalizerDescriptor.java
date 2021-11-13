@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream.registry;
+package org.jkiss.dbeaver.tools.transfer.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
 
-public class StreamFinalizerConfiguratorDescriptor extends AbstractDescriptor {
+public class DataTransferFinalizerDescriptor extends AbstractDescriptor {
     private final String id;
     private final ObjectType type;
+    private final String label;
+    private final String description;
 
-    protected StreamFinalizerConfiguratorDescriptor(@NotNull IConfigurationElement config) {
+    protected DataTransferFinalizerDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
         this.type = new ObjectType(config.getAttribute("class"));
+        this.label = config.getAttribute("label");
+        this.description = config.getAttribute("description");
     }
 
     @NotNull
@@ -39,15 +43,30 @@ public class StreamFinalizerConfiguratorDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public IStreamTransferFinalizerConfigurator create() throws DBException {
-        type.checkObjectClass(IStreamTransferFinalizerConfigurator.class);
+    public ObjectType getType() {
+        return type;
+    }
+
+    @NotNull
+    public String getLabel() {
+        return label;
+    }
+
+    @NotNull
+    public String getDescription() {
+        return description;
+    }
+
+    @NotNull
+    public IDataTransferFinalizer create() throws DBException {
+        type.checkObjectClass(IDataTransferFinalizer.class);
         try {
             return type
-                .getObjectClass(IStreamTransferFinalizerConfigurator.class)
+                .getObjectClass(IDataTransferFinalizer.class)
                 .getDeclaredConstructor()
                 .newInstance();
         } catch (Throwable e) {
-            throw new DBException("Can't create finalizer configurator", e);
+            throw new DBException("Can't create finalizer", e);
         }
     }
 }

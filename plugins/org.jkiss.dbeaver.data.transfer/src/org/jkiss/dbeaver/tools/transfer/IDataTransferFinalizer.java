@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui;
+package org.jkiss.dbeaver.tools.transfer;
 
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferFinalizerConfigurator;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
-public interface IStreamTransferFinalizerConfiguratorUI extends IStreamTransferFinalizerConfigurator {
-    void createControl(@NotNull Composite composite);
-
-    default boolean isComplete(@NotNull StreamConsumerSettings settings) {
-        return true;
-    }
+public interface IDataTransferFinalizer {
+    void finish(@NotNull DBRProgressMonitor monitor, @NotNull StreamTransferConsumer consumer, @NotNull StreamConsumerSettings settings) throws DBException;
 }

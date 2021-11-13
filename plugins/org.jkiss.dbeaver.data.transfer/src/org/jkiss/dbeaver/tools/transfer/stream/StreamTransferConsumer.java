@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.registry.StreamFinalizerRegistry;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferFinalizerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -444,16 +444,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
 
-        final StreamFinalizerRegistry registry = StreamFinalizerRegistry.getInstance();
+        final DataTransferRegistry registry = DataTransferRegistry.getInstance();
         for (String id : settings.getFinalizers()) {
-            final StreamFinalizerDescriptor descriptor = registry.getFinalizerById(id);
+            final DataTransferFinalizerDescriptor descriptor = registry.getFinalizerById(id);
             if (descriptor == null) {
                 log.debug("Can't find finalizer '" + id + "'");
                 continue;
             }
             try {
-                final IStreamTransferFinalizer finalizer = descriptor.create();
-                finalizer.finish(monitor, this, settings);
+                descriptor.create().finish(monitor, this, settings);
             } catch (DBException e) {
                 log.error("Error executing finalizer '" + id + "'", e);
             }

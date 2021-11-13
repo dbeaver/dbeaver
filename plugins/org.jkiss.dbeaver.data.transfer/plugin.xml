@@ -3,17 +3,6 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataTransfer.streamFinalizer" name="Data Transfer Stream Finalizer" schema="schema/org.jkiss.dbeaver.dataTransfer.streamFinalizer.exsd"/>
-
-    <extension point="org.jkiss.dbeaver.dataTransfer.streamFinalizer">
-        <finalizer id="showInExplorer"
-                   label="Show exported file in system explorer"
-                   description="Shows exported file in system explorer"
-                   class="org.jkiss.dbeaver.tools.transfer.stream.finalizer.ShowInExplorerFinalizer"/>
-
-        <configurator id="showInExplorer"
-                      class="org.jkiss.dbeaver.tools.transfer.stream.finalizer.ShowInExplorerFinalizer"/>
-    </extension>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">
         <node type="producer"
@@ -243,6 +232,16 @@
                 <property id="expression" label="Expression" type="string" description="Expression to evaluate" defaultValue="" required="true"/>
             </propertyGroup>
         </transformer>
+
+        <finalizer id="showInExplorer"
+                   label="Show exported file in system explorer"
+                   description="Shows exported file in system explorer"
+                   class="org.jkiss.dbeaver.tools.transfer.finalizer.ShowInExplorerFinalizer"/>
+
+        <finalizer id="executeCommand"
+                   label="Execute command on finish"
+                   description="Executes shell command on finish"
+                   class="org.jkiss.dbeaver.tools.transfer.finalizer.ExecuteCommandFinalizer"/>
 
     </extension>
 

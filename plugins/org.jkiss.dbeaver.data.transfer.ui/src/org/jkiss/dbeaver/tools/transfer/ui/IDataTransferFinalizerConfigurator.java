@@ -14,12 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.tools.transfer.ui;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
-public interface IStreamTransferFinalizer {
-    void finish(@NotNull DBRProgressMonitor monitor, @NotNull StreamTransferConsumer consumer, @NotNull StreamConsumerSettings settings) throws DBException;
+public interface IDataTransferFinalizerConfigurator extends IObjectPropertyConfigurator<StreamConsumerSettings> {
+    boolean isApplicable(@NotNull StreamConsumerSettings configuration);
+
+    default boolean hasControl() {
+        return true;
+    }
 }

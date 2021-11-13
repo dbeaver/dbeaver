@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.jkiss.dbeaver.data.transfer" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.data.transfer" id="org.jkiss.dbeaver.dataTransferProvider" name="Data Export Provider"/>
@@ -20,6 +20,7 @@
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="export" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="finalizer" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -198,6 +199,42 @@
             </annotation>
          </attribute>
          <attribute name="validValues" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="finalizer">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string" use="required">
             <annotation>
                <documentation>
                   

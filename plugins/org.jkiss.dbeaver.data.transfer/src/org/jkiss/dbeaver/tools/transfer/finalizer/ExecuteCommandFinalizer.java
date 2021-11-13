@@ -14,23 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.tools.transfer.finalizer;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
-import java.util.Map;
-
-public interface IStreamTransferFinalizerConfigurator {
-    default void loadSettings(@NotNull DBRRunnableContext context, @NotNull Map<String, Object> settings) {
-        // no settings
-    }
-
-    default void saveSettings(@NotNull Map<String, Object> settings) {
-        // no settings
-    }
-
-    default boolean isApplicable(@NotNull StreamConsumerSettings settings) {
-        return true;
+public class ExecuteCommandFinalizer implements IDataTransferFinalizer {
+    @Override
+    public void finish(@NotNull DBRProgressMonitor monitor, @NotNull StreamTransferConsumer consumer, @NotNull StreamConsumerSettings settings) throws DBException {
+        // TODO: Implement
     }
 }
