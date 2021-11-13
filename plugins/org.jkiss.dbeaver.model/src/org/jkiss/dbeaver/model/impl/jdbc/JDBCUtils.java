@@ -576,6 +576,18 @@ public class JDBCUtils {
         }
     }
 
+    public static int executeUpdate(Connection session, String sql, Object ... params) throws SQLException
+    {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            return dbStat.executeUpdate();
+        }
+    }
+
     public static void executeProcedure(Connection session, String sql) throws SQLException
     {
         try (PreparedStatement dbStat = session.prepareCall(sql)) {
