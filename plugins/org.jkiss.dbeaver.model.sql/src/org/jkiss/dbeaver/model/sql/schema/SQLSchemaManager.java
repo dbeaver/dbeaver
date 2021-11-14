@@ -84,6 +84,8 @@ public final class SQLSchemaManager {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
+                // Do rollback in case some error happened during version check (makes sense for PG)
+                txn.rollback();
                 if (currentSchemaVersion < 0) {
                     createNewSchema(monitor, dbCon);
 
@@ -133,6 +135,7 @@ public final class SQLSchemaManager {
         try (Reader ddlStream = scriptSource.openSchemaCreateScript(monitor)) {
             executeScript(monitor, connection, ddlStream, false);
         }
+        versionManager.fillInitialSchemaData(monitor, connection);
     }
 
     private void dropSchema(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException, IOException {
