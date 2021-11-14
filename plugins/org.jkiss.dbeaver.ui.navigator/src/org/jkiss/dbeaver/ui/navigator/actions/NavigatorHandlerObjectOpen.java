@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -292,7 +293,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             changed = true;
         }
 
-        if (!CommonUtils.isEmpty(attributes)) {
+        if (!CollectionUtils.isEmpty(attributes)) {
             for (Map.Entry<String, Object> attr : attributes.entrySet()) {
                 if (!CommonUtils.equalObjects(editorInput.getAttribute(attr.getKey()), attr.getValue())) {
                     editorInput.setAttribute(attr.getKey(), attr.getValue());

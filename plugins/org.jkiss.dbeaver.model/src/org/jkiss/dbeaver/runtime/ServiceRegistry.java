@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +75,7 @@ public class ServiceRegistry {
     @Nullable
     public <T> T getService(@NotNull Class<T> serviceType) {
         List<ServiceDescriptor> descriptors = services.get(serviceType.getName());
-        if (!CommonUtils.isEmpty(descriptors)) {
+        if (!CollectionUtils.isEmpty(descriptors)) {
             boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
             for (ServiceDescriptor descriptor : descriptors) {
                 if (descriptors.size() > 1 && headlessMode != descriptor.headless) {

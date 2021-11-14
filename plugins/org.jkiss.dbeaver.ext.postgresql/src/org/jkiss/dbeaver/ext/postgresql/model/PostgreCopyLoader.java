@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -117,7 +118,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
                 copyBufferSize
                 );
 
-            List<? extends PostgreTableColumn> tableAttrs = CommonUtils.safeList(table.getAttributes(session.getProgressMonitor()));
+            List<? extends PostgreTableColumn> tableAttrs = CollectionUtils.safeList(table.getAttributes(session.getProgressMonitor()));
             tableAttrs.removeIf(a -> a.getOrdinalPosition() < 0);
             mappings = new AttrMapping[tableAttrs.size()];
 

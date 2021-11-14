@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -120,7 +121,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             UIUtils.createInfoLabel(typesGroup, "Select a connection to see available debug types");
         } else {
             List<DebugConfigurationPanelDescriptor> panels = DebugConfigurationPanelRegistry.getInstance().getPanels(dataSource);
-            if (CommonUtils.isEmpty(panels)) {
+            if (CollectionUtils.isEmpty(panels)) {
                 UIUtils.createInfoLabel(typesGroup, "Driver '" + dataSource.getDriver().getFullName() + "' doesn't support debugging");
             } else {
                 for (DebugConfigurationPanelDescriptor panel : panels) {

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
@@ -349,7 +350,7 @@ public class WMIClass extends WMIContainer
     {
         // Read attributes and references
         getAttributes(monitor);
-        if (superClass == null && CommonUtils.isEmpty(referenceAttributes)) {
+        if (superClass == null && CollectionUtils.isEmpty(referenceAttributes)) {
             return null;
         }
         List<DBSEntityAssociation> associations = new ArrayList<>();

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -29,7 +29,7 @@ public abstract class SQLGeneratorTable extends SQLGeneratorBase<DBSEntity> {
 
     protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSEntity object) throws DBException
     {
-        return CommonUtils.safeCollection(object.getAttributes(monitor));
+        return CollectionUtils.safeCollection(object.getAttributes(monitor));
     }
 
     protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, DBSEntity object) throws DBException

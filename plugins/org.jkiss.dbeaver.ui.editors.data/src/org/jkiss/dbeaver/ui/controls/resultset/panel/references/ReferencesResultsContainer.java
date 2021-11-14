@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -290,7 +291,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                 for (DBSEntityAssociation assoc : references) {
                                     if (assoc instanceof DBSEntityReferrer) {
                                         List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
-                                        if (!CommonUtils.isEmpty(attrs)) {
+                                        if (!CollectionUtils.isEmpty(attrs)) {
                                             ReferenceKey referenceKey = new ReferenceKey(monitor, true, entity, assoc, attrs);
                                             refs.add(referenceKey);
                                         }

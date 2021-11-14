@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -208,9 +209,9 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     private boolean isPotentiallySingleSourceSelect(PlainSelect plainSelect) {
-        return CommonUtils.isEmpty(plainSelect.getJoins()) &&
-            (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressionList().getExpressions())) &&
-            CommonUtils.isEmpty(plainSelect.getIntoTables());
+        return CollectionUtils.isEmpty(plainSelect.getJoins()) &&
+            (plainSelect.getGroupBy() == null || CollectionUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressionList().getExpressions())) &&
+            CollectionUtils.isEmpty(plainSelect.getIntoTables());
     }
 
     private void fillSingleSource(Table fromItem) {
@@ -246,7 +247,7 @@ public class SQLQuery implements SQLScriptElement {
         parseQuery();
         if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
-            return CommonUtils.isEmpty(selectBody.getIntoTables()) &&
+            return CollectionUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
                 !selectBody.isForUpdate();

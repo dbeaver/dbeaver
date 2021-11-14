@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -701,7 +702,7 @@ public class JDBCUtils {
             return;
         }
         List<String> include = filter.getInclude();
-        if (!CommonUtils.isEmpty(include)) {
+        if (!CollectionUtils.isEmpty(include)) {
             if (columnAlias != null) {
                 firstClause = SQLUtils.appendFirstClause(sql, firstClause);
             }
@@ -717,7 +718,7 @@ public class JDBCUtils {
             sql.append(")");
         }
         List<String> exclude = filter.getExclude();
-        if (!CommonUtils.isEmpty(exclude)) {
+        if (!CollectionUtils.isEmpty(exclude)) {
             if (columnAlias != null) {
                 SQLUtils.appendFirstClause(sql, firstClause);
             }
@@ -740,10 +741,10 @@ public class JDBCUtils {
         if (filter.isNotApplicable()) {
             return;
         }
-        for (String inc : CommonUtils.safeCollection(filter.getInclude())) {
+        for (String inc : CollectionUtils.safeCollection(filter.getInclude())) {
             statement.setString(paramIndex++, SQLUtils.makeSQLLike(inc));
         }
-        for (String exc : CommonUtils.safeCollection(filter.getExclude())) {
+        for (String exc : CollectionUtils.safeCollection(filter.getExclude())) {
             statement.setString(paramIndex++, SQLUtils.makeSQLLike(exc));
         }
     }

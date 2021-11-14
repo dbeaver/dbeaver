@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -609,7 +609,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
                 }
                 warnings.add(warning);
             }
-            if (!CommonUtils.isEmpty(warnings)) {
+            if (!CollectionUtils.isEmpty(warnings)) {
                 try {
                     clearWarnings();
                 } catch (Throwable e) {

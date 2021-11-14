@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
-        if (!CommonUtils.isEmpty(attribute.getNestedBindings()) ||
+        if (!CollectionUtils.isEmpty(attribute.getNestedBindings()) ||
             !session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
@@ -147,7 +147,7 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             // They can't be used anyway
             nestedBindings.removeIf(
                 attribute -> {
-                    if (attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings())) {
+                    if (attribute.getDataKind() == DBPDataKind.ARRAY && CollectionUtils.isEmpty(attribute.getNestedBindings())) {
                         return true;
                     }
                     return false;

@@ -111,6 +111,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -2187,7 +2188,7 @@ public class SQLEditor extends SQLEditorBase implements
                     for (SQLScriptElement element : elements) {
                         if (element instanceof SQLQuery) {
                             SQLQuery query = transformer.transformQuery(dataSource, getSyntaxManager(), (SQLQuery) element);
-                            if (!CommonUtils.isEmpty(query.getParameters())) {
+                            if (!CollectionUtils.isEmpty(query.getParameters())) {
                                 query.setParameters(parseQueryParameters(query));
                             }
                             xQueries.add(query);
@@ -2203,7 +2204,7 @@ public class SQLEditor extends SQLEditorBase implements
             DBWorkbench.getPlatformUI().showError("Bad query", "Can't execute query", e);
             return false;
         }
-        if (!CommonUtils.isEmpty(elements)) {
+        if (!CollectionUtils.isEmpty(elements)) {
             return processQueries(elements, script, newTab, false, true, queryListener, null);
         } else {
             return false;
@@ -3502,7 +3503,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             try {
                 SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery(dataSource, getSyntaxManager(), (SQLQuery) query);
-                if (!CommonUtils.isEmpty(countQuery.getParameters())) {
+                if (!CollectionUtils.isEmpty(countQuery.getParameters())) {
                     countQuery.setParameters(parseQueryParameters(countQuery));
                 }
 

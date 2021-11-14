@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,11 +53,11 @@ public class AssociationCreateCommand extends Command {
     }
 
     public ERDEntityAttribute getSourceAttribute() {
-        return CommonUtils.isEmpty(sourceAttributes) ? null : sourceAttributes.get(0);
+        return CollectionUtils.isEmpty(sourceAttributes) ? null : sourceAttributes.get(0);
     }
 
     public ERDEntityAttribute getTargetAttribute() {
-        return CommonUtils.isEmpty(targetAttributes) ? null : targetAttributes.get(0);
+        return CollectionUtils.isEmpty(targetAttributes) ? null : targetAttributes.get(0);
     }
 
     public void setAttributes(List<ERDEntityAttribute> sourceAttributes, List<ERDEntityAttribute> targetAttributes) {
@@ -194,10 +194,9 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected boolean needToSwapForeignKeyDirection(DBRProgressMonitor monitor, List<DBSEntityAttribute> srcAttrs, List<DBSEntityAttribute> targetAttrs) throws DBException {
-        return !CommonUtils.isEmpty(srcAttrs) &&
-            !CommonUtils.isEmpty(targetAttrs) &&
+        return !CollectionUtils.isEmpty(srcAttrs) &&
+            !CollectionUtils.isEmpty(targetAttrs) &&
             !DBVUtils.isIdentifyingAttributes(monitor, srcAttrs) &&
             DBVUtils.isIdentifyingAttributes(monitor, targetAttrs);
     }
 }
-

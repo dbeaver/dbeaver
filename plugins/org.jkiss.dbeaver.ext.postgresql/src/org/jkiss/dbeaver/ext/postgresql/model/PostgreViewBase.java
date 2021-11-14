@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -119,7 +120,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
                         "COMMENT ON " + getTableTypeName() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
             }
 
-            for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+            for (PostgreTableColumn column : CollectionUtils.safeCollection(getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
                     PostgreTableColumnManager.addColumnCommentAction(actions, column);
                 }

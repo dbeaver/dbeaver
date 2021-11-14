@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,7 +63,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
 
         DBSObjectCache<MySQLTableBase, MySQLTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
         // Copy columns
-        for (DBSEntityAttribute srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
+        for (DBSEntityAttribute srcColumn : CollectionUtils.safeCollection(source.getAttributes(monitor))) {
             if (DBUtils.isHiddenObject(srcColumn)) {
                 continue;
             }

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -558,7 +559,7 @@ class ResultSetPersister {
             // Probably we have only virtual one with empty attribute set
             DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
             if (identifier != null) {
-                if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                if (CollectionUtils.isEmpty(identifier.getAttributes())) {
                     // Empty identifier. We have to define it
                     if (!UITask.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
                         throw new DBCException("No unique key defined");

@@ -59,7 +59,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -230,7 +230,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
 
     private void handleSelectionChange() {
         List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(roleOrObjectTable.getViewer().getSelection());
-        if (CommonUtils.isEmpty(selectedObjects)) {
+        if (CollectionUtils.isEmpty(selectedObjects)) {
             updateObjectPermissions(null);
         } else {
             updateObjectPermissions(selectedObjects);
@@ -299,7 +299,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
 
     private void updateObjectPermissions(List<DBSObject> objects) {
 
-        boolean hasBadObjects = CommonUtils.isEmpty(objects);
+        boolean hasBadObjects = CollectionUtils.isEmpty(objects);
 
 /*
         if (isRoleEditor()) {
@@ -349,7 +349,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
             for (int i = 0; i < currentObjects.length; i++) {
                 this.currentPrivileges[i] = getObjectPermissions(currentObjects[i]);
             }
-            editEnabled = !CommonUtils.isEmpty(objects);
+            editEnabled = !CollectionUtils.isEmpty(objects);
         }
 
         if (editEnabled) {

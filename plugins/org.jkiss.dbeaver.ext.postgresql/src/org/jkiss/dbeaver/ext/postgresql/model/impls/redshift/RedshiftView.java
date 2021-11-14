@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -62,9 +62,9 @@ public class RedshiftView extends PostgreView
         }
 
         List<? extends PostgreTableColumn> attrs = super.getAttributes(monitor);
-        if (isPersisted() && CommonUtils.isEmpty(attrs) && isViewVwithNoSchemaBinding(monitor)) {
+        if (isPersisted() && CollectionUtils.isEmpty(attrs) && isViewVwithNoSchemaBinding(monitor)) {
             lateBindingColumns = readLateBindingColumns(monitor);
-            if (!CommonUtils.isEmpty(lateBindingColumns)) {
+            if (!CollectionUtils.isEmpty(lateBindingColumns)) {
                 return lateBindingColumns;
             }
         }

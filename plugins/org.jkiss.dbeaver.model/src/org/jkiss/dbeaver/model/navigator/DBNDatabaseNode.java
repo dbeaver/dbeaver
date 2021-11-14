@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -426,7 +427,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         this.filtered = false;
 
         List<DBXTreeNode> childMetas = meta.getChildren(this);
-        if (CommonUtils.isEmpty(childMetas)) {
+        if (CollectionUtils.isEmpty(childMetas)) {
             return;
         }
         DBSObject object = getObject();
@@ -871,7 +872,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public List<Class<?>> getChildrenTypes(DBXTreeNode useMeta) {
         List<DBXTreeNode> childMetas = useMeta == null ? getMeta().getChildren(this) : Collections.singletonList(useMeta);
-        if (CommonUtils.isEmpty(childMetas)) {
+        if (CollectionUtils.isEmpty(childMetas)) {
             return Collections.emptyList();
         } else {
             List<Class<?>> result = new ArrayList<>();

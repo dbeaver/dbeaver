@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -121,7 +121,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             TreeViewer itemsViewer = (TreeViewer) itemList.getItemsViewer();
             Collection<DBNNode> oldNodes = itemList.getListData();
             List<DBNNode> newNodes = new ArrayList<>();
-            if (!CommonUtils.isEmpty(oldNodes)) {
+            if (!CollectionUtils.isEmpty(oldNodes)) {
                 newNodes.addAll(oldNodes);
             }
             newNodes.addAll(nodes);

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -127,8 +128,8 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         if (ccm != null) {
             try {
                 if (table instanceof SQLServerTable) {
-                    Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(((SQLServerTable) table).getCheckConstraints(monitor));
-                    if (!CommonUtils.isEmpty(checkConstraints)) {
+                    Collection<SQLServerTableCheckConstraint> checkConstraints = CollectionUtils.safeCollection(((SQLServerTable) table).getCheckConstraints(monitor));
+                    if (!CollectionUtils.isEmpty(checkConstraints)) {
                         for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
                             createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint, options));
                         }

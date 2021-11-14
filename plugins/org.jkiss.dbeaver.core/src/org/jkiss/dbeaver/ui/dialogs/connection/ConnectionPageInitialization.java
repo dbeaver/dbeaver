@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -141,7 +142,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     private void loadDatabaseSettings(DBRProgressMonitor monitor, DBPDataSource dataSource)  {
         DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
-        Collection<DBPTransactionIsolation> txnLevels = CommonUtils.safeCollection(dataSource.getInfo().getSupportedTransactionsIsolation());
+        Collection<DBPTransactionIsolation> txnLevels = CollectionUtils.safeCollection(dataSource.getInfo().getSupportedTransactionsIsolation());
         Integer levelCode = dataSourceContainer.getDefaultTransactionsIsolation();
 
         UIUtils.syncExec(() -> {
@@ -151,7 +152,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
             DBPTransactionIsolation defaultLevel = null;
                 {
-                if (levelCode != null && !CommonUtils.isEmpty(txnLevels)) {
+                if (levelCode != null && !CollectionUtils.isEmpty(txnLevels)) {
                     for (DBPTransactionIsolation level : txnLevels) {
                         if (level.getCode() == levelCode) {
                             defaultLevel = level;
@@ -270,7 +271,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
                 final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
                 queriesConfigButton.setToolTipText(bootstrapTooltip);
-                if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
+                if (dataSourceDescriptor != null && !CollectionUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                     queriesConfigButton.setFont(boldFont);
                 }
                 queriesConfigButton.addSelectionListener(new SelectionAdapter() {

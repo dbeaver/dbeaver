@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.ByteNumberFormat;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -125,7 +125,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             postfix++;
         }
 
-        for (PostgreIndexColumn sourceColumn : CommonUtils.safeCollection(srcIndex.getAttributeReferences(monitor))) {
+        for (PostgreIndexColumn sourceColumn : CollectionUtils.safeCollection(srcIndex.getAttributeReferences(monitor))) {
             this.columns.add(new PostgreIndexColumn(monitor, this, sourceColumn));
         }
     }

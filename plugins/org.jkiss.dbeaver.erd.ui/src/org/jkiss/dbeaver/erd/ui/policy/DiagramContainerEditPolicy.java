@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.command.NoteCreateCommand;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,7 +72,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
         } else if (newObject instanceof Collection) {
             entities = new ArrayList<>((Collection<ERDEntity>)newObject);
         }
-        if (CommonUtils.isEmpty(entities)) {
+        if (CollectionUtils.isEmpty(entities)) {
             return null;
         }
         //EditPart host = getTargetEditPart(request);

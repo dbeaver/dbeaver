@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -77,7 +77,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         final DBERegistry editorsRegistry = object.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         for (Class childType : getChildTypes()) {
             Collection<? extends DBSObject> children = getChildObjects(monitor, object, childType);
-            if (!CommonUtils.isEmpty(children)) {
+            if (!CollectionUtils.isEmpty(children)) {
                 SQLObjectEditor<DBSObject, ?> nestedEditor = getObjectEditor(editorsRegistry, childType);
                 if (nestedEditor != null) {
                     for (DBSObject child : children) {
@@ -166,4 +166,3 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
 
 }
-

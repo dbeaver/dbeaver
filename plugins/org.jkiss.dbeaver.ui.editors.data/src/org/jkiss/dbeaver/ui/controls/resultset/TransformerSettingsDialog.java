@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -154,7 +155,7 @@ class TransformerSettingsDialog extends BaseDialog {
         if (vAttr != null) {
             DBVTransformSettings settings = vAttr.getTransformSettings();
             if (settings != null) {
-                if (!CommonUtils.isEmpty(settings.getIncludedTransformers())) {
+                if (!CollectionUtils.isEmpty(settings.getIncludedTransformers())) {
                     transformStr = String.join(",", settings.getIncludedTransformers());
                 } else if (!CommonUtils.isEmpty(settings.getCustomTransformer())) {
                     DBDAttributeTransformerDescriptor td =

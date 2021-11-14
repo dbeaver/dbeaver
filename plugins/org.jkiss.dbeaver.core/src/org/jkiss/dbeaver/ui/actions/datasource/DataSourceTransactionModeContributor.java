@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -88,7 +88,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
 
             menuItems.add(new Separator());
 
-            for (DBPTransactionIsolation txi : CommonUtils.safeCollection(dsInfo.getSupportedTransactionsIsolation())) {
+            for (DBPTransactionIsolation txi : CollectionUtils.safeCollection(dsInfo.getSupportedTransactionsIsolation())) {
                 if (!txi.isEnabled()) {
                     continue;
                 }

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -162,13 +163,13 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     public List<MavenArtifactDependency> getDependencies() {
         List<MavenArtifactDependency> dependencies = new ArrayList<>();
         for (MavenProfile profile : profiles) {
-            if (profile.isActive() && !CommonUtils.isEmpty(profile.dependencies)) {
+            if (profile.isActive() && !CollectionUtils.isEmpty(profile.dependencies)) {
                 dependencies.addAll(profile.dependencies);
             }
         }
         if (parent != null) {
             List<MavenArtifactDependency> parentDependencies = parent.getDependencies();
-            if (!CommonUtils.isEmpty(parentDependencies)) {
+            if (!CollectionUtils.isEmpty(parentDependencies)) {
                 dependencies.addAll(parentDependencies);
             }
         }

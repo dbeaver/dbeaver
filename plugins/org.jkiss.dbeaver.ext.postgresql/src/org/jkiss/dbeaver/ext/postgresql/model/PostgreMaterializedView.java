@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -66,7 +66,7 @@ public class PostgreMaterializedView extends PostgreViewBase
     @Override
     protected String readExtraDefinition(JDBCSession session, Map<String, Object> options) throws DBException {
         Collection<PostgreIndex> indexes = getIndexes(session.getProgressMonitor());
-        if (!CommonUtils.isEmpty(indexes)) {
+        if (!CollectionUtils.isEmpty(indexes)) {
             StringBuilder indexDefs = new StringBuilder("\n-- View indexes:\n");
             for (PostgreIndex index : indexes) {
                 String indexDefinition = index.getObjectDefinitionText(session.getProgressMonitor(), options);

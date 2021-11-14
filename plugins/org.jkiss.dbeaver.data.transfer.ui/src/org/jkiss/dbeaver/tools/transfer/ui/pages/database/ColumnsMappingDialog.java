@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -175,7 +176,7 @@ class ColumnsMappingDialog extends BaseDialog {
                     if (mapping.getParent().getMappingType() == DatabaseMappingType.existing &&
                         mapping.getParent().getTarget() instanceof DBSEntity) {
                         DBSEntity parentEntity = (DBSEntity) mapping.getParent().getTarget();
-                        for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
+                        for (DBSEntityAttribute attr : CollectionUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                             items.add(attr.getName());
                         }
                     }
@@ -213,7 +214,7 @@ class ColumnsMappingDialog extends BaseDialog {
                         if (attrMapping.getParent().getMappingType() == DatabaseMappingType.existing &&
                             attrMapping.getParent().getTarget() instanceof DBSEntity) {
                             DBSEntity parentEntity = (DBSEntity) attrMapping.getParent().getTarget();
-                            for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
+                            for (DBSEntityAttribute attr : CollectionUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                                 if (name.equalsIgnoreCase(attr.getName())) {
                                     attrMapping.setTarget(attr);
                                     attrMapping.setMappingType(DatabaseMappingType.existing);

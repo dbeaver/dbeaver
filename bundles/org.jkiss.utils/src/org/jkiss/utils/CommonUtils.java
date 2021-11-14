@@ -174,71 +174,6 @@ public class CommonUtils {
         return !isEmpty(value);
     }
 
-    public static boolean isEmpty(@Nullable Collection<?> value) {
-        return value == null || value.isEmpty();
-    }
-
-    public static boolean isEmpty(@Nullable Map<?, ?> value) {
-        return value == null || value.isEmpty();
-    }
-
-    @NotNull
-    public static <T> Collection<T> safeCollection(@Nullable Collection<T> theList) {
-        if (theList == null) {
-            theList = Collections.emptyList();
-        }
-        return theList;
-    }
-
-    @NotNull
-    public static <T> List<T> safeList(@Nullable List<T> theList) {
-        if (theList == null) {
-            theList = Collections.emptyList();
-        }
-        return theList;
-    }
-
-    @NotNull
-    public static <T> List<T> copyList(@Nullable Collection<T> theList) {
-        if (theList == null) {
-            return new ArrayList<>();
-        } else {
-            return new ArrayList<>(theList);
-        }
-    }
-
-    /**
-     * Swaps the element with its neighbor to the left in the specified list.
-     * If the element is not present in the list or it is the leftmost element in the list,
-     * the list remains unchanged.
-     *
-     * @param list list
-     * @param element element
-     * @param <T> type of the list
-     */
-    public static <T> void shiftLeft(@NotNull List<? super T> list, @NotNull T element) {
-        int idx = list.indexOf(element);
-        if (idx > 0) {
-            Collections.swap(list, idx - 1, idx);
-        }
-    }
-
-    /**
-     * Swaps the element with its neighbor to the right in the specified list.
-     * If the element is not present in the list or it is the rightmost element in the list,
-     * the list remains unchanged.
-     *
-     * @param list list
-     * @param element element
-     * @param <T> type of the list
-     */
-    public static <T> void shiftRight(@NotNull List<? super T> list, @NotNull T element) {
-        int idx = list.indexOf(element);
-        if (idx != -1 && idx != list.size() - 1) {
-            Collections.swap(list, idx, idx + 1);
-        }
-    }
-
     @NotNull
     public static String notEmpty(@Nullable String value) {
         return value == null ? "" : value;
@@ -308,21 +243,6 @@ public class CommonUtils {
 
     public static boolean equalOrEmptyStrings(@Nullable String s1, @Nullable String s2) {
         return equalObjects(s1, s2) || (isEmpty(s1) && isEmpty(s2));
-    }
-
-    public static boolean equalsContents(@Nullable Collection<?> c1, @Nullable Collection<?> c2) {
-        if (CommonUtils.isEmpty(c1) && CommonUtils.isEmpty(c2)) {
-            return true;
-        }
-        if (c1 == null || c2 == null || c1.size() != c2.size()) {
-            return false;
-        }
-        for (Object o : c1) {
-            if (!c2.contains(o)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @NotNull
@@ -672,19 +592,6 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T> T getItem(@NotNull Collection<T> collection, int index) {
-        if (collection instanceof List) {
-            return ((List<T>) collection).get(index);
-        } else {
-            Iterator<T> iter = collection.iterator();
-            for (int i = 0; i < index; i++) {
-                iter.next();
-            }
-            return iter.next();
-        }
-    }
-
-    @NotNull
     public static <T extends Enum<T>> T fromOrdinal(Class<T> enumClass, int ordinal) {
         T[] enumConstants = enumClass.getEnumConstants();
         for (T value : enumConstants) {
@@ -699,17 +606,6 @@ public class CommonUtils {
             error.printStackTrace(System.err);
             return enumConstants[0];
         }
-    }
-
-    @NotNull
-    public static <T> List<T> filterCollection(@NotNull Collection<?> collection, @NotNull Class<T> type) {
-        List<T> result = new ArrayList<>();
-        for (Object item : collection) {
-            if (type.isInstance(item)) {
-                result.add(type.cast(item));
-            }
-        }
-        return result;
     }
 
     @NotNull
@@ -757,14 +653,6 @@ public class CommonUtils {
         }
         Object optionValue = options.get(name);
         return getBoolean(optionValue, defValue);
-    }
-
-    public static Map<String, Object> makeStringMap(Map<Object, Object> objMap) {
-        Map<String, Object> strMap = new LinkedHashMap<>(objMap.size());
-        for (Map.Entry<Object, Object> e : objMap.entrySet()) {
-            strMap.put(toString(e.getKey(), null), e.getValue());
-        }
-        return strMap;
     }
 
     public static String fixedLengthString(String string, int length) {
@@ -894,12 +782,6 @@ public class CommonUtils {
         return false;
     }
 
-    @NotNull
-    @SafeVarargs
-    public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
-        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
-    }
-
     /**
      * Checks if the {@code index} is within the bounds of the range from
      * {@code 0} (inclusive) to {@code length} (exclusive).
@@ -957,33 +839,6 @@ public class CommonUtils {
             }
         }
         return firstCaseInsensitiveMatch;
-    }
-
-    /**
-     * Groups values into a map of their shared key and a list of matching values using that key.
-     * <p>
-     * <h3>Group strings by their first character</h3>
-     * <pre>{@code
-     * final List<String> values = Arrays.asList("aaa", "abb", "bbb", "bab", "ccc");
-     * final Map<Character, List<String>> groups = group(values, x -> x.charAt(0));
-     *
-     * Assert.assertEquals(Arrays.asList("aaa", "abb"), groups.get('a'));
-     * Assert.assertEquals(Arrays.asList("bbb", "bab"), groups.get('b'));
-     * Assert.assertEquals(Arrays.asList("ccc"), groups.get('c'));
-     * }</pre>
-     * @param values values to group
-     * @param keyExtractor a function that extracts key from value that is used to group values
-     * @return map of a shared key and a list of matching values
-     */
-    @NotNull
-    public static <K, V> Map<K, List<V>> group(@NotNull Collection<V> values, @NotNull Function<? super V, ? extends K> keyExtractor) {
-        final Map<K, List<V>> grouped = new HashMap<>();
-        for (V value : values) {
-            final K key = keyExtractor.apply(value);
-            final List<V> group = grouped.computeIfAbsent(key, k -> new ArrayList<>());
-            group.add(value);
-        }
-        return grouped;
     }
 
     /**

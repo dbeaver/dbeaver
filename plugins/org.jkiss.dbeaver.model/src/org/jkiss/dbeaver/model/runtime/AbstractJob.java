@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,7 +161,7 @@ public abstract class AbstractJob extends Job
 
     private void runBlockCanceler() {
         final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
-            CommonUtils.safeList(progressMonitor.getActiveBlocks()));
+            CollectionUtils.safeList(progressMonitor.getActiveBlocks()));
         if (activeBlocks.isEmpty()) {
             // Nothing to cancel
             return;

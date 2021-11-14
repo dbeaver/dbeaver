@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +62,7 @@ public class EditIndexPage extends AttributesSelectorPage {
         this.index = index;
         this.indexName = this.index.getName();
         this.indexTypes = new ArrayList<>(indexTypes);
-        Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
+        Assert.isTrue(!CollectionUtils.isEmpty(this.indexTypes));
     }
 
     public EditIndexPage(
@@ -73,7 +73,7 @@ public class EditIndexPage extends AttributesSelectorPage {
         super(title, index.getTable());
         this.index = index;
         this.indexTypes = new ArrayList<>(indexTypes);
-        Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
+        Assert.isTrue(!CollectionUtils.isEmpty(this.indexTypes));
         this.supportUniqueIndexes = supportUniqueIndexes;
     }
 

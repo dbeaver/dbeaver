@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -239,7 +240,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             if (!alter) {
                 try {
                     final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
-                    if (!CommonUtils.isEmpty(superTables) && ! tableBase.isPartition()) {
+                    if (!CollectionUtils.isEmpty(superTables) && ! tableBase.isPartition()) {
                         ddl.append("\nINHERITS (");
                         for (int i = 0; i < superTables.size(); i++) {
                             if (i > 0) ddl.append(",");
@@ -327,7 +328,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             return tablePermissions;
         }
         tablePermissions = new ArrayList<>(tablePermissions);
-        for (PostgreTableColumn column : CommonUtils.safeCollection(object.getAttributes(monitor))) {
+        for (PostgreTableColumn column : CollectionUtils.safeCollection(object.getAttributes(monitor))) {
             if (column.getAcl() == null || column.isHidden()) {
                 continue;
             }
@@ -415,7 +416,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             extraOptions.addAll(Arrays.asList(table.getRelOptions()));
         }
 
-        if (!CommonUtils.isEmpty(extraOptions)) {
+        if (!CollectionUtils.isEmpty(extraOptions)) {
             withClauseBuilder.append("\nWITH (");
             for (int i = 0; i < extraOptions.size(); i++) {
                 if (i > 0) {

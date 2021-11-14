@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -310,7 +311,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             log.error("Dispose error", e);
         }
         wb = null;
-        if (!CommonUtils.isEmpty(worksheets)) {
+        if (!CollectionUtils.isEmpty(worksheets)) {
             for (Worksheet w : worksheets.values()) {
                 w.dispose();
             }

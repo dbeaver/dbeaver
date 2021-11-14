@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -466,7 +467,7 @@ public class ReferenceValueEditor {
                 return null;
             }
             List<DBDAttributeValue> precedingKeys = null;
-            List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(monitor));
+            List<? extends DBSEntityAttributeRef> allColumns = CollectionUtils.safeList(refConstraint.getAttributeReferences(monitor));
             if (allColumns.size() > 1 && allColumns.get(0) != fkColumn) {
                 // Our column is not a first on in foreign key.
                 // So, fill uo preceeding keys

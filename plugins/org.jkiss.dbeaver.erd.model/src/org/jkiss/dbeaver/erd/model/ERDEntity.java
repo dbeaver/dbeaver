@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -107,7 +108,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     }
 
     public void sortAttributes(@NotNull Comparator<ERDEntityAttribute> comparator, boolean reflect) {
-        if (CommonUtils.isEmpty(attributes)) {
+        if (CollectionUtils.isEmpty(attributes)) {
             return;
         }
         attributes.sort(comparator);
@@ -126,7 +127,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
 
     @NotNull
     public List<ERDEntityAttribute> getAttributes() {
-        return CommonUtils.safeList(attributes);
+        return CollectionUtils.safeList(attributes);
     }
 
     public ERDEntityAttribute getAttribute(DBSEntityAttribute attribute) {
@@ -179,7 +180,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     }
 
     public void reloadAttributes(ERDDiagram diagram) {
-        if (!CommonUtils.isEmpty(attributes)) {
+        if (!CollectionUtils.isEmpty(attributes)) {
             attributes.clear();
         }
         diagram.getContentProvider().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
@@ -244,7 +245,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     }
 
     public void resolveRelations(ERDContainer diagram, boolean reflect) {
-        if (CommonUtils.isEmpty(unresolvedKeys)) {
+        if (CollectionUtils.isEmpty(unresolvedKeys)) {
             return;
         }
         for (Iterator<DBSEntityAssociation> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {

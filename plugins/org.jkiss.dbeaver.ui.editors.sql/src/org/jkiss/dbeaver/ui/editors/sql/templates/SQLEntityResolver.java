@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +84,7 @@ class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
     static void makeProposalsFromChildren(DBRProgressMonitor monitor, DBSObjectContainer container, List<DBSEntity> names) throws DBException
     {
         Collection<? extends DBSObject> children = container.getChildren(monitor);
-        if (CommonUtils.isEmpty(children)) {
+        if (CollectionUtils.isEmpty(children)) {
             return;
         }
         for (DBSObject child : children) {

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -69,7 +70,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 if (showComments) {
                     // Column comments
                     boolean hasComments = false;
-                    for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                    for (PostgreTableColumn column : CollectionUtils.safeCollection(table.getAttributes(monitor))) {
                         if (!CommonUtils.isEmpty(column.getDescription())) {
                             if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Column comments"));
@@ -83,7 +84,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 if (showComments) {
                     // Constraint comments
                     boolean hasComments = false;
-                    for (PostgreTableConstraintBase constr : CommonUtils.safeCollection(table.getConstraints(monitor))) {
+                    for (PostgreTableConstraintBase constr : CollectionUtils.safeCollection(table.getConstraints(monitor))) {
                         if (!CommonUtils.isEmpty(constr.getDescription())) {
                             if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Constraint comments"));
@@ -92,7 +93,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                             hasComments = true;
                         }
                     }
-                    for (DBSEntityAssociation fk : CommonUtils.safeCollection(table.getAssociations(monitor))) {
+                    for (DBSEntityAssociation fk : CollectionUtils.safeCollection(table.getAssociations(monitor))) {
                         if (fk instanceof PostgreTableForeignKey && !CommonUtils.isEmpty(fk.getDescription())) {
                             if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Foreign key comments"));
@@ -106,7 +107,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 // Triggers
                 if (table instanceof PostgreTableReal) {
                     Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
-                    if (!CommonUtils.isEmpty(triggers)) {
+                    if (!CollectionUtils.isEmpty(triggers)) {
                         actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Triggers"));
 
                         for (PostgreTrigger trigger : triggers) {
@@ -118,7 +119,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 // Rules
                 if (table instanceof PostgreTableReal) {
                     Collection<PostgreRule> rules = ((PostgreTableReal) table).getRules(monitor);
-                    if (!CommonUtils.isEmpty(rules)) {
+                    if (!CollectionUtils.isEmpty(rules)) {
                         actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Rules"));
 
                         for (PostgreRule rule : rules) {

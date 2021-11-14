@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils.ResourceInfo;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -188,7 +189,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             public Object[] getChildren(Object parentElement) {
                 if (parentElement instanceof ResourceInfo) {
                     final List<ResourceInfo> children = ((ResourceInfo) parentElement).getChildren();
-                    return CommonUtils.isEmpty(children) ? null : children.toArray();
+                    return CollectionUtils.isEmpty(children) ? null : children.toArray();
                 }
                 return null;
             }
@@ -197,7 +198,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             public boolean hasChildren(Object element) {
                 if (element instanceof ResourceInfo) {
                     final List<ResourceInfo> children = ((ResourceInfo) element).getChildren();
-                    return !CommonUtils.isEmpty(children);
+                    return !CollectionUtils.isEmpty(children);
                 }
                 return false;
             }

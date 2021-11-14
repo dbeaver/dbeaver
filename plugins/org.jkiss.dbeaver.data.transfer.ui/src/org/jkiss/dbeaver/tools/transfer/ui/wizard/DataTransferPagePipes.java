@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -303,7 +303,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objects)) {
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
-            if (CommonUtils.isEmpty(processors)) {
+            if (CollectionUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(consumer, null));
             } else {
                 for (DataTransferProcessorDescriptor processor : processors) {
@@ -322,7 +322,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
             Collection<DataTransferProcessorDescriptor> processors = producer.getAvailableProcessors(objects);
-            if (CommonUtils.isEmpty(processors)) {
+            if (CollectionUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(producer, null));
             } else {
                 for (DataTransferProcessorDescriptor processor : processors) {

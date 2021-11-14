@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,7 +71,7 @@ public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceO
     @Override
     protected Map<String, Object> getSourceOptions() {
         Map<String, Object> options = super.getSourceOptions();
-        if (!CommonUtils.isEmpty(oracleDDLOptions)) {
+        if (!CollectionUtils.isEmpty(oracleDDLOptions)) {
             options.putAll(oracleDDLOptions);
         }
         return options;

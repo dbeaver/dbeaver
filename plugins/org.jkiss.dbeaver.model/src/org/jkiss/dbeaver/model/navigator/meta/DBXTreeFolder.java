@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +148,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     public boolean hasChildren(DBNNode context, boolean navigable) {
         boolean hasChildren = super.hasChildren(context, navigable);
         if (!hasChildren) {
-            hasChildren = !CommonUtils.isEmpty(contributedCategories);
+            hasChildren = !CollectionUtils.isEmpty(contributedCategories);
         }
         return hasChildren;
     }
@@ -156,7 +157,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     @Override
     public List<DBXTreeNode> getChildren(DBNNode context) {
         List<DBXTreeNode> children = super.getChildren(context);
-        if (!CommonUtils.isEmpty(contributedCategories) && context instanceof DBNDatabaseNode) {
+        if (!CollectionUtils.isEmpty(contributedCategories) && context instanceof DBNDatabaseNode) {
             // Add contributed editors
             List<DBXTreeNode> childrenWithContributions = new ArrayList<>(children);
             DBPDataSourceProviderRegistry dspRegistry = DBWorkbench.getPlatform().getDataSourceProviderRegistry();
@@ -218,7 +219,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     }
 
     public List<String> getContributedCategories() {
-        return CommonUtils.safeList(contributedCategories);
+        return CollectionUtils.safeList(contributedCategories);
     }
 
     public void addContribution(String category) {

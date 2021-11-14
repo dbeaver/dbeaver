@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -1132,7 +1133,7 @@ public final class SQLUtils {
 
     private static String generateTableJoinByAssociation(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
         Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
-        if (!CommonUtils.isEmpty(associations)) {
+        if (!CollectionUtils.isEmpty(associations)) {
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == rightTable) {
                     return generateTablesJoin(monitor, (DBSTableForeignKey)fk, leftAlias, rightAlias);

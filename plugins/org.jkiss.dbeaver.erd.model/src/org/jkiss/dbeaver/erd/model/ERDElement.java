@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +110,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
      */
     @NotNull
     public List<ERDAssociation> getAssociations() {
-        return CommonUtils.safeList(associations);
+        return CollectionUtils.safeList(associations);
     }
 
     /**
@@ -118,7 +118,7 @@ public abstract class ERDElement<OBJECT> extends ERDObject<OBJECT> {
      */
     @NotNull
     public List<ERDAssociation> getReferences() {
-        return CommonUtils.safeList(references);
+        return CollectionUtils.safeList(references);
     }
 
     public boolean hasSelfLinks() {

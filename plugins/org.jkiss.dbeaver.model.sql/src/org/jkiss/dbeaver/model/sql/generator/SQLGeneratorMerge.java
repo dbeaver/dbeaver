@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -35,7 +35,7 @@ public class SQLGeneratorMerge extends SQLGeneratorTable {
         sql.append("MERGE INTO ").append(getEntityName(object)).append(" AS tgt").append(getLineSeparator());
         sql.append("USING SOURCE_TABLE AS src").append(getLineSeparator());
         Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-        if (!CommonUtils.isEmpty(keyAttributes)) {
+        if (!CollectionUtils.isEmpty(keyAttributes)) {
             sql.append("ON (");
             for (DBSEntityAttribute attr : keyAttributes) {
                 if (hasAttr) sql.append(" AND ");

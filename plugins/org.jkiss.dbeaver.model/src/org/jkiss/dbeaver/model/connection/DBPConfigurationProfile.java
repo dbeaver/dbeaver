@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class DBPConfigurationProfile {
         this.profileId = source.profileId;
         this.profileName = source.profileName;
         this.profileDescription = source.profileDescription;
-        if (!CommonUtils.isEmpty(source.properties)) {
+        if (!CollectionUtils.isEmpty(source.properties)) {
             this.properties = new LinkedHashMap<>(source.properties);
         }
     }

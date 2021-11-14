@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -140,7 +141,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         }
         if (source instanceof DBSTable) {
             // Copy indexes
-            for (DBSTableIndex srcIndex : CommonUtils.safeCollection(((DBSTable)source).getIndexes(monitor))) {
+            for (DBSTableIndex srcIndex : CollectionUtils.safeCollection(((DBSTable)source).getIndexes(monitor))) {
                 if (srcIndex instanceof MySQLTableIndex && srcIndex.isPrimary()) {
                     // Skip primary key index (it will be created implicitly)
                     continue;
@@ -151,14 +152,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         }
 
         // Copy constraints
-        for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
+        for (DBSEntityConstraint srcConstr : CollectionUtils.safeCollection(source.getConstraints(monitor))) {
             MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
             this.getContainer().uniqueKeyCache.cacheObject(constr);
         }
 
         // Copy FKs
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
-        for (DBSEntityAssociation srcFK : CommonUtils.safeCollection(source.getAssociations(monitor))) {
+        for (DBSEntityAssociation srcFK : CollectionUtils.safeCollection(source.getAssociations(monitor))) {
             MySQLTableForeignKey fk = new MySQLTableForeignKey(monitor, this, srcFK);
             if (fk.getReferencedConstraint() != null) {
                 fk.setName(fk.getName() + "_copy"); // Fix FK name - they are unique within schema
@@ -232,7 +233,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
-            if (!CommonUtils.isEmpty(checkConstraintObjects)) {
+            if (!CollectionUtils.isEmpty(checkConstraintObjects)) {
                 constraintObjects.addAll(checkConstraintObjects);
             }
             return constraintObjects;

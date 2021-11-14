@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -324,7 +325,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             // Try to get cardinality from some unique index
             // Cardinality
             final Collection<? extends GenericTableIndex> indexList = getIndexes(monitor);
-            if (!CommonUtils.isEmpty(indexList)) {
+            if (!CollectionUtils.isEmpty(indexList)) {
                 for (GenericTableIndex index : indexList) {
                     if (index.isUnique()/* || index.getIndexType() == DBSIndexType.STATISTIC*/) {
                         final long cardinality = index.getCardinality();

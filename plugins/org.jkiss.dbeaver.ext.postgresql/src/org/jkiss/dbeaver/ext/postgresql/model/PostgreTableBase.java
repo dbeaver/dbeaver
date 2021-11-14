@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -98,7 +98,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
         DBSObjectCache<PostgreTableBase, PostgreTableColumn> colCache = getSchema().getTableCache().getChildrenCache(this);
         // Copy columns
-        for (PostgreTableColumn srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
+        for (PostgreTableColumn srcColumn : CollectionUtils.safeCollection(source.getAttributes(monitor))) {
             if (DBUtils.isHiddenObject(srcColumn)) {
                 continue;
             }
@@ -193,7 +193,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     protected PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
-        for (PostgreTableColumn attr : CommonUtils.safeCollection(getAttributes(monitor))) {
+        for (PostgreTableColumn attr : CollectionUtils.safeCollection(getAttributes(monitor))) {
             if (attr.getOrdinalPosition() == position) {
                 return attr;
             }

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ukTable.removeAll();
         try {
             for (DBVEntityConstraint uk : vEntity.getConstraints()) {
-                if (uk.isUseAllColumns() || !CommonUtils.isEmpty(uk.getAttributes())) {
+                if (uk.isUseAllColumns() || !CollectionUtils.isEmpty(uk.getAttributes())) {
                     createUniqueKeyItem(ukTable, uk);
                 }
             }
@@ -413,7 +414,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         if (vAttr != null) {
             DBVTransformSettings transformSettings = vAttr.getTransformSettings();
             if (transformSettings != null) {
-                if (!CommonUtils.isEmpty(transformSettings.getIncludedTransformers())) {
+                if (!CollectionUtils.isEmpty(transformSettings.getIncludedTransformers())) {
                     transformStr = String.join(",", transformSettings.getIncludedTransformers());
                 } else if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
                     DBDAttributeTransformerDescriptor td =

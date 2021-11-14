@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -113,13 +114,13 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
         // Objects
         if (settings.getExportObjects().isEmpty()) {
             // no dump
-        } else if (!CommonUtils.isEmpty(arg.getTables())) {
+        } else if (!CollectionUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");
                 // Use explicit quotes in case of quoted identifiers (#5950)
                 cmd.add(escapeCLIIdentifier(table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
             }
-        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
+        } else if (!CollectionUtils.isEmpty(arg.getSchemas())) {
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
                 // Use explicit quotes in case of quoted identifiers (#5950)

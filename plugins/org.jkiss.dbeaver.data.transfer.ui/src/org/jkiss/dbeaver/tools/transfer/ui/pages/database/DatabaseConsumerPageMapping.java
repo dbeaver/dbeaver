@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -273,7 +274,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                     getWizard().getSettings().processPipeEarlier(pipe);
                     mappingViewer.getTree().setVisible(false);
-                    CommonUtils.shiftLeft(model, mappingContainer);
+                    CollectionUtils.shiftLeft(model, mappingContainer);
                     mappingViewer.refresh();
                     mappingViewer.getTree().setVisible(true);
                     updateUpAndDownButtons(pipe);
@@ -291,7 +292,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                     getWizard().getSettings().processPipeLater(pipe);
                     mappingViewer.getTree().setVisible(false);
-                    CommonUtils.shiftRight(model, mappingContainer);
+                    CollectionUtils.shiftRight(model, mappingContainer);
                     mappingViewer.refresh();
                     mappingViewer.getTree().setVisible(true);
                     updateUpAndDownButtons(pipe);
@@ -634,7 +635,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     DataTransferAttributeTransformerDescriptor transformer = getTransformer (element);
                     if (transformer != null) {
                         Map<String, Object> props = ((DatabaseMappingAttribute) element).getTransformerProperties();
-                        if (!CommonUtils.isEmpty(props)) {
+                        if (!CollectionUtils.isEmpty(props)) {
                             return props.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
                                 .collect(Collectors.joining(GeneralUtils.getDefaultLineSeparator()));
                         }

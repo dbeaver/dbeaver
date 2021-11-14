@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.*;
@@ -154,7 +154,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         for (MySQLDatabaseExportInfo info : wizard.getSettings().getExportObjects()) {
             activeCatalogs.add(info.getDatabase());
             dataSource = info.getDatabase().getDataSource();
-            if (!CommonUtils.isEmpty(info.getTables())) {
+            if (!CollectionUtils.isEmpty(info.getTables())) {
                 Set<MySQLTableBase> tables = checkedObjects.computeIfAbsent(
                     info.getDatabase(), k -> new HashSet<>());
                 for (MySQLTableBase table : info.getTables()) {

@@ -89,6 +89,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.XMLUtils;
 
 import java.net.MalformedURLException;
@@ -1231,7 +1232,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         } else if (DBUtils.isNullValue(value)) {
             UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
-        } else if (!CommonUtils.isEmpty(attr.getReferrers())) {
+        } else if (!CollectionUtils.isEmpty(attr.getReferrers())) {
             // Navigate association
             new AbstractJob("Navigate association") {
                 @Override
@@ -1937,7 +1938,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 Object value = controller.getModel().getCellValue(attr, row);
                 if (isShowAsCheckbox(attr)) {
                     state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
+                } else if (!CollectionUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                     state |= STATE_LINK;
                 } else {
                     String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
@@ -2219,7 +2220,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
             Object value = controller.getModel().getCellValue(attr, row);
             List<DBSEntityReferrer> referrers = attr.getReferrers();
-            if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
+            if (!CollectionUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
                 StringBuilder text = new StringBuilder();
                 for (DBSEntityReferrer ref : referrers) {
                     if (ref instanceof DBSEntityAssociation) {

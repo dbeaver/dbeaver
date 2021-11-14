@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -39,7 +39,7 @@ public class SQLGeneratorDelete extends SQLGeneratorTable {
         }
         sql.append(getLineSeparator()).append("WHERE ");
         Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
-        if (CommonUtils.isEmpty(keyAttributes)) {
+        if (CollectionUtils.isEmpty(keyAttributes)) {
             keyAttributes = getAllAttributes(monitor, object);
         }
         boolean hasAttr = false;

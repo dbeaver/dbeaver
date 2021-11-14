@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,7 +118,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         conn.setConnectionRouter(cLayer.getConnectionRouter());
-        if (!CommonUtils.isEmpty(association.getInitBends())) {
+        if (!CollectionUtils.isEmpty(association.getInitBends())) {
             List<AbsoluteBendpoint> connBends = new ArrayList<>();
             for (int[] bend : association.getInitBends()) {
                 connBends.add(new AbsoluteBendpoint(bend[0], bend[1]));

@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
@@ -324,7 +325,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
             geomValues.add("'" + targetValue + "'");
             try {
-                if (CommonUtils.isEmpty(value.getProperties())) {
+                if (CollectionUtils.isEmpty(value.getProperties())) {
                     geomTipValues.add("null");
                 } else {
                     geomTipValues.add(gson.toJson(value.getProperties()));

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -273,7 +274,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private void setUserInTheEndOfThePath(List<String> searchPath) {
-        if (CommonUtils.isEmpty(searchPath)) {
+        if (CollectionUtils.isEmpty(searchPath)) {
             return;
         }
         if (isUserFirstInPath(searchPath)) {

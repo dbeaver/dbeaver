@@ -25,7 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class DB2TablespaceChooser extends Dialog {
         for (String tablespaceName : listTablespaceNames) {
             tsCombo.add(tablespaceName);
         }
-        if(!CommonUtils.isEmpty(listTablespaceNames)){
+        if(!CollectionUtils.isEmpty(listTablespaceNames)){
             selectedTablespace = listTablespaceNames.get(0);
         }
         tsCombo.select(0);

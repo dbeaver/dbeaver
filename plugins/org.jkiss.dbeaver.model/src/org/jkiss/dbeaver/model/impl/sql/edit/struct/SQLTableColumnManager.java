@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -274,14 +275,14 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             DBSEntity parentObject = (DBSEntity) dbsObject;
 
             Collection<? extends DBSEntityConstraint> constraints = parentObject.getConstraints(monitor);
-            if (!CommonUtils.isEmpty(constraints)) {
+            if (!CollectionUtils.isEmpty(constraints)) {
                 for (DBSEntityConstraint constraint : constraints) {
                     addDependentConstraints(monitor, (DBSEntityAttribute) object, dependentObjectsList, constraint);
                 }
             }
 
             Collection<? extends DBSEntityAssociation> associations = parentObject.getAssociations(monitor);
-            if (!CommonUtils.isEmpty(associations)) {
+            if (!CollectionUtils.isEmpty(associations)) {
                 for (DBSEntityAssociation association : associations) {
                     addDependentConstraints(monitor, (DBSEntityAttribute) object, dependentObjectsList, association);
                 }
@@ -290,10 +291,10 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
 
         if (dbsObject instanceof DBSTable) {
             Collection<? extends DBSTableIndex> indexes = ((DBSTable) dbsObject).getIndexes(monitor);
-            if (!CommonUtils.isEmpty(indexes)) {
+            if (!CollectionUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     List<? extends DBSTableIndexColumn> attributeReferences = index.getAttributeReferences(monitor);
-                    if (!CommonUtils.isEmpty(attributeReferences)) {
+                    if (!CollectionUtils.isEmpty(attributeReferences)) {
                         for (DBSTableIndexColumn indexColumn : attributeReferences) {
                             DBSTableColumn tableColumn = indexColumn.getTableColumn();
                             if (tableColumn == object) {
@@ -312,7 +313,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     private void addDependentConstraints(DBRProgressMonitor monitor, DBSEntityAttribute object, Set<DBSObject> dependentObjectsList, DBSObject constraint) throws DBException {
         if (constraint instanceof DBSEntityReferrer) {
             List<? extends DBSEntityAttributeRef> attributeReferences = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
-            if (!CommonUtils.isEmpty(attributeReferences)) {
+            if (!CollectionUtils.isEmpty(attributeReferences)) {
                 for (DBSEntityAttributeRef attributeRef : attributeReferences) {
                     if (attributeRef.getAttribute() == object) {
                         dependentObjectsList.add(constraint);
@@ -330,4 +331,3 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
                 " IS " + SQLUtils.quoteString(column.getDataSource(), column.getDescription())));
     }
 }
-

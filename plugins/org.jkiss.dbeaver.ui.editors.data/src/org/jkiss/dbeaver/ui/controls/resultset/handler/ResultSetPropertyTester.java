@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -141,7 +141,7 @@ public class ResultSetPropertyTester extends PropertyTester
                         DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                         if (attr != null) {
                             Object value = rsv.getModel().getCellValue(attr, row);
-                            return !CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value);
+                            return !CollectionUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value);
                         }
                     }
                 }

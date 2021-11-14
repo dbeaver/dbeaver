@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -68,7 +68,7 @@ public class DBNBookmark extends DBNResource
     {
         String dsInfo = "";
         Collection<DBPDataSourceContainer> dataSources = getAssociatedDataSources();
-        if (!CommonUtils.isEmpty(dataSources)) {
+        if (!CollectionUtils.isEmpty(dataSources)) {
             DBPDataSourceContainer dataSource = dataSources.iterator().next();
             dsInfo = " ('" + dataSource.getName() + "' - " + dataSource.getDriver().getName() + ")";
         }
@@ -84,7 +84,7 @@ public class DBNBookmark extends DBNResource
     @Override
     public String getNodeTargetName() {
         List<String> dsPath = storage.getDataSourcePath();
-        return CommonUtils.isEmpty(dsPath) ? super.getNodeName() : dsPath.get(dsPath.size() - 1);
+        return CollectionUtils.isEmpty(dsPath) ? super.getNodeName() : dsPath.get(dsPath.size() - 1);
     }
 
     @Override

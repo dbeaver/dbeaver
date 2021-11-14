@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,7 +107,7 @@ public class DBPConnectionBootstrap {
                 !CommonUtils.isEmpty(defaultCatalogName) ||
                 !CommonUtils.isEmpty(defaultSchemaName) ||
                 ignoreErrors ||
-                !CommonUtils.isEmpty(initQueries);
+                !CollectionUtils.isEmpty(initQueries);
     }
 
     @Override

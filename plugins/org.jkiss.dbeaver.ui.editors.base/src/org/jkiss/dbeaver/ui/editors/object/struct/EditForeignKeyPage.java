@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -650,7 +651,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
                         // Get constraints
                         final Collection<? extends DBSEntityConstraint> constraints = DBVUtils.getAllConstraints(monitor, refTable);
-                        if (!CommonUtils.isEmpty(constraints)) {
+                        if (!CollectionUtils.isEmpty(constraints)) {
                             for (DBSEntityConstraint constraint : constraints) {
                                 if (constraint.getConstraintType().isUnique() && constraint instanceof DBSEntityReferrer) {
                                     if (isValidRefConstraint(monitor, (DBSEntityReferrer) constraint)) {
@@ -663,7 +664,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         if (refTable instanceof DBSTable) {
                             // Get indexes
                             final Collection<? extends DBSTableIndex> indexes = ((DBSTable) refTable).getIndexes(monitor);
-                            if (!CommonUtils.isEmpty(indexes)) {
+                            if (!CollectionUtils.isEmpty(indexes)) {
                                 for (DBSTableIndex constraint : indexes) {
                                     if (constraint.isUnique() &&
                                         isConstraintIndex(monitor, curConstraints, constraint) &&
@@ -677,7 +678,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         throw new InvocationTargetException(e);
                     }
                 });
-                if (CommonUtils.isEmpty(curConstraints) && enableCustomKeys && !CommonUtils.isEmpty(refAttributes)) {
+                if (CollectionUtils.isEmpty(curConstraints) && enableCustomKeys && !CollectionUtils.isEmpty(refAttributes)) {
                     // We have ref attrs specified - create virtual unique key automatically
                     DBVEntity vRefEntity = DBVUtils.getVirtualEntity(curRefTable, true);
                     assert vRefEntity != null;
@@ -755,7 +756,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private boolean isValidRefConstraint(DBRProgressMonitor monitor, DBSEntityReferrer constraint) throws DBException {
-        if (!CommonUtils.isEmpty(refAttributes)) {
+        if (!CollectionUtils.isEmpty(refAttributes)) {
             // Constraint must include ref attributes
             for (DBSEntityAttribute refAttr : refAttributes) {
                 if (DBUtils.getConstraintAttribute(monitor, constraint, refAttr) == null) {
@@ -789,7 +790,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             if (curConstraint instanceof DBSEntityReferrer) {
                 // Read column nodes with void monitor because we already cached them above
                 List<? extends DBSEntityAttributeRef> attributeReferences =
-                    CommonUtils.safeList(((DBSEntityReferrer) curConstraint).getAttributeReferences(monitor));
+                    CollectionUtils.safeList(((DBSEntityReferrer) curConstraint).getAttributeReferences(monitor));
                 for (int i = 0; i < attributeReferences.size(); i++) {
                     DBSEntityAttributeRef pkColumn = attributeReferences.get(i);
                     DBSEntityAttribute pkAttribute = pkColumn.getAttribute();
@@ -798,12 +799,12 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         continue;
                     }
                     FKColumnInfo fkColumnInfo = new FKColumnInfo(pkAttribute);
-                    if (!CommonUtils.isEmpty(sourceAttributes) && sourceAttributes.size() > i) {
+                    if (!CollectionUtils.isEmpty(sourceAttributes) && sourceAttributes.size() > i) {
                         fkColumnInfo.ownColumn = sourceAttributes.get(i);
                     }
                     if (fkColumnInfo.ownColumn == null) {
                         // Try to find matched column in own table
-                        if (!CommonUtils.isEmpty(ownAttributes)) {
+                        if (!CollectionUtils.isEmpty(ownAttributes)) {
                             for (DBSEntityAttribute ownColumn : ownAttributes) {
                                 if (ownColumn.getName().equals(pkAttribute.getName()) && curEntity != pkAttribute.getParentObject()) {
                                     fkColumnInfo.ownColumn = ownColumn;
@@ -943,7 +944,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
             // Identify the selected row
             final CCombo columnsCombo = new CCombo(columnsTable, SWT.DROP_DOWN | SWT.READ_ONLY);
-            if (!CommonUtils.isEmpty(ownAttributes)) {
+            if (!CollectionUtils.isEmpty(ownAttributes)) {
                 for (DBSEntityAttribute ownColumn : ownAttributes) {
                     columnsCombo.add(ownColumn.getName());
                     if (fkInfo.ownColumn == ownColumn) {
@@ -1004,11 +1005,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private void setSourceAttributes(Collection<? extends DBSEntityAttribute> srcAttributes) {
-        this.sourceAttributes = CommonUtils.isEmpty(srcAttributes) ? null : new ArrayList<>(srcAttributes);
+        this.sourceAttributes = CollectionUtils.isEmpty(srcAttributes) ? null : new ArrayList<>(srcAttributes);
     }
 
     private void setReferenceAttributes(Collection<? extends DBSEntityAttribute> refAttributes) {
-        this.refAttributes = CommonUtils.isEmpty(refAttributes) ? null : new ArrayList<>(refAttributes);
+        this.refAttributes = CollectionUtils.isEmpty(refAttributes) ? null : new ArrayList<>(refAttributes);
     }
 
     @Nullable

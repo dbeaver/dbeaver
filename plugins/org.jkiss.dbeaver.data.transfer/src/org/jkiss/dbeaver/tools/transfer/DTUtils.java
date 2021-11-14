@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -141,7 +141,7 @@ public class DTUtils {
     public static List<DBSAttributeBase> getAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
         final List<DBSAttributeBase> attributes = new ArrayList<>();
         if (container instanceof DBSEntity && !(container instanceof DBSDocumentContainer)) {
-            for (DBSEntityAttribute attr : CommonUtils.safeList(((DBSEntity) container).getAttributes(monitor))) {
+            for (DBSEntityAttribute attr : CollectionUtils.safeList(((DBSEntity) container).getAttributes(monitor))) {
                 if (DBUtils.isHiddenObject(attr)) {
                     continue;
                 }

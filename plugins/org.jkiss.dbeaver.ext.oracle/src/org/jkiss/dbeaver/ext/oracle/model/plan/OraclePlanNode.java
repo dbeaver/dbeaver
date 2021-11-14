@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IntKeyMap;
+import org.jkiss.utils.collections.IntKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

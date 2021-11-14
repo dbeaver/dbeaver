@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -111,11 +111,11 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     @Override
     public boolean isInUniqueKey() {
         final List<PostgreTableConstraintBase> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
-        if (!CommonUtils.isEmpty(cCache)) {
+        if (!CollectionUtils.isEmpty(cCache)) {
             for (PostgreTableConstraintBase key : cCache) {
                 if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                     List<PostgreTableConstraintColumn> cColumns = ((PostgreTableConstraint) key).getColumns();
-                    if (!CommonUtils.isEmpty(cColumns)) {
+                    if (!CollectionUtils.isEmpty(cColumns)) {
                         for (PostgreTableConstraintColumn cCol : cColumns) {
                             if (cCol.getAttribute() == this) {
                                 return true;

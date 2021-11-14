@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -76,7 +77,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
         this.typeName = copy.typeName;
 
         this.transformSettings = copy.transformSettings == null ? null : new DBVTransformSettings(copy.transformSettings);
-        if (!CommonUtils.isEmpty(copy.properties)) {
+        if (!CollectionUtils.isEmpty(copy.properties)) {
             this.properties = new LinkedHashMap<>(copy.properties);
         }
     }
@@ -303,7 +304,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
     @Nullable
     public Object getProperty(String name)
     {
-        return CommonUtils.isEmpty(properties) ? null : properties.get(name);
+        return CollectionUtils.isEmpty(properties) ? null : properties.get(name);
     }
 
     public void setProperty(String name, @Nullable Object value)
@@ -329,7 +330,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
                 }
             }
         }
-        return transformSettings != null && transformSettings.hasValuableData() || !CommonUtils.isEmpty(properties);
+        return transformSettings != null && transformSettings.hasValuableData() || !CollectionUtils.isEmpty(properties);
     }
 
     public JexlExpression getParsedExpression() {

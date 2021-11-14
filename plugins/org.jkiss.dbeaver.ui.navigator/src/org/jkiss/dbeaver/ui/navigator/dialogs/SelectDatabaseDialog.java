@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -175,7 +176,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 
     @NotNull
     private static List<DBNDatabaseNode> getNodeList(@NotNull DBRProgressMonitor monitor, @Nullable Collection<? extends DBSObject> objectList) {
-        if (CommonUtils.isEmpty(objectList)) {
+        if (CollectionUtils.isEmpty(objectList)) {
             return Collections.emptyList();
         }
         List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());

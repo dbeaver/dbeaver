@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -104,7 +105,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         SQLWordPartDetector wordDetector = request.getWordDetector();
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
         String prevKeyWord = wordDetector.getPrevKeyWord();
-        boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
+        boolean isPrevWordEmpty = CollectionUtils.isEmpty(wordDetector.getPrevWords());
         String prevDelimiter = wordDetector.getPrevDelimiter();
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
@@ -169,10 +170,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         Map<String, Object> parameters = new LinkedHashMap<>();
         List<String> prevWords = wordDetector.getPrevWords();
         String previousWord = "";
-        if (!CommonUtils.isEmpty(prevWords)) {
+        if (!CollectionUtils.isEmpty(prevWords)) {
             previousWord = prevWords.get(0).toUpperCase(Locale.ENGLISH);
         }
-        if (!CommonUtils.isEmpty(prevWords) &&
+        if (!CollectionUtils.isEmpty(prevWords) &&
                 (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord))) {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, false);
         } else {
@@ -202,7 +203,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                     boolean isLike = SQLConstants.KEYWORD_LIKE.equals(previousWord) || SQLConstants.KEYWORD_ILIKE.equals(previousWord);
                                     boolean waitsForValue =
                                         isInLiteral || (
-                                            !CommonUtils.isEmpty(prevWords) &&
+                                            !CollectionUtils.isEmpty(prevWords) &&
                                             isLike || (
                                                 !CommonUtils.isEmpty(prevDelimiter) &&
                                                 !prevDelimiter.endsWith(")")));
@@ -305,7 +306,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 makeProceduresProposals(dataSource, wordPart, true);
             }
         } else {
-            if (!isInLiteral && !request.isSimpleMode() && !CommonUtils.isEmpty(prevWords)) {
+            if (!isInLiteral && !request.isSimpleMode() && !CollectionUtils.isEmpty(prevWords)) {
                 if (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord)) {
                     makeProceduresProposals(dataSource, wordPart, false);
                 }
@@ -341,7 +342,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 {
                     // last expression ends with space or with ")"
                     allowedKeywords = new HashSet<>();
-                    if (proposals.isEmpty() && CommonUtils.isEmpty(wordDetector.getPrevWords())) {
+                    if (proposals.isEmpty() && CollectionUtils.isEmpty(wordDetector.getPrevWords())) {
                         if (!SQLConstants.KEYWORD_FROM.equalsIgnoreCase(wordDetector.getNextWord())) {
                             // No proposals for *. Probably it is a query start
                             allowedKeywords.add(SQLConstants.KEYWORD_FROM);
@@ -461,7 +462,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                     }
 
-                    if (CommonUtils.isEmpty(valueEnumeration) && attribute instanceof DBSAttributeEnumerable) {
+                    if (CollectionUtils.isEmpty(valueEnumeration) && attribute instanceof DBSAttributeEnumerable) {
                         valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(
                             session,
                             isInLiteral ? wordDetector.getFullWord() : null,
@@ -471,7 +472,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             false);
                     }
 
-                    if (!CommonUtils.isEmpty(valueEnumeration)) {
+                    if (!CollectionUtils.isEmpty(valueEnumeration)) {
                         valueEnumeration.sort((o1, o2) -> DBUtils.compareDataValues(o1.getValue(), o2.getValue()));
                         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attribute);
                         DBPImage attrImage = null;
@@ -638,7 +639,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             2);
         List<String> prevWords = joinTableDetector.getPrevWords();
 
-        if (!CommonUtils.isEmpty(prevWords)) {
+        if (!CollectionUtils.isEmpty(prevWords)) {
             DBPDataSource dataSource = request.getContext().getDataSource();
             SQLDialect sqlDialect = dataSource.getSQLDialect();
             String rightTableName = prevWords.get(0);
@@ -682,7 +683,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private boolean tableHaveJoins(DBSEntity table1, DBSEntity table2) {
         try {
             Collection<? extends DBSEntityAssociation> associations = table1.getAssociations(monitor);
-            if (!CommonUtils.isEmpty(associations)) {
+            if (!CollectionUtils.isEmpty(associations)) {
                 for (DBSEntityAssociation fk : associations) {
                     if (fk.getAssociatedEntity() == table2) {
                         return true;
@@ -1025,7 +1026,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             boolean allObjects = !simpleMode && ALL_COLUMNS_PATTERN.equals(startPart);
             String objPrefix = null;
             if (allObjects) {
-                if (!CommonUtils.isEmpty(wordDetector.getPrevWords())) {
+                if (!CollectionUtils.isEmpty(wordDetector.getPrevWords())) {
                     String prevWord = wordDetector.getPrevWords().get(0);
                     if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.getContext().getSyntaxManager().getStructSeparator()) {
                         objPrefix = prevWord;

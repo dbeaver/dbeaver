@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -196,7 +197,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
 
                     // Fill from both installed FDW and pre-configured FDW
                     fdwList = new ArrayList<>();
-                    for (PostgreForeignDataWrapper fdw : CommonUtils.safeCollection(getWizard().getDatabase().getForeignDataWrappers(monitor))) {
+                    for (PostgreForeignDataWrapper fdw : CollectionUtils.safeCollection(getWizard().getDatabase().getForeignDataWrappers(monitor))) {
                         PostgreFDWConfigWizard.FDWInfo fdwInfo = new PostgreFDWConfigWizard.FDWInfo();
                         fdwInfo.installedFDW = fdw;
                         fdwList.add(fdwInfo);

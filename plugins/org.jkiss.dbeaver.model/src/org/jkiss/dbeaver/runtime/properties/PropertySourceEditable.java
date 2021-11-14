@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -126,7 +127,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             if (objectManager != null) {
                 DBSObjectCache cache = objectManager.getObjectsCache((DBSObject) editableValue);
                 if (cache != null && cache.isFullyCached()) {
-                    List<? extends DBSObject> cachedObjects = CommonUtils.copyList(cache.getCachedObjects());
+                    List<? extends DBSObject> cachedObjects = CollectionUtils.copyList(cache.getCachedObjects());
                     cache.setCache(cachedObjects);
                 }
             }

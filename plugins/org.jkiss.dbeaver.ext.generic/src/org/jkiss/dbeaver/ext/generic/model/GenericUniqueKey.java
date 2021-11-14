@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -64,7 +64,7 @@ public class GenericUniqueKey extends GenericTableConstraint {
 
     public void setColumns(List<GenericTableConstraintColumn> columns) {
         this.columns = columns;
-        if (!CommonUtils.isEmpty(this.columns) && this.columns.size() > 1) {
+        if (!CollectionUtils.isEmpty(this.columns) && this.columns.size() > 1) {
             columns.sort(Comparator.comparingInt(GenericTableConstraintColumn::getOrdinalPosition));
         }
     }

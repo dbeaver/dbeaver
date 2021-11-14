@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -154,7 +155,7 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     @Override
     public void loadSettings() {
         List<DBSObject> databaseObjects = ieWizard.getSettings().getDatabaseObjects();
-        if (!CommonUtils.isEmpty(databaseObjects)) {
+        if (!CollectionUtils.isEmpty(databaseObjects)) {
             for (DBSObject obj : databaseObjects) {
                 if (objectClass.isInstance(obj)) {
                     selectedObject = objectClass.cast(obj);

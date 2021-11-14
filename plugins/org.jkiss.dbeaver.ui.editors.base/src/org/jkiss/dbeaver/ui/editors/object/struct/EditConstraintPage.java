@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -257,7 +258,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
     @Override
     public boolean isColumnSelected(DBSEntityAttribute attribute)
     {
-        if (!CommonUtils.isEmpty(attributes)) {
+        if (!CollectionUtils.isEmpty(attributes)) {
             for (DBSEntityAttributeRef ref : attributes) {
                 if (ref.getAttribute() == attribute) {
                     return true;

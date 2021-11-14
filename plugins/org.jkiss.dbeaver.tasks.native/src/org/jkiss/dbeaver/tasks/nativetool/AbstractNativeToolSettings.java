@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -140,7 +141,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
     }
 
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
-        if (dataSourceContainer == null && !CommonUtils.isEmpty(databaseObjects)) {
+        if (dataSourceContainer == null && !CollectionUtils.isEmpty(databaseObjects)) {
             BASE_OBJECT baseObject = databaseObjects.get(0);
             dataSourceContainer = baseObject instanceof DBPDataSourceContainer ?
                 (DBPDataSourceContainer) baseObject : baseObject.getDataSource().getContainer();
@@ -166,7 +167,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
         if (preferenceStore instanceof DBPPreferenceMap && dataSourceContainer != null) {
             List<String> databaseObjectList = ((DBPPreferenceMap) preferenceStore).getObject("databaseObjects");
-            if (!CommonUtils.isEmpty(databaseObjectList)) {
+            if (!CollectionUtils.isEmpty(databaseObjectList)) {
                 DBPProject finalProject = dataSourceContainer.getProject();
                 try {
                     runnableContext.run(true, true, monitor -> {

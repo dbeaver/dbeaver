@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -51,7 +51,7 @@ public class SQLDataTypeResolver extends TemplateVariableResolver {
         DBPDataTypeProvider dataTypeProvider = DBUtils.getAdapter(DBPDataTypeProvider.class, executionContext.getDataSource());
         if (dataTypeProvider != null) {
             final Collection<? extends DBSDataType> localDataTypes = dataTypeProvider.getLocalDataTypes();
-            if (!CommonUtils.isEmpty(localDataTypes)) {
+            if (!CollectionUtils.isEmpty(localDataTypes)) {
                 String[] result = new String[localDataTypes.size()];
                 int index = 0;
                 for (DBSDataType dataType : localDataTypes) {

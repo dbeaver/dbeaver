@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -107,7 +108,7 @@ public class SQLContextInformer
     }
 
     public synchronized boolean hasObjects() {
-        return !CommonUtils.isEmpty(objectReferences);
+        return !CollectionUtils.isEmpty(objectReferences);
     }
 
     public void searchInformation(IRegion region)
@@ -364,7 +365,7 @@ public class SQLContextInformer
                         params.setCaseSensitive(caseSensitive);
                         params.setMaxResults(10);
                         Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, executionContext, params);
-                        if (!CommonUtils.isEmpty(objects)) {
+                        if (!CollectionUtils.isEmpty(objects)) {
                             cache.references.addAll(objects);
                         }
                     }

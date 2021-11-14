@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -225,7 +226,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
-            if (!CommonUtils.isEmpty(objectList)) {
+            if (!CollectionUtils.isEmpty(objectList)) {
                 for (Map<String, Object> object : objectList) {
                     String catalogId = CommonUtils.toString(object.get("catalog"));
                     if (!CommonUtils.isEmpty(catalogId)) {
@@ -250,7 +251,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
                         throw new DBException("Catalog " + catalogId + " not found");
                     }
                     List<MySQLTableBase> tables = null;
-                    if (!CommonUtils.isEmpty(tableNames)) {
+                    if (!CollectionUtils.isEmpty(tableNames)) {
                         tables = new ArrayList<>();
                         for (String tableName : tableNames) {
                             MySQLTableBase table = catalog.getTableCache().getObject(monitor, catalog, tableName);
@@ -288,13 +289,13 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         store.setValue("MySQL.export.showViews", showViews);
         store.setValue(MySQLNativeCredentialsSettings.PREFERENCE_NAME, overrideCredentials);
 
-        if (store instanceof DBPPreferenceMap && !CommonUtils.isEmpty(exportObjects)) {
+        if (store instanceof DBPPreferenceMap && !CollectionUtils.isEmpty(exportObjects)) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = new ArrayList<>();
             for (MySQLDatabaseExportInfo object : exportObjects) {
                 Map<String, Object> objInfo = new LinkedHashMap<>();
                 objInfo.put("catalog", DBUtils.getObjectFullId(object.getDatabase()));
-                if (!CommonUtils.isEmpty(object.getTables())) {
+                if (!CollectionUtils.isEmpty(object.getTables())) {
                     List<String> tableList = new ArrayList<>();
                     for (MySQLTableBase table : object.getTables()) {
                         tableList.add(table.getName());

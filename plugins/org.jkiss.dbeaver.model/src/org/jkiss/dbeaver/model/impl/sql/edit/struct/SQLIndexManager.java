@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -71,7 +71,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         try {
             // Get columns using void monitor
             boolean firstColumn = true;
-            for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(new VoidProgressMonitor()))) {
+            for (DBSTableIndexColumn indexColumn : CollectionUtils.safeCollection(command.getObject().getAttributeReferences(new VoidProgressMonitor()))) {
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 decl.append(DBUtils.getQuotedIdentifier(indexColumn));
@@ -123,4 +123,3 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
 
 
 }
-

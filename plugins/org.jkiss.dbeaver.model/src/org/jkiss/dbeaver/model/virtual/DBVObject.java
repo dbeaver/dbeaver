@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -63,7 +63,7 @@ public abstract class DBVObject implements DBSObject {
      */
     @Nullable
     public <T> T getProperty(@NotNull String name) {
-        return CommonUtils.isEmpty(properties) ? null : (T) properties.get(name);
+        return CollectionUtils.isEmpty(properties) ? null : (T) properties.get(name);
     }
 
     public void setProperty(String name, @Nullable Object value) {
@@ -83,7 +83,7 @@ public abstract class DBVObject implements DBSObject {
     }
 
     protected void copyFrom(@NotNull DBVObject src) {
-        if (!CommonUtils.isEmpty(src.properties)) {
+        if (!CollectionUtils.isEmpty(src.properties)) {
             this.properties = new LinkedHashMap<>(src.properties);
         }
     }

@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -45,14 +45,14 @@ public class ERDUtils
         if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
             return Collections.emptyList();
         }
-        if (CommonUtils.isEmpty(entity.getAttributes(monitor))) {
+        if (CollectionUtils.isEmpty(entity.getAttributes(monitor))) {
             return Collections.emptyList();
         }
 
         // Find PK or unique key
         DBSEntityConstraint uniqueId = null;
         //DBSEntityConstraint uniqueIndex = null;
-        for (DBSEntityConstraint id : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
+        for (DBSEntityConstraint id : CollectionUtils.safeCollection(entity.getConstraints(monitor))) {
             if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                 return DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) id);
             } else if (id.getConstraintType().isUnique()) {
@@ -69,7 +69,7 @@ public class ERDUtils
         if (entity instanceof DBSTable) {
             try {
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
-                if (!CommonUtils.isEmpty(indexes)) {
+                if (!CollectionUtils.isEmpty(indexes)) {
                     for (DBSTableIndex index : indexes) {
                         if (DBUtils.isIdentifierIndex(monitor, index)) {
                             return DBUtils.getEntityAttributes(monitor, index);

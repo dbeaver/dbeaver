@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -186,7 +186,7 @@ public class SearchDataQuery implements ISearchQuery {
 
             List<DBDAttributeConstraint> constraints = new ArrayList<>();
             DBDDataFilter dataFilter = searchDataFilterForContainer(dataContainer, session.getProgressMonitor());
-            for (DBSEntityAttribute attribute : CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
+            for (DBSEntityAttribute attribute : CollectionUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
                 if (params.fastSearch) {
                     if (DBUtils.findAttributeIndex(session.getProgressMonitor(), attribute) == null) {
                         continue;

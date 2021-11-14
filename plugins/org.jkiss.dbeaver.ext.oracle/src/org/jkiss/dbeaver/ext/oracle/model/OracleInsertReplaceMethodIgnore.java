@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class OracleInsertReplaceMethodIgnore implements DBDInsertReplaceMethod {
         if (table != null) {
             try {
                 Collection<? extends DBSTableConstraint> constraints = table.getConstraints(monitor);
-                if (!CommonUtils.isEmpty(constraints)) {
+                if (!CollectionUtils.isEmpty(constraints)) {
                     Optional<? extends DBSTableConstraint> tableConstraint = constraints
                             .stream().filter(key -> key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY).findFirst();
                     if (tableConstraint.isPresent()) {

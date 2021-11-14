@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -232,8 +233,8 @@ public class DBWHandlerConfiguration {
     public boolean hasValuableInfo() {
         return !CommonUtils.isEmpty(userName) ||
             !CommonUtils.isEmpty(password) ||
-            !CommonUtils.isEmpty(properties) ||
-            !CommonUtils.isEmpty(secureProperties);
+            !CollectionUtils.isEmpty(properties) ||
+            !CollectionUtils.isEmpty(secureProperties);
     }
 
     @Override

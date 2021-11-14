@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -324,7 +325,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                 pgTable.setForeignServerName(serverId);
                 pgTable.setForeignOptions(new String[0]);
 
-                for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
+                for (DBSEntityAttribute attr : CollectionUtils.safeCollection(entity.getAttributes(monitor))) {
                     // Cache data types
                     PostgreSchema catalogSchema = database.getCatalogSchema(monitor);
                     if (catalogSchema != null) {

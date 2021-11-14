@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.ui.EmptyAction;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -148,7 +148,7 @@ public class ResultSetReferenceMenu
         }
         manager.removeAll();
 
-        if (CommonUtils.isEmpty(associations)) {
+        if (CollectionUtils.isEmpty(associations)) {
             manager.add(NOFKS_ACTION);
         } else {
             manager.add(FKS_TITLE_ACTION);
@@ -181,7 +181,7 @@ public class ResultSetReferenceMenu
 
         manager.add(new Separator());
 
-        if (CommonUtils.isEmpty(references)) {
+        if (CollectionUtils.isEmpty(references)) {
             manager.add(NOREFS_ACTION);
         } else {
             manager.add(REFS_TITLE_ACTION);

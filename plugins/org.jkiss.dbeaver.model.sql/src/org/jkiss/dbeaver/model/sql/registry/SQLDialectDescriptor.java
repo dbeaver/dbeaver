@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -164,43 +165,43 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     @NotNull
     public List<String> getReservedWords() {
-        return CommonUtils.safeList(keywords);
+        return CollectionUtils.safeList(keywords);
     }
 
     @Override
     @NotNull
     public List<String> getDataTypes() {
-        return CommonUtils.safeList(types);
+        return CollectionUtils.safeList(types);
     }
 
     @Override
     @NotNull
     public List<String> getFunctions() {
-        return CommonUtils.safeList(functions);
+        return CollectionUtils.safeList(functions);
     }
 
     @Override
     @NotNull
     public List<String> getDDLKeywords() {
-        return CommonUtils.safeList(ddlKeywords);
+        return CollectionUtils.safeList(ddlKeywords);
     }
 
     @NotNull
     @Override
     public List<String> getDMLKeywords() {
-        return CommonUtils.safeList(dmlKeywords);
+        return CollectionUtils.safeList(dmlKeywords);
     }
 
     @NotNull
     @Override
     public List<String> getExecuteKeywords() {
-        return CommonUtils.safeList(execKeywords);
+        return CollectionUtils.safeList(execKeywords);
     }
 
     @Override
     @NotNull
     public List<String> getTransactionKeywords() {
-        return CommonUtils.safeList(txnKeywords);
+        return CollectionUtils.safeList(txnKeywords);
     }
 
     @Override
@@ -258,7 +259,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     }
 
     public List<SQLInsertReplaceMethodDescriptor> getSupportedInsertReplaceMethodsDescriptors() {
-        if (insertReplaceMethods == null && !CommonUtils.isEmpty(insertMethodNames)) {
+        if (insertReplaceMethods == null && !CollectionUtils.isEmpty(insertMethodNames)) {
             try {
                 insertMethodDescriptors = new ArrayList<>();
                 List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();

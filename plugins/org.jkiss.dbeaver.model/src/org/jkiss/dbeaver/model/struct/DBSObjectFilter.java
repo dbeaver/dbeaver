@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,23 +142,23 @@ public class DBSObjectFilter
 
     public boolean isEmpty()
     {
-        return CommonUtils.isEmpty(include) && CommonUtils.isEmpty(exclude);
+        return CollectionUtils.isEmpty(include) && CollectionUtils.isEmpty(exclude);
     }
 
     public boolean hasSingleMask()
     {
-        return include != null && include.size() == 1 && CommonUtils.isEmpty(exclude);
+        return include != null && include.size() == 1 && CollectionUtils.isEmpty(exclude);
     }
 
     @Nullable
     public String getSingleMask()
     {
-        return !CommonUtils.isEmpty(include) ? include.get(0) : null;
+        return !CollectionUtils.isEmpty(include) ? include.get(0) : null;
     }
     
     public synchronized boolean matches(String name)
     {
-        if (includePatterns == null && !CommonUtils.isEmpty(include)) {
+        if (includePatterns == null && !CollectionUtils.isEmpty(include)) {
             includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {
                 if (!inc.isEmpty()) {
@@ -179,7 +180,7 @@ public class DBSObjectFilter
             }
         }
 
-        if (excludePatterns == null && !CommonUtils.isEmpty(exclude)) {
+        if (excludePatterns == null && !CollectionUtils.isEmpty(exclude)) {
             excludePatterns = new ArrayList<>(exclude.size());
             for (String exc : exclude) {
                 if (!exc.isEmpty()) {

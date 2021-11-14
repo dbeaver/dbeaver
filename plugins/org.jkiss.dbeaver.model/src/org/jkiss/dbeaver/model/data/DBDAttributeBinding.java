@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKeyColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -325,7 +326,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             DBVEntity vEntity = DBVUtils.getVirtualEntity(attrEntity, false);
             if (vEntity != null) {
                 List<DBVEntityForeignKey> foreignKeys = vEntity.getForeignKeys();
-                if (!CommonUtils.isEmpty(foreignKeys)) {
+                if (!CollectionUtils.isEmpty(foreignKeys)) {
                     List<DBSEntityReferrer> referrers = null;
                     for (DBVEntityForeignKey vfk : foreignKeys) {
                         for (DBVEntityForeignKeyColumn vfkc : vfk.getAttributes()) {

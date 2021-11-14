@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.util.List;
@@ -105,7 +106,7 @@ public class DBRProcessDescriptor
         if (process != null) {
             throw new DBException("Process " + getName() + " already running");
         }
-        if (CommonUtils.isEmpty(processBuilder.command())) {
+        if (CollectionUtils.isEmpty(processBuilder.command())) {
             throw new DBException("Empty command specified");
         }
         try {

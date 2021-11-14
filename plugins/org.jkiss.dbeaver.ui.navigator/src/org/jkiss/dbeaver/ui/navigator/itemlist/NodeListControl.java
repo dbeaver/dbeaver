@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -217,7 +217,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     private static void collectInlineChildren(DBXTreeNode meta, List<DBXTreeNode> inlineMetas)
     {
         final List<DBXTreeNode> metaChildren = meta.getChildren(null);
-        if (!CommonUtils.isEmpty(metaChildren)) {
+        if (!CollectionUtils.isEmpty(metaChildren)) {
             for (DBXTreeNode child : metaChildren) {
                 if (child.isInline()) {
                     inlineMetas.add(child);
@@ -234,14 +234,14 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         if (getRootNode() instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
             List<Class<?>> baseTypes = dbNode.getChildrenTypes(nodeMeta);
-            if (CommonUtils.isEmpty(baseTypes) && dbNode instanceof DBNDatabaseFolder) {
+            if (CollectionUtils.isEmpty(baseTypes) && dbNode instanceof DBNDatabaseFolder) {
                 Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) dbNode).getChildrenClass();
                 if (childrenClass != null) {
                     return new Class[] { childrenClass };
                 }
             }
             // Collect base types for inline children
-            return CommonUtils.isEmpty(baseTypes) ? null : baseTypes.toArray(new Class<?>[0]);
+            return CollectionUtils.isEmpty(baseTypes) ? null : baseTypes.toArray(new Class<?>[0]);
         } else {
             return null;
         }

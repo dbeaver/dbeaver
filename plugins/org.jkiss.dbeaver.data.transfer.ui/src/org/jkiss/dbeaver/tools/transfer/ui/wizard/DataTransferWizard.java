@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -92,7 +93,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
                     if (databaseObject instanceof SQLQueryContainer) {
                         Map<String, Object> queryParameters = ((SQLQueryContainer) databaseObject).getQueryParameters();
-                        if (!CommonUtils.isEmpty(queryParameters)) {
+                        if (!CollectionUtils.isEmpty(queryParameters)) {
                             getTaskVariables().putAll(queryParameters);
                         }
                     }
@@ -374,7 +375,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             }
         }
         // Add common settings page
-        if (!CommonUtils.isEmpty(settingPages)) {
+        if (!CollectionUtils.isEmpty(settingPages)) {
             for (IWizardPage settingsPage : settingPages) {
                 wizard.addPage(settingsPage);
             }
@@ -530,7 +531,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             Map<String, Object> procSettings = new LinkedHashMap<>();
 
             Map<String, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
-            if (!CommonUtils.isEmpty(props)) {
+            if (!CollectionUtils.isEmpty(props)) {
                 StringBuilder propNames = new StringBuilder();
                 for (Map.Entry<String, Object> prop : props.entrySet()) {
                     propNames.append(prop.getKey()).append(',');
@@ -612,7 +613,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             new DialogSettingsMap(getWizardDialogSettings()),
             new DataTransferState(),
             true,
-            CommonUtils.isEmpty(consumers),
+            CollectionUtils.isEmpty(consumers),
             false);
 
         DataTransferWizard wizard = new DataTransferWizard(null, settings, true);

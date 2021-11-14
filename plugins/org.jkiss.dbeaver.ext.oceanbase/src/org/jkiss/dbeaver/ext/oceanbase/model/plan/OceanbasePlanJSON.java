@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
-import org.jkiss.utils.CommonUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.jkiss.utils.collections.CollectionUtils;
 
 public class OceanbasePlanJSON extends AbstractExecutionPlan {
     private static final Gson gson = new Gson();
@@ -59,7 +59,7 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
 
                 OceanbasePlanNodeJSON rootNode = new OceanbasePlanNodeJSON(null, "select", queryBlock);
 
-                if (CommonUtils.isEmpty(rootNode.getNested()) && rootNode.getProperty("message") != null) {
+                if (CollectionUtils.isEmpty(rootNode.getNested()) && rootNode.getProperty("message") != null) {
                     throw new DBCException("Can't explain plan: " + rootNode.getProperty("message"));
                 }
                 nodes.add(rootNode);

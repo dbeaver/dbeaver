@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -134,7 +135,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selIndex = onDuplicateKeyInsertMethods.getSelectionIndex();
-                    if (selIndex > 0 && !CommonUtils.isEmpty(availableInsertMethodsDescriptors)) {
+                    if (selIndex > 0 && !CollectionUtils.isEmpty(availableInsertMethodsDescriptors)) {
                         SQLInsertReplaceMethodDescriptor methodDescriptor = availableInsertMethodsDescriptors.get(selIndex - 1);
                         settings.setOnDuplicateKeyInsertMethodId(methodDescriptor.getId());
                     } else {
@@ -383,7 +384,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
         onDuplicateKeyInsertMethods.removeAll();
         onDuplicateKeyInsertMethods.add(DBSDataManipulator.INSERT_NONE_METHOD);
-        if (!CommonUtils.isEmpty(insertMethodsDescriptors)) {
+        if (!CollectionUtils.isEmpty(insertMethodsDescriptors)) {
             boolean emptyButton = true;
             for (SQLInsertReplaceMethodDescriptor insertMethod : insertMethodsDescriptors) {
                 onDuplicateKeyInsertMethods.add(insertMethod.getLabel());

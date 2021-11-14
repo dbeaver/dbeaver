@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
@@ -120,7 +120,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     }
 
     public boolean isAutoDownloadWizard() {
-        return CommonUtils.isEmpty(getDriver().getDriverFileSources());
+        return CollectionUtils.isEmpty(getDriver().getDriverFileSources());
     }
 
 }

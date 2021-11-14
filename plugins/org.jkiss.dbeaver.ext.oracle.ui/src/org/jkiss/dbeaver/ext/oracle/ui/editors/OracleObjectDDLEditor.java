@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.ui.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +50,7 @@ public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> implemen
     @Override
     protected Map<String, Object> getSourceOptions() {
         Map<String, Object> options = super.getSourceOptions();
-        if (!CommonUtils.isEmpty(oracleDDLOptions)) {
+        if (!CollectionUtils.isEmpty(oracleDDLOptions)) {
             options.putAll(oracleDDLOptions);
         }
         return options;

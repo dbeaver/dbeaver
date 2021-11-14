@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +113,7 @@ public class SQLGeneratorContributor extends CompoundContributionItem {
         final DBSEntity entity = rsv.getModel().getSingleSource();
         if (dataContainer != null && !visibleAttributes.isEmpty() && entity != null) {
             final List<ResultSetRow> selectedRows = new ArrayList<>(rss.getSelectedRows());
-            if (!CommonUtils.isEmpty(selectedRows)) {
+            if (!CollectionUtils.isEmpty(selectedRows)) {
 
                 List<IResultSetController> objects = new ArrayList<>();
                 objects.add(rsv);

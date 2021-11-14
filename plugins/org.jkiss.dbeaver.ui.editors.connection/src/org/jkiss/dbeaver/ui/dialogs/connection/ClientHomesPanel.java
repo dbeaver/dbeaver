@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -251,7 +252,7 @@ public class ClientHomesPanel extends Composite {
         DBPNativeClientLocation defaultLocalClientLocation = clientManager.getDefaultLocalClientLocation();
         if (defaultLocalClientLocation == null) {
             List<DBPNativeClientLocation> driverLocations = driver.getNativeClientLocations();
-            if (!CommonUtils.isEmpty(driverLocations)) {
+            if (!CollectionUtils.isEmpty(driverLocations)) {
                 defaultLocalClientLocation = driverLocations.get(0);
             }
         }

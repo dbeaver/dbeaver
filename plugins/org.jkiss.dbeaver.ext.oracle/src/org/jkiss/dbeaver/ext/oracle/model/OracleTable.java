@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -301,7 +302,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
     @Nullable
     private OracleTableColumn getXMLColumn(DBRProgressMonitor monitor) throws DBException {
-        for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
+        for (OracleTableColumn col : CollectionUtils.safeCollection(getAttributes(monitor))) {
             if (col.getDataType() == tableType) {
                 return col;
             }
@@ -440,7 +441,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         Collection<OracleTableForeignKey> foreignKeys = getAssociations(monitor);
-        if (CommonUtils.isEmpty(foreignKeys)) {
+        if (CollectionUtils.isEmpty(foreignKeys)) {
             return;
         }
 
@@ -466,7 +467,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
     @Override
     public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return !CommonUtils.isEmpty(getAssociations(monitor));
+        return !CollectionUtils.isEmpty(getAssociations(monitor));
     }
 
     @Nullable

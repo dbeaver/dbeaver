@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -103,7 +104,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
             typesToSearch.add(type);
         }
-        if (CommonUtils.isEmpty(typesToSearch)) {
+        if (CollectionUtils.isEmpty(typesToSearch)) {
             return null;
         }
         Group cbGroup = new Group(parent, SWT.NONE);

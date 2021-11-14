@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -162,7 +162,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
             public String getText(Object element) {
                 if (element instanceof DBNResource) {
                     Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
-                    if (!CommonUtils.isEmpty(containers)) {
+                    if (!CollectionUtils.isEmpty(containers)) {
                         StringBuilder text = new StringBuilder();
                         for (DBPDataSourceContainer container : containers) {
                             if (text.length() > 0) {

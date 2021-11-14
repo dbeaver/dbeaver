@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -108,7 +109,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
-        if (!CommonUtils.isEmpty(mappings)) {
+        if (!CollectionUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
                 attr.updateMappingType(monitor, forceRefresh);
             }

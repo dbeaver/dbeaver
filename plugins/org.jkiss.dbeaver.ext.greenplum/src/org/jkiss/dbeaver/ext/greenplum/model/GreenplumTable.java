@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -86,7 +86,7 @@ public class GreenplumTable extends PostgreTableRegular {
     public void appendTableModifiers(DBRProgressMonitor monitor, StringBuilder ddl) {
         try {
             List<PostgreTableColumn> distributionColumns = getDistributionPolicy(monitor);
-            if (CommonUtils.isEmpty(distributionColumns)) {
+            if (CollectionUtils.isEmpty(distributionColumns)) {
                 distributionColumns = GreenplumUtils.getDistributionTableColumns(monitor, distributionColumns, this);
             }
 

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -560,7 +561,7 @@ public class MySQLCatalog implements
                     DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(MySQLTable.class, owner, true);
                     if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
-                        if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
+                        if (!CollectionUtils.isEmpty(tableFilters.getInclude())) {
                             sql.append("(");
                             boolean hasCond = false;
                             for (String incName : tableFilters.getInclude()) {
@@ -570,8 +571,8 @@ public class MySQLCatalog implements
                             }
                             sql.append(")");
                         }
-                        if (!CommonUtils.isEmpty(tableFilters.getExclude())) {
-                            if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
+                        if (!CollectionUtils.isEmpty(tableFilters.getExclude())) {
+                            if (!CollectionUtils.isEmpty(tableFilters.getInclude())) {
                                 sql.append(" AND ");
                             }
                             sql.append("(");

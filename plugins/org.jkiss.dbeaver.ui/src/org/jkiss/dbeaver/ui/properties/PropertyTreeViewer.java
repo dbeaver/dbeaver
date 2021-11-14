@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -441,7 +442,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         TreeItem lastItem = allItems[allItems.length - 1];
                         if (lastItem.getData() instanceof TreeNode) {
                             TreeNode lastNode = (TreeNode) lastItem.getData();
-                            if (!CommonUtils.isEmpty(lastNode.children)) {
+                            if (!CollectionUtils.isEmpty(lastNode.children)) {
                                 lastNode = lastNode.children.get(lastNode.children.size() - 1);
                             }
                             if (lastNode.property != null && CommonUtils.isEmpty(lastNode.property.getDisplayName())) {

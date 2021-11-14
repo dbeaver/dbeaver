@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,7 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
 
     private static boolean isTruncateModeSupported(PostgreToolTableTruncateSettings settings, int mode) {
         List<PostgreTableBase> tablesList = settings.getObjectList();
-        if (!CommonUtils.isEmpty(tablesList)) {
+        if (!CollectionUtils.isEmpty(tablesList)) {
             PostgreTableBase tableBase = tablesList.get(0);
             return CommonUtils.isBitSet(tableBase.getDataSource().getServerType().getTruncateToolModes(), mode);
         }

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -611,12 +612,12 @@ public class ProjectMetadata implements DBPProject {
 
             synchronized (metadataSync) {
                 File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-                if (CommonUtils.isEmpty(resourceProperties) && !mdFile.exists()) {
+                if (CollectionUtils.isEmpty(resourceProperties) && !mdFile.exists()) {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;
                 }
                 try {
-                    if (!CommonUtils.isEmpty(resourceProperties)) {
+                    if (!CollectionUtils.isEmpty(resourceProperties)) {
                         try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
                             try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
                                 jsonWriter.beginObject();

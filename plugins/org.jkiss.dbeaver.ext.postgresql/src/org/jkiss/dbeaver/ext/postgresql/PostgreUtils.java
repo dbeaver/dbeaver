@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.Array;
 import java.sql.SQLException;
@@ -643,7 +644,7 @@ public class PostgreUtils {
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
-            if (!CommonUtils.isEmpty(permissions)) {
+            if (!CollectionUtils.isEmpty(permissions)) {
 
                 for (PostgrePrivilege permission : permissions) {
                     if (permission.hasAllPrivileges(object)) {

@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +41,7 @@ public class OracleToolGatherStatistics implements IUserInterfaceTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<OracleTableBase> tables = CommonUtils.filterCollection(objects, OracleTableBase.class);
+        List<OracleTableBase> tables = CollectionUtils.filterCollection(objects, OracleTableBase.class);
         if (!tables.isEmpty()) {
             TaskConfigurationWizardDialog.openNewTaskDialog(
                     window,
@@ -49,7 +49,7 @@ public class OracleToolGatherStatistics implements IUserInterfaceTool
                     OracleTasks.TASK_TABLE_GATHER_STATISTICS,
                     new StructuredSelection(objects.toArray()));
         } else {
-            List<OracleTableIndex> databases = CommonUtils.filterCollection(objects, OracleTableIndex.class);
+            List<OracleTableIndex> databases = CollectionUtils.filterCollection(objects, OracleTableIndex.class);
             if (!databases.isEmpty()) {
                 TaskConfigurationWizardDialog.openNewTaskDialog(
                         window,

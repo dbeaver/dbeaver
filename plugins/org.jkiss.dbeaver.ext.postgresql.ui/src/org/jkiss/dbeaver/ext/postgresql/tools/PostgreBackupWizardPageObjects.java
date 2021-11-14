@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.*;
@@ -176,10 +176,10 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         for (PostgreDatabaseBackupInfo info : wizard.getSettings().getExportObjects()) {
             dataBase = info.getDatabase();
 
-            if (!CommonUtils.isEmpty(info.getSchemas())) {
+            if (!CollectionUtils.isEmpty(info.getSchemas())) {
                 activeSchemas.addAll(info.getSchemas());
             }
-            if (!CommonUtils.isEmpty(info.getTables())) {
+            if (!CollectionUtils.isEmpty(info.getTables())) {
                 for (PostgreTableBase table : info.getTables()) {
                     PostgreTableContainer tableContainer = table.getContainer();
                     if (!(tableContainer instanceof PostgreSchema)) {
@@ -354,7 +354,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                             PostgreSchema postgreSchema = (PostgreSchema) data;
                             if (schemaItem.getChecked() && check && !checkedObjects.containsKey(postgreSchema)) {
                                 List<PostgreTableBase> tableBaseList = loadTables(postgreSchema);
-                                if (!CommonUtils.isEmpty(tableBaseList)) {
+                                if (!CollectionUtils.isEmpty(tableBaseList)) {
                                     checkedObjects.put(postgreSchema, new HashSet<>(tableBaseList));
                                 }
                             } else if (!schemaItem.getChecked() && !check) {

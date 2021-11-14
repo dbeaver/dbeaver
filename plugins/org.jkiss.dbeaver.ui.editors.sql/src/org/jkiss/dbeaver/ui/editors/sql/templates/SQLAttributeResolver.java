@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -67,10 +68,10 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
                     try {
                         List<DBSEntity> entities = new ArrayList<>();
                         SQLEntityResolver.resolveTables(monitor, executionContext, context, entities);
-                        if (!CommonUtils.isEmpty(entities)) {
+                        if (!CollectionUtils.isEmpty(entities)) {
                             DBSEntity table = DBUtils.findObject(entities, tableName);
                             if (table != null) {
-                                attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
+                                attributes.addAll(CollectionUtils.safeCollection(table.getAttributes(monitor)));
                             }
                         }
                     } catch (DBException e) {
@@ -79,7 +80,7 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
                 }
             };
             RuntimeUtils.runTask(runnable, "Resolve attributes", 1000);
-            if (!CommonUtils.isEmpty(attributes)) {
+            if (!CollectionUtils.isEmpty(attributes)) {
                 String[] result = new String[attributes.size()];
                 for (int i = 0; i < attributes.size(); i++) {
                     DBSEntityAttribute entity = attributes.get(i);

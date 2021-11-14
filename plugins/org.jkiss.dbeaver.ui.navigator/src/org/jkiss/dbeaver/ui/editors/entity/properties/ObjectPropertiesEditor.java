@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -602,7 +603,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         // Query for entity editors
         List<EntityEditorDescriptor> editors = EntityEditorsRegistry.getInstance().getEntityEditors(object, this, null);
-        if (!CommonUtils.isEmpty(editors)) {
+        if (!CollectionUtils.isEmpty(editors)) {
             for (EntityEditorDescriptor descriptor : editors) {
                 if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
                     tabList.add(new TabbedFolderInfo(

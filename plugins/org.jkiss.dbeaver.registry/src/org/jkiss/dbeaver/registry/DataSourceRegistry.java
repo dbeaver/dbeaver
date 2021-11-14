@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -213,7 +214,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public List<? extends DBPDataSourceContainer> getDataSourcesByProfile(@NotNull DBWNetworkProfile profile) {
         List<DataSourceDescriptor> dsCopy;
         synchronized (dataSources) {
-            dsCopy = CommonUtils.copyList(dataSources.values());
+            dsCopy = CollectionUtils.copyList(dataSources.values());
         }
         dsCopy.removeIf(ds -> !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
         return dsCopy;
@@ -224,7 +225,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public List<DataSourceDescriptor> getDataSources() {
         List<DataSourceDescriptor> dsCopy;
         synchronized (dataSources) {
-            dsCopy = CommonUtils.copyList(dataSources.values());
+            dsCopy = CollectionUtils.copyList(dataSources.values());
         }
         dsCopy.sort((o1, o2) -> CommonUtils.notNull(o1.getName(), o1.getId()).compareToIgnoreCase(
             CommonUtils.notNull(o2.getName(), o2.getId())));
@@ -867,7 +868,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             };
             List<DataSourceDescriptor> dsSnapshot;
             synchronized (dataSources) {
-                dsSnapshot = CommonUtils.copyList(dataSources.values());
+                dsSnapshot = CollectionUtils.copyList(dataSources.values());
             }
             monitor.beginTask("Disconnect all databases", dsSnapshot.size());
             try {

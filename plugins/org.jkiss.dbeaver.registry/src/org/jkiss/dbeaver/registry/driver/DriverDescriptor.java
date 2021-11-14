@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
@@ -1275,7 +1276,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private void checkDriverVersion(DBRProgressMonitor monitor) throws IOException {
         for (DBPDriverLibrary library : libraries) {
             final Collection<String> availableVersions = library.getAvailableVersions(monitor);
-            if (!CommonUtils.isEmpty(availableVersions)) {
+            if (!CollectionUtils.isEmpty(availableVersions)) {
                 final String curVersion = library.getVersion();
                 String latestVersion = VersionUtils.findLatestVersion(availableVersions);
                 if (latestVersion != null && !latestVersion.equals(curVersion)) {
@@ -1287,7 +1288,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean isLibraryResolved(DBPDriverLibrary library) {
-        return !library.isDownloadable() || !CommonUtils.isEmpty(resolvedFiles.get(library));
+        return !library.isDownloadable() || !CollectionUtils.isEmpty(resolvedFiles.get(library));
     }
 
     public Collection<DriverFileInfo> getLibraryFiles(DBPDriverLibrary library) {

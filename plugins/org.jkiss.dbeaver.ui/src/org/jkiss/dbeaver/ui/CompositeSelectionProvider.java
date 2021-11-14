@@ -20,7 +20,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,7 @@ public class CompositeSelectionProvider implements ISelectionProvider {
             cp.setSelection(selection);
         } else {
             this.selection = selection;
-            if (!CommonUtils.isEmpty(listeners)) {
+            if (!CollectionUtils.isEmpty(listeners)) {
             	SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
             	for (ISelectionChangedListener listener : listeners) {
             		 listener.selectionChanged(event);
@@ -94,7 +94,7 @@ public class CompositeSelectionProvider implements ISelectionProvider {
     {
         if (this.provider != newProvider){
         	ISelection newSelection = null;
-            if (!CommonUtils.isEmpty(listeners)) {
+            if (!CollectionUtils.isEmpty(listeners)) {
                 if (this.provider != null){
                     for (ISelectionChangedListener listener : listeners) {
                          this.provider.removeSelectionChangedListener(listener);

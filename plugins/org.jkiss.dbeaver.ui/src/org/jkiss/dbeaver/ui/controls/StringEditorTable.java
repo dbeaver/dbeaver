@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -159,7 +159,7 @@ public class StringEditorTable {
 
     public static void fillFilterValues(Table valueTable, List<String> values, DBPImage icon) {
         valueTable.removeAll();
-        if (!CommonUtils.isEmpty(values)) {
+        if (!CollectionUtils.isEmpty(values)) {
             for (String value : values) {
                 TableItem tableItem = new TableItem(valueTable, SWT.LEFT);
                 tableItem.setText(value);

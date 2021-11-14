@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -218,8 +219,8 @@ public class DataSourceUtils {
             if (!CommonUtils.isEmpty(database)) connConfig.setDatabaseName(database);
             if (!CommonUtils.isEmpty(user)) connConfig.setUserName(user);
             if (!CommonUtils.isEmpty(password)) connConfig.setUserPassword(password);
-            if (!CommonUtils.isEmpty(conProperties)) connConfig.setProperties(conProperties);
-            if (!CommonUtils.isEmpty(authProperties)) connConfig.setAuthProperties(authProperties);
+            if (!CollectionUtils.isEmpty(conProperties)) connConfig.setProperties(conProperties);
+            if (!CollectionUtils.isEmpty(authProperties)) connConfig.setAuthProperties(authProperties);
             if (!CommonUtils.isEmpty(authModelId)) connConfig.setAuthModelId(authModelId);
 
             return dataSource;
@@ -318,7 +319,7 @@ public class DataSourceUtils {
         connConfig.setUserName(user);
         connConfig.setUserPassword(password);
         connConfig.setProperties(conProperties);
-        if (!CommonUtils.isEmpty(authProperties)) {
+        if (!CollectionUtils.isEmpty(authProperties)) {
             connConfig.setAuthProperties(authProperties);
         }
         if (!CommonUtils.isEmpty(authModelId)) {
@@ -387,7 +388,7 @@ public class DataSourceUtils {
                     } else {
                         prefNode.remove(RegistryConstants.ATTR_PASSWORD);
                     }
-                    if (!CommonUtils.isEmpty(credentials.getProperties())) {
+                    if (!CollectionUtils.isEmpty(credentials.getProperties())) {
                         for (Map.Entry<String, String> prop : credentials.getProperties().entrySet()) {
                             prefNode.put(prop.getKey(), prop.getValue(), true);
                         }

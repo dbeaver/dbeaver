@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -241,7 +242,7 @@ public class SQLScriptContext implements DBCScriptContext {
 
         // Bind parameters
         List<SQLQueryParameter> parameters = query.getParameters();
-        if (CommonUtils.isEmpty(parameters)) {
+        if (CollectionUtils.isEmpty(parameters)) {
             return true;
         }
 

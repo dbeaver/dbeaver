@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,11 +126,11 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     }
 
     private boolean proceedSelectedColumnsOnly(long flags) {
-        return (flags & DBSDataContainer.FLAG_USE_SELECTED_COLUMNS) != 0 && !CommonUtils.isEmpty(options.getSelectedColumns());
+        return (flags & DBSDataContainer.FLAG_USE_SELECTED_COLUMNS) != 0 && !CollectionUtils.isEmpty(options.getSelectedColumns());
     }
 
     private boolean proceedSelectedRowsOnly(long flags) {
-        return (flags & DBSDataContainer.FLAG_USE_SELECTED_ROWS) != 0 && !CommonUtils.isEmpty(options.getSelectedRows());
+        return (flags & DBSDataContainer.FLAG_USE_SELECTED_ROWS) != 0 && !CollectionUtils.isEmpty(options.getSelectedRows());
     }
 
     @Override

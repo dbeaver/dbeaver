@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class EditConnectionPermissionsDialog extends BaseDialog {
 
     public EditConnectionPermissionsDialog(Shell shell, List<DBPDataSourcePermission> accessRestrictions) {
         super(shell, CoreMessages.dialog_connection_wizard_final_group_security, null);
-        this.accessRestrictions = CommonUtils.safeList(accessRestrictions);
+        this.accessRestrictions = CollectionUtils.safeList(accessRestrictions);
     }
 
     @Override

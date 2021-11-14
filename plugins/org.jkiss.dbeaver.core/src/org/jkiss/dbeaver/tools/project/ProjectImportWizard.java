@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -263,7 +264,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
 
         // Add libraries (only for managable drivers with empty library list)
-        if (CommonUtils.isEmpty(driver.getDriverLibraries())) {
+        if (CollectionUtils.isEmpty(driver.getDriverLibraries())) {
             List<String> libraryList = new ArrayList<>();
             for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_FILE)) {
                 libraryList.add(libElement.getAttribute(RegistryConstants.ATTR_PATH));

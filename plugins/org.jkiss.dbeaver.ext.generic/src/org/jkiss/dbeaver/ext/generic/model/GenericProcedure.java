@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -283,7 +284,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     private String makeSignature(DBRProgressMonitor monitor, boolean showParamNames) throws DBException {
         Collection<GenericProcedureParameter> parameters = getParameters(monitor);
-        if (!CommonUtils.isEmpty(parameters)) {
+        if (!CollectionUtils.isEmpty(parameters)) {
             StringBuilder paramsSignature = new StringBuilder(64);
             boolean hasParam = false;
             for (GenericProcedureParameter param : parameters) {

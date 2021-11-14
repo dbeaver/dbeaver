@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,7 +95,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         try {
             List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());
 
-            if (!CommonUtils.isEmpty(attrRefs)) {
+            if (!CollectionUtils.isEmpty(attrRefs)) {
                 for (DBSEntityAttributeRef attrRef : attrRefs) {
                     if (attrRef instanceof DBSTableForeignKeyColumn) {
                         DBSEntityAttribute targetAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();

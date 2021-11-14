@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 
 public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImportWizard> {
@@ -123,7 +124,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         }
         getContainer().updateButtons();
         if (loaded) {
-            if (CommonUtils.isEmpty(importData.getConnections())) {
+            if (CollectionUtils.isEmpty(importData.getConnections())) {
                 setMessage(ImportConfigMessages.config_import_wizard_page_label_connection_list, IMessageProvider.WARNING);
             } else {
                 for (ImportConnectionInfo connectionInfo : importData.getConnections()) {

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -132,7 +133,7 @@ public class DatabaseTransferUtils {
             if (containerMapping.getSource() instanceof DBSEntity) {
                 // Make primary key
                 Collection<? extends DBSEntityAttribute> identifier = DBUtils.getBestTableIdentifier(monitor, (DBSEntity) containerMapping.getSource());
-                if (!CommonUtils.isEmpty(identifier)) {
+                if (!CollectionUtils.isEmpty(identifier)) {
                     boolean idMapped = true;
                     for (DBSEntityAttribute idAttr : identifier) {
                         if (!mappedAttrs.containsKey(idAttr)) {

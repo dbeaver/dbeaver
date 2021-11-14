@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -90,7 +90,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     @Override
     public String getChildrenType() {
         final List<DBXTreeNode> metaChildren = treeRoot.getChildren(this);
-        if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
+        if (CollectionUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return "?";
         } else {
             return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
@@ -100,7 +100,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     @Override
     public Class<?> getChildrenClass() {
         final List<DBXTreeNode> metaChildren = treeRoot.getChildren(null); // Use null context because we don't need to filter nodes
-        if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
+        if (CollectionUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return null;
         }
         DBXTreeNode childNode = metaChildren.get(0);

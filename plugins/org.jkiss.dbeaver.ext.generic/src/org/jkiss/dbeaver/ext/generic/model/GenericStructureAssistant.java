@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -169,7 +170,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     private GenericStructContainer findContainer(DBRProgressMonitor monitor, GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName) throws DBException
     {
         GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
-        if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
+        if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CollectionUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
             // there is only one catalog - let's use it (PostgreSQL)
             tableCatalog = dataSource.getCatalogs().iterator().next();
         }

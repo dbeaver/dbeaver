@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -305,7 +306,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 		ExasolTableBase table = (ExasolTable) getTable();
 		try {
 			final Collection<ExasolTableUniqueKey> uniqueKeysCache = table.getConstraints(new VoidProgressMonitor());
-			if (!CommonUtils.isEmpty(uniqueKeysCache))
+			if (!CollectionUtils.isEmpty(uniqueKeysCache))
 			{
 				for (ExasolTableUniqueKey key : uniqueKeysCache)
 				{

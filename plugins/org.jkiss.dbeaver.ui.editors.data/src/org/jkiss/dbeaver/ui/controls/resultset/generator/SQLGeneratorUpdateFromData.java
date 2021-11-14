@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -57,7 +58,7 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
                 sql.append(separator).append("SET ");
             }
             boolean hasAttr = false;
-            if (CommonUtils.isEmpty(valueAttributes)) {
+            if (CollectionUtils.isEmpty(valueAttributes)) {
                 valueAttributes = keyAttributes;
             }
             for (DBSAttributeBase attr : valueAttributes) {
@@ -75,7 +76,7 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
 
                 hasAttr = true;
             }
-            if (!CommonUtils.isEmpty(keyAttributes)) {
+            if (!CollectionUtils.isEmpty(keyAttributes)) {
                 sql.append(separator).append("WHERE ");
                 hasAttr = false;
                 for (DBDAttributeBinding attr : keyAttributes) {

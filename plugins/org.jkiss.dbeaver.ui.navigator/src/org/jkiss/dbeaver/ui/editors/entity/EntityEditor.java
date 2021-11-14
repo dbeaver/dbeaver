@@ -77,6 +77,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -484,7 +485,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.CANCEL_ID;
         }
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
-        if (CommonUtils.isEmpty(commands)) {
+        if (CollectionUtils.isEmpty(commands)) {
             return IDialogConstants.IGNORE_ID;
         }
         StringBuilder script = new StringBuilder();

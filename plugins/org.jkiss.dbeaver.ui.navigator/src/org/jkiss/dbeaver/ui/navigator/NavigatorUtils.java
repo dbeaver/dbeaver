@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -472,7 +473,7 @@ public class NavigatorUtils {
                         @SuppressWarnings("unchecked")
                         Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
                         if (curObject instanceof DBNNode) {
-                            if (!CommonUtils.isEmpty(nodesToDrop)) {
+                            if (!CollectionUtils.isEmpty(nodesToDrop)) {
                                 for (DBNNode node : nodesToDrop) {
                                     if (!((DBNNode) curObject).supportsDrop(node)) {
                                         return false;
@@ -484,7 +485,7 @@ public class NavigatorUtils {
                             }
                         } else if (curObject == null) {
                             // Drop to empty area
-                            if (!CommonUtils.isEmpty(nodesToDrop)) {
+                            if (!CollectionUtils.isEmpty(nodesToDrop)) {
                                 for (DBNNode node : nodesToDrop) {
                                     if (!(node instanceof DBNDataSource)) {
                                         return false;

@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,7 +98,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             cmd.add("--format=" + settings.getFormat().getId());
         }
         List<DBSObject> databaseObjects = settings.getDatabaseObjects();
-        if (!CommonUtils.isEmpty(databaseObjects)) {
+        if (!CollectionUtils.isEmpty(databaseObjects)) {
             cmd.add("--dbname=" + databaseObjects.get(0).getName());
         }
         if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {

@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +65,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         final String tableDDL;
 
         final List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
-        if (CommonUtils.isEmpty(attributes)) {
+        if (CollectionUtils.isEmpty(attributes)) {
             throw new DBException("Table has no attributes");
         }
         try {

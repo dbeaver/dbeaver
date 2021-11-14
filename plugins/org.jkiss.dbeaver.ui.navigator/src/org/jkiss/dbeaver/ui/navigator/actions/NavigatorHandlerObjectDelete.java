@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ConfirmNavigatorNodesDeleteDialog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -141,7 +141,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                                 try {
                                     List<? extends DBSObject> dependentObjectsList = ((DBEObjectWithDependencies) objectManager).getDependentObjectsList(monitor, attribute);
                                     changeDependentObjectsList(monitor, dependentObjectsList);
-                                    if (!CommonUtils.isEmpty(dependentObjectsList)) {
+                                    if (!CollectionUtils.isEmpty(dependentObjectsList)) {
                                         for (Object object : dependentObjectsList) {
                                             if (object instanceof DBSObject) {
                                                 DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, (DBSObject) object, false);
@@ -162,7 +162,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     UINavigatorMessages.search_dependencies_error_title, UINavigatorMessages.search_dependencies_error_message, e.getTargetException());
         } catch (InterruptedException ignored) {
         }
-        if (!CommonUtils.isEmpty(dependentObjectsListNodes)) {
+        if (!CollectionUtils.isEmpty(dependentObjectsListNodes)) {
             NavigatorObjectsDeleter dependentObjectsDeleter = NavigatorObjectsDeleter.of(dependentObjectsListNodes, window);
             String confirmMessage;
             if (dependentObjectsListNodes.size() == 1) {
@@ -193,7 +193,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     private static void changeDependentObjectsList(@NotNull DBRProgressMonitor monitor, List<? extends DBSObject> dependentObjectsList) throws DBException {
         // Some indexes in some databases in fact duplicate existing keys, and therefore deleting keys will automatically delete indexes on the database side
         // Let's find this indexes and remove from dependent list
-        if (!CommonUtils.isEmpty(dependentObjectsList)) {
+        if (!CollectionUtils.isEmpty(dependentObjectsList)) {
             List<? extends DBSObject> indexList = dependentObjectsList.stream().filter(o -> o instanceof DBSTableIndex).collect(Collectors.toList());
             List<? extends DBSObject> constrList = dependentObjectsList.stream().filter(o -> o instanceof DBSTableConstraint).collect(Collectors.toList());
             for (DBSObject constraint : constrList) {

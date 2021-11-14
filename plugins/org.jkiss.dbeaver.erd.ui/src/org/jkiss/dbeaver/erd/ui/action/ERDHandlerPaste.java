@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -50,7 +50,7 @@ public class ERDHandlerPaste extends AbstractHandler {
     public boolean isEnabled()
     {
         final Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getFromClipboard();
-        if (objects == null || CommonUtils.isEmpty(objects)) {
+        if (objects == null || CollectionUtils.isEmpty(objects)) {
             return false;
         }
         for (DBPNamedObject object : objects) {
@@ -68,7 +68,7 @@ public class ERDHandlerPaste extends AbstractHandler {
             ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
             if (editor != null && !editor.isReadOnly()) {
                 final Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
-                if (!CommonUtils.isEmpty(objects)) {
+                if (!CollectionUtils.isEmpty(objects)) {
                     try {
                         UIUtils.runInProgressService(monitor -> {
                             final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(
@@ -77,7 +77,7 @@ public class ERDHandlerPaste extends AbstractHandler {
                                 editor.getDiagramProject(),
                                 objects,
                                 new DiagramCollectSettingsDefault(), true);
-                            if (!CommonUtils.isEmpty(erdEntities)) {
+                            if (!CollectionUtils.isEmpty(erdEntities)) {
                                 UIUtils.syncExec(() -> {
                                     Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
                                     editor.getCommandStack().execute(command);

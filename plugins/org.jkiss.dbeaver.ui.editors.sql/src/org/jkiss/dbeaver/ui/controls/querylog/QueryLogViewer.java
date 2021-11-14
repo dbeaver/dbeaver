@@ -71,7 +71,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.collections.LongKeyMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;

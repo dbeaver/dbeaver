@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 public class OceanbaseMySQLCatalog extends MySQLCatalog {
     private final OceanbaseMySQLDataSource dataSource;
@@ -172,7 +173,7 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
                             true);
                     if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
-                        if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
+                        if (!CollectionUtils.isEmpty(tableFilters.getInclude())) {
                             sql.append("(");
                             boolean hasCond = false;
                             for (String incName : tableFilters.getInclude()) {
@@ -184,8 +185,8 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
                             }
                             sql.append(")");
                         }
-                        if (!CommonUtils.isEmpty(tableFilters.getExclude())) {
-                            if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
+                        if (!CollectionUtils.isEmpty(tableFilters.getExclude())) {
+                            if (!CollectionUtils.isEmpty(tableFilters.getInclude())) {
                                 sql.append(" AND ");
                             }
                             sql.append("(");

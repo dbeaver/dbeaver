@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewExceptionDialog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ class StatusDetailsDialog extends EditTextDialog {
     @Override
     protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
-        if (!CommonUtils.isEmpty(warnings)) {
+        if (!CollectionUtils.isEmpty(warnings)) {
             // Create warnings table
             UIUtils.createControlLabel(composite, "Warnings");
             warnTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);

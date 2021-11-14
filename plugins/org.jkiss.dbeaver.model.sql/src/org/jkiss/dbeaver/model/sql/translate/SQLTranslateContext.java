@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -123,7 +124,7 @@ final class SQLTranslateContext {
                     cd.getColDataType().setDataType(newDataType);
                     defChanged = true;
                 }
-                if (!CommonUtils.isEmpty(cd.getColumnSpecs())) {
+                if (!CollectionUtils.isEmpty(cd.getColumnSpecs())) {
                     for (String cSpec : new ArrayList<>(cd.getColumnSpecs())) {
                         switch (cSpec.toUpperCase(Locale.ENGLISH)) {
                             case "AUTO_INCREMENT":

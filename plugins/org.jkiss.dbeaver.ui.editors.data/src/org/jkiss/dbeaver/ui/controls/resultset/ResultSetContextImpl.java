@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 class ResultSetContextImpl implements IResultSetContext {
     private final ResultSetViewer viewer;
@@ -38,7 +38,7 @@ class ResultSetContextImpl implements IResultSetContext {
     public boolean supportsAttributes() {
         DBDAttributeBinding[] attrs = viewer.getModel().getAttributes();
         return attrs.length > 0 &&
-            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()));
+            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CollectionUtils.isEmpty(attrs[0].getNestedBindings()));
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -355,7 +356,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         try {
             // Keywords
             Collection<String> sqlKeywords = makeStringList(metaData.getSQLKeywords());
-            if (!CommonUtils.isEmpty(sqlKeywords)) {
+            if (!CollectionUtils.isEmpty(sqlKeywords)) {
                 for (String keyword : sqlKeywords) {
                     addSQLKeyword(keyword.toUpperCase());
                 }

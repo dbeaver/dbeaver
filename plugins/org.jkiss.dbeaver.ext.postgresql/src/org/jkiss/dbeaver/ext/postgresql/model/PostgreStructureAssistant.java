@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -425,7 +425,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             statement.setString(idx, params.getMask());
             idx++;
         }
-        if (!CommonUtils.isEmpty(schema)) {
+        if (!CollectionUtils.isEmpty(schema)) {
             PostgreUtils.setArrayParameter(statement, idx, schema);
         }
     }

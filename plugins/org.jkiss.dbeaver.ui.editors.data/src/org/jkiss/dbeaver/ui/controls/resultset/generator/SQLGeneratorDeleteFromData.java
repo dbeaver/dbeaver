@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -43,7 +43,7 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
             }
             sql.append(getLineSeparator()).append("WHERE ");
             boolean hasAttr = false;
-            if (CommonUtils.isEmpty(keyAttributes)) {
+            if (CollectionUtils.isEmpty(keyAttributes)) {
                 // For tables without keys including virtual
                 Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, object);
                 for (DBSAttributeBase attr : allAttributes) {

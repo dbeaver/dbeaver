@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -604,7 +605,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public static String makeOverloadedName(PostgreSchema schema, String name, List<PostgreProcedureParameter> params, boolean quote, boolean showParamNames) {
         String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
-        if (!CommonUtils.isEmpty(params)) {
+        if (!CollectionUtils.isEmpty(params)) {
             StringBuilder paramsSignature = new StringBuilder(64);
             paramsSignature.append("(");
             boolean hasParam = false;

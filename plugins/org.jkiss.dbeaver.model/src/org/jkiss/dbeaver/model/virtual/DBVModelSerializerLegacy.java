@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -71,7 +72,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
         if (!CommonUtils.isEmpty(entity.getDescriptionColumnNames())) {
             xml.addAttribute(ATTR_DESCRIPTION, entity.getDescriptionColumnNames());
         }
-        if (!CommonUtils.isEmpty(entity.getProperties())) {
+        if (!CollectionUtils.isEmpty(entity.getProperties())) {
             for (Map.Entry<String, Object> prop : entity.getProperties().entrySet()) {
                 xml.startElement(TAG_PROPERTY);
                 xml.addAttribute(ATTR_NAME, prop.getKey());
@@ -80,7 +81,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             }
         }
         // Attributes
-        for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.getEntityAttributes())) {
+        for (DBVEntityAttribute attr : CollectionUtils.safeCollection(entity.getEntityAttributes())) {
             if (!attr.hasValuableData()) {
                 continue;
             }
@@ -92,12 +93,12 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                         if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
                             xml.addAttribute(ATTR_CUSTOM, transformSettings.getCustomTransformer());
                         }
-                        for (String id : CommonUtils.safeCollection(transformSettings.getIncludedTransformers())) {
+                        for (String id : CollectionUtils.safeCollection(transformSettings.getIncludedTransformers())) {
                             try (final XMLBuilder.Element e5 = xml.startElement(TAG_INCLUDE)) {
                                 xml.addAttribute(ATTR_ID, id);
                             }
                         }
-                        for (String id : CommonUtils.safeCollection(transformSettings.getExcludedTransformers())) {
+                        for (String id : CollectionUtils.safeCollection(transformSettings.getExcludedTransformers())) {
                             try (final XMLBuilder.Element e5 = xml.startElement(TAG_EXCLUDE)) {
                                 xml.addAttribute(ATTR_ID, id);
                             }
@@ -115,7 +116,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                         }
                     }
                 }
-                if (!CommonUtils.isEmpty(attr.getProperties())) {
+                if (!CollectionUtils.isEmpty(attr.getProperties())) {
                     for (Map.Entry<String, Object> prop : attr.getProperties().entrySet()) {
                         xml.startElement(TAG_PROPERTY);
                         xml.addAttribute(ATTR_NAME, prop.getKey());
@@ -126,12 +127,12 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             }
         }
         // Constraints
-        for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.getConstraints())) {
+        for (DBVEntityConstraint c : CollectionUtils.safeCollection(entity.getConstraints())) {
             if (c.hasAttributes()) {
                 xml.startElement(TAG_CONSTRAINT);
                 xml.addAttribute(ATTR_NAME, c.getName());
                 xml.addAttribute(ATTR_TYPE, c.getConstraintType().getName());
-                for (DBVEntityConstraintColumn cc : CommonUtils.safeCollection(c.getAttributeReferences(null))) {
+                for (DBVEntityConstraintColumn cc : CollectionUtils.safeCollection(c.getAttributeReferences(null))) {
                     xml.startElement(TAG_ATTRIBUTE);
                     xml.addAttribute(ATTR_NAME, cc.getAttributeName());
                     xml.endElement();
@@ -140,7 +141,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             }
         }
         // Foreign keys
-        for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.getForeignKeys())) {
+        for (DBVEntityForeignKey fk : CollectionUtils.safeCollection(entity.getForeignKeys())) {
             xml.startElement(TAG_ASSOCIATION);
             DBSEntity refEntity = fk.getAssociatedEntity();
             xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
@@ -148,7 +149,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             if (refConstraint != null) {
                 xml.addAttribute(ATTR_CONSTRAINT, refConstraint.getName());
             }
-            for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributes())) {
+            for (DBVEntityForeignKeyColumn cc : CollectionUtils.safeCollection(fk.getAttributes())) {
                 xml.startElement(TAG_ATTRIBUTE);
                 xml.addAttribute(ATTR_NAME, cc.getAttributeName());
                 xml.endElement();
@@ -156,7 +157,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             xml.endElement();
         }
         // Colors
-        if (!CommonUtils.isEmpty(entity.getColorOverrides())) {
+        if (!CollectionUtils.isEmpty(entity.getColorOverrides())) {
             xml.startElement(TAG_COLORS);
             for (DBVColorOverride color : entity.getColorOverrides()) {
                 xml.startElement(TAG_COLOR);

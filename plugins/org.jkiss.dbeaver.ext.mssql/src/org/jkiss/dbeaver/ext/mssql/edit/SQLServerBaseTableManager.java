@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +71,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
 
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
             final Collection<SQLServerExtendedProperty> extendedProperties = new ArrayList<>(table.getExtendedProperties(monitor));
-            for (SQLServerTableColumn attribute : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+            for (SQLServerTableColumn attribute : CollectionUtils.safeCollection(table.getAttributes(monitor))) {
                 extendedProperties.addAll(attribute.getExtendedProperties(monitor));
             }
             if (!extendedProperties.isEmpty()) {

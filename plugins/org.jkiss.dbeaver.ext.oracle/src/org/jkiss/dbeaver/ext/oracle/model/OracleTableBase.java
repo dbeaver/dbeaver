@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -207,7 +208,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
                     }
                 }
             }
-            for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
+            for (OracleTableColumn col : CollectionUtils.safeCollection(getAttributes(monitor))) {
                 col.cacheComment();
             }
         } catch (Exception e) {

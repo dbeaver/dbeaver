@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.collections.LongKeyMap;
 
 import java.sql.SQLException;
 import java.util.Collection;

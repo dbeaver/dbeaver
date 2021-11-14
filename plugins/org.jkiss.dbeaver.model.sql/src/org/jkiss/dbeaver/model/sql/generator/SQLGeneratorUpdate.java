@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -56,7 +57,7 @@ public class SQLGeneratorUpdate extends SQLGeneratorTable {
             appendDefaultValue(sql, attr);
             hasAttr = true;
         }
-        if (!CommonUtils.isEmpty(keyAttributes)) {
+        if (!CollectionUtils.isEmpty(keyAttributes)) {
             sql.append(getLineSeparator()).append("WHERE ");
             hasAttr = false;
             for (DBSEntityAttribute attr : keyAttributes) {

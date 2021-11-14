@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -74,7 +75,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                 JSONUtils.fieldNE(json, RegistryConstants.ATTR_CATEGORY, driver.getCategory());
             }
 
-            if (!CommonUtils.isEmpty(driver.getDriverLibraries())) {
+            if (!CollectionUtils.isEmpty(driver.getDriverLibraries())) {
                 json.name("libraries");
                 json.beginObject();
                 // Libraries
@@ -96,7 +97,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
 
                         if (!export) {
                             List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
-                            if (!CommonUtils.isEmpty(files)) {
+                            if (!CollectionUtils.isEmpty(files)) {
                                 json.name("files");
                                 json.beginObject();
 
@@ -125,7 +126,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             }
 
             // Client homes
-            if (!CommonUtils.isEmpty(driver.getNativeClientHomes())) {
+            if (!CollectionUtils.isEmpty(driver.getNativeClientHomes())) {
                 json.name("native-clients");
                 json.beginObject();
                 for (DBPNativeClientLocation location : driver.getNativeClientHomes()) {
@@ -140,7 +141,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             }
 
             // Parameters
-            if (!CommonUtils.isEmpty(driver.getCustomParameters())) {
+            if (!CollectionUtils.isEmpty(driver.getCustomParameters())) {
                 json.name("driver-parameters");
                 json.beginObject();
                 for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
@@ -153,7 +154,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             }
 
             // Properties
-            if (!CommonUtils.isEmpty(driver.getCustomConnectionProperties())) {
+            if (!CollectionUtils.isEmpty(driver.getCustomConnectionProperties())) {
                 json.name("connection-properties");
                 json.beginObject();
                 for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {

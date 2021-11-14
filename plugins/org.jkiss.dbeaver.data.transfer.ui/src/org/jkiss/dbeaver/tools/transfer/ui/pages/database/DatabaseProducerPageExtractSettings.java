@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -153,7 +153,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             if (hasSelection) {
                 boolean supportsColumnsExport = true;
                 List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
-                if (!CommonUtils.isEmpty(sourceObjects)) {
+                if (!CollectionUtils.isEmpty(sourceObjects)) {
                     DBSObject sourceObject = sourceObjects.get(0);
                     if (sourceObject instanceof IAdaptable) {
                         DBSDataContainer adapter = ((IAdaptable) sourceObject).getAdapter(DBSDataContainer.class);

@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -134,7 +135,7 @@ public class OracleUtils {
             }
             ddl = ddl.trim();
 
-            if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
+            if (!CollectionUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('INDEX',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
@@ -187,18 +188,18 @@ public class OracleUtils {
 
         try {
             List<OracleTableColumn> attributes = object.getAttributes(monitor);
-            if (!CommonUtils.isEmpty(attributes)) {
+            if (!CollectionUtils.isEmpty(attributes)) {
                 List<DBEPersistAction> actions = new ArrayList<>();
                 if (CommonUtils.isEmpty(objectComment)) {
                     ddlBuilder.append("\n");
                 }
-                for (OracleTableColumn column : CommonUtils.safeCollection(attributes)) {
+                for (OracleTableColumn column : CollectionUtils.safeCollection(attributes)) {
                     String columnComment = column.getComment(monitor);
                     if (!CommonUtils.isEmpty(columnComment)) {
                         OracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
                     }
                 }
-                if (!CommonUtils.isEmpty(actions)) {
+                if (!CollectionUtils.isEmpty(actions)) {
                     for (DBEPersistAction action : actions) {
                         ddlBuilder.append("\n").append(action.getScript()).append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
                     }

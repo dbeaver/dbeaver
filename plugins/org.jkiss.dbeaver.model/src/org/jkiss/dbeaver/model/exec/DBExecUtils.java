@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
@@ -449,7 +450,7 @@ public class DBExecUtils {
                 if (table instanceof DBSTable) {
                     try {
                         Collection<? extends DBSTableIndex> indexes = ((DBSTable) table).getIndexes(monitor);
-                        if (!CommonUtils.isEmpty(indexes)) {
+                        if (!CollectionUtils.isEmpty(indexes)) {
                             // First search for primary index
                             for (DBSTableIndex index : indexes) {
                                 if (index.isPrimary() && DBUtils.isIdentifierIndex(monitor, index)) {
@@ -489,7 +490,7 @@ public class DBExecUtils {
             }
         }
 
-        if (!CommonUtils.isEmpty(identifiers)) {
+        if (!CollectionUtils.isEmpty(identifiers)) {
             // Find PK or unique key
             DBSEntityConstraint uniqueId = null;
             for (DBSEntityConstraint constraint : identifiers) {

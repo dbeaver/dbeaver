@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -248,7 +249,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
             try {
                 monitor.subTask("Cache primary keys");
                 Collection<GenericUniqueKey> objects = constraintKeysCache.getObjects(monitor, this, null);
-                if (CommonUtils.isEmpty(objects)) {
+                if (CollectionUtils.isEmpty(objects)) {
                     // Nothing was read, Maybe driver doesn't support mass keys reading
                     constraintKeysCache.clearCache();
                 }
@@ -268,7 +269,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                 try {
                     monitor.subTask("Cache foreign keys");
                     Collection<GenericTableForeignKey> foreignKeys = foreignKeysCache.getObjects(monitor, this, null);
-                    if (CommonUtils.isEmpty(foreignKeys)) {
+                    if (CollectionUtils.isEmpty(foreignKeys)) {
                         // Nothing was read, Maybe driver doesn't support mass keys reading
                         foreignKeysCache.clearCache();
                     }
@@ -309,7 +310,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
     @Override
     public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
-        for (GenericProcedure procedure : CommonUtils.safeCollection(getProcedures(monitor))) {
+        for (GenericProcedure procedure : CollectionUtils.safeCollection(getProcedures(monitor))) {
             if (uniqueName.equals(procedure.getUniqueName())) {
                 return procedure;
             }
@@ -329,7 +330,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
             return getProcedures(monitor);
         }
         List<GenericProcedure> filteredProcedures = new ArrayList<>();
-        for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
+        for (GenericProcedure proc : CollectionUtils.safeList(getProcedures(monitor))) {
             if (proc.getProcedureType() == DBSProcedureType.PROCEDURE) {
                 filteredProcedures.add(proc);
             }
@@ -340,7 +341,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
         List<GenericProcedure> filteredProcedures = new ArrayList<>();
-        for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
+        for (GenericProcedure proc : CollectionUtils.safeList(getProcedures(monitor))) {
             if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
                 filteredProcedures.add(proc);
             }

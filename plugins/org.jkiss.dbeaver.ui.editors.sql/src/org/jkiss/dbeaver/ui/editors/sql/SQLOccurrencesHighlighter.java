@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -120,7 +121,7 @@ class SQLOccurrencesHighlighter {
                     } else {
                         OccurrencesFinder finder = new OccurrencesFinder(document, wordUnderCursor, wordSelected);
                         List<OccurrencePosition> positions = finder.perform();
-                        if (!CommonUtils.isEmpty(positions)) {
+                        if (!CollectionUtils.isEmpty(positions)) {
                             this.occurrencesFinderJob = new OccurrencesFinderJob(positions);
                             this.occurrencesFinderJob.run(new NullProgressMonitor());
                         } else {

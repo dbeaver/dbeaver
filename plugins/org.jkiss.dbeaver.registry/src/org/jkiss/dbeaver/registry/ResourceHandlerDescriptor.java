@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.osgi.service.prefs.BackingStoreException;
 
 import java.util.*;
@@ -92,7 +93,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
                 defaultRoot = folder;
             }
         }
-        if (CommonUtils.isEmpty(defaultRoot) && !CommonUtils.isEmpty(roots)) {
+        if (CommonUtils.isEmpty(defaultRoot) && !CollectionUtils.isEmpty(roots)) {
             defaultRoot = roots.get(0);
         }
     }

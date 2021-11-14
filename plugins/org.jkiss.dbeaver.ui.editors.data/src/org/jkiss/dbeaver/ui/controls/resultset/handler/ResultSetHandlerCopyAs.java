@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -174,8 +175,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     }
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+                    producerSettings.setSelectedRowsOnly(!CollectionUtils.isEmpty(options.getSelectedRows()));
+                    producerSettings.setSelectedColumnsOnly(!CollectionUtils.isEmpty(options.getSelectedColumns()));
 
                     monitor.worked(1);
                     monitor.subTask("Export data");

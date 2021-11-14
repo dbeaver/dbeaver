@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -72,7 +73,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     @Override
     protected List<String> getCommandLine(MySQLExportSettings settings, MySQLDatabaseExportInfo arg) throws IOException {
         List<String> cmd = super.getCommandLine(settings, arg);
-        if (!CommonUtils.isEmpty(arg.getTables())) {
+        if (!CollectionUtils.isEmpty(arg.getTables())) {
             cmd.add(arg.getDatabase().getName());
             for (MySQLTableBase table : arg.getTables()) {
                 cmd.add(table.getName());
@@ -107,7 +108,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         if (settings.isNoCreateStatements()) {
             cmd.add("--no-create-info"); //$NON-NLS-1$
         } else {
-            if (CommonUtils.isEmpty(arg.getTables())) {
+            if (CollectionUtils.isEmpty(arg.getTables())) {
                 cmd.add("--routines"); //$NON-NLS-1$
             }
         }

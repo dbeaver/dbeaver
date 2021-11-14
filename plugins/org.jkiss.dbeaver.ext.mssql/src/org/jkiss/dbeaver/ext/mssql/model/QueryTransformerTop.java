@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 /**
 * Query transformer for TOP
@@ -57,7 +57,7 @@ public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransfo
                     Select select = (Select) statement;
                     if (select.getSelectBody() instanceof PlainSelect) {
                         PlainSelect selectBody = (PlainSelect) select.getSelectBody();
-                        if (selectBody.getTop() == null && CommonUtils.isEmpty(selectBody.getIntoTables())) {
+                        if (selectBody.getTop() == null && CollectionUtils.isEmpty(selectBody.getIntoTables())) {
                             Top top = new Top();
                             top.setPercentage(false);
                             top.setExpression(new LongValue(offset.longValue() + length.longValue()));

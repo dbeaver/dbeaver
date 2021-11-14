@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -59,7 +59,7 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
     private void makeProposalsFromChildren(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer container, List<T> names) throws DBException
     {
         Collection<? extends DBSObject> children = container.getChildren(monitor);
-        if (CommonUtils.isEmpty(children)) {
+        if (CollectionUtils.isEmpty(children)) {
             return;
         }
         for (DBSObject child : children) {

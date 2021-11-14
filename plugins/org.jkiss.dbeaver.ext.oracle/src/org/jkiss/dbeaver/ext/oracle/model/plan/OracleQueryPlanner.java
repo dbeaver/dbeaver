@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
 import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IntKeyMap;
+import org.jkiss.utils.collections.IntKeyMap;
 
 import java.io.IOException;
 import java.io.Reader;

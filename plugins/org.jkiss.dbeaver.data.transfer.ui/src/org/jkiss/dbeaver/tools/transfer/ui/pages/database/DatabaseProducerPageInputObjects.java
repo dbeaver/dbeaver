@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -149,7 +149,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
         } catch (InterruptedException e) {
             // ignore
         }
-        if (CommonUtils.isEmpty(containerObjects)) {
+        if (CollectionUtils.isEmpty(containerObjects)) {
             setMessage(DTUIMessages.database_producer_page_input_objects_error_message_auto_assign_failed, WARNING);
         } else {
             autoAssignMappings(containerObjects);

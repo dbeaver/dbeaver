@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -162,12 +162,12 @@ public class DBCStatistics implements DBCExecutionResult {
         executeTime += stat.executeTime;
         fetchTime += stat.fetchTime;
         statementsCount += stat.statementsCount;
-        if (!CommonUtils.isEmpty(stat.messages)) {
+        if (!CollectionUtils.isEmpty(stat.messages)) {
             for (String message : stat.messages) {
                 addMessage(message);
             }
         }
-        if (!CommonUtils.isEmpty(stat.infoMap)) {
+        if (!CollectionUtils.isEmpty(stat.infoMap)) {
             for (Map.Entry<String, Object> info : stat.infoMap.entrySet()) {
                 addInfo(info.getKey(), info.getValue());
             }

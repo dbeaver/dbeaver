@@ -46,6 +46,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.util.*;
@@ -122,7 +123,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     public void initializeProjects() {
-        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
+        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CollectionUtils.isEmpty(projects)) {
             try {
                 createDefaultProject(new NullProgressMonitor());
             } catch (CoreException e) {

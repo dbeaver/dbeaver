@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +89,7 @@ public class SQLSemanticProcessor {
             return
                 statement instanceof Select &&
                 ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables());
+                CollectionUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables());
         } catch (Throwable e) {
             //log.debug(e);
             return false;
@@ -176,7 +177,7 @@ public class SQLSemanticProcessor {
                 select.setOrderByElements(orderByElements);
             }
             List<DBDAttributeConstraint> orderConstraints = filter.getOrderConstraints();
-            if (!CommonUtils.isEmpty(orderConstraints)) {
+            if (!CollectionUtils.isEmpty(orderConstraints)) {
                 for (DBDAttributeConstraint co : orderConstraints) {
                     String columnName = co.getAttributeName();
                     boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
@@ -231,7 +232,7 @@ public class SQLSemanticProcessor {
             orderExpr = new LongValue(co.getOrderPosition());
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
-            Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
+            Table orderTable = CollectionUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
 
             if (!isValidTableColumn(monitor, dataSource, orderTable, co)) {
                 orderTable = null;
@@ -269,7 +270,7 @@ public class SQLSemanticProcessor {
         Table table = findTableInFrom(fromItem, constrTable);
         if (table == null) {
             // Maybe it is a join
-            if (!CommonUtils.isEmpty(select.getJoins())) {
+            if (!CollectionUtils.isEmpty(select.getJoins())) {
                 for (Join join : select.getJoins()) {
                     table = findTableInFrom(join.getRightItem(), constrTable);
                     if (table != null) {

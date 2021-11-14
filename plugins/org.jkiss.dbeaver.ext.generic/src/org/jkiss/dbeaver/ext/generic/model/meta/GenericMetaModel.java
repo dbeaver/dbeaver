@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -496,7 +497,7 @@ public class GenericMetaModel {
     public String getPackageName(GenericDataSource dataSource, String catalogName, String procedureName, String specificName) {
 
         // Caused problems in #6241. Probably we should remove it (for now getPackageName always returns null so it is disabled anyway)
-        if (!CommonUtils.isEmpty(catalogName) && CommonUtils.isEmpty(dataSource.getCatalogs())) {
+        if (!CommonUtils.isEmpty(catalogName) && CollectionUtils.isEmpty(dataSource.getCatalogs())) {
             // Check for packages. Oracle (and may be some other databases) uses catalog name as a storage for package name
             // In fact it is a legacy code from ancient times (before Oracle extension was added).
 

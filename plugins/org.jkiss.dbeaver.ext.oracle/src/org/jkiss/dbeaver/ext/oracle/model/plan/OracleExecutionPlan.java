@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
-import org.jkiss.utils.IntKeyMap;
+import org.jkiss.utils.collections.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
 
 import java.sql.ParameterMetaData;

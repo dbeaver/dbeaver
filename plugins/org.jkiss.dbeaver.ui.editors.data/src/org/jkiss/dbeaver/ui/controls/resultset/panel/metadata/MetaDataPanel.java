@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -177,7 +177,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
                 @Override
                 public boolean hasChildren(Object element) {
-                    return !CommonUtils.isEmpty(((DBDAttributeBinding) element).getNestedBindings());
+                    return !CollectionUtils.isEmpty(((DBDAttributeBinding) element).getNestedBindings());
                 }
             });
         }

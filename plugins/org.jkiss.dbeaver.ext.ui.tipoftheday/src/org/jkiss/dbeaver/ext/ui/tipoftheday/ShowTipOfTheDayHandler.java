@@ -26,6 +26,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -48,7 +49,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
 
     static void showTipOfTheDay(IWorkbenchWindow window) {
         List<String> tips = loadTips();
-        if (!CommonUtils.isEmpty(tips)) {
+        if (!CollectionUtils.isEmpty(tips)) {
             showTipOfTheDayDialog(tips, window);
         }
     }

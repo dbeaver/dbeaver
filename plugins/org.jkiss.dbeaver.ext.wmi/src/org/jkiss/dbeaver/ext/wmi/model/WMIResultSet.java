@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.wmi.service.*;
 
 import java.util.*;
@@ -119,7 +119,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     {
         try {
             Collection<WMIQualifier> qualifiers = row.getQualifiers();
-            if (CommonUtils.isEmpty(qualifiers)) {
+            if (CollectionUtils.isEmpty(qualifiers)) {
                 return null;
             }
             return new WMIValueMeta(qualifiers);

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -220,7 +221,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     @Override
     public List<DBPDataSourcePermission> getModifyPermission() {
-        if (CommonUtils.isEmpty(this.connectionModifyRestrictions)) {
+        if (CollectionUtils.isEmpty(this.connectionModifyRestrictions)) {
             return Collections.emptyList();
         } else {
             return new ArrayList<>(this.connectionModifyRestrictions);
@@ -229,7 +230,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     @Override
     public void setModifyPermissions(@Nullable Collection<DBPDataSourcePermission> permissions) {
-        if (CommonUtils.isEmpty(permissions)) {
+        if (CollectionUtils.isEmpty(permissions)) {
             this.connectionModifyRestrictions = null;
         } else {
             this.connectionModifyRestrictions = new ArrayList<>(permissions);

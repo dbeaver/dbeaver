@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -89,10 +89,10 @@ public class ERDContentProviderDefault implements ERDContentProvider {
 
                 boolean attrNodesCached = false;
                 Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-                DBSEntityAttribute firstAttr = CommonUtils.isEmpty(attributes) ? null : attributes.iterator().next();
+                DBSEntityAttribute firstAttr = CollectionUtils.isEmpty(attributes) ? null : attributes.iterator().next();
                 DBSObjectFilter columnFilter = firstAttr == null ? null :
                     entity.getDataSource().getContainer().getObjectFilter(firstAttr.getClass(), entity, false);
-                if (!CommonUtils.isEmpty(attributes)) {
+                if (!CollectionUtils.isEmpty(attributes)) {
                     for (DBSEntityAttribute attribute : attributes) {
                         boolean isInIdentifier = idColumns != null && idColumns.contains(attribute);
                         if (!keyColumns.contains(attribute) && !isAttributeVisible(erdEntity, attribute)) {

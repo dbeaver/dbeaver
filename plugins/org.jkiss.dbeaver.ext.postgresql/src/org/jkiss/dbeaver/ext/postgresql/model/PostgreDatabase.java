@@ -41,8 +41,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.collections.CollectionUtils;
+import org.jkiss.utils.collections.LongKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -522,7 +522,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
-        if (!CommonUtils.isEmpty(dataTypeCache)) {
+        if (!CollectionUtils.isEmpty(dataTypeCache)) {
             return dataTypeCache.values();
         }
         final PostgreSchema schema = getCatalogSchema();
@@ -1169,7 +1169,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                     catalogFilters = new DBSObjectFilter(catalogFilters);
                     // Always read catalog schema
                     List<String> includeFilters = catalogFilters.getInclude();
-                    if (!CommonUtils.isEmpty(includeFilters) && !includeFilters.contains(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+                    if (!CollectionUtils.isEmpty(includeFilters) && !includeFilters.contains(PostgreConstants.CATALOG_SCHEMA_NAME)) {
                         catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                     }
                 }

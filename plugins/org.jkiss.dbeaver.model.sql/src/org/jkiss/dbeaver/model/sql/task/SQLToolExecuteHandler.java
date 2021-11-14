@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -144,7 +145,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                                     session,
                                                                     statement);
                                                     monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
-                                                    if (!CommonUtils.isEmpty(executeStatistics)) {
+                                                    if (!CollectionUtils.isEmpty(executeStatistics)) {
                                                         for (SQLToolStatistics stat : executeStatistics) {
                                                             stat.setExecutionTime(execTime);
                                                         }

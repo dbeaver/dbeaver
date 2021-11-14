@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -100,8 +101,8 @@ public class DBVTransformSettings {
     }
 
     public boolean hasValuableData() {
-        return !CommonUtils.isEmpty(excludedTransformers) ||
-            !CommonUtils.isEmpty(includedTransformers) ||
+        return !CollectionUtils.isEmpty(excludedTransformers) ||
+            !CollectionUtils.isEmpty(includedTransformers) ||
             !CommonUtils.isEmpty(customTransformer);
     }
 

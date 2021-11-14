@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -194,7 +194,7 @@ public class OracleCompilerDialog extends BaseDialog
             toCompile = null;
         }
 
-        if (!CommonUtils.isEmpty(toCompile)) {
+        if (!CollectionUtils.isEmpty(toCompile)) {
             try {
                 UIUtils.runInProgressService(monitor -> performCompilation(monitor, toCompile));
             } catch (InvocationTargetException e) {

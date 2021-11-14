@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,13 +50,13 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
         try {
             String onConflictExpression = "ON CONFLICT (%s) DO UPDATE SET %s";
             Collection<? extends DBSTableConstraint> constraints = table.getConstraints(monitor);
-            if (!CommonUtils.isEmpty(constraints)) {
+            if (!CollectionUtils.isEmpty(constraints)) {
                 StringBuilder pkNames = new StringBuilder();
                 Optional<? extends DBSTableConstraint> tableConstraint = constraints.stream().filter(key -> key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY).findFirst();
                 if (tableConstraint.isPresent()) {
                     DBSTableConstraint dbsTableConstraint = tableConstraint.get();
                     List<? extends DBSEntityAttributeRef> attributeReferences = dbsTableConstraint.getAttributeReferences(monitor);
-                    if (!CommonUtils.isEmpty(attributeReferences)) {
+                    if (!CollectionUtils.isEmpty(attributeReferences)) {
                         boolean hasKey = false;
                         for (DBSEntityAttributeRef column : attributeReferences) {
                             if (hasKey) pkNames.append(",");

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,7 +104,7 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
     }
 
     public List<String> getModelReplacements() {
-        return CommonUtils.safeList(modelReplacements);
+        return CollectionUtils.safeList(modelReplacements);
     }
 
     public void setModelReplacements(List<String> modelReplacements) {

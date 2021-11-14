@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.qm.QMMetaListener;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.collections.LongKeyMap;
 
 import java.util.ArrayList;
 import java.util.Collections;

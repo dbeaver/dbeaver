@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,7 +102,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         {
             if (parentElement instanceof DBCPlanNode) {
                 Collection<? extends DBCPlanNode> nestedNodes = ((DBCPlanNode) parentElement).getNested();
-                return CommonUtils.isEmpty(nestedNodes) ? new Object[0] : nestedNodes.toArray();
+                return CollectionUtils.isEmpty(nestedNodes) ? new Object[0] : nestedNodes.toArray();
             }
             return null;
         }
@@ -119,7 +119,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         @Override
         public boolean hasChildren(Object element)
         {
-            return element instanceof DBCPlanNode && !CommonUtils.isEmpty(((DBCPlanNode) element).getNested());
+            return element instanceof DBCPlanNode && !CollectionUtils.isEmpty(((DBCPlanNode) element).getNested());
         }
 
         @Override

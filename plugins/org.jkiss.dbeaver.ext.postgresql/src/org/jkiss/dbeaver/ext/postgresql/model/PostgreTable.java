@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -98,7 +98,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
         this.partitionKey = source.partitionKey;
 
-        for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+        for (PostgreIndex srcIndex : CollectionUtils.safeCollection(source.getIndexes(monitor))) {
             if (srcIndex.isPrimaryKeyIndex()) {
                 continue;
             }
@@ -221,9 +221,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     {
         final List<PostgreTableInheritance> superTables = getSuperInheritance(monitor);
         final Collection<PostgreTableForeignKey> foreignKeys = getForeignKeys(monitor);
-        if (CommonUtils.isEmpty(superTables)) {
+        if (CollectionUtils.isEmpty(superTables)) {
             return foreignKeys;
-        } else if (CommonUtils.isEmpty(foreignKeys)) {
+        } else if (CollectionUtils.isEmpty(foreignKeys)) {
             return superTables;
         }
         List<DBSEntityAssociation> agg = new ArrayList<>(superTables.size() + foreignKeys.size());
@@ -235,7 +235,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSEntityAssociation> refs = new ArrayList<>(
-            CommonUtils.safeList(getSubInheritance(monitor)));
+            CollectionUtils.safeList(getSubInheritance(monitor)));
         // Obtain a list of schemas containing references to this table to avoid fetching everything
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read referencing schemas")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DISTINCT connamespace FROM pg_catalog.pg_constraint WHERE confrelid=?")) {
@@ -272,7 +272,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     @Property(viewable = false, optional = true, order = 30)
     public List<PostgreTableBase> getSuperTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSuperInheritance(monitor);
-        if (CommonUtils.isEmpty(si)) {
+        if (CollectionUtils.isEmpty(si)) {
             return null;
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
@@ -289,7 +289,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     @Property(viewable = false, optional = true, order = 31)
     public List<PostgreTableBase> getSubTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
-        if (CommonUtils.isEmpty(si)) {
+        if (CollectionUtils.isEmpty(si)) {
             return null;
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
@@ -436,7 +436,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     @Association
     public List<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
-        if (CommonUtils.isEmpty(si)) {
+        if (CollectionUtils.isEmpty(si)) {
             return null;
         }
         return si.stream()

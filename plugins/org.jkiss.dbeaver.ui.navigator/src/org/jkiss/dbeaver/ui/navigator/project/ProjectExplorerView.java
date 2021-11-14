@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -128,7 +129,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     return ((DBNDatabaseNode) element).getDataSourceContainer().getName();
                 } else if (element instanceof DBNResource) {
                     Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
-                    if (!CommonUtils.isEmpty(containers)) {
+                    if (!CollectionUtils.isEmpty(containers)) {
                         StringBuilder text = new StringBuilder();
                         for (DBPDataSourceContainer container : containers) {
                             if (text.length() > 0) {
@@ -161,7 +162,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
             public String getToolTipText(Object element) {
                 if (element instanceof DBNResource) {
                     Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
-                    if (!CommonUtils.isEmpty(containers)) {
+                    if (!CollectionUtils.isEmpty(containers)) {
                         StringBuilder text = new StringBuilder();
                         for (DBPDataSourceContainer container : containers) {
                             String description = container.getDescription();

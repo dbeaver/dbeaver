@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +40,7 @@ public class PostgreToolVacuum implements IUserInterfaceTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<PostgreTableBase> tables = CommonUtils.filterCollection(objects, PostgreTableBase.class);
+        List<PostgreTableBase> tables = CollectionUtils.filterCollection(objects, PostgreTableBase.class);
         if (!tables.isEmpty()) {
             TaskConfigurationWizardDialog.openNewTaskDialog(
                     window,
@@ -48,7 +48,7 @@ public class PostgreToolVacuum implements IUserInterfaceTool
                     PostgreSQLTasks.TASK_TABLE_VACUUM,
                     new StructuredSelection(objects.toArray()));
         } else {
-            List<PostgreDatabase> databases = CommonUtils.filterCollection(objects, PostgreDatabase.class);
+            List<PostgreDatabase> databases = CollectionUtils.filterCollection(objects, PostgreDatabase.class);
             if (!databases.isEmpty()) {
                 TaskConfigurationWizardDialog.openNewTaskDialog(
                         window,

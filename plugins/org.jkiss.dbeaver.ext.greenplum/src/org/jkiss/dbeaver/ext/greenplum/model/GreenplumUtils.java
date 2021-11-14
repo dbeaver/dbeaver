@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class GreenplumUtils {
     static List<PostgreTableColumn> getDistributionTableColumns(@NotNull DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns, @NotNull PostgreTableReal table) throws DBException {
         // Get primary key
         PostgreTableConstraint pk = null;
-        Collection<PostgreTableConstraint> tableConstraints = CommonUtils.safeCollection(table.getConstraints(monitor));
+        Collection<PostgreTableConstraint> tableConstraints = CollectionUtils.safeCollection(table.getConstraints(monitor));
         // First - search PK in table
         Optional<PostgreTableConstraint> constraint = tableConstraints.stream().filter(key -> key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY).findFirst();
         if (constraint.isPresent()) {
@@ -86,7 +87,7 @@ public class GreenplumUtils {
         }
         if (pk != null) {
             List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
-            if (!CommonUtils.isEmpty(pkAttrs)) {
+            if (!CollectionUtils.isEmpty(pkAttrs)) {
                 distributionColumns = new ArrayList<>(pkAttrs.size());
                 for (DBSEntityAttribute attr : pkAttrs) {
                     distributionColumns.add((PostgreTableColumn) attr);
@@ -136,7 +137,7 @@ public class GreenplumUtils {
         ddl.append("\nDISTRIBUTED ");
         if (supportsReplicatedDistribution && table.isPersisted() && GreenplumUtils.isDistributedByReplicated(monitor, table)) {
             ddl.append("REPLICATED");
-        } else if (!CommonUtils.isEmpty(distributionColumns)) {
+        } else if (!CollectionUtils.isEmpty(distributionColumns)) {
             ddl.append("BY (");
             for (int i = 0; i < distributionColumns.size(); i++) {
                 if (i > 0) ddl.append(", ");

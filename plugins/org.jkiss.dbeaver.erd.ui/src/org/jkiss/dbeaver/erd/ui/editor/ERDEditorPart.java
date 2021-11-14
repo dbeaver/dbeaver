@@ -102,6 +102,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -1296,15 +1297,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             for (Object node : nodes) {
                 if (node instanceof EntityPart) {
                     List children = ((EntityPart) node).getChildren();
-                    if (!CommonUtils.isEmpty(children)) {
+                    if (!CollectionUtils.isEmpty(children)) {
                         allNodesChildren.addAll(children);
                     }
                 }
             }
-            if (!CommonUtils.isEmpty(allNodesChildren)) {
+            if (!CollectionUtils.isEmpty(allNodesChildren)) {
                 nodes.addAll(allNodesChildren);
             }
-            if (!CommonUtils.isEmpty(nodes)) {
+            if (!CollectionUtils.isEmpty(nodes)) {
                 Object obj = nodes.get(0);
                 if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
                     for (Object node: nodes) {

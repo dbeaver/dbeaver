@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Map;
 
@@ -324,7 +325,7 @@ public class ActionUtils
 
                     Parameterization[] parametrization = null;
 
-                    if (!CommonUtils.isEmpty(parameters)) {
+                    if (!CollectionUtils.isEmpty(parameters)) {
                         parametrization = new Parameterization[parameters.size()];
                         int paramIndex = 0;
                         for (Map.Entry<String, Object> param : parameters.entrySet()) {

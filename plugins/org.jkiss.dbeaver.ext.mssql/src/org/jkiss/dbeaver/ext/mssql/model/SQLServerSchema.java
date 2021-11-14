@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -378,13 +379,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 if (tableFilters != null && !tableFilters.isEmpty()) {
                     sql.append(" AND (");
                     boolean hasCond = false;
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
+                    for (String incName : CollectionUtils.safeCollection(tableFilters.getInclude())) {
                         if (hasCond) sql.append(" OR ");
                         hasCond = true;
                         sql.append(" o.name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                     }
                     hasCond = false;
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
+                    for (String incName : CollectionUtils.safeCollection(tableFilters.getExclude())) {
                         if (hasCond) sql.append(" OR ");
                         hasCond = true;
                         sql.append(" o.name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
@@ -458,7 +459,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     public List<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         List<SQLServerTableIndex> allIndexes = new ArrayList<>();
         for (SQLServerTableBase table : getTables(monitor)) {
-            allIndexes.addAll(CommonUtils.safeCollection(table.getIndexes(monitor)));
+            allIndexes.addAll(CollectionUtils.safeCollection(table.getIndexes(monitor)));
         }
         return allIndexes;
     }
@@ -681,7 +682,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             }
             DBSEntityConstraint refConstraint = index;
-            for (SQLServerTableUniqueKey refPK : CommonUtils.safeCollection(refTable.getConstraints(monitor))) {
+            for (SQLServerTableUniqueKey refPK : CollectionUtils.safeCollection(refTable.getConstraints(monitor))) {
                 if (refPK.getIndex() == index) {
                     refConstraint = refPK;
                     break;

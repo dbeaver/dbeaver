@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.sql.*;
@@ -479,7 +480,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             } catch (Exception e) {
                 log.warn("Can't fetch database data types: " + e.getMessage());
             }
-            if (CommonUtils.isEmpty(dataTypeCache.getCachedObjects())) {
+            if (CollectionUtils.isEmpty(dataTypeCache.getCachedObjects())) {
                 // Use basic data types
                 dataTypeCache.fillStandardTypes(this);
             }
@@ -502,7 +503,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     }
                 }
             }
-            if (CommonUtils.isEmpty(catalogs) && !catalogsFiltered) {
+            if (CollectionUtils.isEmpty(catalogs) && !catalogsFiltered) {
                 // Catalogs not supported - try to read root schemas
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
@@ -523,7 +524,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     }
                 }
 
-                if (isMergeEntities() || (CommonUtils.isEmpty(schemas))) {
+                if (isMergeEntities() || (CollectionUtils.isEmpty(schemas))) {
                     this.structureContainer = new DataSourceObjectContainer();
                 }
             }
@@ -627,7 +628,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     GenericTableBase findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException {
         GenericObjectContainer container = null;
-        if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(catalogs)) {
+        if (!CommonUtils.isEmpty(catalogName) && !CollectionUtils.isEmpty(catalogs)) {
             container = getCatalog(catalogName);
             if (container == null) {
                 log.error("Catalog " + catalogName + " not found");
@@ -637,7 +638,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container != null) {
                 container = ((GenericCatalog) container).getSchema(monitor, schemaName);
-            } else if (!CommonUtils.isEmpty(schemas)) {
+            } else if (!CollectionUtils.isEmpty(schemas)) {
                 container = this.getSchema(schemaName);
             } else {
                 container = structureContainer;
@@ -657,9 +658,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getCatalogs())) {
+        if (!CollectionUtils.isEmpty(getCatalogs())) {
             return getCatalogs();
-        } else if (!CommonUtils.isEmpty(getSchemas())) {
+        } else if (!CollectionUtils.isEmpty(getSchemas())) {
             return getSchemas();
         } else if (structureContainer != null) {
             return structureContainer.getTables(monitor);
@@ -670,9 +671,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        if (!CommonUtils.isEmpty(getCatalogs())) {
+        if (!CollectionUtils.isEmpty(getCatalogs())) {
             return getCatalog(childName);
-        } else if (!CommonUtils.isEmpty(getSchemas())) {
+        } else if (!CollectionUtils.isEmpty(getSchemas())) {
             return getSchema(childName);
         } else if (structureContainer != null) {
             return structureContainer.getChild(monitor, childName);
@@ -684,9 +685,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     @NotNull
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
-        if (!CommonUtils.isEmpty(catalogs)) {
+        if (!CollectionUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
-        } else if (!CommonUtils.isEmpty(schemas)) {
+        } else if (!CollectionUtils.isEmpty(schemas)) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;
@@ -695,9 +696,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
-        if (!CommonUtils.isEmpty(catalogs)) {
+        if (!CollectionUtils.isEmpty(catalogs)) {
             for (GenericCatalog catalog : catalogs) catalog.cacheStructure(monitor, scope);
-        } else if (!CommonUtils.isEmpty(schemas)) {
+        } else if (!CollectionUtils.isEmpty(schemas)) {
             for (GenericSchema schema : schemas) schema.cacheStructure(monitor, scope);
         } else if (structureContainer != null) {
             structureContainer.cacheStructure(monitor, scope);
@@ -706,19 +707,19 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     private boolean isChild(DBSObject object) throws DBException {
         if (object instanceof GenericCatalog) {
-            return !CommonUtils.isEmpty(catalogs) && catalogs.contains(GenericCatalog.class.cast(object));
+            return !CollectionUtils.isEmpty(catalogs) && catalogs.contains(GenericCatalog.class.cast(object));
         } else if (object instanceof GenericSchema) {
-            return !CommonUtils.isEmpty(schemas) && schemas.contains(GenericSchema.class.cast(object));
+            return !CollectionUtils.isEmpty(schemas) && schemas.contains(GenericSchema.class.cast(object));
         }
         return false;
     }
 
     boolean hasCatalogs() {
-        return !CommonUtils.isEmpty(catalogs);
+        return !CollectionUtils.isEmpty(catalogs);
     }
 
     boolean hasSchemas() {
-        return !CommonUtils.isEmpty(schemas);
+        return !CollectionUtils.isEmpty(schemas);
     }
 
     String getQueryGetActiveDB() {

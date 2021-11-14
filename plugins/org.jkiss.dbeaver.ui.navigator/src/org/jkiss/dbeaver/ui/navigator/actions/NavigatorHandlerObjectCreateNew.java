@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -209,7 +210,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return UIIcon.SQL_CONNECT;
             } else if (node instanceof DBNDatabaseFolder) {
                 final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder)node).getMeta().getChildren(node);
-                if (!CommonUtils.isEmpty(metaChildren)) {
+                if (!CollectionUtils.isEmpty(metaChildren)) {
                     return metaChildren.get(0).getIcon(null);
                 }
                 return null;
@@ -267,7 +268,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (node instanceof DBNDatabaseFolder) {
             DBXTreeFolder folderMeta = ((DBNDatabaseFolder) node).getMeta();
             final List<DBXTreeNode> metaChildren = folderMeta.getChildren(node);
-            if (!CommonUtils.isEmpty(metaChildren)) {
+            if (!CollectionUtils.isEmpty(metaChildren)) {
                 // Test direct child node items
                 Class<?> nodeClass = null;
                 if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
@@ -340,11 +341,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             }
 
             List<DBXTreeNode> childNodeMetas = node.getMeta().getChildren(node);
-            if (!CommonUtils.isEmpty(childNodeMetas)) {
+            if (!CollectionUtils.isEmpty(childNodeMetas)) {
                 for (DBXTreeNode childMeta : childNodeMetas) {
                     if (childMeta instanceof DBXTreeFolder) {
                         List<DBXTreeNode> folderChildMeta = childMeta.getChildren(node);
-                        if (!CommonUtils.isEmpty(folderChildMeta) && folderChildMeta.size() == 1 && folderChildMeta.get(0) instanceof DBXTreeItem) {
+                        if (!CollectionUtils.isEmpty(folderChildMeta) && folderChildMeta.size() == 1 && folderChildMeta.get(0) instanceof DBXTreeItem) {
                             addChildNodeCreateItem(site, createActions, node, (DBXTreeItem) folderChildMeta.get(0));
                         }
                     } else if (childMeta instanceof DBXTreeItem) {

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -237,7 +238,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
 
     public boolean hasAttributes()
     {
-        return !CommonUtils.isEmpty(attributes);
+        return !CollectionUtils.isEmpty(attributes);
     }
 
     @NotNull

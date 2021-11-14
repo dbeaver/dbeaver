@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.collections.LongKeyMap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

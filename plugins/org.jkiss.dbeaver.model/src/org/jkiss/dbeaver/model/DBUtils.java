@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -643,7 +644,7 @@ public final class DBUtils {
         DBVEntity vEntity = DBVUtils.getVirtualEntity(dataContainer, false);
         if (vEntity != null) {
             List<DBVEntityAttribute> customAttributes = DBVUtils.getCustomAttributes(vEntity);
-            if (!CommonUtils.isEmpty(customAttributes)) {
+            if (!CollectionUtils.isEmpty(customAttributes)) {
                 DBDAttributeBinding[] customBindings = new DBDAttributeBinding[customAttributes.size()];
                 for (int i = 0; i < customAttributes.size(); i++) {
                     customBindings[i] = new DBDAttributeBindingCustom(
@@ -692,7 +693,7 @@ public final class DBUtils {
                 log.error("Document attribute '" + docBinding.getName() + "' binding error", e);
             }
             List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
-            if (!CommonUtils.isEmpty(nested)) {
+            if (!CollectionUtils.isEmpty(nested)) {
                 metaColumns.addAll(nested);
             } else {
                 // No nested bindings. Try to get entity attributes
@@ -700,7 +701,7 @@ public final class DBUtils {
                     DBSEntity docEntity = getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), attributeMeta.getEntityMetaData());
                     if (docEntity != null) {
                         Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
-                        if (!CommonUtils.isEmpty(entityAttrs)) {
+                        if (!CollectionUtils.isEmpty(entityAttrs)) {
                             for (DBSEntityAttribute ea : entityAttrs) {
                                 metaColumns.add(new DBDAttributeBindingType(docBinding, ea, metaColumns.size()));
                             }
@@ -728,7 +729,7 @@ public final class DBUtils {
 
     private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
         List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
-        if (CommonUtils.isEmpty(nestedBindings)) {
+        if (CollectionUtils.isEmpty(nestedBindings)) {
             result.add(binding);
         } else {
             for (DBDAttributeBinding nested : nestedBindings) {
@@ -942,7 +943,7 @@ public final class DBUtils {
         if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
             return Collections.emptyList();
         }
-        if (CommonUtils.isEmpty(entity.getAttributes(monitor))) {
+        if (CollectionUtils.isEmpty(entity.getAttributes(monitor))) {
             return Collections.emptyList();
         }
 
@@ -953,7 +954,7 @@ public final class DBUtils {
         if (entity instanceof DBSTable) {
             try {
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
-                if (!CommonUtils.isEmpty(indexes)) {
+                if (!CollectionUtils.isEmpty(indexes)) {
                     for (DBSTableIndex index : indexes) {
                         if (isIdentifierIndex(monitor, index)) {
                             identifiers.add(index);
@@ -1050,7 +1051,7 @@ public final class DBUtils {
     {
         // Check constraints
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
-        if (!CommonUtils.isEmpty(constraints)) {
+        if (!CollectionUtils.isEmpty(constraints)) {
             for (DBSEntityConstraint constraint : constraints) {
                 if (constraint instanceof DBSEntityReferrer && referrerMatches(monitor, (DBSEntityReferrer)constraint, attributes)) {
                     return constraint;
@@ -1059,7 +1060,7 @@ public final class DBUtils {
         }
         if (entity instanceof DBSTable) {
             Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
-            if (!CommonUtils.isEmpty(indexes)) {
+            if (!CollectionUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     if (index.isUnique() && referrerMatches(monitor, index, attributes)) {
                         return index;
@@ -1611,7 +1612,7 @@ public final class DBUtils {
         DBSEntity entity = attribute.getParentObject();
         if (entity instanceof DBSTable) {
             Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
-            if (!CommonUtils.isEmpty(indexes)) {
+            if (!CollectionUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     if (getConstraintAttribute(monitor, index, attribute) != null) {
                         return index;
@@ -2074,7 +2075,7 @@ public final class DBUtils {
     }
 
     public static DBSEntityConstraint getConstraint(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
-        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
+        for (DBSEntityConstraint constraint : CollectionUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
             DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
             if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
                 return constraint;

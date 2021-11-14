@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.collections.LongKeyMap;
 
 import java.sql.SQLException;
 import java.util.List;

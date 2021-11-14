@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,8 +42,8 @@ public class ExasolImportTableTool implements IUserInterfaceTool {
 	public void execute(IWorkbenchWindow window, IWorkbenchPart activePart,
 			Collection<DBSObject> objects) throws DBException
 	{
-		List<ExasolTable> tables = CommonUtils.filterCollection(objects, ExasolTable.class);
-		List<ExasolSchema> schemas = CommonUtils.filterCollection(objects, ExasolSchema.class);
+		List<ExasolTable> tables = CollectionUtils.filterCollection(objects, ExasolTable.class);
+		List<ExasolSchema> schemas = CollectionUtils.filterCollection(objects, ExasolSchema.class);
 		
 		//add tables for all Schemas but ignore views in schema
 		for(ExasolSchema schema : schemas)

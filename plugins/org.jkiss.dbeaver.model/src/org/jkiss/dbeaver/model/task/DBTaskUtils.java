@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class DBTaskUtils {
     }
 
     public static void setVariables(@NotNull Map<String, Object> taskState, @Nullable Map<String, Object> variables) {
-        if (!CommonUtils.isEmpty(variables)) {
+        if (!CollectionUtils.isEmpty(variables)) {
             taskState.put(DBTaskUtils.TASK_VARIABLES, variables);
         } else {
             taskState.remove(DBTaskUtils.TASK_VARIABLES);

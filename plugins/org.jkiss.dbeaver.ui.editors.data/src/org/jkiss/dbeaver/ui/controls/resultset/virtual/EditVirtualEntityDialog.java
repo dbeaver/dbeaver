@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -184,7 +185,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
         if (vAttr != null) {
             DBVTransformSettings transformSettings = vAttr.getTransformSettings();
             if (transformSettings != null) {
-                if (!CommonUtils.isEmpty(transformSettings.getIncludedTransformers())) {
+                if (!CollectionUtils.isEmpty(transformSettings.getIncludedTransformers())) {
                     transformStr = String.join(",", transformSettings.getIncludedTransformers());
                 } else if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
                     DBDAttributeTransformerDescriptor td =

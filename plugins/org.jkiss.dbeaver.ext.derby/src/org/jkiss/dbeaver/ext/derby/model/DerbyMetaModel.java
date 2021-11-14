@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -184,7 +185,7 @@ public class DerbyMetaModel extends GenericMetaModel
                 int[] columnPositions = (int []) baseColumnPositions;
                 for (int pos : columnPositions) {
                     List<? extends GenericTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
-                    if (!CommonUtils.isEmpty(attributes)) {
+                    if (!CollectionUtils.isEmpty(attributes)) {
                         for (GenericTableColumn genericTableColumn : attributes) {
                             if (genericTableColumn.getOrdinalPosition() == pos) {
                                 GenericTableConstraintColumn constraintColumn = new GenericTableConstraintColumn(object, genericTableColumn, pos);

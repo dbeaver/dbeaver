@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.ByteNumberFormat;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -443,13 +443,13 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
 
     @Override
     public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return !CommonUtils.isEmpty(getAssociations(monitor));
+        return !CollectionUtils.isEmpty(getAssociations(monitor));
     }
 
     @Override
     public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         Collection<ExasolTableForeignKey> foreignKeys = getAssociations(monitor);
-        if (CommonUtils.isEmpty(foreignKeys)) {
+        if (CollectionUtils.isEmpty(foreignKeys)) {
             return;
         }
 

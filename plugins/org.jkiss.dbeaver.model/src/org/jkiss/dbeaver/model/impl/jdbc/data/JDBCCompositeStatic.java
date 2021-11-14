@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -56,7 +56,7 @@ public class JDBCCompositeStatic extends JDBCComposite {
             Object[] attrValues = contents == null ? null : contents.getAttributes();
             if (type instanceof DBSEntity) {
                 DBSEntity entity = (DBSEntity) type;
-                Collection<? extends DBSEntityAttribute> entityAttributes = CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()));
+                Collection<? extends DBSEntityAttribute> entityAttributes = CollectionUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()));
                 int valueCount = attrValues == null ? 0 : attrValues.length;
                 if (attrValues != null && entityAttributes.size() != valueCount) {
                     log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + valueCount + ")");

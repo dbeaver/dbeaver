@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -162,7 +163,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     // Network profiles
                     List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
-                    if (!CommonUtils.isEmpty(profiles)) {
+                    if (!CollectionUtils.isEmpty(profiles)) {
                         jsonWriter.name("network-profiles");
                         jsonWriter.beginObject();
                         for (DBWNetworkProfile np : profiles) {
@@ -188,7 +189,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     // Auth profiles
                     List<DBAAuthProfile> authProfiles = registry.getAllAuthProfiles();
-                    if (!CommonUtils.isEmpty(authProfiles)) {
+                    if (!CollectionUtils.isEmpty(authProfiles)) {
                         jsonWriter.name("auth-profiles");
                         jsonWriter.beginObject();
                         for (DBAAuthProfile authProfile : authProfiles) {
@@ -208,7 +209,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     // Filters
                     List<DBSObjectFilter> savedFilters = registry.getSavedFilters();
-                    if (!CommonUtils.isEmpty(savedFilters)) {
+                    if (!CollectionUtils.isEmpty(savedFilters)) {
                         jsonWriter.name("saved-filters");
                         jsonWriter.beginArray();
                         for (DBSObjectFilter cf : savedFilters) {
@@ -219,7 +220,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         jsonWriter.endArray();
                     }
                     // Connection types
-                    if (!CommonUtils.isEmpty(connectionTypes)) {
+                    if (!CollectionUtils.isEmpty(connectionTypes)) {
                         jsonWriter.name("connection-types");
                         jsonWriter.beginObject();
                         for (DBPConnectionType ct : connectionTypes.values()) {
@@ -239,7 +240,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     // Drivers
-                    if (!CommonUtils.isEmpty(drivers)) {
+                    if (!CollectionUtils.isEmpty(drivers)) {
                         jsonWriter.name("drivers");
                         jsonWriter.beginObject();
                         for (Map.Entry<String, Map<String, DBPDriver>> dmap : drivers.entrySet()) {
@@ -477,7 +478,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
-                    if (CommonUtils.isEmpty(originProperties) || !originProperties.containsKey(ATTR_ORIGIN_TYPE)) {
+                    if (CollectionUtils.isEmpty(originProperties) || !originProperties.containsKey(ATTR_ORIGIN_TYPE)) {
                         origin = DataSourceOriginLocal.INSTANCE;
                     } else {
                         String originID = CommonUtils.toString(originProperties.remove(ATTR_ORIGIN_TYPE));
@@ -655,9 +656,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
         Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
-        if (!CommonUtils.isEmpty(securityCfg)) {
+        if (!CollectionUtils.isEmpty(securityCfg)) {
             List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
-            if (!CommonUtils.isEmpty(permissionRestrictions)) {
+            if (!CollectionUtils.isEmpty(permissionRestrictions)) {
                 List<DBPDataSourcePermission> permissions = new ArrayList<>();
                 for (String perm : permissionRestrictions) {
                     try {
@@ -846,7 +847,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Save network handlers' configurations
-            if (!CommonUtils.isEmpty(connectionInfo.getHandlers())) {
+            if (!CollectionUtils.isEmpty(connectionInfo.getHandlers())) {
                 json.name(RegistryConstants.TAG_HANDLERS);
                 json.beginObject();
                 for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
@@ -888,7 +889,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         {
             // Filters
             Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-            if (!CommonUtils.isEmpty(filterMappings)) {
+            if (!CollectionUtils.isEmpty(filterMappings)) {
                 json.name(RegistryConstants.TAG_FILTERS);
                 json.beginArray();
                 for (FilterMapping filter : filterMappings) {
@@ -928,7 +929,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private void serializeModifyPermissions(@NotNull JsonWriter json, DBPDataSourcePermissionOwner permissionOwner) throws IOException {
         List<DBPDataSourcePermission> permissions = permissionOwner.getModifyPermission();
-        if (!CommonUtils.isEmpty(permissions)) {
+        if (!CollectionUtils.isEmpty(permissions)) {
             json.name("security");
             json.beginObject();
             List<String> permIds = new ArrayList<>(permissions.size());
@@ -997,7 +998,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
                 propMap.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword());
             }
-            if (!CommonUtils.isEmpty(credentials.getProperties())) {
+            if (!CollectionUtils.isEmpty(credentials.getProperties())) {
                 propMap.putAll(credentials.getProperties());
             }
         }

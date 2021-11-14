@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -191,7 +192,7 @@ public abstract class DBXTreeNode
 
     public boolean hasChildren(DBNNode context, boolean navigable)
     {
-        if (CommonUtils.isEmpty(children)) {
+        if (CollectionUtils.isEmpty(children)) {
             return recursiveLink != null && recursiveLink.hasChildren(context, navigable);
         }
         if (context == null) {
@@ -211,7 +212,7 @@ public abstract class DBXTreeNode
 
     public List<DBXTreeNode> getChildren(DBNNode context)
     {
-        if (context != null && !CommonUtils.isEmpty(children)) {
+        if (context != null && !CollectionUtils.isEmpty(children)) {
             boolean hasExpr = false;
             for (DBXTreeNode child : children) {
                 if (child.getVisibleIf() != null) {
@@ -293,7 +294,7 @@ public abstract class DBXTreeNode
     public DBPImage getIcon(DBNNode context)
     {
         List<DBXTreeIcon> extIcons = getIcons();
-        if (!CommonUtils.isEmpty(extIcons) && context != null) {
+        if (!CollectionUtils.isEmpty(extIcons) && context != null) {
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
                 if (icon.getExpression() == null) {

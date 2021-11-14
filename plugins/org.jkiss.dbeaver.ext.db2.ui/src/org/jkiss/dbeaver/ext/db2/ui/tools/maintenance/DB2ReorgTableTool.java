@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +36,7 @@ public class DB2ReorgTableTool implements IUserInterfaceTool {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
+        List<DB2Table> tables = CollectionUtils.filterCollection(objects, DB2Table.class);
         if (!tables.isEmpty()) {
             DB2ReorgTableDialog dialog = new DB2ReorgTableDialog(activePart.getSite(), tables);
             dialog.open();

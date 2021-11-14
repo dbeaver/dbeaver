@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -284,7 +285,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
             return false;
         }
         Collection<SQLServerTableIndex> indexes = getIndexes(monitor);
-        if (!CommonUtils.isEmpty(indexes)) {
+        if (!CollectionUtils.isEmpty(indexes)) {
             for (SQLServerTableIndex index : indexes) {
                 if (index.getIndexType() == DBSIndexType.CLUSTERED) {
                     return true;

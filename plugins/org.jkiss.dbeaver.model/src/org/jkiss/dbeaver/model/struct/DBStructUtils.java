@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -212,7 +213,7 @@ public final class DBStructUtils {
             }
             T table = iterator.next();
             try {
-                if (CommonUtils.isEmpty(table.getAssociations(proxyMonitor))) {
+                if (CollectionUtils.isEmpty(table.getAssociations(proxyMonitor))) {
                     simpleTables.add(table);
                     iterator.remove();
                 }
@@ -237,7 +238,7 @@ public final class DBStructUtils {
                 T table = iterator.next();
                 try {
                     boolean allGood = true;
-                    for (DBSEntityAssociation ref : CommonUtils.safeCollection(table.getAssociations(proxyMonitor))) {
+                    for (DBSEntityAssociation ref : CollectionUtils.safeCollection(table.getAssociations(proxyMonitor))) {
                         monitor.worked(1);
                         DBSEntity refEntity = ref.getAssociatedEntity();
                         if (refEntity == null || (!simpleTables.contains(refEntity) && refEntity != table)) {

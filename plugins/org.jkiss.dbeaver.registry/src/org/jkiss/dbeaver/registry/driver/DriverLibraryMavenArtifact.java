@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -242,7 +243,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         if (localVersion != null) {
 
             List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies();
-            if (!CommonUtils.isEmpty(artifactDeps)) {
+            if (!CollectionUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency dependency : artifactDeps) {
                     if (isDependencyExcluded(monitor, dependency)) {
                         continue;

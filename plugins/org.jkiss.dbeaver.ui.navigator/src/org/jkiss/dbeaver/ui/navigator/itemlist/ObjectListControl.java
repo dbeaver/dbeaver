@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -370,7 +371,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         itemsControl.setRedraw(false);
         try {
-            final boolean reload = !append && (CommonUtils.isEmpty(objectList)) || (columnController == null);
+            final boolean reload = !append && (CollectionUtils.isEmpty(objectList)) || (columnController == null);
 
             {
                 // Collect list of items' classes
@@ -379,7 +380,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (!ArrayUtils.isEmpty(baseTypes)) {
                     Collections.addAll(classList, baseTypes);
                 }
-                if (!CommonUtils.isEmpty(items)) {
+                if (!CollectionUtils.isEmpty(items)) {
                     for (OBJECT_TYPE item : items) {
                         Object object = getObjectValue(item);
                         if (object != null && !classList.contains(object.getClass())) {
@@ -411,7 +412,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // Collect all properties
                 PropertySourceAbstract propertySource = getListPropertySource();
                 List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(propertySource, classList, propertyFilter);
-                if (!CommonUtils.isEmpty(items)) {
+                if (!CollectionUtils.isEmpty(items)) {
                     // Remove hidden properties (we need to check them against all items)
                     try {
                         allProps.removeIf(p -> {
@@ -439,7 +440,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         if (prop.isOptional()) {
                             // Check whether at least one itme has this property
                             boolean propHasValue = false;
-                            if (!CommonUtils.isEmpty(items)) {
+                            if (!CollectionUtils.isEmpty(items)) {
                                 for (OBJECT_TYPE item : items) {
                                     try {
                                         Object propValue = prop.readValue(getObjectValue(item), null, true);
@@ -470,7 +471,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             if (reload || objectList.isEmpty()) {
                 // Set viewer content
-                objectList = CommonUtils.isEmpty(items) ? new ArrayList<>() : new ArrayList<>(items);
+                objectList = CollectionUtils.isEmpty(items) ? new ArrayList<>() : new ArrayList<>(items);
 
                 // Pack columns
                 sampleItems = true;

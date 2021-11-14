@@ -140,51 +140,6 @@ public class CommonUtilsTest {
   }
 
   @Test
-  public void testIsEmptyCollection() {
-    final ArrayList<Character> nullValue = null;
-    final ArrayList<Character> emptyValue = new ArrayList<>();
-    final ArrayList<Character> value = new ArrayList<>();
-    value.add('a');
-    Assert.assertTrue(CommonUtils.isEmpty(nullValue));
-    Assert.assertTrue(CommonUtils.isEmpty(emptyValue));
-    Assert.assertFalse(CommonUtils.isEmpty(value));
-  }
-
-  @Test
-  public void testIsEmptyMap() {
-    final HashMap<Integer, Character> nullValue = null;
-    final HashMap<Integer, Character> emptyValue = new HashMap<>();
-    final HashMap<Integer, Character> value = new HashMap<>();
-    value.put(0, 'a');
-    Assert.assertTrue(CommonUtils.isEmpty(nullValue));
-    Assert.assertTrue(CommonUtils.isEmpty(emptyValue));
-    Assert.assertFalse(CommonUtils.isEmpty(value));
-  }
-
-  @Test
-  public void testSafeCollection() {
-    final ArrayList<Character> theList = new ArrayList<>();
-    Assert.assertEquals(theList, CommonUtils.safeCollection(null));
-    Assert.assertEquals(theList, CommonUtils.safeCollection(theList));
-  }
-
-  @Test
-  public void testSafeList() {
-    final ArrayList<Character> theList = new ArrayList<>();
-    Assert.assertEquals(theList, CommonUtils.safeList(null));
-    Assert.assertEquals(theList, CommonUtils.safeList(theList));
-  }
-
-  @Test
-  public void testCopyList() {
-    final ArrayList<Integer> theList = new ArrayList<>();
-    Assert.assertEquals(theList, CommonUtils.copyList(null));
-
-    theList.add(0);
-    Assert.assertEquals(theList, CommonUtils.copyList(theList));
-  }
-
-  @Test
   public void testNotEmpty() {
     Assert.assertEquals("", CommonUtils.notEmpty(null));
     Assert.assertEquals("abc", CommonUtils.notEmpty("abc"));
@@ -439,31 +394,11 @@ public class CommonUtilsTest {
   }
 
   @Test
-  public void testGetItem() {
-    final ArrayList<String> collectionList = new ArrayList<>();
-    collectionList.add("a");
-    Assert.assertEquals("a", CommonUtils.getItem(collectionList, 0));
-
-    final HashSet<String> collectionSet = new LinkedHashSet<>();
-    collectionSet.add("a");
-    collectionSet.add("b");
-    Assert.assertEquals("b", CommonUtils.getItem(collectionSet, 1));
-  }
-
-  @Test
   public void testFromOrdinal() {
     Assert.assertEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 0));
     //Assert.assertNotEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 3));
     thrown.expect(IllegalArgumentException.class);
     CommonUtils.fromOrdinal(enumClassEmpty.class, 3);
-  }
-
-  @Test
-  public void testFilterCollection() {
-    final ArrayList<Object> collection = new ArrayList<>();
-    collection.add("a");
-    collection.add(1);
-    Assert.assertEquals(new String[] { "a" }, CommonUtils.filterCollection(collection, String.class).toArray());
   }
 
   @Test
@@ -562,14 +497,5 @@ public class CommonUtilsTest {
     Assert.assertEquals("unit''test", CommonUtils.unescapeBourneShellString("'unit'\\'''\\''test'"));
     Assert.assertEquals("unit'''test", CommonUtils.unescapeBourneShellString("'unit'\\'''\\'''\\''test'"));
     Assert.assertEquals("'''unit'''test'''", CommonUtils.unescapeBourneShellString("''\\'''\\'''\\''unit'\\'''\\'''\\''test'\\'''\\'''\\'''"));
-  }
-
-  @Test
-  public void testGroup() {
-    final List<String> values = Arrays.asList("aaa", "abb", "bbb", "bab", "ccc");
-    final Map<Character, List<String>> groups = CommonUtils.group(values, x -> x.charAt(0));
-    Assert.assertEquals(Arrays.asList("aaa", "abb"), groups.get('a'));
-    Assert.assertEquals(Arrays.asList("bbb", "bab"), groups.get('b'));
-    Assert.assertEquals(Arrays.asList("ccc"), groups.get('c'));
   }
 }

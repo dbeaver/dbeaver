@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.BlockCanceler;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -65,7 +65,7 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
         } else if (progressMonitor != null) {
             try {
                 List<DBRBlockingObject> activeBlocks = progressMonitor.getActiveBlocks();
-                if (!CommonUtils.isEmpty(activeBlocks)) {
+                if (!CollectionUtils.isEmpty(activeBlocks)) {
                     BlockCanceler.cancelBlock(progressMonitor, activeBlocks.get(activeBlocks.size() - 1), null);
                 }
                 return true;

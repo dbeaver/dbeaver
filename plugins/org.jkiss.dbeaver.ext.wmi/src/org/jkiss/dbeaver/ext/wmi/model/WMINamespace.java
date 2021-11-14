@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
@@ -262,13 +263,13 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     @Override
     public void close()
     {
-        if (!CommonUtils.isEmpty(namespaces)) {
+        if (!CollectionUtils.isEmpty(namespaces)) {
             for (WMINamespace namespace : namespaces) {
                 namespace.close();
             }
             namespaces.clear();
         }
-        if (!CommonUtils.isEmpty(allClasses)) {
+        if (!CollectionUtils.isEmpty(allClasses)) {
             for (WMIClass wmiClass : allClasses) {
                 wmiClass.close();
             }

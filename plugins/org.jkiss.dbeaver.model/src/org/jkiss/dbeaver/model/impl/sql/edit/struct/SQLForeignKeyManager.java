@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -110,7 +111,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             // Get columns using void monitor
             final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(new VoidProgressMonitor());
             boolean firstColumn = true;
-            for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
+            for (DBSEntityAttributeRef constraintColumn : CollectionUtils.safeCollection(columns)) {
                 final DBSEntityAttribute attribute = constraintColumn.getAttribute();
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
@@ -131,7 +132,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             try {
                 boolean firstColumn = true;
                 List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) refConstraint).getAttributeReferences(new VoidProgressMonitor());
-                for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
+                for (DBSEntityAttributeRef constraintColumn : CollectionUtils.safeCollection(columns)) {
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
                     final DBSEntityAttribute attribute = constraintColumn.getAttribute();
@@ -223,4 +224,3 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         return false;
     }
 }
-

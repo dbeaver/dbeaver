@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -807,12 +808,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private void resetLibraries(boolean original) {
         // Set libraries
-        Collection<DBPDriverLibrary> newLibList = CommonUtils.copyList(original ? driver.getOrigFiles() : origLibList);
+        Collection<DBPDriverLibrary> newLibList = CollectionUtils.copyList(original ? driver.getOrigFiles() : origLibList);
         for (DBPDriverLibrary lib : newLibList) {
             lib.setDisabled(false);
             driver.addDriverLibrary(lib, true);
         }
-        for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
+        for (DBPDriverLibrary lib : CollectionUtils.copyList(driver.getDriverLibraries())) {
             if (!newLibList.contains(lib)) {
                 driver.removeDriverLibrary(lib);
             }
@@ -929,7 +930,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof DBPDriverLibrary) {
                 final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles((DBPDriverLibrary) parentElement);
-                if (CommonUtils.isEmpty(files)) {
+                if (CollectionUtils.isEmpty(files)) {
                     return null;
                 }
                 return files.toArray(new Object[files.size()]);
@@ -945,7 +946,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         public boolean hasChildren(Object element) {
             return element instanceof DBPDriverLibrary &&
-                !CommonUtils.isEmpty(driver.getLibraryFiles((DBPDriverLibrary) element));
+                !CollectionUtils.isEmpty(driver.getLibraryFiles((DBPDriverLibrary) element));
         }
     }
 }

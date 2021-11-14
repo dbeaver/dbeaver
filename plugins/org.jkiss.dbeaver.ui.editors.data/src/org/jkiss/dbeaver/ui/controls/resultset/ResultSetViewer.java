@@ -104,6 +104,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -741,7 +742,7 @@ public class ResultSetViewer extends Viewer
                         newPresentations = Collections.emptyList();
                     }
                 }
-                changed = CommonUtils.isEmpty(this.availablePresentations) || !newPresentations.equals(this.availablePresentations);
+                changed = CollectionUtils.isEmpty(this.availablePresentations) || !newPresentations.equals(this.availablePresentations);
                 this.availablePresentations = newPresentations;
                 if (!this.availablePresentations.isEmpty()) {
                     if (activePresentationDescriptor != null && (!metadataChanged || activePresentationDescriptor.getPresentationType().isPersistent())) {
@@ -2685,7 +2686,7 @@ public class ResultSetViewer extends Viewer
         List<? extends DBDAttributeTransformerDescriptor> transformers =
             dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
                 dataSource, attr, null);
-        if (!CommonUtils.isEmpty(transformers)) {
+        if (!CollectionUtils.isEmpty(transformers)) {
             MenuManager transformersMenu = new MenuManager(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_view_column_type, attr.getName()));
             transformersMenu.setRemoveAllWhenShown(true);
             transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
@@ -3070,7 +3071,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(action);
             }
         }
-        if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
+        if (customTransformer != null && !CollectionUtils.isEmpty(customTransformer.getProperties())) {
             manager.add(new TransformerAction(attr, "Settings ...", IAction.AS_UNSPECIFIED, false) {
                 @Override
                 public void run() {
@@ -3234,8 +3235,8 @@ public class ResultSetViewer extends Viewer
         List<DBDAttributeConstraint> constraints = new ArrayList<>();
 
         // Set conditions
-        List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
-        List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
+        List<? extends DBSEntityAttributeRef> ownAttrs = CollectionUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
+        List<? extends DBSEntityAttributeRef> refAttrs = CollectionUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
         if (ownAttrs.size() != refAttrs.size()) {
             throw new DBException(
                 "Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] association [" + association.getName() +
@@ -3300,8 +3301,8 @@ public class ResultSetViewer extends Viewer
             throw new DBException("Can't obtain association '" + DBUtils.getQuotedIdentifier(association) + "' target constraint (table " +
                 (association.getAssociatedEntity() == null ? "???" : DBUtils.getQuotedIdentifier(association.getAssociatedEntity())) + ")");
         }
-        List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
-        List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
+        List<? extends DBSEntityAttributeRef> ownAttrs = CollectionUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
+        List<? extends DBSEntityAttributeRef> refAttrs = CollectionUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
         if (ownAttrs.size() != refAttrs.size()) {
             throw new DBException(
                 "Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] association [" + association.getName() +

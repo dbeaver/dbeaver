@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.*;
@@ -273,7 +273,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             protected IStatus run(DBRProgressMonitor monitor) {
                 monitor.beginTask("Load attributes", 1);
                 try {
-                    for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
+                    for (DBSEntityAttribute attr : CollectionUtils.safeCollection(entity.getAttributes(monitor))) {
                         if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr) || DBUtils.isRowIdAttribute(attr)) {
                             attrList.add(attr);
                             // Preload node - required later to display its icon

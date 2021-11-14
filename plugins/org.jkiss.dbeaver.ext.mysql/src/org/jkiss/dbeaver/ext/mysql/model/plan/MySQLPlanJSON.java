@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
                     }
                 }
 */
-                if (CommonUtils.isEmpty(rootNode.getNested()) && rootNode.getProperty("message") != null) {
+                if (CollectionUtils.isEmpty(rootNode.getNested()) && rootNode.getProperty("message") != null) {
                     throw new DBCException("Can't explain plan: " + rootNode.getProperty("message"));
                 }
                 nodes.add(rootNode);

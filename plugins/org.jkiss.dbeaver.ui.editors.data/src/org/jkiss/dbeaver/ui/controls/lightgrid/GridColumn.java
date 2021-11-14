@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,7 +201,7 @@ class GridColumn {
             }
         }
         int childHeight = 0;
-        if (includeChildren && !CommonUtils.isEmpty(children)) {
+        if (includeChildren && !CollectionUtils.isEmpty(children)) {
             for (GridColumn child : children) {
                 childHeight = Math.max(childHeight, child.getHeaderHeight(true, false));
             }
@@ -239,7 +240,7 @@ class GridColumn {
 
         x+= GridColumnRenderer.getFilterControlBounds().width;
         
-        if (!CommonUtils.isEmpty(children)) {
+        if (!CollectionUtils.isEmpty(children)) {
             int childWidth = 0;
             for (GridColumn child : children) {
                 childWidth += child.computeHeaderWidth();
@@ -266,7 +267,7 @@ class GridColumn {
 	 */
 	void pack(boolean reflect) {
 		int newWidth = computeHeaderWidth();
-        if (CommonUtils.isEmpty(children)) {
+        if (CollectionUtils.isEmpty(children)) {
             // Calculate width of visible cells
             int topIndex = grid.getTopIndex();
             int bottomIndex = grid.getBottomIndex();

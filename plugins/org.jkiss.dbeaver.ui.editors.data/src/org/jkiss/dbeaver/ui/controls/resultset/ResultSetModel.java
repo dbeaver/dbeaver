@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -698,7 +699,7 @@ public class ResultSetModel {
         }
         {
             List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-            if (!CommonUtils.isEmpty(coList)) {
+            if (!CollectionUtils.isEmpty(coList)) {
                 for (DBVColorOverride co : coList) {
                     DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
                     if (binding != null) {

@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -379,7 +380,7 @@ public class DataSourceDescriptor
         {
             return false;
         }
-        if (CommonUtils.isEmpty(connectionModifyRestrictions)) {
+        if (CollectionUtils.isEmpty(connectionModifyRestrictions)) {
             return getConnectionConfiguration().getConnectionType().hasModifyPermission(permission);
         } else {
             return !connectionModifyRestrictions.contains(permission);
@@ -388,7 +389,7 @@ public class DataSourceDescriptor
 
     @Override
     public List<DBPDataSourcePermission> getModifyPermission() {
-        if (CommonUtils.isEmpty(this.connectionModifyRestrictions)) {
+        if (CollectionUtils.isEmpty(this.connectionModifyRestrictions)) {
             return Collections.emptyList();
         } else {
             return new ArrayList<>(this.connectionModifyRestrictions);
@@ -397,7 +398,7 @@ public class DataSourceDescriptor
 
     @Override
     public void setModifyPermissions(@Nullable Collection<DBPDataSourcePermission> permissions) {
-        if (CommonUtils.isEmpty(permissions)) {
+        if (CollectionUtils.isEmpty(permissions)) {
             this.connectionModifyRestrictions = null;
         } else {
             this.connectionModifyRestrictions = new ArrayList<>(permissions);
@@ -1444,7 +1445,7 @@ public class DataSourceDescriptor
             CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
             CommonUtils.equalObjects(this.folder, source.folder) &&
             CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
-            CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
+            CollectionUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
 
     public static class ContextInfo implements DBPObject {

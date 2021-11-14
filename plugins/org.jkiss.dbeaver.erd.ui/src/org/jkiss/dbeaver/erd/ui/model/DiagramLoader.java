@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -344,7 +345,7 @@ public class DiagramLoader extends ERDPersistedState {
         }
         // Set relations' bends
         for (RelationLoadInfo info : relInfos) {
-            if (!CommonUtils.isEmpty(info.bends)) {
+            if (!CollectionUtils.isEmpty(info.bends)) {
                 if (info.pkTable.entity == null || info.fkTable.entity == null) {
                     // Logical connection with notes or something
                     continue;
@@ -461,7 +462,7 @@ public class DiagramLoader extends ERDPersistedState {
             }
             xml.endElement();
 
-            if (!CommonUtils.isEmpty(diagram.getNotes())) {
+            if (!CollectionUtils.isEmpty(diagram.getNotes())) {
                 // Notes
                 xml.startElement(TAG_NOTES);
                 for (ERDNote note : diagram.getNotes()) {
@@ -542,7 +543,7 @@ public class DiagramLoader extends ERDPersistedState {
                         AssociationPart associationPart = pkInfo.nodePart.getConnectionPart(rel, false);
                         if (associationPart != null) {
                             final List<Bendpoint> bendpoints = associationPart.getBendpoints();
-                            if (!CommonUtils.isEmpty(bendpoints)) {
+                            if (!CollectionUtils.isEmpty(bendpoints)) {
                                 for (Bendpoint bendpoint : bendpoints) {
                                     xml.startElement(TAG_BEND);
                                     if (bendpoint instanceof AbsoluteBendpoint) {

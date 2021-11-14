@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.registry.expressions.ExpressionNamespaceDescriptor;
 import org.jkiss.dbeaver.registry.expressions.ExpressionRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -278,13 +279,13 @@ public abstract class DBVUtils {
     public static List<DBSEntityAttribute> getAllAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
         List<DBSEntityAttribute> result = new ArrayList<>();
         final Collection<? extends DBSEntityAttribute> realAttributes = entity.getAttributes(monitor);
-        if (!CommonUtils.isEmpty(realAttributes)) {
+        if (!CollectionUtils.isEmpty(realAttributes)) {
             result.addAll(realAttributes);
         }
         DBVEntity vEntity = getVirtualEntity(entity, false);
         if (vEntity != null) {
             List<DBVEntityAttribute> vAttributes = vEntity.getEntityAttributes();
-            if (!CommonUtils.isEmpty(vAttributes)) {
+            if (!CollectionUtils.isEmpty(vAttributes)) {
                 for (DBVEntityAttribute attr : vAttributes) {
                     if (attr.isCustom()) {
                         result.add(attr);
@@ -300,13 +301,13 @@ public abstract class DBVUtils {
     public static List<DBSEntityConstraint> getAllConstraints(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
         List<DBSEntityConstraint> result = new ArrayList<>();
         final Collection<? extends DBSEntityConstraint> realConstraints = entity.getConstraints(monitor);
-        if (!CommonUtils.isEmpty(realConstraints)) {
+        if (!CollectionUtils.isEmpty(realConstraints)) {
             result.addAll(realConstraints);
         }
         DBVEntity vEntity = getVirtualEntity(entity, false);
         if (vEntity != null) {
             List<DBVEntityConstraint> vConstraints = vEntity.getConstraints();
-            if (!CommonUtils.isEmpty(vConstraints)) {
+            if (!CollectionUtils.isEmpty(vConstraints)) {
                 result.addAll(vConstraints);
             }
         }
@@ -319,7 +320,7 @@ public abstract class DBVUtils {
         List<DBSEntityAssociation> result = new ArrayList<>();
         try {
             final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
-            if (!CommonUtils.isEmpty(realConstraints)) {
+            if (!CollectionUtils.isEmpty(realConstraints)) {
                 result.addAll(realConstraints);
             }
         } catch (DBException e) {
@@ -329,7 +330,7 @@ public abstract class DBVUtils {
             DBVEntity vEntity = getVirtualEntity(entity, false);
             if (vEntity != null) {
                 List<DBVEntityForeignKey> vFKs = vEntity.getForeignKeys();
-                if (!CommonUtils.isEmpty(vFKs)) {
+                if (!CollectionUtils.isEmpty(vFKs)) {
                     result.addAll(vFKs);
                 }
             }
@@ -343,7 +344,7 @@ public abstract class DBVUtils {
         List<DBSEntityAssociation> result = new ArrayList<>();
         try {
             final Collection<? extends DBSEntityAssociation> realConstraints = onEntity.getReferences(monitor);
-            if (!CommonUtils.isEmpty(realConstraints)) {
+            if (!CollectionUtils.isEmpty(realConstraints)) {
                 result.addAll(realConstraints);
             }
         } catch (DBException e) {
@@ -360,7 +361,7 @@ public abstract class DBVUtils {
         DBNDatabaseNode entityNode = DBNUtils.getNodeByObject(onEntity);
         if (entityNode != null) {
             List<DBVEntityForeignKey> globalRefs = DBVModel.getGlobalReferences(entityNode);
-            if (!CommonUtils.isEmpty(globalRefs)) {
+            if (!CollectionUtils.isEmpty(globalRefs)) {
                 return globalRefs;
             }
         }

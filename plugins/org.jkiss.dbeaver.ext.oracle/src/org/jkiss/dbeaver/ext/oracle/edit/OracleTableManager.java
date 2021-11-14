@@ -31,11 +31,11 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -92,7 +92,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
 
         if (!table.isPersisted()) {
             // Column comments for the newly created table
-            for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+            for (OracleTableColumn column : CollectionUtils.safeCollection(table.getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
                     OracleTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
                 }

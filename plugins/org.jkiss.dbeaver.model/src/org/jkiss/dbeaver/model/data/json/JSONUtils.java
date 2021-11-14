@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -162,10 +163,10 @@ public class JSONUtils {
     }
 
     public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list, boolean force) throws IOException {
-        if (force || !CommonUtils.isEmpty(list)) {
+        if (force || !CollectionUtils.isEmpty(list)) {
             json.name(tagName);
             json.beginArray();
-            for (String include : CommonUtils.safeCollection(list)) {
+            for (String include : CollectionUtils.safeCollection(list)) {
                 json.value(include);
             }
             json.endArray();
@@ -173,14 +174,14 @@ public class JSONUtils {
     }
 
     public static void serializeObjectList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<?> list) throws IOException {
-        if (!CommonUtils.isEmpty(list)) {
+        if (!CollectionUtils.isEmpty(list)) {
             json.name(tagName);
             serializeCollection(json, list);
         }
     }
 
     public static void serializeProperties(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Map<String, ?> properties) throws IOException {
-        if (!CommonUtils.isEmpty(properties)) {
+        if (!CollectionUtils.isEmpty(properties)) {
             json.name(tagName);
             serializeMap(json, properties);
         }
@@ -188,7 +189,7 @@ public class JSONUtils {
 
     public static void serializeCollection(@NotNull JsonWriter json, @NotNull Collection<?> list) throws IOException {
         json.beginArray();
-        for (Object value : CommonUtils.safeCollection(list)) {
+        for (Object value : CollectionUtils.safeCollection(list)) {
             if (value == null) {
                 json.nullValue();
             } else if (value instanceof Number) {

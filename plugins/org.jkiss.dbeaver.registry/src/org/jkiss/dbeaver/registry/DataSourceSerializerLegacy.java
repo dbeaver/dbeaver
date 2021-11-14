@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -290,7 +291,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         {
             // Filters
             Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-            if (!CommonUtils.isEmpty(filterMappings)) {
+            if (!CollectionUtils.isEmpty(filterMappings)) {
                 xml.startElement(RegistryConstants.TAG_FILTERS);
                 for (FilterMapping filter : filterMappings) {
                     if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
@@ -372,12 +373,12 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         if (!filter.isEnabled()) {
             xml.addAttribute(RegistryConstants.ATTR_ENABLED, false);
         }
-        for (String include : CommonUtils.safeCollection(filter.getInclude())) {
+        for (String include : CollectionUtils.safeCollection(filter.getInclude())) {
             xml.startElement(RegistryConstants.TAG_INCLUDE);
             xml.addAttribute(RegistryConstants.ATTR_NAME, include);
             xml.endElement();
         }
-        for (String exclude : CommonUtils.safeCollection(filter.getExclude())) {
+        for (String exclude : CollectionUtils.safeCollection(filter.getExclude())) {
             xml.startElement(RegistryConstants.TAG_EXCLUDE);
             xml.addAttribute(RegistryConstants.ATTR_NAME, exclude);
             xml.endElement();

@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class ClickhouseTableManager extends GenericTableManager {
         if (table instanceof ClickhouseTable) {
             try {
                 List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
-                if (!CommonUtils.isEmpty(attributes)) {
+                if (!CollectionUtils.isEmpty(attributes)) {
                     ddl.append(" ENGINE = MergeTree()\n" +
                             "ORDER BY ").append(DBUtils.getQuotedIdentifier(attributes.get(0)));
                 } else {

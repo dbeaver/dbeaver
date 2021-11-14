@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
@@ -202,7 +203,7 @@ public class MavenArtifact implements IMavenIdentifier
 
     @Nullable
     public Collection<String> getAvailableVersions(DBRProgressMonitor monitor, String versionSpec) throws IOException {
-        if (CommonUtils.isEmpty(versions) && !metadataLoaded) {
+        if (CollectionUtils.isEmpty(versions) && !metadataLoaded) {
             loadMetadata(monitor);
         }
         if (!isVersionPattern(versionSpec)) {

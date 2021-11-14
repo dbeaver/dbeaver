@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -254,7 +255,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                     DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
 
                     // Check that this consumer is allowed
-                    if (!CommonUtils.isEmpty(initObjects)) {
+                    if (!CollectionUtils.isEmpty(initObjects)) {
                         if (!DataTransferRegistry.getInstance().getAvailableConsumers(initObjects).contains(consumerNode)) {
                             consumerNode = null;
                         }
@@ -277,7 +278,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 if (!CommonUtils.isEmpty(producerId)) {
                     DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
                     // Check that this producer is allowed
-                    if (!CommonUtils.isEmpty(initObjects)) {
+                    if (!CollectionUtils.isEmpty(initObjects)) {
                         if (!DataTransferRegistry.getInstance().getAvailableProducers(initObjects).contains(producerNode)) {
                             producerNode = null;
                         }
@@ -500,11 +501,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     }
 
     public void processPipeEarlier(@NotNull DataTransferPipe pipe) {
-        CommonUtils.shiftLeft(dataPipes, pipe);
+        CollectionUtils.shiftLeft(dataPipes, pipe);
     }
 
     public void processPipeLater(@NotNull DataTransferPipe pipe) {
-        CommonUtils.shiftRight(dataPipes, pipe);
+        CollectionUtils.shiftRight(dataPipes, pipe);
     }
 
     public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor) {

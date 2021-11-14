@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,7 +75,7 @@ public class DBDRowIdentifier implements DBPObject {
     }
 
     public boolean isValidIdentifier() {
-        if (entityIdentifier instanceof DBSEntityReferrer && CommonUtils.isEmpty(attributes)) {
+        if (entityIdentifier instanceof DBSEntityReferrer && CollectionUtils.isEmpty(attributes)) {
             return false;
         }
         return true;
@@ -88,7 +88,7 @@ public class DBDRowIdentifier implements DBPObject {
             Collections.addAll(this.attributes, bindings);
         } else if (entityIdentifier instanceof DBSEntityReferrer) {
             DBSEntityReferrer referrer = (DBSEntityReferrer) entityIdentifier;
-            Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
+            Collection<? extends DBSEntityAttributeRef> refs = CollectionUtils.safeCollection(referrer.getAttributeReferences(monitor));
             for (DBSEntityAttributeRef cColumn : refs) {
                 DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
                 if (binding != null) {

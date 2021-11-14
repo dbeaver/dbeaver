@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -48,7 +48,7 @@ public class DriverClassLoader extends URLClassLoader
                 if (localFile == null) {
                     // Check library files cache
                     List<DriverDescriptor.DriverFileInfo> cachedFiles = driver.getCachedFiles(driverFile);
-                    if (!CommonUtils.isEmpty(cachedFiles)) {
+                    if (!CollectionUtils.isEmpty(cachedFiles)) {
                         for (DriverDescriptor.DriverFileInfo fileInfo : cachedFiles) {
                             if (fileInfo.getFile() != null && fileInfo.getFile().getName().equalsIgnoreCase(nativeName)) {
                                 return fileInfo.getFile().getAbsolutePath();

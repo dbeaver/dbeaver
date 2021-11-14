@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -116,7 +116,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
     {
-        if (CommonUtils.isEmpty(getSchemas(monitor))) {
+        if (CollectionUtils.isEmpty(getSchemas(monitor))) {
             // Cache tables only if we don't have schemas
             super.cacheStructure(monitor, scope);
         }
@@ -126,7 +126,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getSchemas(monitor))) {
+        if (!CollectionUtils.isEmpty(getSchemas(monitor))) {
             return getSchemas(monitor);
         } else {
             return getTables(monitor);
@@ -137,7 +137,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getSchemas(monitor))) {
+        if (!CollectionUtils.isEmpty(getSchemas(monitor))) {
             return getSchema(monitor, childName);
         } else {
             return super.getChild(monitor, childName);
@@ -149,7 +149,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(schemas) || (monitor != null && !CommonUtils.isEmpty(getSchemas(monitor)))) {
+        if (!CollectionUtils.isEmpty(schemas) || (monitor != null && !CollectionUtils.isEmpty(getSchemas(monitor)))) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;

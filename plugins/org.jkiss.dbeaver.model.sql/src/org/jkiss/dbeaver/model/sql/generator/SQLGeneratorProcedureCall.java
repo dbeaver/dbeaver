@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 
@@ -34,7 +34,7 @@ public class SQLGeneratorProcedureCall extends SQLGeneratorProcedure {
         DBPDataSource dataSource = proc.getDataSource();
         {
             SQLDialect sqlDialect = dataSource.getSQLDialect();
-            sqlDialect.generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
+            sqlDialect.generateStoredProcedureCall(sql, proc, CollectionUtils.safeCollection(parameters));
         }
     }
 }

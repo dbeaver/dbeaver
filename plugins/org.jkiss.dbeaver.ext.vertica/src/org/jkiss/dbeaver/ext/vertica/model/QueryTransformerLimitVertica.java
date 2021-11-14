@@ -22,7 +22,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 /**
 * Query transformer for LIMIT.
@@ -43,7 +43,7 @@ public class QueryTransformerLimitVertica extends QueryTransformerLimit implemen
         if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
             return selectBody.getFromItem() != null &&
-                CommonUtils.isEmpty(selectBody.getIntoTables()) &&
+                CollectionUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
                 !selectBody.isForUpdate();

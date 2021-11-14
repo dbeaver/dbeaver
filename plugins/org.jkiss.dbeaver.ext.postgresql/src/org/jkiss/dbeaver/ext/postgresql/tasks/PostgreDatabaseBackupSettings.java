@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -164,7 +165,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
-            if (!CommonUtils.isEmpty(objectList)) {
+            if (!CollectionUtils.isEmpty(objectList)) {
                 for (Map<String, Object> object : objectList) {
                     String catalogId = CommonUtils.toString(object.get("database"));
                     if (!CommonUtils.isEmpty(catalogId)) {
@@ -192,7 +193,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                     }
                     List<PostgreSchema> schemas = null;
                     List<PostgreTableBase> tables = null;
-                    if (!CommonUtils.isEmpty(schemaNames)) {
+                    if (!CollectionUtils.isEmpty(schemaNames)) {
                         schemas = new ArrayList<>();
                         for (String schemaName : schemaNames) {
                             PostgreSchema schema = database.getSchema(monitor, schemaName);
@@ -203,7 +204,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                             }
                         }
                     }
-                    if (!CommonUtils.isEmpty(tableNames) && !CommonUtils.isEmpty(schemas)) {
+                    if (!CollectionUtils.isEmpty(tableNames) && !CollectionUtils.isEmpty(schemas)) {
                         PostgreSchema schema = schemas.get(0);
                         tables = new ArrayList<>();
                         for (String tableName : tableNames) {
@@ -238,20 +239,20 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         store.setValue("pg.export.noPrivileges", noPrivileges);
         store.setValue("pg.export.noOwner", noOwner);
 
-        if (store instanceof DBPPreferenceMap && !CommonUtils.isEmpty(exportObjects)) {
+        if (store instanceof DBPPreferenceMap && !CollectionUtils.isEmpty(exportObjects)) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = new ArrayList<>();
             for (PostgreDatabaseBackupInfo object : exportObjects) {
                 Map<String, Object> objInfo = new LinkedHashMap<>();
                 objInfo.put("database", DBUtils.getObjectFullId(object.getDatabase()));
-                if (!CommonUtils.isEmpty(object.getSchemas())) {
+                if (!CollectionUtils.isEmpty(object.getSchemas())) {
                     List<String> tableList = new ArrayList<>();
                     for (PostgreSchema schema : object.getSchemas()) {
                         tableList.add(schema.getName());
                     }
                     objInfo.put("schemas", tableList);
                 }
-                if (!CommonUtils.isEmpty(object.getTables())) {
+                if (!CollectionUtils.isEmpty(object.getTables())) {
                     List<String> tableList = new ArrayList<>();
                     for (PostgreTableBase table : object.getTables()) {
                         tableList.add(table.getName());

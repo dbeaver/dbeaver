@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,7 +75,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Override
     public String getChildrenType() {
         final List<DBXTreeNode> metaChildren = meta.getChildren(this);
-        if (CommonUtils.isEmpty(metaChildren)) {
+        if (CollectionUtils.isEmpty(metaChildren)) {
             return "?";
         } else {
             return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
@@ -139,4 +139,3 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     }
 
 }
-

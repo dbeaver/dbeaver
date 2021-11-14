@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -248,7 +249,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             return false;
         }
         Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
-        if (!CommonUtils.isEmpty(params)) {
+        if (!CollectionUtils.isEmpty(params)) {
             for (DBSProcedureParameter param : params) {
                 if (param.getParameterKind().isOutput()) {
                     return true;
@@ -264,7 +265,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
         try {
             Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
-            if (!CommonUtils.isEmpty(params)) {
+            if (!CollectionUtils.isEmpty(params)) {
                 int index = 0;
                 for (DBSProcedureParameter param : params) {
                     if (param.getParameterKind().isOutput()) {

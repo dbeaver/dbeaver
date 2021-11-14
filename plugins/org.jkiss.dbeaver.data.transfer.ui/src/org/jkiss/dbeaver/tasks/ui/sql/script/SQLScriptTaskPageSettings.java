@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.*;
@@ -311,7 +311,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         Set<DBPDataSourceContainer> dataSources = new LinkedHashSet<>();
         for (DBNResource element : selectedScripts) {
             Collection<DBPDataSourceContainer> resDS = element.getAssociatedDataSources();
-            if (!CommonUtils.isEmpty(resDS)) {
+            if (!CollectionUtils.isEmpty(resDS)) {
                 dataSources.addAll(resDS);
             }
         }

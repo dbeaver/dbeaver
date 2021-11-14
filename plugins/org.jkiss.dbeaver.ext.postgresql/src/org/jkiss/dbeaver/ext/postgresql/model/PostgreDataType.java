@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -697,7 +698,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             case c: {
                 sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ("); //$NON-NLS-1$ //$NON-NLS-2$
                 Collection<PostgreDataTypeAttribute> attributes = getAttributes(monitor);
-                if (!CommonUtils.isEmpty(attributes)) {
+                if (!CollectionUtils.isEmpty(attributes)) {
                     boolean first = true;
                     for (PostgreDataTypeAttribute attr : attributes) {
                         if (!first) sql.append(","); //$NON-NLS-1$

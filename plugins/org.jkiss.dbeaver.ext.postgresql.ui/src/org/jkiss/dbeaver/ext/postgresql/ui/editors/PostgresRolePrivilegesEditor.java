@@ -67,7 +67,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -221,7 +221,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private void handleSelectionChange() {
         List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(roleOrObjectTable.getViewer().getSelection());
-        if (CommonUtils.isEmpty(selectedObjects)) {
+        if (CollectionUtils.isEmpty(selectedObjects)) {
             updateObjectPermissions(null);
         } else {
             updateObjectPermissions(selectedObjects);
@@ -340,13 +340,13 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private void updateObjectPermissions(List<DBSObject> objects) {
 
-        boolean hasBadObjects = CommonUtils.isEmpty(objects);
+        boolean hasBadObjects = CollectionUtils.isEmpty(objects);
 
         if (isRoleEditor()) {
             // In role editor each object may have different privilege set
             permissionTable.removeAll();
 
-            if (!CommonUtils.isEmpty(objects)) {
+            if (!CollectionUtils.isEmpty(objects)) {
                 Class<?> objectType = objects.get(0).getClass();
                 for (PostgrePrivilegeType pt : getDatabaseObject().getDataSource().getSupportedPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(objectType)) {
@@ -388,7 +388,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             for (int i = 0; i < currentObjects.length; i++) {
                 this.currentPermissions[i] = getObjectPermissions(currentObjects[i]);
             }
-            editEnabled = !CommonUtils.isEmpty(objects);
+            editEnabled = !CollectionUtils.isEmpty(objects);
         }
 
         if (editEnabled) {

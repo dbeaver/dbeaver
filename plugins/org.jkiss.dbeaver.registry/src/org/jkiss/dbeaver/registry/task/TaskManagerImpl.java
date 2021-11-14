@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -171,7 +172,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     @NotNull
     @Override
     public DBTTaskFolder createTaskFolder(@NotNull DBPProject project, @NotNull String folderName, @Nullable DBTTask[] folderTasks) throws DBException {
-        if (!CommonUtils.isEmpty(tasksFolders) && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getName().equals(folderName))) {
+        if (!CollectionUtils.isEmpty(tasksFolders) && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getName().equals(folderName))) {
             throw new DBException("Task folder with name '" + folderName + "' already exists");
         }
         TaskFolderImpl taskFolder = new TaskFolderImpl(folderName, project, folderTasks != null ? new ArrayList<>(Arrays.asList(folderTasks)) : new ArrayList<>());
@@ -238,7 +239,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
         // Remove empty task folder or make task folder empty and then remove it
         List<DBTTask> folderTasks = taskFolder.getTasks();
-        if (!CommonUtils.isEmpty(folderTasks)) {
+        if (!CollectionUtils.isEmpty(folderTasks)) {
             for (DBTTask task : folderTasks) {
                 if (task instanceof TaskImpl) {
                     ((TaskImpl)task).setTaskFolder(null);
@@ -386,7 +387,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     private void serializeTasks(DBRProgressMonitor monitor, JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
-        if (!CommonUtils.isEmpty(tasksFolders)) {
+        if (!CollectionUtils.isEmpty(tasksFolders)) {
             jsonWriter.name(TASKS_FOLDERS_TAG);
             jsonWriter.beginObject();
             for (TaskFolderImpl taskFolder : tasksFolders) {

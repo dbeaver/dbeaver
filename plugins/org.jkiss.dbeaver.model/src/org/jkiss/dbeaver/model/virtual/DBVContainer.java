@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -173,7 +173,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     @Override
     public boolean hasValuableData() {
-        if (!CommonUtils.isEmpty(getProperties())) {
+        if (!CollectionUtils.isEmpty(getProperties())) {
             return true;
         }
         for (DBVEntity entity : getEntities()) {

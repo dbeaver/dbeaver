@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.List;
 
@@ -98,7 +98,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         // Execute bootstrap queries
         DBPConnectionBootstrap bootstrap = getBootstrapSettings();
         List<String> initQueries = bootstrap.getInitQueries();
-        if (!CommonUtils.isEmpty(initQueries)) {
+        if (!CollectionUtils.isEmpty(initQueries)) {
             monitor.subTask("Run bootstrap queries");
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
                 for (String query : initQueries) {

@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.utils;
+package org.jkiss.utils.collections;
 
 import java.util.*;
 
 /**
-	Map with int key.
+	Map with long key.
 */
-@SuppressWarnings("unchecked")
-public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
+public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	/**
 	 * The default initial capacity - MUST be a power of two.
 	 */
@@ -43,7 +42,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	/**
 	 * The table, resized as necessary. Length MUST Always be a power of two.
 	 */
-	transient IntEntry<VALUE>[] table;
+	transient LongEntry<VALUE>[] table;
 
 	/**
 	 * The number of key-value mappings contained in this identity hash map.
@@ -64,12 +63,12 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	final float loadFactor;
 
 	/**
-	 * The number of times this IntKeyMap has been structurally modified
+	 * The number of times this LongKeyMap has been structurally modified
 	 */
 	transient volatile int modCount;
 
 	/**
-	 * Constructs an empty <tt>IntKeyMap</tt> with the specified initial
+	 * Constructs an empty <tt>LongKeyMap</tt> with the specified initial
 	 * capacity and load factor.
 	 *
 	 * @param  initialCapacity The initial capacity.
@@ -77,7 +76,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * @throws IllegalArgumentException if the initial capacity is negative
 	 *         or the load factor is nonpositive.
 	 */
-	public IntKeyMap(int initialCapacity, float loadFactor) {
+	public LongKeyMap(int initialCapacity, float loadFactor) {
 		if (initialCapacity < 0)
 			throw new IllegalArgumentException("Illegal initial capacity: " +
 											   initialCapacity);
@@ -94,28 +93,28 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 
 		this.loadFactor = loadFactor;
 		threshold = (int)(capacity * loadFactor);
-		table = new IntEntry[capacity];
+		table = new LongEntry[capacity];
 	}
 
 	/**
-	 * Constructs an empty <tt>IntKeyMap</tt> with the specified initial
+	 * Constructs an empty <tt>LongKeyMap</tt> with the specified initial
 	 * capacity and the default load factor (0.75).
 	 *
 	 * @param  initialCapacity the initial capacity.
 	 * @throws IllegalArgumentException if the initial capacity is negative.
 	 */
-	public IntKeyMap(int initialCapacity) {
+	public LongKeyMap(int initialCapacity) {
 		this(initialCapacity, DEFAULT_LOAD_FACTOR);
 	}
 
 	/**
-	 * Constructs an empty <tt>IntKeyMap</tt> with the default initial capacity
+	 * Constructs an empty <tt>LongKeyMap</tt> with the default initial capacity
 	 * (16) and the default load factor (0.75).
 	 */
-	public IntKeyMap() {
+	public LongKeyMap() {
 		this.loadFactor = DEFAULT_LOAD_FACTOR;
 		threshold = DEFAULT_INITIAL_CAPACITY;
-		table = new IntEntry[DEFAULT_INITIAL_CAPACITY];
+		table = new LongEntry[DEFAULT_INITIAL_CAPACITY];
 	}
 
 	static int hash(long x) {
@@ -158,7 +157,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	@Override
     public boolean containsKey(Object key)
 	{
-		return containsKey(((Number)key).intValue());
+		return containsKey(((Number)key).longValue());
 	}
 
 	/**
@@ -172,12 +171,12 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * @param   key the key whose associated value is to be returned.
 	 * @return  the value to which this map maps the specified key, or
 	 *          <tt>null</tt> if the map contains no mapping for this key.
-	 * @see #put(int, Object)
+	 * @see #put(long, Object)
 	 */
-	public VALUE get(int key) {
+	public VALUE get(long key) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		IntEntry<VALUE> e = table[i];
+		LongEntry<VALUE> e = table[i];
 		while (true) {
 			if (e == null)
 				return null;
@@ -191,11 +190,11 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * Returns <tt>true</tt> if this map contains a mapping for the
 	 * specified key.
 	 */
-	public boolean containsKey(int key)
+	public boolean containsKey(long key)
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		IntEntry<VALUE> e = table[i];
+		LongEntry<VALUE> e = table[i];
 		while (e != null) {
 			if (e.hash == hash && key == e.key)
 				return true;
@@ -206,13 +205,13 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 
 	/**
 	 * Returns the entry associated with the specified key in the
-	 * IntKeyMap.  Returns null if the IntKeyMap contains no mapping
+	 * LongKeyMap.  Returns null if the LongKeyMap contains no mapping
 	 * for this key.
 	 */
-	IntEntry<VALUE> getEntry(int key) {
+	LongEntry<VALUE> getEntry(long key) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		IntEntry<VALUE> e = table[i];
+		LongEntry<VALUE> e = table[i];
 		while (e != null && !(e.hash == hash && key == e.key))
 			e = e.next;
 		return e;
@@ -227,14 +226,14 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * @param value value to be associated with the specified key.
 	 * @return previous value associated with specified key, or <tt>null</tt>
 	 *	       if there was no mapping for key.  A <tt>null</tt> return can
-	 *	       also indicate that the IntKeyMap previously associated
+	 *	       also indicate that the LongKeyMap previously associated
 	 *	       <tt>null</tt> with the specified key.
 	 */
-	public VALUE put(int key, VALUE value) {
+	public VALUE put(long key, VALUE value) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
 
-		for (IntEntry<VALUE> e = table[i]; e != null; e = e.next) {
+		for (LongEntry<VALUE> e = table[i]; e != null; e = e.next) {
 			if (e.hash == hash && key == e.key) {
 				VALUE oldValue = e.value;
 				e.value = value;
@@ -253,7 +252,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * check for comodification, etc.  It calls createEntry rather than
 	 * addEntry.
 	 */
-	private void putForCreate(int key, VALUE value) {
+	private void putForCreate(long key, VALUE value) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
 
@@ -262,7 +261,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		 * clone or deserialize.  It will only happen for construction if the
 		 * input Map is a sorted map whose ordering is inconsistent w/ equals.
 		 */
-		for (IntEntry<VALUE> e = table[i]; e != null; e = e.next) {
+		for (LongEntry<VALUE> e = table[i]; e != null; e = e.next) {
 			if (e.hash == hash && key == e.key) {
 				e.value = value;
 				return;
@@ -272,15 +271,15 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		createEntry(hash, key, value, i);
 	}
 
-	void putAllForCreate(IntKeyMap<VALUE> m) {
-		for (Iterator i = m.entrySet().iterator(); i.hasNext(); ) {
-			IntEntry<VALUE> e = (IntEntry<VALUE>) i.next();
+	void putAllForCreate(LongKeyMap<VALUE> m) {
+		for (Iterator<LongEntry<VALUE>> i = m.entrySet().iterator(); i.hasNext(); ) {
+			LongEntry<VALUE> e = i.next();
 			putForCreate(e.key, e.value);
 		}
 	}
 
 	/**
-	 * Rehashes the contents of this map into a new <tt>IntKeyMap</tt> instance
+	 * Rehashes the contents of this map into a new <tt>LongKeyMap</tt> instance
 	 * with a larger capacity. This method is called automatically when the
 	 * number of keys in this map exceeds its capacity and load factor.
 	 *
@@ -288,14 +287,14 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 */
 	void resize(int newCapacity) {
 		// assert (newCapacity & -newCapacity) == newCapacity; // power of 2
-		IntEntry[] oldTable = table;
+		LongEntry<VALUE>[] oldTable = table;
 		int oldCapacity = oldTable.length;
 
 		// check if needed
 		if (size < threshold || oldCapacity > newCapacity)
 			return;
 
-		IntEntry<VALUE>[] newTable = new IntEntry[newCapacity];
+		LongEntry[] newTable = new LongEntry[newCapacity];
 		transfer(newTable);
 		table = newTable;
 		threshold = (int)(newCapacity * loadFactor);
@@ -304,15 +303,15 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	/**
 	 * Transfer all entries from current table to newTable.
 	 */
-	void transfer(IntEntry[] newTable) {
-		IntEntry<VALUE>[] src = table;
+	void transfer(LongEntry[] newTable) {
+		LongEntry<VALUE>[] src = table;
 		int newCapacity = newTable.length;
 		for (int j = 0; j < src.length; j++) {
-			IntEntry<VALUE> e = src[j];
+			LongEntry<VALUE> e = src[j];
 			if (e != null) {
 				src[j] = null;
 				do {
-					IntEntry<VALUE> next = e.next;
+					LongEntry<VALUE> next = e.next;
 					int i = indexFor(e.hash, newCapacity);
 					e.next = newTable[i];
 					newTable[i] = e;
@@ -330,7 +329,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * @param t mappings to be stored in this map.
 	 * @throws NullPointerException if the specified map is null.
 	 */
-	public void putAll(IntKeyMap<VALUE> t) {
+	public void putAll(LongKeyMap<VALUE> t) {
 		// Expand enough to hold t's elements without resizing.
 		int n = t.size();
 		if (n == 0)
@@ -345,8 +344,8 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 			resize(capacity);
 		}
 
-		for (Iterator i = t.entrySet().iterator(); i.hasNext(); ) {
-			IntEntry<VALUE> e = (IntEntry<VALUE>) i.next();
+		for (Iterator<LongEntry<VALUE>> i = t.entrySet().iterator(); i.hasNext(); ) {
+			LongEntry<VALUE> e = i.next();
 			put(e.key, e.value);
 		}
 	}
@@ -360,24 +359,24 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 *	       also indicate that the map previously associated <tt>null</tt>
 	 *	       with the specified key.
 	 */
-	public VALUE remove(int key) {
-		IntEntry<VALUE> e = removeEntryForKey(key);
+	public VALUE remove(long key) {
+		LongEntry<VALUE> e = removeEntryForKey(key);
 		return (e == null ? null : e.value);
 	}
 
 	/**
 	 * Removes and returns the entry associated with the specified key
-	 * in the IntKeyMap.  Returns null if the IntKeyMap contains no mapping
+	 * in the LongKeyMap.  Returns null if the LongKeyMap contains no mapping
 	 * for this key.
 	 */
-	IntEntry<VALUE> removeEntryForKey(int key) {
+	LongEntry<VALUE> removeEntryForKey(long key) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		IntEntry<VALUE> prev = table[i];
-		IntEntry<VALUE> e = prev;
+		LongEntry<VALUE> prev = table[i];
+		LongEntry<VALUE> e = prev;
 
 		while (e != null) {
-			IntEntry<VALUE> next = e.next;
+			LongEntry<VALUE> next = e.next;
 			if (e.hash == hash && key == e.key) {
 				modCount++;
 				size--;
@@ -397,18 +396,18 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	/**
 	 * Special version of remove for EntrySet.
 	 */
-	IntEntry<VALUE> removeMapping(Object o) {
-		if (!(o instanceof IntEntry))
+	LongEntry<VALUE> removeMapping(Object o) {
+		if (!(o instanceof LongEntry))
 			return null;
 
-		IntEntry<VALUE> entry = (IntEntry<VALUE>)o;
+		LongEntry<VALUE> entry = (LongEntry<VALUE>)o;
 		int hash = hash(entry.key);
 		int i = indexFor(hash, table.length);
-		IntEntry<VALUE> prev = table[i];
-		IntEntry<VALUE> e = prev;
+		LongEntry<VALUE> prev = table[i];
+		LongEntry<VALUE> e = prev;
 
 		while (e != null) {
-			IntEntry<VALUE> next = e.next;
+			LongEntry<VALUE> next = e.next;
 			if (e.hash == hash && e.equals(entry)) {
 				modCount++;
 				size--;
@@ -431,7 +430,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	@Override
     public void clear() {
 		modCount++;
-		IntEntry<VALUE> tab[] = table;
+		LongEntry<VALUE> tab[] = table;
 		for (int i = 0; i < tab.length; i++)
 			tab[i] = null;
 		size = 0;
@@ -451,9 +450,9 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		if (value == null)
 			return containsNullValue();
 
-		IntEntry<VALUE> tab[] = table;
+		LongEntry<VALUE> tab[] = table;
 		for (int i = 0; i < tab.length ; i++)
-			for (IntEntry<VALUE> e = tab[i] ; e != null ; e = e.next)
+			for (LongEntry<VALUE> e = tab[i] ; e != null ; e = e.next)
 				if (value.equals(e.value))
 					return true;
 		return false;
@@ -462,23 +461,23 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	@Override
     public VALUE get(Object key)
 	{
-		return get(((Number)key).intValue());
+		return get(((Number)key).longValue());
 	}
 
 	@Override
-    public VALUE put(Integer key, VALUE value)
+    public VALUE put(Long key, VALUE value)
 	{
-		return put(key.intValue(), value);
+		return put(key.longValue(), value);
 	}
 
 	@Override
     public VALUE remove(Object key)
 	{
-		return remove(((Number)key).intValue());
+		return remove(((Number)key).longValue());
 	}
 
 	@Override
-    public void putAll(Map<? extends Integer, ? extends VALUE> t)
+    public void putAll(Map<? extends Long, ? extends VALUE> t)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -488,36 +487,36 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 **/
 	private boolean containsNullValue()
 	{
-		IntEntry<VALUE> tab[] = table;
+		LongEntry<VALUE> tab[] = table;
 		for (int i = 0; i < tab.length ; i++)
-			for (IntEntry<VALUE> e = tab[i] ; e != null ; e = e.next)
+			for (LongEntry<VALUE> e = tab[i] ; e != null ; e = e.next)
 				if (e.value == null)
 					return true;
 		return false;
 	}
 
-	public static class IntEntry<VALUE> implements Entry<Integer, VALUE> {
-		final int key;
+	public static class LongEntry<VALUE> implements Entry<Long, VALUE> {
+		final long key;
 		VALUE value;
 		final int hash;
-		IntEntry<VALUE> next;
+		LongEntry<VALUE> next;
 
 		/**
 		 * Create new entry.
 		 */
-		IntEntry(int h, int k, VALUE v, IntEntry<VALUE> n) {
+		LongEntry(int h, long k, VALUE v, LongEntry<VALUE> n) {
 			value = v;
 			next = n;
 			key = k;
 			hash = h;
 		}
 
-		public int getInt() {
+		public long getLong() {
 			return key;
 		}
 
 		@Override
-        public Integer getKey()
+        public Long getKey()
 		{
 			return key;
 		}
@@ -535,9 +534,9 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		}
 
 		public boolean equals(Object o) {
-			if (!(o instanceof IntEntry))
+			if (!(o instanceof LongEntry))
 				return false;
-			IntEntry<VALUE> e = (IntEntry<VALUE>)o;
+			LongEntry<VALUE> e = (LongEntry<VALUE>)o;
 			if (key == e.key) {
 				VALUE v1 = getValue();
 				VALUE v2 = e.getValue();
@@ -564,8 +563,8 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 *
 	 * Subclass overrides this to alter the behavior of put method.
 	 */
-	void addEntry(int hash, int key, VALUE value, int bucketIndex) {
-		table[bucketIndex] = new IntEntry<>(hash, key, value, table[bucketIndex]);
+	void addEntry(int hash, long key, VALUE value, int bucketIndex) {
+		table[bucketIndex] = new LongEntry<>(hash, key, value, table[bucketIndex]);
 		if (size++ >= threshold)
 			resize(2 * table.length);
 	}
@@ -575,25 +574,25 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * as part of Map construction or "pseudo-construction" (cloning,
 	 * deserialization).  This version needn't worry about resizing the table.
 	 *
-	 * Subclass overrides this to alter the behavior of IntKeyMap(Map),
+	 * Subclass overrides this to alter the behavior of LongKeyMap(Map),
 	 * clone, and readObject.
 	 */
-	void createEntry(int hash, int key, VALUE value, int bucketIndex) {
-		table[bucketIndex] = new IntEntry<>(hash, key, value, table[bucketIndex]);
+	void createEntry(int hash, long key, VALUE value, int bucketIndex) {
+		table[bucketIndex] = new LongEntry<>(hash, key, value, table[bucketIndex]);
 		size++;
 	}
 
-	private abstract class HashIterator<T> implements Iterator<T> {
-		IntEntry<VALUE> next;                  // next entry to return
+	private abstract class HashIterator<X> implements Iterator<X> {
+		LongEntry<VALUE> next;                  // next entry to return
 		int expectedModCount;        // For fast-fail
 		int index;                   // current slot
-		IntEntry<VALUE> current;               // current entry
+		LongEntry<VALUE> current;               // current entry
 
 		HashIterator() {
 			expectedModCount = modCount;
-			IntEntry<VALUE>[] t = table;
+			LongEntry<VALUE>[] t = table;
 			int i = t.length;
-			IntEntry<VALUE> n = null;
+			LongEntry<VALUE> n = null;
 			if (size != 0) { // advance to first entry
 				while (i > 0 && (n = t[--i]) == null)
 					;
@@ -607,15 +606,15 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 			return next != null;
 		}
 
-		IntEntry<VALUE> nextEntry() {
+		LongEntry<VALUE> nextEntry() {
 			if (modCount != expectedModCount)
 				throw new ConcurrentModificationException();
-			IntEntry<VALUE> e = next;
+			LongEntry<VALUE> e = next;
 			if (e == null)
 				throw new NoSuchElementException();
 
-			IntEntry<VALUE> n = e.next;
-			IntEntry<VALUE>[] t = table;
+			LongEntry<VALUE> n = e.next;
+			LongEntry<VALUE>[] t = table;
 			int i = index;
 			while (n == null && i > 0)
 				n = t[--i];
@@ -630,9 +629,9 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 				throw new IllegalStateException();
 			if (modCount != expectedModCount)
 				throw new ConcurrentModificationException();
-			int k = current.key;
+			long k = current.key;
 			current = null;
-			IntKeyMap.this.removeEntryForKey(k);
+			LongKeyMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
 		}
 
@@ -645,25 +644,25 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		}
 	}
 
-	private class KeyIterator extends HashIterator<Integer> {
+	private class KeyIterator extends HashIterator<Long> {
 		@Override
-        public Integer next() {
+        public Long next() {
 			return nextEntry().key;
 		}
-		public int nextInt() {
+		public long nextLong() {
 			return nextEntry().key;
 		}
 	}
 
-	private class EntryIterator extends HashIterator<IntEntry<VALUE>> {
+	private class EntryIterator extends HashIterator<LongEntry<VALUE>> {
 		@Override
-        public IntEntry<VALUE> next() {
+        public LongEntry<VALUE> next() {
 			return nextEntry();
 		}
 	}
 
 	// Subclass overrides these to alter behavior of views' iterator() method
-	Iterator<Integer> newKeyIterator()
+	Iterator<Long> newKeyIterator()
 	{
 		return new KeyIterator();
 	}
@@ -671,7 +670,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	{
 		return new ValueIterator();
 	}
-	Iterator<IntEntry<VALUE>> newEntryIterator()
+	Iterator<LongEntry<VALUE>> newEntryIterator()
 	{
 		return new EntryIterator();
 	}
@@ -679,8 +678,8 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 
 	// Views
 
-	private transient Set<IntEntry<VALUE>> entrySet = null;
-	transient volatile Set<Integer> keySet = null;
+	private transient Set<LongEntry<VALUE>> entrySet = null;
+	transient volatile Set<Long> keySet = null;
 	transient volatile Collection<VALUE> values = null;
 
 	/**
@@ -695,14 +694,14 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * @return a set view of the keys contained in this map.
 	 */
 	@Override
-    public Set<Integer> keySet() {
-		Set<Integer> ks = keySet;
+    public Set<Long> keySet() {
+		Set<Long> ks = keySet;
 		return (ks != null ? ks : (keySet = new KeySet()));
 	}
 
-	private class KeySet extends AbstractSet<Integer> {
+	private class KeySet extends AbstractSet<Long> {
 		@Override
-        public Iterator<Integer> iterator() {
+        public Iterator<Long> iterator() {
 			return newKeyIterator();
 		}
 		@Override
@@ -712,7 +711,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		@Override
         public boolean contains(Object o) {
 			if (o instanceof Number) {
-				return containsKey(((Number)o).intValue());
+				return containsKey(((Number)o).longValue());
 			} else {
 				return false;
 			}
@@ -720,14 +719,14 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		@Override
         public boolean remove(Object o) {
 			if (o instanceof Number) {
-				return IntKeyMap.this.removeEntryForKey(((Number)o).intValue()) != null;
+				return LongKeyMap.this.removeEntryForKey(((Number)o).longValue()) != null;
 			} else {
 				return false;
 			}
 		}
 		@Override
         public void clear() {
-			IntKeyMap.this.clear();
+			LongKeyMap.this.clear();
 		}
 	}
 
@@ -763,28 +762,28 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		}
 		@Override
         public void clear() {
-			IntKeyMap.this.clear();
+			LongKeyMap.this.clear();
 		}
 	}
 
 	@Override
     public Set entrySet()
 	{
-		Set<IntEntry<VALUE>> es = entrySet;
+		Set<LongEntry<VALUE>> es = entrySet;
 		return (es != null ? es : (entrySet = new EntrySet()));
 	}
 
-	private class EntrySet extends AbstractSet<IntEntry<VALUE>> {
+	private class EntrySet extends AbstractSet<LongEntry<VALUE>> {
 		@Override
-        public Iterator<IntEntry<VALUE>> iterator() {
+        public Iterator<LongEntry<VALUE>> iterator() {
 			return newEntryIterator();
 		}
 		@Override
         public boolean contains(Object o) {
-			if (!(o instanceof IntEntry))
+			if (!(o instanceof LongEntry))
 				return false;
-			IntEntry<VALUE> e = (IntEntry<VALUE>)o;
-			IntEntry<VALUE> candidate = getEntry(e.key);
+			LongEntry e = (LongEntry)o;
+			LongEntry candidate = getEntry(e.key);
 			return candidate != null && candidate.equals(e);
 		}
 		@Override
@@ -797,7 +796,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		}
 		@Override
         public void clear() {
-			IntKeyMap.this.clear();
+			LongKeyMap.this.clear();
 		}
 	}
 

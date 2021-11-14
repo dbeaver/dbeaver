@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
                 }, "Resolve object references", 1000);
             }
         }
-        if (!CommonUtils.isEmpty(entities)) {
+        if (!CollectionUtils.isEmpty(entities)) {
             String[] result = new String[entities.size()];
             for (int i = 0; i < entities.size(); i++) {
                 T entity = entities.get(i);

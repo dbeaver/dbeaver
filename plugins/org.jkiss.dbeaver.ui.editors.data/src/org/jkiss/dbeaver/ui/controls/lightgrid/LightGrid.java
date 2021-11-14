@@ -37,7 +37,8 @@ import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IntKeyMap;
+import org.jkiss.utils.collections.CollectionUtils;
+import org.jkiss.utils.collections.IntKeyMap;
 
 import java.util.List;
 import java.util.*;
@@ -571,7 +572,7 @@ public abstract class LightGrid extends Canvas {
                         List<GridColumn> fatColumns = new ArrayList<>();
                         for (GridColumn curColumn : columns) {
                             int curColumnWidthPercent = (int)((curColumn.getWidth() / (double)  clientWidth) * 100);
-                            if (CommonUtils.isEmpty(curColumn.getChildren()) && curColumnWidthPercent > maxColumnDefWidth) {
+                            if (CollectionUtils.isEmpty(curColumn.getChildren()) && curColumnWidthPercent > maxColumnDefWidth) {
                                 fatColumns.add(curColumn);
                             } else {
                                 normalWidth += curColumn.getWidth();
@@ -2511,7 +2512,7 @@ public abstract class LightGrid extends Canvas {
     private void paintColumnsHeader(GC gc, @NotNull GridColumn column, int x, int y, int columnHeight, int level) {
         List<GridColumn> children = column.getChildren();
         int paintHeight = columnHeight;
-        if (CommonUtils.isEmpty(children)) {
+        if (CollectionUtils.isEmpty(children)) {
             paintHeight = columnHeight + (headerHeight - y - columnHeight);
         }
         Rectangle bounds = new Rectangle(x, y, column.getWidth(), paintHeight);
@@ -2522,7 +2523,7 @@ public abstract class LightGrid extends Canvas {
             selectedColumns.contains(column) || focusColumn == column,
             hover,
             column.getElement());
-        if (!CommonUtils.isEmpty(children)) {
+        if (!CollectionUtils.isEmpty(children)) {
             // Draw child columns
             level++;
             int childX = x;
@@ -4900,5 +4901,3 @@ public abstract class LightGrid extends Canvas {
 
 
 }
-
-

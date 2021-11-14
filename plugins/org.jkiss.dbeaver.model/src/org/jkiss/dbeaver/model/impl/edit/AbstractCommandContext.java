@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -181,7 +182,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 }
                             }
                         //}
-                        if (!CommonUtils.isEmpty(cmd.persistActions)) {
+                        if (!CollectionUtils.isEmpty(cmd.persistActions)) {
                             try (DBCSession session = openCommandPersistContext(monitor, cmd.command)) {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {

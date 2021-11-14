@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -66,7 +67,7 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
 
         info.addNodeProperties(node,nodeJson);
 
-        if (!CommonUtils.isEmpty(node.getNested())) {
+        if (!CollectionUtils.isEmpty(node.getNested())) {
             JsonArray nodes = new JsonArray();
             for(DBCPlanNode childNode : node.getNested()) {
                 nodes.add(serializeNode(childNode,info));

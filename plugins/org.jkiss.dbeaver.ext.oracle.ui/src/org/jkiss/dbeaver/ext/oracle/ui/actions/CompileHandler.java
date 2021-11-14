@@ -49,7 +49,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class CompileHandler extends OracleTaskHandler
                 }
                 if (error != null) {
                     DBWorkbench.getPlatformUI().showError("Unexpected compilation error", null, error);
-                } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
+                } else if (!CollectionUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
                     StringBuilder fullMessage = new StringBuilder();

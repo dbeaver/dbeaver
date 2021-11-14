@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -127,7 +128,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
 
         if (!tableBase.isPersisted()) {
             // Column comments for the newly created table
-            for (GenericTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
+            for (GenericTableColumn column : CollectionUtils.safeCollection(tableBase.getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
                     GenericTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
                 }

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -112,7 +113,7 @@ public class DiagramObjectCollector {
         }
         container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
         final Collection<? extends DBSObject> children = container.getChildren(monitor);
-        if (!CommonUtils.isEmpty(children)) {
+        if (!CollectionUtils.isEmpty(children)) {
             Class<? extends DBSObject> childType = container.getPrimaryChildType(monitor);
             DBSObjectFilter objectFilter = container.getDataSource().getContainer().getObjectFilter(childType, container, true);
             for (DBSObject entity : children) {
@@ -215,7 +216,7 @@ public class DiagramObjectCollector {
         if (roots.isEmpty()) {
             return Collections.emptyList();
         }
-        for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
+        for (Map.Entry<DBPProject, List<DBSObject>> entry : CollectionUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
             final DBPProject project = entry.getKey();
             final List<DBSObject> values = entry.getValue();
             if (project != diagramProject) {

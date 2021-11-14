@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -150,7 +150,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     private static void fillToolsMenu(List<IContributionItem> menuItems, List<ToolDescriptor> tools, ISelection selection)
     {
         boolean hasTools = false;
-        if (!CommonUtils.isEmpty(tools)) {
+        if (!CollectionUtils.isEmpty(tools)) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             if (workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();

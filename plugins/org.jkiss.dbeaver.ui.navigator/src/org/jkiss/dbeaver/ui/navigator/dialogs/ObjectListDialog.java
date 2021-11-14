@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -284,7 +284,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         ObjectListDialog<T> scDialog = new ObjectListDialog<>(parentShell, title, true, listId, objects, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
-            return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);
+            return CollectionUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);
         } else {
             return null;
         }

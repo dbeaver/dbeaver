@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.Locale;
@@ -211,7 +212,7 @@ public class SQLCompletionProposalBase {
                 boolean isExec = CommonUtils.toBoolean(params.get(PARAM_EXEC));
 
                 Collection<? extends DBSProcedureParameter> parameters = ((DBSProcedure) object).getParameters(monitor);
-                if (!CommonUtils.isEmpty(parameters)) {
+                if (!CollectionUtils.isEmpty(parameters)) {
                     StringBuilder params = new StringBuilder();
                     for (DBSProcedureParameter param : parameters) {
                         if (param.getParameterKind().isInput()) {

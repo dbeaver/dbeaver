@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +65,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
             if (statement instanceof Select) {
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
-                    if (!CommonUtils.isEmpty(((PlainSelect) selectBody).getOrderByElements())) {
+                    if (!CollectionUtils.isEmpty(((PlainSelect) selectBody).getOrderByElements())) {
                         ((PlainSelect) selectBody).setOrderByElements(null);
                         queryText = statement.toString();
                     }
@@ -91,7 +91,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
-                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
+                if (select.getGroupBy() != null && !CollectionUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
                     throw new DBException("Can't inject COUNT into query with GROUP BY clause");
                 }
 

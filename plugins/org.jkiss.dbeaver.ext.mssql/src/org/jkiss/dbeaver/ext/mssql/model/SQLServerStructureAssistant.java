@@ -33,11 +33,10 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * SQLServerStructureAssistant
@@ -160,7 +159,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return Collections.emptyList();
         }
 
-        if (CommonUtils.isEmpty(databases)) {
+        if (CollectionUtils.isEmpty(databases)) {
             return Collections.emptyList();
         }
 

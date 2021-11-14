@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -336,7 +337,7 @@ public class DatabaseTasksTree {
                 rootObjects.addAll(getTaskProjects(allTasks));
             } else {
                 // Add task folders as parent elements, task from these folders will be added in children list
-                if (!CommonUtils.isEmpty(allTasksFolders)) {
+                if (!CollectionUtils.isEmpty(allTasksFolders)) {
                     allTasksFolders.sort(DBUtils.nameComparatorIgnoreCase());
                     rootObjects.addAll(allTasksFolders);
                 }
@@ -345,7 +346,7 @@ public class DatabaseTasksTree {
                     .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
                 // Now we need to distribute all tasks without folders
-                if (!CommonUtils.isEmpty(allTasksWithoutFolders)) {
+                if (!CollectionUtils.isEmpty(allTasksWithoutFolders)) {
                     if (groupByCategory) {
                         for (DBTTaskCategory category : getTaskCategories(null, null, allTasksWithoutFolders)) {
                             rootObjects.add(new TaskCategoryNode(null, null, category, null));
@@ -529,7 +530,7 @@ public class DatabaseTasksTree {
                     .filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement)
                     .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
-                if (!CommonUtils.isEmpty(thisProjectTasksWithoutFolder)) {
+                if (!CollectionUtils.isEmpty(thisProjectTasksWithoutFolder)) {
                     if (groupByCategory) {
                         for (DBTTaskCategory category : getTaskCategories(project, null, thisProjectTasksWithoutFolder)) {
                             children.add(new TaskCategoryNode(project, null, category, null));
@@ -910,7 +911,7 @@ public class DatabaseTasksTree {
 
                     if (event.data instanceof DatabaseTaskTransfer.Data) {
                         List<DBTTask> tasksToDrop = ((DatabaseTaskTransfer.Data) event.data).getTasks();
-                        if (!CommonUtils.isEmpty(tasksToDrop)) {
+                        if (!CollectionUtils.isEmpty(tasksToDrop)) {
                             for (DBTTask task : tasksToDrop) {
                                 if (task instanceof TaskImpl && task.getProject() == taskFolder.getProject()) { // Do not move tasks into another project
                                     ((TaskImpl)task).setTaskFolder(taskFolder);

@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -683,7 +684,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
 
-        if (!CommonUtils.isEmpty(preceedingKeys) || searchInKeys || searchInDesc) {
+        if (!CollectionUtils.isEmpty(preceedingKeys) || searchInKeys || searchInDesc) {
             query.append(" WHERE ");
         }
         boolean hasCond = false;

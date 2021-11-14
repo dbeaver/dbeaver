@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -207,8 +208,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producerSettings.setQueryRowCount(false);
                     // disable OpenNewconnection by default (#6432)
                     producerSettings.setOpenNewConnections(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+                    producerSettings.setSelectedRowsOnly(!CollectionUtils.isEmpty(options.getSelectedRows()));
+                    producerSettings.setSelectedColumnsOnly(!CollectionUtils.isEmpty(options.getSelectedColumns()));
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 

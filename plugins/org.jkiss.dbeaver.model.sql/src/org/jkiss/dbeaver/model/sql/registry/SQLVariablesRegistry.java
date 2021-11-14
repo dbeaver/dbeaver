@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.sql.internal.SQLModelActivator;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.collections.CollectionUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -275,7 +276,7 @@ public class SQLVariablesRegistry {
                 log.debug("Both driver and connection are null");
                 return;
             }
-            if (CommonUtils.isEmpty(variables)) {
+            if (CollectionUtils.isEmpty(variables)) {
                 return;
             }
             Map<String, Object> varMap = new LinkedHashMap<>();
