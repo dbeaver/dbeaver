@@ -17,8 +17,12 @@
 package org.jkiss.dbeaver.erd.ui.command;
 
 import org.eclipse.gef3.commands.Command;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -34,6 +38,8 @@ import java.util.List;
  * Command to create association
  */
 public class AssociationCreateCommand extends Command {
+
+    private static final Log log = Log.getLog(AssociationCreateCommand.class);
 
     protected ERDAssociation association;
     protected ERDElement<?> sourceEntity;
@@ -142,6 +148,22 @@ public class AssociationCreateCommand extends Command {
             List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
             List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
 
+            try {
+                // Maybe we need to swap source and target
+                // Ref table must have a unique constraint with ref attributes
+                if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
+                    DBSEntity tmpEntity = targetEntityObject;
+                    targetEntityObject = srcEntityObject;
+                    srcEntityObject = tmpEntity;
+
+                    List<DBSEntityAttribute> tmpAttrs = refAttrs;
+                    refAttrs = srcAttrs;
+                    srcAttrs = tmpAttrs;
+                }
+            } catch (DBException e) {
+                log.error("Error reading constraints", e);
+            }
+
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
             assert vEntity != null;
 
@@ -169,6 +191,13 @@ public class AssociationCreateCommand extends Command {
 
     public void setEditor(ERDEditorPart editor) {
         this.editor = editor;
+    }
+
+    protected boolean needToSwapForeignKeyDirection(DBRProgressMonitor monitor, List<DBSEntityAttribute> srcAttrs, List<DBSEntityAttribute> targetAttrs) throws DBException {
+        return !CommonUtils.isEmpty(srcAttrs) &&
+            !CommonUtils.isEmpty(targetAttrs) &&
+            !DBVUtils.isIdentifyingAttributes(monitor, srcAttrs) &&
+            DBVUtils.isIdentifyingAttributes(monitor, targetAttrs);
     }
 }
 

@@ -47,10 +47,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.erd.model.ERDObject;
-import org.jkiss.dbeaver.erd.model.ERDUtils;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
@@ -359,7 +356,6 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         } else if (object instanceof DBSEntityAssociation) {
             entityAssociation = (DBSEntityAssociation) object;
             entity = entityAssociation.getParentObject();
-            return;
         } else {
             return;
         }
@@ -394,7 +390,18 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                             erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
                         });
                     }
-
+                } else if (entityAssociation != null) {
+                    ERDEntity erdEntity = diagram.getEntity(entity);
+                    ERDEntity targetEntity = diagram.getEntity(entityAssociation.getAssociatedEntity());
+                    if (erdEntity != null &&
+                        erdEntity.getAssociation(entityAssociation) == null &&
+                        erdEntity.getReferenceAssociation(entityAssociation) == null)
+                    {
+                        DBSEntityAssociation addedAssociation = entityAssociation;
+                        UIUtils.asyncExec(() -> {
+                            new ERDAssociation(addedAssociation, erdEntity, targetEntity, true);
+                        });
+                    }
                 } else {
                     // New entity. Add it if it has the same object container
                     // or if this entity was created from the same editor
@@ -449,16 +456,30 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 ERDEntity erdEntity = diagram.getEntity(entity);
                 if (erdEntity != null) {
                     DBSEntityAttribute removedAttribute = entityAttribute;
+                    DBSEntityAssociation removedAssociation = entityAssociation;
                     UIUtils.asyncExec(() -> {
-                        if (removedAttribute == null) {
-                            // Entity delete
-                            diagram.removeEntity(erdEntity, true);
-                        } else {
+                        if (removedAttribute != null) {
                             ERDEntityAttribute erdAttribute = erdEntity.getAttribute(removedAttribute);
                             if (erdAttribute != null) {
                                 erdEntity.removeAttribute(erdAttribute, false);
                                 erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
                             }
+                        } else if (removedAssociation != null) {
+                            ERDAssociation erdAssociation = erdEntity.getAssociation(removedAssociation);
+                            if (erdAssociation != null) {
+                                erdEntity.removeAssociation(erdAssociation, true);
+
+                                if (erdAssociation.getTargetEntity() instanceof ERDEntity) {
+                                    ERDEntity refEntity = (ERDEntity) erdAssociation.getTargetEntity();
+                                    if (refEntity != null) {
+                                        refEntity.removeReferenceAssociation(erdAssociation, true);
+                                    }
+                                }
+                            }
+
+                        } else {
+                            // Entity delete
+                            diagram.removeEntity(erdEntity, true);
                         }
                     });
                 }
@@ -468,17 +489,21 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 ERDEntity erdEntity = diagram.getEntity(entity);
                 if (erdEntity != null) {
                     DBSEntityAttribute updatedAttribute = entityAttribute;
+                    DBSEntityAssociation updatedAssociation = entityAssociation;
+
                     UIUtils.asyncExec(() -> {
-                        if (updatedAttribute == null) {
-                            erdEntity.reloadAttributes(diagram);
-                            erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
-                        } else {
+                        if (updatedAttribute != null) {
                             ERDEntityAttribute erdAttribute = erdEntity.getAttribute(updatedAttribute);
                             if (erdAttribute != null) {
                                 erdAttribute.firePropertyChange(ERDEntityAttribute.PROP_NAME, null, updatedAttribute.getName());
                                 // Resize entity
                                 erdEntity.firePropertyChange(ERDObject.PROP_SIZE, null, null);
                             }
+                        } else if (updatedAssociation != null) {
+
+                        } else {
+                            erdEntity.reloadAttributes(diagram);
+                            erdEntity.firePropertyChange(ERDEntity.PROP_CONTENTS, null, null);
                         }
                     });
                 }

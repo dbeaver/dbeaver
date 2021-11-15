@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -576,6 +575,18 @@ public class JDBCUtils {
         }
     }
 
+    public static int executeUpdate(Connection session, String sql, Object ... params) throws SQLException
+    {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            return dbStat.executeUpdate();
+        }
+    }
+
     public static void executeProcedure(Connection session, String sql) throws SQLException
     {
         try (PreparedStatement dbStat = session.prepareCall(sql)) {
@@ -619,15 +630,15 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
+    public static String queryString(Connection session, String sql, Object... args) throws SQLException
     {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
                     dbStat.setObject(i + 1, args[i]);
                 }
             }
-            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+            try (ResultSet resultSet = dbStat.executeQuery()) {
                 if (resultSet.next()) {
                     return resultSet.getString(1);
                 } else {
@@ -638,15 +649,15 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static <T> T queryObject(JDBCSession session, String sql, Object... args) throws SQLException
+    public static <T> T queryObject(Connection session, String sql, Object... args) throws SQLException
     {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
                     dbStat.setObject(i + 1, args[i]);
                 }
             }
-            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+            try (ResultSet resultSet = dbStat.executeQuery()) {
                 if (resultSet.next()) {
                     return (T) resultSet.getObject(1);
                 } else {
@@ -783,4 +794,30 @@ public class JDBCUtils {
     }
 
 
+    public static Long queryLong(Connection session, String sql, Object... params) throws SQLException {
+        final Number result = executeQuery(session, sql, params);
+        if (result != null) {
+            return result.longValue();
+        }
+        return null;
+    }
+
+    public static long executeInsertAutoIncrement(Connection session, String sql, Object... params) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            dbStat.execute();
+            return getGeneratedKey(dbStat);
+        }
+    }
+
+    public static long getGeneratedKey(PreparedStatement dbStat) throws SQLException {
+        try (final ResultSet keysRS = dbStat.getGeneratedKeys()) {
+            keysRS.next();
+            return keysRS.getLong(1);
+        }
+    }
 }

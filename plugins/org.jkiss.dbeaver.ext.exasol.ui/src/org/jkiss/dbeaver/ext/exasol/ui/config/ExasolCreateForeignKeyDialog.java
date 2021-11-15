@@ -21,9 +21,11 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
+import java.util.Map;
+
 public class ExasolCreateForeignKeyDialog extends EditForeignKeyPage {
-    public ExasolCreateForeignKeyDialog(String title, ExasolTableForeignKey foreignKey) {
-        super(title, foreignKey, new DBSForeignKeyModifyRule[0]);
+    public ExasolCreateForeignKeyDialog(String title, ExasolTableForeignKey foreignKey, Map<String, Object> options) {
+        super(title, foreignKey, new DBSForeignKeyModifyRule[0], options);
     }
 
     @Override

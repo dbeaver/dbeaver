@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 unique constraint configurator
@@ -39,7 +40,7 @@ public class DB2UniqueKeyConfigurator implements DBEObjectConfigurator<DB2TableU
             DBSEntityConstraintType.UNIQUE_KEY };
 
     @Override
-    public DB2TableUniqueKey configureObject(DBRProgressMonitor monitor, Object table, DB2TableUniqueKey constraint) {
+    public DB2TableUniqueKey configureObject(DBRProgressMonitor monitor, Object table, DB2TableUniqueKey constraint, Map<String, Object> options) {
     	return new UITask<DB2TableUniqueKey>() {
             @Override
             protected DB2TableUniqueKey runTask()

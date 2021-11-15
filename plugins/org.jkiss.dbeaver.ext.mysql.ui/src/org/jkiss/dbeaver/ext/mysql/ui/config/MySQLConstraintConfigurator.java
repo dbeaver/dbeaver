@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * MySQL constraint configurator
  */
@@ -36,7 +38,7 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
 
 
     @Override
-    public MySQLTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableConstraint constraint) {
+    public MySQLTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableConstraint constraint, Map<String, Object> options) {
         MySQLDataSource dataSource = constraint.getDataSource();
         return UITask.run(() -> {
             EditConstraintPage editPage;

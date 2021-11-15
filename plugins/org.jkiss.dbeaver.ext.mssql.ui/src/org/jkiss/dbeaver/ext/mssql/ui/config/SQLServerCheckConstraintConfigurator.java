@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * SQL server unique constraint manager
  */
 public class SQLServerCheckConstraintConfigurator implements DBEObjectConfigurator<SQLServerTableCheckConstraint> {
 
     @Override
-    public SQLServerTableCheckConstraint configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableCheckConstraint constraint) {
+    public SQLServerTableCheckConstraint configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableCheckConstraint constraint, Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 "Create CHECK constraint",

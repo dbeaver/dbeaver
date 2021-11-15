@@ -219,7 +219,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     protected OBJECT_TYPE configureObject(DBRProgressMonitor monitor, Object parent, OBJECT_TYPE object, Map<String, Object> options) {
         DBEObjectConfigurator<OBJECT_TYPE> configurator = GeneralUtils.adapt(object, DBEObjectConfigurator.class);
         if (configurator != null) {
-            return configurator.configureObject(monitor, parent, object);
+            return configurator.configureObject(monitor, parent, object, options);
         }
         return object;
     }

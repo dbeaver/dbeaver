@@ -34,14 +34,9 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * RuntimeUtils
@@ -52,6 +47,8 @@ public final class RuntimeUtils {
     private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
     private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
     private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
+
+    private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
 
     private RuntimeUtils() {
         //intentionally left blank
@@ -308,6 +305,18 @@ public final class RuntimeUtils {
 
     public static void setThreadName(String name) {
         Thread.currentThread().setName("DBeaver: " + name);
+    }
+
+    public static byte[] getLocalMacAddress() throws IOException {
+        InetAddress localHost = InetAddress.getLocalHost();
+        NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+        if (ni == null) {
+            Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+            if (niEnum.hasMoreElements()) {
+                ni = niEnum.nextElement();
+            }
+        }
+        return ni == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
     }
 
     /**

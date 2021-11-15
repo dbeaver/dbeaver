@@ -25,13 +25,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 /**
  * MySQL sequence configurator
  */
 public class MySQLTriggerConfigurator implements DBEObjectConfigurator<MySQLTrigger> {
     
     @Override
-    public MySQLTrigger configureObject(DBRProgressMonitor monitor, Object parent, MySQLTrigger trigger) {
+    public MySQLTrigger configureObject(DBRProgressMonitor monitor, Object parent, MySQLTrigger trigger, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(trigger.getDataSource(), DBSEntityType.TRIGGER);
             if (!editPage.edit()) {

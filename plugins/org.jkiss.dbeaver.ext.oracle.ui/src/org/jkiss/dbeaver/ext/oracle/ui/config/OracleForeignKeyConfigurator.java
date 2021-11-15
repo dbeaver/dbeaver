@@ -27,13 +27,15 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
+import java.util.Map;
+
 /**
  * Oracle foreign key manager
  */
 public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<OracleTableForeignKey> {
 
     @Override
-    public OracleTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, OracleTableForeignKey foreignKey) {
+    public OracleTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, OracleTableForeignKey foreignKey, Map<String, Object> options) {
         return UITask.run(() -> {
             EditForeignKeyPage editPage = new EditForeignKeyPage(
                 OracleUIMessages.edit_oracle_foreign_key_manager_dialog_title,
@@ -42,7 +44,7 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
                     DBSForeignKeyModifyRule.NO_ACTION,
                     DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                     DBSForeignKeyModifyRule.SET_NULL,
-                    DBSForeignKeyModifyRule.SET_DEFAULT});
+                    DBSForeignKeyModifyRule.SET_DEFAULT}, options);
             editPage.setSupportsCustomName(true);
             if (!editPage.edit()) {
                 return null;

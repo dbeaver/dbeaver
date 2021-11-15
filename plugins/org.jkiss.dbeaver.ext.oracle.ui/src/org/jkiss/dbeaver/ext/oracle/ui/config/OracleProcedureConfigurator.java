@@ -24,13 +24,15 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.util.Map;
+
 /**
  * OracleProcedureConfigurator
  */
 public class OracleProcedureConfigurator implements DBEObjectConfigurator<OracleProcedureStandalone> {
 
     @Override
-    public OracleProcedureStandalone configureObject(DBRProgressMonitor monitor, Object container, OracleProcedureStandalone procedure) {
+    public OracleProcedureStandalone configureObject(DBRProgressMonitor monitor, Object container, OracleProcedureStandalone procedure, Map<String, Object> options) {
         return new UITask<OracleProcedureStandalone>() {
             @Override
             protected OracleProcedureStandalone runTask() {

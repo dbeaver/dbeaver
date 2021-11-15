@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateSequencePage;
 
+import java.util.Map;
+
 /**
  * Postgre sequence configurator
  */
 public class PostgreSequenceConfigurator implements DBEObjectConfigurator<PostgreSequence> {
     @Override
-    public PostgreSequence configureObject(DBRProgressMonitor monitor, Object parent, PostgreSequence sequence) {
+    public PostgreSequence configureObject(DBRProgressMonitor monitor, Object parent, PostgreSequence sequence, Map<String, Object> options) {
         return new UITask<PostgreSequence>() {
             @Override
             protected PostgreSequence runTask() {

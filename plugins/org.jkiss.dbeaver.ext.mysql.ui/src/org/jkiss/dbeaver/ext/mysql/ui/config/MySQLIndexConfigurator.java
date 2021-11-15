@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * MySQL index configurator
@@ -43,7 +44,7 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
 
 
     @Override
-    public MySQLTableIndex configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableIndex index) {
+    public MySQLTableIndex configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableIndex index, Map<String, Object> options) {
         return UITask.run(() -> {
             MyEditIndexPage editPage = new MyEditIndexPage(index);
             if (!editPage.edit()) {

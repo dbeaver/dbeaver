@@ -67,6 +67,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 
 /**
  * ResultSetViewer
@@ -436,7 +437,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         DBCQueryPlannerConfiguration configuration = new DBCQueryPlannerConfiguration();
         DBEObjectConfigurator<DBCQueryPlannerConfiguration> plannerConfigurator = GeneralUtils.adapt(planner, DBEObjectConfigurator.class);
         if (plannerConfigurator != null) {
-            return plannerConfigurator.configureObject(monitor, planner, configuration);
+            return plannerConfigurator.configureObject(monitor, planner, configuration, Collections.emptyMap());
         }
         return configuration;
     }

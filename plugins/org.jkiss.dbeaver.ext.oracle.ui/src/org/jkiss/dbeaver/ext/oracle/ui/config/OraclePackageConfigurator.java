@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 /**
  * OraclePackageConfigurator
  */
 public class OraclePackageConfigurator implements DBEObjectConfigurator<OraclePackage> {
 
     @Override
-    public OraclePackage configureObject(DBRProgressMonitor monitor, Object container, OraclePackage oraclePackage) {
+    public OraclePackage configureObject(DBRProgressMonitor monitor, Object container, OraclePackage oraclePackage, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(oraclePackage.getDataSource(), DBSEntityType.PACKAGE);
             if (!editPage.edit()) {

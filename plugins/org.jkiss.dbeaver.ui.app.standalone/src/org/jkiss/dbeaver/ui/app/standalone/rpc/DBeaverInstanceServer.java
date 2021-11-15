@@ -203,8 +203,8 @@ public class DBeaverInstanceServer implements IInstanceController {
                 //IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
                 registry.bind(CONTROLLER_ID, stub);
             }
-            for (CommandLineParameterHandler remoteHandler : DBeaverCommandLine.getRemoteParameterHandlers(commandLine)) {
-
+            if (commandLine != null) {
+                DBeaverCommandLine.getRemoteParameterHandlers(commandLine);
             }
 
             final IInstanceController client = InstanceClient.createClient(GeneralUtils.getMetadataFolder().getParent(), true);

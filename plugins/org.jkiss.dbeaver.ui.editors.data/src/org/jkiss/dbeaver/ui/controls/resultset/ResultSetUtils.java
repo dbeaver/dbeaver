@@ -29,9 +29,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -189,5 +191,22 @@ public class ResultSetUtils
         public String getText() {
             return text;
         }
+    }
+
+    public static DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {
+        // Restore data filter
+        final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
+        if (savedConfig != null) {
+            final DBDDataFilter dataFilter = new DBDDataFilter();
+            try {
+                savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
+            } catch (DBException e) {
+                log.warn("Can't restore table data filters for " + dataContainer.getName(), e);
+            }
+            if (dataFilter.hasFilters()) {
+                return dataFilter;
+            }
+        }
+        return null;
     }
 }

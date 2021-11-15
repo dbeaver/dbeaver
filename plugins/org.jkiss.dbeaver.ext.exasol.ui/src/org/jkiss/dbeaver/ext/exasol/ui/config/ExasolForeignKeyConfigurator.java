@@ -29,17 +29,18 @@ import org.jkiss.dbeaver.ui.UITask;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<ExasolTableForeignKey> {
     protected static final Log log = Log.getLog(ExasolForeignKeyConfigurator.class);
 
     @Override
-    public ExasolTableForeignKey configureObject(DBRProgressMonitor monitor, Object container, ExasolTableForeignKey foreignKey) {
+    public ExasolTableForeignKey configureObject(DBRProgressMonitor monitor, Object container, ExasolTableForeignKey foreignKey, Map<String, Object> options) {
         ExasolTable table = (ExasolTable) container;
         return new UITask<ExasolTableForeignKey>() {
             @Override
             protected ExasolTableForeignKey runTask() {
-                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog(ExasolMessages.dialog_create_foreign_key_title, foreignKey);
+                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog(ExasolMessages.dialog_create_foreign_key_title, foreignKey, options);
 
                 if (!editPage.edit()) {
                     return null;

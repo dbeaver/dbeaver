@@ -37,6 +37,10 @@ public interface SQLSchemaVersionManager {
     /**
      * Updates current schema version
      */
-    void updateCurrentSchemaVersion(DBRProgressMonitor monitor, Connection connection, String schemaName, int prevVersion) throws DBException, SQLException;
+    void updateCurrentSchemaVersion(DBRProgressMonitor monitor, Connection connection, String schemaName) throws DBException, SQLException;
+
+    default void fillInitialSchemaData(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException {
+
+    }
 
 }

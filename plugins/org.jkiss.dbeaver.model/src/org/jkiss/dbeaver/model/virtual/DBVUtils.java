@@ -476,4 +476,39 @@ public abstract class DBVUtils {
         return jexlEngine.createExpression(expression);
     }
 
+    public static boolean isIdentifyingAttributes(@NotNull DBRProgressMonitor monitor, @NotNull List<DBSEntityAttribute> attributes) throws DBException {
+        if (attributes.isEmpty()) {
+            return false;
+        }
+        DBSEntity table = attributes.get(0).getParentObject();
+
+        {
+            // Check constraints
+            Collection<? extends DBSEntityConstraint> constraints = getAllConstraints(monitor, table);
+            if (constraints != null) {
+                for (DBSEntityConstraint constraint : constraints) {
+                    if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
+                        List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                        if (attrRefs == null) {
+                            continue;
+                        }
+                        if (attributes.size() != attrRefs.size()) {
+                            continue;
+                        }
+                        boolean matches = true;
+                        for (int i = 0; i < attributes.size(); i++) {
+                            if (attributes.get(i) != attrRefs.get(i).getAttribute()) {
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

@@ -30,13 +30,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 /**
  * DB2SchemaConfigurator
  */
 public class DB2SchemaConfigurator implements DBEObjectConfigurator<DB2Schema> {
 
     @Override
-    public DB2Schema configureObject(DBRProgressMonitor monitor, Object container, DB2Schema newSchema) {
+    public DB2Schema configureObject(DBRProgressMonitor monitor, Object container, DB2Schema newSchema, Map<String, Object> options) {
         return new UITask<DB2Schema>() {
             @Override
             protected DB2Schema runTask() {

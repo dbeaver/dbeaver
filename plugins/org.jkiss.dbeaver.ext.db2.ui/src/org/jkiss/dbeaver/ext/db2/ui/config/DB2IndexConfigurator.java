@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 index configurator
@@ -53,7 +54,7 @@ public class DB2IndexConfigurator implements DBEObjectConfigurator<DB2Index> {
     }
 
     @Override
-    public DB2Index configureObject(DBRProgressMonitor monitor, Object container, DB2Index index) {
+    public DB2Index configureObject(DBRProgressMonitor monitor, Object container, DB2Index index, Map<String, Object> options) {
         return UITask.run(() -> {
         	DB2TableBase table = (DB2TableBase) container;
         	EditIndexPage editPage = new EditIndexPage(

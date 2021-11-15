@@ -417,7 +417,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         allProps.removeIf(p -> {
                             for (OBJECT_TYPE item : items) {
                                 Object objectValue = getObjectValue(item);
-                                if (p.isPropertyVisible(objectValue, objectValue)) {
+                                if (objectValue != null && p.isPropertyVisible(objectValue, objectValue)) {
                                     return false;
                                 }
                             }

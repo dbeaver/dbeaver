@@ -220,6 +220,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                     throw error;
                                 }
                                 if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
+                                    // Disable logging to avoid QM handlers notifications.
+                                    session.enableLogging(false);
                                     // Commit all processed changes
                                     txnManager.commit(session);
                                 }

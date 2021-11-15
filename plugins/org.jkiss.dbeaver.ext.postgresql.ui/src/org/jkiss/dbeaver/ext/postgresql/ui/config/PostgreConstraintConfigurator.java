@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * Postgre constraint configurator
  */
@@ -35,7 +37,7 @@ public class PostgreConstraintConfigurator implements DBEObjectConfigurator<Post
 
 
     @Override
-    public PostgreTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, PostgreTableConstraint constraint) {
+    public PostgreTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, PostgreTableConstraint constraint, Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 PostgreMessages.edit_constraint_page_add_constraint,

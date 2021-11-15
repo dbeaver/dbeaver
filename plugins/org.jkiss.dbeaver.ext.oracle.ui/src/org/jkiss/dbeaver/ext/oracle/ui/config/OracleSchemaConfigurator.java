@@ -34,13 +34,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 /**
  * OracleSchemaConfigurator
  */
 public class OracleSchemaConfigurator implements DBEObjectConfigurator<OracleSchema> {
 
     @Override
-    public OracleSchema configureObject(DBRProgressMonitor monitor, Object container, OracleSchema newSchema) {
+    public OracleSchema configureObject(DBRProgressMonitor monitor, Object container, OracleSchema newSchema, Map<String, Object> options) {
         return new UITask<OracleSchema>() {
             @Override
             protected OracleSchema runTask() {

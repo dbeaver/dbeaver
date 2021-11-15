@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 public class OracleQueueConfigurator implements DBEObjectConfigurator<OracleQueue> {
 
     @Override
-    public OracleQueue configureObject(DBRProgressMonitor monitor, Object container, OracleQueue queue) {
+    public OracleQueue configureObject(DBRProgressMonitor monitor, Object container, OracleQueue queue, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage page = new EntityEditPage(queue.getDataSource(), DBSEntityType.SEQUENCE);
             if (!page.edit()) {

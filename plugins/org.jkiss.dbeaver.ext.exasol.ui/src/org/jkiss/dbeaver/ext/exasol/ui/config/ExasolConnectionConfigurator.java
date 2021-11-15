@@ -24,9 +24,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 public class ExasolConnectionConfigurator implements DBEObjectConfigurator<ExasolConnection> {
     @Override
-    public ExasolConnection configureObject(DBRProgressMonitor monitor, Object container, ExasolConnection con) {
+    public ExasolConnection configureObject(DBRProgressMonitor monitor, Object container, ExasolConnection con, Map<String, Object> options) {
         return new UITask<ExasolConnection>() {
             @Override
             protected ExasolConnection runTask()
