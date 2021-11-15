@@ -41,6 +41,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private static final String PROP_HEADER = "tableHeader";
     private static final String PROP_COLUMN_HEADERS = "columnHeaders";
+    private static final String PROP_BACKGROUND_COLOR = "backgroundColor";
+    
+   
 
     private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
@@ -50,6 +53,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private boolean outputHeader = true;
     private boolean outputColumnHeaders = true;
+    private String backgroundColor;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
@@ -58,6 +62,12 @@ public class DataExporterHTML extends StreamExporterAbstract {
         Map<String, Object> properties = site.getProperties();
         outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
         outputColumnHeaders = CommonUtils.getBoolean(properties.get(PROP_COLUMN_HEADERS), outputColumnHeaders);
+        
+        backgroundColor = CommonUtils.toString(properties.get(PROP_BACKGROUND_COLOR), backgroundColor);
+        if (backgroundColor.length() != 6) {
+        	backgroundColor = "D0E3FA";
+        }
+        
     }
 
     @Override
@@ -78,6 +88,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
         out.write("<head>\n" +
             "<meta charset=\"" + getSite().getOutputEncoding() + "\"/>" +
             "<style>\n" +
+            "body{ background-color: #" + backgroundColor + ";}" +
             "table {border: medium solid #6495ed;" +
             "border-collapse: collapse;" +
             "width: 100%;} " +
@@ -91,7 +102,10 @@ public class DataExporterHTML extends StreamExporterAbstract {
 //              "width: 50%;" +
             "padding: 5px;" +
             "text-align: center;}" +
-            ".odd{background:#e8edff;}" +
+//            ".odd{background:#D0E3FA;}" +
+//            ".odd{background:#D0E3FA;}" +
+           "tr:nth-child(odd) {background: #F8FAD0;}" + 
+           "tr:nth-child(even) {background:#D0FAE3;}" + 
             "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
             "</style>\n</head>\n");
         out.write("<body>\n<table>");
