@@ -84,17 +84,19 @@ public final class SQLSchemaManager {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
+                // Do rollback in case some error happened during version check (makes sense for PG)
+                txn.rollback();
                 if (currentSchemaVersion < 0) {
                     createNewSchema(monitor, dbCon);
 
                     // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName, currentSchemaVersion);
+                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
                 } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
                     dropSchema(monitor, dbCon);
                     createNewSchema(monitor, dbCon);
 
                     // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName, currentSchemaVersion);
+                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
                 } else if (schemaVersionActual > currentSchemaVersion) {
                     upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
                 }
@@ -117,12 +119,13 @@ public final class SQLSchemaManager {
                     executeScript(monitor, connection, ddlStream, true);
                 } catch (Exception e) {
                     log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
+                    throw e;
                 } finally {
                     ContentUtils.close(ddlStream);
                 }
                 // Update schema version
                 versionManager.updateCurrentSchemaVersion(
-                    monitor, connection, targetDatabaseName, updateToVer);
+                    monitor, connection, targetDatabaseName);
             }
         }
     }
@@ -132,6 +135,7 @@ public final class SQLSchemaManager {
         try (Reader ddlStream = scriptSource.openSchemaCreateScript(monitor)) {
             executeScript(monitor, connection, ddlStream, false);
         }
+        versionManager.fillInitialSchemaData(monitor, connection);
     }
 
     private void dropSchema(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException, IOException {
