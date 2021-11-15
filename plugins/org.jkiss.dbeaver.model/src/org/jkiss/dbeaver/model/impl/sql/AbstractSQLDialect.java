@@ -350,7 +350,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute) {
+    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute) {
         if (attribute instanceof DBSObject) {
             return DBUtils.isPseudoAttribute(attribute) ?
                 attribute.getName() :

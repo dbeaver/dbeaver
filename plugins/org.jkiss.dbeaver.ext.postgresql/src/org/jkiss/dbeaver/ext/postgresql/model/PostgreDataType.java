@@ -244,7 +244,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @ForTest
-    PostgreDataType(PostgreSchema schema, int valueType, String name) {
+    public PostgreDataType(PostgreSchema schema, int valueType, String name) {
         super(schema, valueType, name, null, false, false, -1, -1, -1);
         alias = false;
         ownerId = 0;

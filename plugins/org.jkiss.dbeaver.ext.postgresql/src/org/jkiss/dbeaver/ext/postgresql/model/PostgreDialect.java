@@ -810,7 +810,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
-    public String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute) {
+    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute) {
+        // This method actually works for special data types like JSON and XML. Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
         String attrName = attribute.getName();
         if (attribute instanceof DBSObject) {
             attrName = DBUtils.isPseudoAttribute(attribute) ?
@@ -823,6 +824,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+        // Some data for some types of columns data types must be cast. It can be simple casting only with data type name like "::pg_class" or casting with fully qualified names for user defined types like "::schemaName.testType".
+        // Or very special clauses with JSON and XML columns, when we have to cast both column data and column name to text.
         return getCastedString(attribute, expression, isInCondition, false);
     }
 

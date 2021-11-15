@@ -282,11 +282,11 @@ public interface SQLDialect {
     DBPIdentifierCase storesQuotedCase();
 
     /**
-     * Enables to call particular cast operator or function for special attributes.
+     * Enables to call particular cast operator or function for special attribute name.
      * @param attribute   attribute data to help decide whether cast and how to cast
-     * @return            casted string
+     * @return            casted attribute name
      */
-    String getAttributeDataTypeCastClause(@NotNull DBSAttributeBase attribute);
+    String getCastedAttributeName(@NotNull DBSAttributeBase attribute);
 
     /**
      * Enables to call particular cast operator or function for special data types.
