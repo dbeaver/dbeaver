@@ -21,24 +21,26 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferFinalizerConfigurator;
 
+import java.util.Map;
+
 public class ShowInExplorerFinalizerConfigurator implements IDataTransferFinalizerConfigurator {
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
         // not implemented
     }
 
     @Override
-    public void loadSettings(StreamConsumerSettings configuration) {
+    public void loadSettings(@NotNull Map<String, Object> settings) {
         // not implemented
     }
 
     @Override
-    public void saveSettings(StreamConsumerSettings configuration) {
+    public void saveSettings(@NotNull Map<String, Object> settings) {
         // not implemented
     }
 
     @Override
-    public void resetSettings(StreamConsumerSettings configuration) {
+    public void resetSettings(@NotNull Map<String, Object> settings) {
         // not implemented
     }
 

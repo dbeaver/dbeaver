@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
-public interface IDataTransferFinalizerConfigurator extends IObjectPropertyConfigurator<StreamConsumerSettings> {
+import java.util.Map;
+
+public interface IDataTransferFinalizerConfigurator extends IObjectPropertyConfigurator<Map<String, Object>> {
     boolean isApplicable(@NotNull StreamConsumerSettings configuration);
 
     default boolean hasControl() {

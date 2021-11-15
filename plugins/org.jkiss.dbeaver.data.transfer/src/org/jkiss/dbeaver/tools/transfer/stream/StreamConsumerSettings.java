@@ -83,8 +83,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
-
-    private final Set<String> finalizers = new HashSet<>();
+    private final Map<String, Map<String, Object>> finalizers = new HashMap<>();
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -220,7 +219,25 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dataMappings.put(container.getSource(), container);
     }
 
-    public Set<String> getFinalizers() {
+    @NotNull
+    public Map<String, Object> getFinalizerSettings(@NotNull String id) {
+        return finalizers.computeIfAbsent(id, x -> new HashMap<>());
+    }
+
+    public void addFinalizer(@NotNull String id) {
+        finalizers.putIfAbsent(id, new HashMap<>());
+    }
+
+    public void removeFinalizer(@NotNull String id) {
+        finalizers.remove(id);
+    }
+
+    public boolean hasFinalizer(@NotNull String id) {
+        return finalizers.containsKey(id);
+    }
+
+    @NotNull
+    public Map<String, Map<String, Object>> getFinalizers() {
         return finalizers;
     }
 
@@ -294,7 +311,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             }
         }
 
-        finalizers.addAll(JSONUtils.getStringList(settings, "finalizers"));
+        final Map<String, Object> finalizers = JSONUtils.getObject(settings, "finalizers");
+        for (String finalizer : finalizers.keySet()) {
+            this.finalizers.put(finalizer, JSONUtils.getObject(finalizers, finalizer));
+        }
     }
 
     @Override
@@ -336,7 +356,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         }
 
         if (!finalizers.isEmpty()) {
-            settings.put("finalizers", new ArrayList<>(finalizers));
+            settings.put("finalizers", finalizers);
         }
     }
 

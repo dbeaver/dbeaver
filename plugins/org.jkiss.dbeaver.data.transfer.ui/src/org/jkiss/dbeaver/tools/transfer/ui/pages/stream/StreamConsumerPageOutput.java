@@ -29,7 +29,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -322,9 +321,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
-        for (FinalizerComposite finalizer : finalizers.values()) {
-            // TODO: Load settings
-            finalizer.loadSettings(getWizard().getRunnableContext(), Collections.emptyMap());
+        for (Map.Entry<String, FinalizerComposite> finalizer : finalizers.entrySet()) {
+            finalizer.getValue().setFinalizerEnabled(settings.hasFinalizer(finalizer.getKey()));
+            finalizer.getValue().loadSettings(settings.getFinalizerSettings(finalizer.getKey()));
         }
 
         updatePageCompletion();
@@ -333,9 +332,13 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     @Override
     public void deactivatePage() {
-        for (FinalizerComposite finalizer : finalizers.values()) {
-            // TODO: Save settings
-            finalizer.saveSettings(new HashMap<>());
+        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
+
+        for (Map.Entry<String, FinalizerComposite> finalizer : finalizers.entrySet()) {
+            final FinalizerComposite configurator = finalizer.getValue();
+            if (configurator.isFinalizerEnabled() && configurator.isFinalizerApplicable() && configurator.isFinalizerComplete()) {
+                configurator.saveSettings(settings.getFinalizerSettings(finalizer.getKey()));
+            }
         }
     }
 
@@ -440,15 +443,15 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 });
             }
 
-            UIUtils.asyncExec(() -> setFinalizerEnabled(settings.getFinalizers().contains(descriptor.getId())));
+            UIUtils.asyncExec(() -> setFinalizerEnabled(settings.hasFinalizer(descriptor.getId())));
         }
 
-        public void loadSettings(@NotNull DBRRunnableContext context, @NotNull Map<String, Object> settings) {
-//            configurator.loadSettings(context, settings);
+        public void loadSettings(@NotNull Map<String, Object> settings) {
+            configurator.loadSettings(settings);
         }
 
         public void saveSettings(@NotNull Map<String, Object> settings) {
-//            configurator.saveSettings(settings);
+            configurator.saveSettings(settings);
         }
 
         public boolean isFinalizerEnabled() {
@@ -480,9 +483,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             }
 
             if (enabled && available) {
-                settings.getFinalizers().add(descriptor.getId());
+                settings.addFinalizer(descriptor.getId());
             } else {
-                settings.getFinalizers().remove(descriptor.getId());
+                settings.removeFinalizer(descriptor.getId());
             }
 
             updatePageCompletion();

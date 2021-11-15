@@ -18,14 +18,29 @@ package org.jkiss.dbeaver.tools.transfer.finalizer;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.File;
+import java.util.Map;
 
 public class ExecuteCommandFinalizer implements IDataTransferFinalizer {
+    public static final String PROP_COMMAND = "command";
+    public static final String PROP_WORKING_DIRECTORY = "workingDirectory";
+
     @Override
-    public void finish(@NotNull DBRProgressMonitor monitor, @NotNull StreamTransferConsumer consumer, @NotNull StreamConsumerSettings settings) throws DBException {
-        // TODO: Implement
+    public void handle(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
+        final String commandLine = consumer.translatePattern(CommonUtils.toString(settings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
+        final String workingDirectory = CommonUtils.toString(settings.get(PROP_WORKING_DIRECTORY));
+
+        final DBRShellCommand command = new DBRShellCommand(commandLine);
+        command.setWorkingDirectory(workingDirectory);
+
+        final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
+        processDescriptor.execute();
     }
 }

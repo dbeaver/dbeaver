@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferFinalizerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -445,16 +446,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         final DataTransferRegistry registry = DataTransferRegistry.getInstance();
-        for (String id : settings.getFinalizers()) {
-            final DataTransferFinalizerDescriptor descriptor = registry.getFinalizerById(id);
+        for (Map.Entry<String, Map<String, Object>> entry : settings.getFinalizers().entrySet()) {
+            final DataTransferFinalizerDescriptor descriptor = registry.getFinalizerById(entry.getKey());
             if (descriptor == null) {
-                log.debug("Can't find finalizer '" + id + "'");
+                log.debug("Can't find finalizer '" + entry.getKey() + "'");
                 continue;
             }
             try {
-                descriptor.create().finish(monitor, this, settings);
+                descriptor.create().handle(monitor, IDataTransferFinalizer.Event.FINISH, this, entry.getValue());
             } catch (DBException e) {
-                log.error("Error executing finalizer '" + id + "'", e);
+                DBWorkbench.getPlatformUI().showError("Transfer finalizer", "Error executing data transfer finalizer '" + entry.getKey() + "'", e);
+                log.error("Error executing finalizer '" + entry.getKey() + "'", e);
             }
         }
     }
@@ -546,7 +548,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String translatePattern(String pattern, final File targetFile) {
+    public String translatePattern(String pattern, final File targetFile) {
         final Date ts;
         if (parameters.startTimestamp != null) {
             // Use saved timestamp (#7352)
@@ -692,6 +694,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
         return row;
+    }
+
+    @NotNull
+    public StreamConsumerSettings getSettings() {
+        return settings;
     }
 
     private class StreamExportSite implements IStreamDataExporterSite {

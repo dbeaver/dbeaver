@@ -239,7 +239,7 @@
                    class="org.jkiss.dbeaver.tools.transfer.finalizer.ShowInExplorerFinalizer"/>
 
         <finalizer id="executeCommand"
-                   label="Execute command on finish"
+                   label="Execute process on finish"
                    description="Executes shell command on finish"
                    class="org.jkiss.dbeaver.tools.transfer.finalizer.ExecuteCommandFinalizer"/>
 

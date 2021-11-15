@@ -21,15 +21,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 import java.io.File;
+import java.util.Map;
 
 public class ShowInExplorerFinalizer implements IDataTransferFinalizer {
     @Override
-    public void finish(@NotNull DBRProgressMonitor monitor, @NotNull StreamTransferConsumer consumer, @NotNull StreamConsumerSettings settings) throws DBException {
-        if (!settings.isOutputClipboard()) {
+    public void handle(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
+        if (!consumer.getSettings().isOutputClipboard()) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();
             DBWorkbench.getPlatformUI().showInSystemExplorer(new File(folder, filename).getAbsolutePath());
