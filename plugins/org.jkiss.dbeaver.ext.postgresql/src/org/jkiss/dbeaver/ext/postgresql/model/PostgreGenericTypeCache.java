@@ -138,7 +138,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
                         case "bytea":
                             valueType = Types.BINARY;
                             break;
-                        case "xml":
+                        case PostgreConstants.TYPE_XML:
                             valueType = Types.SQLXML;
                             break;
                         default:

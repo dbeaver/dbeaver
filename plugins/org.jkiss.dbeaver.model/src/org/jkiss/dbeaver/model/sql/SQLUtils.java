@@ -595,7 +595,7 @@ public final class SQLUtils {
                     } else if (inlineCriteria) {
                         strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
                     } else {
-                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?");
+                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
                     }
                     conString.append(' ').append(strValue);
                 }
@@ -641,7 +641,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
                     } else {
-                        conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?"));
+                        conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true));
                     }
                 }
                 conString.append(")");
@@ -665,7 +665,7 @@ public final class SQLUtils {
 
         return dataSource.getSQLDialect().getTypeCastClause(
             attribute,
-            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat));
+            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat), false);
     }
 
     private static String convertValueToSQLFormat(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {

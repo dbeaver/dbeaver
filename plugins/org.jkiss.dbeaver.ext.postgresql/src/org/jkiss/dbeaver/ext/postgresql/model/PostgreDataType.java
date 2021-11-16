@@ -244,7 +244,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @ForTest
-    PostgreDataType(PostgreSchema schema, int valueType, String name) {
+    public PostgreDataType(PostgreSchema schema, int valueType, String name) {
         super(schema, valueType, name, null, false, false, -1, -1, -1);
         alias = false;
         ownerId = 0;
@@ -263,6 +263,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 }
             }
         }
+    }
+
+    @Nullable
+    String getConditionTypeCasting(boolean isInCondition, boolean castColumnName) {
+        final String typeName = getTypeName();
+        if (isInCondition && (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName))) {
+            // Convert value in text for json or xml columns in where condition
+            // This strange case only for tables without keys
+            return "::text";
+        }
+        if (!castColumnName && (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || getTypeID() == Types.OTHER)) {
+            // Cast special dataTypes and use full names for user defined types
+            return "::" + getFullyQualifiedName(DBPEvaluationContext.DDL);
+        }
+        return null;
     }
 
     public boolean isAlias() {
@@ -982,7 +997,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                             case "bytea":
                                 valueType = Types.BINARY;
                                 break;
-                            case "xml":
+                            case PostgreConstants.TYPE_XML:
                                 valueType = Types.SQLXML;
                                 break;
                             case "int1":

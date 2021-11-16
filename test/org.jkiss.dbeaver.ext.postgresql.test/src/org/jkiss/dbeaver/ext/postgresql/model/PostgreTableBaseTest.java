@@ -17,8 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -26,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
@@ -45,8 +43,6 @@ import java.util.List;
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreTableBaseTest {
 
-    private static final Log log = Log.getLog(PostgreTableBaseTest.class);
-
     @Mock
     DBRProgressMonitor monitor;
 
@@ -62,8 +58,6 @@ public class PostgreTableBaseTest {
     JDBCResultSet mockResults;
     @Mock
     DBPDataSourceContainer mockDataSourceContainer;
-
-    private final long sampleId = 111111;
 
     private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
@@ -84,13 +78,14 @@ public class PostgreTableBaseTest {
         };
 
         PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
-        testDatabase = testDataSource.createDatabaseImpl(new VoidProgressMonitor(), "testdb", testUser, null, null, null);
+        testDatabase = testDataSource.createDatabaseImpl(monitor, "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "testSchema", testUser);
 
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
         Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
         Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
+        long sampleId = 111111;
         Mockito.when(mockResults.getLong("oid")).thenReturn(sampleId);
         Mockito.when(mockResults.getLong("relowner")).thenReturn(sampleId);
 
@@ -105,7 +100,7 @@ public class PostgreTableBaseTest {
         };
         testTableRegular.setName("testTableRegular");
         testTableRegular.setPartition(false);
-        addColumn(testTableRegular, "column1", "int4", 1);
+        PostgreTestUtils.addColumn(testTableRegular, "column1", "int4", 1);
 
         // Test View
         testView = new PostgreView(testSchema);
@@ -124,7 +119,7 @@ public class PostgreTableBaseTest {
         };
         tableRegular.setName("testTable");
         tableRegular.setPartition(false);
-        addColumn(tableRegular, "column1", "int4", 1);
+        PostgreTestUtils.addColumn(tableRegular, "column1", "int4", 1);
 
         String expectedDDL =
             "-- Drop table" + lineBreak +
@@ -149,8 +144,8 @@ public class PostgreTableBaseTest {
         };
         tableRegular.setName("testTable");
         tableRegular.setPartition(false);
-        addColumn(tableRegular, "column1", "int4", 1);
-        addColumn(tableRegular, "column2", "varchar", 2);
+        PostgreTestUtils.addColumn(tableRegular, "column1", "int4", 1);
+        PostgreTestUtils.addColumn(tableRegular, "column2", "varchar", 2);
 
         String expectedDDL =
             "-- Drop table" + lineBreak +
@@ -257,16 +252,6 @@ public class PostgreTableBaseTest {
                                 "VERSION null";
         String actualDDL = postgreExtension.getObjectDefinitionText(monitor, Collections.emptyMap());
         Assert.assertEquals(expectedDDL, actualDDL);
-    }
-
-    private PostgreTableColumn addColumn(PostgreTableBase table, String columnName, String columnType, int ordinalPosition) throws DBException {
-        PostgreTableColumn column = new PostgreTableColumn(table);
-        column.setName(columnName);
-        column.setTypeName(columnType);
-        column.setOrdinalPosition(ordinalPosition);
-        List<PostgreTableColumn> cachedAttributes = (List<PostgreTableColumn>) table.getCachedAttributes();
-        cachedAttributes.add(column);
-        return column;
     }
 
 }
