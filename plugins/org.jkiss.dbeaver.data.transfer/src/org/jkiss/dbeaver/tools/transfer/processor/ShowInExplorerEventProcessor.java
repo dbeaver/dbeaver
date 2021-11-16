@@ -30,7 +30,7 @@ public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor
     public static final String ID = "showInExplorer";
 
     @Override
-    public void onEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
+    public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> processorSettings) throws DBException {
         if (!consumer.getSettings().isOutputClipboard()) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();

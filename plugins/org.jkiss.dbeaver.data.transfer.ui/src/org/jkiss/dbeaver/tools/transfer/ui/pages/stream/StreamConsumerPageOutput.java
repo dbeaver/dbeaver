@@ -205,15 +205,13 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
             final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
 
-            if (!dataTransferRegistry.getEventProcessors().isEmpty()) {
-                for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors()) {
-                    try {
-                        final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
-                        final IDataTransferEventProcessorConfigurator configurator = configuratorDescriptor.createConfigurator();
-                        processors.put(descriptor.getId(), new EventProcessorComposite(resultsSettings, settings, descriptor, configurator));
-                    } catch (Exception e) {
-                        log.error("Can't create event processor", e);
-                    }
+            for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors(StreamTransferConsumer.NODE_ID)) {
+                try {
+                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
+                    final IDataTransferEventProcessorConfigurator configurator = configuratorDescriptor.createConfigurator();
+                    this.processors.put(descriptor.getId(), new EventProcessorComposite(resultsSettings, settings, descriptor, configurator));
+                } catch (Exception e) {
+                    log.error("Can't create event processor", e);
                 }
             }
         }

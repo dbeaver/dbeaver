@@ -237,13 +237,15 @@
                 id="showInExplorer"
                 label="Show exported file in system explorer"
                 description="Shows exported file in system explorer"
-                class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"/>
+                class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"
+                nodes="streamTransferConsumer"/>
 
         <eventProcessor
                 id="executeCommand"
                 label="Execute process on finish"
                 description="Executes shell command on finish"
-                class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"/>
+                class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
+                nodes="streamTransferConsumer"/>
 
     </extension>
 

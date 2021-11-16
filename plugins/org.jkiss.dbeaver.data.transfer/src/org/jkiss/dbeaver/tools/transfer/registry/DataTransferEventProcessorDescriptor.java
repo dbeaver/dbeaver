@@ -20,15 +20,23 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DataTransferEventProcessorDescriptor extends AbstractDescriptor {
     private final String id;
     private final ObjectType type;
     private final String label;
     private final String description;
+    private final int order;
+    private final Set<String> applicableNodeIds;
 
     protected DataTransferEventProcessorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -37,6 +45,8 @@ public class DataTransferEventProcessorDescriptor extends AbstractDescriptor {
         this.type = new ObjectType(config.getAttribute("class"));
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.order = CommonUtils.toInt(config.getAttribute("order"));
+        this.applicableNodeIds = new HashSet<>(Arrays.asList(config.getAttribute("nodes").split(",")));
     }
 
     @NotNull
@@ -59,9 +69,17 @@ public class DataTransferEventProcessorDescriptor extends AbstractDescriptor {
         return description;
     }
 
+    public int getOrder() {
+        return order;
+    }
+
+    public boolean isApplicable(@NotNull String nodeId) {
+        return applicableNodeIds.contains(nodeId);
+    }
+
     @SuppressWarnings("unchecked")
     @NotNull
-    public <T extends IDataTransferNode<?>> IDataTransferEventProcessor<T> create() throws DBException {
+    public <T extends IDataTransferConsumer<?, ?>> IDataTransferEventProcessor<T> create() throws DBException {
         type.checkObjectClass(IDataTransferEventProcessor.class);
         try {
             return type

@@ -217,6 +217,20 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="label" type="string" use="required">
+          <annotation>
+             <documentation>
+
+             </documentation>
+          </annotation>
+         </attribute>
+         <attribute name="description" type="string" use="required">
+          <annotation>
+             <documentation>
+
+             </documentation>
+          </annotation>
+         </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
@@ -227,17 +241,17 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="label" type="string" use="required">
+         <attribute name="nodes" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="description" type="string" use="required">
+         <attribute name="order" type="string"">
             <annotation>
                <documentation>
-                  
+
                </documentation>
             </annotation>
          </attribute>

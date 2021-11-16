@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DataTransferRegistry
@@ -183,8 +184,11 @@ public class DataTransferRegistry {
     }
 
     @NotNull
-    public Collection<DataTransferEventProcessorDescriptor> getEventProcessors() {
-        return Collections.unmodifiableCollection(eventProcessors.values());
+    public Collection<DataTransferEventProcessorDescriptor> getEventProcessors(@NotNull String nodeId) {
+        return eventProcessors.values().stream()
+            .filter(x -> x.isApplicable(nodeId))
+            .sorted(Comparator.comparingInt(DataTransferEventProcessorDescriptor::getOrder))
+            .collect(Collectors.toList());
     }
 
     @Nullable

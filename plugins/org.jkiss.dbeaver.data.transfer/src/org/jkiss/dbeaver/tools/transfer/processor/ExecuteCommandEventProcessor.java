@@ -34,9 +34,9 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
     public static final String PROP_WORKING_DIRECTORY = "workingDirectory";
 
     @Override
-    public void onEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
-        final String commandLine = consumer.translatePattern(CommonUtils.toString(settings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
-        final String workingDirectory = CommonUtils.toString(settings.get(PROP_WORKING_DIRECTORY));
+    public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> processorSettings) throws DBException {
+        final String commandLine = consumer.translatePattern(CommonUtils.toString(processorSettings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
+        final String workingDirectory = CommonUtils.toString(processorSettings.get(PROP_WORKING_DIRECTORY));
 
         final DBRShellCommand command = new DBRShellCommand(commandLine);
         command.setWorkingDirectory(workingDirectory);

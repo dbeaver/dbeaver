@@ -73,6 +73,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
     private static final String PROP_FORMAT = "format"; //$NON-NLS-1$
 
+    public static final String NODE_ID = "streamTransferConsumer";
+
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VARIABLE_CATALOG = "catalog";
     public static final String VARIABLE_SCHEMA = "schema";
@@ -459,7 +461,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             try {
                 final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
-                processor.onEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+                processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
                 log.error("Error executing event processor '" + entry.getKey() + "'", e);

@@ -23,10 +23,11 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 import java.util.Map;
 
-public interface IDataTransferEventProcessor<T extends IDataTransferNode<?>> {
-    void onEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull T node, @NotNull Map<String, Object> settings) throws DBException;
+public interface IDataTransferEventProcessor<T extends IDataTransferConsumer<?, ?>> {
+    void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull T consumer, @NotNull Map<String, Object> processorSettings) throws DBException;
 
     enum Event {
+        START,
         FINISH
     }
 }
