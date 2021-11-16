@@ -218,14 +218,14 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 */
             }
 
-            autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, null, false, 2);
+            autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, CoreMessages.pref_page_connection_types_label_auto_commit_by_default_tip, false, 2);
             autocommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     getSelectedType().setAutocommit(autocommitCheck.getSelection());
                 }
             });
-            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_sql_execution, null, false, 2);
+            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_sql_execution, CoreMessages.pref_page_connection_types_label_confirm_sql_execution_tip, false, 2);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
