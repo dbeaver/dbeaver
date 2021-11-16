@@ -93,6 +93,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_about_label_version;
 	public static String dialog_about_title;
 
+	public static String dialog_password_change_username;
+	public static String dialog_password_change_old_password;
+	public static String dialog_password_change_new_password;
+	public static String dialog_password_change_verify_password;
+
 	public static String dialog_connection_button_test;
 	public static String dialog_connection_events_settings_group;
 	public static String dialog_connection_events_checkbox_show_process;
