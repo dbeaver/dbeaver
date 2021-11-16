@@ -509,4 +509,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public int getTruncateToolModes() {
         return TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE | TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES | TRUNCATE_TOOL_MODE_SUPPORT_CASCADE;
     }
+
+    @Override
+    public boolean supportsDistinctForStatementsWithAcl() {
+        return true;
+    }
 }

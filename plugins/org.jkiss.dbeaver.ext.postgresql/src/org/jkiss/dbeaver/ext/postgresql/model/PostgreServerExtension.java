@@ -158,4 +158,6 @@ public interface PostgreServerExtension {
 
     int getTruncateToolModes();
 
+    boolean supportsDistinctForStatementsWithAcl();
+
 }
