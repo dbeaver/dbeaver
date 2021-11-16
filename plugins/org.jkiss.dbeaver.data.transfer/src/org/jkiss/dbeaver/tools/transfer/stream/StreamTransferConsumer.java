@@ -43,9 +43,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferFinalizerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -451,17 +451,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         final DataTransferRegistry registry = DataTransferRegistry.getInstance();
-        for (Map.Entry<String, Map<String, Object>> entry : settings.getFinalizers().entrySet()) {
-            final DataTransferFinalizerDescriptor descriptor = registry.getFinalizerById(entry.getKey());
+        for (Map.Entry<String, Map<String, Object>> entry : settings.getProcessors().entrySet()) {
+            final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
             if (descriptor == null) {
-                log.debug("Can't find finalizer '" + entry.getKey() + "'");
+                log.debug("Can't find event processor '" + entry.getKey() + "'");
                 continue;
             }
             try {
-                descriptor.create().handle(monitor, IDataTransferFinalizer.Event.FINISH, this, entry.getValue());
+                descriptor.create().onEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Transfer finalizer", "Error executing data transfer finalizer '" + entry.getKey() + "'", e);
-                log.error("Error executing finalizer '" + entry.getKey() + "'", e);
+                DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
+                log.error("Error executing event processor '" + entry.getKey() + "'", e);
             }
         }
     }

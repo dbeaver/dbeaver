@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui.finalizer.config;
+package org.jkiss.dbeaver.tools.transfer.ui.processor.config;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -23,16 +23,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.tools.transfer.finalizer.ExecuteCommandFinalizer;
+import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
-import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferFinalizerConfigurator;
+import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
-public class ExecuteCommandFinalizerConfigurator implements IDataTransferFinalizerConfigurator {
+public class ExecuteCommandEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator {
     private String command;
     private String workingDirectory;
 
@@ -60,15 +60,15 @@ public class ExecuteCommandFinalizerConfigurator implements IDataTransferFinaliz
 
     @Override
     public void loadSettings(@NotNull Map<String, Object> settings) {
-        command = CommonUtils.toString(settings.get(ExecuteCommandFinalizer.PROP_COMMAND));
-        workingDirectory = CommonUtils.toString(settings.get(ExecuteCommandFinalizer.PROP_WORKING_DIRECTORY));
+        command = CommonUtils.toString(settings.get(ExecuteCommandEventProcessor.PROP_COMMAND));
+        workingDirectory = CommonUtils.toString(settings.get(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY));
     }
 
     @Override
     public void saveSettings(@NotNull Map<String, Object> settings) {
-        settings.put(ExecuteCommandFinalizer.PROP_COMMAND, command);
+        settings.put(ExecuteCommandEventProcessor.PROP_COMMAND, command);
         if (!CommonUtils.isEmptyTrimmed(workingDirectory)) {
-            settings.put(ExecuteCommandFinalizer.PROP_WORKING_DIRECTORY, workingDirectory);
+            settings.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, workingDirectory);
         }
     }
 

@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.finalizer;
+package org.jkiss.dbeaver.tools.transfer.processor;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.Map;
 
-public class ExecuteCommandFinalizer implements IDataTransferFinalizer {
-    public static final String FINALIZER_ID = "executeCommand";
+public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor {
+    public static final String ID = "executeCommand";
     public static final String PROP_COMMAND = "command";
     public static final String PROP_WORKING_DIRECTORY = "workingDirectory";
 
     @Override
-    public void handle(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
+    public void onEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
         final String commandLine = consumer.translatePattern(CommonUtils.toString(settings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
         final String workingDirectory = CommonUtils.toString(settings.get(PROP_WORKING_DIRECTORY));
 

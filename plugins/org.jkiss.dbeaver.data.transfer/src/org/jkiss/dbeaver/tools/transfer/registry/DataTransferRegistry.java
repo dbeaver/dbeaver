@@ -42,7 +42,7 @@ public class DataTransferRegistry {
 
     private final List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
     private final Map<String, DataTransferAttributeTransformerDescriptor> transformers = new LinkedHashMap<>();
-    private final Map<String, DataTransferFinalizerDescriptor> finalizers = new LinkedHashMap<>();
+    private final Map<String, DataTransferEventProcessorDescriptor> eventProcessors = new LinkedHashMap<>();
 
     private DataTransferRegistry(@NotNull IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -58,9 +58,9 @@ public class DataTransferRegistry {
                 // Load transformers
                 DataTransferAttributeTransformerDescriptor at = new DataTransferAttributeTransformerDescriptor(ext);
                 transformers.put(at.getId(), at);
-            } else if ("finalizer".equals(ext.getName())) {
-                final DataTransferFinalizerDescriptor descriptor = new DataTransferFinalizerDescriptor(ext);
-                finalizers.put(descriptor.getId(), descriptor);
+            } else if ("eventProcessor".equals(ext.getName())) {
+                final DataTransferEventProcessorDescriptor descriptor = new DataTransferEventProcessorDescriptor(ext);
+                eventProcessors.put(descriptor.getId(), descriptor);
             }
 
         }
@@ -183,12 +183,12 @@ public class DataTransferRegistry {
     }
 
     @NotNull
-    public Collection<DataTransferFinalizerDescriptor> getFinalizers() {
-        return Collections.unmodifiableCollection(finalizers.values());
+    public Collection<DataTransferEventProcessorDescriptor> getEventProcessors() {
+        return Collections.unmodifiableCollection(eventProcessors.values());
     }
 
     @Nullable
-    public DataTransferFinalizerDescriptor getFinalizerById(@NotNull String id) {
-        return finalizers.get(id);
+    public DataTransferEventProcessorDescriptor getEventProcessorById(@NotNull String id) {
+        return eventProcessors.get(id);
     }
 }

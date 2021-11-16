@@ -35,11 +35,11 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferFinalizerDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferFinalizerConfigurator;
+import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -73,7 +73,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Button splitFilesCheckbox;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
-    private final Map<String, FinalizerComposite> finalizers = new HashMap<>();
+    private final Map<String, EventProcessorComposite> processors = new HashMap<>();
 
     public StreamConsumerPageOutput() {
         super(DTMessages.data_transfer_wizard_output_name);
@@ -205,14 +205,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
             final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
 
-            if (!dataTransferRegistry.getFinalizers().isEmpty()) {
-                for (DataTransferFinalizerDescriptor descriptor : dataTransferRegistry.getFinalizers()) {
+            if (!dataTransferRegistry.getEventProcessors().isEmpty()) {
+                for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors()) {
                     try {
                         final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
-                        final IDataTransferFinalizerConfigurator configurator = configuratorDescriptor.createConfigurator();
-                        finalizers.put(descriptor.getId(), new FinalizerComposite(resultsSettings, settings, descriptor, configurator));
+                        final IDataTransferEventProcessorConfigurator configurator = configuratorDescriptor.createConfigurator();
+                        processors.put(descriptor.getId(), new EventProcessorComposite(resultsSettings, settings, descriptor, configurator));
                     } catch (Exception e) {
-                        log.error("Can't create finalizer", e);
+                        log.error("Can't create event processor", e);
                     }
                 }
             }
@@ -254,8 +254,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         timestampPattern.setEnabled(!clipboard);
 
-        for (FinalizerComposite finalizer : finalizers.values()) {
-            finalizer.setFinalizerAvailable(finalizer.isFinalizerApplicable());
+        for (EventProcessorComposite processor : processors.values()) {
+            processor.setProcessorAvailable(processor.isProcessorApplicable());
         }
     }
 
@@ -283,9 +283,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
-        for (Map.Entry<String, FinalizerComposite> finalizer : finalizers.entrySet()) {
-            finalizer.getValue().setFinalizerEnabled(settings.hasFinalizer(finalizer.getKey()));
-            finalizer.getValue().loadSettings(settings.getFinalizerSettings(finalizer.getKey()));
+        for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
+            processor.getValue().setProcessorEnabled(settings.hasProcessor(processor.getKey()));
+            processor.getValue().loadSettings(settings.getProcessorSettings(processor.getKey()));
         }
 
         updatePageCompletion();
@@ -296,10 +296,10 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     public void deactivatePage() {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
-        for (Map.Entry<String, FinalizerComposite> finalizer : finalizers.entrySet()) {
-            final FinalizerComposite configurator = finalizer.getValue();
-            if (configurator.isFinalizerEnabled() && configurator.isFinalizerApplicable() && configurator.isFinalizerComplete()) {
-                configurator.saveSettings(settings.getFinalizerSettings(finalizer.getKey()));
+        for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
+            final EventProcessorComposite configurator = processor.getValue();
+            if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
+                configurator.saveSettings(settings.getProcessorSettings(processor.getKey()));
             }
         }
     }
@@ -333,9 +333,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             return false;
         }
 
-        for (FinalizerComposite finalizer : finalizers.values()) {
-            if (finalizer.isFinalizerApplicable() && finalizer.isFinalizerEnabled() && !finalizer.isFinalizerComplete()) {
-                setErrorMessage(NLS.bind("Configuration for ''{0}'' is incomplete", finalizer.descriptor.getLabel()));
+        for (EventProcessorComposite processor : processors.values()) {
+            if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
+                setErrorMessage(NLS.bind("Configuration for ''{0}'' is incomplete", processor.descriptor.getLabel()));
                 return false;
             }
         }
@@ -366,14 +366,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         return isConsumerOfType(StreamTransferConsumer.class);
     }
 
-    private class FinalizerComposite extends Composite {
-        private final DataTransferFinalizerDescriptor descriptor;
-        private final IDataTransferFinalizerConfigurator configurator;
+    private class EventProcessorComposite extends Composite {
+        private final DataTransferEventProcessorDescriptor descriptor;
+        private final IDataTransferEventProcessorConfigurator configurator;
         private final StreamConsumerSettings settings;
         private final Button enabledCheckbox;
         private Link configureLink;
 
-        public FinalizerComposite(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull DataTransferFinalizerDescriptor descriptor, @Nullable IDataTransferFinalizerConfigurator configurator) {
+        public EventProcessorComposite(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull DataTransferEventProcessorDescriptor descriptor, @Nullable IDataTransferEventProcessorConfigurator configurator) {
             super(parent, SWT.NONE);
             this.descriptor = descriptor;
             this.configurator = configurator;
@@ -388,7 +388,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             enabledCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setFinalizerEnabled(enabledCheckbox.getSelection());
+                    setProcessorEnabled(enabledCheckbox.getSelection());
                 }
             });
 
@@ -405,7 +405,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 });
             }
 
-            UIUtils.asyncExec(() -> setFinalizerEnabled(settings.hasFinalizer(descriptor.getId())));
+            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasProcessor(descriptor.getId())));
         }
 
         public void loadSettings(@NotNull Map<String, Object> settings) {
@@ -416,27 +416,27 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             configurator.saveSettings(settings);
         }
 
-        public boolean isFinalizerEnabled() {
+        public boolean isProcessorEnabled() {
             return enabledCheckbox.getEnabled() && enabledCheckbox.getSelection();
         }
 
-        public boolean isFinalizerApplicable() {
+        public boolean isProcessorApplicable() {
             return configurator != null && configurator.isApplicable(settings);
         }
 
-        public boolean isFinalizerComplete() {
+        public boolean isProcessorComplete() {
             return configurator.isComplete();
         }
 
-        public void setFinalizerAvailable(boolean available) {
-            setFinalizerEnabled(enabledCheckbox.getSelection(), available);
+        public void setProcessorAvailable(boolean available) {
+            setProcessorEnabled(enabledCheckbox.getSelection(), available);
         }
 
-        public void setFinalizerEnabled(boolean enabled) {
-            setFinalizerEnabled(enabled, enabledCheckbox.getEnabled());
+        public void setProcessorEnabled(boolean enabled) {
+            setProcessorEnabled(enabled, enabledCheckbox.getEnabled());
         }
 
-        private void setFinalizerEnabled(boolean enabled, boolean available) {
+        private void setProcessorEnabled(boolean enabled, boolean available) {
             enabledCheckbox.setSelection(enabled);
             enabledCheckbox.setEnabled(available);
 
@@ -445,9 +445,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             }
 
             if (enabled && available) {
-                settings.addFinalizer(descriptor.getId());
+                settings.addProcessor(descriptor.getId());
             } else {
-                settings.removeFinalizer(descriptor.getId());
+                settings.removeProcessor(descriptor.getId());
             }
 
             updatePageCompletion();
@@ -455,9 +455,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     }
 
     private static class ConfigureDialog extends BaseDialog {
-        private final IDataTransferFinalizerConfigurator configurator;
+        private final IDataTransferEventProcessorConfigurator configurator;
 
-        public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferFinalizerDescriptor descriptor, @NotNull IDataTransferFinalizerConfigurator configurator) {
+        public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferEventProcessorDescriptor descriptor, @NotNull IDataTransferEventProcessorConfigurator configurator) {
             super(shell, NLS.bind("Configure ''{0}''", descriptor.getLabel()), null);
             this.configurator = configurator;
             setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);

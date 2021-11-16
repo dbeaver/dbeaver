@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui;
+package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 import java.util.Map;
 
-public interface IDataTransferFinalizerConfigurator extends IObjectPropertyConfigurator<Map<String, Object>> {
-    boolean isApplicable(@NotNull StreamConsumerSettings configuration);
+public interface IDataTransferEventProcessor {
+    void onEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException;
 
-    default boolean hasControl() {
-        return true;
+    enum Event {
+        FINISH
     }
 }

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui.finalizer.config;
+package org.jkiss.dbeaver.tools.transfer.ui.processor.config;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
-import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferFinalizerConfigurator;
+import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 
 import java.util.Map;
 
-public class ShowInExplorerFinalizerConfigurator implements IDataTransferFinalizerConfigurator {
+public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator {
     @Override
     public void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
         // not implemented

@@ -90,11 +90,11 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator
-                class="org.jkiss.dbeaver.tools.transfer.finalizer.ShowInExplorerFinalizer"
-                uiClass="org.jkiss.dbeaver.tools.transfer.ui.finalizer.config.ShowInExplorerFinalizerConfigurator"/>
+                class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"
+                uiClass="org.jkiss.dbeaver.tools.transfer.ui.processor.config.ShowInExplorerEventProcessorConfigurator"/>
         <propertyConfigurator
-                class="org.jkiss.dbeaver.tools.transfer.finalizer.ExecuteCommandFinalizer"
-                uiClass="org.jkiss.dbeaver.tools.transfer.ui.finalizer.config.ExecuteCommandFinalizerConfigurator"/>
+                class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
+                uiClass="org.jkiss.dbeaver.tools.transfer.ui.processor.config.ExecuteCommandEventProcessorConfigurator"/>
     </extension>
 
 </plugin>

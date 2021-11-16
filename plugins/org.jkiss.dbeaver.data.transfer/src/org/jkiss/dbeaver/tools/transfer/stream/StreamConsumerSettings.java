@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
-import org.jkiss.dbeaver.tools.transfer.finalizer.ExecuteCommandFinalizer;
-import org.jkiss.dbeaver.tools.transfer.finalizer.ShowInExplorerFinalizer;
+import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -85,7 +85,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
-    private final Map<String, Map<String, Object>> finalizers = new HashMap<>();
+    private final Map<String, Map<String, Object>> processors = new HashMap<>();
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -222,25 +222,25 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
 
     @NotNull
-    public Map<String, Object> getFinalizerSettings(@NotNull String id) {
-        return finalizers.computeIfAbsent(id, x -> new HashMap<>());
+    public Map<String, Object> getProcessorSettings(@NotNull String id) {
+        return processors.computeIfAbsent(id, x -> new HashMap<>());
     }
 
-    public void addFinalizer(@NotNull String id) {
-        finalizers.putIfAbsent(id, new HashMap<>());
+    public void addProcessor(@NotNull String id) {
+        processors.putIfAbsent(id, new HashMap<>());
     }
 
-    public void removeFinalizer(@NotNull String id) {
-        finalizers.remove(id);
+    public void removeProcessor(@NotNull String id) {
+        processors.remove(id);
     }
 
-    public boolean hasFinalizer(@NotNull String id) {
-        return finalizers.containsKey(id);
+    public boolean hasProcessor(@NotNull String id) {
+        return processors.containsKey(id);
     }
 
     @NotNull
-    public Map<String, Map<String, Object>> getFinalizers() {
-        return finalizers;
+    public Map<String, Map<String, Object>> getProcessors() {
+        return processors;
     }
 
     public DBDDataFormatterProfile getFormatterProfile() {
@@ -313,20 +313,20 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             }
         }
 
-        final Map<String, Object> finalizers = JSONUtils.getObject(settings, "finalizers");
-        for (String finalizer : finalizers.keySet()) {
-            this.finalizers.put(finalizer, JSONUtils.getObject(finalizers, finalizer));
+        final Map<String, Object> processors = JSONUtils.getObject(settings, "processors");
+        for (String processor : processors.keySet()) {
+            this.processors.put(processor, JSONUtils.getObject(processors, processor));
         }
 
-        if (isOpenFolderOnFinish() && !this.finalizers.containsKey(ShowInExplorerFinalizer.FINALIZER_ID)) {
-            this.finalizers.put(ShowInExplorerFinalizer.FINALIZER_ID, Collections.emptyMap());
+        if (isOpenFolderOnFinish() && !this.processors.containsKey(ShowInExplorerEventProcessor.ID)) {
+            this.processors.put(ShowInExplorerEventProcessor.ID, Collections.emptyMap());
         }
 
-        if (isExecuteProcessOnFinish() && !this.finalizers.containsKey(ExecuteCommandFinalizer.FINALIZER_ID)) {
+        if (isExecuteProcessOnFinish() && !this.processors.containsKey(ExecuteCommandEventProcessor.ID)) {
             final Map<String, Object> config = new HashMap<>();
-            config.put(ExecuteCommandFinalizer.PROP_COMMAND, getFinishProcessCommand());
-            config.put(ExecuteCommandFinalizer.PROP_WORKING_DIRECTORY, null);
-            this.finalizers.put(ExecuteCommandFinalizer.FINALIZER_ID, config);
+            config.put(ExecuteCommandEventProcessor.PROP_COMMAND, getFinishProcessCommand());
+            config.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, null);
+            this.processors.put(ExecuteCommandEventProcessor.ID, config);
         }
     }
 
@@ -368,8 +368,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             settings.put("mappings", mappings);
         }
 
-        if (!finalizers.isEmpty()) {
-            settings.put("finalizers", finalizers);
+        if (!processors.isEmpty()) {
+            settings.put("processors", processors);
         }
     }
 

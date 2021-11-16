@@ -20,7 +20,7 @@
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="export" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="finalizer" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="eventProcessor" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -208,7 +208,7 @@
       </complexType>
    </element>
 
-   <element name="finalizer">
+   <element name="eventProcessor">
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -223,7 +223,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor"/>
                </appInfo>
             </annotation>
          </attribute>

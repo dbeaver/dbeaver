@@ -20,15 +20,15 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferFinalizer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 
-public class DataTransferFinalizerDescriptor extends AbstractDescriptor {
+public class DataTransferEventProcessorDescriptor extends AbstractDescriptor {
     private final String id;
     private final ObjectType type;
     private final String label;
     private final String description;
 
-    protected DataTransferFinalizerDescriptor(@NotNull IConfigurationElement config) {
+    protected DataTransferEventProcessorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
@@ -58,15 +58,15 @@ public class DataTransferFinalizerDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public IDataTransferFinalizer create() throws DBException {
-        type.checkObjectClass(IDataTransferFinalizer.class);
+    public IDataTransferEventProcessor create() throws DBException {
+        type.checkObjectClass(IDataTransferEventProcessor.class);
         try {
             return type
-                .getObjectClass(IDataTransferFinalizer.class)
+                .getObjectClass(IDataTransferEventProcessor.class)
                 .getDeclaredConstructor()
                 .newInstance();
         } catch (Throwable e) {
-            throw new DBException("Can't create finalizer", e);
+            throw new DBException("Can't create event processor", e);
         }
     }
 }
