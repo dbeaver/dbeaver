@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DataTransferRegistry
@@ -40,17 +41,11 @@ public class DataTransferRegistry {
 
     private static final Log log = Log.getLog(DataTransferRegistry.class);
 
-    public synchronized static DataTransferRegistry getInstance() {
-        if (instance == null) {
-            instance = new DataTransferRegistry(Platform.getExtensionRegistry());
-        }
-        return instance;
-    }
-
     private final List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
     private final Map<String, DataTransferAttributeTransformerDescriptor> transformers = new LinkedHashMap<>();
+    private final Map<String, DataTransferEventProcessorDescriptor> eventProcessors = new LinkedHashMap<>();
 
-    private DataTransferRegistry(IExtensionRegistry registry) {
+    private DataTransferRegistry(@NotNull IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
@@ -64,6 +59,9 @@ public class DataTransferRegistry {
                 // Load transformers
                 DataTransferAttributeTransformerDescriptor at = new DataTransferAttributeTransformerDescriptor(ext);
                 transformers.put(at.getId(), at);
+            } else if ("eventProcessor".equals(ext.getName())) {
+                final DataTransferEventProcessorDescriptor descriptor = new DataTransferEventProcessorDescriptor(ext);
+                eventProcessors.put(descriptor.getId(), descriptor);
             }
 
         }
@@ -86,6 +84,14 @@ public class DataTransferRegistry {
         nodes.sort(Comparator.comparing(DataTransferNodeDescriptor::getName));
 
         //transformers.sort(Comparator.comparing(DataTransferAttributeTransformerDescriptor::getName));
+    }
+
+    @NotNull
+    public synchronized static DataTransferRegistry getInstance() {
+        if (instance == null) {
+            instance = new DataTransferRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
     }
 
     public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<DBSObject> sourceObjects) {
@@ -175,5 +181,18 @@ public class DataTransferRegistry {
 
     public DataTransferAttributeTransformerDescriptor getAttributeTransformerByName(String tName) {
         return transformers.values().stream().filter(t -> t.getName().equals(tName)).findFirst().orElse(null);
+    }
+
+    @NotNull
+    public Collection<DataTransferEventProcessorDescriptor> getEventProcessors(@NotNull String nodeId) {
+        return eventProcessors.values().stream()
+            .filter(x -> x.isApplicable(nodeId))
+            .sorted(Comparator.comparingInt(DataTransferEventProcessorDescriptor::getOrder))
+            .collect(Collectors.toList());
+    }
+
+    @Nullable
+    public DataTransferEventProcessorDescriptor getEventProcessorById(@NotNull String id) {
+        return eventProcessors.get(id);
     }
 }

@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.tools.transfer;
 
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
-/**
- * IObjectPropertyConfigurator
- */
-public interface IObjectPropertyConfigurator<SETTINGS> {
-    /**
-     * @param parent                 Parent composite
-     * @param propertyChangeListener Can be called upon UI control change to update page completeness and other things.
-     */
-    void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener);
+import java.util.Map;
 
-    void loadSettings(@NotNull SETTINGS settings);
+public interface IDataTransferEventProcessor<T extends IDataTransferConsumer<?, ?>> {
+    void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull T consumer, @NotNull Map<String, Object> processorSettings) throws DBException;
 
-    void saveSettings(@NotNull SETTINGS settings);
-
-    void resetSettings(@NotNull SETTINGS settings);
-
-    boolean isComplete();
-
+    enum Event {
+        START,
+        FINISH
+    }
 }

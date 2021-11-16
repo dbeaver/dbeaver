@@ -43,7 +43,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -55,10 +58,7 @@ import org.jkiss.utils.io.ByteOrderMark;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -72,6 +72,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
     private static final String PROP_FORMAT = "format"; //$NON-NLS-1$
+
+    public static final String NODE_ID = "streamTransferConsumer";
 
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VARIABLE_CATALOG = "catalog";
@@ -133,6 +135,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private boolean initialized = false;
     private boolean firstRow = true;
     private TransferParameters parameters;
+
+    private List<File> outputFiles = new ArrayList<>();
 
     public StreamTransferConsumer() {
     }
@@ -276,7 +280,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
-        outputFile = !parameters.isBinary && outputClipboard ? null : makeOutputFile();
+        if (parameters.isBinary || !outputClipboard) {
+            outputFile = makeOutputFile();
+            outputFiles.add(outputFile);
+        } else {
+            outputFile = null;
+        }
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -388,6 +397,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         bytesWritten = 0;
         multiFileNumber++;
         outputFile = makeOutputFile();
+        outputFiles.add(outputFile);
 
         openOutputStreams();
     }
@@ -439,6 +449,22 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 // Last one
                 DBWorkbench.getPlatformUI().showInSystemExplorer(outputFile.toString());
+            }
+        }
+
+        final DataTransferRegistry registry = DataTransferRegistry.getInstance();
+        for (Map.Entry<String, Map<String, Object>> entry : settings.getProcessors().entrySet()) {
+            final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
+            if (descriptor == null) {
+                log.debug("Can't find event processor '" + entry.getKey() + "'");
+                continue;
+            }
+            try {
+                final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
+                processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
+                log.error("Error executing event processor '" + entry.getKey() + "'", e);
             }
         }
     }
@@ -499,6 +525,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return translatePattern(settings.getOutputFolder(), null);
     }
 
+    @NotNull
+    public List<File> getOutputFiles() {
+        return outputFiles;
+    }
+
     public String getOutputFileName() {
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
@@ -530,7 +561,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String translatePattern(String pattern, final File targetFile) {
+    public String translatePattern(String pattern, final File targetFile) {
         final Date ts;
         if (parameters.startTimestamp != null) {
             // Use saved timestamp (#7352)
@@ -676,6 +707,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
         return row;
+    }
+
+    @NotNull
+    public StreamConsumerSettings getSettings() {
+        return settings;
     }
 
     private class StreamExportSite implements IStreamDataExporterSite {

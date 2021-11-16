@@ -14,27 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.tools.transfer.ui;
 
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
-/**
- * IObjectPropertyConfigurator
- */
-public interface IObjectPropertyConfigurator<SETTINGS> {
-    /**
-     * @param parent                 Parent composite
-     * @param propertyChangeListener Can be called upon UI control change to update page completeness and other things.
-     */
-    void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener);
+import java.util.Map;
 
-    void loadSettings(@NotNull SETTINGS settings);
+public interface IDataTransferEventProcessorConfigurator extends IObjectPropertyConfigurator<Map<String, Object>> {
+    boolean isApplicable(@NotNull StreamConsumerSettings configuration);
 
-    void saveSettings(@NotNull SETTINGS settings);
-
-    void resetSettings(@NotNull SETTINGS settings);
-
-    boolean isComplete();
-
+    default boolean hasControl() {
+        return true;
+    }
 }

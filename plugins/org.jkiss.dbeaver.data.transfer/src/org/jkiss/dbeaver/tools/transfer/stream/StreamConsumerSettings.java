@@ -28,15 +28,15 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer settings
@@ -85,6 +85,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
+    private final Map<String, Map<String, Object>> processors = new HashMap<>();
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -220,6 +221,28 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dataMappings.put(container.getSource(), container);
     }
 
+    @NotNull
+    public Map<String, Object> getProcessorSettings(@NotNull String id) {
+        return processors.computeIfAbsent(id, x -> new HashMap<>());
+    }
+
+    public void addProcessor(@NotNull String id) {
+        processors.putIfAbsent(id, new HashMap<>());
+    }
+
+    public void removeProcessor(@NotNull String id) {
+        processors.remove(id);
+    }
+
+    public boolean hasProcessor(@NotNull String id) {
+        return processors.containsKey(id);
+    }
+
+    @NotNull
+    public Map<String, Map<String, Object>> getProcessors() {
+        return processors;
+    }
+
     public DBDDataFormatterProfile getFormatterProfile() {
         return formatterProfile;
     }
@@ -289,6 +312,22 @@ public class StreamConsumerSettings implements IDataTransferSettings {
                 log.debug("Canceled by user", e);
             }
         }
+
+        final Map<String, Object> processors = JSONUtils.getObject(settings, "processors");
+        for (String processor : processors.keySet()) {
+            this.processors.put(processor, JSONUtils.getObject(processors, processor));
+        }
+
+        if (isOpenFolderOnFinish() && !this.processors.containsKey(ShowInExplorerEventProcessor.ID)) {
+            this.processors.put(ShowInExplorerEventProcessor.ID, Collections.emptyMap());
+        }
+
+        if (isExecuteProcessOnFinish() && !this.processors.containsKey(ExecuteCommandEventProcessor.ID)) {
+            final Map<String, Object> config = new HashMap<>();
+            config.put(ExecuteCommandEventProcessor.PROP_COMMAND, getFinishProcessCommand());
+            config.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, null);
+            this.processors.put(ExecuteCommandEventProcessor.ID, config);
+        }
     }
 
     @Override
@@ -327,6 +366,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
                 mappings.put(DBUtils.getObjectFullId(container.getSource()), containerSettings);
             }
             settings.put("mappings", mappings);
+        }
+
+        if (!processors.isEmpty()) {
+            settings.put("processors", processors);
         }
     }
 
