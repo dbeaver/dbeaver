@@ -58,10 +58,7 @@ import org.jkiss.utils.io.ByteOrderMark;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -136,6 +133,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private boolean initialized = false;
     private boolean firstRow = true;
     private TransferParameters parameters;
+
+    private List<File> outputFiles = new ArrayList<>();
 
     public StreamTransferConsumer() {
     }
@@ -279,7 +278,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
-        outputFile = !parameters.isBinary && outputClipboard ? null : makeOutputFile();
+        if (parameters.isBinary || !outputClipboard) {
+            outputFile = makeOutputFile();
+            outputFiles.add(outputFile);
+        } else {
+            outputFile = null;
+        }
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -391,6 +395,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         bytesWritten = 0;
         multiFileNumber++;
         outputFile = makeOutputFile();
+        outputFiles.add(outputFile);
 
         openOutputStreams();
     }
@@ -515,6 +520,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @NotNull
     public String getOutputFolder() {
         return translatePattern(settings.getOutputFolder(), null);
+    }
+
+    @NotNull
+    public List<File> getOutputFiles() {
+        return outputFiles;
     }
 
     public String getOutputFileName() {
