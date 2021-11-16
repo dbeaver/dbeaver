@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import java.io.File;
 import java.util.Map;
 
-public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor {
+public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor<StreamTransferConsumer> {
     public static final String ID = "showInExplorer";
 
     @Override

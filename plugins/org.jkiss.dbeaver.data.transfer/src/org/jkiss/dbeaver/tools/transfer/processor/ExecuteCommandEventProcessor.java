@@ -28,7 +28,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.util.Map;
 
-public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor {
+public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor<StreamTransferConsumer> {
     public static final String ID = "executeCommand";
     public static final String PROP_COMMAND = "command";
     public static final String PROP_WORKING_DIRECTORY = "workingDirectory";

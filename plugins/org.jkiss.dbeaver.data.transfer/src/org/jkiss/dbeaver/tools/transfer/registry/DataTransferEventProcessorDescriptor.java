@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 public class DataTransferEventProcessorDescriptor extends AbstractDescriptor {
     private final String id;
@@ -57,8 +59,9 @@ public class DataTransferEventProcessorDescriptor extends AbstractDescriptor {
         return description;
     }
 
+    @SuppressWarnings("unchecked")
     @NotNull
-    public IDataTransferEventProcessor create() throws DBException {
+    public <T extends IDataTransferNode<?>> IDataTransferEventProcessor<T> create() throws DBException {
         type.checkObjectClass(IDataTransferEventProcessor.class);
         try {
             return type
