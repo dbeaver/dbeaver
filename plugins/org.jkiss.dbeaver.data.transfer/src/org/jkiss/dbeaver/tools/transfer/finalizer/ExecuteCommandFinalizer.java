@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.Map;
 
 public class ExecuteCommandFinalizer implements IDataTransferFinalizer {
+    public static final String FINALIZER_ID = "executeCommand";
     public static final String PROP_COMMAND = "command";
     public static final String PROP_WORKING_DIRECTORY = "workingDirectory";
 

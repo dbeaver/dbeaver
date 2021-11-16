@@ -27,6 +27,8 @@ import java.io.File;
 import java.util.Map;
 
 public class ShowInExplorerFinalizer implements IDataTransferFinalizer {
+    public static final String FINALIZER_ID = "showInExplorer";
+
     @Override
     public void handle(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> settings) throws DBException {
         if (!consumer.getSettings().isOutputClipboard()) {

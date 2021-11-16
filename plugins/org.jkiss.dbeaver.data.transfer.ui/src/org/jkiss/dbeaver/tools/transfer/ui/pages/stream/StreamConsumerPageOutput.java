@@ -67,9 +67,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Text directoryText;
     private Text fileNameText;
     private Button compressCheckbox;
-    private Button showFolderCheckbox;
-    private Button execProcessCheckbox;
-    private Text execProcessText;
     private Button clipboardCheck;
     private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
@@ -195,55 +192,28 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         {
-            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 2, GridData.FILL_HORIZONTAL, 0);
+            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 1, GridData.FILL_HORIZONTAL, 0);
 
-            showFolderCheckbox = UIUtils.createCheckbox(resultsSettings, DTMessages.data_transfer_wizard_output_checkbox_open_folder, true);
-            showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setOpenFolderOnFinish(showFolderCheckbox.getSelection());
-                }
-            });
-            showFolderCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
-
-            execProcessCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_checkbox_execute_process, true);
-            execProcessCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setExecuteProcessOnFinish(execProcessCheckbox.getSelection());
-                    updateControlsEnablement();
-                    updatePageCompletion();
-                }
-            });
-            execProcessText = new Text(resultsSettings, SWT.BORDER);
-            execProcessText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            execProcessText.addModifyListener(e -> {
-                settings.setFinishProcessCommand(execProcessText.getText());
-                updatePageCompletion();
-            });
-
-            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, null, getWizard().getSettings().isShowFinalMessage(), 4);
+            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, getWizard().getSettings().isShowFinalMessage());
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
                 }
             });
-        }
 
-        final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
-        final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
+            final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
+            final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
 
-        if (!dataTransferRegistry.getFinalizers().isEmpty()) {
-            final Group group = UIUtils.createControlGroup(composite, "Actions after finish", 1, GridData.FILL_HORIZONTAL, 0);
-
-            for (DataTransferFinalizerDescriptor descriptor : dataTransferRegistry.getFinalizers()) {
-                try {
-                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
-                    final IDataTransferFinalizerConfigurator configurator = configuratorDescriptor.createConfigurator();
-                    finalizers.put(descriptor.getId(), new FinalizerComposite(group, settings, descriptor, configurator));
-                } catch (Exception e) {
-                    log.error("Can't create finalizer", e);
+            if (!dataTransferRegistry.getFinalizers().isEmpty()) {
+                for (DataTransferFinalizerDescriptor descriptor : dataTransferRegistry.getFinalizers()) {
+                    try {
+                        final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
+                        final IDataTransferFinalizerConfigurator configurator = configuratorDescriptor.createConfigurator();
+                        finalizers.put(descriptor.getId(), new FinalizerComposite(resultsSettings, settings, descriptor, configurator));
+                    } catch (Exception e) {
+                        log.error("Can't create finalizer", e);
+                    }
                 }
             }
         }
@@ -257,11 +227,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
             UIUtils.setContentProposalToolTip(directoryText, DTUIMessages.stream_consumer_page_output_tooltip_output_directory_pattern, variables);
             UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern, variables);
-            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line, variables);
 
             ContentAssistUtils.installContentProposal(directoryText, new SmartTextContentAdapter(), proposalProvider);
             ContentAssistUtils.installContentProposal(fileNameText, new SmartTextContentAdapter(), proposalProvider);
-            ContentAssistUtils.installContentProposal(execProcessText, new SmartTextContentAdapter(), proposalProvider);
         }
 
         setControl(composite);
@@ -285,9 +253,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingCombo.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         timestampPattern.setEnabled(!clipboard);
-        showFolderCheckbox.setEnabled(!clipboard);
-        execProcessCheckbox.setEnabled(!clipboard);
-        execProcessText.setEnabled(!clipboard);
 
         for (FinalizerComposite finalizer : finalizers.values()) {
             finalizer.setFinalizerAvailable(finalizer.isFinalizerApplicable());
@@ -310,9 +275,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
         timestampPattern.setText(settings.getOutputTimestampPattern());
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
-        showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
-        execProcessCheckbox.setSelection(settings.isExecuteProcessOnFinish());
-        execProcessText.setText(CommonUtils.toString(settings.getFinishProcessCommand()));
 
         if (isBinary) {
             clipboardCheck.setSelection(false);

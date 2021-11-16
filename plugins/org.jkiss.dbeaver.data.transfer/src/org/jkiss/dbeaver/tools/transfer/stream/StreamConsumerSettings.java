@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.finalizer.ExecuteCommandFinalizer;
+import org.jkiss.dbeaver.tools.transfer.finalizer.ShowInExplorerFinalizer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -314,6 +316,17 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         final Map<String, Object> finalizers = JSONUtils.getObject(settings, "finalizers");
         for (String finalizer : finalizers.keySet()) {
             this.finalizers.put(finalizer, JSONUtils.getObject(finalizers, finalizer));
+        }
+
+        if (isOpenFolderOnFinish() && !this.finalizers.containsKey(ShowInExplorerFinalizer.FINALIZER_ID)) {
+            this.finalizers.put(ShowInExplorerFinalizer.FINALIZER_ID, Collections.emptyMap());
+        }
+
+        if (isExecuteProcessOnFinish() && !this.finalizers.containsKey(ExecuteCommandFinalizer.FINALIZER_ID)) {
+            final Map<String, Object> config = new HashMap<>();
+            config.put(ExecuteCommandFinalizer.PROP_COMMAND, getFinishProcessCommand());
+            config.put(ExecuteCommandFinalizer.PROP_WORKING_DIRECTORY, null);
+            this.finalizers.put(ExecuteCommandFinalizer.FINALIZER_ID, config);
         }
     }
 
