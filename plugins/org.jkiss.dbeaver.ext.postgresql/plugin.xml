@@ -174,7 +174,7 @@
                                         </folder>
                                     </items>
                                 </folder>
-                                <folder label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" visibleIf="object.dataSource.serverType.supportsIndexes()" virtual="true">
+                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" visibleIf="object.dataSource.serverType.supportsIndexes()" virtual="true">
                                     <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
                                         <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
                                         </items>
@@ -470,8 +470,8 @@
                         label="EnterpriseDB"
                         icon="icons/edb_icon.png"
                         iconBig="icons/edb_icon_big.png"
-                        class="com.edb.Driver"
-                        sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
                         defaultPort="5444"
                         defaultDatabase="edb"
@@ -480,7 +480,8 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
                         categories="sql">
-                    <file type="jar" path="maven:/com.edb:edb-jdbc18:RELEASE[9.4.1212.1]"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
 
                     <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
