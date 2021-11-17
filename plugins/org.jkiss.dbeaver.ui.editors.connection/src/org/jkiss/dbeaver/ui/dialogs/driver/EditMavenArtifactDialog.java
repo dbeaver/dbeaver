@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -38,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -59,7 +58,7 @@ import java.util.regex.Pattern;
 public class EditMavenArtifactDialog extends BaseDialog {
     private static final Log log = Log.getLog(EditMavenArtifactDialog.class);
 
-    private static final Pattern REGEX_FOR_GRADLE = Pattern.compile("([\\w_.-]+):([\\w_.-]+)(:([\\w_.-]+))?(:([\\w_.-]+))?", Pattern.MULTILINE);
+    private static final Pattern REGEX_FOR_GRADLE = Pattern.compile("([\\w_.-]+):([\\w_.-]+)(?::([\\w_.-]+))(?::([\\w_.-]+))?", Pattern.MULTILINE);
 
     private final DriverLibraryMavenArtifact originalArtifact;
     private final DriverDescriptor driver;
@@ -140,16 +139,21 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     private void parseArtifactText() {
         try {
-            artifacts.clear();
-            if (REGEX_FOR_GRADLE.matcher(fieldText.getText()).find()) {
-                artifacts.addAll(parseGradle());
-            } else {
-                artifacts.addAll(parseMaven());
-            }
+            artifacts.addAll(parseMaven());
             setStatus(false, NLS.bind(UIConnectionMessages.dialog_edit_driver_edit_maven_artifacts_count, artifacts.size()));
         } catch (Exception e) {
-            setStatus(true, e.getMessage());
-            log.debug("Error parsing dependency declaration", e);
+            if (REGEX_FOR_GRADLE.matcher(fieldText.getText()).find()) {
+                try {
+                    artifacts.addAll(parseGradle());
+                    setStatus(false, NLS.bind(UIConnectionMessages.dialog_edit_driver_edit_maven_artifacts_count, artifacts.size()));
+                } catch (DBException ex) {
+                    setStatus(true, e.getMessage());
+                    log.debug("Error parsing dependency declaration", e);
+                }
+            } else {
+                setStatus(true, e.getMessage());
+                log.debug("Error parsing dependency declaration", e);
+            }
         }
     }
 
@@ -157,7 +161,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         getButton(IDialogConstants.OK_ID).setEnabled(!error);
         errorLabel.setVisible(!message.isEmpty());
         if (!message.isEmpty()) {
-            errorLabel.setImage(JFaceResources.getImage(error ? Dialog.DLG_IMG_MESSAGE_ERROR : Dialog.DLG_IMG_MESSAGE_INFO));
+            errorLabel.setImage(DBeaverIcons.getImage(error ? DBIcon.SMALL_ERROR : DBIcon.SMALL_INFO));
             errorLabel.setText(message);
         }
     }
@@ -371,6 +375,8 @@ public class EditMavenArtifactDialog extends BaseDialog {
             } else {
                 DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", versionText.getText());
                 lib.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), classifierText.getText(), versionText.getText()));
+                lib.setLoadOptionalDependencies(loadOptionalDependencies);
+                lib.setIgnoreDependencies(ignoreDependencies);
                 artifacts.add(lib);
             }
         } else {
