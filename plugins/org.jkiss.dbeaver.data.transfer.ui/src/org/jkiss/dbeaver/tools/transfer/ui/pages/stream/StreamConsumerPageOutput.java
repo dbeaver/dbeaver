@@ -282,8 +282,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
         for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
-            processor.getValue().setProcessorEnabled(settings.hasProcessor(processor.getKey()));
-            processor.getValue().loadSettings(settings.getProcessorSettings(processor.getKey()));
+            processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));
+            processor.getValue().loadSettings(settings.getEventProcessorSettings(processor.getKey()));
         }
 
         updatePageCompletion();
@@ -297,7 +297,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
             final EventProcessorComposite configurator = processor.getValue();
             if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
-                configurator.saveSettings(settings.getProcessorSettings(processor.getKey()));
+                configurator.saveSettings(settings.getEventProcessorSettings(processor.getKey()));
             }
         }
     }
@@ -324,10 +324,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             Charset.forName(settings.getOutputEncoding());
         } catch (Exception e) {
             setErrorMessage(DTMessages.data_transfer_wizard_output_error_invalid_charset);
-            return false;
-        }
-        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
-            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_finish_command);
             return false;
         }
 
@@ -403,7 +399,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 });
             }
 
-            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasProcessor(descriptor.getId())));
+            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasEventProcessor(descriptor.getId())));
         }
 
         public void loadSettings(@NotNull Map<String, Object> settings) {
@@ -443,9 +439,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             }
 
             if (enabled && available) {
-                settings.addProcessor(descriptor.getId());
+                settings.addEventProcessor(descriptor.getId());
             } else {
-                settings.removeProcessor(descriptor.getId());
+                settings.removeEventProcessor(descriptor.getId());
             }
 
             updatePageCompletion();

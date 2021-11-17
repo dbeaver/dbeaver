@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,10 +27,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -44,7 +41,6 @@ import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -428,32 +424,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
 
             closeExporter();
-
-            if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish() && !settings.isUseSingleFile()) {
-                executeFinishCommand();
-            }
-
             return;
         }
 
-        if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish() && settings.isUseSingleFile()) {
-            executeFinishCommand();
-        }
         if (!parameters.isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
                 String strContents = outputBuffer.toString();
                 DBWorkbench.getPlatformUI().copyTextToClipboard(strContents, parameters.isHTML);
                 outputBuffer = null;
             }
-        } else {
-            if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
-                // Last one
-                DBWorkbench.getPlatformUI().showInSystemExplorer(outputFile.toString());
-            }
         }
 
         final DataTransferRegistry registry = DataTransferRegistry.getInstance();
-        for (Map.Entry<String, Map<String, Object>> entry : settings.getProcessors().entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> entry : settings.getEventProcessors().entrySet()) {
             final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
             if (descriptor == null) {
                 log.debug("Can't find event processor '" + entry.getKey() + "'");
@@ -478,21 +461,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public Object getTargetObjectContainer() {
         return null;
-    }
-
-    private void executeFinishCommand() {
-        String commandLine = translatePattern(
-            settings.getFinishProcessCommand(),
-            outputFile);
-        DBRShellCommand command = new DBRShellCommand(commandLine);
-        DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
-        try {
-            processDescriptor.execute();
-        } catch (DBException e) {
-
-            DBWorkbench.getPlatformUI().showError(DTMessages.stream_transfer_consumer_title_run_process,
-                    NLS.bind(DTMessages.stream_transfer_consumer_message_error_running_process, commandLine), e);
-        }
     }
 
     @Override
