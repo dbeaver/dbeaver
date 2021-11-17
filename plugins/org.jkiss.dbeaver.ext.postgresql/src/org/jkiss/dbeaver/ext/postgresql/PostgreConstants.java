@@ -89,6 +89,8 @@ public class PostgreConstants {
 
     // Workaround for Redshift 2.x
     public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
+    // Workaround for EnterpriseDB
+    public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
