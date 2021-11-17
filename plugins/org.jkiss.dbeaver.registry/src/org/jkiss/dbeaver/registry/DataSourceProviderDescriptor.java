@@ -414,6 +414,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 return;
             }
         }
+        DBXTreeNode parentNode = baseItem;
 
         if (CommonUtils.getBoolean(config.getAttribute("replaceChildren"))) {
             baseItem.clearChildren();
@@ -421,25 +422,35 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
         String changeFolderType = config.getAttribute("changeFolderType");
         if (changeFolderType != null) {
-            DBXTreeNode parentNode = baseItem.getParent();
-            if (parentNode instanceof DBXTreeFolder) {
-                ((DBXTreeFolder)parentNode).setType(changeFolderType);
+            DBXTreeNode folderNode = baseItem.getParent();
+            if (folderNode instanceof DBXTreeFolder) {
+                ((DBXTreeFolder)folderNode).setType(changeFolderType);
             } else {
                 log.error("Can't update folder type to " + changeFolderType);
             }
         } else {
             String afterPath = config.getAttribute(RegistryConstants.ATTR_AFTER);
-            DBXTreeItem afterItem = null;
+            DBXTreeNode afterItem = null;
             if (afterPath != null) {
                 afterItem = baseItem.findChildItemByPath(afterPath);
+            } else {
+                String sibling = config.getAttribute("sibling");
+                if (sibling != null) {
+                    DBXTreeItem siblingItem = baseItem.findChildItemByPath(sibling);
+                    if (siblingItem == null) {
+                        log.error("Sibling item '" + sibling + "' not found");
+                    } else {
+                        parentNode = siblingItem.getParent();
+                    }
+                }
             }
 
             // Inject nodes into tree item
-            loadTreeChildren(config, baseItem, afterItem);
+            loadTreeChildren(config, parentNode, afterItem);
         }
     }
 
-    private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent, DBXTreeItem afterItem)
+    private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent, DBXTreeNode afterItem)
     {
         IConfigurationElement[] children = config.getChildren();
         if (!ArrayUtils.isEmpty(children)) {
@@ -449,7 +460,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
-    private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config, DBXTreeItem afterItem)
+    private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config, DBXTreeNode afterItem)
     {
         DBXTreeNode child = null;
         final String refId = config.getAttribute(RegistryConstants.ATTR_REF);

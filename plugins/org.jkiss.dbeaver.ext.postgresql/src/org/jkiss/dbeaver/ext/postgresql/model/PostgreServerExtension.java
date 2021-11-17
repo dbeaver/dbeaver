@@ -160,4 +160,5 @@ public interface PostgreServerExtension {
 
     boolean supportsDistinctForStatementsWithAcl();
 
+    boolean supportsOpFamily();
 }

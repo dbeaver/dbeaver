@@ -514,4 +514,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsDistinctForStatementsWithAcl() {
         return true;
     }
+
+    @Override
+    public boolean supportsOpFamily() {
+        return  dataSource.isServerVersionAtLeast(8, 3);
+    }
 }
