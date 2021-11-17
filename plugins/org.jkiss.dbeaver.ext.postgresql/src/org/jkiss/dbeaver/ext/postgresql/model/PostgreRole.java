@@ -385,8 +385,9 @@ public class PostgreRole implements
                 log.error("Error reading routine privileges", e);
             }
             // Select acl for all schemas, sequences and materialized views
+            boolean supportsDistinct = getDataSource().getServerType().supportsDistinctForStatementsWithAcl(); // Greenplum do not support DISTINCT keyword with the acl data type in the query
             String otherObjectsSQL = "SELECT * FROM (\n" +
-                    "\tSELECT DISTINCT relnamespace,\n" +
+                    "\tSELECT " + (supportsDistinct ? "DISTINCT" : "") + " relnamespace,\n" +
                     "\trelname,\n" +
                     "\trelkind,\n" +
                     "\trelacl,\n" +
@@ -400,8 +401,8 @@ public class PostgreRole implements
                     "FROM pg_namespace\n" +
                     "WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema')\n" +
                     "UNION ALL\n" +
-                    "SELECT DISTINCT\n" +
-                    "\tn.oid AS relnamespace,\n" +
+                    "SELECT " + (supportsDistinct ? "DISTINCT" : "") +
+                    "\n\tn.oid AS relnamespace,\n" +
                     "\tn.nspname AS relname,\n" +
                     "\t'C' AS relkind,\n" +
                     "\tnspacl AS relacl,\n" +
