@@ -573,7 +573,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private void addMavenArtifact() {
         EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), driver, null);
         if (fd.open() == IDialogConstants.OK_ID) {
-            driver.addDriverLibrary(fd.getLibrary(), true);
+            for (DriverLibraryMavenArtifact artifact : fd.getArtifacts()) {
+                driver.addDriverLibrary(artifact, true);
+            }
             changeLibContent();
         }
     }

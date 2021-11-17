@@ -281,7 +281,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public String getVersion() {
-        if (preferredVersion != null) {
+        if (preferredVersion != null && !preferredVersion.isEmpty()) {
             return preferredVersion;
         }
         if (localVersion != null) {
