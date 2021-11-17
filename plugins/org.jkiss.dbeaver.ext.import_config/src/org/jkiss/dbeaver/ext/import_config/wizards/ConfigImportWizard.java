@@ -279,7 +279,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             conConfig.setHostName(connectionInfo.getHost());
             conConfig.setHostPort(connectionInfo.getPort());
             conConfig.setDatabaseName(connectionInfo.getDatabase());
-            url = connectionInfo.getDriver().getDataSourceProvider().getConnectionURL(connectionInfo.getDriver(), conConfig);
+            url = connectionInfo.getDriver().getConnectionURL(conConfig);
             connectionInfo.setUrl(url);
         }
     }
