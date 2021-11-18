@@ -81,11 +81,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean compressResults = false;
     private boolean splitOutFiles = false;
     private long maxOutFileSize = 10 * 1000 * 1000;
-    private boolean openFolderOnFinish = true;
-    private boolean executeProcessOnFinish = false;
-    private String finishProcessCommand = null;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
-    private final Map<String, Map<String, Object>> processors = new HashMap<>();
+    private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -183,30 +180,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         this.maxOutFileSize = maxOutFileSize;
     }
 
-    public boolean isOpenFolderOnFinish() {
-        return openFolderOnFinish;
-    }
-
-    public void setOpenFolderOnFinish(boolean openFolderOnFinish) {
-        this.openFolderOnFinish = openFolderOnFinish;
-    }
-
-    public boolean isExecuteProcessOnFinish() {
-        return executeProcessOnFinish;
-    }
-
-    public void setExecuteProcessOnFinish(boolean executeProcessOnFinish) {
-        this.executeProcessOnFinish = executeProcessOnFinish;
-    }
-
-    public String getFinishProcessCommand() {
-        return finishProcessCommand;
-    }
-
-    public void setFinishProcessCommand(String finishProcessCommand) {
-        this.finishProcessCommand = finishProcessCommand;
-    }
-
     @NotNull
     public Map<DBSDataContainer, StreamMappingContainer> getDataMappings() {
         return dataMappings;
@@ -222,25 +195,25 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
 
     @NotNull
-    public Map<String, Object> getProcessorSettings(@NotNull String id) {
-        return processors.computeIfAbsent(id, x -> new HashMap<>());
+    public Map<String, Object> getEventProcessorSettings(@NotNull String id) {
+        return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
     }
 
-    public void addProcessor(@NotNull String id) {
-        processors.putIfAbsent(id, new HashMap<>());
+    public void addEventProcessor(@NotNull String id) {
+        eventProcessors.putIfAbsent(id, new HashMap<>());
     }
 
-    public void removeProcessor(@NotNull String id) {
-        processors.remove(id);
+    public void removeEventProcessor(@NotNull String id) {
+        eventProcessors.remove(id);
     }
 
-    public boolean hasProcessor(@NotNull String id) {
-        return processors.containsKey(id);
+    public boolean hasEventProcessor(@NotNull String id) {
+        return eventProcessors.containsKey(id);
     }
 
     @NotNull
-    public Map<String, Map<String, Object>> getProcessors() {
-        return processors;
+    public Map<String, Map<String, Object>> getEventProcessors() {
+        return eventProcessors;
     }
 
     public DBDDataFormatterProfile getFormatterProfile() {
@@ -271,9 +244,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         compressResults = CommonUtils.getBoolean(settings.get("compressResults"), compressResults);
         splitOutFiles = CommonUtils.getBoolean(settings.get("splitOutFiles"), splitOutFiles);
         maxOutFileSize = CommonUtils.toLong(settings.get("maxOutFileSize"), maxOutFileSize);
-        openFolderOnFinish = CommonUtils.getBoolean(settings.get("openFolderOnFinish"), openFolderOnFinish);
-        executeProcessOnFinish = CommonUtils.getBoolean(settings.get("executeProcessOnFinish"), executeProcessOnFinish);
-        finishProcessCommand = CommonUtils.toString(settings.get("finishProcessCommand"), finishProcessCommand);
+
+        final boolean openFolderOnFinish = CommonUtils.getBoolean(settings.get("openFolderOnFinish"), false);
+        final boolean executeProcessOnFinish = CommonUtils.getBoolean(settings.get("executeProcessOnFinish"), false);
+        final String finishProcessCommand = CommonUtils.toString(settings.get("finishProcessCommand"));
 
         String formatterProfile = CommonUtils.toString(settings.get("formatterProfile"));
         if (!CommonUtils.isEmpty(formatterProfile)) {
@@ -313,20 +287,20 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             }
         }
 
-        final Map<String, Object> processors = JSONUtils.getObject(settings, "processors");
+        final Map<String, Object> processors = JSONUtils.getObject(settings, "eventProcessors");
         for (String processor : processors.keySet()) {
-            this.processors.put(processor, JSONUtils.getObject(processors, processor));
+            eventProcessors.put(processor, JSONUtils.getObject(processors, processor));
         }
 
-        if (isOpenFolderOnFinish() && !this.processors.containsKey(ShowInExplorerEventProcessor.ID)) {
-            this.processors.put(ShowInExplorerEventProcessor.ID, Collections.emptyMap());
+        if (openFolderOnFinish && !eventProcessors.containsKey(ShowInExplorerEventProcessor.ID)) {
+            eventProcessors.put(ShowInExplorerEventProcessor.ID, Collections.emptyMap());
         }
 
-        if (isExecuteProcessOnFinish() && !this.processors.containsKey(ExecuteCommandEventProcessor.ID)) {
+        if (executeProcessOnFinish && !eventProcessors.containsKey(ExecuteCommandEventProcessor.ID)) {
             final Map<String, Object> config = new HashMap<>();
-            config.put(ExecuteCommandEventProcessor.PROP_COMMAND, getFinishProcessCommand());
+            config.put(ExecuteCommandEventProcessor.PROP_COMMAND, finishProcessCommand);
             config.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, null);
-            this.processors.put(ExecuteCommandEventProcessor.ID, config);
+            eventProcessors.put(ExecuteCommandEventProcessor.ID, config);
         }
     }
 
@@ -347,10 +321,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         settings.put("splitOutFiles", splitOutFiles);
         settings.put("maxOutFileSize", maxOutFileSize);
 
-        settings.put("openFolderOnFinish", openFolderOnFinish);
-        settings.put("executeProcessOnFinish", executeProcessOnFinish);
-        settings.put("finishProcessCommand", finishProcessCommand);
-
         if (formatterProfile != null) {
             settings.put("formatterProfile", formatterProfile.getProfileName());
         } else {
@@ -368,8 +338,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             settings.put("mappings", mappings);
         }
 
-        if (!processors.isEmpty()) {
-            settings.put("processors", processors);
+        if (!eventProcessors.isEmpty()) {
+            settings.put("eventProcessors", eventProcessors);
         }
     }
 
@@ -389,9 +359,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         }
 
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_compress, compressResults);
-        if (executeProcessOnFinish) {
-            DTUtils.addSummary(summary, "Execute process on finish", finishProcessCommand);
-        }
 
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_settings_label_binaries, lobExtractType);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_settings_label_encoding, lobEncoding);

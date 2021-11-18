@@ -61,7 +61,6 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_output_label_segment_size;
 	public static String data_transfer_wizard_output_error_empty_output_directory;
 	public static String data_transfer_wizard_output_error_empty_output_filename;
-	public static String data_transfer_wizard_output_error_empty_finish_command;
 	public static String data_transfer_wizard_output_error_invalid_charset;
 	public static String data_transfer_wizard_output_name;
 	public static String data_transfer_wizard_output_title;
