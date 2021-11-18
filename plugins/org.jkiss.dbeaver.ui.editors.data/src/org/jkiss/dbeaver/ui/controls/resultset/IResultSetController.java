@@ -231,4 +231,6 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void addListener(IResultSetListener listener);
 
     void removeListener(IResultSetListener listener);
+
+    void updateDirtyFlag();
 }
