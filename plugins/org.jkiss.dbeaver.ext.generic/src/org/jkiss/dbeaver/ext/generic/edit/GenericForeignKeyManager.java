@@ -49,17 +49,17 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     public boolean canCreateObject(Object container) {
         return (container instanceof GenericTable)
             && ((GenericTable) container).getDataSource().getInfo().supportsReferentialIntegrity()
-            && GenericUtils.canAlterTable((GenericTable) container);
+            && GenericUtils.canAlterTable((GenericTable) container, false);
     }
 
     @Override
     public boolean canEditObject(GenericTableForeignKey object) {
-        return GenericUtils.canAlterTable(object);
+        return GenericUtils.canAlterTable(object, false);
     }
 
     @Override
     public boolean canDeleteObject(GenericTableForeignKey object) {
-        return GenericUtils.canAlterTable(object);
+        return GenericUtils.canAlterTable(object, false);
     }
 
     @Override

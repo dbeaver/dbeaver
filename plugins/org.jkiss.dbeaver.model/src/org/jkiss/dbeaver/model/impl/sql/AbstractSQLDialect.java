@@ -831,7 +831,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean supportsAlterTableStatement() {
+    public boolean supportsAlterTableStatement(boolean isIndex) {
         return true;
     }
 

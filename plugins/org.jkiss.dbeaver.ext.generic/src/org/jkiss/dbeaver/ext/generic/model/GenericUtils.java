@@ -160,8 +160,8 @@ public class GenericUtils {
 
     }
 
-    public static boolean canAlterTable(@NotNull DBSObject object) {
+    public static boolean canAlterTable(@NotNull DBSObject object, boolean isIndex) {
         // Either object is not yet persisted (so no alter is required) or database supports table altering
-        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement();
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableStatement(isIndex);
     }
 }

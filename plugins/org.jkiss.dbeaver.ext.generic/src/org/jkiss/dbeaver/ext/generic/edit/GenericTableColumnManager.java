@@ -55,17 +55,17 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
 
     @Override
     public boolean canCreateObject(Object container) {
-        return container instanceof GenericTable && GenericUtils.canAlterTable((GenericTable) container);
+        return container instanceof GenericTable && GenericUtils.canAlterTable((GenericTable) container, false);
     }
 
     @Override
     public boolean canEditObject(GenericTableColumn object) {
-        return GenericUtils.canAlterTable(object);
+        return GenericUtils.canAlterTable(object, false);
     }
 
     @Override
     public boolean canDeleteObject(GenericTableColumn object) {
-        return GenericUtils.canAlterTable(object);
+        return GenericUtils.canAlterTable(object, false);
     }
 
     @Override

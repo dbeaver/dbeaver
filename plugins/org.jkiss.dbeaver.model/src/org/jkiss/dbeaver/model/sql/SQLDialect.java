@@ -420,7 +420,7 @@ public interface SQLDialect {
 
     boolean isDisableScriptEscapeProcessing();
 
-    boolean supportsAlterTableStatement();
+    boolean supportsAlterTableStatement(boolean isIndex);
 
     boolean supportsInsertAllDefaultValuesStatement();
 

@@ -43,8 +43,8 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean supportsAlterTableStatement() {
-        return false;
+    public boolean supportsAlterTableStatement(boolean isIndex) {
+        return isIndex;
     }
 
     @NotNull

@@ -127,7 +127,7 @@ public class HiveSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean supportsAlterTableStatement() {
+    public boolean supportsAlterTableStatement(boolean isIndex) {
         return false;
     }
 }
