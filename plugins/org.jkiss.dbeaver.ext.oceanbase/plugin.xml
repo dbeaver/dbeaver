@@ -121,16 +121,18 @@
                 <driver
                     id="alipay_oceanbase"
                     label="OceanBase"
-                    class="com.alipay.oceanbase.jdbc.Driver"
-                    sampleURL="jdbc:oceanbase://{host}:{port}[/{database}]"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}:{port}[/{database}]"
                     defaultPort="2881"
                     description="Alipay Oceanbase"
                     webURL="https://open.oceanbase.com"
                     icon="icons/ob_icon.png"
                     iconBig="icons/ob_icon_big.png"
+                    description="Driver for OceanBase-MySQL"
                     categories="sql">
                     <replace provider="generic" driver="oceanbase"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
                 </driver>
             </drivers>
         </datasource>
