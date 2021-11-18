@@ -3270,6 +3270,7 @@ public abstract class LightGrid extends Canvas {
             if (hoveringOnColumnResizer) {
                 columnBeingResized.pack(true);
                 resizingColumn = false;
+                scrollValuesObsolete = true;
                 handleHoverOnColumnHeader(e.x, e.y);
                 redraw();
                 return;
