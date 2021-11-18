@@ -43,11 +43,13 @@
             <supports dataSource="postgresql"/>
             <supports dataSource="greenplum"/>
             <supports dataSource="redshift"/>
+            <supports dataSource="enterprisedb"/>
         </editorContribution>
         <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
             <supports dataSource="postgresql"/>
             <supports dataSource="greenplum"/>
             <supports dataSource="redshift"/>
+            <supports dataSource="enterprisedb"/>
         </editorContribution>
     </extension>
 
@@ -89,6 +91,7 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObjectExt"/>
         </editor>
 
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreConstraintConfigurator">
