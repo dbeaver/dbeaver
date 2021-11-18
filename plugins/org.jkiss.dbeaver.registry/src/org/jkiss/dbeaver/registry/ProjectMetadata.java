@@ -26,6 +26,7 @@ import org.eclipse.core.internal.properties.PropertyBucket;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -54,6 +56,17 @@ public class ProjectMetadata implements DBPProject {
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
     public static final String PROP_PROJECT_ID = "id";
+    private static final String EMPTY_PROJECT_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<projectDescription>\n" +
+        "<name>${project-name}</name>\n" +
+        "<comment></comment>\n" +
+        "<projects>\n" +
+        "</projects>\n" +
+        "<buildSpec>\n" +
+        "</buildSpec>\n" +
+        "<natures>\n" +
+        "</natures>\n" +
+        "</projectDescription>";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -178,13 +191,22 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
         if (project != null && !project.isOpen()) {
+            NullProgressMonitor monitor = new NullProgressMonitor();
             try {
-                NullProgressMonitor monitor = new NullProgressMonitor();
                 project.open(monitor);
                 project.refreshLocal(IFile.DEPTH_ONE, monitor);
             } catch (CoreException e) {
-                log.error("Error opening project", e);
-                return;
+                if (workspace.getPlatform().getApplication().isStandalone() &&
+                    e.getMessage().contains(IProjectDescription.DESCRIPTION_FILE_NAME)) {
+                    try {
+                        recoverProjectDescription();
+                        project.open(monitor);
+                        project.refreshLocal(IFile.DEPTH_ONE, monitor);
+                    } catch (Exception e2) {
+                        log.error("Error opening project", e2);
+                        return;
+                    }
+                }
             }
         }
         if (inMemory) {
@@ -203,6 +225,16 @@ public class ProjectMetadata implements DBPProject {
 
         // Check project structure and migrate
         checkAndUpdateProjectStructure();
+    }
+
+    public void recoverProjectDescription() throws IOException {
+        // .project file missing. Let's try to create an empty project config
+        File mdFile = new File(getAbsolutePath(), IProjectDescription.DESCRIPTION_FILE_NAME);
+        log.debug("Recovering project '" + project.getName() + "' metadata " + mdFile.getAbsolutePath());
+
+        IOUtils.writeFileFromString(
+            mdFile,
+            EMPTY_PROJECT_TEMPLATE.replace("${project-name}", project.getName()));
     }
 
     @Override

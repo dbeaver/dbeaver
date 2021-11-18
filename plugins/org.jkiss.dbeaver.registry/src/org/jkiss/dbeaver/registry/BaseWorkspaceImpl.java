@@ -274,7 +274,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                         // skip regular files
                         continue;
                     }
-                    File projectConfig = new File(wsFile, ".project");
+                    File projectConfig = new File(wsFile, IProjectDescription.DESCRIPTION_FILE_NAME);
                     if (projectConfig.exists()) {
                         String projectName = wsFile.getName();
                         IProject project = root.getProject(projectName);
