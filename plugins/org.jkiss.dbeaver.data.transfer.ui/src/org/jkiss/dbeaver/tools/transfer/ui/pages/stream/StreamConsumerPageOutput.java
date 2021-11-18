@@ -329,7 +329,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         for (EventProcessorComposite processor : processors.values()) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
-                setErrorMessage(NLS.bind("Configuration for ''{0}'' is incomplete", processor.descriptor.getLabel()));
+                setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.descriptor.getLabel()));
                 return false;
             }
         }
@@ -387,12 +387,11 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             });
 
             if (hasControl) {
-                configureLink = UIUtils.createLink(this, "<a>Configure</a>", new SelectionAdapter() {
+                configureLink = UIUtils.createLink(this, DTMessages.data_transfer_wizard_output_event_processor_configure, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         final ConfigureDialog dialog = new ConfigureDialog(getShell(), descriptor, configurator);
                         if (dialog.open() == IDialogConstants.OK_ID) {
-                            // TODO: Persist configuration
                             updatePageCompletion();
                         }
                     }
@@ -452,7 +451,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         private final IDataTransferEventProcessorConfigurator configurator;
 
         public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferEventProcessorDescriptor descriptor, @NotNull IDataTransferEventProcessorConfigurator configurator) {
-            super(shell, NLS.bind("Configure ''{0}''", descriptor.getLabel()), null);
+            super(shell, NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
             this.configurator = configurator;
             setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }

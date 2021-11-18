@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.utils.CommonUtils;
@@ -42,14 +43,14 @@ public class ExecuteCommandEventProcessorConfigurator implements IDataTransferEv
         group.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
         group.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(300, SWT.DEFAULT).create());
 
-        final Text commandText = UIUtils.createLabelText(group, "Command", command);
+        final Text commandText = UIUtils.createLabelText(group, DTUIMessages.data_transfer_event_processor_execute_command_command, command);
         commandText.addModifyListener(e -> {
             command = commandText.getText();
             propertyChangeListener.run();
         });
 
-        UIUtils.createControlLabel(group, "Working directory");
-        final TextWithOpenFolder workingDirectoryText = new TextWithOpenFolder(group, "Choose working directory");
+        UIUtils.createControlLabel(group, DTUIMessages.data_transfer_event_processor_execute_command_working_directory);
+        final TextWithOpenFolder workingDirectoryText = new TextWithOpenFolder(group, DTUIMessages.data_transfer_event_processor_execute_command_working_directory_title);
         workingDirectoryText.setText(workingDirectory);
         workingDirectoryText.getTextControl().addModifyListener(e -> {
             workingDirectory = workingDirectoryText.getText();
