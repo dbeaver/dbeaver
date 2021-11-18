@@ -53,6 +53,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (DBNNode.class == adapterType) {
+            boolean unwrapParentNode = false;
             Object object = ((EditPart) adaptableObject).getModel();
             if (object instanceof EntityDiagram) {
                 final EntityDiagram diagram = (EntityDiagram) object;
@@ -63,6 +64,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
                         object = diagram.getRootObjectContainer();
                     }
                 }
+                unwrapParentNode = true;
             }
             if (object instanceof ERDObject) {
                 object = ((ERDObject<?>) object).getObject();
@@ -74,7 +76,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
                 DBNDatabaseNode node = DBNUtils.getNodeByObject((DBSObject) object);
                 if (node instanceof DBNDatabaseItem && node.getObject() instanceof DBSStructContainer) {
                     node = getTablesFolderNode(node);
-                } else if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {
+                } else if (node != null && node.getParentNode() instanceof DBNDatabaseNode && unwrapParentNode) {
                     node = (DBNDatabaseNode) node.getParentNode();
                 }
 
