@@ -173,6 +173,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_use_legacy_instantiation_tip;
     public static String dialog_edit_driver_description;
     public static String dialog_edit_driver_edit_maven_title;
+    public static String dialog_edit_driver_edit_maven_artifacts_count;
     public static String dialog_edit_driver_edit_maven_group_id_label;
     public static String dialog_edit_driver_edit_maven_artifact_id_label;
     public static String dialog_edit_driver_edit_maven_classfier_label;
@@ -266,6 +267,13 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_user_password_change_label;
     public static String dialog_user_password_change_question_label;
     public static String dialog_user_password_change_question_message;
+    public static String dialog_edit_driver_edit_maven_raw;
+    public static String dialog_edit_driver_edit_maven_settings;
+    public static String dialog_edit_driver_edit_maven_manual;
+    public static String dialog_edit_driver_edit_maven_load_optional_dependencies;
+    public static String dialog_edit_driver_edit_maven_ignore_transient_dependencies;
+    public static String dialog_edit_driver_edit_maven_load_optional_dependencies_tip;
+    public static String dialog_edit_driver_edit_maven_ignore_transient_dependencies_tip;
 
     static {
         // initialize resource bundle
