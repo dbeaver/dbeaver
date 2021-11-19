@@ -108,13 +108,11 @@ public class DTUIMessages extends NLS {
 	public static String database_producer_page_input_objects_node_select_target;
 	public static String database_producer_page_input_objects_node_select_source;
 
-	public static String stream_consumer_page_output_checkbox_execute_process;
 	public static String stream_consumer_page_output_label_maximum_file_size;
 	public static String stream_consumer_page_output_label_show_finish_message;
 	public static String stream_consumer_page_output_tooltip_output_directory_pattern;
 	public static String stream_consumer_page_output_tooltip_output_file_name_pattern;
 	public static String stream_consumer_page_output_label_results;
-	public static String stream_consumer_page_output_tooltip_process_command_line;
 	public static String stream_consumer_page_output_variables_hint_label;
 	public static String stream_consumer_page_settings_title;
 	public static String stream_consumer_page_settings_description;
@@ -189,6 +187,10 @@ public class DTUIMessages extends NLS {
 	public static String value_format_selector_display;
 	public static String value_format_selector_editable;
 	public static String value_format_selector_database_native;
+
+	public static String data_transfer_event_processor_execute_command_command;
+	public static String data_transfer_event_processor_execute_command_working_directory;
+	public static String data_transfer_event_processor_execute_command_working_directory_title;
 
 	static {
 		// initialize resource bundle

@@ -36,7 +36,6 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_output_checkbox_split_files;
 	public static String data_transfer_wizard_output_checkbox_split_files_tip;
 	public static String data_transfer_wizard_output_checkbox_new_connection;
-	public static String data_transfer_wizard_output_checkbox_open_folder;
 	public static String data_transfer_wizard_output_checkbox_select_row_count;
 	public static String data_transfer_wizard_output_checkbox_selected_columns_only;
 	public static String data_transfer_wizard_output_checkbox_selected_rows_only;
@@ -62,6 +61,9 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_output_error_empty_output_directory;
 	public static String data_transfer_wizard_output_error_empty_output_filename;
 	public static String data_transfer_wizard_output_error_invalid_charset;
+	public static String data_transfer_wizard_output_event_processor_configure;
+	public static String data_transfer_wizard_output_event_processor_configure_title;
+	public static String data_transfer_wizard_output_event_processor_error_incomplete_configuration;
 	public static String data_transfer_wizard_output_name;
 	public static String data_transfer_wizard_output_title;
 	public static String data_transfer_wizard_settings_binaries_item_inline;
