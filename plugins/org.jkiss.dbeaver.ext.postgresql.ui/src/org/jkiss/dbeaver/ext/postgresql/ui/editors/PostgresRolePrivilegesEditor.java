@@ -534,10 +534,10 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     DBRProgressMonitor monitor = new VoidProgressMonitor();
                     DBNDatabaseNode rootNode;
                     if (isRoleEditor()) {
-                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(getDatabaseObject().getDatabase());
+                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
                         rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
                     } else {
-                        DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(getDatabaseObject().getDataSource());
+                        DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
                         rootNode = DBNUtils.getChildFolder(monitor, dsNode, PostgreRole.class);
                     }
                     if (rootNode == null) {
