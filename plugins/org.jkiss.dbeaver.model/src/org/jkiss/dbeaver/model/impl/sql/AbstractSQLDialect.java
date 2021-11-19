@@ -836,6 +836,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsIndexCreateAndDrop() {
+        return supportsAlterTableStatement();
+    }
+
+    @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return false;
     }
