@@ -425,7 +425,7 @@ public class VersionUpdateDialog extends Dialog {
         @NotNull
         @Override
         public String getExecutableName(@NotNull ApplicationDescriptor application) {
-            return application.getId() + "-latest-macos";
+            return application.getId() + "-latest-macos-" + Platform.getOSArch();
         }
 
         @NotNull
