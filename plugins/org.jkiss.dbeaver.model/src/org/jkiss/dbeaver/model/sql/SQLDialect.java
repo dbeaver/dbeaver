@@ -422,6 +422,8 @@ public interface SQLDialect {
 
     boolean supportsAlterTableStatement();
 
+    boolean supportsIndexCreateAndDrop();
+
     boolean supportsInsertAllDefaultValuesStatement();
 
 }
