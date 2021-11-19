@@ -139,7 +139,10 @@ class GridColumnRenderer extends AbstractRenderer {
 //            if (element == grid.getFocusColumnElement()) {
 //                gc.drawLine(bounds.x + x + pushedDrawingOffset, bounds.y + bounds.height - pushedDrawingOffset, bounds.x + bounds.width - RIGHT_MARGIN, bounds.y + bounds.height - BOTTOM_MARGIN);
 //            }
+
+            gc.setClipping(bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, width, grid.fontMetrics.getHeight());
             gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
+            gc.setClipping((Rectangle) null);
         }
 
         if (sortOrder != SWT.NONE) {

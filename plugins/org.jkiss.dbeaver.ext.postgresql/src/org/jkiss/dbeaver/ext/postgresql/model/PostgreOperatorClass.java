@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -31,7 +32,7 @@ import java.sql.SQLException;
 public class PostgreOperatorClass extends PostgreInformation {
 
     private long oid;
-    private PostgreAccessMethod accessMethod;
+    private final PostgreAccessMethod accessMethod;
     private String name;
     private long namespaceId;
     private long ownerId;
@@ -85,7 +86,7 @@ public class PostgreOperatorClass extends PostgreInformation {
         return accessMethod.getDatabase().getRoleById(monitor, ownerId);
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 5, visibleIf = PostgreSupportsOpFamily.class)
     public PostgreOperatorFamily getFamily(DBRProgressMonitor monitor) throws DBException {
         return accessMethod.getOperatorFamily(monitor, familyId);
     }
@@ -107,5 +108,13 @@ public class PostgreOperatorClass extends PostgreInformation {
         }
         return accessMethod.getDatabase().getDataType(monitor, keyTypeId);
     }
+
+    public static class PostgreSupportsOpFamily implements IPropertyValueValidator<PostgreOperatorClass, Object> {
+        @Override
+        public boolean isValidValue(PostgreOperatorClass object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsOpFamily();
+        }
+    }
+
 }
 

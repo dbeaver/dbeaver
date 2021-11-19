@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.configurator;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -46,10 +47,9 @@ public class UIPropertyConfiguratorDescriptor extends AbstractContextDescriptor
     }
 
     @SuppressWarnings("unchecked")
-    public <T> IObjectPropertyConfigurator<T> createConfigurator()
-        throws DBException
-    {
-        return uiConfigType.createInstance(IObjectPropertyConfigurator.class);
+    @NotNull
+    public <T extends IObjectPropertyConfigurator<?>> T createConfigurator() throws DBException {
+        return (T) uiConfigType.createInstance(IObjectPropertyConfigurator.class);
     }
 
 }

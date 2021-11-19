@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,10 +27,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -43,7 +40,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -55,10 +54,7 @@ import org.jkiss.utils.io.ByteOrderMark;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -72,6 +68,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
     private static final String PROP_FORMAT = "format"; //$NON-NLS-1$
+
+    public static final String NODE_ID = "streamTransferConsumer";
 
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VARIABLE_CATALOG = "catalog";
@@ -133,6 +131,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private boolean initialized = false;
     private boolean firstRow = true;
     private TransferParameters parameters;
+
+    private List<File> outputFiles = new ArrayList<>();
 
     public StreamTransferConsumer() {
     }
@@ -276,7 +276,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
-        outputFile = !parameters.isBinary && outputClipboard ? null : makeOutputFile();
+        if (parameters.isBinary || !outputClipboard) {
+            outputFile = makeOutputFile();
+            outputFiles.add(outputFile);
+        } else {
+            outputFile = null;
+        }
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -388,6 +393,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         bytesWritten = 0;
         multiFileNumber++;
         outputFile = makeOutputFile();
+        outputFiles.add(outputFile);
 
         openOutputStreams();
     }
@@ -418,27 +424,30 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
 
             closeExporter();
-
-            if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish() && !settings.isUseSingleFile()) {
-                executeFinishCommand();
-            }
-
             return;
         }
 
-        if (!settings.isOutputClipboard() && settings.isExecuteProcessOnFinish() && settings.isUseSingleFile()) {
-            executeFinishCommand();
-        }
         if (!parameters.isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
                 String strContents = outputBuffer.toString();
                 DBWorkbench.getPlatformUI().copyTextToClipboard(strContents, parameters.isHTML);
                 outputBuffer = null;
             }
-        } else {
-            if (settings.isOpenFolderOnFinish() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
-                // Last one
-                DBWorkbench.getPlatformUI().showInSystemExplorer(outputFile.toString());
+        }
+
+        final DataTransferRegistry registry = DataTransferRegistry.getInstance();
+        for (Map.Entry<String, Map<String, Object>> entry : settings.getEventProcessors().entrySet()) {
+            final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
+            if (descriptor == null) {
+                log.debug("Can't find event processor '" + entry.getKey() + "'");
+                continue;
+            }
+            try {
+                final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
+                processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
+                log.error("Error executing event processor '" + entry.getKey() + "'", e);
             }
         }
     }
@@ -452,21 +461,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public Object getTargetObjectContainer() {
         return null;
-    }
-
-    private void executeFinishCommand() {
-        String commandLine = translatePattern(
-            settings.getFinishProcessCommand(),
-            outputFile);
-        DBRShellCommand command = new DBRShellCommand(commandLine);
-        DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
-        try {
-            processDescriptor.execute();
-        } catch (DBException e) {
-
-            DBWorkbench.getPlatformUI().showError(DTMessages.stream_transfer_consumer_title_run_process,
-                    NLS.bind(DTMessages.stream_transfer_consumer_message_error_running_process, commandLine), e);
-        }
     }
 
     @Override
@@ -497,6 +491,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @NotNull
     public String getOutputFolder() {
         return translatePattern(settings.getOutputFolder(), null);
+    }
+
+    @NotNull
+    public List<File> getOutputFiles() {
+        return outputFiles;
     }
 
     public String getOutputFileName() {
@@ -530,7 +529,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String translatePattern(String pattern, final File targetFile) {
+    public String translatePattern(String pattern, final File targetFile) {
         final Date ts;
         if (parameters.startTimestamp != null) {
             // Use saved timestamp (#7352)
@@ -676,6 +675,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
         return row;
+    }
+
+    @NotNull
+    public StreamConsumerSettings getSettings() {
+        return settings;
     }
 
     private class StreamExportSite implements IStreamDataExporterSite {

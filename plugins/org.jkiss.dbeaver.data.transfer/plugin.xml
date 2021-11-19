@@ -233,6 +233,20 @@
             </propertyGroup>
         </transformer>
 
+        <eventProcessor
+                id="showInExplorer"
+                label="%dataTransfer.eventProcessor.showInExplorer.label"
+                description="%dataTransfer.eventProcessor.showInExplorer.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"
+                nodes="streamTransferConsumer"/>
+
+        <eventProcessor
+                id="executeCommand"
+                label="%dataTransfer.eventProcessor.executeCommand.label"
+                description="%dataTransfer.eventProcessor.executeCommand.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
+                nodes="streamTransferConsumer"/>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">

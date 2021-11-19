@@ -546,7 +546,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 !DBSDataType.class.isAssignableFrom(nodeChildClass) &&
                 !DBSSequence.class.isAssignableFrom(nodeChildClass) &&
                 !DBSPackage.class.isAssignableFrom(nodeChildClass)) ||
-            DBSEntityAttribute.class.isAssignableFrom(nodeChildClass);
+            DBSEntityAttribute.class.isAssignableFrom(nodeChildClass) ||
+            DBSInstance.class.isAssignableFrom(nodeChildClass);
     }
 
     /**
@@ -922,8 +923,47 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return null;
         }
         String propertyName = meta.getPropertyName();
+        if (propertyName.contains(".")) {
+            // Extract property recursively
+            for (String fieldName : propertyName.split("\\.")) {
+                object = extractDynamicPropertyValue(monitor, object, fieldName);
+                if (object == null) {
+                    return null;
+                }
+            }
+            return object;
+        }
         try {
             Method getter = meta.getPropertyReadMethod(object.getClass());
+            if (getter == null) {
+                log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
+                return null;
+            }
+            Class<?>[] paramTypes = getter.getParameterTypes();
+            if (paramTypes.length == 0) {
+                // No params - just read it
+                return getter.invoke(object);
+            } else if (paramTypes.length == 1 && paramTypes[0] == DBRProgressMonitor.class) {
+                // Read with progress monitor
+                return getter.invoke(object, monitor);
+            } else {
+                log.warn("Can't read property '" + propertyName + "' - bad method signature: " + getter.toString());
+                return null;
+            }
+        } catch (IllegalAccessException ex) {
+            log.warn("Error accessing items " + propertyName, ex);
+            return null;
+        } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof DBException) {
+                throw (DBException) ex.getTargetException();
+            }
+            throw new DBException("Can't read " + propertyName + ": " + ex.getTargetException().getMessage(), ex.getTargetException());
+        }
+    }
+
+    private static Object extractDynamicPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName) throws DBException {
+        try {
+            Method getter = DBXTreeItem.findPropertyReadMethod(object.getClass(), propertyName);
             if (getter == null) {
                 log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;

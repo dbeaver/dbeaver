@@ -3,12 +3,13 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: Data Transfer UI
 Bundle-SymbolicName: org.jkiss.dbeaver.data.transfer.ui;singleton:=true
-Bundle-Version: 1.0.53.qualifier
-Bundle-Release-Date: 20211115
+Bundle-Version: 1.0.54.qualifier
+Bundle-Release-Date: 20211129
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.tools.transfer.ui.wizard,
+Export-Package: org.jkiss.dbeaver.tools.transfer.ui,
+ org.jkiss.dbeaver.tools.transfer.ui.wizard,
  org.jkiss.dbeaver.ui.controls
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
@@ -26,6 +27,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.tasks.ui;visibility:=reexport,
  org.jkiss.dbeaver.data.transfer;visibility:=reexport,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.editors.connection
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer.ui

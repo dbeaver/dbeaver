@@ -89,6 +89,8 @@ public class PostgreConstants {
 
     // Workaround for Redshift 2.x
     public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
+    // Workaround for EnterpriseDB
+    public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
@@ -111,6 +113,7 @@ public class PostgreConstants {
     public static final String TYPE_TIMESTAMP = "timestamp";
     public static final String TYPE_TIMETZ = "timetz";
     public static final String TYPE_TIMESTAMPTZ = "timestamptz";
+    public static final String TYPE_XML = "xml";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 

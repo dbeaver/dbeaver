@@ -93,6 +93,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_about_label_version;
 	public static String dialog_about_title;
 
+	public static String dialog_password_change_username;
+	public static String dialog_password_change_old_password;
+	public static String dialog_password_change_new_password;
+	public static String dialog_password_change_verify_password;
+
 	public static String dialog_connection_button_test;
 	public static String dialog_connection_events_settings_group;
 	public static String dialog_connection_events_checkbox_show_process;
@@ -460,7 +465,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_description;
 	public static String pref_page_connection_types_label_color;
 	public static String pref_page_connection_types_label_auto_commit_by_default;
+	public static String pref_page_connection_types_label_auto_commit_by_default_tip;
 	public static String pref_page_connection_types_label_confirm_sql_execution;
+	public static String pref_page_connection_types_label_confirm_sql_execution_tip;
 	public static String pref_page_connection_types_label_confirm_data_change;
 	public static String pref_page_connection_types_label_confirm_data_change_tip;
 

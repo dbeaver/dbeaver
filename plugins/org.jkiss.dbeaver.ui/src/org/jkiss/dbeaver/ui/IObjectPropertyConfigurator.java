@@ -17,23 +17,23 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 
 /**
  * IObjectPropertyConfigurator
  */
-public interface IObjectPropertyConfigurator<T>
-{
+public interface IObjectPropertyConfigurator<SETTINGS> {
     /**
      * @param parent                 Parent composite
-     * @param propertyChangeListener Can be called upon UI control change to update page completness and other things.
+     * @param propertyChangeListener Can be called upon UI control change to update page completeness and other things.
      */
-    void createControl(Composite parent, Runnable propertyChangeListener);
+    void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener);
 
-    void loadSettings(T configuration);
+    void loadSettings(@NotNull SETTINGS settings);
 
-    void saveSettings(T configuration);
+    void saveSettings(@NotNull SETTINGS settings);
 
-    void resetSettings(T configuration);
+    void resetSettings(@NotNull SETTINGS settings);
 
     boolean isComplete();
 

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -281,13 +282,21 @@ public interface SQLDialect {
     DBPIdentifierCase storesQuotedCase();
 
     /**
+     * Enables to call particular cast operator or function for special attribute name.
+     * @param attribute   attribute data to help decide whether cast and how to cast
+     * @return            casted attribute name
+     */
+    String getCastedAttributeName(@NotNull DBSAttributeBase attribute);
+
+    /**
      * Enables to call particular cast operator or function for special data types.
      * @param attribute   value attribute to help decide whether cast and how to cast
      * @param expression      string representation for cast
+     * @param isInCondition helps to understand the application place of the method
      * @return            casted string
      */
     @NotNull
-    String getTypeCastClause(DBSTypedObject attribute, String expression);
+    String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition);
 
     /**
      * Quoting functions
@@ -412,6 +421,8 @@ public interface SQLDialect {
     boolean isDisableScriptEscapeProcessing();
 
     boolean supportsAlterTableStatement();
+
+    boolean supportsIndexCreateAndDrop();
 
     boolean supportsInsertAllDefaultValuesStatement();
 

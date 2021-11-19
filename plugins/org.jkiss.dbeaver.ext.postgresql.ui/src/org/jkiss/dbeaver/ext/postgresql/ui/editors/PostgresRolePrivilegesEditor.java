@@ -519,7 +519,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
 
         ProgressVisualizer<Collection<PostgrePrivilege>> createLoadVisualizer() {
-            return new ProgressVisualizer<Collection<PostgrePrivilege>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(Collection<PostgrePrivilege> privs) {
                     super.completeLoading(privs);
@@ -532,12 +532,13 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     }
                     // Load navigator tree
                     DBRProgressMonitor monitor = new VoidProgressMonitor();
-                    DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(getDatabaseObject().getDatabase());
                     DBNDatabaseNode rootNode;
                     if (isRoleEditor()) {
+                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
                         rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
                     } else {
-                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
+                        DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
+                        rootNode = DBNUtils.getChildFolder(monitor, dsNode, PostgreRole.class);
                     }
                     if (rootNode == null) {
                         DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");

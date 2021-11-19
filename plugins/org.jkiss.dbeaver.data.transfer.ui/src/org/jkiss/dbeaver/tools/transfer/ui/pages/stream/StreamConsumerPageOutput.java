@@ -16,19 +16,30 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,6 +47,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -47,21 +59,21 @@ import java.util.stream.Collectors;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
+    private static final Log log = Log.getLog(StreamConsumerPageOutput.class);
+
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
     private Text timestampPattern;
     private Text directoryText;
     private Text fileNameText;
     private Button compressCheckbox;
-    private Button showFolderCheckbox;
-    private Button execProcessCheckbox;
-    private Text execProcessText;
     private Button clipboardCheck;
     private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
     private Button splitFilesCheckbox;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
+    private final Map<String, EventProcessorComposite> processors = new HashMap<>();
 
     public StreamConsumerPageOutput() {
         super(DTMessages.data_transfer_wizard_output_name);
@@ -96,7 +108,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 settings.setOutputFolder(directoryText.getText());
                 updatePageCompletion();
             });
-            ((GridData)directoryText.getParent().getLayoutData()).horizontalSpan = 4;
+            ((GridData) directoryText.getParent().getLayoutData()).horizontalSpan = 4;
 
             UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
@@ -180,40 +192,28 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         {
-            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 2, GridData.FILL_HORIZONTAL, 0);
+            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 1, GridData.FILL_HORIZONTAL, 0);
 
-            showFolderCheckbox = UIUtils.createCheckbox(resultsSettings, DTMessages.data_transfer_wizard_output_checkbox_open_folder, true);
-            showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setOpenFolderOnFinish(showFolderCheckbox.getSelection());
-                }
-            });
-            showFolderCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
-
-            execProcessCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_checkbox_execute_process, true);
-            execProcessCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setExecuteProcessOnFinish(execProcessCheckbox.getSelection());
-                    updateControlsEnablement();
-                    updatePageCompletion();
-                }
-            });
-            execProcessText = new Text(resultsSettings, SWT.BORDER);
-            execProcessText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            execProcessText.addModifyListener(e -> {
-                settings.setFinishProcessCommand(execProcessText.getText());
-                updatePageCompletion();
-            });
-
-            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, null, getWizard().getSettings().isShowFinalMessage(), 4);
+            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, getWizard().getSettings().isShowFinalMessage());
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
                 }
             });
+
+            final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
+            final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
+
+            for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors(StreamTransferConsumer.NODE_ID)) {
+                try {
+                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
+                    final IDataTransferEventProcessorConfigurator configurator = configuratorDescriptor.createConfigurator();
+                    this.processors.put(descriptor.getId(), new EventProcessorComposite(resultsSettings, settings, descriptor, configurator));
+                } catch (Exception e) {
+                    log.error("Can't create event processor", e);
+                }
+            }
         }
 
         {
@@ -225,11 +225,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
             UIUtils.setContentProposalToolTip(directoryText, DTUIMessages.stream_consumer_page_output_tooltip_output_directory_pattern, variables);
             UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern, variables);
-            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line, variables);
 
             ContentAssistUtils.installContentProposal(directoryText, new SmartTextContentAdapter(), proposalProvider);
             ContentAssistUtils.installContentProposal(fileNameText, new SmartTextContentAdapter(), proposalProvider);
-            ContentAssistUtils.installContentProposal(execProcessText, new SmartTextContentAdapter(), proposalProvider);
         }
 
         setControl(composite);
@@ -253,14 +251,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingCombo.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         timestampPattern.setEnabled(!clipboard);
-        showFolderCheckbox.setEnabled(!clipboard);
-        execProcessCheckbox.setEnabled(!clipboard);
-        execProcessText.setEnabled(!clipboard);
+
+        for (EventProcessorComposite processor : processors.values()) {
+            processor.setProcessorAvailable(processor.isProcessorApplicable());
+        }
     }
 
     @Override
-    public void activatePage()
-    {
+    public void activatePage() {
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
 
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
@@ -275,9 +273,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
         timestampPattern.setText(settings.getOutputTimestampPattern());
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
-        showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
-        execProcessCheckbox.setSelection(settings.isExecuteProcessOnFinish());
-        execProcessText.setText(CommonUtils.toString(settings.getFinishProcessCommand()));
 
         if (isBinary) {
             clipboardCheck.setSelection(false);
@@ -286,34 +281,33 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
+        for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
+            processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));
+            processor.getValue().loadSettings(settings.getEventProcessorSettings(processor.getKey()));
+        }
+
         updatePageCompletion();
         updateControlsEnablement();
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
+    public void deactivatePage() {
+        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
+
+        for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
+            final EventProcessorComposite configurator = processor.getValue();
+            if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
+                configurator.saveSettings(settings.getEventProcessorSettings(processor.getKey()));
+            }
+        }
+    }
+
+    @Override
+    protected boolean determinePageCompletion() {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
         if (settings == null) {
             return false;
         }
-        /*
-        int selectionIndex = encodingCombo.getSelectionIndex();
-
-        String encoding = null;
-        if (selectionIndex >= 0) {
-            encoding = encodingCombo.getItem(selectionIndex);
-        }
-
-        if (settings.isOutputClipboard() || encoding == null || GeneralUtils.getCharsetBOM(encoding) == null) {
-            encodingBOMLabel.setEnabled(false);
-            encodingBOMCheckbox.setEnabled(false);
-        } else {
-            encodingBOMLabel.setEnabled(true);
-            encodingBOMCheckbox.setEnabled(true);
-        }
-*/
-
         if (settings.isOutputClipboard()) {
             return true;
         }
@@ -332,10 +326,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             setErrorMessage(DTMessages.data_transfer_wizard_output_error_invalid_charset);
             return false;
         }
-        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
-            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_finish_command);
-            return false;
+
+        for (EventProcessorComposite processor : processors.values()) {
+            if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
+                setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.descriptor.getLabel()));
+                return false;
+            }
         }
+
         return true;
     }
 
@@ -360,5 +358,119 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     @Override
     public boolean isPageApplicable() {
         return isConsumerOfType(StreamTransferConsumer.class);
+    }
+
+    private class EventProcessorComposite extends Composite {
+        private final DataTransferEventProcessorDescriptor descriptor;
+        private final IDataTransferEventProcessorConfigurator configurator;
+        private final StreamConsumerSettings settings;
+        private final Button enabledCheckbox;
+        private Link configureLink;
+
+        public EventProcessorComposite(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull DataTransferEventProcessorDescriptor descriptor, @Nullable IDataTransferEventProcessorConfigurator configurator) {
+            super(parent, SWT.NONE);
+            this.descriptor = descriptor;
+            this.configurator = configurator;
+            this.settings = settings;
+
+            final boolean hasControl = configurator != null && configurator.hasControl();
+
+            setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
+            setLayout(GridLayoutFactory.fillDefaults().numColumns(hasControl ? 2 : 1).create());
+
+            enabledCheckbox = UIUtils.createCheckbox(this, descriptor.getLabel(), descriptor.getDescription(), false, 1);
+            enabledCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setProcessorEnabled(enabledCheckbox.getSelection());
+                }
+            });
+
+            if (hasControl) {
+                configureLink = UIUtils.createLink(this, DTMessages.data_transfer_wizard_output_event_processor_configure, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        final ConfigureDialog dialog = new ConfigureDialog(getShell(), descriptor, configurator);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            updatePageCompletion();
+                        }
+                    }
+                });
+            }
+
+            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasEventProcessor(descriptor.getId())));
+        }
+
+        public void loadSettings(@NotNull Map<String, Object> settings) {
+            configurator.loadSettings(settings);
+        }
+
+        public void saveSettings(@NotNull Map<String, Object> settings) {
+            configurator.saveSettings(settings);
+        }
+
+        public boolean isProcessorEnabled() {
+            return enabledCheckbox.getEnabled() && enabledCheckbox.getSelection();
+        }
+
+        public boolean isProcessorApplicable() {
+            return configurator != null && configurator.isApplicable(settings);
+        }
+
+        public boolean isProcessorComplete() {
+            return configurator.isComplete();
+        }
+
+        public void setProcessorAvailable(boolean available) {
+            setProcessorEnabled(enabledCheckbox.getSelection(), available);
+        }
+
+        public void setProcessorEnabled(boolean enabled) {
+            setProcessorEnabled(enabled, enabledCheckbox.getEnabled());
+        }
+
+        private void setProcessorEnabled(boolean enabled, boolean available) {
+            enabledCheckbox.setSelection(enabled);
+            enabledCheckbox.setEnabled(available);
+
+            if (configurator.hasControl()) {
+                configureLink.setEnabled(enabled && available);
+            }
+
+            if (enabled && available) {
+                settings.addEventProcessor(descriptor.getId());
+            } else {
+                settings.removeEventProcessor(descriptor.getId());
+            }
+
+            updatePageCompletion();
+        }
+    }
+
+    private static class ConfigureDialog extends BaseDialog {
+        private final IDataTransferEventProcessorConfigurator configurator;
+
+        public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferEventProcessorDescriptor descriptor, @NotNull IDataTransferEventProcessorConfigurator configurator) {
+            super(shell, NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
+            this.configurator = configurator;
+            setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            final Composite composite = super.createDialogArea(parent);
+            configurator.createControl(composite, this::updateCompletion);
+            return composite;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            super.createButtonsForButtonBar(parent);
+            updateCompletion();
+        }
+
+        private void updateCompletion() {
+            getButton(IDialogConstants.OK_ID).setEnabled(configurator.isComplete());
+        }
     }
 }

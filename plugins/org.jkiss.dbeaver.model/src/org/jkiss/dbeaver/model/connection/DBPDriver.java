@@ -109,7 +109,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean isAllowsEmptyPassword();
     boolean isLicenseRequired();
     boolean isCustomDriverLoader();
-    boolean isUseURL();
+    boolean isSampleURLApplicable();
     boolean isCustomEndpointInformation();
 
     // Can be created
@@ -169,6 +169,8 @@ public interface DBPDriver extends DBPNamedObject
     <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
+
+    String getConnectionURL(DBPConnectionConfiguration configuration);
 
     /**
      * Create copy of

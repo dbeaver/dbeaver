@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -348,9 +349,19 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return DBPIdentifierCase.MIXED;
     }
 
+    @Override
+    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute) {
+        if (attribute instanceof DBSObject) {
+            return DBUtils.isPseudoAttribute(attribute) ?
+                attribute.getName() :
+                DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+        }
+        return attribute.getName();
+    }
+
     @NotNull
     @Override
-    public String getTypeCastClause(DBSTypedObject attribute, String expression) {
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
         return expression;
     }
 
@@ -822,6 +833,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean supportsAlterTableStatement() {
         return true;
+    }
+
+    @Override
+    public boolean supportsIndexCreateAndDrop() {
+        return supportsAlterTableStatement();
     }
 
     @Override

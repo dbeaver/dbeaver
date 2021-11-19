@@ -119,9 +119,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     {
         if (!isCustomURL()) {
             connectionInfo.setUrl(
-                site.getDriver().getDataSourceProvider().getConnectionURL(
-                    site.getDriver(),
-                    connectionInfo));
+                site.getDriver().getConnectionURL(connectionInfo));
         }
     }
 

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -808,23 +809,37 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return BLOCK_BOUND_KEYWORDS;
     }
 
+    @Override
+    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute) {
+        // This method actually works for special data types like JSON and XML. Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
+        String attrName = attribute.getName();
+        if (attribute instanceof DBSObject) {
+            attrName = DBUtils.isPseudoAttribute(attribute) ?
+                attribute.getName() :
+                DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+        }
+        return getCastedString(attribute, attrName, true, true);
+    }
+
     @NotNull
     @Override
-    public String getTypeCastClause(DBSTypedObject attribute, String expression) {
-        String typeName = attribute.getTypeName();
-        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
-            if (attribute instanceof DBDAttributeBinding) {
-                DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
-                if (dataType != null) {
-                    DBSObject parentObject = dataType.getParentObject();
-                    if (parentObject instanceof PostgreSchema && dataType instanceof PostgreDataType) {
-                        typeName = ((PostgreDataType) dataType).getFullyQualifiedName(DBPEvaluationContext.DDL);
-                    }
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+        // Some data for some types of columns data types must be cast. It can be simple casting only with data type name like "::pg_class" or casting with fully qualified names for user defined types like "::schemaName.testType".
+        // Or very special clauses with JSON and XML columns, when we have to cast both column data and column name to text.
+        return getCastedString(attribute, expression, isInCondition, false);
+    }
+
+    private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
+        if (attribute instanceof DBDAttributeBinding) {
+            DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
+            if (dataType instanceof PostgreDataType) {
+                String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
+                if (CommonUtils.isNotEmpty(typeCasting)) {
+                    return string + typeCasting;
                 }
             }
-            return expression + "::" + typeName;
         }
-        return expression;
+        return string;
     }
 
     @NotNull

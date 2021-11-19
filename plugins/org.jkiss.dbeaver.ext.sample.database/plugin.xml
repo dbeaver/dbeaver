@@ -32,7 +32,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="menu:help?after=additions">
+        <menuContribution allPopups="false" locationURI="menu:help?after=installation_help">
             <command commandId="org.jkiss.dbeaver.ext.sample.database.commands.create"/>
         </menuContribution>
     </extension>

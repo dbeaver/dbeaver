@@ -369,11 +369,11 @@ public abstract class DBXTreeNode
         };
     }
 
-    public void moveChildAfter(DBXTreeNode child, DBXTreeItem afterItem) {
+    public void moveChildAfter(DBXTreeNode child, DBXTreeNode afterItem) {
         int afterIndex = -1;
         for (int i = 0; i < children.size(); i++) {
             DBXTreeNode n = children.get(i);
-            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren().size() == 1 && n.getChildren().get(0) == afterItem)) {
+            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren() != null && n.getChildren().size() == 1 && n.getChildren().get(0) == afterItem)) {
                 afterIndex = i;
                 break;
             }

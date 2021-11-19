@@ -123,7 +123,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
         connectionInfo.setDatabaseName(dbFile.getAbsolutePath());
         connectionInfo.setConnectionType(DBPConnectionType.DEV);
-        connectionInfo.setUrl(genericDSProvider.getInstance(sqliteDriver).getConnectionURL(sqliteDriver, connectionInfo));
+        connectionInfo.setUrl(sqliteDriver.getConnectionURL(connectionInfo));
         dataSource = new DataSourceDescriptor(dsRegistry, SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
         dataSource.setSavePassword(true);
         dataSource.getNavigatorSettings().setShowSystemObjects(true);

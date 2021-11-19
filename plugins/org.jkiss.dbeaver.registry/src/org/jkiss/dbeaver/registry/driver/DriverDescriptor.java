@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
@@ -758,7 +759,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public boolean isUseURL() {
+    public boolean isSampleURLApplicable() {
         return useURLTemplate;
     }
 
@@ -1014,6 +1015,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public void loadDriver(DBRProgressMonitor monitor)
             throws DBException {
         this.loadDriver(monitor, false);
+    }
+
+    public boolean isSampleURLForced() {
+        return isSampleURLApplicable() && !CommonUtils.equalObjects(sampleURL, origSampleURL);
+    }
+
+    @Override
+    public String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        if (isSampleURLForced()) {
+            // Generate URL by template
+            return JDBCURL.generateUrlByTemplate(this, connectionInfo);
+        } else {
+            // It can be empty in some cases (e.g. when we create connections from command line command)
+            return getDataSourceProvider().getConnectionURL(this, connectionInfo);
+        }
     }
 
     @Override

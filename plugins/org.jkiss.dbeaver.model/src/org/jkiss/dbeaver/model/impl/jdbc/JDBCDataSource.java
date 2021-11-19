@@ -147,11 +147,12 @@ public abstract class JDBCDataSource
                 connectionConfigurer.beforeConnection(monitor, connectionInfo, connectProps);
             }
             final String url = getConnectionURL(connectionInfo);
+            boolean isInvalidURL = false;
             if (driverInstance != null) {
                 try {
                     if (!driverInstance.acceptsURL(url)) {
-                        // Just write a warning in log. Some drivers are poorly coded and always returns false here.
-                        log.error("Bad URL: " + url);
+                        // Just set the mark. Some drivers are poorly coded and always returns false here.
+                        isInvalidURL = true;
                     }
                 } catch (Throwable e) {
                     log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
@@ -214,7 +215,11 @@ public abstract class JDBCDataSource
                 throw new DBCException("Connection has timed out");
             }
             if (connection[0] == null) {
-                throw new DBCException("Null connection returned");
+                if (isInvalidURL) {
+                    throw new DBCException("Invalid JDBC URL: " + url);
+                } else {
+                    throw new DBCException("Null connection returned");
+                }
             }
 
             // Set read-only flag
@@ -269,8 +274,7 @@ public abstract class JDBCDataSource
     protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
         String url = connectionInfo.getUrl();
         if (CommonUtils.isEmpty(url)) {
-            // It can be empty in some cases (e.g. when we create connections from command line command)
-            url = getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), connectionInfo);
+            url = getContainer().getDriver().getConnectionURL(connectionInfo);
         }
         return url;
     }

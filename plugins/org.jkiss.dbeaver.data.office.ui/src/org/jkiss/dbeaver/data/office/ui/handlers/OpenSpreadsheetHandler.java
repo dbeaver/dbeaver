@@ -100,7 +100,6 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     StreamConsumerSettings settings = new StreamConsumerSettings();
 
                     settings.setOutputEncodingBOM(false);
-                    settings.setOpenFolderOnFinish(false);
                     settings.setOutputFolder(tempDir.getAbsolutePath());
                     settings.setOutputFilePattern(tempFile.getName());
 

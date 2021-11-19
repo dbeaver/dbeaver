@@ -282,7 +282,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driverURLText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
         driverURLText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_sample_url_tip);
         driverURLText.addModifyListener(e -> onChangeProperty());
-        driverURLText.setEnabled(driver == null || driver.isUseURL());
+        driverURLText.setEnabled(driver == null || driver.isSampleURLApplicable());
 
         driverPortText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port, CommonUtils.notEmpty(driver.getDefaultPort()), SWT.BORDER | advStyle);
         driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

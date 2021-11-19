@@ -252,7 +252,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
             DTUIMessages.database_producer_page_input_objects_node_select_table,
             rootNode,
             lastSelection,
-            new Class[] {DBSObjectContainer.class},
+            new Class[] {DBSInstance.class, DBSObjectContainer.class},
             new Class[] {DBSObjectContainer.class},
             null);
         if (!(node instanceof DBNDatabaseNode)) {
@@ -281,7 +281,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
                 NLS.bind(DTUIMessages.database_producer_page_input_objects_node_select_source, pipe.getConsumer().getObjectName()),
             rootNode,
             lastSelection,
-            new Class[] {DBSObjectContainer.class, DBSDataContainer.class},
+            new Class[] {DBSInstance.class, DBSObjectContainer.class, DBSDataContainer.class},
             new Class[] {chooseConsumer ? DBSDataManipulator.class : DBSDataContainer.class}, null);
         if (node instanceof DBNDatabaseNode) {
             lastSelection = (DBNDatabaseNode) node;

@@ -173,7 +173,7 @@ public class DBXTreeItem extends DBXTreeNode
         return getter == NULL_GETTER ? null : getter;
     }
 
-    private static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
+    public static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
         String methodName = BeanUtils.propertyNameToMethodName(propertyName);
         return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
     }
