@@ -17,19 +17,20 @@
 
 package org.jkiss.dbeaver.ext.oceanbase.ui.views;
 
-import java.util.Locale;
-
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.Activator;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.OceanbaseMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
 
 /**
  * OceanbaseConnectionPage
@@ -85,8 +88,8 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             portText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = UIUtils.getFontHeight(portText) * 5;
             portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
@@ -98,6 +101,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             databaseText = new Text(hostGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
+            gd.horizontalSpan = 3;
             databaseText.setLayoutData(gd);
             databaseText.addModifyListener(textListener);
 
@@ -108,6 +112,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             tenantText = new Text(hostGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
+            gd.horizontalSpan = 3;
             tenantText.setLayoutData(gd);
             tenantText.addModifyListener(textListener);
         }

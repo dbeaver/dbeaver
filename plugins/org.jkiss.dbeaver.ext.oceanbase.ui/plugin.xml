@@ -52,5 +52,12 @@
                 class="org.jkiss.dbeaver.ext.oceanbase.ui.views.OceanbaseConnectionPage"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.oceanbase/icons/ob_icon.png"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator
+            class="org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative"
+            uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+    </extension>
+
 </plugin>
 
