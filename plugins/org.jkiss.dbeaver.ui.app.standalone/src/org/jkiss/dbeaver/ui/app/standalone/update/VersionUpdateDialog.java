@@ -56,6 +56,8 @@ public class VersionUpdateDialog extends Dialog {
 
     private static final Log log = Log.getLog(VersionUpdateDialog.class);
 
+    private static final String PROP_DISTRIBUTION_TYPE = "dbeaver.distribution.type";
+
     private static final int INFO_ID = 1000;
     private static final int UPGRADE_ID = 1001;
     private static final int CHECK_EA_ID = 1002;
@@ -259,11 +261,10 @@ public class VersionUpdateDialog extends Dialog {
                         final Path file;
 
                         try {
-                            final String executableName = installer.getExecutableName(app);
-                            final String executableExtension = installer.getExecutableExtension();
+                            final String executable = installer.getExecutableName(app);
 
-                            folder = Files.createTempDirectory(executableName);
-                            file = Files.createFile(folder.resolve(executableName + '.' + executableExtension));
+                            folder = Files.createTempDirectory(executable);
+                            file = Files.createFile(folder.resolve(executable));
 
                             log.debug("Downloading installation file to " + file);
                             WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file.toFile(), null);
@@ -349,9 +350,8 @@ public class VersionUpdateDialog extends Dialog {
 
     @NotNull
     private String getDownloadURL(@NotNull ApplicationDescriptor application, @NotNull PlatformInstaller installer, @NotNull VersionDescriptor version) {
-        final String name = installer.getExecutableName(application);
-        final String extension = installer.getExecutableExtension();
-        return CommonUtils.removeTrailingSlash(version.getDownloadURL()) + '/' + name + '.' + extension;
+        final String executable = installer.getExecutableName(application);
+        return CommonUtils.removeTrailingSlash(version.getDownloadURL()) + '/' + executable;
     }
 
     @NotNull
@@ -363,8 +363,8 @@ public class VersionUpdateDialog extends Dialog {
             default: os = "linux"; break;
         }
         String arch = Platform.getOSArch();
-        String dist = null;
-        if (os.equals("linux")) {
+        String dist = System.getProperty(PROP_DISTRIBUTION_TYPE);
+        if (os.equals("linux") && CommonUtils.isEmpty(dist)) {
             // Determine package manager
             try {
                 RuntimeUtils.executeProcess("/usr/bin/apt-get", "--version");
@@ -384,9 +384,6 @@ public class VersionUpdateDialog extends Dialog {
 
         @NotNull
         String getExecutableName(@NotNull ApplicationDescriptor application);
-
-        @NotNull
-        String getExecutableExtension();
     }
 
     private static final class WindowsInstaller implements PlatformInstaller {
@@ -402,13 +399,11 @@ public class VersionUpdateDialog extends Dialog {
         @NotNull
         @Override
         public String getExecutableName(@NotNull ApplicationDescriptor application) {
-            return application.getId() + "-latest-x86_64-setup";
-        }
-
-        @NotNull
-        @Override
-        public String getExecutableExtension() {
-            return "exe";
+            if ("zip".equals(System.getProperty(PROP_DISTRIBUTION_TYPE))) {
+                return application.getId() + "-latest-win32.win32.x86_64.zip";
+            } else {
+                return application.getId() + "-latest-x86_64-setup.exe";
+            }
         }
     }
 
@@ -425,13 +420,7 @@ public class VersionUpdateDialog extends Dialog {
         @NotNull
         @Override
         public String getExecutableName(@NotNull ApplicationDescriptor application) {
-            return application.getId() + "-latest-macos";
-        }
-
-        @NotNull
-        @Override
-        public String getExecutableExtension() {
-            return "dmg";
+            return application.getId() + "-latest-macos" + Platform.getOSArch() + ".dmg";
         }
     }
 }
