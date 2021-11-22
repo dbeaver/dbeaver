@@ -144,8 +144,9 @@ public class DialogUtils {
         String fileName = fileDialog.open();
         if (!CommonUtils.isEmpty(fileName)) {
             setCurDialogFolder(fileDialog.getFilterPath());
+            fileName = fixMissingFileExtension(fileDialog, fileName);
         }
-        return fixMissingFileExtension(fileDialog, fileName);
+        return fileName;
     }
 
     public static String getCurDialogFolder()
