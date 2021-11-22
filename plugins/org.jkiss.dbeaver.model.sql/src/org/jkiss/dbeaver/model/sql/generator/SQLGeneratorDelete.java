@@ -20,7 +20,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
+import org.jkiss.dbeaver.model.impl.sql.DataManipulationQueryKeys;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
@@ -43,11 +45,20 @@ public class SQLGeneratorDelete extends SQLGeneratorTable {
             keyAttributes = getAllAttributes(monitor, object);
         }
         boolean hasAttr = false;
-        for (DBSEntityAttribute attr : keyAttributes) {
-            if (hasAttr) sql.append(" AND ");
-            sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-            appendDefaultValue(sql, attr);
-            hasAttr = true;
+        String keyValues = null;
+        if (object instanceof DataManipulationQueryKeys) {
+            keyValues = ((DataManipulationQueryKeys) object).getQueryKeyValues(keyAttributes.toArray(new DBSAttributeBase[0]), null);
+            if (CommonUtils.isNotEmpty(keyValues)) {
+                sql.append(keyValues);
+            }
+        }
+        if (CommonUtils.isEmpty(keyValues)) {
+            for (DBSEntityAttribute attr : keyAttributes) {
+                if (hasAttr) sql.append(" AND ");
+                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                appendDefaultValue(sql, attr);
+                hasAttr = true;
+            }
         }
         sql.append(";\n");
     }

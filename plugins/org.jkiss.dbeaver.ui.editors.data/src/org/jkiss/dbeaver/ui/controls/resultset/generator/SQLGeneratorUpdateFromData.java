@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
+import org.jkiss.dbeaver.model.impl.sql.DataManipulationQueryKeys;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -77,11 +78,20 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
             }
             if (!CommonUtils.isEmpty(keyAttributes)) {
                 sql.append(separator).append("WHERE ");
-                hasAttr = false;
-                for (DBDAttributeBinding attr : keyAttributes) {
-                    if (hasAttr) sql.append(" AND ");
-                    appendValueCondition(getController(), sql, attr, firstRow);
-                    hasAttr = true;
+                String keyValues = null;
+                if (object.getDataContainer() instanceof DataManipulationQueryKeys) {
+                    keyValues = ((DataManipulationQueryKeys) object.getDataContainer()).getQueryKeyValues(keyAttributes.toArray(new DBSAttributeBase[0]), firstRow.getValues());
+                    if (CommonUtils.isNotEmpty(keyValues)) {
+                        sql.append(keyValues);
+                    }
+                }
+                if (CommonUtils.isEmpty(keyValues)) {
+                    hasAttr = false;
+                    for (DBDAttributeBinding attr : keyAttributes) {
+                        if (hasAttr) sql.append(" AND ");
+                        appendValueCondition(getController(), sql, attr, firstRow);
+                        hasAttr = true;
+                    }
                 }
             }
             sql.append(";\n");
