@@ -34,7 +34,7 @@ Require-Bundle: org.eclipse.osgi.services,
  org.jkiss.dbeaver.tasks.ui,
  org.jkiss.bundle.gis;visibility:=reexport
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.jkiss.dbeaver.ext.postgresql.PostgreUIActivator

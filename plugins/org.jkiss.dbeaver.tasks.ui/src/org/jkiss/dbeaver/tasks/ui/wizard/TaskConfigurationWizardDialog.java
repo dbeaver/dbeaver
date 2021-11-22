@@ -201,6 +201,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                     // Now we need to create real wizard, initialize it and inject in this dialog
                         nestedTaskWizard = nextTaskWizard;
                         nestedTaskWizard.addPages();
+                        nestedTaskWizard.initializeWizard(this.getShell().getParent());
                         setWizard(nestedTaskWizard);
                 }
             } catch (Exception e) {

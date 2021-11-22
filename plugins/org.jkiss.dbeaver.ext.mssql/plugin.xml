@@ -205,6 +205,26 @@
                     <file type="jar" path="maven:/com.microsoft.azure:msal4j[1.9.1]" optional="true" />
                 </driver>
 
+                <driver
+                        id="babelfish"
+                        label="Babelfish via TDS (beta)"
+                        icon="icons/bbfsh_icon.png"
+                        iconBig="icons/bbfsh_icon_big.png"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host};databaseName={database}"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="https://babelfishpg.org/"
+                        description="%driver.sqlserver.description"
+                        categories="sql,server,aws">
+
+                    <replace provider="mssql" driver="mssql_jdbc_babelfish"/>
+
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[9.2.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                </driver>
+
                 <!-- jTDS driver - deprecated -->
                 <driver
                         id="jtds"

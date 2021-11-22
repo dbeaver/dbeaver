@@ -32,11 +32,18 @@ public class SQLServerExtendedPropertyCache extends JDBCObjectLookupCache<SQLSer
     @NotNull
     @Override
     public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerExtendedPropertyOwner owner, @Nullable SQLServerExtendedProperty object, @Nullable String objectName) throws SQLException {
-        JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT *, TYPE_ID(CAST(SQL_VARIANT_PROPERTY(value, 'BaseType') as nvarchar)) AS value_type" +
-            " FROM " + SQLServerUtils.getExtendedPropsTableName(owner.getDatabase()) +
-            " WHERE major_id=? AND minor_id=? AND class=? ORDER BY minor_id"
-        );
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ep.*, ");
+        if (SQLServerUtils.isDriverBabelfish(session.getDataSource().getContainer().getDriver())) {
+            sql.append("NULL AS value_type ");
+        }
+        else {
+            sql.append("TYPE_ID(CAST(SQL_VARIANT_PROPERTY(value, 'BaseType') as nvarchar)) AS value_type ");
+        }
+        sql.append("FROM ");
+        sql.append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase()));
+        sql.append(" ep WHERE ep.major_id=? AND ep.minor_id=? AND ep.class=? ORDER BY ep.minor_id");
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getMajorObjectId());
         dbStat.setLong(2, owner.getMinorObjectId());
         dbStat.setLong(3, owner.getExtendedPropertyObjectClass().getClassId());

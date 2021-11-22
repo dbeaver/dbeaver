@@ -426,7 +426,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         if (hasStatistics && !forceRefresh) {
             return;
         }
-        if (SQLServerUtils.isDriverAzure(getContainer().getDriver()) || isDataWarehouseServer(monitor)) {
+        if (SQLServerUtils.isDriverAzure(getContainer().getDriver()) || SQLServerUtils.isDriverBabelfish(getContainer().getDriver()) || isDataWarehouseServer(monitor)) {
             hasStatistics = true;
             return;
         }

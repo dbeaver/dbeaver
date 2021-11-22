@@ -176,7 +176,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (!isPersisted()) {
+        if (!isPersisted() || SQLServerUtils.isDriverBabelfish(getDataSource().getContainer().getDriver())) {
             return null;
         }
         if (ddl == null) {

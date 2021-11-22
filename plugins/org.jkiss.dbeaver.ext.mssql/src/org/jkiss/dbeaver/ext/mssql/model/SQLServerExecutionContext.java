@@ -149,7 +149,11 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
             String currentSchema = null;
             try {
                 try (JDBCStatement dbStat = session.createStatement()) {
-                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT db_name(), schema_name(), original_login()")) {
+                    String query = "SELECT db_name(), schema_name(), original_login()";
+                    if (SQLServerUtils.isDriverBabelfish(session.getDataSource().getContainer().getDriver())) {
+                        query = "SELECT db_name(), s.name AS schema_name, session_user AS original_login FROM sys.schemas s";
+                    }
+                    try (JDBCResultSet dbResult = dbStat.executeQuery(query)) {
                         dbResult.next();
                         currentDatabase = dbResult.getString(1);
                         currentSchema = dbResult.getString(2);

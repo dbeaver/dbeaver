@@ -20,8 +20,6 @@
 package org.jkiss.dbeaver.erd.ui.action;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
@@ -29,10 +27,11 @@ import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.File;
+import java.io.FileWriter;
 
 /**
  * Action to toggle diagram persistence
@@ -42,7 +41,7 @@ public class DiagramExportAction extends Action {
     private static final Log log = Log.getLog(DiagramExportAction.class);
 
     private final ERDEditorPart editor;
-    private Shell shell;
+    private final Shell shell;
 
     public DiagramExportAction(ERDEditorPart editor, Shell shell) {
         super("Export diagram", DBeaverIcons.getImageDescriptor(UIIcon.EXPORT));
@@ -55,21 +54,14 @@ public class DiagramExportAction extends Action {
     @Override
     public void run() {
         try {
-            String path = null;
-            FileDialog dialog = new FileDialog( shell, SWT.SAVE );
-            String[] filterExt = {"*.erd"};
-            dialog.setFilterExtensions(filterExt);
-            path = dialog.open();
-            
-            if ( path != null ) {
-                String diagramState = DiagramLoader.serializeDiagram(new VoidProgressMonitor(), editor.getDiagramPart(), editor.getDiagram(), false, true);
-
-                try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(path), GeneralUtils.UTF8_CHARSET)) {
-                    osw.write(diagramState);
+            final File path = DialogUtils.selectFileForSave(shell, "Save diagram as", new String[]{"*.erd"}, null);
+            if (path != null) {
+                try (FileWriter writer = new FileWriter(path, GeneralUtils.UTF8_CHARSET)) {
+                    writer.write(DiagramLoader.serializeDiagram(new VoidProgressMonitor(), editor.getDiagramPart(), editor.getDiagram(), false, true));
                 }
-            }
-            else
+            } else {
                 log.error("Invalid path to save the image");
+            }
         } catch (Exception e) {
             log.error("Error saving diagram", e);
         }

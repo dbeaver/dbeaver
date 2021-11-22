@@ -59,13 +59,21 @@ public class DialogUtils {
         return selectFileForSave(parentShell, "Save Content As", null, valueName);
     }
 
-    public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, @Nullable String fileName)
-    {
+    @Nullable
+    public static File selectFileForSave(@NotNull Shell parentShell, @NotNull String title, @Nullable String[] filterExt, @Nullable String fileName) {
+        return selectFileForSave(parentShell, title, filterExt, null, fileName);
+    }
+
+    @Nullable
+    public static File selectFileForSave(@NotNull Shell parentShell, @NotNull String title, @Nullable String[] filterExt, @Nullable String[] filterNames, @Nullable String fileName) {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
         fileDialog.setText(title);
         fileDialog.setOverwrite(true);
         if (filterExt != null) {
             fileDialog.setFilterExtensions(filterExt);
+        }
+        if (filterNames != null) {
+            fileDialog.setFilterNames(filterNames);
         }
         if (fileName != null) {
             fileDialog.setFileName(fileName);
@@ -136,6 +144,7 @@ public class DialogUtils {
         String fileName = fileDialog.open();
         if (!CommonUtils.isEmpty(fileName)) {
             setCurDialogFolder(fileDialog.getFilterPath());
+            fileName = fixMissingFileExtension(fileDialog, fileName);
         }
         return fileName;
     }
@@ -206,5 +215,18 @@ public class DialogUtils {
         return filteredTree.getViewer();
     }
 
-
+    /* SWT 2021-06-02 bug: file extension is not appended on Windows */
+    @NotNull
+    private static String fixMissingFileExtension(@NotNull FileDialog dialog, @NotNull String filename) {
+        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) && filename.indexOf('.') < 0 && RuntimeUtils.isWindows()) {
+            final String[] filters = dialog.getFilterExtensions();
+            if (dialog.getFilterIndex() >= 0 && dialog.getFilterIndex() < filters.length) {
+                final String filter = filters[dialog.getFilterIndex()];
+                if (!filter.equals("*") && !filter.equals("*.*") && filter.indexOf('.') >= 0) {
+                    return filename + filter.substring(filter.lastIndexOf('.'));
+                }
+            }
+        }
+        return filename;
+    }
 }

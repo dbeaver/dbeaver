@@ -132,9 +132,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private boolean firstRow = true;
     private TransferParameters parameters;
 
-    private List<File> outputFiles = new ArrayList<>();
+    private final List<File> outputFiles = new ArrayList<>();
+    private StatOutputStream statStream;
 
     public StreamTransferConsumer() {
+    }
+
+    protected long getBytesWritten() {
+        return statStream == null ? 0 : statStream.getBytesWritten();
     }
 
     @Override
@@ -324,8 +329,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private void openOutputStreams() throws IOException {
+        this.statStream = new StatOutputStream(
+            new FileOutputStream(outputFile, settings.isUseSingleFile()));
         this.outputStream = new BufferedOutputStream(
-            new FileOutputStream(outputFile, settings.isUseSingleFile()),
+            statStream,
             OUT_FILE_BUFFER_SIZE);
         if (settings.isCompressResults()) {
             this.zipStream = new ZipOutputStream(this.outputStream);
@@ -357,8 +364,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private void closeOutputStreams() {
         if (this.writer != null) {
             this.writer.flush();
-            ContentUtils.close(this.writer);
-            this.writer = null;
         }
 
         // Finish zip stream

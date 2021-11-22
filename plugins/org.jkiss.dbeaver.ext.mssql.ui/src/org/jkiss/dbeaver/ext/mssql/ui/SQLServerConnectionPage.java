@@ -58,11 +58,13 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private boolean activated;
 
     private final Image LOGO_AZURE;
+    private final Image LOGO_BABELFISH;
     private final Image LOGO_SQLSERVER;
     private final Image LOGO_SYBASE;
 
     public SQLServerConnectionPage() {
         LOGO_AZURE = createImage("icons/azure_logo.png");
+        LOGO_BABELFISH = createImage("icons/bbfsh_logo.png");
         LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
         LOGO_SYBASE = createImage("icons/sybase_logo.png");
 
@@ -73,6 +75,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     {
         super.dispose();
         UIUtils.dispose(LOGO_AZURE);
+        UIUtils.dispose(LOGO_BABELFISH);
         UIUtils.dispose(LOGO_SQLSERVER);
         UIUtils.dispose(LOGO_SYBASE);
     }
@@ -221,18 +224,27 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
     @Override
     public Image getImage() {
-        boolean isSqlServer = isSqlServer();
-        boolean isDriverAzure = isSqlServer && isDriverAzure();
-
-        return isSqlServer ?
-            (isDriverAzure ?
-                LOGO_AZURE :
-                LOGO_SQLSERVER) :
-            LOGO_SYBASE;
+        Image logo = LOGO_SYBASE;
+        if (isSqlServer()) {
+            if (isDriverAzure()) {
+                logo = LOGO_AZURE;
+            }
+            else if (isDriverBabelfish()) {
+                logo = LOGO_BABELFISH;
+            }
+            else {
+                logo = LOGO_SQLSERVER;
+            }
+        }
+        return logo;
     }
 
     private boolean isDriverAzure() {
         return SQLServerUtils.isDriverAzure(getSite().getDriver());
+    }
+
+    private boolean isDriverBabelfish() {
+        return SQLServerUtils.isDriverBabelfish(getSite().getDriver());
     }
 
     private boolean isSqlServer() {

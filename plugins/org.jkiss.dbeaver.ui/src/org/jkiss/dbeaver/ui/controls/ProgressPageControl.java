@@ -272,7 +272,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (searchControlsComposite == null || searchControlsComposite.isDisposed()) {
             return;
         }
-        this.setRedraw(false);
+        searchControlsComposite.getParent().setRedraw(false);
         try {
             // Delete all controls created in searchControlsComposite
             UIUtils.disposeChildControls(searchControlsComposite);
@@ -310,7 +310,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             searchControlsComposite.getParent().layout();
             //customControlsComposite.layout();
         } finally {
-            this.setRedraw(true);
+            searchControlsComposite.getParent().setRedraw(true);
         }
     }
 
