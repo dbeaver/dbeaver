@@ -101,6 +101,16 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
             tabFolder = new TabFolder(composite, SWT.TOP | SWT.FLAT);
             tabFolder.setLayoutData(gd);
+            tabFolder.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    artifacts.clear();
+                    if (tabFolder.getSelectionIndex() == 0){
+                        parseArtifactText();
+                    }
+                    super.widgetSelected(e);
+                }
+            });
             if (originalArtifact == null) {
                 createRawTab(tabFolder);
             }
@@ -139,6 +149,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     private void parseArtifactText() {
         try {
+            artifacts.clear();
             artifacts.addAll(parseMaven());
             setStatus(false, NLS.bind(UIConnectionMessages.dialog_edit_driver_edit_maven_artifacts_count, artifacts.size()));
         } catch (Exception e) {
