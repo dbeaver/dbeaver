@@ -106,9 +106,8 @@ public class EditMavenArtifactDialog extends BaseDialog {
                 public void widgetSelected(SelectionEvent e) {
                     artifacts.clear();
                     if (tabFolder.getSelectionIndex() == 0){
-                        parseArtifactText();
+                        UIUtils.asyncExec(EditMavenArtifactDialog.this::parseArtifactText);
                     }
-                    super.widgetSelected(e);
                 }
             });
             if (originalArtifact == null) {
@@ -150,8 +149,10 @@ public class EditMavenArtifactDialog extends BaseDialog {
     private void parseArtifactText() {
         try {
             artifacts.clear();
-            artifacts.addAll(parseMaven());
-            setStatus(false, NLS.bind(UIConnectionMessages.dialog_edit_driver_edit_maven_artifacts_count, artifacts.size()));
+            if (!fieldText.getText().isEmpty()) {
+                artifacts.addAll(parseMaven());
+                setStatus(false, NLS.bind(UIConnectionMessages.dialog_edit_driver_edit_maven_artifacts_count, artifacts.size()));
+            }
         } catch (Exception e) {
             if (REGEX_FOR_GRADLE.matcher(fieldText.getText()).find()) {
                 try {
