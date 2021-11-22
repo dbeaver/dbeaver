@@ -26,11 +26,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -40,6 +36,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+
+import static org.jkiss.dbeaver.model.sql.SQLUtils.makeSQLLike;
 
 /**
  * Abstract SQL Dialect
@@ -506,6 +504,22 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter) {
         return SQLSemanticProcessor.addFiltersToQuery(monitor, dataSource, query, filter);
+    }
+
+    @Override
+    public void createLike(StringBuilder sql, String mask, boolean negative) {
+        mask = makeSQLLike(mask);
+        if (mask.contains("%") || mask.contains("_")) {
+            if (negative) sql.append(" NOT");
+            sql.append(" LIKE ?");
+        }  else {
+            sql.append(negative ? "<> ?": "=?");
+        }
+    }
+
+    @Override
+    public void createLikeWithEscape(@NotNull StringBuilder sql, @NotNull String mask, char escapeChar, boolean negative) {
+        createLike(sql, mask, negative);
     }
 
     @Override

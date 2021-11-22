@@ -345,6 +345,10 @@ public interface SQLDialect {
 
     String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
 
+    void createLike(@NotNull StringBuilder sql, @NotNull String mask, boolean negative); // LIKE '${mask}'
+
+    void createLikeWithEscape(@NotNull StringBuilder sql, @NotNull String mask, char escapeChar, boolean negative); // LIKE '${mask}' ESCAPE '${escapeChar}'
+
     /**
      * Two-item array containing begin and end of multi-line comments.
      * @return string array or null if multi-line comments are not supported

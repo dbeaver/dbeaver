@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -369,7 +370,7 @@ public class SQLServerDatabase
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
                 sql.append("\n");
-                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true);
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true, new SQLServerDialect() , '\\');
             }
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

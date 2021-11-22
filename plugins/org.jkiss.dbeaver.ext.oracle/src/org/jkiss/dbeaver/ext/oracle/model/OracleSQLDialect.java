@@ -31,10 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -387,6 +384,20 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         return MultiValueInsertMode.INSERT_ALL;
+    }
+
+    @Override
+    public void createLikeWithEscape(@NotNull StringBuilder sql, @NotNull String mask, char escapeChar, boolean negative) {
+        createLike(sql, mask, negative);
+        if (mask.indexOf(escapeChar) >= 0){
+            sql.append(" ESCAPE ").append(getQuotedString(String.valueOf(escapeChar)));
+        }
+    }
+
+    @Override
+    public void createLike(StringBuilder sql, String mask, boolean negative) {
+        mask = SQLUtils.makeSQLLike(mask);
+        super.createLike(sql, mask, negative);
     }
 
     @NotNull

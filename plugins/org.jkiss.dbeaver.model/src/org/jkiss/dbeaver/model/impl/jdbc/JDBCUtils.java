@@ -687,7 +687,7 @@ public class JDBCUtils {
         debugColumnRead(dbResult, "#" + columnIndex, error);
     }
 
-    public static void appendFilterClause(StringBuilder sql, DBSObjectFilter filter, String columnAlias, boolean firstClause)
+    public static void appendFilterClause(StringBuilder sql, DBSObjectFilter filter, String columnAlias, boolean firstClause, SQLDialect dialect, char escapedChar)
     {
         if (filter.isNotApplicable()) {
             return;
@@ -697,7 +697,7 @@ public class JDBCUtils {
                 firstClause = SQLUtils.appendFirstClause(sql, firstClause);
                 sql.append(columnAlias);
             }
-            SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false);
+            dialect.createLikeWithEscape(sql, filter.getSingleMask(), escapedChar, false);
             return;
         }
         List<String> include = filter.getInclude();
@@ -712,7 +712,7 @@ public class JDBCUtils {
                 if (columnAlias != null) {
                     sql.append(columnAlias);
                 }
-                SQLUtils.appendLikeCondition(sql, include.get(i), false);
+                dialect.createLikeWithEscape(sql, include.get(i), escapedChar,false );
             }
             sql.append(")");
         }
@@ -728,7 +728,7 @@ public class JDBCUtils {
                 if (columnAlias != null) {
                     sql.append(columnAlias);
                 }
-                SQLUtils.appendLikeCondition(sql, exclude.get(i), false);
+                dialect.createLikeWithEscape(sql, exclude.get(i), escapedChar, false);
             }
             sql.append(")");
         }

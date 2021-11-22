@@ -771,7 +771,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true, new MySQLDialect(), '\\');
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {

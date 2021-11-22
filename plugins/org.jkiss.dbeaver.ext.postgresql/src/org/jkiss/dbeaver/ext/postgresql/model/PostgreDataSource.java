@@ -215,7 +215,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 catalogQuery.append(" AND NOT datistemplate ");
             }
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false, new PostgreDialect(), '\\');
             }
             catalogQuery.append("\nORDER BY db.datname");
         }
