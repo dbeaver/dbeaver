@@ -389,6 +389,11 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         return MultiValueInsertMode.INSERT_ALL;
     }
 
+    @Override
+    public String getLikeEscapeClause(@NotNull String escapeChar) {
+        return " ESCAPE " + getQuotedString(escapeChar);
+    }
+
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {

@@ -369,7 +369,7 @@ public class SQLServerDatabase
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
                 sql.append("\n");
-                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true);
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true, owner.getDataSource());
             }
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

@@ -475,7 +475,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
             DBSObjectFilter databaseFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
             if (databaseFilters != null && databaseFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", true);
+                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", true, owner);
             }
             sql.append("\nORDER BY db.name");
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

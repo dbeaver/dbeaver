@@ -1181,7 +1181,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                     }
                 }
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true, database.getDataSource());
             }
             catalogQuery.append(" ORDER BY nspname");
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
