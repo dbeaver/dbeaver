@@ -61,12 +61,14 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider implemen
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         //jdbc:awsathena://AwsRegion=us-east-1;
         String urlTemplate = driver.getSampleURL();
+        String regionName = connectionInfo.getServerName();
         if (CommonUtils.isEmpty(urlTemplate) || !urlTemplate.startsWith(AthenaConstants.JDBC_URL_PREFIX)) {
-            return AthenaConstants.JDBC_URL_PREFIX + AthenaConstants.DRIVER_PROP_REGION + "=" + connectionInfo.getServerName() + ";";
+            return AthenaConstants.JDBC_URL_PREFIX + AthenaConstants.DRIVER_PROP_REGION + "=" + regionName + ";";
         }
         urlTemplate = urlTemplate
-            .replace("{region}", connectionInfo.getServerName())
-            .replace("=region;", "=" + connectionInfo.getServerName() + ";"); // Left for backward compatibility
+            .replace("{region}", regionName)
+            .replace("{server}", regionName)
+            .replace("=region;", "=" + regionName + ";"); // Left for backward compatibility
         return urlTemplate;
     }
 
@@ -78,4 +80,5 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider implemen
         }
         return null;
     }
+
 }
