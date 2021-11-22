@@ -42,7 +42,6 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
                 sql.append("DELETE FROM ").append(entityName);
             }
             sql.append(getLineSeparator()).append("WHERE ");
-            boolean hasAttr = false;
             if (CommonUtils.isEmpty(keyAttributes)) {
                 // For tables without keys including virtual
                 Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, object);
@@ -56,11 +55,7 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
                     }
                 }
             }
-            for (DBDAttributeBinding binding : keyAttributes) {
-                if (hasAttr) sql.append(" AND ");
-                appendValueCondition(getController(), sql, binding, firstRow);
-                hasAttr = true;
-            }
+            appendKeyConditions(sql, keyAttributes, firstRow);
             sql.append(";\n");
         }
     }
