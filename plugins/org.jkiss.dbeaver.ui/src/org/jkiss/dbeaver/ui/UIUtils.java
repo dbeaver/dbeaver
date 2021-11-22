@@ -584,14 +584,14 @@ public class UIUtils {
 
     public static CLabel createInfoLabel(Composite parent, String text) {
         CLabel tipLabel = new CLabel(parent, SWT.NONE);
-        tipLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+        tipLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
         tipLabel.setText(text);
         return tipLabel;
     }
 
     public static CLabel createInfoLabel(Composite parent, String text, int gridStyle, int hSpan) {
         CLabel tipLabel = new CLabel(parent, SWT.NONE);
-        tipLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+        tipLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
         tipLabel.setText(text);
         GridData gd = new GridData(gridStyle);
         if (hSpan > 1) {
