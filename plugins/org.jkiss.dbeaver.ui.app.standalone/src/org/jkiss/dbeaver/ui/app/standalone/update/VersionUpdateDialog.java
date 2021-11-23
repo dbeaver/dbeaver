@@ -57,6 +57,11 @@ public class VersionUpdateDialog extends Dialog {
     private static final Log log = Log.getLog(VersionUpdateDialog.class);
 
     private static final String PROP_DISTRIBUTION_TYPE = "dbeaver.distribution.type";
+    private static final String OS_WINDOWS = "win";
+    private static final String OS_MACOS = "mac";
+    private static final String OS_LINUX = "linux";
+    private static final String DISTRIBUTION_DEB = "deb";
+    private static final String DISTRIBUTION_RPM = "rpm";
 
     private static final int INFO_ID = 1000;
     private static final int UPGRADE_ID = 1001;
@@ -356,26 +361,27 @@ public class VersionUpdateDialog extends Dialog {
 
     @NotNull
     private String getDownloadPageURL(@NotNull VersionDescriptor version) {
-        String os = Platform.getOS();
-        switch (os) {
-            case "win32": os = "win"; break;
-            case "macosx": os = "mac"; break;
-            default: os = "linux"; break;
+        String os;
+        if (RuntimeUtils.isWindows()) {
+            os = OS_WINDOWS;
+        } else if (RuntimeUtils.isMacOS()) {
+            os = OS_MACOS;
+        } else {
+            os = OS_LINUX;
         }
-        String arch = Platform.getOSArch();
         String dist = System.getProperty(PROP_DISTRIBUTION_TYPE);
-        if (os.equals("linux") && CommonUtils.isEmpty(dist)) {
-            // Determine package manager
+        if (RuntimeUtils.isLinux() && CommonUtils.isEmpty(dist)) {
+            // If distribution type was not set explicitly, then let's attempt a dumb guess.
             try {
                 RuntimeUtils.executeProcess("/usr/bin/apt-get", "--version");
-                dist = "deb";
+                dist = DISTRIBUTION_DEB;
             } catch (DBException e) {
-                dist = "rpm";
+                dist = DISTRIBUTION_RPM;
             }
         }
         return CommonUtils.removeTrailingSlash(version.getBaseURL()) + "?start" +
             "&os=" + os +
-            "&arch=" + arch +
+            "&arch=" + Platform.getOSArch() +
             (dist == null ? "" : "&dist=" + dist);
     }
 
