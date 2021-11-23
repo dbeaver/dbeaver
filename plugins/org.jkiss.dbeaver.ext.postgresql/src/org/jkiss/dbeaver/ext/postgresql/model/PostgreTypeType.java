@@ -29,6 +29,7 @@ public enum PostgreTypeType implements DBPNamedObject
     c("Composite"),
     d("Domain"),
     e("Enum type"),
+    m("Multirange"), // Starting with the 14 PG version
     p("Pseudo-type"),
     r("Range");
 
