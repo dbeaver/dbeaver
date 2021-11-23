@@ -131,6 +131,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void flushConfig();
     void refreshConfig();
 
+    Throwable getLastLoadError();
+
     void notifyDataSourceListeners(final DBPEvent event);
 
     @NotNull

@@ -81,6 +81,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
     private DBAAuthCredentialsProvider authCredentialsProvider;
+    private Throwable lastLoadError;
 
     public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
         this.platform = platform;
@@ -521,6 +522,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
+    public Throwable getLastLoadError() {
+        return lastLoadError;
+    }
+
+    @Override
     public void addDataSourceListener(@NotNull DBPEventListener listener) {
         synchronized (dataSourceListeners) {
             dataSourceListeners.add(listener);
@@ -715,7 +721,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             DataSourceSerializer serializer = modern ? new DataSourceSerializerModern(this) : new DataSourceSerializerLegacy(this);
             serializer.parseDataSources(fromFile, configurationStorage, refresh, parseResults);
             updateProjectNature();
+
+            lastLoadError = null;
         } catch (Exception ex) {
+            lastLoadError = ex;
             log.error("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
         }
     }
