@@ -470,8 +470,8 @@
                         label="EnterpriseDB"
                         icon="icons/edb_icon.png"
                         iconBig="icons/edb_icon_big.png"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        class="com.edb.Driver"
+                        sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
                         useURL="true"
                         defaultPort="5444"
                         defaultDatabase="edb"
@@ -480,8 +480,7 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/com.edb:edb-jdbc18:RELEASE[9.4.1212.1]"/>
 
                     <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
