@@ -63,30 +63,27 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
 
     void appendKeyConditions(@NotNull StringBuilder sql, Collection<DBDAttributeBinding> keyAttributes, ResultSetRow firstRow) {
         Object[] values = firstRow.getValues();
-        boolean valuesAdded = false;
         if (!ArrayUtils.isEmpty(values)) {
             Object firstCellValue = values[0];
             if (firstCellValue instanceof DBDDocument) {
                 DBDDocument document = (DBDDocument) firstCellValue;
-                Object idName = document.getDocumentProperty(DBDDocument.PROP_ID_NAME);
+                Object idName = document.getDocumentProperty(DBDDocument.PROP_ID_ATTRIBUTE_NAME);
                 Object documentId = document.getDocumentId();
                 if (idName != null && documentId != null) {
                     sql.append(idName).append(" = ").append(SQLUtils.quoteString(getSingleEntity().getDataSource(), documentId.toString()));
-                    valuesAdded = true;
+                    return;
                 }
             }
         }
-        if (!valuesAdded) {
-            boolean hasAttr = false;
-            for (DBDAttributeBinding attr : keyAttributes) {
-                if (hasAttr) sql.append(" AND ");
-                appendValueCondition(getController(), sql, attr, firstRow);
-                hasAttr = true;
-            }
+        boolean hasAttr = false;
+        for (DBDAttributeBinding attr : keyAttributes) {
+            if (hasAttr) sql.append(" AND ");
+            appendValueCondition(getController(), sql, attr, firstRow);
+            hasAttr = true;
         }
     }
 
-    void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
+    private void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
         Object value = rsv.getModel().getCellValue(binding, firstRow);
         sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML));
         if (DBUtils.isNullValue(value)) {
