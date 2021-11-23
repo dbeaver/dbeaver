@@ -42,12 +42,7 @@ public class SQLGeneratorSelectFromData extends SQLGeneratorResultSet {
             }
             sql.append(getLineSeparator()).append("FROM ").append(getEntityName(getSingleEntity()));
             sql.append(getLineSeparator()).append("WHERE ");
-            hasAttr = false;
-            for (DBDAttributeBinding binding : keyAttributes) {
-                if (hasAttr) sql.append(" AND ");
-                appendValueCondition(getController(), sql, binding, firstRow);
-                hasAttr = true;
-            }
+            appendKeyConditions(sql, keyAttributes, firstRow);
             sql.append(";\n");
         }
     }

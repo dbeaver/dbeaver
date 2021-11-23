@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.generator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +61,29 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
         return object.getModel().getVisibleAttributes();
     }
 
-    void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
+    void appendKeyConditions(@NotNull StringBuilder sql, Collection<DBDAttributeBinding> keyAttributes, ResultSetRow firstRow) {
+        Object[] values = firstRow.getValues();
+        if (!ArrayUtils.isEmpty(values)) {
+            Object firstCellValue = values[0];
+            if (firstCellValue instanceof DBDDocument) {
+                DBDDocument document = (DBDDocument) firstCellValue;
+                Object idName = document.getDocumentProperty(DBDDocument.PROP_ID_ATTRIBUTE_NAME);
+                Object documentId = document.getDocumentId();
+                if (idName != null && documentId != null) {
+                    sql.append(idName).append(" = ").append(SQLUtils.quoteString(getSingleEntity().getDataSource(), documentId.toString()));
+                    return;
+                }
+            }
+        }
+        boolean hasAttr = false;
+        for (DBDAttributeBinding attr : keyAttributes) {
+            if (hasAttr) sql.append(" AND ");
+            appendValueCondition(getController(), sql, attr, firstRow);
+            hasAttr = true;
+        }
+    }
+
+    private void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
         Object value = rsv.getModel().getCellValue(binding, firstRow);
         sql.append(DBUtils.getObjectFullName(binding.getAttribute(), DBPEvaluationContext.DML));
         if (DBUtils.isNullValue(value)) {
