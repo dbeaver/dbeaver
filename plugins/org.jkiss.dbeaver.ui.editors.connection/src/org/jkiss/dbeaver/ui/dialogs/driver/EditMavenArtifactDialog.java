@@ -106,7 +106,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
                 public void widgetSelected(SelectionEvent e) {
                     artifacts.clear();
                     //check if we are on raw tab. When trues to parse
-                    if (tabFolder.getSelectionIndex() == 0 && tabFolder.getSelection().length != 1){
+                    if (tabFolder.getSelectionIndex() == 0 && tabFolder.getItemCount() != 1){
                         UIUtils.asyncExec(EditMavenArtifactDialog.this::parseArtifactText);
                     }
                 }
