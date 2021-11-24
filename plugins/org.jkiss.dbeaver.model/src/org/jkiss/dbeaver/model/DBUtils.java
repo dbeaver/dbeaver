@@ -1702,8 +1702,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSObject getSelectedObject(@NotNull DBCExecutionContext context)
-    {
+    public static DBSObject getSelectedObject(@NotNull DBCExecutionContext context) {
         DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
         if (contextDefaults != null) {
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
@@ -1715,7 +1714,6 @@ public final class DBUtils {
                 return defaultCatalog;
             }
         }
-
         return null;
     }
 
