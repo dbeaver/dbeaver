@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverCommandLine;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
@@ -186,6 +185,20 @@ public class DBeaverInstanceServer implements IInstanceController {
     @Override
     public void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException {
         DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(eventId, properties);
+    }
+
+    @Override
+    public void bringToFront() {
+        UIUtils.syncExec(() -> {
+            final Shell shell = UIUtils.getActiveShell();
+            if (shell != null) {
+                if (!shell.getMinimized()) {
+                    shell.setMinimized(true);
+                }
+                shell.setMinimized(false);
+                shell.setActive();
+            }
+        });
     }
 
     public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {

@@ -60,6 +60,7 @@ public class DBeaverCommandLine
     public static final String PARAM_DISCONNECT_ALL = "disconnectAll";
     public static final String PARAM_REUSE_WORKSPACE = "reuseWorkspace";
     public static final String PARAM_NEW_INSTANCE = "newInstance";
+    public static final String PARAM_BRING_TO_FRONT = "bringToFront";
     public static final String PARAM_QUIET = "q";
 
     public final static Options ALL_OPTIONS = new Options()
@@ -73,6 +74,7 @@ public class DBeaverCommandLine
         .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
         .addOption(PARAM_REUSE_WORKSPACE, PARAM_REUSE_WORKSPACE, false, "Force workspace reuse (do not show warnings)")
         .addOption(PARAM_NEW_INSTANCE, PARAM_NEW_INSTANCE, false, "Force creating new application instance (do not try to activate already running)")
+        .addOption(PARAM_BRING_TO_FRONT, PARAM_BRING_TO_FRONT, false, "Bring DBeaver window on top of other applications")
         .addOption(PARAM_QUIET, PARAM_QUIET, false, "Run quietly (do not print logs)")
 
         // Eclipse options
@@ -207,6 +209,10 @@ public class DBeaverCommandLine
         }
         if (commandLine.hasOption(PARAM_DISCONNECT_ALL)) {
             controller.executeWorkbenchCommand(ConnectionCommands.CMD_DISCONNECT_ALL);
+            exitAfterExecute = true;
+        }
+        if (commandLine.hasOption(PARAM_BRING_TO_FRONT)) {
+            controller.bringToFront();
             exitAfterExecute = true;
         }
 
