@@ -343,8 +343,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         if (useBulkLoadCheck != null && !useBulkLoadCheck.isDisposed()) {
-            DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
-            useBulkLoadCheck.setEnabled(DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) != null);
+            final DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
+            if (DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) == null) {
+                useBulkLoadCheck.setEnabled(false);
+                useBulkLoadCheck.setSelection(false);
+                settings.setUseBulkLoad(false);
+            }
         }
 
         loadInsertMethods();
