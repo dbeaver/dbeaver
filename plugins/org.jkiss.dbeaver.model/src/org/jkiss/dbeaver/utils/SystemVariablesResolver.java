@@ -63,8 +63,13 @@ public class SystemVariablesResolver implements IVariableResolver {
                 } catch (UnknownHostException e) {
                     return "127.0.0.1";
                 }
+            default:
+                String var = System.getProperty(name);
+                if (var != null) {
+                    return var;
+                }
+                return System.getenv(name);
         }
-        return null;
     }
 
     public static String getInstallPath() {

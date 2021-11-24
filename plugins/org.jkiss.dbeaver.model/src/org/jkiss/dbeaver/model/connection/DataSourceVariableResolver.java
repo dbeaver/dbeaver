@@ -59,15 +59,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
             case DBPConnectionConfiguration.VARIABLE_DATE:
                 return RuntimeUtils.getCurrentDate();
             default:
-                String var = super.get(name);
-                if (var != null) {
-                    return var;
-                }
-                var = System.getProperty(name);
-                if (var != null) {
-                    return var;
-                }
-                return System.getenv(name);
+                return super.get(name);
         }
     }
 }
