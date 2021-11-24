@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -31,6 +29,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -124,15 +123,15 @@ class StatusLabel extends Composite {
         this.messageType = messageType;
 
         //Color fg;
-        String statusIconId = null;
+        DBIcon statusIcon = null;
         switch (messageType) {
             case ERROR:
                 //fg = colorError;
-                statusIconId = Dialog.DLG_IMG_MESSAGE_ERROR;
+                statusIcon = DBIcon.SMALL_ERROR;
                 break;
             case WARNING:
                 //fg = colorWarning;
-                statusIconId = Dialog.DLG_IMG_MESSAGE_WARNING;
+                statusIcon = DBIcon.SMALL_WARNING;
                 break;
         }
         //statusText.setForeground(fg);
@@ -140,8 +139,8 @@ class StatusLabel extends Composite {
         if (message == null) {
             message = "???"; //$NON-NLS-1$
         }
-        if (statusIconId != null) {
-            detailsIcon.setImage(JFaceResources.getImage(statusIconId));
+        if (statusIcon != null) {
+            detailsIcon.setImage(DBeaverIcons.getImage(statusIcon));
         } else {
             detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         }
