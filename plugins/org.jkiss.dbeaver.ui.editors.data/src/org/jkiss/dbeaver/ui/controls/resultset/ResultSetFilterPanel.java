@@ -597,8 +597,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (serviceSQL != null) {
             serviceSQL.openSQLConsole(
                 dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
-                viewer.getExecutionContext(),
-                null,
+                null, // This is workaround to open new SQL Editor with this dataContainer schema/catalog, not default
+                dataContainer,
                 editorName,
                 viewer.getActiveQueryText());
         }
