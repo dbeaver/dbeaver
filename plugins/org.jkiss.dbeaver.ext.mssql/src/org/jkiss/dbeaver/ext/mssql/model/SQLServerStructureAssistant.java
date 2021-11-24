@@ -129,7 +129,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         Collection<SQLServerDatabase> databases;
         SQLServerSchema schema = null;
 
-        if (parentObject instanceof DBPDataSourceContainer || parentObject instanceof SQLServerDataSource) {
+        if (parentObject == null || parentObject instanceof SQLServerDataSource) {
             if (globalSearch) {
                 databases = executionContext.getDataSource().getDatabases(monitor);
             } else {
