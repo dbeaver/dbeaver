@@ -29,7 +29,7 @@ public class DBQuotaException extends DBCException {
     private final Object exceededValue;
 
     public DBQuotaException(String message, String quotaId, Object quotaValue, Object exceededValue) {
-        super(message);
+        super(message + " (>" + quotaValue + ")");
         this.quotaId = quotaId;
         this.quotaValue = quotaValue;
         this.exceededValue = exceededValue;
