@@ -754,6 +754,15 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
+    public boolean isStatementClosed() throws DBCException {
+        try {
+            return isClosed();
+        } catch (SQLException e) {
+            throw new DBCException("Unable to determine if statement is closed", e);
+        }
+    }
+
+    @Override
     public void setPoolable(boolean poolable)
         throws SQLException
     {
