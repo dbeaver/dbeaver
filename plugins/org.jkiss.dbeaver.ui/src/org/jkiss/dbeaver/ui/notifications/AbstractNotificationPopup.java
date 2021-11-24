@@ -72,21 +72,18 @@ public abstract class AbstractNotificationPopup extends Window {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             if (!display.isDisposed()) {
-                display.asyncExec(new Runnable() {
-                    public void run() {
-                        Shell shell = AbstractNotificationPopup.this.getShell();
-                        if (shell == null || shell.isDisposed()) {
-                            return;
-                        }
-
-                        if (isMouseOver(shell)) {
-                            scheduleAutoClose();
-                            return;
-                        }
-
-                        AbstractNotificationPopup.this.closeFade();
+                display.asyncExec(() -> {
+                    Shell shell = AbstractNotificationPopup.this.getShell();
+                    if (shell == null || shell.isDisposed()) {
+                        return;
                     }
 
+                    if (isMouseOver(shell)) {
+                        scheduleAutoClose();
+                        return;
+                    }
+
+                    AbstractNotificationPopup.this.closeFade();
                 });
             }
             if (monitor.isCanceled()) {
@@ -96,10 +93,6 @@ public abstract class AbstractNotificationPopup extends Window {
             return Status.OK_STATUS;
         }
     };
-
-    private final boolean respectDisplayBounds = true;
-
-    private final boolean respectMonitorBounds = true;
 
     private AnimationUtil.FadeJob fadeJob;
 
@@ -155,12 +148,7 @@ public abstract class AbstractNotificationPopup extends Window {
      * @return the name to be used in the title of the popup.
      */
     protected String getPopupShellTitle() {
-        String productName = GeneralUtils.getProductName();
-        if (productName != null) {
-            return productName + " " + LABEL_NOTIFICATION; //$NON-NLS-1$
-        } else {
-            return LABEL_NOTIFICATION;
-        }
+        return GeneralUtils.getProductName() + " " + LABEL_NOTIFICATION; //$NON-NLS-1$
     }
 
     protected Image getPopupShellImage(int maximumHeight) {
@@ -169,8 +157,6 @@ public abstract class AbstractNotificationPopup extends Window {
 
     /**
      * Override to populate with notifications.
-     *
-     * @param parent
      */
     protected void createContentArea(Composite parent) {
         // empty by default
@@ -187,7 +173,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
         Label titleTextLabel = new Label(parent, SWT.NONE);
         titleTextLabel.setText(getPopupShellTitle());
-        titleTextLabel.setFont(JFaceResources.getFontRegistry().getBold("org.eclipse.jface.defaultfont"));
+        titleTextLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
         titleTextLabel.setForeground(getTitleForeground());
         titleTextLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
         titleTextLabel.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
@@ -540,32 +526,26 @@ public abstract class AbstractNotificationPopup extends Window {
     }
 
     private Point fixupDisplayBounds(Point tipSize, Point location) {
-        if (respectDisplayBounds) {
-            Rectangle bounds;
-            Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
+        Rectangle bounds;
+        Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
 
-            if (respectMonitorBounds) {
-                bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
-            } else {
-                bounds = getPrimaryClientArea();
+        bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
+
+        if (!(bounds.contains(location) && bounds.contains(rightBounds))) {
+            if (rightBounds.x > bounds.x + bounds.width) {
+                location.x -= rightBounds.x - (bounds.x + bounds.width);
             }
 
-            if (!(bounds.contains(location) && bounds.contains(rightBounds))) {
-                if (rightBounds.x > bounds.x + bounds.width) {
-                    location.x -= rightBounds.x - (bounds.x + bounds.width);
-                }
+            if (rightBounds.y > bounds.y + bounds.height) {
+                location.y -= rightBounds.y - (bounds.y + bounds.height);
+            }
 
-                if (rightBounds.y > bounds.y + bounds.height) {
-                    location.y -= rightBounds.y - (bounds.y + bounds.height);
-                }
+            if (location.x < bounds.x) {
+                location.x = bounds.x;
+            }
 
-                if (location.x < bounds.x) {
-                    location.x = bounds.x;
-                }
-
-                if (location.y < bounds.y) {
-                    location.y = bounds.y;
-                }
+            if (location.y < bounds.y) {
+                location.y = bounds.y;
             }
         }
 

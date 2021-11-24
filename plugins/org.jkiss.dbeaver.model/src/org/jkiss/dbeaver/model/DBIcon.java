@@ -162,7 +162,7 @@ public class DBIcon implements DBPImage
 
     private static final boolean VALIDATE_ICON_FILE = false;
 
-    private static Map<String, DBPImage> iconMap = new HashMap<>();
+    private static final Map<String, DBPImage> iconMap = new HashMap<>();
 
 
     static  {
