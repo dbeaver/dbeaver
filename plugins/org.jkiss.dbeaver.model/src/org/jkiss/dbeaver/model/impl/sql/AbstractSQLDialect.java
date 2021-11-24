@@ -53,7 +53,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private static final String[] EXEC_KEYWORDS = new String[0];
     private static final String[] DDL_KEYWORDS = new String[0];
     private static final Collection<String> TRANSACTION_NON_MODIFYING_KEYWORDS =
-        CommonUtils.unmodifiableSet(SQLConstants.KEYWORD_SELECT, "SHOW", "USE", "SET", SQLConstants.KEYWORD_EXPLAIN);
+        Set.of(SQLConstants.KEYWORD_SELECT, "SHOW", "USE", "SET", SQLConstants.KEYWORD_EXPLAIN);
 
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
