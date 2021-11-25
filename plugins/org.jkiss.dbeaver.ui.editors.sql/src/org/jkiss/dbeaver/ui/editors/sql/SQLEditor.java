@@ -4208,12 +4208,12 @@ public class SQLEditor extends SQLEditorBase implements
                         SQLQueryJob queryJob = qp.curJob;
                         if (queryJob != null) {
                             DBCStatement statement = queryJob.getCurrentStatement();
-                            if (statement != null) {
-                                try {
+                            try {
+                                if (statement != null && !statement.isStatementClosed()) {
                                     outputReader.readServerOutput(monitor, executionContext, null, statement, outputWriter);
-                                } catch (DBCException e) {
-                                    log.error(e);
                                 }
+                            } catch (DBCException e) {
+                                log.error(e);
                             }
                         }
                     }
