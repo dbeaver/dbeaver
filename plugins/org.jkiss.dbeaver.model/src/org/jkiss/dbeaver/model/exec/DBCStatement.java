@@ -127,4 +127,8 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
     void setStatementTimeout(int timeout) throws DBCException;
 
     void setResultsFetchSize(int fetchSize) throws DBCException;
+
+    default boolean isStatementClosed() throws DBCException {
+        return false;
+    }
 }
