@@ -253,12 +253,6 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             super.fillCustomActions(contributionManager);
             if (part != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(part.getSite(), contributionManager);
-                /*if (part instanceof ObjectPropertiesEditor) {
-                    contributionManager.add(new Separator());
-                    ((ObjectPropertiesEditor) part).createPropertyRefreshAction(contributionManager);
-                }*/
-                // For now the "read statistics" button is added for all tables with expensive annotation in other place.
-                // We don't need this duplicate contribution for now
             }
         }
 
