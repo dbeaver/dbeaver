@@ -79,7 +79,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.workbenchSite = workbenchSite;
         this.rootNode = rootNode;
 
-        this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
+        this.selectionProvider = createSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
         NavigatorUtils.addContextMenu(workbenchSite, getItemsViewer(), this.selectionProvider);
@@ -107,6 +107,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 //        if (workbenchSite != null) {
 //            UIUtils.addFocusTracker(workbenchSite, INavigatorModelView.NAVIGATOR_CONTROL_ID, getItemsViewer().getControl());
 //        }
+    }
+
+    protected NodeSelectionProvider createSelectionProvider(ISelectionProvider selectionProvider) {
+        return new NodeSelectionProvider(selectionProvider);
     }
 
     protected void openNodeEditor(DBNNode node) {
@@ -150,8 +154,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    public ISelectionProvider getSelectionProvider()
-    {
+    public ISelectionProvider getSelectionProvider() {
         return selectionProvider;
     }
 
@@ -411,7 +414,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
 
-    private class NodeSelectionProvider implements ISelectionProvider, ISelectionChangedListener {
+    protected class NodeSelectionProvider implements ISelectionProvider, ISelectionChangedListener {
 
         private final ISelectionProvider original;
         private final List<ISelectionChangedListener> listeners = new ArrayList<>();
@@ -471,6 +474,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                     listener.selectionChanged(event);
                 }
             }
+
         }
 
         void dispose()
