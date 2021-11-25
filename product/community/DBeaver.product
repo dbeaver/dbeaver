@@ -14,7 +14,7 @@
 
         <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Dosgi.requiredJavaVersion=11 -Xms64m -Xmx1024m</vmArgs>
         <vmArgsWin>-Djavax.net.ssl.trustStoreType=WINDOWS-ROOT</vmArgsWin>
-        <vmArgsMac>-XstartOnFirstThread -Djavax.net.ssl.trustStoreType=KeychainStore</vmArgsMac>
+        <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
     </launcherArgs>
 
     <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
