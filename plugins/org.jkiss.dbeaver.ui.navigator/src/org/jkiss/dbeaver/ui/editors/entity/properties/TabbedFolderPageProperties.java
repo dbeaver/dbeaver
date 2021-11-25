@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -254,10 +253,12 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             super.fillCustomActions(contributionManager);
             if (part != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(part.getSite(), contributionManager);
-                if (part instanceof ObjectPropertiesEditor) {
+                /*if (part instanceof ObjectPropertiesEditor) {
                     contributionManager.add(new Separator());
                     ((ObjectPropertiesEditor) part).createPropertyRefreshAction(contributionManager);
-                }
+                }*/
+                // For now the "read statistics" button is added for all tables with expensive annotation in other place.
+                // We don't need this duplicate contribution for now
             }
         }
 
