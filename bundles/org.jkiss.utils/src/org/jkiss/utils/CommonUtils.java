@@ -196,6 +196,14 @@ public class CommonUtils {
     }
 
     @NotNull
+    public static <T> List<T> singletonOrEmpty(@Nullable T object) {
+        if (object == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(object);
+    }
+
+    @NotNull
     public static <T> List<T> safeList(@Nullable List<T> theList) {
         if (theList == null) {
             theList = Collections.emptyList();
