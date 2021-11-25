@@ -182,6 +182,11 @@ public class CommonUtils {
         return value == null || value.isEmpty();
     }
 
+    @Nullable
+    public static <T> T getFirstOrNull(@NotNull List<T> list) {
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     @NotNull
     public static <T> Collection<T> safeCollection(@Nullable Collection<T> theList) {
         if (theList == null) {
