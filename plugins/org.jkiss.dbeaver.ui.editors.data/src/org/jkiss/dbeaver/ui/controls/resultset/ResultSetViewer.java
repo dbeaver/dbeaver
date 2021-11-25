@@ -2068,6 +2068,7 @@ public class ResultSetViewer extends Viewer
                         ResultSetUtils.formatRowCount(rowsFetched) +
                             ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
                 }
+                statusMessage = statusMessage + " - " + java.time.LocalDateTime.now();
             }
         }
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
