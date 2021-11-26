@@ -44,4 +44,6 @@ public interface IInstanceController extends Remote {
     void executeWorkbenchCommand(String commandID) throws RemoteException;
 
     void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException;
+
+    void bringToFront() throws RemoteException;
 }
