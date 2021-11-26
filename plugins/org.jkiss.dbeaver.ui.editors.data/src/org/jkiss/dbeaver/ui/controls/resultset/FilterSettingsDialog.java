@@ -469,6 +469,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed()
     {
+        columnsViewer.applyEditorValue();
         treeEditor.okPressed();
         boolean hasVisibleColumns = false;
         for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
@@ -476,6 +477,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 //            constraint.setVisualPosition(this.constraints.indexOf(constraint));
             if (constraint.isVisible()) {
                 hasVisibleColumns = true;
+                break;
             }
         }
         if (!hasVisibleColumns) {
