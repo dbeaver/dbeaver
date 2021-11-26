@@ -321,31 +321,34 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             producerProcessor = true;
         }
 
-        // Load processor properties
-        Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
-        {
-            for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
-                Map<String, Object> procSection = (Map<String, Object>) procIter.getValue();
-                String processorId = procIter.getKey();
-                String nodeId = CommonUtils.toString(procSection.get("@node"));
-                if (CommonUtils.isEmpty(nodeId)) {
-                    // Legacy code support
-                    int divPos = processorId.indexOf(':');
-                    if (divPos != -1) {
-                        nodeId = processorId.substring(0, divPos);
-                        processorId = processorId.substring(divPos + 1);
-                    }
-                }
-                String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
-                DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
-                if (node != null) {
-                    Map<String, Object> props = new HashMap<>();
-                    DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
-                    if (nodeProcessor != null) {
-                        for (String prop : CommonUtils.splitString(propNamesId, ',')) {
-                            props.put(prop, procSection.get(prop));
+        String property = System.getProperty("use.default.settings"); // Turn off processor settings download. For Testing only. Use it after vmargs -Duse.default.settings=true
+        if (CommonUtils.isEmpty(property)) {
+            // Load processor properties
+            Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
+            {
+                for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
+                    Map<String, Object> procSection = (Map<String, Object>) procIter.getValue();
+                    String processorId = procIter.getKey();
+                    String nodeId = CommonUtils.toString(procSection.get("@node"));
+                    if (CommonUtils.isEmpty(nodeId)) {
+                        // Legacy code support
+                        int divPos = processorId.indexOf(':');
+                        if (divPos != -1) {
+                            nodeId = processorId.substring(0, divPos);
+                            processorId = processorId.substring(divPos + 1);
                         }
-                        processorPropsHistory.put(nodeProcessor, props);
+                    }
+                    String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
+                    DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
+                    if (node != null) {
+                        Map<String, Object> props = new HashMap<>();
+                        DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
+                        if (nodeProcessor != null) {
+                            for (String prop : CommonUtils.splitString(propNamesId, ',')) {
+                                props.put(prop, procSection.get(prop));
+                            }
+                            processorPropsHistory.put(nodeProcessor, props);
+                        }
                     }
                 }
             }
