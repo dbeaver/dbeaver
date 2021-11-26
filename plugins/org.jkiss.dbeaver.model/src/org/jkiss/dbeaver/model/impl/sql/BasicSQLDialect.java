@@ -64,12 +64,6 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
         SQLConstants.KEYWORD_ROLLBACK
     };
 
-    @NotNull
-    @Override
-    public String getLikeEscapeClause(@NotNull String escapeChar) {
-        return null;
-    }
-
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };

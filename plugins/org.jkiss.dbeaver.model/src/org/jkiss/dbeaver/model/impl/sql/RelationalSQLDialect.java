@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
@@ -38,6 +39,8 @@ public interface RelationalSQLDialect extends SQLDialect {
      */
     boolean isAmbiguousCountBroken();
 
-    @NotNull
-    String getLikeEscapeClause(@NotNull String escapeChar);
+    @Nullable
+    default String getLikeEscapeClause(@NotNull String escapeChar) {
+        return null;
+    }
 }
