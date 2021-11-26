@@ -907,12 +907,6 @@ public class CommonUtils {
         return false;
     }
 
-    @NotNull
-    @SafeVarargs
-    public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
-        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
-    }
-
     /**
      * Checks if the {@code index} is within the bounds of the range from
      * {@code 0} (inclusive) to {@code length} (exclusive).
