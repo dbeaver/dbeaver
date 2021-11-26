@@ -108,7 +108,10 @@ public class ItemListControl extends NodeListControl
                     boolean isEnabled = ObjectPropertyTester.canCreateObject(selectedNode, true);
                     if (isEnabled != createObjectCommand.isVisible()) {
                         createObjectCommand.setVisible(isEnabled);
-                        createObjectCommand.getParent().update(true);
+                        IContributionManager toolbarManager = createObjectCommand.getParent();
+                        if (toolbarManager != null) {
+                            toolbarManager.update(true);
+                        }
                     }
                 }
             }
