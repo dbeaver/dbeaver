@@ -423,7 +423,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             for (TableItem item : permissionTable.getItems()) {
                 PostgrePrivilegeType privType = (PostgrePrivilegeType) item.getData();
                 short perm = currentPermissions[0] == null ? PostgrePrivilege.NONE : currentPermissions[0].getPermission(privType);
-                item.setChecked((perm & PostgrePrivilege.GRANTED) != 0 );
+                item.setChecked(CommonUtils.isBitSet(perm, PostgrePrivilege.GRANTED));
                 if ((perm & PostgrePrivilege.WITH_GRANT_OPTION) != 0) {
                     item.setText(1, "X");
                 } else {
