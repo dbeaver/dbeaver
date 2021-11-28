@@ -174,6 +174,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_description;
     public static String dialog_edit_driver_edit_maven_title;
     public static String dialog_edit_driver_edit_maven_artifacts_count;
+    public static String dialog_edit_driven_edit_maven_field_text_message;
     public static String dialog_edit_driver_edit_maven_group_id_label;
     public static String dialog_edit_driver_edit_maven_artifact_id_label;
     public static String dialog_edit_driver_edit_maven_classfier_label;
