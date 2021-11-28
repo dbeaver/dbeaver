@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.List;
 
@@ -179,13 +180,7 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
             if (permission.privilegeType != privilegeType) {
                 if (permit) {
                     permission.permissions |= GRANTED;
-                    ObjectPermission[] tempPermission = new ObjectPermission[this.permissions.length+1];
-                    for(int i = 0; i < this.permissions.length; i++) {
-                	tempPermission[i] = this.permissions[i];
-                    }
-                    tempPermission[this.permissions.length] = new ObjectPermission(privilegeType, grantor, permission.permissions);
-                    this.permissions = tempPermission;
-                    
+                    ArrayUtils.add(ObjectPermission.class, this.permissions, new ObjectPermission(privilegeType, grantor, permission.permissions));
                 } else {
                     permission.permissions = 0;
                 }
