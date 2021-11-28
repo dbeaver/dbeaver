@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.ConnectionLayer;
-import org.eclipse.draw2dl.FanRouter;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.ShortestPathConnectionRouter;
+import org.eclipse.draw2dl.*;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.commands.Command;
 import org.eclipse.gef3.commands.CommandStackEvent;
 import org.eclipse.gef3.commands.CommandStackEventListener;
+import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
@@ -46,6 +44,7 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -193,12 +192,30 @@ public class DiagramPart extends PropertyAwarePart {
 
     public void rearrangeDiagram()
     {
+        for (Object part : getChildren()) {
+            if (part instanceof NodePart) {
+                resetConnectionConstraints(((NodePart) part).getSourceConnections());
+            }
+        }
         //delegatingLayoutManager.set
         delegatingLayoutManager.rearrange(getFigure());
 
         //getFigure().setLayoutManager(delegatingLayoutManager);
         //getFigure().getLayoutManager().layout(getFigure());
         getFigure().repaint();
+    }
+
+    private void resetConnectionConstraints(List sourceConnections) {
+        if (!CommonUtils.isEmpty(sourceConnections)) {
+            for (Object sc : sourceConnections) {
+                if (sc instanceof AbstractConnectionEditPart) {
+                    ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
+                    if (sc instanceof AssociationPart) {
+                        ((AssociationPart)sc).setConnectionRouting((PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                    }
+                }
+            }
+        }
     }
 
     /**

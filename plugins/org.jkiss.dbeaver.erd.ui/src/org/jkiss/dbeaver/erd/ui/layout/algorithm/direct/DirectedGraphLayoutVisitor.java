@@ -136,7 +136,7 @@ public class DirectedGraphLayoutVisitor {
     {
         List<?> outgoing = entityPart.getSourceConnections();
         for (int i = 0; i < outgoing.size(); i++) {
-            AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) entityPart.getSourceConnections().get(i);
+            AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) outgoing.get(i);
             addConnectionEdges(connectionPart);
         }
     }
@@ -230,9 +230,6 @@ public class DirectedGraphLayoutVisitor {
 */
             }
             conn.setRoutingConstraint(bends);
-        } else {
-            // Clear previous bend points
-            conn.setRoutingConstraint(null);
         }
 
     }
