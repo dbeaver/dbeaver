@@ -309,7 +309,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                                 currentObject.getName(),
                                 Collections.singletonList(privGrant));
                     } else {
-                    	permission.setPermission(privilegeType, grant);
+                    	permission.setPermission(privilegeType, grant, currentUser);
                     }
                     
                 }
