@@ -163,9 +163,16 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
 
     public void setPermission(PostgrePrivilegeType privilegeType, boolean permit) {
         for (ObjectPermission permission : permissions) {
-            if (permission.privilegeType == privilegeType) {
+            if (permission.privilegeType != privilegeType) {
                 if (permit) {
                     permission.permissions |= GRANTED;
+                    ObjectPermission[] tempPermission = new ObjectPermission[this.permissions.length+1];
+                    for(int i = 0; i < this.permissions.length; i++) {
+                	tempPermission[i] = this.permissions[i];
+                    }
+                    tempPermission[this.permissions.length] = new ObjectPermission(privilegeType, permission.getGrantor(), permission.permissions);
+                    this.permissions = tempPermission;
+                    
                 } else {
                     permission.permissions = 0;
                 }

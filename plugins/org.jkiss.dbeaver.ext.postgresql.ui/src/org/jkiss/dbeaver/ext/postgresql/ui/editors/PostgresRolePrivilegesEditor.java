@@ -254,7 +254,18 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     // No permission - nothing to revoke
                     continue;
                 }
-                if (isRoleEditor()) {
+                
+            } else if (privilegeType != null) {
+                // Check for privilege was already granted for this object
+                boolean hasPriv = permission.getPermission(privilegeType) != PostgrePrivilege.NONE;
+                if (grant != hasPriv && !grant) {
+                    permissionMap.remove(permission.getName());
+                }
+            }
+            
+            
+            {
+            	if (isRoleEditor()) {
                     PostgrePrivilegeOwner permissionsOwner = (PostgrePrivilegeOwner) currentObject;
                     PostgrePrivilegeGrant.Kind kind;
                     String objectName;
@@ -292,20 +303,19 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         privilegeType,
                         false,
                         false);
-                    permission = new PostgreObjectPrivilege(
-                        databaseObject,
-                        currentObject.getName(),
-                        Collections.singletonList(privGrant));
+                    if(permission == null) {
+                    	permission = new PostgreObjectPrivilege(
+                                databaseObject,
+                                currentObject.getName(),
+                                Collections.singletonList(privGrant));
+                    } else {
+                    	permission.setPermission(privilegeType, grant);
+                    }
+                    
                 }
                 // Add to map
                 currentPermissions[i] = permission;
                 permissionMap.put(permission.getName(), permission);
-            } else if (privilegeType != null) {
-                // Check for privilege was already granted for this object
-                boolean hasPriv = permission.getPermission(privilegeType) != PostgrePrivilege.NONE;
-                if (grant != hasPriv && !grant) {
-                    permissionMap.remove(permission.getName());
-                }
             }
 
             // Add command
@@ -413,7 +423,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             for (TableItem item : permissionTable.getItems()) {
                 PostgrePrivilegeType privType = (PostgrePrivilegeType) item.getData();
                 short perm = currentPermissions[0] == null ? PostgrePrivilege.NONE : currentPermissions[0].getPermission(privType);
-                item.setChecked((perm & PostgrePrivilege.GRANTED) != 0);
+                item.setChecked((perm & PostgrePrivilege.GRANTED) != 0 );
                 if ((perm & PostgrePrivilege.WITH_GRANT_OPTION) != 0) {
                     item.setText(1, "X");
                 } else {
