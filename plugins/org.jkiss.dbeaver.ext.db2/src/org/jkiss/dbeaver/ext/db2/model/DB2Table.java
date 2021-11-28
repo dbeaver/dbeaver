@@ -94,6 +94,7 @@ public class DB2Table extends DB2TableBase
     private String volatileMode;
     private DB2TableCompressionMode compression;
     private DB2TableAccessMode accessMode;
+    private DB2TableOrganizationMode organizationMode;
     private Boolean mdcClustered;
     private DB2TableDropRule dropRule;
     private DB2TableTemporalType temporalType;
@@ -126,6 +127,7 @@ public class DB2Table extends DB2TableBase
         this.volatileMode = JDBCUtils.safeGetString(dbResult, "VOLATILE");
         this.compression = CommonUtils.valueOf(DB2TableCompressionMode.class, JDBCUtils.safeGetString(dbResult, "COMPRESSION"));
         this.accessMode = CommonUtils.valueOf(DB2TableAccessMode.class, JDBCUtils.safeGetString(dbResult, "ACCESS_MODE"));
+        this.organizationMode = CommonUtils.valueOf(DB2TableOrganizationMode.class, JDBCUtils.safeGetString(dbResult, "TABLEORG"));
         this.mdcClustered = JDBCUtils.safeGetBoolean(dbResult, "CLUSTERED", DB2YesNo.Y.name());
         this.dropRule = CommonUtils.valueOf(DB2TableDropRule.class, JDBCUtils.safeGetString(dbResult, "DROPRULE"));
 
@@ -434,31 +436,36 @@ public class DB2Table extends DB2TableBase
         return accessMode;
     }
 
-    @Property(viewable = false, editable = false, order = 107)
+    @Property(specific = true, order = 107)
+    public DB2TableOrganizationMode getOrganizationMode() {
+        return organizationMode;
+    }
+
+    @Property(viewable = false, editable = false, order = 108)
     public Boolean getMdcClustered()
     {
         return mdcClustered;
     }
 
-    @Property(viewable = false, editable = false, order = 108)
+    @Property(viewable = false, editable = false, order = 109)
     public DB2TableDropRule getDropRule()
     {
         return dropRule;
     }
 
-    @Property(viewable = false, editable = false, specific = true, order = 109)
+    @Property(viewable = false, editable = false, specific = true, order = 110)
     public String getDataCapture()
     {
         return dataCapture;
     }
 
-    @Property(viewable = false, editable = false, specific = true, order = 110)
+    @Property(viewable = false, editable = false, specific = true, order = 111)
     public DB2TablePartitionMode getPartitionMode()
     {
         return partitionMode;
     }
 
-    @Property(viewable = false, editable = false, order = 111)
+    @Property(viewable = false, editable = false, order = 112)
     public String getConstChecked()
     {
         return constChecked;
