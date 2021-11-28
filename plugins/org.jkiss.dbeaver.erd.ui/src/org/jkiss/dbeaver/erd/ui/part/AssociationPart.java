@@ -28,6 +28,7 @@ import org.eclipse.gef3.*;
 import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -166,7 +167,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             srcDec.setScale(10, 6);
             conn.setTargetDecoration(srcDec);
-        } else if (constraintType.isAssociation()) {
+        } else if (constraintType.isAssociation() &&
+            association.getSourceEntity() instanceof ERDEntity &&
+            association.getTargetEntity() instanceof ERDEntity)
+        {
             final CircleDecoration sourceDecor = new CircleDecoration();
             sourceDecor.setRadius(3);
             sourceDecor.setFill(true);
