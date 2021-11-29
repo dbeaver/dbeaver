@@ -182,25 +182,12 @@ public class CommonUtils {
         return value == null || value.isEmpty();
     }
 
-    @Nullable
-    public static <T> T getFirstOrNull(@NotNull List<T> list) {
-        return list.isEmpty() ? null : list.get(0);
-    }
-
     @NotNull
     public static <T> Collection<T> safeCollection(@Nullable Collection<T> theList) {
         if (theList == null) {
             theList = Collections.emptyList();
         }
         return theList;
-    }
-
-    @NotNull
-    public static <T> List<T> singletonOrEmpty(@Nullable T object) {
-        if (object == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(object);
     }
 
     @NotNull
@@ -907,6 +894,12 @@ public class CommonUtils {
         return false;
     }
 
+    @NotNull
+    @SafeVarargs
+    public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
+        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
+    }
+
     /**
      * Checks if the {@code index} is within the bounds of the range from
      * {@code 0} (inclusive) to {@code length} (exclusive).
@@ -1019,5 +1012,28 @@ public class CommonUtils {
         }
         matcher.appendTail(sb);
         return sb.toString();
+    }
+
+    public static String getColor(@Nullable String value, String defaultValue) {
+    	if (value.matches("^#([0-9a-fA-F]{3}){1,2}$") ||
+    			value.matches("^rgb\\(([0-9]{1,3}%*,* *){1,3}\\)") ||
+    			value.matches("^rgba\\(([0-9]{1,3}%*,* *){1,4}\\)") ||
+    			value.matches("^hsl\\(([0-9]{1,3}){1},([0-9]{1,3}%,){2}([0-1]{1,3}){1}\\)") ||
+    			value.matches("black|green|silver|gray|olive|white|yellow|maroon|navy|red|blue|purple|teal|fuchsia|aqua")
+        ) {
+    		return (String) value;
+    	} else {
+    		return defaultValue;
+    	}
+    }
+
+    public static String getColor(@Nullable Object value, String defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        } else if (value instanceof String) {
+            return (String) value;
+        } else {
+            return getColor(value.toString(), defaultValue);
+        }
     }
 }

@@ -122,6 +122,7 @@
                     <property id="tableHeader" label="%dataTransfer.processor.html.property.header.name" type="boolean" description="%dataTransfer.processor.html.property.header.description" defaultValue="true"/>
                     <property id="columnHeaders" label="%dataTransfer.processor.html.property.columnHeaders.name" type="boolean" description="%dataTransfer.processor.html.property.columnHeaders.description" defaultValue="true"/>
                     <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
+                    <property id="backgroundColor" label="%dataTransfer.processor.html.property.backgroundColor.name" type="string" description="%dataTransfer.processor.html.property.backgroundColor.description" defaultValue="#D0E3FA"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -222,30 +223,16 @@
         <transformer id="null" label="Set to NULL" description="Set column value to NULL" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>
 
         <transformer id="constant" label="Constant" description="Set column value to a constant value" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerConstant">
-            <propertyGroup label="Settings">
-                <property id="constant" label="Constant value" type="string" description="Constant value" defaultValue="" required="false"/>
+            <propertyGroup label="%propertyGroup.label">
+                <property id="constant" label="%property.label" type="string" description="%property.description" defaultValue="" required="false"/>
             </propertyGroup>
         </transformer>
 
         <transformer id="expression" label="Expression" description="Set column value to a result of expression" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
-            <propertyGroup label="Settings">
-                <property id="expression" label="Expression" type="string" description="Expression to evaluate" defaultValue="" required="true"/>
+            <propertyGroup label="%propertyGroup.label.0">
+                <property id="expression" label="%property.label.0" type="string" description="%property.description.0" defaultValue="" required="true"/>
             </propertyGroup>
         </transformer>
-
-        <eventProcessor
-                id="showInExplorer"
-                label="%dataTransfer.eventProcessor.showInExplorer.label"
-                description="%dataTransfer.eventProcessor.showInExplorer.description"
-                class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"
-                nodes="streamTransferConsumer"/>
-
-        <eventProcessor
-                id="executeCommand"
-                label="%dataTransfer.eventProcessor.executeCommand.label"
-                description="%dataTransfer.eventProcessor.executeCommand.description"
-                class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
-                nodes="streamTransferConsumer"/>
 
     </extension>
 
