@@ -38,21 +38,22 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
 
     private static final String ATTR_JOIN_TYPE = "Join-Type";
     private static final String ATTR_HASH_COND = "Hash-Cond";
-    public static final String ATTR_INDEX_COND = "Index-Cond";
-    public static final String ATTR_NODE_TYPE = "Node-Type";
-    public static final String ATTR_RELATION_NAME = "Relation-Name";
-    public static final String ATTR_FUNCTION_NAME = "Function-Name";
+    private static final String ATTR_INDEX_COND = "Index-Cond";
+    static final String ATTR_NODE_TYPE = "Node-Type";
+    static final String ATTR_RELATION_NAME = "Relation-Name";
+    static final String ATTR_FUNCTION_NAME = "Function-Name";
     public static final String ATTR_ALIAS = "Alias";
-    public static final String ATTR_TOTAL_COST = "Total-Cost";
-    public static final String ATTR_STARTUP_COST = "Startup-Cost";
-    public static final String ATTR_INDEX_NAME = "Index-Name";
-    public static final String ATTR_CTE_NAME = "CTE-Name";
-    public static final String ATTR_ACTUAL_TOTAL_TIME = "Actual-Total-Time";
-    public static final String ATTR_ACTUAL_ROWS = "Actual-Rows";
-    public static final String ATTR_PLAN_ROWS = "Plan-Rows";
-    public static final String ATTR_FILTER = "Filter";
+    static final String ATTR_TOTAL_COST = "Total-Cost";
+    static final String ATTR_STARTUP_COST = "Startup-Cost";
+    static final String ATTR_INDEX_NAME = "Index-Name";
+    private static final String ATTR_CTE_NAME = "CTE-Name";
+    private static final String ATTR_ACTUAL_TOTAL_TIME = "Actual-Total-Time";
+    static final String ATTR_ACTUAL_ROWS = "Actual-Rows";
+    static final String ATTR_PLAN_ROWS = "Plan-Rows";
+    private static final String ATTR_FILTER = "Filter";
+    private static final String ATTR_PARALLEL_AWARE = "Parallel-Aware";
     
-    public static final String ATTR_OBJECT_NAME = "Object name";
+    static final String ATTR_OBJECT_NAME = "Object name";
 
     private final static List<String> allowedKind = new ArrayList<>( 
             Arrays.asList("result",
@@ -105,6 +106,11 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         String startCost = attributes.get(ATTR_STARTUP_COST);
         String totalCost = attributes.get(ATTR_TOTAL_COST);
         cost = startCost + " - " + totalCost;
+        String parallelAware = attributes.get(ATTR_PARALLEL_AWARE);
+        if (parallelAware.equals("true")) {
+            // PG adds the "Parallel" word to the scan type in the TEXT format but not in XML format. In XML format, there is a special Parallel-Aware tag.
+            nodeType = "Parallel " + nodeType;
+        }
     }
 
     @Override
