@@ -77,7 +77,7 @@ public class PostgreTablespace extends PostgreInformation implements PostgreScri
 
     @Property(viewable = true, order = 2)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return getDatabase().getRoleById(monitor, ownerId);
+        return getDataSource().getRoleById(monitor, ownerId);
     }
 
     @Property(viewable = true, order = 3)

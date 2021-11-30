@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -85,7 +84,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private long dbTotalSize = -1;
     private Boolean supportTypColumn;
 
-    public final PostgreDatabaseJDBCObjectCache<? extends PostgreRole> roleCache = createRoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
     public final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
     public final ForeignServerCache foreignServerCache = new ForeignServerCache();
@@ -360,29 +358,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Property(editable = true, updatable = true, order = 3, listProvider = RoleListProvider.class)
     public PostgreRole getDBA(DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);
-        return getRoleById(monitor, ownerId);
+        return getDataSource().getRoleById(monitor, ownerId);
     }
 
     public void setDBA(PostgreRole owner) {
         this.ownerId = owner.getObjectId();
-    }
-
-    @Nullable
-    public PostgreRole getRoleById(DBRProgressMonitor monitor, long roleId) throws DBException {
-        if (!getDataSource().getServerType().supportsRoles()) {
-            return null;
-        }
-        checkInstanceConnection(monitor);
-        return PostgreUtils.getObjectById(monitor, roleCache, this, roleId);
-    }
-
-    @Nullable
-    public PostgreRole getRoleByName(DBRProgressMonitor monitor, PostgreDatabase owner, String roleName) throws DBException {
-        if (!getDataSource().getServerType().supportsRoles()) {
-            return null;
-        }
-        checkInstanceConnection(monitor);
-        return roleCache.getObject(monitor, owner, roleName);
     }
 
     @Property(editable = false, updatable = false, order = 5/*, listProvider = CharsetListProvider.class*/)
@@ -428,11 +408,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Association
     public Collection<? extends PostgreRole> getAuthIds(DBRProgressMonitor monitor) throws DBException {
-        if (!getDataSource().supportsRoles()) {
+        PostgreDataSource dataSource = getDataSource();
+        if (!dataSource.supportsRoles()) {
             return Collections.emptyList();
         }
         checkInstanceConnection(monitor);
-        return roleCache.getAllObjects(monitor, this);
+        return dataSource.getRoleCache().getAllObjects(monitor, dataSource);
     }
 
     @Association
@@ -763,7 +744,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         readDatabaseInfo(monitor);
 
         // Clear all caches
-        roleCache.clearCache();
         accessMethodCache.clearCache();
         foreignDataWrapperCache.clearCache();
         foreignServerCache.clearCache();
@@ -780,11 +760,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     public Collection<? extends PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
-        if (!getDataSource().getServerType().supportsRoles()) {
+        PostgreDataSource dataSource = getDataSource();
+        if (!dataSource.getServerType().supportsRoles()) {
             return Collections.emptyList();
         }
         checkInstanceConnection(monitor);
-        return roleCache.getAllObjects(monitor, this);
+        return dataSource.getRoleCache().getAllObjects(monitor, dataSource);
     }
 
     ////////////////////////////////////////////////////
@@ -926,48 +907,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     /////////////////////////////////////////////////////////////////////////////////////
     // Caches
 
-    @NotNull
-    protected PostgreDatabaseJDBCObjectCache<? extends PostgreRole> createRoleCache() {
-        return new RoleCache();
-    }
-
-    protected static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
-        boolean handlePermissionDeniedError(Exception e) {
-            if (e instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) e).getDatabaseState())) {
-                log.warn(e);
-                setCache(Collections.emptyList());
-                return true;
-            }
-            return false;
-        }
-    }
-
-    static class RoleCache extends PostgreDatabaseJDBCObjectCache<PostgreRole> {
-        @NotNull
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
-            throws SQLException {
-            return session.prepareStatement(
-                "SELECT a.oid,a.* FROM pg_catalog.pg_roles a " +
-                    "\nORDER BY a.rolname"
-            );
-        }
-
-        @Override
-        protected PostgreRole fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException {
-            return new PostgreRole(owner, dbResult);
-        }
-
-        @Override
-        protected boolean handleCacheReadError(Exception error) {
-            // #271, #501: in some databases (AWS?) pg_authid is not accessible
-            // FIXME: maybe some better workaround?
-            return handlePermissionDeniedError(error);
-        }
-    }
-
-    static class AccessMethodCache extends PostgreDatabaseJDBCObjectCache<PostgreAccessMethod> {
+    static class AccessMethodCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreAccessMethod> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -985,7 +925,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class EncodingCache extends PostgreDatabaseJDBCObjectCache<PostgreCharset> {
+    static class EncodingCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreCharset> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1005,7 +945,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class CollationCache extends PostgreDatabaseJDBCObjectCache<PostgreCollation> {
+    static class CollationCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreCollation> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1024,7 +964,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class LanguageCache extends PostgreDatabaseJDBCObjectCache<PostgreLanguage> {
+    static class LanguageCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreLanguage> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1042,7 +982,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class ForeignDataWrapperCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignDataWrapper> {
+    static class ForeignDataWrapperCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreForeignDataWrapper> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1062,7 +1002,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class ForeignServerCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignServer> {
+    static class ForeignServerCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreForeignServer> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1080,7 +1020,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class TablespaceCache extends PostgreDatabaseJDBCObjectCache<PostgreTablespace> {
+    static class TablespaceCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreTablespace> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1105,7 +1045,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class AvailableExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreAvailableExtension> {
+    static class AvailableExtensionCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreAvailableExtension> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1122,7 +1062,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
     
-    static class ExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreExtension> {
+    static class ExtensionCache extends PostgreContainerJDBCObjectCache<PostgreDatabase, PostgreExtension> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)

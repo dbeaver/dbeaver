@@ -78,7 +78,7 @@ public class PostgreCollation implements PostgreObject {
 
     @Property(viewable = true, order = 3)
     public PostgreRole getOwnerId(DBRProgressMonitor monitor) throws DBException {
-        return database.getRoleById(monitor, ownerId);
+        return getDataSource().getRoleById(monitor, ownerId);
     }
 
     @Property(viewable = true, order = 5)

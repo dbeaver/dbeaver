@@ -58,8 +58,8 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected PostgreRole createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new PostgreRole(((PostgreDataSource) container).getDefaultInstance(), "NewRole", "", true);
+    protected PostgreRole createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+        return new PostgreRole((PostgreDataSource) container, "NewRole", "", true);
     }
 
     @Override

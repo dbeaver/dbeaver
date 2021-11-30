@@ -166,7 +166,7 @@ public class PostgreSchema implements
 
     @Property(order = 4)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return database.getDataSource().getServerType().supportsRoles() ? database.getRoleById(monitor, ownerId) : null;
+        return database.getDataSource().getServerType().supportsRoles() ? getDataSource().getRoleById(monitor, ownerId) : null;
     }
 
     @Override

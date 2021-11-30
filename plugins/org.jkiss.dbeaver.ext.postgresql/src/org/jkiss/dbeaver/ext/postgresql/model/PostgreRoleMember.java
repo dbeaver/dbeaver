@@ -86,17 +86,17 @@ public class PostgreRoleMember implements DBSObject {
 
     @Property(viewable = true, order = 1)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return owner.getDatabase().getRoleById(monitor, role);
+        return owner.getDataSource().getRoleById(monitor, role);
     }
 
     @Property(viewable = true, order = 2)
     public PostgreRole getMember(DBRProgressMonitor monitor) throws DBException {
-        return owner.getDatabase().getRoleById(monitor, member);
+        return owner.getDataSource().getRoleById(monitor, member);
     }
 
     @Property(viewable = true, order = 3)
     public PostgreRole getGrantor(DBRProgressMonitor monitor) throws DBException {
-        return owner.getDatabase().getRoleById(monitor, grantor);
+        return owner.getDataSource().getRoleById(monitor, grantor);
     }
 
     @Property(viewable = true, order = 4)

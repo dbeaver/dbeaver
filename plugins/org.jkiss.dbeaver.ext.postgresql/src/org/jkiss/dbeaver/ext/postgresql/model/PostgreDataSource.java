@@ -85,6 +85,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
+    private final PostgreContainerJDBCObjectCache<PostgreDataSource, ? extends PostgreRole> roleCache = createRoleCache();
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     private String serverVersion;
@@ -390,6 +391,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
         this.databaseCache.clearCache();
         this.activeDatabaseName = null;
+        this.roleCache.clearCache();
 
         this.initializeRemoteInstance(monitor);
         this.initialize(monitor);
@@ -418,6 +420,26 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         throws DBException
     {
         databaseCache.getAllObjects(monitor, this);
+    }
+
+    PostgreContainerJDBCObjectCache<PostgreDataSource, ? extends PostgreRole> getRoleCache() {
+        return roleCache;
+    }
+
+    @Nullable
+    public PostgreRole getRoleById(DBRProgressMonitor monitor, long roleId) throws DBException {
+        if (!getDataSource().getServerType().supportsRoles()) {
+            return null;
+        }
+        return PostgreUtils.getObjectById(monitor, roleCache, this, roleId);
+    }
+
+    @Nullable
+    public PostgreRole getRoleByName(DBRProgressMonitor monitor, PostgreDataSource owner, String roleName) throws DBException {
+        if (!getDataSource().getServerType().supportsRoles()) {
+            return null;
+        }
+        return roleCache.getObject(monitor, owner, roleName);
     }
 
     ////////////////////////////////////////////
@@ -678,6 +700,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
+    @NotNull
+    protected PostgreContainerJDBCObjectCache<PostgreDataSource, ? extends PostgreRole> createRoleCache() {
+        return new RoleCache();
+    }
+
     private static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
     }
 
@@ -698,6 +725,31 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         @Override
         protected PostgreSetting fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new PostgreSetting(owner, dbResult);
+        }
+    }
+
+    static class RoleCache extends PostgreContainerJDBCObjectCache<PostgreDataSource, PostgreRole> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner)
+            throws SQLException {
+            return session.prepareStatement(
+                "SELECT a.oid,a.* FROM pg_catalog.pg_roles a " +
+                    "\nORDER BY a.rolname"
+            );
+        }
+
+        @Override
+        protected PostgreRole fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException {
+            return new PostgreRole(owner, dbResult);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            // #271, #501: in some databases (AWS?) pg_authid is not accessible
+            // FIXME: maybe some better workaround?
+            return handlePermissionDeniedError(error);
         }
     }
 

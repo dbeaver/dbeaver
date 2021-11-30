@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -65,7 +66,7 @@ public class PostgreRole implements
 
     private static final Log log = Log.getLog(PostgreRole.class);
 
-    protected final PostgreDatabase database;
+    protected final PostgreDataSource dataSource;
     protected long oid;
     protected String name;
     protected boolean superUser;
@@ -110,18 +111,18 @@ public class PostgreRole implements
 
     }
 
-    public PostgreRole(PostgreDatabase database, String name, String password, boolean isUser) {
-        this.database = database;
+    public PostgreRole(@NotNull PostgreDataSource dataSource, String name, String password, boolean isUser) {
+        this.dataSource = dataSource;
         this.name = name;
         this.password = password;
         this.canLogin = isUser;
         this.persisted = false;
     }
 
-    public PostgreRole(PostgreDatabase database, ResultSet dbResult)
+    public PostgreRole(@NotNull PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
     {
-        this.database = database;
+        this.dataSource = dataSource;
         this.loadInfo(dbResult);
     }
 
@@ -151,13 +152,13 @@ public class PostgreRole implements
     @Nullable
     @Override
     public DBSObject getParentObject() {
-        return database;
+        return dataSource;
     }
 
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
-        return database.getDataSource();
+        return dataSource;
     }
 
     public boolean isUser() {
@@ -189,7 +190,7 @@ public class PostgreRole implements
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
-        return database;
+        return dataSource.getDefaultInstance();
     }
 
     @Property(viewable = true, order = 2)
@@ -369,17 +370,15 @@ public class PostgreRole implements
         List<PostgrePrivilege> permissions = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?")) {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, getName());
+                    "SELECT * FROM information_schema.table_privileges WHERE grantee=?")) {
+                dbStat.setString(1, getName());
                 permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading table privileges", e);
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?")) {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, getName());
+                    "SELECT * FROM information_schema.routine_privileges WHERE grantee=?")) {
+                dbStat.setString(1, getName());
                 permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading routine privileges", e);
@@ -466,7 +465,7 @@ public class PostgreRole implements
                                             new PostgreRolePrivilege(
                                                     this,
                                                     pKind,
-                                                    schema.getName(),
+                                                    schema,
                                                     objectName,
                                                     grants));
                                 }
@@ -499,7 +498,20 @@ public class PostgreRole implements
             // Pack to permission list
             List<PostgrePrivilege> result = new ArrayList<>(privs.size());
             for (List<PostgrePrivilegeGrant> priv : privs.values()) {
-                result.add(new PostgreRolePrivilege(role, kind, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
+                String catalogName = priv.get(0).getObjectCatalog();
+                PostgreDatabase database = role.getDataSource().getDatabase(catalogName);
+                if (database != null) {
+                    String schemaName = priv.get(0).getObjectSchema();
+                    PostgreSchema schema = null;
+                    try {
+                        schema = database.getSchema(new VoidProgressMonitor(), schemaName);
+                    } catch (DBException e) {
+                        log.error("Can't find object permissions schema", e);
+                    }
+                    if (schema != null) {
+                        result.add(new PostgreRolePrivilege(role, kind, schema, priv.get(0).getObjectName(), priv));
+                    }
+                }
             }
             return result;
         }

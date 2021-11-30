@@ -83,7 +83,7 @@ public class PostgreOperatorClass extends PostgreInformation {
 
     @Property(viewable = true, order = 4)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return accessMethod.getDatabase().getRoleById(monitor, ownerId);
+        return accessMethod.getDataSource().getRoleById(monitor, ownerId);
     }
 
     @Property(viewable = true, order = 5, visibleIf = PostgreSupportsOpFamily.class)

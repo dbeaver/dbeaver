@@ -48,7 +48,8 @@ public class PostgreObjectPrivilege extends PostgrePrivilege {
     @Override
     public PostgreRole getTargetObject(DBRProgressMonitor monitor) throws DBException
     {
-        return owner.getDatabase().getRoleByName(monitor, owner.getDatabase(), grantee);
+        PostgreDataSource dataSource = owner.getDataSource();
+        return dataSource.getRoleByName(monitor, dataSource, grantee);
     }
 
     public String getGrantee() {

@@ -68,7 +68,7 @@ public class PostgreDialectFunctionsTest {
             }
         };
 
-        PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
+        PostgreRole testUser = new PostgreRole(testDataSource, "tester", "test", true);
         PostgreDatabase testDatabase = testDataSource.createDatabaseImpl(monitor, "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "testSchema", testUser);
         PGCatalogTestSchema = new PostgreSchema(testDatabase, PostgreConstants.CATALOG_SCHEMA_NAME, testUser); // Test PG_catalog schema for the right define default data types fully qualified names

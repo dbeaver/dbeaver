@@ -35,13 +35,15 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
     private static final Log log = Log.getLog(PostgreRolePrivilege.class);
 
     private PostgrePrivilegeGrant.Kind kind;
+    private PostgreDatabase database;
     private String schemaName;
     private String objectName;
 
-    public PostgreRolePrivilege(PostgrePrivilegeOwner owner, PostgrePrivilegeGrant.Kind kind, String schemaName, String objectName, List<PostgrePrivilegeGrant> privileges) {
+    public PostgreRolePrivilege(PostgrePrivilegeOwner owner, PostgrePrivilegeGrant.Kind kind, @NotNull PostgreSchema schema, String objectName, List<PostgrePrivilegeGrant> privileges) {
         super(owner, privileges);
         this.kind = kind;
-        this.schemaName = schemaName;
+        this.schemaName = schema.getName();
+        this.database = schema.getDatabase();
         this.objectName = objectName;
     }
 
@@ -70,6 +72,10 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
         this.kind = kind;
     }
 
+    public PostgreDatabase getDatabase() {
+        return database;
+    }
+
     public String getSchemaName() {
         return schemaName;
     }
@@ -79,7 +85,7 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
     }
 
     public String getFullObjectName() {
-        return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) +
+        return DBUtils.getQuotedIdentifier(database) + "." + DBUtils.getQuotedIdentifier(getDataSource(), schemaName) +
             (kind == PostgrePrivilegeGrant.Kind.SCHEMA ? "" :
                 ("." + (kind == PostgrePrivilegeGrant.Kind.FUNCTION || kind == PostgrePrivilegeGrant.Kind.PROCEDURE ? objectName :
                         DBUtils.getQuotedIdentifier(getDataSource(), objectName))));
@@ -93,8 +99,9 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
     @Override
     public int compareTo(@NotNull PostgrePrivilege o) {
         if (o instanceof PostgreRolePrivilege) {
+            final int databaseRes = database.getName().compareTo(((PostgreRolePrivilege)o).getDatabase().getName());
             final int res = schemaName.compareTo(((PostgreRolePrivilege)o).schemaName);
-            return res != 0 ? res : CommonUtils.compare(objectName, ((PostgreRolePrivilege)o).objectName);
+            return databaseRes != 0 ? databaseRes : res != 0 ? res : CommonUtils.compare(objectName, ((PostgreRolePrivilege)o).objectName);
         }
         return 0;
     }

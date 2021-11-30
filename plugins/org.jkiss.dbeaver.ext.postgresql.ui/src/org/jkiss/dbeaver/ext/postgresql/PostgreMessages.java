@@ -89,6 +89,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_schema_name;
     public static String dialog_create_schema_owner;
     public static String dialog_create_schema_title;
+    public static String dialog_create_schema_database;
 
     /* dialog create extension */
     public static String dialog_create_extension_name;

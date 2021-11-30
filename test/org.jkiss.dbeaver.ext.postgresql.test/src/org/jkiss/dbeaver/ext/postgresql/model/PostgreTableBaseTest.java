@@ -77,7 +77,7 @@ public class PostgreTableBaseTest {
             }
         };
 
-        PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
+        PostgreRole testUser = new PostgreRole(testDataSource, "tester", "test", true);
         testDatabase = testDataSource.createDatabaseImpl(monitor, "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "testSchema", testUser);
 

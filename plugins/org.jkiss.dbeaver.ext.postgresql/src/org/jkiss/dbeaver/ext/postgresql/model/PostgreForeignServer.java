@@ -139,7 +139,7 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
 
     @Property(viewable = false, order = 8)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return getDatabase().getRoleById(monitor, ownerId);
+        return getDataSource().getRoleById(monitor, ownerId);
     }
 
     @Property(viewable = true, order = 10)
