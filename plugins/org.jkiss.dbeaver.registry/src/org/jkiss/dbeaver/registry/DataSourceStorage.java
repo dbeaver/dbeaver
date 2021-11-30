@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -31,18 +31,18 @@ import java.util.Map;
  */
 class DataSourceStorage implements DBPDataSourceConfigurationStorage
 {
-    private final File sourceFile;
+    private final Path sourceFile;
     private final boolean isDefault;
     private final String configSuffix;
 
-    DataSourceStorage(File sourceFile, boolean isDefault) {
+    DataSourceStorage(Path sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
 
         if (isDefault) {
             configSuffix = "";
         } else {
-            String configFileName = sourceFile.getName();
+            String configFileName = sourceFile.getFileName().toString();
             configSuffix = configFileName.substring(
                 DBPDataSourceRegistry.MODERN_CONFIG_FILE_PREFIX.length(),
                 configFileName.length() - DBPDataSourceRegistry.MODERN_CONFIG_FILE_EXT.length());
@@ -52,7 +52,7 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
 
     @Override
     public String getStorageId() {
-        return "file://" + sourceFile.getAbsolutePath();
+        return "file://" + sourceFile.toAbsolutePath();
     }
 
     @Override
@@ -66,7 +66,7 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
     }
 
     public String getName() {
-        return sourceFile.getName();
+        return sourceFile.getFileName().toString();
     }
 
     public String getConfigurationFileSuffix() {
@@ -78,7 +78,7 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
         return isDefault;
     }
 
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return sourceFile;
     }
 
@@ -89,6 +89,6 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
 
     @Override
     public String toString() {
-        return sourceFile.getAbsolutePath();
+        return sourceFile.toAbsolutePath().toString();
     }
 }

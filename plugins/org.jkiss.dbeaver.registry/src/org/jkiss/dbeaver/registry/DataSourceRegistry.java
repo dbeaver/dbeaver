@@ -47,8 +47,10 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,7 +71,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final DBPPlatform platform;
     private final DBPProject project;
 
-    private final Map<File, DataSourceStorage> storages = new LinkedHashMap<>();
+    private final Map<Path, DataSourceStorage> storages = new LinkedHashMap<>();
     private final Map<String, DataSourceDescriptor> dataSources = new LinkedHashMap<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
@@ -146,10 +148,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     return storage;
                 }
             }
-            File defFile = getModernConfigFile();
-            if (!defFile.exists()) {
-                File legacyFile = getLegacyConfigFile();
-                if (legacyFile.exists()) {
+            Path defFile = getModernConfigFile();
+            if (!Files.exists(defFile)) {
+                Path legacyFile = getLegacyConfigFile();
+                if (Files.exists(legacyFile)) {
                     defFile = legacyFile;
                 }
             }
@@ -159,12 +161,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private File getLegacyConfigFile() {
-        return new File(project.getAbsolutePath(), LEGACY_CONFIG_FILE_NAME);
+    private Path getLegacyConfigFile() {
+        return project.getAbsolutePath().resolve(LEGACY_CONFIG_FILE_NAME);
     }
 
-    private File getModernConfigFile() {
-        return new File(project.getMetadataFolder(false), MODERN_CONFIG_FILE_NAME);
+    private Path getModernConfigFile() {
+        return project.getMetadataFolder(false).resolve(MODERN_CONFIG_FILE_NAME);
     }
 
     @NotNull
@@ -609,10 +611,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return result;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull File fromFile) {
+    public List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull Path fromPath) {
         ParseResults parseResults = new ParseResults();
-        loadDataSources(fromFile, false, true, parseResults, configurationStorage);
+        loadDataSources(fromPath, false, true, parseResults, configurationStorage);
         return new ArrayList<>(parseResults.addedDataSources);
     }
 
@@ -628,30 +631,37 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
         // Modern way - search json configs in metadata folder
         boolean modernFormat = false;
-        File metadataFolder = project.getMetadataFolder(false);
-        if (metadataFolder.exists()) {
-            File[] mdFiles = metadataFolder.listFiles();
-            if (mdFiles != null) {
-                for (File res : mdFiles) {
-                    if (!res.isDirectory() && res.exists() &&
-                        res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT)) {
+        Path metadataFolder = project.getMetadataFolder(false);
+        if (Files.exists(metadataFolder)) {
+            try {
+                List<Path> mdFiles = Files.list(metadataFolder)
+                    .filter(path -> !Files.isDirectory(path) && Files.exists(path))
+                    .collect(Collectors.toList());
+                for (Path res : mdFiles) {
+                    String fileName = res.getFileName().toString();
+                    if (fileName.startsWith(MODERN_CONFIG_FILE_PREFIX) && fileName.endsWith(MODERN_CONFIG_FILE_EXT)) {
                         loadDataSources(res, refresh, true, parseResults);
                         modernFormat = true;
                     }
                 }
+            } catch (IOException e) {
+                log.error("Error during project files read", e);
             }
         }
         if (!modernFormat) {
-            // Logacy way (search config.xml in project folder)
-            File[] mdFiles = project.getAbsolutePath().listFiles();
-            if (mdFiles != null) {
-                for (File res : mdFiles) {
-                    if (!res.isDirectory() && res.exists()) {
-                        if (res.getName().startsWith(LEGACY_CONFIG_FILE_PREFIX) && res.getName().endsWith(LEGACY_CONFIG_FILE_EXT)) {
-                            loadDataSources(res, refresh, false, parseResults);
-                        }
+            try {
+                // Logacy way (search config.xml in project folder)
+                List<Path> mdFiles = Files.list(project.getAbsolutePath())
+                    .filter(path -> !Files.isDirectory(path) && Files.exists(path))
+                    .collect(Collectors.toList());
+                for (Path res : mdFiles) {
+                    String fileName = res.getFileName().toString();
+                    if (fileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && fileName.endsWith(LEGACY_CONFIG_FILE_EXT)) {
+                        loadDataSources(res, refresh, false, parseResults);
                     }
                 }
+            } catch (IOException e) {
+                log.error("Error during legacy project files read", e);
             }
             if (!storages.isEmpty()) {
                 // Save config immediately in the new format
@@ -699,21 +709,21 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private void loadDataSources(@NotNull File fromFile, boolean refresh, boolean modern, @NotNull ParseResults parseResults) {
-        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(modern ? MODERN_CONFIG_FILE_NAME : LEGACY_CONFIG_FILE_NAME);
+    private void loadDataSources(@NotNull Path path, boolean refresh, boolean modern, @NotNull ParseResults parseResults) {
+        boolean extraConfig = !path.getFileName().toString().equalsIgnoreCase(modern ? MODERN_CONFIG_FILE_NAME : LEGACY_CONFIG_FILE_NAME);
         DataSourceStorage storage;
         synchronized (storages) {
-            storage = storages.get(fromFile);
+            storage = storages.get(path);
             if (storage == null) {
-                storage = new DataSourceStorage(fromFile, !extraConfig);
-                storages.put(fromFile, storage);
+                storage = new DataSourceStorage(path, !extraConfig);
+                storages.put(path, storage);
             }
         }
-        loadDataSources(fromFile, refresh, modern, parseResults, storage);
+        loadDataSources(path, refresh, modern, parseResults, storage);
     }
 
-    private void loadDataSources(@NotNull File fromFile, boolean refresh, boolean modern, @NotNull ParseResults parseResults, @NotNull DBPDataSourceConfigurationStorage configurationStorage) {
-        if (!fromFile.exists()) {
+    private void loadDataSources(@NotNull Path fromFile, boolean refresh, boolean modern, @NotNull ParseResults parseResults, @NotNull DBPDataSourceConfigurationStorage configurationStorage) {
+        if (!Files.exists(fromFile)) {
             return;
         }
 
@@ -725,7 +735,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             lastLoadError = null;
         } catch (Exception ex) {
             lastLoadError = ex;
-            log.error("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
+            log.error("Error loading datasource config from " + fromFile.toAbsolutePath(), ex);
         }
     }
 
@@ -741,7 +751,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             for (DataSourceStorage storage : storages.values()) {
                 List<DataSourceDescriptor> localDataSources = getDataSources(storage);
 
-                File configFile = storage.getSourceFile();
+                Path configFile = storage.getSourceFile();
 
                 if (storage.isDefault()) {
                     if (project.isModernProject()) {
@@ -750,22 +760,24 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         configFile = getLegacyConfigFile();
                     }
                 } else {
-                    String configFileName = configFile.getName();
+                    String configFileName = configFile.getFileName().toString();
                     if (configFileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && configFileName.endsWith(".xml")) {
                         // Legacy configuration - move to metadata folder as json
                         String newFileName = MODERN_CONFIG_FILE_PREFIX + configFileName.substring(LEGACY_CONFIG_FILE_PREFIX.length());
                         int divPos = newFileName.lastIndexOf(".");
                         newFileName = newFileName.substring(0, divPos) + ".json";
-                        configFile = new File(project.getMetadataFolder(false), newFileName);
+                        configFile = project.getMetadataFolder(false).resolve(newFileName);
                     }
                 }
                 try {
                     ContentUtils.makeFileBackup(configFile);
 
                     if (localDataSources.isEmpty()) {
-                        if (configFile.exists()) {
-                            if (!configFile.delete()) {
-                                log.error("Error deleting file '" + configFile.getAbsolutePath() + "'");
+                        if (Files.exists(configFile)) {
+                            try {
+                                Files.delete(configFile);
+                            } catch (IOException e) {
+                                log.error("Error deleting file '" + configFile.toAbsolutePath() + "'", e);
                             }
                         }
                     } else {

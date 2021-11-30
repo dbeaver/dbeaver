@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -42,6 +40,9 @@ import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -487,54 +488,29 @@ public class ContentUtils {
         }
     }
 
-    public static void makeFileBackup(IFile file) {
-        if (!file.exists()) {
+    public static void makeFileBackup(Path file) {
+        if (!Files.exists(file)) {
             return;
         }
-        String backupFileName = file.getName() + ".bak";
+        String backupFileName = file.getFileName().toString() + ".bak";
         if (!backupFileName.startsWith(".")) {
             backupFileName = "." + backupFileName;
         }
-        IFile backupFile = file.getParent().getFile(new Path(backupFileName));
-        if (backupFile.exists()) {
-            Date backupTime = new Date(backupFile.getModificationStamp());
-            if (CommonUtils.isSameDay(backupTime, new Date())) {
-                return;
+        Path backupFile = file.getParent().resolve(backupFileName);
+        if (Files.exists(backupFile)) {
+            try {
+                Date backupTime = new Date(Files.getLastModifiedTime(backupFile).toMillis());
+                if (CommonUtils.isSameDay(backupTime, new Date())) {
+                    return;
+                }
+            } catch (IOException e) {
+                log.error("Error getting file modified time", e);
             }
         }
-        try (InputStream fis = file.getContents()) {
-
-            if (!backupFile.exists()) {
-                backupFile.create(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
-            } else {
-                backupFile.setContents(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
-            }
+        try {
+            Files.copy(file, backupFile, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
-            log.error("Error creating backup copy of " + file.getFullPath(), e);
-        }
-    }
-
-    public static void makeFileBackup(File file) {
-        if (!file.exists()) {
-            return;
-        }
-        String backupFileName = file.getName() + ".bak";
-        if (!backupFileName.startsWith(".")) {
-            backupFileName = "." + backupFileName;
-        }
-        File backupFile = new File(file.getParent(), backupFileName);
-        if (backupFile.exists()) {
-            Date backupTime = new Date(backupFile.lastModified());
-            if (CommonUtils.isSameDay(backupTime, new Date())) {
-                return;
-            }
-        }
-        try (InputStream fis = new FileInputStream(file)) {
-            try (OutputStream fos = new FileOutputStream(backupFile)) {
-                IOUtils.copyStream(fis, fos);
-            }
-        } catch (Exception e) {
-            log.error("Error creating backup copy of " + file.getAbsolutePath(), e);
+            log.error("Error creating backup copy of " + file.toAbsolutePath(), e);
         }
     }
 

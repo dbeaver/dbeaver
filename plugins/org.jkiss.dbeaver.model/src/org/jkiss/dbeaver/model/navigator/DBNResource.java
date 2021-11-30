@@ -41,8 +41,10 @@ import java.util.*;
 public class DBNResource extends DBNNode// implements IContributorResourceAdapter
 {
     private static final Log log = Log.getLog(DBNResource.class);
+
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
-    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private IResource resource;
     private DBPResourceHandler handler;

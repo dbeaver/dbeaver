@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,13 +53,13 @@ public interface DBPProject extends DBPObject, DBAAuthSpace
     UUID getProjectID();
 
     @NotNull
-    File getAbsolutePath();
+    Path getAbsolutePath();
 
     @NotNull
     IProject getEclipseProject();
 
     @NotNull
-    File getMetadataFolder(boolean create);
+    Path getMetadataFolder(boolean create);
 
     boolean isOpen();
 
