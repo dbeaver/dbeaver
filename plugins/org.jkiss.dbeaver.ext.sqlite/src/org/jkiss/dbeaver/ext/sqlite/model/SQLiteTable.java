@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
+import java.util.Collection;
 import java.util.List;
 
 public class SQLiteTable extends GenericTable implements DBDPseudoAttributeContainer,DBPNamedObject2 {
@@ -75,9 +76,21 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public List<SQLiteTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<SQLiteTableColumn>) super.getAttributes(monitor);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Collection<SQLiteTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return (Collection<SQLiteTableForeignKey>) super.getAssociations(monitor);
+    }
+
+    @Override
+    public SQLiteTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
+        return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
     }
 }
