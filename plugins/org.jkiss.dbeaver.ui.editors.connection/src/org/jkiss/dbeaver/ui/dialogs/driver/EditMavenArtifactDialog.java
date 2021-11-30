@@ -105,16 +105,15 @@ public class EditMavenArtifactDialog extends BaseDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     artifacts.clear();
-                    //check if we are on raw tab. When trues to parse
-                    if (tabFolder.getSelectionIndex() == 0 && tabFolder.getItemCount() != 1){
+                    if (tabFolder.getSelection()[0].getData() == TabType.DEPENDENCY_DECLARATION){
                         UIUtils.asyncExec(EditMavenArtifactDialog.this::parseArtifactText);
                     }
                 }
             });
             if (originalArtifact == null) {
-                createRawTab(tabFolder);
+                createDependencyDeclarationTab(tabFolder);
             }
-            createManualTab(tabFolder);
+            createDeclareArtifactManuallyTab(tabFolder);
         }
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_edit_driver_edit_maven_settings, 1, GridData.FILL_HORIZONTAL, 0);
@@ -182,7 +181,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
     }
 
-    private void createRawTab(@NotNull TabFolder folder) {
+    private void createDependencyDeclarationTab(@NotNull TabFolder folder) {
 
         Composite container = new Composite(folder, SWT.NONE);
         container.setLayout(new GridLayout(1, true));
@@ -205,9 +204,10 @@ public class EditMavenArtifactDialog extends BaseDialog {
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_raw);
         item.setControl(container);
+        item.setData(TabType.DEPENDENCY_DECLARATION);
     }
 
-    private void createManualTab(@NotNull TabFolder folder) {
+    private void createDeclareArtifactManuallyTab(@NotNull TabFolder folder) {
         Composite container = new Composite(folder, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -225,6 +225,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_manual);
         item.setControl(container);
+        item.setData(TabType.DECLARE_ARTIFACT_MANUALLY);
 
 
         ModifyListener ml = e -> updateButtons();
@@ -361,6 +362,11 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     }
 
+    private enum TabType {
+        DEPENDENCY_DECLARATION,
+        DECLARE_ARTIFACT_MANUALLY
+    }
+
     private enum State {
         DEPENDENCIES,
         DEPENDENCY,
@@ -371,10 +377,10 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        if (tabFolder.getSelectionIndex() == 1) {
+        if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
                 originalArtifact.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, defaultVersionText.getText()));
-                originalArtifact.setPreferredVersion(defaultVersionText.getText());
+                originalArtifact.setPreferredVersion(preferredVersionText.getText());
                 originalArtifact.setIgnoreDependencies(ignoreDependencies);
                 originalArtifact.setLoadOptionalDependencies(loadOptionalDependencies);
             } else {
