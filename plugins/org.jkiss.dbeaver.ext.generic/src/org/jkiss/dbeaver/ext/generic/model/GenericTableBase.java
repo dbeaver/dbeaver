@@ -242,7 +242,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
@@ -449,7 +449,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                 if (fk == null) {
                     fk = fkMap.get(info.fkName);
                     if (fk == null) {
-                        fk = new GenericTableForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, deferability, true);
+                        fk = fkTable.getDataSource().getMetaModel().createTableForeignKeyImpl(fkTable, info.fkName, null, pk, deleteRule, updateRule, deferability, true);
                         fkMap.put(info.fkName, fk);
                         fkList.add(fk);
                     }

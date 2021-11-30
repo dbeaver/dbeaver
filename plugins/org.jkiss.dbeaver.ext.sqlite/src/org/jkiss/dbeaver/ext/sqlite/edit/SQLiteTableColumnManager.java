@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -28,12 +29,9 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,9 +39,7 @@ import java.util.stream.Collectors;
 /**
  * SQLiteTableColumnManager
  */
-public class SQLiteTableColumnManager extends GenericTableColumnManager
-    implements DBEObjectRenamer<GenericTableColumn>
-{
+public class SQLiteTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
 
     @Override
     public boolean canCreateObject(Object container) {
@@ -60,10 +56,6 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         final GenericTableColumn column = command.getObject();
         final GenericTableBase table = column.getTable();
 
-        final String tableName = DBUtils.getQuotedIdentifier(table);
-        final String tableColumns;
-        final String tableDDL;
-
         final List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
         if (CommonUtils.isEmpty(attributes)) {
             throw new DBException("Table has no attributes");
@@ -72,46 +64,22 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
             if (attributes.contains(column)) {
                 table.removeAttribute(column);
             }
-            tableColumns = attributes.stream()
-                .filter(DBPPersistedObject::isPersisted)
-                .map(DBUtils::getQuotedIdentifier)
-                .collect(Collectors.joining(",\n  "));
-            tableDDL = DBStructUtils.generateTableDDL(monitor, table, Collections.emptyMap(), false);
+            SQLiteUtils.createTableAlterActions(
+                monitor,
+                "Drop column " + DBUtils.getQuotedIdentifier(column),
+                table,
+                attributes.stream().filter(DBPPersistedObject::isPersisted).collect(Collectors.toList()),
+                actions
+            );
         } finally {
             if (attributes.contains(column)) {
                 table.addAttribute(column);
             }
         }
-
-        actions.add(new SQLDatabasePersistActionComment(
-            table.getDataSource(),
-            "Drop column " + DBUtils.getQuotedIdentifier(column)
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Create temporary table from original table",
-            "CREATE TEMPORARY TABLE temp AS\nSELECT\n  " + tableColumns + "\nFROM " + tableName
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Drop original table",
-            "\nDROP TABLE " + tableName + ";\n"
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Create new table",
-            tableDDL
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Insert values from temporary table to new table",
-            "INSERT INTO " + tableName + "\n (" + tableColumns + ")\nSELECT\n  " + tableColumns + "\nFROM temp"
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Drop temporary table",
-            "\nDROP TABLE temp"
-        ));
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         final GenericTableColumn column = command.getObject();
 
         actions.add(
