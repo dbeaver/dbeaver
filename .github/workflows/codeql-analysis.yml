@@ -29,8 +29,6 @@ jobs:
         # We must fetch at least the immediate parents so that if this is
         # a pull request then we can checkout the head.
         fetch-depth: 2
-        ref: 'devel'
-        token: ${{ secrets.ACTIONS_DEVOPS_TOKEN }}
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
