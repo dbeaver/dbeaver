@@ -47,7 +47,8 @@ public class HANAProcedureParameter extends GenericProcedureParameter {
 
     @Override
     public DBPImage getObjectImage() {
-        if (tableType != null || inplaceTableType != null || HANAProcedure.DATA_TYPE_NAME_ANY_TABLE_TYPE.equals(typeName))
+        if (HANAProcedure.DATA_TYPE_NAME_TABLE_TYPE.equals(typeName) || 
+        		HANAProcedure.DATA_TYPE_NAME_ANY_TABLE_TYPE.equals(typeName))
             return DBIcon.TREE_TABLE;
         return super.getObjectImage();
     }
@@ -57,8 +58,9 @@ public class HANAProcedureParameter extends GenericProcedureParameter {
         return tableType;
     }
 
+    // optional column in summary view and optional table in detail view with plugin.xml/visibleIf=...
     @Property(viewable = true, order = 26, optional = true)
-    public Boolean getHasInplaceTableType() {
+    public Boolean hasInplaceTableType() {
         if(inplaceTableType != null)
             return true;
         return null;
@@ -80,11 +82,6 @@ public class HANAProcedureParameter extends GenericProcedureParameter {
     @Property(hidden = true)
     public boolean isRequired() {
         return super.isRequired();
-    }
-
-    // optional in HANAInplaceTableTypeColumn detail window
-    public boolean hasInplaceTableType() {
-        return inplaceTableType != null;
     }
 
     @Association

@@ -21,13 +21,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,7 +45,6 @@ public class HANAProcedure extends GenericProcedure {
 
     static final String DATA_TYPE_NAME_TABLE_TYPE = "TABLE_TYPE";
     static final String DATA_TYPE_NAME_ANY_TABLE_TYPE = "ANY_TABLE_TYPE";
-    static final String BOOLEAN_TRUE = "TRUE";
     private static final String PARAMETER_TYPE_IN = "IN";
     private static final String PARAMETER_TYPE_INOUT = "INOUT";
     private static final String PARAMETER_TYPE_OUT = "OUT";
@@ -76,11 +75,11 @@ public class HANAProcedure extends GenericProcedure {
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String parameterName = dbResult.getString(1);
-                        String columnName = dbResult.getString(2);
-                        String typeName = dbResult.getString(3);
-                        int length = dbResult.getInt(4);
-                        int scale = dbResult.getInt(5);
+                        String parameterName = JDBCUtils.safeGetString(dbResult, 1);
+                        String columnName = JDBCUtils.safeGetString(dbResult, 2);
+                        String typeName = JDBCUtils.safeGetString(dbResult, 3);
+                        int length = JDBCUtils.safeGetInt(dbResult, 4);
+                        int scale = JDBCUtils.safeGetInt(dbResult, 5);
                         
                         List<HANAInplaceTableTypeColumn> inplaceTableType = inplaceTableTypes.get(parameterName);
                         if (inplaceTableType == null) {
@@ -117,27 +116,23 @@ public class HANAProcedure extends GenericProcedure {
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String columnName = dbResult.getString(1);
-                        String typeName = dbResult.getString(2);
-                        int columnSize = dbResult.getInt(3);
-                        int scale = dbResult.getInt(4);
-                        int position = dbResult.getInt(5);
-                        String parameterTypeStr = dbResult.getString(9);
-                        boolean hasInplaceTableType = BOOLEAN_TRUE.equals(dbResult.getString(8));
-                        boolean hasDefaultValue = BOOLEAN_TRUE.equals(dbResult.getString(10));
+                        String columnName = JDBCUtils.safeGetString(dbResult, 1);
+                        String typeName = JDBCUtils.safeGetString(dbResult, 2);
+                        int columnSize = JDBCUtils.safeGetInt(dbResult, 3);
+                        int scale = JDBCUtils.safeGetInt(dbResult, 4);
+                        int position = JDBCUtils.safeGetInt(dbResult, 5);
+                        String parameterTypeStr = JDBCUtils.safeGetString(dbResult, 9);
+                        boolean hasInplaceTableType = "TRUE".equals(JDBCUtils.safeGetString(dbResult, 8));
+                        boolean hasDefaultValue = "TRUE".equals(JDBCUtils.safeGetString(dbResult, 10));
                         
                         DBSProcedureParameterKind parameterType;
-                        if(parameterTypeStr.equals(PARAMETER_TYPE_IN)) {
-                            parameterType = DBSProcedureParameterKind.IN;
-                        } else if(parameterTypeStr.equals(PARAMETER_TYPE_INOUT)) {
-                            parameterType = DBSProcedureParameterKind.INOUT;
-                        } else if(parameterTypeStr.equals(PARAMETER_TYPE_OUT)) {
-                            parameterType = DBSProcedureParameterKind.OUT;
-                        } else if(parameterTypeStr.equals(PARAMETER_TYPE_RETURN)) {
-                            parameterType = DBSProcedureParameterKind.RETURN;
-                        } else {
-                            parameterType = DBSProcedureParameterKind.UNKNOWN;
-                        }     
+                        switch(parameterTypeStr) {
+	                    	case PARAMETER_TYPE_IN:     parameterType = DBSProcedureParameterKind.IN; break; 
+	                    	case PARAMETER_TYPE_INOUT:  parameterType = DBSProcedureParameterKind.INOUT; break; 
+	                    	case PARAMETER_TYPE_OUT:    parameterType = DBSProcedureParameterKind.OUT; break; 
+	                    	case PARAMETER_TYPE_RETURN: parameterType = DBSProcedureParameterKind.RETURN; break; 
+	                    	default:                    parameterType = DBSProcedureParameterKind.UNKNOWN; break; 
+                        }
                         DBSObject tableType = null;
                         List<HANAInplaceTableTypeColumn> inplaceTableType = null;
                         if(DATA_TYPE_NAME_TABLE_TYPE.equals(typeName)) {
@@ -155,10 +150,9 @@ public class HANAProcedure extends GenericProcedure {
                                 }
                             }
                         }
-                        GenericProcedureParameter column = new HANAProcedureParameter(
+                        addColumn(new HANAProcedureParameter(
                                 this, columnName, typeName, position, columnSize, scale, parameterType, 
-                                tableType, inplaceTableType, hasDefaultValue);
-                        addColumn(column);
+                                tableType, inplaceTableType, hasDefaultValue));
                     }
                 }
             }
