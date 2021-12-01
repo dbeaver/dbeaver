@@ -148,6 +148,30 @@ public class SQLCompletionAnalyzerTest {
     }
 
     @Test
+    public void testColumnWithNonExistingAliases() throws DBException {
+        final RequestResult request = RequestBuilder.tables(s-> {
+            s.table("Table1", t -> {
+                t.attribute("Col1");
+                t.attribute("Col2");
+            });
+            s.table("Table2", t -> {
+                t.attribute("Col4");
+                t.attribute("Col5");
+            });
+        }).prepare();
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Table1 join Table2 t on t.|", false);
+            Assert.assertEquals("Col4", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col5", proposals.get(1).getReplacementString());
+        }
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Table1 b join Table2 on b.|", false);
+            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
+        }
+    }
+
+    @Test
     public void testColumnNamesExpandCompletion() throws DBException {
         final RequestResult request = RequestBuilder
             .tables(s -> {
