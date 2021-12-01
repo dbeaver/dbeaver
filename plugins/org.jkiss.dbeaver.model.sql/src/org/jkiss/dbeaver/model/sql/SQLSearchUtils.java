@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -43,13 +42,19 @@ public class SQLSearchUtils
     private static final Log log = Log.getLog(SQLSearchUtils.class);
 
     @Nullable
-    public static DBSObject findObjectByFQN(DBRProgressMonitor monitor, @NotNull DBSObjectContainer sc, @Nullable DBCExecutionContext executionContext, List<String> nameList, boolean useAssistant, SQLIdentifierDetector identifierDetector) {
+    public static DBSObject findObjectByFQN(DBRProgressMonitor monitor, DBSObjectContainer sc, @Nullable DBCExecutionContext executionContext, List<String> nameList, boolean useAssistant, SQLIdentifierDetector identifierDetector) {
         if (nameList.isEmpty()) {
             return null;
         }
-        DBPDataSource dataSource = sc.getDataSource();
-        if (executionContext == null) {
+        DBPDataSource dataSource = sc == null ? null : sc.getDataSource();
+        if (executionContext == null && dataSource != null) {
             executionContext = DBUtils.getDefaultContext(dataSource, true);
+        }
+        if (dataSource == null && executionContext != null) {
+            dataSource = executionContext.getDataSource();
+        }
+        if (dataSource == null) {
+            return null;
         }
         {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
