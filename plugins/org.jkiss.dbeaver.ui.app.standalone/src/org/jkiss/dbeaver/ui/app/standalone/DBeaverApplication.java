@@ -62,7 +62,10 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -505,21 +508,22 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
-        final File homeDir = new File(defaultHomePath);
+        final Path homeDir = Path.of(defaultHomePath);
         try {
-            if (!homeDir.exists() || ArrayUtils.isEmpty(homeDir.listFiles())) {
-                File previousVersionWorkspaceDir = null;
+            if (!Files.exists(homeDir) || Files.list(homeDir).count() == 0) {
+                Path previousVersionWorkspaceDir = null;
                 for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
                     oldDir = GeneralUtils.replaceSystemPropertyVariables(oldDir);
-                    final File oldWorkspaceDir = new File(oldDir);
-                    if (oldWorkspaceDir.exists() && GeneralUtils.getMetadataFolder(oldWorkspaceDir).exists()) {
+                    final Path oldWorkspaceDir = Path.of(oldDir);
+                    if (Files.exists(oldWorkspaceDir) &&
+                        Files.exists(GeneralUtils.getMetadataFolder(oldWorkspaceDir))) {
                         previousVersionWorkspaceDir = oldWorkspaceDir;
                         break;
                     }
                 }
                 if (previousVersionWorkspaceDir != null) {
                     DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
-                    if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir, homeDir)) {
+                    if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir.toFile(), homeDir.toFile())) {
                         return false;
                     }
                 }
@@ -576,7 +580,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     }
 
     public static void writeWorkspaceInfo() {
-        final File metadataFolder = GeneralUtils.getMetadataFolder();
+        final Path metadataFolder = GeneralUtils.getMetadataFolder();
         Properties props = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
         props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());
@@ -625,7 +629,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         }
         String logLocation = preferenceStore.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
         if (CommonUtils.isEmpty(logLocation)) {
-            logLocation = new File(GeneralUtils.getMetadataFolder(), DBConstants.DEBUG_LOG_FILE_NAME).getAbsolutePath(); //$NON-NLS-1$
+            logLocation = GeneralUtils.getMetadataFolder().resolve(DBConstants.DEBUG_LOG_FILE_NAME).toAbsolutePath().toString(); //$NON-NLS-1$
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);

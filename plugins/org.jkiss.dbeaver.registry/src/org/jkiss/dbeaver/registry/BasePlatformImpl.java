@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -236,7 +237,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
 
     @NotNull
     @Override
-    public File getCustomDriversHome() {
+    public Path getCustomDriversHome() {
         return DriverDescriptor.getCustomDriversHome();
     }
 

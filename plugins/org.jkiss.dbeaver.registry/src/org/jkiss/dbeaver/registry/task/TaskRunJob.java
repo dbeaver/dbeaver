@@ -29,9 +29,14 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -77,10 +82,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             GeneralUtils.getProductTitle(),
             0, null, null);
         task.getTaskStatsFolder(true);
-        File logFile = task.getRunLog(taskRun);
+        Path logFile = task.getRunLog(taskRun);
         task.addNewRun(taskRun);
 
-        try (PrintStream logStream = new PrintStream(new FileOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {
+        try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {
             taskLog = Log.getLog(TaskRunJob.class);
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);

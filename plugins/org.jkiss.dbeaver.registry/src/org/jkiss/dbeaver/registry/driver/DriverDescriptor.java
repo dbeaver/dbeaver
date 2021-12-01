@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -56,6 +57,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -186,8 +189,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private transient boolean isFailed = false;
 
     static {
-        File driversHome = DriverDescriptor.getCustomDriversHome();
-        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
+        Path driversHome = DriverDescriptor.getCustomDriversHome();
+        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
     }
 
     private DriverDescriptor(String id) {
@@ -1412,20 +1415,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return null;
     }
 
-    public static File getCustomDriversHome() {
-        File homeFolder;
+    public static Path getCustomDriversHome() {
+        Path homeFolder;
         // Try to use custom drivers path from preferences
-        String driversHome = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_HOME);
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        String driversHome = platform.getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_HOME);
         if (!CommonUtils.isEmpty(driversHome)) {
-            homeFolder = new File(driversHome);
+            homeFolder = Path.of(driversHome);
         } else {
-            homeFolder = new File(
-                DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().getParent(),
-                DBConstants.DEFAULT_DRIVERS_FOLDER);
+            homeFolder = platform.getWorkspace().getAbsolutePath().getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
         }
-        if (!homeFolder.exists()) {
-            if (!homeFolder.mkdirs()) {
-                log.warn("Can't create drivers folder '" + homeFolder.getAbsolutePath() + "'");
+        if (!Files.exists(homeFolder)) {
+            try {
+                Files.createDirectories(homeFolder);
+            } catch (IOException e) {
+                log.warn("Can't create drivers folder '" + homeFolder.toAbsolutePath() + "'", e);
             }
         }
 

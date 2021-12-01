@@ -55,8 +55,9 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
@@ -77,7 +78,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private DatabaseTasksTree tasksTree;
 
     private TreeViewer taskRunViewer;
-    private ViewerColumnController taskRunColumnController;
+    private ViewerColumnController<?,?> taskRunColumnController;
 
     public DatabaseTasksView() {
     }
@@ -450,10 +451,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTask task = tasksTree.getSelectedTask();
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null) {
-                File runLog = task.getRunLog(taskRun);
-                if (runLog.exists()) {
+                Path runLog = task.getRunLog(taskRun);
+                if (Files.exists(runLog)) {
                     try {
-                        IEditorPart editorPart = EditorUtils.openExternalFileEditor(runLog, getSite().getWorkbenchWindow());
+                        IEditorPart editorPart = EditorUtils.openExternalFileEditor(runLog.toFile(), getSite().getWorkbenchWindow());
                         // Set UTF8 encoding
                         if (editorPart instanceof ITextEditor) {
                             IDocumentProvider prov = ((ITextEditor) editorPart).getDocumentProvider();
@@ -466,7 +467,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                         DBWorkbench.getPlatformUI().showError("Open log error", "Error while opening task execution log", e);
                     }
                 } else {
-                    UIUtils.showMessageBox(getSite().getShell(), "Lof file not found", "Can't find log file '" + runLog.getAbsolutePath() + "'", SWT.ICON_ERROR);
+                    UIUtils.showMessageBox(getSite().getShell(), "Lof file not found", "Can't find log file '" + runLog.toAbsolutePath() + "'", SWT.ICON_ERROR);
                 }
             }
         }
@@ -518,7 +519,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         public void run() {
             DBTTask task = tasksTree.getSelectedTask();
             if (task != null) {
-                DBWorkbench.getPlatformUI().executeShellProgram(task.getRunLogFolder().getAbsolutePath());
+                DBWorkbench.getPlatformUI().executeShellProgram(task.getRunLogFolder().toAbsolutePath().toString());
             }
         }
     }

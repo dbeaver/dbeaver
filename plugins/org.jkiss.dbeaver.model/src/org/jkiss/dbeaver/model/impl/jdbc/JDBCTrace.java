@@ -20,8 +20,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
@@ -41,14 +44,10 @@ public class JDBCTrace {
         boolean traceEnabled = CommonUtils.toBoolean(System.getProperty("dbeaver.jdbc.trace"));
 
         if (traceEnabled) {
-            File traceFile = new File(
-                DBWorkbench.getPlatform().getWorkspace().getMetadataFolder(),
-                "jdbc-api-trace.log");
+            Path traceFile = DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve("jdbc-api-trace.log");
             PrintWriter writer;
             try {
-                writer = new PrintWriter(
-                    new OutputStreamWriter(
-                        new FileOutputStream(traceFile), StandardCharsets.UTF_8));
+                writer = new PrintWriter(Files.newBufferedWriter(traceFile, StandardCharsets.UTF_8), true);
             } catch (IOException e) {
                 log.error("Error opening JDBC trace file", e);
                 writer = null;

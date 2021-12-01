@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -36,6 +36,8 @@ import java.util.List;
  */
 public interface DBPWorkspace extends DBAAuthSpace
 {
+    String METADATA_FOLDER = ".metadata";
+
     @NotNull
     DBPPlatform getPlatform();
 
@@ -45,10 +47,10 @@ public interface DBPWorkspace extends DBAAuthSpace
     boolean isActive();
 
     @NotNull
-    File getAbsolutePath();
+    Path getAbsolutePath();
 
     @NotNull
-    File getMetadataFolder();
+    Path getMetadataFolder();
 
     @NotNull
     IWorkspace getEclipseWorkspace();

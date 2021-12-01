@@ -38,7 +38,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,11 +71,11 @@ public class TaskManagerImpl implements DBTTaskManager {
     private final ProjectMetadata projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
-    private File statisticsFolder;
+    private final Path statisticsFolder;
 
     public TaskManagerImpl(ProjectMetadata projectMetadata) {
         this.projectMetadata = projectMetadata;
-        this.statisticsFolder = new File(projectMetadata.getWorkspace().getMetadataFolder(), TASK_STATS_FOLDER);
+        this.statisticsFolder = projectMetadata.getWorkspace().getMetadataFolder().resolve(TASK_STATS_FOLDER);
 
         loadConfiguration();
     }
@@ -258,7 +261,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public File getStatisticsFolder() {
+    public Path getStatisticsFolder() {
         return statisticsFolder;
     }
 

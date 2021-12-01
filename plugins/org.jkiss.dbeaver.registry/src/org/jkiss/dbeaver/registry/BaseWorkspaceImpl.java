@@ -48,6 +48,8 @@ import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -136,12 +138,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         }
     }
 
-    public static Properties readWorkspaceInfo(File metadataFolder) {
+    public static Properties readWorkspaceInfo(Path metadataFolder) {
         Properties props = new Properties();
 
-        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
-        if (versionFile.exists()) {
-            try (InputStream is = new FileInputStream(versionFile)) {
+        Path versionFile = metadataFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE);
+        if (Files.exists(versionFile)) {
+            try (InputStream is = Files.newInputStream(versionFile)) {
                 props.load(is);
             } catch (Exception e) {
                 log.error(e);
@@ -150,10 +152,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         return props;
     }
 
-    public static void writeWorkspaceInfo(File metadataFolder, Properties props) {
-        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
+    public static void writeWorkspaceInfo(Path metadataFolder, Properties props) {
+        Path versionFile = metadataFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE);
 
-        try (OutputStream os = new FileOutputStream(versionFile)) {
+        try (OutputStream os = Files.newOutputStream(versionFile)) {
             props.store(os, "DBeaver workspace version");
         } catch (Exception e) {
             log.error(e);
@@ -323,14 +325,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     @NotNull
     @Override
-    public File getAbsolutePath() {
-        return eclipseWorkspace.getRoot().getLocation().toFile();
+    public Path getAbsolutePath() {
+        return eclipseWorkspace.getRoot().getLocation().toFile().toPath();
     }
 
     @NotNull
     @Override
-    public File getMetadataFolder() {
-        return GeneralUtils.getMetadataFolder(getAbsolutePath());
+    public Path getMetadataFolder() {
+        return getAbsolutePath().resolve(METADATA_FOLDER);
     }
 
     public void save(DBRProgressMonitor monitor) throws DBException {
@@ -577,11 +579,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     private void loadExternalFileProperties() {
         synchronized (externalFileProperties) {
             externalFileProperties.clear();
-            File propsFile = new File(
-                GeneralUtils.getMetadataFolder(),
-                EXT_FILES_PROPS_STORE);
-            if (propsFile.exists()) {
-                try (InputStream is = new FileInputStream(propsFile)) {
+            Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
+            if (Files.exists(propsFile)) {
+                try (InputStream is = Files.newInputStream(propsFile)) {
                     try (ObjectInputStream ois = new ObjectInputStream(is)) {
                         final Object object = ois.readObject();
                         if (object instanceof Map) {
@@ -714,10 +714,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             synchronized (externalFileProperties) {
-                File propsFile = new File(
-                    GeneralUtils.getMetadataFolder(),
-                    EXT_FILES_PROPS_STORE);
-                try (OutputStream os = new FileOutputStream(propsFile)) {
+                Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
+                try (OutputStream os = Files.newOutputStream(propsFile)) {
                     try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
                         oos.writeObject(externalFileProperties);
                     }
