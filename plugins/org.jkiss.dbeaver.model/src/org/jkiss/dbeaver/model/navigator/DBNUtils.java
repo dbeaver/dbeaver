@@ -118,16 +118,18 @@ public class DBNUtils {
         // Sort children is we have this feature on in preferences
         // and if children are not folders
         if (children.length > 0) {
-            if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(children[0])) {
-                if (!(children[0] instanceof DBNContainer)) {
-                    Arrays.sort(children, NodeNameComparator.INSTANCE);
+            DBNNode firstChild = children[0];
+            if (!(firstChild instanceof DBNResource)) {
+                if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(firstChild)) {
+                    if (!(firstChild instanceof DBNContainer)) {
+                        Arrays.sort(children, NodeNameComparator.INSTANCE);
+                    }
+                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
+                    Arrays.sort(children, NodeFolderComparator.INSTANCE);
                 }
             }
         }
 
-        if (children.length > 0 && prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
-            Arrays.sort(children, NodeFolderComparator.INSTANCE);
-        }
     }
 
     private static boolean isMergedEntity(DBNNode node) {

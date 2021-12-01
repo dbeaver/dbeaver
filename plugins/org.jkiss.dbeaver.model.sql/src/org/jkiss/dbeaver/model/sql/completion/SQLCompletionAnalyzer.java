@@ -245,9 +245,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Part of column name
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
-                    if (selectedObject instanceof DBSObjectContainer) {
-                        sc = (DBSObjectContainer)selectedObject;
+                    if (request.getContext().getExecutionContext() != null) {
+                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                        if (selectedObject instanceof DBSObjectContainer) {
+                            sc = (DBSObjectContainer) selectedObject;
+                        }
                     }
                     SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
                     String tableAlias = null;

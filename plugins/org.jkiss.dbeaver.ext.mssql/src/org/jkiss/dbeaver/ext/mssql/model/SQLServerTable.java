@@ -224,6 +224,10 @@ public class SQLServerTable extends SQLServerTableBase
         if (hasStatistics()) {
             return;
         }
+        if (SQLServerUtils.isDriverBabelfish(getDataSource().getContainer().getDriver())) {
+            setDefaultTableStats();
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
             try (JDBCPreparedStatement dbStat = SQLServerUtils.prepareTableStatisticLoadStatement(
                 session,
@@ -289,7 +293,7 @@ public class SQLServerTable extends SQLServerTableBase
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerTable table) throws SQLException {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM " + SQLServerUtils.getSystemTableName(table.getDatabase(), "check_constraints") + " WHERE parent_object_id=?");
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.* FROM " + SQLServerUtils.getSystemTableName(table.getDatabase(), "check_constraints") + " c WHERE c.parent_object_id=?");
             dbStat.setLong(1, table.getObjectId());
             return dbStat;
         }

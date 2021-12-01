@@ -146,7 +146,9 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
 
     @Override
     public void setFocus() {
-        editor.setFocus();
+        if (editor != null) {
+            editor.setFocus();
+        }
     }
 
     @Override

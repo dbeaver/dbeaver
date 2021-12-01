@@ -146,9 +146,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         connectionInfo.setHostPort(Integer.toString(sshLocalPort));
         if (configuration.getDriver() != null) {
             // Driver can be null in case of orphan tunnel config (e.g. in network profile)
-            String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
-                configuration.getDriver(),
-                connectionInfo);
+            String newURL = configuration.getDriver().getConnectionURL(connectionInfo);
             connectionInfo.setUrl(newURL);
         }
         return connectionInfo;

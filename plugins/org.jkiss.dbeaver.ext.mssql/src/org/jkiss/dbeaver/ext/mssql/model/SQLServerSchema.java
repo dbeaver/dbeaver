@@ -324,6 +324,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         if (hasTableStatistics && !forceRefresh) {
             return;
         }
+        if (SQLServerUtils.isDriverBabelfish(getDataSource().getContainer().getDriver())) {
+            hasTableStatistics = true;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
             try (JDBCPreparedStatement dbStat = SQLServerUtils.prepareTableStatisticLoadStatement(
                 session,
@@ -744,10 +748,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                "SELECT * FROM \n")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "sequences")).append("\n");
-            sql.append("WHERE schema_id=?");
-            sql.append("\nORDER BY name");
+                "SELECT s.* FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "sequences")).append(" s\n");
+            sql.append("WHERE s.schema_id=?");
+            sql.append("\nORDER BY s.name");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, schema.getObjectId());
@@ -786,10 +790,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
-            sql.append("SELECT * FROM \n")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "synonyms")).append("\n");
-            sql.append("WHERE schema_id=?");
-            sql.append("\nORDER BY name");
+            sql.append("SELECT s.* FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "synonyms")).append(" s\n");
+            sql.append("WHERE s.schema_id=?");
+            sql.append("\nORDER BY s.name");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, schema.getObjectId());
@@ -891,9 +895,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
+            final SQLServerDataSource dataSource = schema.getDataSource();
             StringBuilder sql = new StringBuilder(500);
             sql.append("SELECT ");
-            if (schema.getDataSource().isServerVersionAtLeast(14, 0)) {
+            if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())) {
+                sql.append("t.*, ''");
+            }
+            else if (dataSource.isServerVersionAtLeast(14, 0)) {
                 sql.append(" t.*, (SELECT STRING_AGG(te.type_desc, ', ') FROM ")
                     .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "trigger_events")).append(" te ")
                     .append("WHERE t.object_id = te.object_id)");

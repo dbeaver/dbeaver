@@ -235,15 +235,15 @@
 
         <eventProcessor
                 id="showInExplorer"
-                label="Show exported file in system explorer"
-                description="Shows exported file in system explorer"
+                label="%dataTransfer.eventProcessor.showInExplorer.label"
+                description="%dataTransfer.eventProcessor.showInExplorer.description"
                 class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"
                 nodes="streamTransferConsumer"/>
 
         <eventProcessor
                 id="executeCommand"
-                label="Execute process on finish"
-                description="Executes shell command on finish"
+                label="%dataTransfer.eventProcessor.executeCommand.label"
+                description="%dataTransfer.eventProcessor.executeCommand.description"
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
                 nodes="streamTransferConsumer"/>
 

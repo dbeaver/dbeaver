@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.virtual.DBVObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -226,6 +227,10 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                     ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
                     ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
                 dbObject);
+
+            if (dbObject instanceof DBSObjectContainer) {
+                diagram.setRootObjectContainer((DBSObjectContainer) dbObject);
+            }
 
             boolean hasPersistedState = false;
             try {

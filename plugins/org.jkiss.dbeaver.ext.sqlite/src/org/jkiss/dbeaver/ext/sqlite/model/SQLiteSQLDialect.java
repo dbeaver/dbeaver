@@ -58,4 +58,9 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
     }
+
+    @Override
+    public boolean supportsIndexCreateAndDrop() {
+        return true;
+    }
 }

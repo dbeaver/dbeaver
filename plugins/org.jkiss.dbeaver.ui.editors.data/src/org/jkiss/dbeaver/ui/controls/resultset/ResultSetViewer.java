@@ -1526,6 +1526,15 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Override
+    public void updateDirtyFlag() {
+        synchronized (listeners) {
+            for (IResultSetListener listener : listeners) {
+                listener.handleResultSetChange();
+            }
+        }
+    }
+
     public void updateEditControls()
     {
         fireResultSetChange();

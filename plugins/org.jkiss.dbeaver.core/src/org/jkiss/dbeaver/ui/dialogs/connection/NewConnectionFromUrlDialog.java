@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -33,6 +32,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -90,7 +90,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
             errorLabel = new CLabel(composite, SWT.NONE);
             errorLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            errorLabel.setImage(JFaceResources.getImage(DLG_IMG_MESSAGE_ERROR));
+            errorLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
             errorLabel.setVisible(false);
 
             final AbstractJob refreshJob = new AbstractJob("Refresh suitable drivers timeout") {

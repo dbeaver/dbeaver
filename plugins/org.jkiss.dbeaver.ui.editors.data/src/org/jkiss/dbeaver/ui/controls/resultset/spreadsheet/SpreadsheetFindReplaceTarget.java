@@ -308,6 +308,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     }
                 } else {
                     // Not found
+                    spreadsheet.redraw();
                     return -1;
                 }
             }

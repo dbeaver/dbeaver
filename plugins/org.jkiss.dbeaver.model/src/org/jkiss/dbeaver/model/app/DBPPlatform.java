@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * DBPPlatform
@@ -93,7 +94,7 @@ public interface DBPPlatform
     File getConfigurationFile(String fileName);
 
     @NotNull
-    File getCustomDriversHome();
+    Path getCustomDriversHome();
 
     boolean isReadOnly();
 

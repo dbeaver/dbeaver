@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.project;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -58,7 +55,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
     private static final Log log = Log.getLog(ProjectExportWizard.class);
 
     private static final int COPY_BUFFER_SIZE = 5000;
-    private static final String PROJECT_DESC_FILE = ".project";
+    private static final String PROJECT_DESC_FILE = IProjectDescription.DESCRIPTION_FILE_NAME;
     private static final Set<String> IGNORED_RESOURCES = new HashSet<>();
     private ProjectExportWizardPage mainPage;
 

@@ -77,7 +77,7 @@ class DBeaverSettingsImporter {
     boolean migrateFromPreviousVersion(final File oldDir, final File newDir) {
 
         Properties workspaceProps = new Properties();
-        File versionFile = new File(GeneralUtils.getMetadataFolder(oldDir), DBConstants.WORKSPACE_PROPS_FILE);
+        File versionFile = GeneralUtils.getMetadataFolder(oldDir.toPath()).resolve(DBConstants.WORKSPACE_PROPS_FILE).toFile();
         if (versionFile.exists()) {
             try (InputStream is = new FileInputStream(versionFile)) {
                 workspaceProps.load(is);

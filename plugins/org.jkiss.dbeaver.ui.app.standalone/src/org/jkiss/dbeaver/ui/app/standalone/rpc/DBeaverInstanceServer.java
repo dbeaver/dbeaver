@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverCommandLine;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
@@ -188,6 +187,20 @@ public class DBeaverInstanceServer implements IInstanceController {
         DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(eventId, properties);
     }
 
+    @Override
+    public void bringToFront() {
+        UIUtils.syncExec(() -> {
+            final Shell shell = UIUtils.getActiveShell();
+            if (shell != null) {
+                if (!shell.getMinimized()) {
+                    shell.setMinimized(true);
+                }
+                shell.setMinimized(false);
+                shell.setActive();
+            }
+        });
+    }
+
     public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {
         try {
             openRmiRegistry();
@@ -207,14 +220,15 @@ public class DBeaverInstanceServer implements IInstanceController {
                 DBeaverCommandLine.getRemoteParameterHandlers(commandLine);
             }
 
-            final IInstanceController client = InstanceClient.createClient(GeneralUtils.getMetadataFolder().getParent(), true);
+            final IInstanceController client = InstanceClient.createClient(
+                GeneralUtils.getMetadataFolder().getParent().toAbsolutePath().toString(), true);
             if (client != null) {
                 log.debug("Can't start RMI server because other instance is already running");
                 return null;
             }
 
             configFileChannel = FileChannel.open(
-                GeneralUtils.getMetadataFolder().toPath().resolve(RMI_PROP_FILE),
+                GeneralUtils.getMetadataFolder().resolve(RMI_PROP_FILE),
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
             );
 
@@ -255,7 +269,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
             if (configFileChannel != null) {
                 configFileChannel.close();
-                Files.delete(GeneralUtils.getMetadataFolder().toPath().resolve(RMI_PROP_FILE));
+                Files.delete(GeneralUtils.getMetadataFolder().resolve(RMI_PROP_FILE));
             }
 
             log.debug("RMI controller has been stopped");

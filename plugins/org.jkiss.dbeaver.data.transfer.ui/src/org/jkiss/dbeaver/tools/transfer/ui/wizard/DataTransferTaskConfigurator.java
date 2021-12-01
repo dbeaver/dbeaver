@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -146,7 +143,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         isExport ? DTUIMessages.data_transfer_task_configurator_tables_title_choose_source : DTUIMessages.data_transfer_task_configurator_tables_title_choose_target,
                         rootNode,
                         selNode,
-                        new Class[]{DBSObjectContainer.class, tableClass},
+                        new Class[]{DBSInstance.class, DBSObjectContainer.class, tableClass},
                         new Class[]{tableClass},
                         null);
                     if (tables != null) {
@@ -183,7 +180,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                             DTUIMessages.data_transfer_task_configurator_tables_title_choose_source,
                             rootNode,
                             selNode,
-                            new Class[]{DBSObjectContainer.class},
+                            new Class[]{DBSInstance.class, DBSObjectContainer.class},
                             new Class[]{DBPDataSource.class, DBSCatalog.class, DBSSchema.class},
                             null);
 

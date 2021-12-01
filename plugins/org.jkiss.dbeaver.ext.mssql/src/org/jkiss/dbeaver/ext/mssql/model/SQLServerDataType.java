@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -67,7 +68,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     public SQLServerDataType(DBSObject owner, ResultSet dbResult) {
         this.owner = owner;
 
-        this.name = JDBCUtils.safeGetString(dbResult, "name");
+        String nameValue = JDBCUtils.safeGetString(dbResult, "name");
+        this.name = DBUtils.getUnQuotedIdentifier(owner.getDataSource(), CommonUtils.notEmpty(nameValue));
         this.systemTypeId = JDBCUtils.safeGetInt(dbResult, "system_type_id");
         this.userTypeId = JDBCUtils.safeGetInt(dbResult, "user_type_id");
         this.schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
@@ -485,4 +487,6 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     public Collection<SQLServerTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
+
+
 }

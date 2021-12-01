@@ -355,7 +355,13 @@ public class SQLServerDatabase
             if (!showAllSchemas) {
                 sql.append("DISTINCT ");
             }
-            sql.append("s.*,ep.value as description FROM ").append(sysSchema).append(".schemas s");
+            sql.append("s.*,ep.value as description FROM ");
+            if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())) {
+                sql.append("(SELECT CAST(ext.orig_name AS sysname) AS name, base.oid AS schema_id, base.nspowner AS principal_id FROM pg_namespace base JOIN babelfish_namespace_ext ext ON base.nspname = ext.nspname JOIN babelfish_sysdatabases dbs ON dbs.dbid = ext.dbid WHERE dbs.name = '" + DBUtils.getQuotedIdentifier(dataSource, owner.getName()) + "') AS s");
+            }
+            else {
+                sql.append(sysSchema).append(".schemas s");
+            }
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId())
                 .append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
             if (!showAllSchemas) {
@@ -369,7 +375,7 @@ public class SQLServerDatabase
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
                 sql.append("\n");
-                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true);
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true, owner.getDataSource());
             }
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

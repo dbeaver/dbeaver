@@ -26,10 +26,11 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -206,7 +207,7 @@ public class MavenRepository
         cachedArtifacts.remove(artifactReference.getId());
     }
 
-    File getLocalCacheDir()
+    Path getLocalCacheDir()
     {
         String extPath;
         switch (type) {
@@ -222,11 +223,13 @@ public class MavenRepository
                 extPath = id;
                 break;
         }
-        File homeFolder = new File(DBWorkbench.getPlatform().getCustomDriversHome(), "maven/" + extPath);
+        Path homeFolder = DBWorkbench.getPlatform().getCustomDriversHome().resolve("maven/" + extPath);
         //File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
-        if (!homeFolder.exists()) {
-            if (!homeFolder.mkdirs()) {
-                log.warn("Can't create maven repository '" + name + "' cache folder '" + homeFolder + "'");
+        if (!Files.exists(homeFolder)) {
+            try {
+                Files.createDirectories(homeFolder);
+            } catch (IOException e) {
+                log.warn("Can't create maven repository '" + name + "' cache folder '" + homeFolder + "'", e);
             }
         }
 

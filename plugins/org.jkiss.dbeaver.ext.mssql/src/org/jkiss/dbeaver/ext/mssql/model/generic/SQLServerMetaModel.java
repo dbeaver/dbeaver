@@ -265,8 +265,12 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery;
             if (serverType == ServerType.SQL_SERVER) {
-                mdQuery = systemSchema + ".sp_helptext '" +
-                    DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'";
+                final String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name);
+                if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())) {
+                    mdQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+                } else {
+                    mdQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
+                }
             } else {
                 if (isSapIQ(dataSource)) {
                     mdQuery = "SELECT s.source\n" +

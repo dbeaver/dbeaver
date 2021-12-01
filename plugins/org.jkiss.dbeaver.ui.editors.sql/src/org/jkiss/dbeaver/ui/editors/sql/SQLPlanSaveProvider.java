@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -61,13 +62,8 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
         if (query != null) {
 
             if (planner instanceof DBCQueryPlannerSerializable) {
-
-                FileDialog saveDialog = new FileDialog(viewer.getControl().getShell(), SWT.SAVE);
-                saveDialog.setFilterExtensions(EXT);
-                saveDialog.setFilterNames(NAMES);
-
-                String filePath = DialogUtils.openFileDialog(saveDialog);
-                if (filePath == null || filePath.trim().length() == 0) {
+                final File filePath = DialogUtils.selectFileForSave(viewer.getControl().getShell(), "Save execution plan as", EXT, NAMES, null);
+                if (filePath == null) {
                     return;
                 }
 

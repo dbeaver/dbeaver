@@ -26,11 +26,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -53,7 +49,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private static final String[] EXEC_KEYWORDS = new String[0];
     private static final String[] DDL_KEYWORDS = new String[0];
     private static final Collection<String> TRANSACTION_NON_MODIFYING_KEYWORDS =
-        CommonUtils.unmodifiableSet(SQLConstants.KEYWORD_SELECT, "SHOW", "USE", "SET", SQLConstants.KEYWORD_EXPLAIN);
+        Set.of(SQLConstants.KEYWORD_SELECT, "SHOW", "USE", "SET", SQLConstants.KEYWORD_EXPLAIN);
 
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
@@ -833,6 +829,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean supportsAlterTableStatement() {
         return true;
+    }
+
+    @Override
+    public boolean supportsIndexCreateAndDrop() {
+        return supportsAlterTableStatement();
     }
 
     @Override

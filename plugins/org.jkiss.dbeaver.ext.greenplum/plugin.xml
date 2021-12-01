@@ -36,7 +36,7 @@
                     </items>
                 </folder>
             </treeInjection>
-            <treeInjection path="postgresql/database" after="users">
+            <treeInjection path="postgresql" after="users">
                 <folder label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
                     <treeContribution category="connectionEditor"/>
                 </folder>

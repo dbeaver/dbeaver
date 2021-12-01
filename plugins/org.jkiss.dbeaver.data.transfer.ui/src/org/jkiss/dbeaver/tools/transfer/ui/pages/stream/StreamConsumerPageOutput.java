@@ -282,8 +282,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
         for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
-            processor.getValue().setProcessorEnabled(settings.hasProcessor(processor.getKey()));
-            processor.getValue().loadSettings(settings.getProcessorSettings(processor.getKey()));
+            processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));
+            processor.getValue().loadSettings(settings.getEventProcessorSettings(processor.getKey()));
         }
 
         updatePageCompletion();
@@ -297,7 +297,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
             final EventProcessorComposite configurator = processor.getValue();
             if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
-                configurator.saveSettings(settings.getProcessorSettings(processor.getKey()));
+                configurator.saveSettings(settings.getEventProcessorSettings(processor.getKey()));
             }
         }
     }
@@ -326,14 +326,10 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             setErrorMessage(DTMessages.data_transfer_wizard_output_error_invalid_charset);
             return false;
         }
-        if (settings.isExecuteProcessOnFinish() && CommonUtils.isEmpty(settings.getFinishProcessCommand())) {
-            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_finish_command);
-            return false;
-        }
 
         for (EventProcessorComposite processor : processors.values()) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
-                setErrorMessage(NLS.bind("Configuration for ''{0}'' is incomplete", processor.descriptor.getLabel()));
+                setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.descriptor.getLabel()));
                 return false;
             }
         }
@@ -391,19 +387,18 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             });
 
             if (hasControl) {
-                configureLink = UIUtils.createLink(this, "<a>Configure</a>", new SelectionAdapter() {
+                configureLink = UIUtils.createLink(this, DTMessages.data_transfer_wizard_output_event_processor_configure, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         final ConfigureDialog dialog = new ConfigureDialog(getShell(), descriptor, configurator);
                         if (dialog.open() == IDialogConstants.OK_ID) {
-                            // TODO: Persist configuration
                             updatePageCompletion();
                         }
                     }
                 });
             }
 
-            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasProcessor(descriptor.getId())));
+            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasEventProcessor(descriptor.getId())));
         }
 
         public void loadSettings(@NotNull Map<String, Object> settings) {
@@ -443,9 +438,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             }
 
             if (enabled && available) {
-                settings.addProcessor(descriptor.getId());
+                settings.addEventProcessor(descriptor.getId());
             } else {
-                settings.removeProcessor(descriptor.getId());
+                settings.removeEventProcessor(descriptor.getId());
             }
 
             updatePageCompletion();
@@ -456,7 +451,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         private final IDataTransferEventProcessorConfigurator configurator;
 
         public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferEventProcessorDescriptor descriptor, @NotNull IDataTransferEventProcessorConfigurator configurator) {
-            super(shell, NLS.bind("Configure ''{0}''", descriptor.getLabel()), null);
+            super(shell, NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
             this.configurator = configurator;
             setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }

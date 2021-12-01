@@ -411,7 +411,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         for (DBNNode node = getSelectedNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) node).getObject();
-                if (object instanceof DBSStructContainer || object instanceof DBPDataSourceContainer) {
+                if (object instanceof DBSStructContainer) {
                     parentObject = object;
                     break;
                 }

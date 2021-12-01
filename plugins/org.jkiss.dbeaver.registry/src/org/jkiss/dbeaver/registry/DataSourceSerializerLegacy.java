@@ -41,13 +41,16 @@ import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +76,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
-        File configFile) throws IOException
+        Path configPath) throws IOException
     {
         // Save in temp memory to be safe (any error during direct write will corrupt configuration)
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
@@ -112,14 +115,14 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         } catch (IOException ex) {
             log.error("IO error while saving datasources xml", ex);
         }
-        IOUtils.writeFileFromBuffer(configFile, tempStream.toByteArray());
+        Files.write(configPath, tempStream.toByteArray());
     }
 
     @Override
-    public void parseDataSources(File configFile, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(Path configPath, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException
     {
-        try (InputStream is = new FileInputStream(configFile)){
+        try (InputStream is = Files.newInputStream(configPath)){
             SAXReader parser = new SAXReader(is);
             final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
             parser.parse(dsp);

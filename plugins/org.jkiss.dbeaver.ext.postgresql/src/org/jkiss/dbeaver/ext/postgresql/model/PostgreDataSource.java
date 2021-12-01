@@ -215,7 +215,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 catalogQuery.append(" AND NOT datistemplate ");
             }
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false, this);
             }
             catalogQuery.append("\nORDER BY db.datname");
         }
@@ -442,7 +442,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 // Patch URL with new database name
                 if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
                     conConfig.setDatabaseName(instance.getName());
-                    conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+                    conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
                 } //else {
                     //String url = conConfig.getUrl();
                 //}

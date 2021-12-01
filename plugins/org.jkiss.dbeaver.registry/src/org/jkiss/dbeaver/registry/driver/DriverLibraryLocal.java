@@ -147,7 +147,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), localPath);
         if (!file.exists()) {
             // Use custom drivers path
-            file = new File(DriverDescriptor.getCustomDriversHome(), localPath);
+            file = new File(DriverDescriptor.getCustomDriversHome().toFile(), localPath);
         }
         return file;
     }

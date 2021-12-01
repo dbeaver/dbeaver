@@ -68,7 +68,8 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
-            String[] replFor = CommonUtils.notEmpty(dsConfig.getAttribute("for")).split(",");
+            String forAttr = dsConfig.getAttribute("for");
+            String[] replFor = CommonUtils.isEmpty(forAttr) ? new String[0] : forAttr.split(",");
             this.replaces.put(replModel, replFor);
             this.hasCondReplaces = hasCondReplaces || !ArrayUtils.isEmpty(replFor);
         }

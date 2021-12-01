@@ -37,4 +37,9 @@ class OracleDataSourceInfo extends JDBCDataSourceInfo {
         return OracleObjectType.values();
     }
 
+    @Override
+    public boolean needsTableMetaForColumnResolution() {
+        return false;
+    }
+
 }

@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
@@ -785,14 +784,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         @Override
         public void run() {
             DataSourcePropertyFilter.readExpensivePropertiesFor(this.databaseObject, !isChecked());
-            DBUtils.fireObjectUpdate(this.databaseObject, true);
 
             MultiPageEditorPart mainEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
             if (mainEditor instanceof IRefreshablePart) {
                 ((IRefreshablePart) mainEditor).refreshPart(this, true);
             }
-            //getRootNode().refreshNode()
-            //DBWorkbench.getPlatform().getNavigatorModel().fireNodeUpdate(source, this, DBNEvent.NodeChange.REFRESH);
         }
     }
 }

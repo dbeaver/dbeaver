@@ -59,8 +59,8 @@ public class PostgreAccessMethod extends PostgreInformation {
     private boolean storage;
     private boolean clusterable;
     private boolean predLocks;
-    private OperatorFamilyCache operatorFamilyCache = new OperatorFamilyCache();
-    private OperatorClassCache operatorClassCache = new OperatorClassCache();
+    private final OperatorFamilyCache operatorFamilyCache = new OperatorFamilyCache();
+    private final OperatorClassCache operatorClassCache = new OperatorClassCache();
     
     public PostgreAccessMethod(PostgreDatabase database, ResultSet dbResult)
         throws SQLException

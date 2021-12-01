@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -56,6 +57,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     private final List<ERDEntity> entities = new ArrayList<>();
     private final Map<DBPDataSourceContainer, DataSourceInfo> dataSourceMap = new LinkedHashMap<>();
     private final Map<DBPDataSourceContainer, Map<DBSObjectContainer, Integer>> dataSourceContainerMap = new LinkedHashMap<>();
+    private DBSObjectContainer rootObjectContainer;
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
@@ -329,8 +331,27 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         return result;
     }
 
-    public List<DBPDataSourceContainer> getDataSources() {
-        return new ArrayList<>(dataSourceMap.keySet());
+    @NotNull
+    public Collection<DBPDataSourceContainer> getDataSources() {
+        return dataSourceMap.keySet();
+    }
+
+    @Nullable
+    public Collection<DBSObjectContainer> getObjectContainers(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        final Map<DBSObjectContainer, Integer> containers = dataSourceContainerMap.get(dataSourceContainer);
+        if (containers != null) {
+            return containers.keySet();
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBSObjectContainer getRootObjectContainer() {
+        return rootObjectContainer;
+    }
+
+    public void setRootObjectContainer(@NotNull DBSObjectContainer rootObjectContainer) {
+        this.rootObjectContainer = rootObjectContainer;
     }
 
     public List<ERDEntity> getEntities(DBPDataSourceContainer dataSourceContainer) {

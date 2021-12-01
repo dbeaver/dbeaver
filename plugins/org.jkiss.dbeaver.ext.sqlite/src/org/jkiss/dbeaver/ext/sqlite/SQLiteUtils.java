@@ -17,15 +17,26 @@
 
 package org.jkiss.dbeaver.ext.sqlite;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * SQLiteUtils
@@ -71,5 +82,39 @@ public class SQLiteUtils {
             log.debug(e);
             return null;
         }
+    }
+
+    public static void createTableAlterActions(@NotNull DBRProgressMonitor monitor, @NotNull String reason, @NotNull GenericTableBase table, @NotNull Collection<DBSAttributeBase> attributes, @NotNull Collection<DBEPersistAction> actions) throws DBException {
+        final String columns = attributes.stream()
+            .map(DBUtils::getQuotedIdentifier)
+            .collect(Collectors.joining(",\n  "));
+
+        actions.add(new SQLDatabasePersistActionComment(
+            table.getDataSource(),
+            reason
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Create temporary table from original table",
+            "CREATE TEMPORARY TABLE temp AS\nSELECT"
+                + (attributes.isEmpty() ? " *" : "\n  " + columns) + "\nFROM " + DBUtils.getQuotedIdentifier(table)
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop original table",
+            "\nDROP TABLE " + DBUtils.getQuotedIdentifier(table) + ";\n"
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Create new table",
+            DBStructUtils.generateTableDDL(monitor, table, Collections.emptyMap(), false)
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Insert values from temporary table to new table",
+            "INSERT INTO " + DBUtils.getQuotedIdentifier(table)
+                + (attributes.isEmpty() ? "" : "\n (" + columns + ")") + "\nSELECT"
+                + (attributes.isEmpty() ? " *" : "\n  " + columns) + "\nFROM temp"
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop temporary table",
+            "\nDROP TABLE temp"
+        ));
     }
 }

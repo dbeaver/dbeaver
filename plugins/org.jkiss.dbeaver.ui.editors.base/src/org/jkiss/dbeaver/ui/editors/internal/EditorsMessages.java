@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class EditorsMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.internal.EditorsResources"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.internal.EditorsResources"; //$NON-NLS-1$
 
 	public static String dialog_struct_attribute_edit_page_header_edit_attribute;
 	public static String dialog_struct_attribute_edit_page_label_text_name;
@@ -71,6 +71,13 @@ public class EditorsMessages extends NLS {
 	public static String dialog_morph_delimited_target_group_spinner_wrap_line_tip;
 	public static String dialog_morph_delimited_target_group_leading_text;
 	public static String dialog_morph_delimited_target_group_trailing_text;
+
+	public static String database_editor_command_save_name;
+	public static String database_editor_command_save_tip;
+	public static String database_editor_command_revert_name;
+	public static String database_editor_command_revert_tip;
+	public static String database_editor_command_refresh_name;
+	public static String database_editor_command_refresh_tip;
 
 	static {
 		// initialize resource bundle

@@ -142,7 +142,6 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
                     settings.setOutputClipboard(true);
                     settings.setOutputEncodingBOM(false);
-                    settings.setOpenFolderOnFinish(false);
 
                     Map<DataTransferProcessorDescriptor, Map<String, Object>> propertiesMap = CopyAsConfigurationStorage.getProcessorProperties();
                     Map<String, Object> properties = propertiesMap.get(processor);

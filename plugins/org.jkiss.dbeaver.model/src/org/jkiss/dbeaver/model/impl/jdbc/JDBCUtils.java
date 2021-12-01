@@ -687,8 +687,18 @@ public class JDBCUtils {
         debugColumnRead(dbResult, "#" + columnIndex, error);
     }
 
-    public static void appendFilterClause(StringBuilder sql, DBSObjectFilter filter, String columnAlias, boolean firstClause)
-    {
+    public static void appendFilterClause(@NotNull StringBuilder sql,
+                                          @NotNull DBSObjectFilter filter,
+                                          @NotNull String columnAlias,
+                                          @NotNull boolean firstClause) {
+        appendFilterClause(sql, filter, columnAlias, firstClause, null);
+    }
+
+    public static void appendFilterClause(@NotNull StringBuilder sql,
+                                          @NotNull DBSObjectFilter filter,
+                                          @NotNull String columnAlias,
+                                          @NotNull boolean firstClause,
+                                          DBPDataSource dataSource) {
         if (filter.isNotApplicable()) {
             return;
         }
@@ -697,7 +707,7 @@ public class JDBCUtils {
                 firstClause = SQLUtils.appendFirstClause(sql, firstClause);
                 sql.append(columnAlias);
             }
-            SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false);
+            SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false, dataSource != null ? dataSource.getSQLDialect() : null);
             return;
         }
         List<String> include = filter.getInclude();
@@ -712,7 +722,7 @@ public class JDBCUtils {
                 if (columnAlias != null) {
                     sql.append(columnAlias);
                 }
-                SQLUtils.appendLikeCondition(sql, include.get(i), false);
+                SQLUtils.appendLikeCondition(sql, include.get(i), false, dataSource != null ? dataSource.getSQLDialect() : null);
             }
             sql.append(")");
         }
@@ -728,15 +738,15 @@ public class JDBCUtils {
                 if (columnAlias != null) {
                     sql.append(columnAlias);
                 }
-                SQLUtils.appendLikeCondition(sql, exclude.get(i), false);
+
+                SQLUtils.appendLikeCondition(sql, exclude.get(i), false, dataSource != null ? dataSource.getSQLDialect() : null);
             }
             sql.append(")");
         }
     }
 
     public static void setFilterParameters(PreparedStatement statement, int paramIndex, DBSObjectFilter filter)
-        throws SQLException
-    {
+        throws SQLException {
         if (filter.isNotApplicable()) {
             return;
         }

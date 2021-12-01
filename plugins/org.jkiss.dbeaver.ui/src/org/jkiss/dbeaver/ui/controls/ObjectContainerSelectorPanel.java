@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -139,7 +140,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                     containerHint != null ? containerHint : containerTitle,
                     rootNode.getDatabases(),
                     selectedNode,
-                    new Class[]{DBSObjectContainer.class},
+                    new Class[]{ DBSInstance.class, DBSObjectContainer.class },
                     new Class[] { DBSObjectContainer.class },
                     new Class[]{ DBSSchema.class });
                 if (node != null) {

@@ -124,7 +124,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         }
         sqlViewer.reloadSyntaxRules();
 
-        //parent.addDisposeListener(e -> sqlViewer.dispose());
+        UIUtils.asyncExec(editorPH::layout);
 
         return panel;
     }

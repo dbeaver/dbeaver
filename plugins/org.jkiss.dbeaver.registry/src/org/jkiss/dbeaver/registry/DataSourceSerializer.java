@@ -20,8 +20,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -33,11 +33,11 @@ interface DataSourceSerializer
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
-        File configFile)
+        Path configPath)
         throws DBException, IOException;
 
     void parseDataSources(
-        File configFile,
+        Path configPath,
         DBPDataSourceConfigurationStorage configurationStorage,
         boolean refresh,
         DataSourceRegistry.ParseResults parseResults)

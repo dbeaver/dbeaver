@@ -165,7 +165,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
             }
         }
         proxyPasswordText.setText(passwordString);
-        customDriversHome.setText(DriverDescriptor.getCustomDriversHome().getAbsolutePath());
+        customDriversHome.setText(DriverDescriptor.getCustomDriversHome().toAbsolutePath().toString());
 
         sourceList.removeAll();
         for (String source : DriverDescriptor.getDriversSources()) {

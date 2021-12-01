@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.ui.properties.PropertyEditorUtils;
@@ -77,6 +79,7 @@ public class ItemListControl extends NodeListControl
     private final Font boldFont;
 
     private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
+    private CommandContributionItem createObjectCommand;
 
     public ItemListControl(
         Composite parent,
@@ -92,6 +95,27 @@ public class ItemListControl extends NodeListControl
         //this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.normalFont = parent.getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
+    }
+
+    @Override
+    protected NodeSelectionProvider createSelectionProvider(ISelectionProvider selectionProvider) {
+        return new NodeSelectionProvider(selectionProvider) {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                super.selectionChanged(event);
+                if (createObjectCommand != null) {
+                    DBNNode selectedNode = NavigatorUtils.getSelectedNode(event.getSelection());
+                    boolean isEnabled = ObjectPropertyTester.canCreateObject(selectedNode, true);
+                    if (isEnabled != createObjectCommand.isVisible()) {
+                        createObjectCommand.setVisible(isEnabled);
+                        IContributionManager toolbarManager = createObjectCommand.getParent();
+                        if (toolbarManager != null) {
+                            toolbarManager.update(true);
+                        }
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -126,9 +150,10 @@ public class ItemListControl extends NodeListControl
                 NavigatorCommands.CMD_OBJECT_OPEN));
             {
                 if (ObjectPropertyTester.canCreateObject(rootNode, true)) {
-                    contributionManager.add(ActionUtils.makeCommandContribution(
+                    createObjectCommand = ActionUtils.makeCommandContribution(
                         workbenchSite,
-                        NavigatorCommands.CMD_OBJECT_CREATE));
+                        NavigatorCommands.CMD_OBJECT_CREATE);
+                    contributionManager.add(createObjectCommand);
                 } else if (ObjectPropertyTester.canCreateObject(rootNode, false)) {
                     contributionManager.add(new Action(null, Action.AS_DROP_DOWN_MENU) {
                         {

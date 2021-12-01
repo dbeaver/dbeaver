@@ -26,6 +26,7 @@ import org.eclipse.core.internal.properties.PropertyBucket;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -42,9 +43,15 @@ import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class ProjectMetadata implements DBPProject {
@@ -54,6 +61,17 @@ public class ProjectMetadata implements DBPProject {
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
     public static final String PROP_PROJECT_ID = "id";
+    private static final String EMPTY_PROJECT_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<projectDescription>\n" +
+        "<name>${project-name}</name>\n" +
+        "<comment></comment>\n" +
+        "<projects>\n" +
+        "</projects>\n" +
+        "<buildSpec>\n" +
+        "</buildSpec>\n" +
+        "<natures>\n" +
+        "</natures>\n" +
+        "</projectDescription>";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -73,7 +91,7 @@ public class ProjectMetadata implements DBPProject {
     private final DBASessionContext sessionContext;
 
     private String projectName;
-    private File projectPath;
+    private Path projectPath;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
@@ -92,7 +110,7 @@ public class ProjectMetadata implements DBPProject {
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
     }
 
-    public ProjectMetadata(DBPWorkspace workspace, String name, File path, DBASessionContext sessionContext) {
+    public ProjectMetadata(DBPWorkspace workspace, String name, Path path, DBASessionContext sessionContext) {
         this(workspace, workspace.getActiveProject() == null ? null : workspace.getActiveProject().getEclipseProject(), sessionContext);
         this.projectName = name;
         this.projectPath = path;
@@ -139,8 +157,8 @@ public class ProjectMetadata implements DBPProject {
 
     @NotNull
     @Override
-    public File getAbsolutePath() {
-        return projectPath != null ? projectPath : project.getLocation().toFile();
+    public Path getAbsolutePath() {
+        return projectPath != null ? projectPath : project.getLocation().toFile().toPath();
     }
 
     @NotNull
@@ -151,11 +169,13 @@ public class ProjectMetadata implements DBPProject {
 
     @NotNull
     @Override
-    public File getMetadataFolder(boolean create) {
-        File metadataFolder = new File(getAbsolutePath(), METADATA_FOLDER);
-        if (create && !metadataFolder.exists()) {
-            if (!metadataFolder.mkdirs()) {
-                log.error("Error creating metadata folder");
+    public Path getMetadataFolder(boolean create) {
+        Path metadataFolder = getMetadataPath();
+        if (create && !Files.exists(metadataFolder)) {
+            try {
+                Files.createDirectories(metadataFolder);
+            } catch (IOException e) {
+                log.error("Error creating metadata folder" + metadataFolder, e);
             }
         }
 
@@ -163,8 +183,8 @@ public class ProjectMetadata implements DBPProject {
     }
 
     @NotNull
-    private File getMetadataPath() {
-        return new File(getAbsolutePath(), METADATA_FOLDER);
+    private Path getMetadataPath() {
+        return getAbsolutePath().resolve(METADATA_FOLDER);
     }
 
     @Override
@@ -178,13 +198,22 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
         if (project != null && !project.isOpen()) {
+            NullProgressMonitor monitor = new NullProgressMonitor();
             try {
-                NullProgressMonitor monitor = new NullProgressMonitor();
                 project.open(monitor);
                 project.refreshLocal(IFile.DEPTH_ONE, monitor);
             } catch (CoreException e) {
-                log.error("Error opening project", e);
-                return;
+                if (workspace.getPlatform().getApplication().isStandalone() &&
+                    e.getMessage().contains(IProjectDescription.DESCRIPTION_FILE_NAME)) {
+                    try {
+                        recoverProjectDescription();
+                        project.open(monitor);
+                        project.refreshLocal(IFile.DEPTH_ONE, monitor);
+                    } catch (Exception e2) {
+                        log.error("Error opening project", e2);
+                        return;
+                    }
+                }
             }
         }
         if (inMemory) {
@@ -192,10 +221,10 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
 
-        File mdFolder = getMetadataFolder(false);
+        Path mdFolder = getMetadataFolder(false);
 
-        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (!mdFolder.exists() && dsConfig.exists()) {
+        Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
+        if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
             format = ProjectFormat.LEGACY;
         } else {
             format = ProjectFormat.MODERN;
@@ -203,6 +232,16 @@ public class ProjectMetadata implements DBPProject {
 
         // Check project structure and migrate
         checkAndUpdateProjectStructure();
+    }
+
+    public void recoverProjectDescription() throws IOException {
+        // .project file missing. Let's try to create an empty project config
+        Path mdFile = getAbsolutePath().resolve(IProjectDescription.DESCRIPTION_FILE_NAME);
+        log.debug("Recovering project '" + project.getName() + "' metadata " + mdFile.toAbsolutePath());
+
+        IOUtils.writeFileFromString(
+            mdFile.toFile(),
+            EMPTY_PROJECT_TEMPLATE.replace("${project-name}", project.getName()));
     }
 
     @Override
@@ -291,13 +330,13 @@ public class ProjectMetadata implements DBPProject {
         }
 
         synchronized (metadataSync) {
-            File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
-            if (settingsFile.exists() && settingsFile.length() > 0) {
+            Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
+            if (Files.exists(settingsFile) && settingsFile.toFile().length() > 0) {
                 // Parse metadata
-                try (Reader settingsReader = new InputStreamReader(new FileInputStream(settingsFile), StandardCharsets.UTF_8)) {
+                try (Reader settingsReader = Files.newBufferedReader(settingsFile, StandardCharsets.UTF_8)) {
                     properties = JSONUtils.parseMap(METADATA_GSON, settingsReader);
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' setting from "  + settingsFile.getAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' setting from "  + settingsFile.toAbsolutePath(), e);
                 }
             }
             if (properties == null) {
@@ -307,12 +346,12 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void saveProperties() {
-        File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
+        Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
         String settingsString = METADATA_GSON.toJson(properties);
-        try (Writer settingsWriter = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
+        try (Writer settingsWriter = new OutputStreamWriter(Files.newOutputStream(settingsFile), StandardCharsets.UTF_8)) {
             settingsWriter.write(settingsString);
         } catch (Throwable e) {
-            log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.getAbsolutePath(), e);
+            log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.toAbsolutePath(), e);
         }
     }
 
@@ -433,11 +472,11 @@ public class ProjectMetadata implements DBPProject {
                 return;
             }
 
-            File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-            if (mdFile.exists() && mdFile.length() > 0) {
+            Path mdFile = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+            if (Files.exists(mdFile) && mdFile.toFile().length() > 0) {
                 // Parse metadata
                 Map<String, Map<String, Object>> mdCache = new TreeMap<>();
-                try (Reader mdReader = new InputStreamReader(new FileInputStream(mdFile), StandardCharsets.UTF_8)) {
+                try (Reader mdReader = Files.newBufferedReader(mdFile, StandardCharsets.UTF_8)) {
                     try (JsonReader jsonReader = METADATA_GSON.newJsonReader(mdReader)) {
                         jsonReader.beginObject();
                         while (jsonReader.hasNext()) {
@@ -482,7 +521,7 @@ public class ProjectMetadata implements DBPProject {
                         resourceProperties = mdCache;
                     }
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.getAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.toAbsolutePath(), e);
                 }
             }
             if (resourceProperties == null) {
@@ -500,10 +539,10 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
 
-        File mdConfig = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-        if (!mdConfig.exists()) {
+        Path mdConfig = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+        if (!Files.exists(mdConfig)) {
             // Migrate
-            log.debug("Migrate Eclipse resource properties to the project metadata (" + mdConfig.getAbsolutePath() + ")");
+            log.debug("Migrate Eclipse resource properties to the project metadata (" + mdConfig.toAbsolutePath() + ")");
             Map<String, Map<String, Object>> projectResourceProperties = extractProjectResourceProperties();
             synchronized (metadataSync) {
                 this.resourceProperties = projectResourceProperties;
@@ -607,17 +646,17 @@ public class ProjectMetadata implements DBPProject {
         protected IStatus run(DBRProgressMonitor monitor) {
             setName("Project '" + ProjectMetadata.this.getName() + "' sync job");
 
-            ContentUtils.makeFileBackup(new File(getMetadataFolder(false), METADATA_STORAGE_FILE));
+            ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
 
             synchronized (metadataSync) {
-                File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-                if (CommonUtils.isEmpty(resourceProperties) && !mdFile.exists()) {
+                Path mdFile = getMetadataPath().resolve(METADATA_STORAGE_FILE);
+                if (CommonUtils.isEmpty(resourceProperties) && !Files.exists(mdFile)) {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;
                 }
                 try {
                     if (!CommonUtils.isEmpty(resourceProperties)) {
-                        try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
+                        try (Writer mdWriter = Files.newBufferedWriter(mdFile, StandardCharsets.UTF_8)) {
                             try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
                                 jsonWriter.beginObject();
 

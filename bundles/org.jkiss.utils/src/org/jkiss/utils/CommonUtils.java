@@ -182,12 +182,25 @@ public class CommonUtils {
         return value == null || value.isEmpty();
     }
 
+    @Nullable
+    public static <T> T getFirstOrNull(@NotNull List<T> list) {
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     @NotNull
     public static <T> Collection<T> safeCollection(@Nullable Collection<T> theList) {
         if (theList == null) {
             theList = Collections.emptyList();
         }
         return theList;
+    }
+
+    @NotNull
+    public static <T> List<T> singletonOrEmpty(@Nullable T object) {
+        if (object == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(object);
     }
 
     @NotNull
@@ -892,12 +905,6 @@ public class CommonUtils {
         if (ch >= 'A' && ch <= 'Z')
             return radix > ch - 'A' + 10;
         return false;
-    }
-
-    @NotNull
-    @SafeVarargs
-    public static <T> Set<T> unmodifiableSet(@NotNull T... vararg) {
-        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(vararg)));
     }
 
     /**

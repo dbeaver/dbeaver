@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRFinder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -296,7 +297,6 @@ public final class SQLUtils {
      * Removes \\r characters from query.
      * Actually this is done specially for Oracle due to some bug in it's driver
      *
-     *
      * @param dataSource
      * @param query query
      * @return normalized query
@@ -321,14 +321,18 @@ public final class SQLUtils {
         return result.toString();
     }
 
-    public static void appendLikeCondition(StringBuilder sql, String value, boolean not)
-    {
+    public static void appendLikeCondition(@NotNull StringBuilder sql,@NotNull String value, boolean not,@Nullable SQLDialect dialect) {
         value = makeSQLLike(value);
         if (value.contains("%") || value.contains("_")) {
             if (not) sql.append(" NOT");
             sql.append(" LIKE ?");
-        }  else {
-            sql.append(not ? "<>?": "=?");
+            if (dialect instanceof RelationalSQLDialect &&
+                ((RelationalSQLDialect) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null)
+            {
+                sql.append(((RelationalSQLDialect) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
+            }
+        } else {
+            sql.append(not ? "<>?" : "=?");
         }
     }
 

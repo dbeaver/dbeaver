@@ -43,7 +43,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     public File getPath() {
         NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
         if (distribution != null) {
-            File driversHome = DriverDescriptor.getCustomDriversHome();
+            File driversHome = DriverDescriptor.getCustomDriversHome().toFile();
             return new File(driversHome, distribution.getTargetPath());
         }
         return new File(getName());

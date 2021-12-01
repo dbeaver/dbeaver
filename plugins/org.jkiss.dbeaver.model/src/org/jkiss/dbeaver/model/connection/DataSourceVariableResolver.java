@@ -53,21 +53,13 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
             case DBPConnectionConfiguration.VARIABLE_DATASOURCE:
                 return dataSourceContainer == null ? null : dataSourceContainer.getName();
             case DBPConnectionConfiguration.VAR_PROJECT_PATH:
-                return dataSourceContainer == null ? null : dataSourceContainer.getProject().getAbsolutePath().getAbsolutePath();
+                return dataSourceContainer == null ? null : dataSourceContainer.getProject().getAbsolutePath().toAbsolutePath().toString();
             case DBPConnectionConfiguration.VAR_PROJECT_NAME:
                 return dataSourceContainer == null ? null : dataSourceContainer.getProject().getName();
             case DBPConnectionConfiguration.VARIABLE_DATE:
                 return RuntimeUtils.getCurrentDate();
             default:
-                String var = super.get(name);
-                if (var != null) {
-                    return var;
-                }
-                var = System.getProperty(name);
-                if (var != null) {
-                    return var;
-                }
-                return System.getenv(name);
+                return super.get(name);
         }
     }
 }

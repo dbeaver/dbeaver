@@ -77,12 +77,7 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
             }
             if (!CommonUtils.isEmpty(keyAttributes)) {
                 sql.append(separator).append("WHERE ");
-                hasAttr = false;
-                for (DBDAttributeBinding attr : keyAttributes) {
-                    if (hasAttr) sql.append(" AND ");
-                    appendValueCondition(getController(), sql, attr, firstRow);
-                    hasAttr = true;
-                }
+                appendKeyConditions(sql, keyAttributes, firstRow);
             }
             sql.append(";\n");
         }

@@ -165,7 +165,9 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     }
 
     protected boolean isDatabaseObjectVisible(DBSObject obj) {
-        return obj instanceof DBSObjectContainer || obj instanceof DBSDataContainer && obj instanceof DBSEntity;
+        return obj instanceof DBSInstance ||
+            obj instanceof DBSObjectContainer ||
+            (obj instanceof DBSDataContainer && obj instanceof DBSEntity);
     }
 
     protected boolean isDataSourceVisible(DBNDataSource dataSource) {

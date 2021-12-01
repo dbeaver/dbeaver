@@ -700,6 +700,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    public PostgreSchema createSchemaImpl(@NotNull PostgreDatabase owner, @NotNull String name, @NotNull JDBCResultSet resultSet) throws SQLException {
+        return new PostgreSchema(owner, name, resultSet);
+    }
+
+    public PostgreSchema createSchemaImpl(@NotNull PostgreDatabase owner, @NotNull String name, @Nullable PostgreRole postgreRole) {
+        return new PostgreSchema(owner, name, postgreRole);
+    }
+
     PostgreTableBase findTable(DBRProgressMonitor monitor, long schemaId, long tableId)
         throws DBException {
         PostgreSchema schema = getSchema(monitor, schemaId);
@@ -1173,7 +1181,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                     }
                 }
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true, database.getDataSource());
             }
             catalogQuery.append(" ORDER BY nspname");
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
@@ -1192,7 +1200,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             if (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
                 return null;
             }
-            return new PostgreSchema(owner, name, resultSet);
+            return owner.createSchemaImpl(owner, name, resultSet);
         }
     }
 
