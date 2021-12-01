@@ -1,6 +1,8 @@
 name: Java CI
 
-on: [push, pull_request]
+on: 
+  push:
+  pull_request:
 
 jobs:
   build:
@@ -15,11 +17,5 @@ jobs:
         java-version: 11
         distribution: 'adopt'
         cache: 'maven'
-    # - name: Cache Maven packages
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: ~/.m2
-    #     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-    #     restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
       run: mvn -B package --file pom.xml
