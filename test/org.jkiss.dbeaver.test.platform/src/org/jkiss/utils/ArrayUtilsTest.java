@@ -119,9 +119,9 @@ public class ArrayUtilsTest {
 
   @Test
   public void testContains() {
-    Assert.assertFalse(ArrayUtils.contains(new String[]{}, new String[]{"a"}));
-    Assert.assertFalse(ArrayUtils.contains(new String[]{"b"}, new String[]{"a"}));
-    Assert.assertTrue(ArrayUtils.contains(new String[]{"a"}, new String[]{"a"}));
+    Assert.assertFalse(ArrayUtils.containsAny(new String[]{}, new String[]{"a"}));
+    Assert.assertFalse(ArrayUtils.containsAny(new String[]{"b"}, new String[]{"a"}));
+    Assert.assertTrue(ArrayUtils.containsAny(new String[]{"a"}, new String[]{"a"}));
   }
 
   @Test

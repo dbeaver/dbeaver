@@ -129,17 +129,28 @@ public class ArrayUtils {
     }
 
     @SafeVarargs
-    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE... values)
-    {
-        if (isEmpty(array))
-            return false;
-        for (int i = 0; i < array.length; i++) {
-            for (int k = 0; k < values.length; k++) {
-                if (CommonUtils.equalObjects(array[i], values[k]))
+    public static <OBJECT_TYPE> boolean containsAny(OBJECT_TYPE[] array, OBJECT_TYPE... values) {
+        for (OBJECT_TYPE item : array) {
+            for (OBJECT_TYPE value : values) {
+                if (CommonUtils.equalObjects(item, value))
                     return true;
             }
         }
         return false;
+    }
+
+    @SafeVarargs
+    public static <OBJECT_TYPE> boolean containsAll(OBJECT_TYPE[] array, OBJECT_TYPE... values) {
+        if (isEmpty(array)) {
+            return false;
+        }
+        for (OBJECT_TYPE item : array) {
+            for (OBJECT_TYPE value : values) {
+                if (!CommonUtils.equalObjects(item, value))
+                    return false;
+            }
+        }
+        return true;
     }
 
     @NotNull
