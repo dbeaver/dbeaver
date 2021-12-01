@@ -34,7 +34,7 @@ public interface PostgrePrivilegeOwner extends PostgreObject, DBAPrivilegeOwner 
 
     /**
      * Get object privileges.
-     * @param includeNestedObjects - include permissions for all nested objects. For exmaple for table columns.
+     * @param includeNestedObjects - include permissions for all nested objects. For example for table columns.
      */
     @Override
     Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;

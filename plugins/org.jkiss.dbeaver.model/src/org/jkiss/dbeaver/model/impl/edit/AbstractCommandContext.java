@@ -182,7 +182,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                             }
                         //}
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                            try (DBCSession session = openCommandPersistContext(monitor, cmd.command)) {
+                            try (DBCSession session = openCommandPersistContext(monitor, cmd.command, cmd.persistActions.get(0).action)) {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
                                     DBEPersistAction.ActionType actionType = persistInfo.action.getType();
@@ -733,11 +733,20 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         commandQueues = null;
     }
 
-    protected DBCSession openCommandPersistContext(
+    private DBCSession openCommandPersistContext(
         DBRProgressMonitor monitor,
-        DBECommand<?> command)
-        throws DBException
-    {
+        DBECommand<?> command,
+        DBEPersistAction persistAction)
+        throws DBException {
+        if (persistAction instanceof DBEPersistActionWithContext) {
+            DBCExecutionContext context = ((DBEPersistActionWithContext) persistAction).getContext();
+            if (context != null && context != executionContext) {
+                return context.openSession(
+                    monitor,
+                    DBCExecutionPurpose.META_DDL,
+                    ModelMessages.model_edit_execute_ + command.getTitle());
+            }
+        }
         return executionContext.openSession(
             monitor,
             DBCExecutionPurpose.META_DDL,

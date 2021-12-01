@@ -110,7 +110,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 if (element instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) element).getObject();
                     if (object instanceof PostgreSchema) {
-                        String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
+                        String schemaPrefix = DBUtils.getQuotedIdentifier(((PostgreSchema) object).getDatabase()) + "." + DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : permissionMap.keySet()) {
                             if (tableName.startsWith(schemaPrefix)) {
                                 return boldFont;
@@ -136,7 +136,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     if (childType == null) {
                         return false;
                     }
-                    return PostgreTableReal.class.isAssignableFrom(childType) ||
+                    return PostgreSchema.class.isAssignableFrom(childType) ||
+                        PostgreTableReal.class.isAssignableFrom(childType) ||
                         PostgreSequence.class.isAssignableFrom(childType) ||
                         PostgreProcedure.class.isAssignableFrom(childType);
                 }
@@ -230,8 +231,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private PostgrePrivilege getObjectPermissions(DBSObject object) {
         if (object instanceof PostgreProcedure) {
-            String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getSpecificName();
+            PostgreProcedure procedure = (PostgreProcedure) object;
+            String fqProcName = DBUtils.getQuotedIdentifier(procedure.getDatabase()) + "." + DBUtils.getQuotedIdentifier(procedure.getSchema()) + "." + procedure.getSpecificName();
             return permissionMap.get(fqProcName);
+        } else if (object instanceof PostgreObject && !(object instanceof PostgreRole)) {
+            return permissionMap.get(DBUtils.getQuotedIdentifier(((PostgreObject) object).getDatabase()) + "." + DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
         } else {
             return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
         }
@@ -278,7 +282,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     permission = new PostgreRolePrivilege(
                         databaseObject,
                         kind,
-                        permissionsOwner.getSchema().getName(),
+                        permissionsOwner.getSchema(),
                         objectName,
                         Collections.emptyList());
                 } else {
@@ -534,8 +538,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     DBRProgressMonitor monitor = new VoidProgressMonitor();
                     DBNDatabaseNode rootNode;
                     if (isRoleEditor()) {
-                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
-                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
+                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
+                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreDatabase.class);
                     } else {
                         DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
                         rootNode = DBNUtils.getChildFolder(monitor, dsNode, PostgreRole.class);

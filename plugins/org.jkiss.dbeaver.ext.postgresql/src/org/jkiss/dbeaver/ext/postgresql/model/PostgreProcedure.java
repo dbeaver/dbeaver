@@ -234,11 +234,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 varArrayType = container.getDatabase().getDataType(monitor, varTypeId);
             }
         }
-        if (dataSource.isServerVersionAtLeast(9, 2)) {
+        if (dataSource.isServerVersionAtLeast(9, 2) && !dataSource.isServerVersionAtLeast(12, 0)) {
             this.procTransform = JDBCUtils.safeGetString(dbResult, "protransform");
         }
-        this.isAggregate = JDBCUtils.safeGetBoolean(dbResult, "proisagg");
-        if (dataSource.isServerVersionAtLeast(8, 4)) {
+        if (dataSource.isServerVersionAtLeast(7, 3) && !dataSource.isServerVersionAtLeast(11, 0)) {
+            // Aggregate type can be found as PostgreProcedureKind.a in the prokind column starts PG version 11
+            this.isAggregate = JDBCUtils.safeGetBoolean(dbResult, "proisagg");
+        }
+        if (dataSource.isServerVersionAtLeast(8, 4) && !dataSource.isServerVersionAtLeast(11, 0)) {
+            // Window type can be found as PostgreProcedureKind.f in the prokind column starts PG version 11
             this.isWindow = JDBCUtils.safeGetBoolean(dbResult, "proiswindow");
         }
         this.isSecurityDefiner = JDBCUtils.safeGetBoolean(dbResult, "prosecdef");

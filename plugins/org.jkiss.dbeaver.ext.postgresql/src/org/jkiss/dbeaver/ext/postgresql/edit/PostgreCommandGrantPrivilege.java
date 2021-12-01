@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -81,6 +82,8 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             roleName = DBUtils.getQuotedIdentifier(object);
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
+            } else if (privilegeOwner instanceof PostgreSchema) {
+                objectName = DBUtils.getQuotedIdentifier(privilegeOwner); // Full schema name with database prefix doesn't work in these type of commands
             } else {
                 objectName = ((PostgreRolePrivilege) permission).getFullObjectName();
             }
@@ -126,6 +129,17 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             (grant ? " TO " : " FROM ") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
+        }
+        if (privilegeOwner instanceof PostgreObject && !(privilegeOwner instanceof PostgreRole)) {
+            JDBCExecutionContext defaultContext = ((PostgreObject) privilegeOwner).getDatabase().getDefaultContext(false);
+            if (defaultContext != executionContext) {
+                return new DBEPersistAction[] {
+                    new SQLDatabasePersistAction(
+                        "Grant",
+                        grantScript,
+                        defaultContext)
+                };
+            }
         }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(

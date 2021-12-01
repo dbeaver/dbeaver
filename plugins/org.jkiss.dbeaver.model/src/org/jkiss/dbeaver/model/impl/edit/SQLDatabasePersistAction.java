@@ -16,23 +16,32 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistActionWithContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Object persist action implementation
  */
-public class SQLDatabasePersistAction implements DBEPersistAction {
+public class SQLDatabasePersistAction implements DBEPersistAction, DBEPersistActionWithContext {
 
     private final String title;
     private final String script;
     private final ActionType type;
     private final boolean complex;
+    private DBCExecutionContext executionContext;
 
     public SQLDatabasePersistAction(String title, String script)
     {
         this(title, script, ActionType.NORMAL, false);
+    }
+
+    public SQLDatabasePersistAction(String title, String script, DBCExecutionContext executionContext) {
+        this(title, script, ActionType.NORMAL, false);
+        this.executionContext = executionContext;
     }
 
     public SQLDatabasePersistAction(String title, String script, boolean complex)
@@ -91,5 +100,11 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
     @Override
     public boolean isComplex() {
         return complex;
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContext getContext() {
+        return executionContext;
     }
 }
