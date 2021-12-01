@@ -26,4 +26,4 @@ jobs:
       with:
         fetch-depth: 2
 
-    - uses: dbeaver/dbeaver/.github/actions/codeql@devel
+    - uses: dbeaver/dbeaver/.github/actions/java-codeql@devel
