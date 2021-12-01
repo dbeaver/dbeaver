@@ -156,9 +156,7 @@ public class HANAProcedure extends GenericProcedure {
                             }
                         }
                         GenericProcedureParameter column = new HANAProcedureParameter(
-                                this, columnName, typeName, 0 /*valueType*/,
-                                position, columnSize, scale, 0 /*precision*/, 
-                                false /*notNull*/, null /*remarks*/, parameterType, 
+                                this, columnName, typeName, position, columnSize, scale, parameterType, 
                                 tableType, inplaceTableType, hasDefaultValue);
                         addColumn(column);
                     }
