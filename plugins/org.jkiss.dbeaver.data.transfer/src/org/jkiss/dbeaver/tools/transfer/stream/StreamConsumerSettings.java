@@ -71,6 +71,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
     private boolean outputEncodingBOM = false;
     private String outputTimestampPattern = GeneralUtils.DEFAULT_TIMESTAMP_PATTERN;
+    private String backGroundColor = GeneralUtils.getDefaultBackgroundColor();
 
     private DBDDataFormatterProfile formatterProfile;
     @NotNull
@@ -122,6 +123,14 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     public void setOutputEncoding(String outputEncoding) {
         this.outputEncoding = outputEncoding;
+    }
+    
+    public String getBackgroundColor() {
+        return backGroundColor;
+    }
+
+    public void setBackgroundColor(String backGroundColor) {
+        this.backGroundColor = backGroundColor;
     }
 
     public boolean isOutputEncodingBOM() {
@@ -354,6 +363,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bgColor, backGroundColor);
         } else {
             DTUtils.addSummary(summary, "Copy to clipboard", outputClipboard);
         }

@@ -59,6 +59,8 @@ public class GeneralUtils {
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
+   // #D0E3FA
+    public static final String BACKGROUND_COLOR = "rgb(208, 227, 250)";
 
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
@@ -92,6 +94,10 @@ public class GeneralUtils {
      */
     public static String getDefaultFileEncoding() {
         return UTF8_ENCODING;
+    }
+    
+    public static String getDefaultBackgroundColor() {
+        return BACKGROUND_COLOR;
     }
 
     public static String getDefaultLocalFileEncoding() {

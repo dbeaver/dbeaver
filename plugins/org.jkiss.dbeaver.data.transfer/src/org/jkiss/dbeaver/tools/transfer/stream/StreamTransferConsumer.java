@@ -787,6 +787,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         public String getOutputEncoding() {
             return settings == null ? StandardCharsets.UTF_8.displayName() : settings.getOutputEncoding();
         }
+
+        @NotNull
+		@Override
+		public String getBackgroundColor() {
+			return settings == null ? GeneralUtils.getDefaultBackgroundColor() : settings.getBackgroundColor();
+		}
     }
 
     private class OutputStreamStatProxy extends OutputStream {

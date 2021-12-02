@@ -751,6 +751,18 @@ public class UIUtils {
 
         return button;
     }
+    
+    public static Button createButton(Composite parent, String label)
+    {
+        final Button button = new Button(parent, SWT.PUSH);
+        button.setText(label);
+        return button;
+    }
+    
+    public static String rgbToString(RGB rgb)
+    {
+        return "rgb(" + rgb.red + ", " + rgb.green + ", " +rgb.blue + ")";
+    }
 
     public static Button createCheckbox(Composite parent, boolean checked)
     {
@@ -982,6 +994,12 @@ public class UIUtils {
 //    {
 //
 //    }
+    
+    public static Combo createColorCombo(Composite parent, @Nullable String bgColor) {
+    	Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN);
+    	
+    	return encodingCombo;
+    }
 
     public static Combo createEncodingCombo(Composite parent, @Nullable String curCharset)
     {

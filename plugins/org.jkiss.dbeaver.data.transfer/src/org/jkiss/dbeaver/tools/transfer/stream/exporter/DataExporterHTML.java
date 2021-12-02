@@ -73,6 +73,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     }
 
     private void printHeader() {
+    	//String s = "#fab2a2";
         PrintWriter out = getWriter();
         out.write("<!DOCTYPE html>\n<html>\n");
         out.write("<head>\n" +
@@ -85,7 +86,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
             "padding: 5px;" +
-            "background-color: #D0E3FA;}" +
+            "background-color:" +  getSite().getBackgroundColor() + ";}" +
             "td{font-family: sans-serif;" +
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +

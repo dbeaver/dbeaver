@@ -50,5 +50,8 @@ public interface IStreamDataExporterSite {
 
     @NotNull
     String getOutputEncoding();
+    
+    @NotNull
+    String getBackgroundColor();
 
 }

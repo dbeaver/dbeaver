@@ -23,6 +23,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -63,6 +65,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
+    private Button encodingBGCButton;
     private Text timestampPattern;
     private Text directoryText;
     private Text fileNameText;
@@ -137,6 +140,19 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         settings.setOutputEncodingBOM(encodingBOMCheckbox.getSelection());
+                    }
+                });
+                encodingBGCButton = UIUtils.createButton(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bgColor);
+                encodingBGCButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                    	 ColorDialog cd = new ColorDialog(encodingBGCButton.getShell());
+                    	 cd.setText("Chose a color");
+                         RGB newColor = cd.open();
+                         Color color = new Color(encodingBGCButton.getShell().getDisplay(), newColor);
+                         settings.setBackgroundColor(UIUtils.rgbToString(color.getRGB()));
+                         //color.getRGB().toString()
+                         color.dispose();
                     }
                 });
             }

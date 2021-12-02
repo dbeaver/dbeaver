@@ -158,6 +158,9 @@ public class DTMessages extends NLS {
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message;
 
+	public static String data_transfer_wizard_output_label_insert_bgColor;
+	public static String data_transfer_wizard_output_label_insert_bgColor_tooltip;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTMessages.class);
