@@ -569,8 +569,8 @@ public class DBExecUtils {
     public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
         return
             attr1 != null && attr2 != null &&
-            SQLUtils.compareAliases(attr1.getLabel(), attr2.getLabel()) &&
-            SQLUtils.compareAliases(attr1.getName(), attr2.getName()) &&
+            SQLUtils.compareAliases(CommonUtils.notEmpty(attr1.getLabel()), CommonUtils.notEmpty(attr2.getLabel())) &&
+            SQLUtils.compareAliases(CommonUtils.notEmpty(attr1.getName()), CommonUtils.notEmpty(attr2.getName())) &&
             CommonUtils.equalObjects(attr1.getEntityMetaData(), attr2.getEntityMetaData()) &&
             attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
             attr1.isRequired() == attr2.isRequired() &&
