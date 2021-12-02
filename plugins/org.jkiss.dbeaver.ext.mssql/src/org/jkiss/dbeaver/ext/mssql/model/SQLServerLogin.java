@@ -135,7 +135,7 @@ public class SQLServerLogin implements DBAUser, DBPStatefulObject {
 
     @Property(viewable = true, order = 3)
     public String getLoginTypeName() {
-        return loginType.getLoginType();
+        return loginType == null ? null : loginType.getLoginType();
     }
 
     @Property(viewable = true, order = 4)
