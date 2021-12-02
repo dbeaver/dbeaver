@@ -1020,4 +1020,16 @@ public class CommonUtils {
         matcher.appendTail(sb);
         return sb.toString();
     }
+
+    public static boolean startsWith(@NotNull CharSequence target, int fromIndex, @NotNull CharSequence prefix) {
+        if (target.length() < prefix.length() || target.length() <= fromIndex) {
+            return false;
+        }
+        for (int i = 0; i < prefix.length(); i++) {
+            if (target.charAt(fromIndex + i) != prefix.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
