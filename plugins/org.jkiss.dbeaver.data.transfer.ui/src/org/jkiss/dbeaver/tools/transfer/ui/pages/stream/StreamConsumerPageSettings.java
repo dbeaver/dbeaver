@@ -21,6 +21,8 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -181,6 +183,31 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 DataExporterHTML html = new DataExporterHTML();
 
                 lobBackgroundText = UIUtils.createLabelText(binariesPanel, "BackgroundColor", "Enter some color");
+                
+                MouseListener onMouseClickText = new MouseListener() {
+
+
+					@Override
+					public void mouseDown(MouseEvent arg0) {
+						lobBackgroundText.setText("");
+					}
+
+					@Override
+					public void mouseDoubleClick(MouseEvent arg0) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void mouseUp(MouseEvent arg0) {
+						// TODO Auto-generated method stub
+						
+					}
+
+                	
+                };
+                	  
+                lobBackgroundText.addMouseListener(onMouseClickText);;
                 Button okButton = new Button(binariesPanel, SWT.PUSH);
                             okButton.setText("OK");
                             okButton.addSelectionListener(new SelectionAdapter() {
