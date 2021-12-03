@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -76,6 +77,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private Label lobEncodingLabel;
     private Combo lobEncodingCombo;
     private Combo formatProfilesCombo;
+    private Text lobBackgroundText;
     private PropertySourceCustom propertySource;
     private ValueFormatSelector valueFormatSelector;
 
@@ -136,9 +138,9 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 reloadFormatProfiles();
 
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_label_binaries);
-                Composite binariesPanel = UIUtils.createComposite(generalSettings, 4);
+                Composite binariesPanel = UIUtils.createComposite(generalSettings, 7);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 4;
+                gd.horizontalSpan = 6;
                 binariesPanel.setLayoutData(gd);
                 lobExtractType = new Combo(binariesPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(
@@ -174,6 +176,22 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                             case LOB_ENCODING_NATIVE: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.NATIVE); break;
                         }
                     }
+                });
+                
+                DataExporterHTML html = new DataExporterHTML();
+
+                lobBackgroundText = UIUtils.createLabelText(binariesPanel, "BackgroundColor", "Enter some color");
+                Button okButton = new Button(binariesPanel, SWT.PUSH);
+                            okButton.setText("OK");
+                            okButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+
+                        html.setBackgroundColor(lobBackgroundText.getText());
+                        lobBackgroundText.setText("");
+                        lobBackgroundText.forceFocus();
+                    }
+
                 });
 
                 valueFormatSelector = new ValueFormatSelector(generalSettings);

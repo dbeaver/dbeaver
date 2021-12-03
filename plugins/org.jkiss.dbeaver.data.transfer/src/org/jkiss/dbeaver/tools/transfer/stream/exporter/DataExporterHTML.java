@@ -50,6 +50,13 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private boolean outputHeader = true;
     private boolean outputColumnHeaders = true;
+    
+    private static String backgroundColor;
+    
+    public void setBackgroundColor(String color) {
+		backgroundColor = color;
+	}
+    
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
@@ -85,7 +92,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
             "padding: 5px;" +
-            "background-color: #D0E3FA;}" +
+            "background-color: " + backgroundColor + ";}" +
             "td{font-family: sans-serif;" +
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
@@ -227,4 +234,5 @@ public class DataExporterHTML extends StreamExporterAbstract {
             }
         }
     }
+
 }
