@@ -33,7 +33,8 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
 
     public static final Object LOADING_FAMILY = new Object();
 
-    private static Image[] IMG_LOADING = new Image[] {
+    private static final Image[] IMG_LOADING = new Image[] {
+        DBeaverIcons.getImage(UIIcon.LOADING0),
         DBeaverIcons.getImage(UIIcon.LOADING1),
         DBeaverIcons.getImage(UIIcon.LOADING2),
         DBeaverIcons.getImage(UIIcon.LOADING3),
