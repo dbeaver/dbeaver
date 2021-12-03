@@ -1,9 +1,9 @@
 name: Maven Build Verify
 
 on: 
-  push:
   pull_request:
-
+    branches:
+      - devel
 jobs:
   build:
 
