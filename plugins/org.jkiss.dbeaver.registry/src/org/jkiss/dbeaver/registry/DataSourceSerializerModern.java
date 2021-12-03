@@ -53,6 +53,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -285,7 +286,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!decrypt) {
             return new String(credBuffer.toByteArray(), StandardCharsets.UTF_8);
         } else {
-            ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
+            SecretKey localSecretKey = registry.getProject().getSecureStorage().getLocalSecretKey();
+            if (localSecretKey == null) {
+                throw new IOException("Can't obtain local secret key");
+            }
+            ContentEncrypter encrypter = new ContentEncrypter(localSecretKey);
             try {
                 return encrypter.decrypt(credBuffer.toByteArray());
             } catch (Exception e) {
@@ -1018,7 +1023,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         final DBASecureStorage secureStorage = dataSource == null ? registry.getProject().getSecureStorage() : dataSource.getProject().getSecureStorage();
         {
             try {
-                if (secureStorage.useSecurePreferences()) {
+                if (secureStorage.useSecurePreferences() && !passwordReadCanceled) {
                     ISecurePreferences prefNode = dataSource == null ? secureStorage.getSecurePreferences() : dataSource.getSecurePreferences();
                     if (subNode != null) {
                         for (String nodeName : subNode.split("/")) {
