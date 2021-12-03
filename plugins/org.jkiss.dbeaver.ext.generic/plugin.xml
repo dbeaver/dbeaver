@@ -532,8 +532,7 @@
                     <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
                     <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
 
-                    <file type="jar" path="drivers/teradata/terajdbc4.jar" bundle="drivers.teradata"/>
-                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" bundle="drivers.teradata"/>
+                    <file type="jar" path="drivers/teradata" bundle="drivers.teradata"/>
                     <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
 
                     <parameter name="supports-truncate" value="false"/>
