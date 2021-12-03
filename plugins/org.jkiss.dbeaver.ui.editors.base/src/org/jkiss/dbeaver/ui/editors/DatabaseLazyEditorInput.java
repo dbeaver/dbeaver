@@ -23,6 +23,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -47,6 +48,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -217,7 +219,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
         navigatorModel.ensureProjectLoaded(project);
         //dataSourceContainer, project, nodePath, nodeName, activePageId, activeFolderId
 
-        DBPDataSource dataSource;
+        long connectionTimeout = dataSourceContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
+        long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
             try {
                 dataSourceContainer.connect(monitor, true, true);
@@ -234,15 +237,20 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
                     // Close editor
                     return null;
                 } else if (result == IDialogConstants.RETRY_ID) {
+                    connectionStart = System.currentTimeMillis();
                     continue;
                 } else {
                     return new ErrorEditorInput(GeneralUtils.makeExceptionStatus(e), navigatorModel.getNodeByObject(dataSourceContainer));
                 }
             }
-            break;
+            if (connectionTimeout > 0 && connectionStart + connectionTimeout <= System.currentTimeMillis()) {
+                break;
+            }
+            // Wait a few seconds to let in-progress connection initialize
+            RuntimeUtils.pause(1000);
         }
         try {
-            dataSource = dataSourceContainer.getDataSource();
+            final DBPDataSource dataSource = dataSourceContainer.getDataSource();
             if (dataSource == null) {
                 throw new DBException("Connection to '" + dataSourceContainer.getName() + "' canceled");
             }
