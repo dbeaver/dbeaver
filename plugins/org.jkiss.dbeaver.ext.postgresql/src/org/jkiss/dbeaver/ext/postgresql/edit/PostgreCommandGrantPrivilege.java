@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -27,51 +29,54 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Grant/Revoke privilege command
  */
 public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePrivilegeOwner> {
-
     private final boolean grant;
-    private final PostgrePrivilege permission;
-    private final PostgrePrivilegeType[] privilege;
+    private final PostgrePrivilege privilege;
+    private final Set<PostgrePrivilegeType> privilegeTypes;
     private final DBSObject privilegeOwner;
 
-    public PostgreCommandGrantPrivilege(PostgrePrivilegeOwner user, boolean grant, DBSObject privilegeOwner, PostgrePrivilege permission, PostgrePrivilegeType[] privilege)
-    {
+    public PostgreCommandGrantPrivilege(@NotNull PostgrePrivilegeOwner user, boolean grant, @NotNull DBSObject privilegeOwner, @NotNull PostgrePrivilege privilege, @Nullable PostgrePrivilegeType[] privilegeTypes) {
         super(user, grant ? "Grant" : "Revoke");
         this.grant = grant;
-        this.privilegeOwner = privilegeOwner;
-        this.permission = permission;
         this.privilege = privilege;
-    }
+        this.privilegeTypes = new HashSet<>();
+        this.privilegeOwner = privilegeOwner;
 
-    @Override
-    public void updateModel()
-    {
-        //getObject().clearGrantsCache();
-    }
-
-    @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
-    {
-        boolean withGrantOption = false;
-        StringBuilder privName = new StringBuilder();
-        if (privilege == null) {
-            privName = new StringBuilder(PostgrePrivilegeType.ALL.name());
+        if (privilegeTypes != null) {
+            this.privilegeTypes.addAll(Arrays.asList(privilegeTypes));
         } else {
-            for (PostgrePrivilegeType pn : privilege) {
-                if (privName.length() > 0) privName.append(", ");
-                privName.append(pn.name());
-                if ((permission.getPermission(pn) & PostgrePrivilege.WITH_GRANT_OPTION) != 0) {
-                    withGrantOption = true;
+            // Expand PostgrePrivilegeType.ALL to simplify command merging later
+            for (PostgrePrivilegeType type : getObject().getDataSource().getSupportedPrivilegeTypes()) {
+                if (type.supportsType(privilegeOwner.getClass())) {
+                    this.privilegeTypes.add(type);
                 }
+            }
+        }
+    }
 
+    @NotNull
+    @Override
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+        if (privilegeTypes.isEmpty()) {
+            return new DBEPersistAction[0];
+        }
+
+        boolean withGrantOption = false;
+        final StringJoiner privName = new StringJoiner(", ");
+
+        if (hasAllPrivilegeTypes()) {
+            privName.add(PostgrePrivilegeType.ALL.name());
+        } else {
+            for (PostgrePrivilegeType pn : privilegeTypes) {
+                privName.add(pn.name());
+                withGrantOption |= CommonUtils.isBitSet(privilege.getPermission(pn), PostgrePrivilege.WITH_GRANT_OPTION);
             }
         }
 
@@ -82,10 +87,10 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
             } else {
-                objectName = ((PostgreRolePrivilege) permission).getFullObjectName();
+                objectName = ((PostgreRolePrivilege) privilege).getFullObjectName();
             }
         } else {
-            PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.permission;
+            PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
                 roleName = permission.getGrantee();
                 if (!roleName.toLowerCase(Locale.ENGLISH).startsWith("group ")) {
@@ -97,18 +102,15 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             }
             objectName = PostgreUtils.getObjectUniqueName(object);
         }
-        if (roleName == null) {
-            return new DBEPersistAction[0];
-        }
 
         String objectType;
-        if (permission instanceof PostgreRolePrivilege) {
+        if (privilege instanceof PostgreRolePrivilege) {
             if (privilegeOwner instanceof PostgreProcedure) {
                 if (((PostgreProcedure) privilegeOwner).getKind() == PostgreProcedureKind.p) {
-                    ((PostgreRolePrivilege) permission).setKind(PostgrePrivilegeGrant.Kind.PROCEDURE);
+                    ((PostgreRolePrivilege) privilege).setKind(PostgrePrivilegeGrant.Kind.PROCEDURE);
                 }
             }
-            objectType = ((PostgreRolePrivilege) permission).getKind().name();
+            objectType = ((PostgreRolePrivilege) privilege).getKind().name();
         } else {
             objectType = PostgreUtils.getObjectTypeName(object);
         }
@@ -129,25 +131,65 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
-                "Grant",
-                grantScript)
+                grant ? "Grant" : "Revoke",
+                grantScript
+            )
         };
     }
 
+    @Nullable
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
-    {
-        if (prevCommand instanceof PostgreCommandGrantPrivilege) {
-            PostgreCommandGrantPrivilege prevGrant = (PostgreCommandGrantPrivilege)prevCommand;
-            if (prevGrant.permission == permission && Arrays.equals(prevGrant.privilege, privilege)) {
-                if (prevGrant.grant == grant) {
-                    return prevCommand;
-                } else {
-                    return null;
-                }
-            }
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+        // In order to properly merge grant/revoke commands, we need to capture
+        // the first one which grants and one which revokes and merge privileges
+        // from other commands into them. Other commands are consumed later in process.
+
+        final String grantCommandId = makeUniqueName("grant");
+        final String revokeCommandId = makeUniqueName("revoke");
+        final String mergedCommandId = makeUniqueName("merged") + "#" + hashCode();
+
+        userParams.putIfAbsent(grant ? grantCommandId : revokeCommandId, this);
+
+        final PostgreCommandGrantPrivilege grantCommand = (PostgreCommandGrantPrivilege) userParams.get(grantCommandId);
+        final PostgreCommandGrantPrivilege revokeCommand = (PostgreCommandGrantPrivilege) userParams.get(revokeCommandId);
+
+        if (!userParams.containsKey(mergedCommandId)) {
+            userParams.put(mergedCommandId, true);
+
+            mergePrivilegeTypes(
+                grantCommand != null ? grantCommand.privilegeTypes : Collections.emptySet(),
+                revokeCommand != null ? revokeCommand.privilegeTypes : Collections.emptySet(),
+                new ArrayList<>(privilegeTypes),
+                grant
+            );
         }
-        return super.merge(prevCommand, userParams);
+
+        return grant ? grantCommand : revokeCommand;
     }
 
+    private void mergePrivilegeTypes(@NotNull Set<PostgrePrivilegeType> granted, @NotNull Set<PostgrePrivilegeType> revoked, @NotNull Collection<PostgrePrivilegeType> modified, boolean grant) {
+        if (grant) {
+            granted.removeAll(modified);
+            modified.removeIf(revoked::remove);
+            granted.addAll(modified);
+        } else {
+            revoked.removeAll(modified);
+            modified.removeIf(granted::remove);
+            revoked.addAll(modified);
+        }
+    }
+
+    private boolean hasAllPrivilegeTypes() {
+        for (PostgrePrivilegeType type : getObject().getDataSource().getSupportedPrivilegeTypes()) {
+            if (type.supportsType(privilegeOwner.getClass()) && !privilegeTypes.contains(type)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @NotNull
+    private String makeUniqueName(@NotNull String name) {
+        return name + "#" + privilege.hashCode() + "#" + privilegeOwner.hashCode();
+    }
 }
