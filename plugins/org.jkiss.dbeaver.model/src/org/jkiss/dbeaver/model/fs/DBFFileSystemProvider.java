@@ -17,13 +17,14 @@
 
 package org.jkiss.dbeaver.model.fs;
 
-import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.access.DBASession;
 
 /**
  * Virtual file system provider
  */
-public interface DBFFileSystemProvider extends DBPObjectWithDescription {
+public interface DBFFileSystemProvider extends DBPObject {
 
-    DBFVirtualFileSystem[] getAvailableFileSystems();
+    DBFVirtualFileSystem[] getAvailableFileSystems(DBASession session);
 
 }
