@@ -195,7 +195,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             // [JDBC] Some drivers return empty foreign key names
             fkName = parent.getName().toUpperCase() + "_FK_" + pkTable.getName().toUpperCase(Locale.ENGLISH);
         }
-        return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, deferability, true);
+        return owner.getDataSource().getMetaModel().createTableForeignKeyImpl(parent, fkName, null, pk, deleteRule, updateRule, deferability, true);
     }
 
     @Nullable

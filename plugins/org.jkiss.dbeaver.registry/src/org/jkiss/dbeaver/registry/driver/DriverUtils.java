@@ -126,7 +126,7 @@ public class DriverUtils {
         }
         File localCacheDir =
             new File(
-                new File(DriverDescriptor.getCustomDriversHome(), ZIP_EXTRACT_DIR),
+                new File(DriverDescriptor.getCustomDriversHome().toFile(), ZIP_EXTRACT_DIR),
                 sourceName);
         if (!localCacheDir.exists() && !localCacheDir.mkdirs()) {
             throw new IOException("Can't create local cache folder '" + localCacheDir.getAbsolutePath() + "'");

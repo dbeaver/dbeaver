@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -80,7 +80,7 @@ public interface DBTTaskManager {
     void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException;
 
     @NotNull
-    File getStatisticsFolder();
+    Path getStatisticsFolder();
 
     Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
 

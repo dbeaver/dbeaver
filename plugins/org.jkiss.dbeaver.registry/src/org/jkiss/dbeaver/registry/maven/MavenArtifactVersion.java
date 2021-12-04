@@ -187,7 +187,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 return new File(externalURL);
             }
         }
-        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + artifact.getVersionFileName(version, fileExt));
+        return artifact.getRepository().getLocalCacheDir().resolve(
+            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, fileExt)).toFile();
     }
 
     public String getExternalURL() {
@@ -224,9 +225,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 log.warn(e);
             }
         }
-        return new File(
-            artifact.getRepository().getLocalCacheDir(),
-            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_POM));
+        return artifact.getRepository().getLocalCacheDir().resolve(
+            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_POM)).toFile();
     }
 
     private String getRemotePOMLocation() {

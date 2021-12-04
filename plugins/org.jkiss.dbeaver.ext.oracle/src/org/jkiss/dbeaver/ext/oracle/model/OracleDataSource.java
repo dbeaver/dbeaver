@@ -860,7 +860,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             schemasQuery.append(
                 "WHERE (");
             if (showOnlyOneSchema) {
-                schemasQuery.append("UPPER(U.USERNAME) = ?");
+                schemasQuery.append("(U.USERNAME) = ?");
             } else if (showAllSchemas) {
                 schemasQuery.append("U.USERNAME IS NOT NULL");
             } else {

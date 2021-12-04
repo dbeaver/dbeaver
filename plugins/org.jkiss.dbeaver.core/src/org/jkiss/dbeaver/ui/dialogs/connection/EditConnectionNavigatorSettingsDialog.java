@@ -130,6 +130,12 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                     }
                 }
             });
+            if (mergeEntities.getEnabled()) {
+                hideFolders.setEnabled(false);
+            }
+            if (hideFolders.getEnabled()) {
+                mergeEntities.setEnabled(false);
+            }
         }
 
         return composite;

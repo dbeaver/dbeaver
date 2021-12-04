@@ -69,6 +69,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
     private static final Log log = Log.getLog(DataTransferWizard.class);
+    private static final String CLI_ARG_DEBUG_DISABLE_DT_SETTINGS_SAVE = "dbeaver.debug.disable-data-transfer-settings-save";
 
     private DataTransferSettings settings;
     private final Map<Class<?>, NodePageSettings> nodeSettings = new LinkedHashMap<>();
@@ -515,34 +516,37 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             config.put("processor", settings.getProcessor().getId());
         }
 
-        // Save processors' properties
-        Map<String, Object> processorsSection = new LinkedHashMap<>();
+        String property = System.getProperty(CLI_ARG_DEBUG_DISABLE_DT_SETTINGS_SAVE); // Turn off processor settings save. For Testing only. Use it after vmargs -Ddbeaver.debug.disable-data-transfer-settings-save=true
+        if (CommonUtils.isEmpty(property)) {
+            // Save processors' properties
+            Map<String, Object> processorsSection = new LinkedHashMap<>();
 
-        for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
+            for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
 
-            if (isTask) {
-                // Do not save settings for nodes not involved in this task
-                if (settings.getProcessor() == null || !settings.getProcessor().getId().equals(procDescriptor.getId())) {
-                    continue;
+                if (isTask) {
+                    // Do not save settings for nodes not involved in this task
+                    if (settings.getProcessor() == null || !settings.getProcessor().getId().equals(procDescriptor.getId())) {
+                        continue;
+                    }
                 }
+
+                Map<String, Object> procSettings = new LinkedHashMap<>();
+
+                Map<String, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
+                if (!CommonUtils.isEmpty(props)) {
+                    StringBuilder propNames = new StringBuilder();
+                    for (Map.Entry<String, Object> prop : props.entrySet()) {
+                        propNames.append(prop.getKey()).append(',');
+                    }
+                    procSettings.put("@propNames", propNames.toString());
+                    for (Map.Entry<String, Object> prop : props.entrySet()) {
+                        procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+                    }
+                }
+                processorsSection.put(procDescriptor.getFullId(), procSettings);
             }
-
-            Map<String, Object> procSettings = new LinkedHashMap<>();
-
-            Map<String, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
-            if (!CommonUtils.isEmpty(props)) {
-                StringBuilder propNames = new StringBuilder();
-                for (Map.Entry<String, Object> prop : props.entrySet()) {
-                    propNames.append(prop.getKey()).append(',');
-                }
-                procSettings.put("@propNames", propNames.toString());
-                for (Map.Entry<String, Object> prop : props.entrySet()) {
-                    procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-                }
-            }
-            processorsSection.put(procDescriptor.getFullId(), procSettings);
+            config.put("processors", processorsSection);
         }
-        config.put("processors", processorsSection);
 
         return config;
     }

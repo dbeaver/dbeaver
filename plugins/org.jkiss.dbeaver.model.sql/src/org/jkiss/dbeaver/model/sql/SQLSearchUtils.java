@@ -19,12 +19,16 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,14 +42,24 @@ public class SQLSearchUtils
     private static final Log log = Log.getLog(SQLSearchUtils.class);
 
     @Nullable
-    public static DBSObject findObjectByFQN(DBRProgressMonitor monitor, DBSObjectContainer sc, DBCExecutionContext executionContext, List<String> nameList, boolean useAssistant, SQLIdentifierDetector identifierDetector) {
+    public static DBSObject findObjectByFQN(DBRProgressMonitor monitor, DBSObjectContainer sc, @Nullable DBCExecutionContext executionContext, List<String> nameList, boolean useAssistant, SQLIdentifierDetector identifierDetector) {
         if (nameList.isEmpty()) {
+            return null;
+        }
+        DBPDataSource dataSource = sc == null ? null : sc.getDataSource();
+        if (executionContext == null && dataSource != null) {
+            executionContext = DBUtils.getDefaultContext(dataSource, true);
+        }
+        if (dataSource == null && executionContext != null) {
+            dataSource = executionContext.getDataSource();
+        }
+        if (dataSource == null) {
             return null;
         }
         {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
-                unquotedNames.add(DBUtils.getUnQuotedIdentifier(executionContext.getDataSource(), name));
+                unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
             }
 
             DBSObject result = findObjectByPath(monitor, executionContext, sc, unquotedNames, identifierDetector, useAssistant);
@@ -57,7 +71,7 @@ public class SQLSearchUtils
             // Fix names (convert case or remove quotes)
             for (int i = 0; i < nameList.size(); i++) {
                 String name = nameList.get(i);
-                String unquotedName = DBUtils.getUnQuotedIdentifier(executionContext.getDataSource(), name);
+                String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
                 if (!unquotedName.equals(name)) {
                     name = unquotedName;
                 } else {

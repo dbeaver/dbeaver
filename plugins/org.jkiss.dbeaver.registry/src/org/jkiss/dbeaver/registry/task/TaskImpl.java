@@ -25,14 +25,15 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * TaskImpl
@@ -166,16 +167,21 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @NotNull
     @Override
-    public File getRunLog(DBTTaskRun run) {
-        return new File(getTaskStatsFolder(false), TaskRunImpl.RUN_LOG_PREFIX + run.getId() + "." + TaskRunImpl.RUN_LOG_EXT);
+    public Path getRunLog(DBTTaskRun run) {
+        return getTaskStatsFolder(false).resolve(
+            TaskRunImpl.RUN_LOG_PREFIX + run.getId() + "." + TaskRunImpl.RUN_LOG_EXT);
     }
 
     @Override
     public void removeRunLog(DBTTaskRun taskRun) {
-        File runLog = getRunLog(taskRun);
+        Path runLog = getRunLog(taskRun);
 
-        if (runLog.exists() && !runLog.delete()) {
-            log.error("Can't delete log file '" + runLog.getAbsolutePath() + "'");
+        if (Files.exists(runLog)) {
+            try {
+                Files.delete(runLog);
+            } catch (IOException e) {
+                log.error("Can't delete log file '" + runLog.toAbsolutePath() + "'", e);
+            }
         }
         RunStatistics runStatistics = loadRunStatistics();
         runStatistics.runs.remove(taskRun);
@@ -188,15 +194,20 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @Override
     public void cleanRunStatistics() {
-        File statsFolder = getTaskStatsFolder(false);
-        if (statsFolder.exists()) {
-            for (File file : ArrayUtils.safeArray(statsFolder.listFiles())) {
-                if (!file.delete()) {
-                    log.error("Can't delete log item '" + file.getAbsolutePath() + "'");
+        Path statsFolder = getTaskStatsFolder(false);
+        if (Files.exists(statsFolder)) {
+            try {
+                List<Path> taskFiles = Files.list(statsFolder).collect(Collectors.toList());
+                for (Path file : taskFiles) {
+                    try {
+                        Files.delete(file);
+                    } catch (IOException e) {
+                        log.error("Can't delete log item '" + file.toAbsolutePath() + "'", e);
+                    }
                 }
-            }
-            if (!statsFolder.delete()) {
-                log.error("Can't delete logs folder '" + statsFolder.getAbsolutePath() + "'");
+                Files.delete(statsFolder);
+            } catch (IOException e) {
+                log.error("Can't delete logs folder '" + statsFolder.toAbsolutePath() + "'", e);
             }
         }
         RunStatistics runStatistics = new RunStatistics();
@@ -229,24 +240,28 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @NotNull
     @Override
-    public File getRunLogFolder() {
+    public Path getRunLogFolder() {
         return getTaskStatsFolder(false);
     }
 
-    File getTaskStatsFolder(boolean create) {
-        File taskStatsFolder = new File(project.getTaskManager().getStatisticsFolder(), id);
-        if (create && !taskStatsFolder.exists() && !taskStatsFolder.mkdirs()) {
-            log.error("Can't create task log folder '" + taskStatsFolder.getAbsolutePath() + "'");
+    Path getTaskStatsFolder(boolean create) {
+        Path taskStatsFolder = project.getTaskManager().getStatisticsFolder().resolve(id);
+        if (create && !Files.exists(taskStatsFolder)) {
+            try {
+                Files.createDirectories(taskStatsFolder);
+            } catch (IOException e) {
+                log.error("Can't create task log folder '" + taskStatsFolder.toAbsolutePath() + "'", e);
+            }
         }
         return taskStatsFolder;
     }
 
     private RunStatistics loadRunStatistics() {
-        File metaFile = new File(getTaskStatsFolder(false), META_FILE_NAME);
-        if (!metaFile.exists()) {
+        Path metaFile = getTaskStatsFolder(false).resolve(META_FILE_NAME);
+        if (!Files.exists(metaFile)) {
             return new RunStatistics();
         }
-        try (FileReader reader = new FileReader(metaFile)) {
+        try (Reader reader = Files.newBufferedReader(metaFile)) {
             RunStatistics statistics = gson.fromJson(reader, RunStatistics.class);
             if (statistics == null) {
                 log.error("Null task run statistics returned");
@@ -260,8 +275,8 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     }
 
     private void flushRunStatistics(RunStatistics stats) {
-        File metaFile = new File(getTaskStatsFolder(true), META_FILE_NAME);
-        try (FileWriter writer = new FileWriter(metaFile)) {
+        Path metaFile = getTaskStatsFolder(true).resolve(META_FILE_NAME);
+        try (Writer writer = Files.newBufferedWriter(metaFile)) {
             String metaContent = gson.toJson(stats);
             writer.write(metaContent);
         } catch (IOException e) {

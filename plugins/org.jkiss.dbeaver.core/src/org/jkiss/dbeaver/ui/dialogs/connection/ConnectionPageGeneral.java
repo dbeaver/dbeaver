@@ -163,7 +163,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
-                connectionTypeCombo.select(conConfig.getConnectionType());
+                setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
                 updateNavigatorSettingsPreset(navigatorSettingsCombo, dataSourceDescriptor.getNavigatorSettings());
 
                 folderSelector.setFolder(dataSourceDescriptor.getFolder());
@@ -178,7 +178,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }
         } else {
             // Default settings
-            connectionTypeCombo.select(DBPConnectionType.getDefaultConnectionType());
+            setConnectionType(connectionTypeCombo, DBPConnectionType.getDefaultConnectionType());
             updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
             folderSelector.setFolder(curDataSourceFolder);
 
@@ -322,7 +322,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         if (!connectionTypeCombo.getItems().contains(curConType)) {
                             curConType = connectionTypeCombo.getItems().get(0);
                         }
-                        connectionTypeCombo.select(curConType);
+                        setConnectionType(connectionTypeCombo, curConType);
                         getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, curConType, curConType);
                     }
                 });
@@ -493,6 +493,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         CSmartCombo<DBPConnectionType> connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
         loadConnectionTypes(connectionTypeCombo);
+        setConnectionType(connectionTypeCombo, DBPConnectionType.getDefaultConnectionType());
         connectionTypeCombo.select(DBPConnectionType.getDefaultConnectionType());
         final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(connectionTypeCombo) * 20;
@@ -520,6 +521,16 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), accessRestrictions);
         if (dialog.open() == IDialogConstants.OK_ID) {
             accessRestrictions = dialog.getAccessRestrictions();
+        }
+    }
+
+    public static void setConnectionType(@NotNull CSmartCombo<DBPConnectionType> combo, @NotNull DBPConnectionType connectionType) {
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            final DBPConnectionType item = combo.getItem(i);
+            if (item.getId().equals(connectionType.getId())) {
+                combo.select(i);
+                return;
+            }
         }
     }
 

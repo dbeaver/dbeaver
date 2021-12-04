@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
@@ -43,6 +44,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -63,8 +66,6 @@ public class GeneralUtils {
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
     public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
-
-    private static final String METADATA_FOLDER = ".metadata";
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
@@ -656,17 +657,25 @@ public class GeneralUtils {
         }
     }
 
-    public static File getMetadataFolder() {
-        final URL workspaceURL = Platform.getInstanceLocation().getURL();
-        File metaDir = getMetadataFolder(new File(workspaceURL.getPath()));
-        if (!metaDir.exists() && !metaDir.mkdir()) {
-            return Platform.getLogFileLocation().toFile().getParentFile();
+    public static Path getMetadataFolder() {
+        try {
+            final URL workspaceURL = Platform.getInstanceLocation().getURL();
+            Path metaDir = getMetadataFolder(Path.of(workspaceURL.toURI()));
+            if (!Files.exists(metaDir)) {
+                try {
+                    Files.createDirectories(metaDir);
+                } catch (IOException e) {
+                    return Platform.getLogFileLocation().toFile().toPath();
+                }
+            }
+            return metaDir;
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Can't parse workspace location URL", e);
         }
-        return metaDir;
     }
 
-    public static File getMetadataFolder(File workspaceFolder) {
-        return new File(workspaceFolder, METADATA_FOLDER);
+    public static Path getMetadataFolder(Path workspaceFolder) {
+        return workspaceFolder.resolve(DBPWorkspace.METADATA_FOLDER);
     }
 
     @NotNull

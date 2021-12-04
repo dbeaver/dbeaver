@@ -109,7 +109,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            if (ArrayUtils.contains(params.getObjectTypes(), OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY)) {
+            if (ArrayUtils.containsAny(params.getObjectTypes(), OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY)) {
                 // Search constraints
                 findConstraintsByMask(session, schema, params, objects);
                 if (!containsOnlyConstraintOrFK(params.getObjectTypes())) {

@@ -103,7 +103,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             return;
         }
         // Extract bundled database to workspace metadata
-        File dbFolder = new File(GeneralUtils.getMetadataFolder(), SAMPLE_DB1_FOLDER);
+        File dbFolder = GeneralUtils.getMetadataFolder().resolve(SAMPLE_DB1_FOLDER).toFile();
         if (!dbFolder.exists()) {
             if (!dbFolder.mkdirs()) {
                 log.error("Can't create target database folder " + dbFolder.getAbsolutePath());

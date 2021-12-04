@@ -2324,7 +2324,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 if (CommonUtils.isEmpty(attributeBinding.getLabel())) {
-                    return attributeBinding.getName();
+                    return CommonUtils.notEmpty(attributeBinding.getName());
                 } else {
                     return attributeBinding.getLabel();
                 }

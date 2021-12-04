@@ -932,8 +932,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
                 if (state == InlineState.TABLE_DOT) {
-                    if (CommonUtils.isEmpty(tableAlias)) {
+                    if (CommonUtils.isEmpty(tableAlias) && !isTableQueryToken(tok, value)) {
                         state = InlineState.MATCHED;
+                    } else if (isTableQueryToken(tok, value)) {
+                        /*
+                            Sometimes we can have table without alias, it will reset state to table_name because there is no alias to check
+                            See #12335
+                         */
+                        matchedTableName = null;
+                        state = InlineState.TABLE_NAME;
+                        continue;
                     } else {
                         state = InlineState.ALIAS_AS;
                     }

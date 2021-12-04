@@ -33,7 +33,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * DBNResource
@@ -41,8 +44,10 @@ import java.util.*;
 public class DBNResource extends DBNNode// implements IContributorResourceAdapter
 {
     private static final Log log = Log.getLog(DBNResource.class);
+
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
-    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private IResource resource;
     private DBPResourceHandler handler;
@@ -229,6 +234,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
+        children = null;
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 
@@ -339,26 +345,22 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
 
     protected void sortChildren(DBNNode[] list)
     {
-        Arrays.sort(list, new Comparator<DBNNode>() {
-            @Override
-            public int compare(DBNNode o1, DBNNode o2)
-            {
-                if (o1 instanceof DBNProjectDatabases) {
-                    return -1;
-                } else if (o2 instanceof DBNProjectDatabases) {
-                    return 1;
-                } else {
-                    if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
-                        IResource res1 = ((DBNResource)o1).getResource();
-                        IResource res2 = ((DBNResource)o2).getResource();
-                        if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
-                            return -1;
-                        } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
-                            return 1;
-                        }
+        Arrays.sort(list, (o1, o2) -> {
+            if (o1 instanceof DBNProjectDatabases) {
+                return -1;
+            } else if (o2 instanceof DBNProjectDatabases) {
+                return 1;
+            } else {
+                if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
+                    IResource res1 = ((DBNResource)o1).getResource();
+                    IResource res2 = ((DBNResource)o2).getResource();
+                    if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
+                        return -1;
+                    } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
+                        return 1;
                     }
-                    return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
                 }
+                return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
             }
         });
     }

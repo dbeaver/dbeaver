@@ -1,0 +1,10 @@
+name: "Commit Message Validation"
+
+on:
+  pull_request:
+    branches:
+      - devel
+
+jobs:
+  check-commit-message:
+    uses: dbeaver/dbeaver/.github/workflows/reused-commit-msgs-validator.yml@devel
