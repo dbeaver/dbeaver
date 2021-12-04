@@ -258,7 +258,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     private RunStatistics loadRunStatistics() {
         Path metaFile = getTaskStatsFolder(false).resolve(META_FILE_NAME);
-        if (Files.exists(metaFile)) {
+        if (!Files.exists(metaFile)) {
             return new RunStatistics();
         }
         try (Reader reader = Files.newBufferedReader(metaFile)) {
