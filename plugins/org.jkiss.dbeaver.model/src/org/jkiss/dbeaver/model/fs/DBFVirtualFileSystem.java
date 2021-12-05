@@ -30,6 +30,8 @@ public interface DBFVirtualFileSystem {
 
     String getFileSystemDisplayName();
 
+    String getId();
+
     String getDescription();
 
     DBPImage getIcon();

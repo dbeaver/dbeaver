@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
@@ -138,6 +140,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     @Override
     public DBERegistry getEditorsRegistry() {
         return ObjectManagerRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBFRegistry getFileSystemRegistry() {
+        return FileSystemProviderRegistry.getInstance();
     }
 
     @Override
