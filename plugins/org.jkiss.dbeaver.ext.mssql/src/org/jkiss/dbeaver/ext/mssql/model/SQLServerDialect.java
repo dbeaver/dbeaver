@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -112,6 +113,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
         this.isSqlServer = SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
 
         addFunctions(Arrays.asList(SQLSERVER_FUNCTIONS_DATETIME));
+        addFunctions(Collections.singleton("SQL_VARIANT"));
     }
 
     @NotNull
@@ -194,24 +196,28 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        if (dataKind == DBPDataKind.DATETIME) {
-            if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName) ||
-                    SQLServerConstants.TYPE_TIME.equalsIgnoreCase(typeName) ||
-                    SQLServerConstants.TYPE_DATETIMEOFFSET.equalsIgnoreCase(typeName)) {
-                Integer scale = column.getScale();
-                if (scale != null && scale >= 0 && scale < 7) {
-                    return "(" + scale + ')';
+        String lowerTypeName = typeName.toLowerCase(Locale.ENGLISH); // Workaround for generic data types
+        if (dataKind == DBPDataKind.DATETIME || lowerTypeName.equals(SQLServerConstants.TYPE_DATETIMEOFFSET)) {
+            // The datetimeoffset is the DATE type with the String data kind. Uses scale for the length property as other DATE types.
+            switch (lowerTypeName) {
+                case SQLServerConstants.TYPE_DATETIME2:
+                case SQLServerConstants.TYPE_TIME:
+                case SQLServerConstants.TYPE_DATETIMEOFFSET: {
+                    Integer scale = column.getScale();
+                    if (scale != null && scale >= 0 && scale < 7) {
+                        return "(" + scale + ')';
+                    }
                 }
             }
         } else if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.BINARY) {
-            String lowerTypeName = typeName.toLowerCase(Locale.ENGLISH); // Workaround for generic data types
             switch (lowerTypeName) {
+                case SQLServerConstants.TYPE_BINARY:
                 case SQLServerConstants.TYPE_CHAR:
                 case SQLServerConstants.TYPE_NCHAR:
                 case SQLServerConstants.TYPE_VARCHAR:
                 case SQLServerConstants.TYPE_NVARCHAR:
                 case SQLServerConstants.TYPE_SQL_VARIANT:
-                case SQLServerConstants.TYPE_VARBINARY:{
+                case SQLServerConstants.TYPE_VARBINARY: {
                     long maxLength = column.getMaxLength();
                     if (maxLength == 0) {
                         return null;
@@ -230,7 +236,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
         } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES , typeName)) {
             return null;
         } else if (dataKind == DBPDataKind.NUMERIC &&
-                (SQLServerConstants.TYPE_NUMERIC.equalsIgnoreCase(typeName) || SQLServerConstants.TYPE_DECIMAL.equalsIgnoreCase(typeName))) {
+                (SQLServerConstants.TYPE_NUMERIC.equals(lowerTypeName) || SQLServerConstants.TYPE_DECIMAL.equals(lowerTypeName))) {
             // numeric and decimal - are synonyms in sql server
             // The numeric precision has a range from 1 to 38. The default precision is 38.
             // The scale has a range from 0 to p (precision). The scale can be specified only if the precision is specified. By default, the scale is zero
