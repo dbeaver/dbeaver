@@ -61,6 +61,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
+    private Text scriptFileNamePattern;
     private Button bindEmbeddedReadCheck;
     private Button bindEmbeddedWriteCheck;
     private Composite commentTypeComposite;
@@ -93,19 +94,32 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
             connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_title_pattern, "");
+            scriptFileNamePattern = UIUtils.createLabelText(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_file_name_pattern, "");
             ContentAssistUtils.installContentProposal(
-                    scriptTitlePattern,
+                scriptFileNamePattern,
                     new SmartTextContentAdapter(),
                     new StringContentProposalProvider(
-                        GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_ACTIVE_DATABASE),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_ACTIVE_SCHEMA)));
+                        GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_CONNECTION_NAME),
+                        GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_DRIVER_NAME),
+                        GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_DATABASE),
+                        GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA),
+                        GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_PROJECT)));
             UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
-                    SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT,
-                    SQLEditor.VAR_ACTIVE_DATABASE, SQLEditor.VAR_ACTIVE_SCHEMA);
+                    SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME,
+                    SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
+            ContentAssistUtils.installContentProposal(
+                scriptTitlePattern,
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
+                    GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_CONNECTION_NAME),
+                    GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_DRIVER_NAME),
+                    GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_FILE_NAME),
+                    GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_FILE_EXT),
+                    GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_DATABASE),
+                    GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
+            UIUtils.setContentProposalToolTip(scriptFileNamePattern, "Output file name patterns",
+                    SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME, SQLPreferenceConstants.VAR_FILE_NAME, SQLPreferenceConstants.VAR_FILE_EXT,
+                    SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
         }
 
         // New Script template
@@ -208,7 +222,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
         connectionFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
-
+        scriptFileNamePattern.setMessage(store.getString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
         setSQLTemplateText(SQLEditorUtils.getNewScriptTemplate(store), false);
         sqlTemplateEnabledCheckbox.setSelection(store.getBoolean(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED));
         UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
@@ -251,6 +265,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         store.setValue(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
+        store.setValue(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN, scriptFileNamePattern.getText());
 
         store.setValue(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED, sqlTemplateEnabledCheckbox.getSelection());
         final IDocument document = sqlTemplateViewer.getDocument();

@@ -235,6 +235,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_blank_line_delimiter_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_parameters;
     public static String pref_page_sql_editor_title_pattern;
+    public static String pref_page_sql_editor_file_name_pattern;
     public static String pref_page_sql_editor_checkbox_delete_empty_scripts;
     public static String pref_page_sql_editor_checkbox_put_new_scripts;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
@@ -337,7 +338,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_full_DDL;
 
 
-	static {
+    static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
     }

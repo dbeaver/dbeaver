@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
@@ -176,9 +177,22 @@ public class SQLEditorUtils {
                 }
             }
         }
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        String pattern = store.getString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN);
+
+        String filename = GeneralUtils.replaceVariables(pattern, new SQLEditorVariablesResolver(
+                dataSourceContainer,
+                dataSourceContainer == null ? null : dataSourceContainer.getConnectionConfiguration(),
+                navigatorContext.getExecutionContext(),
+                null,
+                null, null));
+
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
+        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder,
+                CommonUtils.isEmpty(filename) ? "Script" : CommonUtils.escapeFileName(filename),
+                SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);
 
         // Save ds container reference
