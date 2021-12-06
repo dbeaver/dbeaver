@@ -178,7 +178,7 @@ public class SQLEditorUtils {
         }
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
+        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, project.getName(), SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);
 
         // Save ds container reference
