@@ -830,8 +830,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
-        if (attribute instanceof DBDAttributeBinding) {
-            DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
+        if (attribute instanceof DBDAttributeBinding || attribute instanceof PostgreTableColumn) {
+            DBSDataType dataType = attribute instanceof DBDAttributeBinding ? ((DBDAttributeBinding) attribute).getDataType() : ((PostgreTableColumn) attribute).getDataType();
             if (dataType instanceof PostgreDataType) {
                 String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
                 if (CommonUtils.isNotEmpty(typeCasting)) {
