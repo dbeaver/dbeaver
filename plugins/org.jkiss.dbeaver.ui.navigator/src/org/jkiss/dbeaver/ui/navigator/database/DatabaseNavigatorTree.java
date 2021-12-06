@@ -322,6 +322,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
+    public void beforeTreeExpanding(TreeEvent event) {
+        // Do nothing
+    }
+
     private TreeViewer doCreateNavigatorTreeViewer(Composite parent, int style) {
         return new TreeViewer(parent, style) {
             @Override
@@ -340,6 +344,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 // Disable redraw during expand (its blinking)
                 getTree().setRedraw(false);
                 try {
+                    beforeTreeExpanding(event);
                     super.handleTreeExpand(event);
                 } finally {
                     getTree().setRedraw(true);

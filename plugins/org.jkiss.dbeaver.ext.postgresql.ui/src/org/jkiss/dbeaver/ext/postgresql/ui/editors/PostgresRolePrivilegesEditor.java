@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.ControlEnableState;
@@ -28,6 +30,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.TreeEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,8 +48,10 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -62,10 +67,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -96,7 +103,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         SashForm composite = UIUtils.createPartDivider(getSite().getPart(), this.pageControl, SWT.HORIZONTAL);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        roleOrObjectTable = new DatabaseNavigatorTree(
+        roleOrObjectTable = new DatabaseObjectsNavigatorTree(
             composite,
             DBWorkbench.getPlatform().getNavigatorModel().getRoot(),
             SWT.MULTI | SWT.FULL_SELECTION,
@@ -457,14 +464,31 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(permissionTable, false));
 
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            executionContext = getDatabaseObject().getDataSource().getDefaultInstance().getMetaContext();
+        }
+
+        PostgreDatabase database = null;
+        Object[] expandedElements = roleOrObjectTable.getViewer().getExpandedElements();
+        for (Object object : ArrayUtils.safeArray(expandedElements)) {
+            if (object instanceof DBNDatabaseItem) {
+                DBSObject dbsObject = ((DBNDatabaseItem) object).getObject();
+                if (dbsObject instanceof PostgreDatabase) {
+                    // TODO: it's a hack to read privileges only for one database in the refresh case. Maybe we must read all currentObjects databases and their privileges here
+                    database = (PostgreDatabase) dbsObject;
+                }
+            }
+        }
+        PostgreDatabase finalDatabase = database;
         LoadingJob.createService(
-            new DatabaseLoadService<Collection<PostgrePrivilege>>("Load permissions", getExecutionContext()) {
+            new DatabaseLoadService<>("Load permissions", executionContext) {
                 @Override
                 public Collection<PostgrePrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPrivileges(monitor, false);
+                        return getDatabaseObject().getPrivileges(monitor, false, finalDatabase);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -537,11 +561,10 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     // Load navigator tree
                     DBRProgressMonitor monitor = new VoidProgressMonitor();
                     DBNDatabaseNode rootNode;
+                    DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
                     if (isRoleEditor()) {
-                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
-                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreDatabase.class);
+                        rootNode = DBNUtils.getChildFolder(monitor, dsNode, PostgreDatabase.class);
                     } else {
-                        DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
                         rootNode = DBNUtils.getChildFolder(monitor, dsNode, PostgreRole.class);
                     }
                     if (rootNode == null) {
@@ -564,6 +587,42 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             IWorkbenchSite workbenchSite = getSite();
             if (workbenchSite != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
+            }
+        }
+    }
+
+    private class DatabaseObjectsNavigatorTree extends DatabaseNavigatorTree {
+
+        DatabaseObjectsNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter) {
+            super(parent, rootNode, style, showRoot, navigatorFilter);
+        }
+
+        @Override
+        public void beforeTreeExpanding(TreeEvent event) {
+            // We can't read privileges for all databases if we in the Role permissions tab.
+            // Let's read gradually, on the opening of each database tab separately.
+            PostgrePrivilegeOwner privilegeOwner = getDatabaseObject();
+            if ((privilegeOwner instanceof PostgreRole) && event.item.getData() instanceof DBNDatabaseItem) {
+                DBSObject object = ((DBNDatabaseItem) event.item.getData()).getObject();
+                if (object instanceof PostgreDatabase) {
+                    new AbstractJob("Load database privileges") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            monitor.beginTask("Load database " + object.getName() + " privileges", 1);
+                            try {
+                                Collection<PostgrePrivilege> privileges = privilegeOwner.getPrivileges(monitor, false, (PostgreDatabase) object);
+                                for (PostgrePrivilege perm : CommonUtils.safeCollection(privileges)) {
+                                    permissionMap.put(perm.getName(), perm);
+                                }
+                                return Status.OK_STATUS;
+                            } catch (DBException e) {
+                                return GeneralUtils.makeErrorStatus("Error loading constraints", e);
+                            } finally {
+                                monitor.done();
+                            }
+                        }
+                    }.schedule();
+                }
             }
         }
     }

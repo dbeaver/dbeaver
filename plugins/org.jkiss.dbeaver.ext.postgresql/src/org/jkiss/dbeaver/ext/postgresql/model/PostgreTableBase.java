@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -254,7 +255,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects, @Nullable DBSCatalog catalog) throws DBException {
         if (!isPersisted()) {
             return Collections.emptyList();
         }

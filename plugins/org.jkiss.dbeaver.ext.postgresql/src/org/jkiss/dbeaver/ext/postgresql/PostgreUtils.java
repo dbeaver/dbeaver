@@ -643,7 +643,7 @@ public class PostgreUtils {
             }
 
             // Permissions
-            Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
+            Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true, null);
             if (!CommonUtils.isEmpty(permissions)) {
 
                 for (PostgrePrivilege permission : permissions) {

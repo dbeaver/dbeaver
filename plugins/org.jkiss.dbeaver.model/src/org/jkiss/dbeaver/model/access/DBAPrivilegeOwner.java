@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.access;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 
 import java.util.Collection;
 
@@ -28,6 +29,6 @@ import java.util.Collection;
  */
 public interface DBAPrivilegeOwner extends DBSObject {
 
-    Collection<? extends DBAPrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
+    Collection<? extends DBAPrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects, DBSCatalog catalog) throws DBException;
 
 }

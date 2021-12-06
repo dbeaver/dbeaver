@@ -413,7 +413,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPrivileges(monitor, false);
+                        return getDatabaseObject().getPrivileges(monitor, false, null);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     } finally {

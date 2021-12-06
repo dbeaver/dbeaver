@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -66,7 +67,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects, @Nullable DBSCatalog catalog) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl());
     }
 

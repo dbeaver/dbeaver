@@ -331,7 +331,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             if (column.getAcl() == null || column.isHidden()) {
                 continue;
             }
-            tablePermissions.addAll(column.getPrivileges(monitor, true));
+            tablePermissions.addAll(column.getPrivileges(monitor, true, null));
         }
 
         return tablePermissions;
