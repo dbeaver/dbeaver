@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -180,7 +181,10 @@ public class PostgreValueParser {
     public static String generateObjectString(Object[] values) {
         String[] line = new String[values.length];
         for (int i = 0; i < values.length; i++) {
-            final Object value = values[i];
+            Object value = values[i];
+            if (value instanceof DBDCollection) {
+                value = ((DBDCollection) value).getRawValue();
+            }
             if (value instanceof Object[]) {
                 String arrayPostgreStyle = Arrays.deepToString((Object[]) value)
                         .replace("[", "{")
