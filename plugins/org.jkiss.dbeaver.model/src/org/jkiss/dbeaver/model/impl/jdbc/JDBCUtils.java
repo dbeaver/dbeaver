@@ -270,6 +270,17 @@ public class JDBCUtils {
         }
     }
 
+    public static boolean safeGetBoolean(@NotNull ResultSet dbResult, int columnIndex, @NotNull String trueValue)
+    {
+        try {
+            final String strValue = dbResult.getString(columnIndex);
+            return strValue != null && strValue.startsWith(trueValue);
+        } catch (Exception e) {
+            debugColumnRead(dbResult, columnIndex, e);
+            return false;
+        }
+    }
+
     public static boolean safeGetBoolean(ResultSet dbResult, String columnName, String trueValue)
     {
         try {

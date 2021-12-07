@@ -122,8 +122,8 @@ public class HANAProcedure extends GenericProcedure {
                         int scale = JDBCUtils.safeGetInt(dbResult, 4);
                         int position = JDBCUtils.safeGetInt(dbResult, 5);
                         String parameterTypeStr = JDBCUtils.safeGetString(dbResult, 9);
-                        boolean hasInplaceTableType = "TRUE".equals(JDBCUtils.safeGetString(dbResult, 8));
-                        boolean hasDefaultValue = "TRUE".equals(JDBCUtils.safeGetString(dbResult, 10));
+                        boolean hasInplaceTableType = JDBCUtils.safeGetBoolean(dbResult, 8, HANAConstants.SYS_BOOLEAN_TRUE);
+                        boolean hasDefaultValue = JDBCUtils.safeGetBoolean(dbResult, 10, HANAConstants.SYS_BOOLEAN_TRUE);
                         
                         DBSProcedureParameterKind parameterType;
                         switch(parameterTypeStr) {
