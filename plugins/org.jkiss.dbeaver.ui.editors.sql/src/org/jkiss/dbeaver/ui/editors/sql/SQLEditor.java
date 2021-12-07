@@ -95,6 +95,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
@@ -139,7 +140,6 @@ public class SQLEditor extends SQLEditorBase implements
     private static final int EXTRA_CONTROL_INDEX = 0;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
-
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
     private static final Pattern EMBEDDED_BINDING_PREFIX_PATTERN = Pattern.compile("--\\s*CONNECTION:\\s*(.+)", Pattern.CASE_INSENSITIVE);
 
@@ -156,15 +156,11 @@ public class SQLEditor extends SQLEditorBase implements
 //    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 //    private static final String TOOLBAR_GROUP_PANELS = "panelToggles";
 
-    public static final String VAR_CONNECTION_NAME = "connectionName";
-    public static final String VAR_FILE_NAME = "fileName";
-    public static final String VAR_FILE_EXT = "fileExt";
-    public static final String VAR_DRIVER_NAME = "driverName";
-    public static final String VAR_ACTIVE_DATABASE = "database";
-    public static final String VAR_ACTIVE_SCHEMA = "schema";
 
-    public static final String DEFAULT_TITLE_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
 
+
+    public static final String DEFAULT_TITLE_PATTERN = "<${" + SQLPreferenceConstants.VAR_CONNECTION_NAME + "}> ${" + SQLPreferenceConstants.VAR_FILE_NAME + "}";
+    public static final String DEFAULT_SCRIPT_FILE_NAME = "Script";
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
@@ -1937,12 +1933,17 @@ public class SQLEditor extends SQLEditorBase implements
             .append(" \nType: ").append(dataSourceContainer.getDriver().getFullName())
             .append(" \nURL: ").append(dataSourceContainer.getConnectionConfiguration().getUrl());
 
-        Map<String, Object> vars = getScriptVariables(null, scriptPath);
-        if (vars.get(VAR_ACTIVE_DATABASE) != null) {
-            tip.append(" \nDatabase: ").append(vars.get(VAR_ACTIVE_DATABASE));
+        SQLEditorVariablesResolver scriptNameResolver = new SQLEditorVariablesResolver(dataSourceContainer,
+                dataSourceContainer.getConnectionConfiguration(),
+                getExecutionContext(),
+                scriptPath,
+                null,
+                getProject());
+        if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_DATABASE) != null) {
+            tip.append(" \nDatabase: ").append(scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_DATABASE));
         }
-        if (vars.get(VAR_ACTIVE_SCHEMA) != null) {
-            tip.append(" \nSchema: ").append(vars.get(VAR_ACTIVE_SCHEMA));
+        if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA) != null) {
+            tip.append(" \nSchema: ").append(scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA));
         }
 
         return tip.toString();
@@ -1962,32 +1963,16 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        Map<String, Object> vars = getScriptVariables(file, scriptName);
 
         DBPPreferenceStore preferenceStore = getActivePreferenceStore();
         String pattern = preferenceStore.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN);
-        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
-    }
-
-    @NotNull
-    private Map<String, Object> getScriptVariables(IFile file, String scriptName) {
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        Map<String, Object> vars = new HashMap<>();
-        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "none" : dataSourceContainer.getName());
-        vars.put(VAR_FILE_NAME, scriptName);
-        vars.put(VAR_FILE_EXT,
-            file == null ? "" : file.getFullPath().getFileExtension());
-        vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
-
-        final DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext != null) {
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            if (contextDefaults != null) {
-                vars.put(VAR_ACTIVE_DATABASE, contextDefaults.getDefaultCatalog());
-                vars.put(VAR_ACTIVE_SCHEMA, contextDefaults.getDefaultSchema());
-            }
-        }
-        return vars;
+        return GeneralUtils.replaceVariables(pattern, new SQLEditorVariablesResolver(
+                dataSourceContainer,
+                null,
+                getExecutionContext(),
+                scriptName,
+                file,
+                getProject()));
     }
 
     @Override
