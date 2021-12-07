@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -830,8 +831,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
-        if (attribute instanceof DBDAttributeBinding) {
-            DBSDataType dataType = ((DBDAttributeBinding) attribute).getDataType();
+        if (attribute instanceof DBSTypedObjectEx) {
+            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
             if (dataType instanceof PostgreDataType) {
                 String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
                 if (CommonUtils.isNotEmpty(typeCasting)) {
