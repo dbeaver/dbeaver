@@ -17,24 +17,163 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
+import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class HANAProcedure extends GenericProcedure {
+
+    static final String DATA_TYPE_NAME_TABLE_TYPE = "TABLE_TYPE";
+    static final String DATA_TYPE_NAME_ANY_TABLE_TYPE = "ANY_TABLE_TYPE";
+    private static final String PARAMETER_TYPE_IN = "IN";
+    private static final String PARAMETER_TYPE_INOUT = "INOUT";
+    private static final String PARAMETER_TYPE_OUT = "OUT";
+    private static final String PARAMETER_TYPE_RETURN = "RETURN";
+    
+    Map<String, List<HANAInplaceTableTypeColumn> > inplaceTableTypes;
 
     public HANAProcedure(GenericStructContainer container, String procedureName, String specificName,
             String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
+    }
+    
+    private void loadInplaceTableTypes(DBRProgressMonitor monitor) throws DBException {
+        inplaceTableTypes = new HashMap<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure parameter columns")) {
+            String stmt = "SELECT PARAMETER_NAME, COLUMN_NAME, DATA_TYPE_NAME, LENGTH, SCALE";
+            if (DBSProcedureType.PROCEDURE == getProcedureType()) {
+                stmt += " FROM SYS.PROCEDURE_PARAMETER_COLUMNS"+
+                        " WHERE SCHEMA_NAME=? AND PROCEDURE_NAME=?"+
+                        " ORDER BY PARAMETER_NAME, POSITION";
+            } else {
+                stmt += " FROM SYS.FUNCTION_PARAMETER_COLUMNS"+
+                        " WHERE SCHEMA_NAME=? AND FUNCTION_NAME=?"+
+                        " ORDER BY PARAMETER_NAME, POSITION";
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
+                dbStat.setString(1, getParentObject().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String parameterName = JDBCUtils.safeGetString(dbResult, 1);
+                        String columnName = JDBCUtils.safeGetString(dbResult, 2);
+                        String typeName = JDBCUtils.safeGetString(dbResult, 3);
+                        int length = JDBCUtils.safeGetInt(dbResult, 4);
+                        int scale = JDBCUtils.safeGetInt(dbResult, 5);
+                        
+                        List<HANAInplaceTableTypeColumn> inplaceTableType = inplaceTableTypes.get(parameterName);
+                        if (inplaceTableType == null) {
+                            inplaceTableType = new LinkedList<HANAInplaceTableTypeColumn>();
+                            inplaceTableTypes.put(parameterName, inplaceTableType);
+                        }
+                        inplaceTableType.add(new HANAInplaceTableTypeColumn(this, columnName, typeName, inplaceTableType.size() + 1, length, scale));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, getDataSource());
+        }
+    }
+
+    @Override
+    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure parameter")) {
+            String stmt;
+            stmt = "SELECT PARAMETER_NAME, DATA_TYPE_NAME, LENGTH, SCALE, POSITION,"+
+                   " TABLE_TYPE_SCHEMA, TABLE_TYPE_NAME, IS_INPLACE_TYPE,"+
+                   " PARAMETER_TYPE, HAS_DEFAULT_VALUE";
+            if (DBSProcedureType.PROCEDURE == getProcedureType()) {
+                stmt += " FROM SYS.PROCEDURE_PARAMETERS"+
+                        " WHERE SCHEMA_NAME=? AND PROCEDURE_NAME=?"+
+                        " ORDER BY POSITION";
+            } else {
+                stmt += " FROM SYS.FUNCTION_PARAMETERS"+
+                        " WHERE SCHEMA_NAME=? AND FUNCTION_NAME=?"+
+                        " ORDER BY POSITION";
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
+                dbStat.setString(1, getParentObject().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String columnName = JDBCUtils.safeGetString(dbResult, 1);
+                        String typeName = JDBCUtils.safeGetString(dbResult, 2);
+                        int columnSize = JDBCUtils.safeGetInt(dbResult, 3);
+                        int scale = JDBCUtils.safeGetInt(dbResult, 4);
+                        int position = JDBCUtils.safeGetInt(dbResult, 5);
+                        String parameterTypeStr = JDBCUtils.safeGetString(dbResult, 9);
+                        boolean hasInplaceTableType = "TRUE".equals(JDBCUtils.safeGetString(dbResult, 8));
+                        boolean hasDefaultValue = "TRUE".equals(JDBCUtils.safeGetString(dbResult, 10));
+                        
+                        DBSProcedureParameterKind parameterType;
+                        switch(parameterTypeStr) {
+	                    	case PARAMETER_TYPE_IN:     parameterType = DBSProcedureParameterKind.IN; break; 
+	                    	case PARAMETER_TYPE_INOUT:  parameterType = DBSProcedureParameterKind.INOUT; break; 
+	                    	case PARAMETER_TYPE_OUT:    parameterType = DBSProcedureParameterKind.OUT; break; 
+	                    	case PARAMETER_TYPE_RETURN: parameterType = DBSProcedureParameterKind.RETURN; break; 
+	                    	default:                    parameterType = DBSProcedureParameterKind.UNKNOWN; break; 
+                        }
+                        DBSObject tableType = null;
+                        List<HANAInplaceTableTypeColumn> inplaceTableType = null;
+                        if(DATA_TYPE_NAME_TABLE_TYPE.equals(typeName)) {
+                            if (hasInplaceTableType) {
+                                if (inplaceTableTypes == null) {
+                                    loadInplaceTableTypes(monitor);
+                                }
+                                inplaceTableType = inplaceTableTypes.get(columnName);
+                            } else {
+                                String tableTypeSchema = dbResult.getString(6);
+                                String tableTypeName = dbResult.getString(7);
+                                GenericSchema schema = getDataSource().getSchema(tableTypeSchema);
+                                if (schema != null) {
+                                    tableType = schema.getTable(monitor, tableTypeName);
+                                }
+                            }
+                        }
+                        addColumn(new HANAProcedureParameter(
+                                this, columnName, typeName, position, columnSize, scale, parameterType, 
+                                tableType, inplaceTableType, hasDefaultValue));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, getDataSource());
+        }
     }
 
     @Association
     public List<HANADependency> getDependencies(DBRProgressMonitor monitor) throws DBException {
         return HANADependency.readDependencies(monitor, this);
     }
+
+    @Property(hidden = true)
+    public GenericCatalog getCatalog() { return super.getCatalog(); }
+
+    @Property(hidden = true)
+    public GenericPackage getPackage() { return super.getPackage(); }
+    
+    // hide, as not properly filled by driver. type is anyway obvious from RETURN parameter
+    @Property(hidden = true)
+    public GenericFunctionResultType getFunctionResultType() { return super.getFunctionResultType(); }
+
 }

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
@@ -186,6 +187,8 @@ public class PostgreValueParser {
                         .replace("]", "}")
                         .replace(" ", "");
                 line[i] = arrayPostgreStyle; //Strings are not quoted
+            } else if (value instanceof JDBCComposite) {
+                line[i] = generateObjectString(((JDBCComposite) value).getValues());
             } else if (value != null) {
                 // Values are simply skipped if they're NULL.
                 // https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6

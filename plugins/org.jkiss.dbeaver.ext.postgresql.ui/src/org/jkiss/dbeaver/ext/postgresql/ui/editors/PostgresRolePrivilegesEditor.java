@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
@@ -159,7 +160,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (e.detail == SWT.CHECK) {
-                        updateCurrentPrivileges(((TableItem) e.item).getChecked(), (PostgrePrivilegeType) e.item.getData());
+                        updateCurrentPrivileges(((TableItem) e.item).getChecked(), (PostgrePrivilegeType) e.item.getData(), null);
                     }
                 }
             });
@@ -188,25 +189,13 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             UIUtils.createPushButton(buttonPanel, PostgreMessages.dialog_create_push_button_grant_all, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    boolean hadNonChecked = false;
-                    for (TableItem item : permissionTable.getItems()) {
-                        if (!item.getChecked()) hadNonChecked = true;
-                        item.setChecked(true);
-                    }
-                    if (hadNonChecked) updateCurrentPrivileges(true, null);
+                    updateAllCurrentPrivileges(true);
                 }
             });
             UIUtils.createPushButton(buttonPanel, PostgreMessages.dialog_create_push_button_revoke_all, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    boolean hadChecked = false;
-                    for (TableItem item : permissionTable.getItems()) {
-                        if (item.getChecked()) hadChecked = true;
-                        item.setChecked(false);
-                    }
-                    if (hadChecked) {
-                        updateCurrentPrivileges(false, null);
-                    }
+                    updateAllCurrentPrivileges(false);
                 }
             });
 
@@ -237,7 +226,19 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
     }
 
-    private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
+    private void updateAllCurrentPrivileges(boolean grant) {
+        final PostgrePrivilegeType[] previousPrivilegeTypes = Arrays.stream(permissionTable.getItems())
+            .filter(x -> grant != x.getChecked())
+            .peek(x -> x.setChecked(grant))
+            .map(x -> (PostgrePrivilegeType) x.getData())
+            .toArray(PostgrePrivilegeType[]::new);
+
+        if (previousPrivilegeTypes.length > 0) {
+            updateCurrentPrivileges(grant, null, previousPrivilegeTypes);
+        }
+    }
+
+    private void updateCurrentPrivileges(boolean grant, @Nullable PostgrePrivilegeType privilegeType, @Nullable PostgrePrivilegeType[] previousPrivilegeTypes) {
 
         if (ArrayUtils.isEmpty(currentObjects)) {
             DBWorkbench.getPlatformUI().showError("Update privilege", "Can't update privilege - no current object");
@@ -315,7 +316,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     grant,
                     currentObject,
                     permission,
-                    privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),
+                    privilegeType == null ? previousPrivilegeTypes : new PostgrePrivilegeType[] { privilegeType }),
                 new DBECommandReflector<PostgrePrivilegeOwner, PostgreCommandGrantPrivilege>() {
                     @Override
                     public void redoCommand(PostgreCommandGrantPrivilege cmd)

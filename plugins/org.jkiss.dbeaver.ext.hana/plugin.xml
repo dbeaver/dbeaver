@@ -70,7 +70,9 @@
                         <folder id="procedures" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.procedures.node.name" icon="#procedures">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <folder label="%tree.procedure_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
-                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false">
+                                        <items label="%tree.inplace_table_type.node.name" property="inplaceTableType" visibleIf="object.hasInplaceTableType()" navigable="false"/>
+                                    </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANADependency" label="%tree.dependencies.node.name" icon="#references">
                                     <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
@@ -80,7 +82,9 @@
                         <folder id="functions" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.functions.node.name" icon="#functions">
                             <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
                                 <folder label="%tree.function_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
-                                    <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                    <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false">
+                                        <items label="%tree.inplace_table_type.node.name" property="inplaceTableType" visibleIf="object.hasInplaceTableType()" navigable="false"/>
+                                    </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANADependency" label="%tree.dependencies.node.name" icon="#references">
                                     <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>

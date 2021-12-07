@@ -39,7 +39,10 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
@@ -109,7 +112,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            new FilteredTree(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true, false) {
+            new FilteredTree(columnsGroup, SWT.MULTI | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true, false) {
                 @Override
                 protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
                     columnsViewer = new TreeViewer(parent, style);
@@ -271,23 +274,19 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 toolbar.setLayoutData(gd);
                 toolbar.setLayout(new FillLayout());
                 moveTopButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_top, UIIcon.ARROW_TOP, () -> {
-                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                    moveColumns(selectionIndex, 0);
+                    moveSelectedItems(false, false);
                 });
                 moveTopButton.setEnabled(false);
                 moveUpButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_up, UIIcon.ARROW_UP, () -> {
-                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                    swapColumns(selectionIndex, selectionIndex - 1);
+                    moveSelectedItems(false, true);
                 });
                 moveUpButton.setEnabled(false);
                 moveDownButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_down, UIIcon.ARROW_DOWN, () -> {
-                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                    swapColumns(selectionIndex, selectionIndex + 1);
+                    moveSelectedItems(true, true);
                 });
                 moveDownButton.setEnabled(false);
                 moveBottomButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_bottom, UIIcon.ARROW_BOTTOM, () -> {
-                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                    moveColumns(selectionIndex, getItemsCount() - 1);
+                    moveSelectedItems(true, false);
                 });
                 moveBottomButton.setEnabled(false);
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
@@ -322,14 +321,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     orderText.setText(""); //$NON-NLS-1$
                     whereText.setText(""); //$NON-NLS-1$
                 });
-
-                columnsViewer.addSelectionChangedListener(event -> {
-                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                    moveTopButton.setEnabled(selectionIndex > 0);
-                    moveUpButton.setEnabled(selectionIndex > 0);
-                    moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
-                    moveBottomButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
-                });
+                columnsViewer.addSelectionChangedListener(event -> updateButtons());
 
             }
             TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
@@ -368,26 +360,15 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         columnsViewer.expandAll();
     }
 
-    private int getSelectionIndex(Tree tree) {
-        final TreeItem[] selection = tree.getSelection();
-        if (selection.length == 0) {
-            return 0;
-        }
-        return tree.indexOf(selection[0]);
-    }
 
-    private void swapColumns(int curIndex, int newIndex)
+    private void swapColumns(TreeItem curItem, int newIndex)
     {
-        final DBDAttributeConstraint c1 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(curIndex).getData());
+        final DBDAttributeConstraint c1 = getBindingConstraint((DBDAttributeBinding) curItem.getData());
         final DBDAttributeConstraint c2 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(newIndex).getData());
         final int vp2 = c2.getVisualPosition();
         c2.setVisualPosition(c1.getVisualPosition());
         c1.setVisualPosition(vp2);
         refreshData();
-        moveTopButton.setEnabled(newIndex > 0);
-        moveUpButton.setEnabled(newIndex > 0);
-        moveDownButton.setEnabled(newIndex < getItemsCount() - 1);
-        moveBottomButton.setEnabled(newIndex < getItemsCount() - 1);
     }
 
     private void moveColumns(int curIndex, int newIndex)
@@ -506,6 +487,43 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         super.okPressed();
     }
 
+    private void updateButtons() {
+        final Tree tree = columnsViewer.getTree();
+        final TreeItem[] selection = tree.getSelection();
+        final boolean moveDownEnabled = selection.length > 0 && tree.indexOf(selection[selection.length - 1]) != tree.getItemCount() - 1;
+        final boolean moveUpEnabled = selection.length > 0 && tree.indexOf(selection[0]) != 0;
+        final boolean moveToBottomEnabled = selection.length > 0 && tree.indexOf(selection[0]) != tree.getItemCount() - selection.length;
+        final boolean moveToTopEnabled = selection.length > 0 && tree.indexOf(selection[selection.length - 1]) != selection.length - 1;
+        moveBottomButton.setEnabled(moveToBottomEnabled);
+        moveDownButton.setEnabled(moveDownEnabled);
+
+        moveTopButton.setEnabled(moveToTopEnabled);
+        moveUpButton.setEnabled(moveUpEnabled);
+    }
+
+    private void moveSelectedItems(boolean reverse, boolean singleStep) {
+        Tree tree = columnsViewer.getTree();
+        TreeItem[] selection = tree.getSelection();
+        int j = 0;
+        if (reverse) {
+            for (int i = selection.length - 1; i >= 0; i--) {
+                if (singleStep && tree.indexOf(selection[i]) == tree.getItemCount() - 1 - j) {
+                    continue;
+                }
+                swapColumns(selection[i], !singleStep ? getItemsCount() - 1 - j++ : tree.indexOf(selection[i]) + 1);
+                updateButtons();
+            }
+        } else {
+            for (TreeItem treeItem : selection) {
+                if (singleStep && tree.indexOf(treeItem) == j) {
+                    continue;
+                }
+                swapColumns(treeItem, !singleStep ? j++ : tree.indexOf(treeItem) - 1);
+                updateButtons();
+            }
+        }
+    }
+
     class ColumnLabelProvider extends LabelProvider implements ITableLabelProvider
     {
         @Nullable
@@ -527,8 +545,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
 
         @Override
-        public String getColumnText(Object element, int columnIndex)
-        {
+        public String getColumnText(Object element, int columnIndex) {
             DBDAttributeBinding binding = (DBDAttributeBinding) element;
             DBDAttributeConstraint constraint = getBindingConstraint(binding);
             switch (columnIndex) {
@@ -595,8 +612,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
         item.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 action.run();
             }
         });
@@ -664,8 +680,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }
         }
 
-        private void toggleColumnOrder(TreeItem item)
-        {
+        private void toggleColumnOrder(TreeItem item) {
             DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
             if (constraint.getOrderPosition() == 0) {
                 // Add new ordered column

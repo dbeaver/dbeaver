@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceTask;
-import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -427,6 +424,22 @@ public class JDBCUtils {
             debugColumnRead(dbResult, columnIndex, e);
             return null;
         }
+    }
+
+    @Nullable
+    public static <T extends Enum<T> & DBPEnumWithValue> T safeGetEnum(@NotNull ResultSet dbResult, @NotNull String columnName, @NotNull Class<T> type) {
+        try {
+            final int value = dbResult.getInt(columnName);
+            for (T constant : type.getEnumConstants()) {
+                if (constant.getValue() == value) {
+                    return constant;
+                }
+            }
+            log.debug("Can't convert value " + value + " to enum type " + type);
+        } catch (Exception e) {
+            debugColumnRead(dbResult, columnName, e);
+        }
+        return null;
     }
 
     @Nullable
