@@ -55,9 +55,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * DBeaver instance controller.
@@ -65,13 +63,13 @@ import java.util.Properties;
 public class DBeaverInstanceServer implements IInstanceController {
 
     private static final Log log = Log.getLog(DBeaverInstanceServer.class);
-
+    private DBPDataSourceContainer dataSourceContainer = null;
     private static final String VAR_RMI_SERVER_HOSTNAME = "java.rmi.server.hostname";
 
     private static int portNumber;
     private static Registry registry;
     private static FileChannel configFileChannel;
-
+    private static final List<File> filesToConnect = new ArrayList<>();
     private static final RMIClientSocketFactory CSF_DEFAULT = RMISocketFactory.getDefaultSocketFactory();
     private static final RMIServerSocketFactory SSF_LOCAL = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
     private static boolean localRMI = false;
@@ -91,6 +89,10 @@ public class DBeaverInstanceServer implements IInstanceController {
             for (String filePath : fileNames) {
                 File file = new File(filePath);
                 if (file.exists()) {
+                    filesToConnect.add(file);
+                    if (dataSourceContainer != null){
+                        EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
+                    }
                     EditorUtils.openExternalFileEditor(file, window);
                 } else {
                     DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
@@ -113,16 +115,21 @@ public class DBeaverInstanceServer implements IInstanceController {
             instanceConParameters,
             false,
             instanceConParameters.createNewConnection);
-
         if (dataSource == null) {
             return;
         }
-
+        if (this.dataSourceContainer == null){
+            dataSourceContainer = dataSource;
+            for (File file : filesToConnect) {
+                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
+            }
+        }
         if (instanceConParameters.openConsole) {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
                 SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSource), dataSource.getName(), "");
                 workbenchWindow.getShell().forceActive();
+
             });
         } else if (instanceConParameters.makeConnect) {
             DataSourceHandler.connectToDataSource(null, dataSource, null);
