@@ -21,4 +21,7 @@ public class HANAConstants {
 	// boolean like columns in SYS schema are stored as VARCHAR(5) with values TRUE, FALSE
     public static final String SYS_BOOLEAN_TRUE = "TRUE";
     public static final String SYS_BOOLEAN_FALSE = "FALSE";
+    
+    // pseudo schema for PUBLIC SYNONYMs
+    public static final String SCHEMA_PUBLIC = "PUBLIC";
 }

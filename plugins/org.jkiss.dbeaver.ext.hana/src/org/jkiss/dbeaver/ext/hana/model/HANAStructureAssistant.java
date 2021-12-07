@@ -166,7 +166,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                                 @NotNull
                                 @Override
                                 public String getFullyQualifiedName(DBPEvaluationContext context) {
-                                    if (objectType == HANAObjectType.SYNONYM && "PUBLIC".equals(schemaName)) {
+                                    if (objectType == HANAObjectType.SYNONYM && HANAConstants.SCHEMA_PUBLIC.equals(schemaName)) {
                                         return DBUtils.getQuotedIdentifier(dataSource, objectName);
                                     }
                                     return super.getFullyQualifiedName(context);

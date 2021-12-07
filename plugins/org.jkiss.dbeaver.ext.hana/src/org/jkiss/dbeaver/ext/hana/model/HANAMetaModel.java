@@ -54,7 +54,6 @@ public class HANAMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(HANAMetaModel.class);
     private static Pattern ERROR_POSITION_PATTERN = Pattern.compile(" \\(at pos ([0-9]+)\\)");
-    static String PUBLIC_SCHEMA_NAME = "PUBLIC";
     
     public HANAMetaModel() {
         super();
@@ -75,10 +74,10 @@ public class HANAMetaModel extends GenericMetaModel
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
         // throws exception if password or license expired
 
-        GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
+        HANASchema publicSchema = new HANASchema(dataSource, catalog, HANAConstants.SCHEMA_PUBLIC);
         int i;
         for (i = 0; i < schemas.size(); i++)
-            if (schemas.get(i).getName().compareTo(PUBLIC_SCHEMA_NAME) > 0)
+            if (schemas.get(i).getName().compareTo(HANAConstants.SCHEMA_PUBLIC) > 0)
                 break;
         schemas.add(i, publicSchema);
         return schemas;

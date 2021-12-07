@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 public class HANASchema extends GenericSchema {
+	
     public HANASchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) {
         super(dataSource, catalog, schemaName);
     }
@@ -34,5 +35,9 @@ public class HANASchema extends GenericSchema {
     @Override
     public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return HANATable.class;
+    }
+    
+    public boolean hasOnlySynonyms() { 
+    	return HANAConstants.SCHEMA_PUBLIC.equals(getName()); 
     }
 }
