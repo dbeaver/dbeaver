@@ -189,7 +189,12 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     // the same registry
                     continue;
                 }
+                // Set folder to null to avoid its creation during copy
+                DBPDataSourceFolder srcFolder = oldContainer.getFolder();
+                oldContainer.setFolder(null);
                 DBPDataSourceContainer newContainer = oldContainer.createCopy(dataSourceRegistry);
+                oldContainer.setFolder(srcFolder);
+
                 newContainer.setFolder(toFolder);
                 oldContainer.getRegistry().removeDataSource(oldContainer);
 
