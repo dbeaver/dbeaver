@@ -372,8 +372,17 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
-            sql.append("SELECT o.*,ep.value as description FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
+            sql.append("SELECT o.*,ep.value as description");
+            if (SQLServerUtils.supportsExternalTables(session.getDataSource())) {
+                sql.append(",et.location,eds.name as data_source_name, eff.name as file_format_name");
+            }
+            sql.append(" FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=o.object_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
+            if (SQLServerUtils.supportsExternalTables(session.getDataSource())) {
+                sql.append("\nLEFT JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "external_tables")).append(" et ON et.object_id=o.object_id");
+                sql.append("\nLEFT JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "external_data_sources")).append(" eds ON eds.data_source_id=et.data_source_id");
+                sql.append("\nLEFT JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "external_file_formats")).append(" eff ON eff.file_format_id=et.file_format_id");
+            }
             sql.append("\nWHERE o.type IN ('U','S','V','TT') AND o.schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND o.name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
@@ -406,6 +415,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         {
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
             if (SQLServerObjectType.U.name().equals(type) || SQLServerObjectType.S.name().equals(type)) {
+                if (CommonUtils.isNotEmpty(JDBCUtils.safeGetString(dbResult, "location"))) {
+                    return new SQLServerExternalTable(owner, dbResult);
+                }
                 return new SQLServerTable(owner, dbResult);
             } else if (SQLServerObjectType.TT.name().equals(type)) {
                 return new SQLServerTableType(owner, dbResult);
