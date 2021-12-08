@@ -699,11 +699,7 @@ public final class SQLUtils {
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
-                    if (!sqlDialect.isQuotedString(strValue)) {
-                        return sqlDialect.getQuotedString(strValue);
-                    } else {
-                        return strValue;
-                    }
+                    return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
             case BOOLEAN:
