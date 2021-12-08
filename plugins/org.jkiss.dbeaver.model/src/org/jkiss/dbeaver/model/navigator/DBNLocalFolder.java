@@ -30,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -212,10 +213,18 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void dropNodes(Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
-            if (node instanceof DBNDataSource) {
-                ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
-            } else if (node instanceof DBNLocalFolder) {
-                ((DBNLocalFolder) node).getFolder().setParent(this.getFolder());
+            if (node.getOwnerProject() == this.getOwnerProject()) {
+                if (node instanceof DBNDataSource) {
+                    ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
+                } else if (node instanceof DBNLocalFolder) {
+                    ((DBNLocalFolder) node).getFolder().setParent(this.getFolder());
+                }
+            } else {
+                if (node instanceof DBNDataSource) {
+                    getParentNode().moveNodesToFolder(Collections.singletonList(node), this.getFolder());
+                } else if (node instanceof DBNLocalFolder) {
+                    log.error("Can't move nodes between projects");
+                }
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);
