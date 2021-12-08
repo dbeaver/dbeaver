@@ -175,6 +175,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+        moveNodesToFolder(nodes, null);
+    }
+
+    public void moveNodesToFolder(Collection<DBNNode> nodes, DBPDataSourceFolder toFolder) throws DBException {
         Set<DBPDataSourceRegistry> registryToRefresh = new LinkedHashSet<>();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
@@ -186,6 +190,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     continue;
                 }
                 DBPDataSourceContainer newContainer = oldContainer.createCopy(dataSourceRegistry);
+                newContainer.setFolder(toFolder);
                 oldContainer.getRegistry().removeDataSource(oldContainer);
 
                 dataSourceRegistry.addDataSource(newContainer);
