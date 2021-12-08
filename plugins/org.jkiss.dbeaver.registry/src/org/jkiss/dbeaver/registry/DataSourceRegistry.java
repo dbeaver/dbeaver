@@ -649,19 +649,21 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             }
         }
         if (!modernFormat) {
-            try {
-                // Logacy way (search config.xml in project folder)
-                List<Path> mdFiles = Files.list(project.getAbsolutePath())
-                    .filter(path -> !Files.isDirectory(path) && Files.exists(path))
-                    .collect(Collectors.toList());
-                for (Path res : mdFiles) {
-                    String fileName = res.getFileName().toString();
-                    if (fileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && fileName.endsWith(LEGACY_CONFIG_FILE_EXT)) {
-                        loadDataSources(res, refresh, false, parseResults);
+            if (Files.exists(project.getAbsolutePath())) {
+                try {
+                    // Logacy way (search config.xml in project folder)
+                    List<Path> mdFiles = Files.list(project.getAbsolutePath())
+                        .filter(path -> !Files.isDirectory(path) && Files.exists(path))
+                        .collect(Collectors.toList());
+                    for (Path res : mdFiles) {
+                        String fileName = res.getFileName().toString();
+                        if (fileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && fileName.endsWith(LEGACY_CONFIG_FILE_EXT)) {
+                            loadDataSources(res, refresh, false, parseResults);
+                        }
                     }
+                } catch (IOException e) {
+                    log.error("Error during legacy project files read", e);
                 }
-            } catch (IOException e) {
-                log.error("Error during legacy project files read", e);
             }
             if (!storages.isEmpty()) {
                 // Save config immediately in the new format
