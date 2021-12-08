@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
 
@@ -40,4 +42,12 @@ public class ExasolGeometryValueHandler extends GISGeometryValueHandler {
         statement.setString(paramIndex, value.toString()); // Just convert to string for Exasol (doesn't work with bytes)
     }
 
+	@NotNull
+	@Override
+	public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+		if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
+			return value.toString();
+		}
+		return super.getValueDisplayString(column, value, format);
+	}
 }
