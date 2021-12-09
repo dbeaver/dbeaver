@@ -41,6 +41,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     public enum NodePathType {
         resource,
+        path,
         folder,
         database,
         ext,
@@ -266,6 +267,10 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             }
             return o1.getName().compareToIgnoreCase(o2.getName());
         });
+    }
+
+    protected void fireNodeEvent(final DBNEvent event) {
+        getModel().fireNodeEvent(event);
     }
 
     public static Class<? extends DBSObject> getFolderChildrenClass(DBXTreeFolder meta) {

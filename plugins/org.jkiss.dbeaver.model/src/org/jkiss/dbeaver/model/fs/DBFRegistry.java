@@ -17,18 +17,11 @@
 
 package org.jkiss.dbeaver.model.fs;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
 /**
- * Virtual file system provider
+ * Virtual file system registry
  */
-public interface DBFFileSystemProvider extends DBPObject {
+public interface DBFRegistry {
 
-    DBFVirtualFileSystem[] getAvailableFileSystems(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBASessionContext sessionContext);
+    DBFFileSystemDescriptor[] getFileSystemProviders();
 
 }
