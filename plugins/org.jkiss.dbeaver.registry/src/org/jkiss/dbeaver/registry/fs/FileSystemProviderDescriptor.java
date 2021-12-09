@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.registry.fs;
 
-import com.sun.istack.NotNull;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
