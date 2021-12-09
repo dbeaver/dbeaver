@@ -39,6 +39,7 @@ public interface SQLCompletionContext {
 
     DBPDataSource getDataSource();
 
+    @Nullable
     DBCExecutionContext getExecutionContext();
 
     SQLSyntaxManager getSyntaxManager();
