@@ -219,7 +219,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                    DBSObject selectedObject = getActiveInstanceObject();
                     if (selectedObject != null) {
                         makeProposalsFromChildren(selectedObject, null, false, parameters);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -246,7 +246,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
                     if (request.getContext().getExecutionContext() != null) {
-                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                        DBSObject selectedObject = getActiveInstanceObject();
                         if (selectedObject instanceof DBSObjectContainer) {
                             sc = (DBSObjectContainer) selectedObject;
                         }
@@ -407,11 +407,20 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         filterProposals(dataSource);
     }
 
+    @Nullable
+    private DBSObject getActiveInstanceObject() {
+        DBCExecutionContext context = request.getContext().getExecutionContext();
+        if (context == null) {
+            return null;
+        }
+        return DBUtils.getActiveInstanceObject(context);
+    }
+
     private void makeProceduresProposals(DBPDataSource dataSource, String wordPart, boolean exec) throws DBException {
         // Add procedures/functions for column proposals
         DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
         DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+        DBSObject selectedObject = getActiveInstanceObject();
         if (selectedObject instanceof DBSObjectContainer) {
             if (request.getContext().isSearchGlobally() && !request.getWordDetector().containsSeparator(wordPart)) {
                 // Do not send information about the scheme to the assistant
@@ -1261,7 +1270,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                        DBSObject selectedObject = getActiveInstanceObject();
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
                             isSingleObject = false;
