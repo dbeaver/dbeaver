@@ -41,16 +41,18 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject {
     private final long id;
     private final String name;
     private final String description;
+    private final PostgreJobClass jobClass;
     private final boolean enabled;
 
     private final StepCache stepCache = new StepCache();
     private final ScheduleCache scheduleCache = new ScheduleCache();
 
-    public PostgreJob(@NotNull PostgreDatabase database, @NotNull ResultSet dbResult) {
+    public PostgreJob(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull ResultSet dbResult) throws DBException {
         this.database = database;
         this.id = JDBCUtils.safeGetLong(dbResult, "jobid");
         this.name = JDBCUtils.safeGetString(dbResult, "jobname");
         this.description = JDBCUtils.safeGetString(dbResult, "jobdesc");
+        this.jobClass = database.getJobClass(monitor, JDBCUtils.safeGetLong(dbResult, "jobjclid"));
         this.enabled = JDBCUtils.safeGetBoolean(dbResult, "jobenabled");
     }
 
@@ -73,7 +75,13 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject {
         return description;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
+    public PostgreJobClass getJobClass() {
+        return jobClass;
+    }
+
+    @Property(viewable = true, order = 4)
     public boolean isEnabled() {
         return enabled;
     }

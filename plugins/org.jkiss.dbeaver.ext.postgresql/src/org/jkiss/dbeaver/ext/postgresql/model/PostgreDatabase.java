@@ -97,6 +97,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
     public final JobCache jobCache = new JobCache();
+    public final JobClassCache jobClassCache = new JobClassCache();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
@@ -583,6 +584,22 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return jobCache.getAllObjects(monitor, this);
     }
 
+    @Association
+    public Collection<PostgreJobClass> getJobClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        return jobClassCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public PostgreJobClass getJobClass(@NotNull DBRProgressMonitor monitor, long id) throws DBException {
+        for (PostgreJobClass cls : getJobClasses(monitor)) {
+            if (cls.getObjectId() == id) {
+                return cls;
+            }
+        }
+        return null;
+    }
+
     ///////////////////////////////////////////////
     // Object container
 
@@ -781,6 +798,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         collationCache.clearCache();
         tablespaceCache.clearCache();
         jobCache.clearCache();
+        jobClassCache.clearCache();
         schemaCache.clearCache();
         cacheDataTypes(monitor, true);
 
@@ -1221,8 +1239,22 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         @Nullable
         @Override
-        protected PostgreJob fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) {
-            return new PostgreJob(database, dbResult);
+        protected PostgreJob fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) throws DBException {
+            return new PostgreJob(session.getProgressMonitor(), database, dbResult);
+        }
+    }
+
+    public static class JobClassCache extends PostgreDatabaseJDBCObjectCache<PostgreJobClass> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database) throws SQLException {
+            return session.prepareStatement("SELECT * FROM pgagent.pga_jobclass");
+        }
+
+        @Nullable
+        @Override
+        protected PostgreJobClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) {
+            return new PostgreJobClass(database, dbResult);
         }
     }
 

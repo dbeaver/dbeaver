@@ -261,6 +261,9 @@
                             </folder>
                         </items>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobClass" label="%tree.job.classes.node.name">
+                        <items label="%tree.job.class.node.name" path="class" property="defaultInstance.jobClasses"/>
+                    </folder>
                 </folder>
 
                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip">
