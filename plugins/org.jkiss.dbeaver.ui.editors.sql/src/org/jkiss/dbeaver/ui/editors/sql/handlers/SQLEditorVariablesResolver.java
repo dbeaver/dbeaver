@@ -61,7 +61,7 @@ public class SQLEditorVariablesResolver extends DataSourceVariableResolver {
             case SQLPreferenceConstants.VAR_CONNECTION_NAME:
                 return dataSourceContainer == null ? "none" : dataSourceContainer.getName();
             case SQLPreferenceConstants.VAR_DRIVER_NAME:
-                return dataSourceContainer.getDriver() == null ? "?" : dataSourceContainer.getDriver().getFullName();
+                return dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName();
             case SQLPreferenceConstants.VAR_ACTIVE_DATABASE:
                 return getContextInfo(SQLPreferenceConstants.VAR_ACTIVE_DATABASE);
             case SQLPreferenceConstants.VAR_ACTIVE_SCHEMA:
