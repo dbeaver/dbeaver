@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -403,8 +405,31 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     );
                 }
             }
+            //TODO Add preference setting for hippie engine
+            makeProposalFromHippie();
         }
         filterProposals(dataSource);
+    }
+
+    private void makeProposalFromHippie() {
+        HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor();
+        ICompletionProposal[] iCompletionProposals = hippieProposalProcessor.computeCompletionProposals(request.getDocument(), request.getDocumentOffset());
+        for (ICompletionProposal iCompletionProposal : iCompletionProposals) {
+            iCompletionProposal.getDisplayString();
+            if (!hasProposal(proposals, iCompletionProposal.getDisplayString())) {
+                proposals.add(request.getContext().createProposal(
+                    request,
+                    iCompletionProposal.getDisplayString(),
+                    iCompletionProposal.getDisplayString(), // replacementString
+                    iCompletionProposal.getDisplayString().length(), //cursorPosition the position of the cursor following the insert
+                    null, //image to display
+                    //new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+                    DBPKeywordType.LITERAL,
+                    iCompletionProposal.getAdditionalProposalInfo(),
+                    null,
+                    Collections.emptyMap()));
+            }
+        }
     }
 
     private void makeProceduresProposals(DBPDataSource dataSource, String wordPart, boolean exec) throws DBException {
