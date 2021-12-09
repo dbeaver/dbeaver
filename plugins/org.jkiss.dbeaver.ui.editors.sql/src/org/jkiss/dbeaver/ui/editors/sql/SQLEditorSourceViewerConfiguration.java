@@ -38,6 +38,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.texteditor.HippieProposalProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -184,6 +185,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
             assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
             assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
+            assistant.addContentAssistProcessor(new HippieProposalProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
         } catch (Throwable e) {
             // addContentAssistProcessor API was added in 4.12
             // Let's support older Eclipse versions
