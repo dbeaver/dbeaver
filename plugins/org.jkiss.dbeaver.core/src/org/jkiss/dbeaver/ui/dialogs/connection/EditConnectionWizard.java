@@ -222,7 +222,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
         // Check locked datasources
         if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (dataSource.getProject().getSecureStorage().useSecurePreferences() && !isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+            if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
                 if (!checkLockPassword()) {
                     return false;
                 }
