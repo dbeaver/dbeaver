@@ -1,17 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2005, 2016 IBM Corporation and others.
- *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
- * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Genady Beryozkin, me@genady.org - #getSuggestions implementation copied from HippieCompleteAction
- *******************************************************************************/
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2021 DBeaver Corp and others
@@ -33,9 +19,9 @@ package org.jkiss.dbeaver.model.sql.completion.hippie;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
-import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
+
+
+
 import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
@@ -53,14 +39,15 @@ public final class HippieProposalProcessor {
 
     private static final ICompletionProposal[] NO_PROPOSALS = new ICompletionProposal[0];
     private static final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
+    private final HippieCompletionEngine fEngine = new HippieCompletionEngine();
 
-    private static final class Proposal implements ICompletionProposal, ICompletionProposalExtension, ICompletionProposalExtension2, ICompletionProposalExtension3, ICompletionProposalExtension4,
-        ICompletionProposalExtension6, ICompletionProposalExtension7 {
+    private static final class Proposal implements ICompletionProposal, ICompletionProposalExtension, ICompletionProposalExtension2, ICompletionProposalExtension3 {
+
 
         private final String fString;
         private final String fPrefix;
         private final int fOffset;
-        private StyledString fDisplayString;
+
 
         public Proposal(String string, String prefix, int offset) {
             fString = string;
@@ -86,11 +73,6 @@ public final class HippieProposalProcessor {
         @Override
         public String getDisplayString() {
             return fPrefix + fString;
-        }
-
-        @Override
-        public Image getImage() {
-            return null;
         }
 
         @Override
@@ -128,12 +110,13 @@ public final class HippieProposalProcessor {
             apply(viewer != null ? viewer.getDocument() : null, trigger, offset);
         }
 
-        @Override
         public void selected(ITextViewer viewer, boolean smartToggle) {
+            //empty block
         }
 
         @Override
         public void unselected(ITextViewer viewer) {
+            //empty block
         }
 
         @Override
@@ -161,35 +144,7 @@ public final class HippieProposalProcessor {
             return fOffset - fPrefix.length();
         }
 
-        @Override
-        public boolean isAutoInsertable() {
-            return true;
-        }
-
-        @Override
-        public StyledString getStyledDisplayString() {
-            if (fDisplayString == null) {
-                fDisplayString = new StyledString(getDisplayString());
-            }
-            return fDisplayString;
-        }
-
-        @Override
-        public StyledString getStyledDisplayString(IDocument document, int offset, BoldStylerProvider boldStylerProvider) {
-            StyledString styledDisplayString = new StyledString();
-            styledDisplayString.append(getStyledDisplayString());
-
-            int start = getPrefixCompletionStart(document, offset);
-            int patternLength = offset - start;
-            if (patternLength > 0) {
-                styledDisplayString.setStyle(0, patternLength, boldStylerProvider.getBoldStyler());
-            }
-            return styledDisplayString;
-        }
-
     }
-
-    private final HippieCompletionEngine fEngine = new HippieCompletionEngine();
 
     /**
      * Creates a new hippie completion proposal computer.

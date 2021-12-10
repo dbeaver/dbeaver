@@ -21,7 +21,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
+import org.jkiss.dbeaver.model.sql.completion.hippie.ICompletionProposal;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -425,7 +426,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     null, //image to display
                     //new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
                     DBPKeywordType.LITERAL,
-                    iCompletionProposal.getAdditionalProposalInfo(),
+                    null,
                     null,
                     Collections.emptyMap()));
             }
