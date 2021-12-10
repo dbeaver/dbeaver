@@ -62,7 +62,7 @@ public final class HippieCompletionEngine {
     // unicode identifier part
 //	private static final String COMPLETION_WORD_REGEX= "[\\p{L}[\\p{Mn}[\\p{Pc}[\\p{Nd}[\\p{Nl}]]]]]+"; //$NON-NLS-1$
     // java identifier part (unicode id part + currency symbols)
-    private static final String COMPLETION_WORD_REGEX = "[\\p{L}[\\p{Mn}[\\p{Pc}[\\p{Nd}[\\p{Nl}[\\p{Sc}]]]]]]+"; //$NON-NLS-1$
+    private static final String COMPLETION_WORD_REGEX = "[\\p{L}\\p{Mn}\\p{Pc}\\p{Nd}\\p{Nl}\\p{Sc}]+"; //$NON-NLS-1$
     /**
      * The pre-compiled word pattern.
      *
@@ -151,11 +151,9 @@ public final class HippieCompletionEngine {
      *                        is good for searching in other documents.
      * @return a {@link List} of possible completions (as {@link String}s),
      * excluding the common prefix
-     * @throws BadLocationException if there is some error scanning the
-     *                              document.
      */
     public List<String> getCompletionsForward(IDocument document, CharSequence prefix,
-                                              int firstPosition, boolean currentWordLast) throws BadLocationException {
+                                              int firstPosition, boolean currentWordLast) {
         ArrayList<String> res = new ArrayList<>();
         for (Iterator<String> it = getForwardIterator(document, prefix, firstPosition, currentWordLast); it.hasNext(); ) {
             res.add(it.next());
@@ -174,9 +172,8 @@ public final class HippieCompletionEngine {
      * @return a {@link List} of possible completions ({@link String}s)
      * from the caret position to the beginning of the document.
      * The empty suggestion is not included in the results.
-     * @throws BadLocationException if any error occurs
      */
-    public List<String> getCompletionsBackwards(IDocument document, CharSequence prefix, int firstPosition) throws BadLocationException {
+    public List<String> getCompletionsBackwards(IDocument document, CharSequence prefix, int firstPosition) {
         ArrayList<String> res = new ArrayList<>();
         for (Iterator<String> it = getBackwardIterator(document, prefix, firstPosition); it.hasNext(); ) {
             res.add(it.next());
@@ -473,7 +470,7 @@ public final class HippieCompletionEngine {
      *
      * @since 3.6
      */
-    private abstract class HippieCompletionIterator implements Iterator<String> {
+    private abstract static class HippieCompletionIterator implements Iterator<String> {
 
         /**
          * The document to be scanned
@@ -598,7 +595,7 @@ public final class HippieCompletionEngine {
          * <code>true</code> is good for searching in the currently open document and
          * <code>false</code> is good for searching in other documents.
          */
-        private boolean fCurrentWordLast;
+        private final boolean fCurrentWordLast;
 
 
         /**
@@ -672,7 +669,6 @@ public final class HippieCompletionEngine {
 
             fNext = null;
             fHasNext = false;
-            return;
         }
 
         /**

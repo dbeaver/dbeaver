@@ -36,6 +36,7 @@ import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,8 +124,8 @@ public final class HippieProposalProcessor {
         }
 
         @Override
-        public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
-            apply(viewer.getDocument(), trigger, offset);
+        public void apply(@Nullable ITextViewer viewer, char trigger, int stateMask, int offset) {
+            apply(viewer != null ? viewer.getDocument() : null, trigger, offset);
         }
 
         @Override
@@ -208,7 +209,7 @@ public final class HippieProposalProcessor {
                     result.add(createProposal(string, prefix, offset));
             }
 
-            return result.toArray(new ICompletionProposal[result.size()]);
+            return result.toArray(new ICompletionProposal[0]);
 
         } catch (BadLocationException x) {
             // ignore and return no proposals
@@ -257,9 +258,8 @@ public final class HippieProposalProcessor {
      * @param document the viewer
      * @param prefix   the completion prefix
      * @return all possible completions that were found in the current document
-     * @throws BadLocationException if accessing the document fails
      */
-    private ArrayList<String> createSuggestionsFromOpenDocument(IDocument document, int offset, String prefix) throws BadLocationException {
+    private ArrayList<String> createSuggestionsFromOpenDocument(IDocument document, int offset, String prefix) {
         ArrayList<String> completions = new ArrayList<>();
         completions.addAll(fEngine.getCompletionsBackwards(document, prefix, offset));
         completions.addAll(fEngine.getCompletionsForward(document, prefix, offset - prefix.length(), true));
