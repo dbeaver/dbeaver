@@ -76,19 +76,19 @@ import java.util.List;
 /**
  * DBeaver UI core
  */
-public class DBeaverUI implements DBPPlatformUI {
+public class DesktopUI implements DBPPlatformUI {
 
-    private static final Log log = Log.getLog(DBeaverUI.class);
+    private static final Log log = Log.getLog(DesktopUI.class);
 
-    private static DBeaverUI instance;
+    private static DesktopUI instance;
 
     private TrayIconHandler trayItem;
     private final List<IDisposable> globalDisposables = new ArrayList<>();
     private WorkbenchContextListener contextListener;
 
-    public static DBeaverUI getInstance() {
+    public static DesktopUI getInstance() {
         if (instance == null) {
-            instance = new DBeaverUI();
+            instance = new DesktopUI();
             instance.initialize();
         }
         return instance;
@@ -124,7 +124,7 @@ public class DBeaverUI implements DBPPlatformUI {
     private void initialize() {
         this.trayItem = new TrayIconHandler();
 
-        if (DBeaverCore.isStandalone()) {
+        if (DesktopPlatform.isStandalone()) {
             //Policy.setErrorSupportProvider(new ApplicationErrorSupportProvider());
         }
 
@@ -228,7 +228,7 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message) {
-        return showError(title, null, new Status(IStatus.ERROR, DBeaverCore.PLUGIN_ID, message));
+        return showError(title, null, new Status(IStatus.ERROR, DesktopPlatform.PLUGIN_ID, message));
     }
 
     @Override
@@ -422,7 +422,7 @@ public class DBeaverUI implements DBPPlatformUI {
     @Override
     public void refreshPartState(Object part) {
         if (part instanceof IWorkbenchPart) {
-            UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
+            UIUtils.asyncExec(() -> DesktopUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
         }
     }
 

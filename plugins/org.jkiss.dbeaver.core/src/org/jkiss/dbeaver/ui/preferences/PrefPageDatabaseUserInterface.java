@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -67,7 +67,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Button notificationsEnabled;
     private Spinner notificationsCloseDelay;
 
-    private boolean isStandalone = DBeaverCore.isStandalone();
+    private boolean isStandalone = DesktopPlatform.isStandalone();
 
     public PrefPageDatabaseUserInterface()
     {
