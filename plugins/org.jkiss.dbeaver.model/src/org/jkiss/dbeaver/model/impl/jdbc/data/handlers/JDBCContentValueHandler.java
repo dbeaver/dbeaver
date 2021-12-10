@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -175,6 +176,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
                     return new JDBCContentBytes(session.getExecutionContext(), (String) object);
+                case Types.SQLXML:
+                    DBCExecutionContext context = session.getExecutionContext();
+                    return new JDBCContentXML(
+                        context,
+                        new JDBCSQLXMLImpl(new JDBCContentChars(context, (String) object))
+                    );
                 default:
                     // String by default
                     return new JDBCContentChars(session.getExecutionContext(), (String) object);
