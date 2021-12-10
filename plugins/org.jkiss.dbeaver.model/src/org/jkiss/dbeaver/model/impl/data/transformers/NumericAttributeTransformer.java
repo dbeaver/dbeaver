@@ -123,9 +123,8 @@ public class NumericAttributeTransformer implements DBDAttributeTransformer {
             } catch (NumberFormatException e) {
                 if (lenient) {
                     log.trace("Error converting string '" + value + "' to " + type, e);
-                    return value;
                 }
-                throw e;
+                return value;
             }
         }
     }
