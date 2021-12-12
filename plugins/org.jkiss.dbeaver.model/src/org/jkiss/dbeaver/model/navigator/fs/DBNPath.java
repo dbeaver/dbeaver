@@ -29,10 +29,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -41,7 +44,7 @@ import java.util.*;
 /**
  * DBNResource
  */
-public class DBNPath extends DBNNode
+public class DBNPath extends DBNNode implements DBNLazyNode
 {
     private static final Log log = Log.getLog(DBNPath.class);
 
@@ -78,7 +81,29 @@ public class DBNPath extends DBNNode
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return path.getFileName().toString();
+        return getFileName();
+    }
+
+    // Path's file name may be null (e.g. forFS root folder)
+    // Then try to extract it from URI or from toString
+    private String getFileName() {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            String virtName = null;
+            URI uri = path.toUri();
+            if (uri != null) {
+                String uriPath = uri.getPath();
+                if (!CommonUtils.isEmpty(uriPath)) {
+                    virtName = uriPath;
+                }
+            }
+            if (virtName == null) {
+                virtName = path.toString();
+            }
+            return CommonUtils.removeTrailingSlash(
+                CommonUtils.removeLeadingSlash(virtName));
+        }
+        return fileName.toString();
     }
 
     @Override
@@ -94,7 +119,7 @@ public class DBNPath extends DBNNode
 //        } catch (IOException e) {
 //            log.debug(e);
 //        }
-        return DBIcon.TREE_FILE;
+        return allowsChildren() ? DBIcon.TREE_FOLDER : DBIcon.TREE_FILE;
     }
 
     @Override
@@ -190,7 +215,7 @@ public class DBNPath extends DBNNode
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + path.getFileName().toString();
+        return getParentNode().getNodeItemPath() + "/" + getFileName();
     }
 
     @Override
@@ -303,7 +328,7 @@ public class DBNPath extends DBNNode
 
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() {
-        return path == null ? null : DATE_FORMAT.format(path.toFile().lastModified());
+        return null;//path == null ? null : DATE_FORMAT.format(path.toFile().lastModified());
     }
 
     protected boolean isResourceExists() {
@@ -323,4 +348,8 @@ public class DBNPath extends DBNNode
         return path == null ? super.toString() : path.toString();
     }
 
+    @Override
+    public boolean needsInitialization() {
+        return children == null;
+    }
 }

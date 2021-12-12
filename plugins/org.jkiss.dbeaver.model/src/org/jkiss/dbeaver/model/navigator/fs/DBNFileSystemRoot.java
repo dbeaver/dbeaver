@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -41,7 +42,7 @@ public class DBNFileSystemRoot extends DBNNode {
 
     private DBNFileSystem[] children;
 
-    public DBNFileSystemRoot(DBNNode parentNode) {
+    public DBNFileSystemRoot(DBNProject parentNode) {
         super(parentNode);
     }
 

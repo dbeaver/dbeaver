@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -34,7 +35,7 @@ import java.util.*;
 /**
  * DBNFileSystem
  */
-public class DBNFileSystem extends DBNNode
+public class DBNFileSystem extends DBNNode implements DBNLazyNode
 {
     private static final Log log = Log.getLog(DBNFileSystem.class);
 
@@ -77,7 +78,7 @@ public class DBNFileSystem extends DBNNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FILE;
+        return DBIcon.TREE_FOLDER;
     }
 
     @Override
@@ -156,4 +157,8 @@ public class DBNFileSystem extends DBNNode
         return fileSystem.getFileSystemDisplayName();
     }
 
+    @Override
+    public boolean needsInitialization() {
+        return children == null;
+    }
 }
