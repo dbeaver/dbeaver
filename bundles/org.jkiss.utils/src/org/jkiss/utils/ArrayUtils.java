@@ -270,4 +270,16 @@ public class ArrayUtils {
     public static <T> T[] toArray(Class<T> type, Collection<? extends T> list) {
         return list.toArray((T[]) Array.newInstance(type, list.size()));
     }
+
+    @Nullable
+    public static boolean[] unbox(@Nullable Boolean[] source) {
+        if (source == null) {
+            return null;
+        }
+        final boolean[] result = new boolean[source.length];
+        for (int i = 0; i < source.length; i++) {
+            result[i] = source[i];
+        }
+        return result;
+    }
 }

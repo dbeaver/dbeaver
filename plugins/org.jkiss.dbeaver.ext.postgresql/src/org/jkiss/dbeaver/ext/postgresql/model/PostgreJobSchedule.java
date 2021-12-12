@@ -18,29 +18,33 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Arrays;
+import java.time.Instant;
 
-public class PostgreJobSchedule implements PostgreObject {
+public class PostgreJobSchedule implements PostgreObject, DBPNamedObject2, DBPRefreshableObject, DBPSaveableObject {
     private final PostgreJob job;
     private final long id;
-    private final String name;
-    private final String description;
-    private final boolean enabled;
+    private String name;
+    private String description;
+    private boolean enabled;
     private final Timestamp start;
     private final Timestamp end;
-    private final Boolean[] minutes;
-    private final Boolean[] hours;
-    private final Boolean[] weekDays;
-    private final Boolean[] monthDays;
-    private final Boolean[] months;
+    private final boolean[] minutes;
+    private final boolean[] hours;
+    private final boolean[] weekDays;
+    private final boolean[] monthDays;
+    private final boolean[] months;
+    private boolean persisted;
 
     public PostgreJobSchedule(@NotNull PostgreJob job, ResultSet dbResult) {
         this.job = job;
@@ -50,11 +54,28 @@ public class PostgreJobSchedule implements PostgreObject {
         this.enabled = JDBCUtils.safeGetBoolean(dbResult, "jscenabled");
         this.start = JDBCUtils.safeGetTimestamp(dbResult, "jscstart");
         this.end = JDBCUtils.safeGetTimestamp(dbResult, "jscend");
-        this.minutes = JDBCUtils.safeGetArray(dbResult, "jscminutes");
-        this.hours = JDBCUtils.safeGetArray(dbResult, "jschours");
-        this.weekDays = JDBCUtils.safeGetArray(dbResult, "jscweekdays");
-        this.monthDays = JDBCUtils.safeGetArray(dbResult, "jscmonthdays");
-        this.months = JDBCUtils.safeGetArray(dbResult, "jscmonths");
+        this.minutes = ArrayUtils.unbox(JDBCUtils.safeGetArray(dbResult, "jscminutes"));
+        this.hours = ArrayUtils.unbox(JDBCUtils.safeGetArray(dbResult, "jschours"));
+        this.weekDays = ArrayUtils.unbox(JDBCUtils.safeGetArray(dbResult, "jscweekdays"));
+        this.monthDays = ArrayUtils.unbox(JDBCUtils.safeGetArray(dbResult, "jscmonthdays"));
+        this.months = ArrayUtils.unbox(JDBCUtils.safeGetArray(dbResult, "jscmonths"));
+        this.persisted = true;
+    }
+
+    public PostgreJobSchedule(@NotNull PostgreJob job, @NotNull String name) {
+        this.job = job;
+        this.id = 0;
+        this.name = name;
+        this.description = "";
+        this.enabled = true;
+        this.start = Timestamp.from(Instant.now());
+        this.end = null;
+        this.minutes = new boolean[60];
+        this.hours = new boolean[24];
+        this.weekDays = new boolean[7];
+        this.monthDays = new boolean[32];
+        this.months = new boolean[12];
+        this.persisted = false;
     }
 
     @Override
@@ -64,73 +85,86 @@ public class PostgreJobSchedule implements PostgreObject {
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, editable = true, updatable = true, order = 1)
     public String getName() {
         return name;
     }
 
-    @Nullable
     @Override
-    @Property(viewable = true, order = 2)
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 2)
     public String getDescription() {
         return description;
     }
 
-    @Property(viewable = true, order = 3)
+    public void setDescription(@NotNull String description) {
+        this.description = description;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
     public boolean isEnabled() {
         return enabled;
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @NotNull
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 4, specific = true)
     public Timestamp getStart() {
         return start;
     }
 
-    @NotNull
-    @Property(viewable = true, order = 5)
+    @Nullable
+    @Property(viewable = true, order = 5, specific = true)
     public Timestamp getEnd() {
         return end;
     }
 
     @NotNull
-    @Property(order = 10, category = DBConstants.CAT_STATISTICS, valueRenderer = ArrayValueRenderer.class)
-    public Boolean[] getMinutes() {
+    public boolean[] getMinutes() {
         return minutes;
     }
 
     @NotNull
-    @Property(order = 11, category = DBConstants.CAT_STATISTICS, valueRenderer = ArrayValueRenderer.class)
-    public Boolean[] getHours() {
+    public boolean[] getHours() {
         return hours;
     }
 
     @NotNull
-    @Property(order = 12, category = DBConstants.CAT_STATISTICS, valueRenderer = ArrayValueRenderer.class)
-    public Boolean[] getWeekDays() {
+    public boolean[] getWeekDays() {
         return weekDays;
     }
 
     @NotNull
-    @Property(order = 13, category = DBConstants.CAT_STATISTICS, valueRenderer = ArrayValueRenderer.class)
-    public Boolean[] getMonthDays() {
+    public boolean[] getMonthDays() {
         return monthDays;
     }
 
     @NotNull
-    @Property(order = 14, category = DBConstants.CAT_STATISTICS, valueRenderer = ArrayValueRenderer.class)
-    public Boolean[] getMonths() {
+    public boolean[] getMonths() {
         return months;
     }
 
     @Override
     public boolean isPersisted() {
-        return true;
+        return persisted;
     }
 
-    @Nullable
     @Override
-    public DBSObject getParentObject() {
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
+    }
+
+    @NotNull
+    @Override
+    public PostgreJob getParentObject() {
         return job;
     }
 
@@ -146,10 +180,9 @@ public class PostgreJobSchedule implements PostgreObject {
         return job.getDatabase();
     }
 
-    public static class ArrayValueRenderer implements IPropertyValueTransformer<Object, Object> {
-        @Override
-        public Object transform(Object object, Object value) throws IllegalArgumentException {
-            return Arrays.toString((Object[]) value);
-        }
+    @Nullable
+    @Override
+    public PostgreJobSchedule refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return job.getScheduleCache().refreshObject(monitor, job, this);
     }
 }

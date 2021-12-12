@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
   -->
-  
+
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.postgresql.serverType" name="PostgreSQL Server Type" schema="schema/org.jkiss.dbeaver.postgresql.serverType.exsd"/>
@@ -587,6 +587,8 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTablespaceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDataTypeManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreJobScheduleManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreJobStepManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

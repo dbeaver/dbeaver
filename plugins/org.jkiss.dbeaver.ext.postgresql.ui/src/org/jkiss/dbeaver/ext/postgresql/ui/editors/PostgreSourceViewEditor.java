@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,7 +44,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     protected boolean isReadOnly()
     {
         PostgreScriptObject sourceObject = getSourceObject();
-        if (sourceObject instanceof PostgreProcedure || sourceObject instanceof PostgreTrigger || sourceObject instanceof PostgreViewBase) {
+        if (sourceObject instanceof PostgreProcedure || sourceObject instanceof PostgreTrigger || sourceObject instanceof PostgreViewBase || sourceObject instanceof PostgreJobStep) {
             return false;
         }
         return true;

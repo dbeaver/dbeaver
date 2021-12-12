@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,7 +37,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PostgreJob implements PostgreObject, DBPStatefulObject {
+public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject {
     private final PostgreDatabase database;
     private final long id;
     private final String name;
@@ -92,10 +93,20 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject {
         return stepCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
+    public StepCache getStepCache() {
+        return stepCache;
+    }
+
     @Association
     @NotNull
     public List<PostgreJobSchedule> getSchedules(@NotNull DBRProgressMonitor monitor) throws DBException {
         return scheduleCache.getAllObjects(monitor, this);
+    }
+
+    @NotNull
+    public ScheduleCache getScheduleCache() {
+        return scheduleCache;
     }
 
     @Override
@@ -129,16 +140,30 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject {
 
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) {
-        stepCache.clearCache();
-        scheduleCache.clearCache();
+        // not implemented
     }
 
-    private static class StepCache extends JDBCObjectCache<PostgreJob, PostgreJobStep> {
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        stepCache.clearCache();
+        scheduleCache.clearCache();
+        return this;
+    }
+
+    public static class StepCache extends JDBCObjectLookupCache<PostgreJob, PostgreJobStep> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreJob job) throws SQLException {
-            final JDBCPreparedStatement stmt = session.prepareStatement("SELECT * FROM pgagent.pga_jobstep WHERE jstjobid=?");
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreJob job, @Nullable PostgreJobStep step, @Nullable String objectName) throws SQLException {
+            final StringBuilder sql = new StringBuilder("SELECT * FROM pgagent.pga_jobstep WHERE jstjobid=?");
+            if (step != null) {
+                sql.append(" AND jstid=?");
+            }
+            final JDBCPreparedStatement stmt = session.prepareStatement(sql.toString());
             stmt.setLong(1, job.getObjectId());
+            if (step != null) {
+                stmt.setLong(2, step.getObjectId());
+            }
             return stmt;
         }
 
@@ -149,12 +174,19 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject {
         }
     }
 
-    private static class ScheduleCache extends JDBCObjectCache<PostgreJob, PostgreJobSchedule> {
+    public static class ScheduleCache extends JDBCObjectLookupCache<PostgreJob, PostgreJobSchedule> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreJob job) throws SQLException {
-            final JDBCPreparedStatement stmt = session.prepareStatement("SELECT * FROM pgagent.pga_schedule WHERE jscjobid=?");
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreJob job, @Nullable PostgreJobSchedule schedule, @Nullable String objectName) throws SQLException {
+            final StringBuilder sql = new StringBuilder("SELECT * FROM pgagent.pga_schedule WHERE jscjobid=?");
+            if (schedule != null) {
+                sql.append(" AND jscid=?");
+            }
+            final JDBCPreparedStatement stmt = session.prepareStatement(sql.toString());
             stmt.setLong(1, job.getObjectId());
+            if (schedule != null) {
+                stmt.setLong(2, schedule.getObjectId());
+            }
             return stmt;
         }
 
