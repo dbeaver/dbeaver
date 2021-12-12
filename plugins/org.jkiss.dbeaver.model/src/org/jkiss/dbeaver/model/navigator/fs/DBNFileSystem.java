@@ -23,13 +23,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -40,7 +40,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     private static final Log log = Log.getLog(DBNFileSystem.class);
 
     private DBFVirtualFileSystem fileSystem;
-    private DBNPath[] children;
+    private DBNFileSystemRoot[] children;
 
     public DBNFileSystem(DBNNode parentNode, DBFVirtualFileSystem fileSystem) {
         super(parentNode);
@@ -87,22 +87,22 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     }
 
     @Override
-    public DBNPath[] getChildren(DBRProgressMonitor monitor) throws DBException {
+    public DBNFileSystemRoot[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
             this.children = readChildNodes(monitor);
         }
         return children;
     }
 
-    protected DBNPath[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        List<DBNPath> result = new ArrayList<>();
-        for (Path rootPath : fileSystem.getFileSystem(monitor).getRootDirectories()) {
-            result.add(new DBNPath(this, rootPath));
-        };
+    protected DBNFileSystemRoot[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+        List<DBNFileSystemRoot> result = new ArrayList<>();
+        for (DBFVirtualFileSystemRoot rootPath : fileSystem.getRootFolders(monitor)) {
+            result.add(new DBNFileSystemRoot(this, rootPath));
+        }
         if (result.isEmpty()) {
-            return new DBNPath[0];
+            return new DBNFileSystemRoot[0];
         } else {
-            final DBNPath[] childNodes = result.toArray(new DBNPath[0]);
+            final DBNFileSystemRoot[] childNodes = result.toArray(new DBNFileSystemRoot[0]);
             sortChildren(childNodes);
             return childNodes;
         }
@@ -142,14 +142,6 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     public void refreshResourceState(Object source) {
         //path.
         fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
-    }
-
-    @Override
-    public <T> T getAdapter(Class<T> adapter) {
-        if (fileSystem != null && adapter.isAssignableFrom(fileSystem.getClass())) {
-            return adapter.cast(fileSystem);
-        }
-        return super.getAdapter(adapter);
     }
 
     @Override

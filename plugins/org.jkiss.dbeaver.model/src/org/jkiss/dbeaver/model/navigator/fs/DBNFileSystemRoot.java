@@ -21,29 +21,40 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
-import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Path;
 
 /**
  * DBNFileSystemRoot
  */
-public class DBNFileSystemRoot extends DBNNode {
-
+public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
+{
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
-    private DBNFileSystem[] children;
+    private DBFVirtualFileSystemRoot root;
+    private DBNPath[] children;
+    private Path path;
 
-    public DBNFileSystemRoot(DBNProject parentNode) {
+    public DBNFileSystemRoot(DBNNode parentNode, DBFVirtualFileSystemRoot root) {
         super(parentNode);
+        this.root = root;
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return root == null || super.isDisposed();
+    }
+
+    @Override
+    protected void dispose(boolean reflect) {
+        children = null;
+        this.root = null;
+        super.dispose(reflect);
     }
 
     @Override
@@ -54,18 +65,17 @@ public class DBNFileSystemRoot extends DBNNode {
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return "File Systems";
+        return root.getName();
     }
 
     @Override
-//    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
-        return "All virtual file systems";
+        return null;
     }
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FILE;
+        return DBIcon.TREE_FOLDER;
     }
 
     @Override
@@ -74,48 +84,15 @@ public class DBNFileSystemRoot extends DBNNode {
     }
 
     @Override
-    public DBNFileSystem[] getChildren(DBRProgressMonitor monitor) throws DBException {
-        if (children == null) {
-            this.children = readChildNodes(monitor);
-        }
-        return children;
-    }
-
-    protected DBNFileSystem[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        monitor.beginTask("Read available file systems", 1);
-        List<DBNFileSystem> result = new ArrayList<>();
-        for (DBFFileSystemDescriptor fsProvider : DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders()) {
-            DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
-                monitor, getModel().getModelAuthContext());
-            for (DBFVirtualFileSystem fs : fsList) {
-                DBNFileSystem newChild = new DBNFileSystem(this, fs);
-                result.add(newChild);
+    protected Path getPath() {
+        if (path == null) {
+            try {
+                path = root.getPath(new VoidProgressMonitor());
+            } catch (DBException e) {
+                log.error(e);
+                return Path.of(".nonexistentfolder");
             }
         }
-        result.sort(DBUtils.nameComparatorIgnoreCase());
-        monitor.done();
-        return result.toArray(new DBNFileSystem[0]);
+        return path;
     }
-
-    @Override
-    public boolean isManagable() {
-        return true;
-    }
-
-    @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) {
-        children = null;
-        return this;
-    }
-
-    @Override
-    public String getNodeItemPath() {
-        return NodePathType.path.getPrefix();
-    }
-
-    @Override
-    public boolean supportsRename() {
-        return false;
-    }
-
 }
