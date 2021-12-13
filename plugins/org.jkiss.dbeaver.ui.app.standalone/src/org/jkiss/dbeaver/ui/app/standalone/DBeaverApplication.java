@@ -407,7 +407,12 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
-            defaultHomePath = instanceLoc.getURL().getFile();
+            try {
+                defaultHomePath = RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL()).getAbsolutePath();
+            } catch (IOException e) {
+                System.err.println("Unable to resolve workspace location " + instanceLoc);
+                e.printStackTrace();
+            }
         }
         return defaultHomePath;
     }
