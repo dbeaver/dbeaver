@@ -77,7 +77,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
 
-        try (Reader reader = openStreamReader(inputStream, processorProperties, false)) {
+        try (Reader reader = openStreamReader(inputStream, processorProperties, true)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
                 String[] header = getNextLine(csvReader);
                 if (header == null) {
@@ -110,6 +110,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         }
                     }
 
+                    boolean hasUnresolvedColumns = false;
                     for (int i = 0; i < Math.min(line.length, header.length); i++) {
                         Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(line[i]);
                         StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
@@ -136,7 +137,14 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                     columnInfo.setTypeName(dataType.getSecond());
                                 }
                                 break;
+                            default:
+                                hasUnresolvedColumns = true;
+                                break;
                         }
+                    }
+
+                    if (!hasUnresolvedColumns) {
+                        break;
                     }
                 }
 
