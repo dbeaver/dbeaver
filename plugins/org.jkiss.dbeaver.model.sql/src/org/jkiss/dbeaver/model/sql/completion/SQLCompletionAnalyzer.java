@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -62,10 +64,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
     private static final String ALL_COLUMNS_PATTERN = "*";
+    private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
     private static final String MATCH_ANY_PATTERN = "%";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
-
     private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
 
@@ -403,10 +405,31 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     );
                 }
             }
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE))
+                makeProposalFromHippie();
         }
         filterProposals(dataSource);
     }
 
+    private void makeProposalFromHippie() {
+        HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor();
+        String[] DisplayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset());
+        for (String word : DisplayNames) {
+            if (!hasProposal(proposals, word)) {
+                proposals.add(request.getContext().createProposal(
+                    request,
+                    word,
+                    word, // replacementString
+                    word.length(), //cursorPosition the position of the cursor following the insert
+                    null, //image to display
+                    //new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+                    DBPKeywordType.LITERAL,
+                    null,
+                    null,
+                    Collections.emptyMap()));
+            }
+        }
+    }
     @Nullable
     private DBSObject getActiveInstanceObject() {
         DBCExecutionContext context = request.getContext().getExecutionContext();
