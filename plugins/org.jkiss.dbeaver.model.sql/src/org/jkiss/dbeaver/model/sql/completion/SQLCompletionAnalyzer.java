@@ -431,6 +431,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     Collections.emptyMap()));
             }
         }
+    }
     @Nullable
     private DBSObject getActiveInstanceObject() {
         DBCExecutionContext context = request.getContext().getExecutionContext();
