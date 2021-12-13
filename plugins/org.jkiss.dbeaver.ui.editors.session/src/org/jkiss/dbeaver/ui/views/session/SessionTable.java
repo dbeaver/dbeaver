@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.views.session;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
@@ -46,9 +45,9 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
 
     private DBAServerSessionManager<SESSION_TYPE> sessionManager;
 
-    SessionTable(Composite parent, int style, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
+    SessionTable(Composite parent, int style, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager, IContentProvider contentProvider)
     {
-        super(parent, style, site, CONTENT_PROVIDER);
+        super(parent, style, site, contentProvider);
         this.sessionManager = sessionManager;
         //setFitWidth(true);
     }
@@ -86,28 +85,6 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
     protected Map<String, Object> getSessionOptions() {
         return null;
     }
-
-    private static IStructuredContentProvider CONTENT_PROVIDER = new IStructuredContentProvider() {
-        @Override
-        public Object[] getElements(Object inputElement)
-        {
-            if (inputElement instanceof Collection) {
-                return ((Collection<?>)inputElement).toArray();
-            }
-            return null;
-        }
-
-        @Override
-        public void dispose()
-        {
-        }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
-        }
-
-    };
 
     class LoadSessionsService extends DatabaseLoadService<Collection<SESSION_TYPE>> {
 

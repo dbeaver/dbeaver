@@ -437,7 +437,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 for (ObjectPropertyDescriptor prop : allProps) {
                     if (!propertySource.hasProperty(prop)) {
                         if (prop.isOptional()) {
-                            // Check whether at least one itme has this property
+                            // Check whether at least one item has this property
                             boolean propHasValue = false;
                             if (!CommonUtils.isEmpty(items)) {
                                 for (OBJECT_TYPE item : items) {
@@ -990,6 +990,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         String id;
         String displayName;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();
+        boolean isGrouping;
 
         private ObjectColumn(String id, String displayName) {
             this.id = id;
@@ -1008,6 +1009,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Nullable
         public ObjectPropertyDescriptor getProperty(Object object) {
             return object == null ? null : getPropertyByObject(this, object);
+        }
+
+        public boolean isGrouping() {
+            return isGrouping;
+        }
+
+        public void setGrouping(boolean grouping) {
+            isGrouping = grouping;
         }
     }
 

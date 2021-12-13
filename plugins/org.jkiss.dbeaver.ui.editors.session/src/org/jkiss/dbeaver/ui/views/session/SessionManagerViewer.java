@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -59,6 +61,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -67,15 +70,18 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConso
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
+import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.ui.views.session.internal.SessionEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * SessionManagerViewer
@@ -107,6 +113,8 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     private ExplainPlanViewer planViewer;
     private Object selectedPlanElement;
     private final CTabFolder detailsFolder;
+
+    private ObjectListControl.ObjectColumn groupingColumn;
 
     protected SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager<SESSION_TYPE> sessionManager) {
         this.workbenchPart = part;
@@ -362,10 +370,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     {
         ISelection selection = sessionTable.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerSession)((IStructuredSelection) selection).getFirstElement();
-        } else {
-            return null;
+            Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+            if (firstElement instanceof DBAServerSession) {
+                return (DBAServerSession) firstElement;
+            }
         }
+        return null;
     }
 
     public List<DBAServerSession> getSelectedSessions()
@@ -452,9 +462,8 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         private SessionSearcher searcher;
 
-        SessionListControl(Composite sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
-        {
-            super(sash, SWT.SHEET, site, sessionManager);
+        SessionListControl(Composite sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager) {
+            super(sash, SWT.SHEET, site, sessionManager, new SessionTreeProvider());
             searcher = new SessionSearcher();
         }
 
@@ -463,16 +472,15 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             contributeToToolbar(getSessionManager(), contributionManager);
 
             if (sessionManager instanceof DBAServerSessionManagerSQL &&
-                ((DBAServerSessionManagerSQL) sessionManager).canGenerateSessionReadQuery())
-            {
+                ((DBAServerSessionManagerSQL) sessionManager).canGenerateSessionReadQuery()) {
                 contributionManager.add(ActionUtils.makeActionContribution(new Action("SQL", IAction.AS_PUSH_BUTTON) {
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT));
                         setToolTipText("Open SQL editor and execute session read SQL query");
                     }
+
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         String sqlScript = ((DBAServerSessionManagerSQL) sessionManager).generateSessionReadQuery(getSessionOptions());
                         if (!CommonUtils.isEmpty(sqlScript)) {
                             SQLNavigatorContext navContext = new SQLNavigatorContext(
@@ -497,11 +505,43 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 contributionManager.add(new Separator());
             }
 
+            if (contributionManager instanceof MenuManager) {
+                contributionManager.add(new Action("Group by column", null) {
+                    @Override
+                    public void run() {
+                        int selectedColumn = getRenderer().getSelectedColumn();
+                        if (selectedColumn != -1) {
+                            groupingColumn = getColumnByIndex(selectedColumn);
+                            groupingColumn.setGrouping(true);
+                            refreshSessions();
+                        }
+                    }
+
+                    @Override
+                    public boolean isEnabled() {
+                        return groupingColumn == null;
+                    }
+                });
+
+                contributionManager.add(new Action("Clear grouping", null) {
+                    @Override
+                    public void run() {
+                        groupingColumn = null;
+                        refreshSessions();
+                    }
+
+                    @Override
+                    public boolean isEnabled() {
+                        return groupingColumn != null;
+                    }
+                });
+                contributionManager.add(new Separator());
+            }
+
             refreshControl.populateRefreshButton(contributionManager);
             contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
-                public void run()
-                {
+                public void run() {
                     refreshSessions();
                 }
             });
@@ -513,8 +553,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         @Override
-        protected ISearchExecutor getSearchRunner()
-        {
+        protected ISearchExecutor getSearchRunner() {
             return searcher;
         }
 
@@ -594,6 +633,86 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             protected void afterCompleteLoading(@NotNull Collection<SESSION_TYPE> items) {
                 setListData(items, false, false, true);
             }
+        }
+    }
+
+    private class SessionTreeProvider extends TreeContentProvider {
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            if (groupingColumn != null) {
+                Object[] elements = super.getElements(inputElement);
+
+                if (ArrayUtils.isEmpty(elements)) {
+                    return elements;
+                }
+
+                ObjectPropertyDescriptor groupingDescriptor = groupingColumn.getProperty(elements[0]);
+
+                if (groupingDescriptor != null) {
+                    final ObjectPropertyDescriptor descriptor = groupingDescriptor;
+
+                    Map<Object, List<Object>> objectListMap = Arrays.stream(elements)
+                        .collect(Collectors.groupingBy(element -> {
+                            try {
+                                Object value = descriptor.readValue(element, new VoidProgressMonitor(), false);
+                                if (value == null) {
+                                    return "<empty>";
+                                }
+                                return value;
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }));
+
+                    SessionsGroupingWrapper[] groupArray = new SessionsGroupingWrapper[objectListMap.size()];
+
+                    int index = 0;
+                    for (Map.Entry<Object, List<Object>> group : objectListMap.entrySet()) {
+                        groupArray[index] = new SessionsGroupingWrapper(group.getKey(), group.getValue());
+                        index++;
+                    }
+
+                    return groupArray;
+                }
+                return elements;
+            }
+            return super.getElements(inputElement);
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            if (groupingColumn != null && parentElement instanceof SessionsGroupingWrapper) {
+                return ((SessionsGroupingWrapper) parentElement).getSessionsList().toArray();
+            }
+            return new Object[0];
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            if (groupingColumn != null) {
+                return element instanceof SessionsGroupingWrapper;
+            }
+            return false;
+        }
+    }
+
+    private static class SessionsGroupingWrapper {
+
+        private Object parameterName;
+        private List<Object> sessionsList;
+
+        public SessionsGroupingWrapper(Object parameterName, List<Object> sessionsList) {
+            this.parameterName = parameterName;
+            this.sessionsList = sessionsList;
+        }
+
+        public Object getParameterName() {
+            return parameterName;
+        }
+
+        public List<Object> getSessionsList() {
+            return sessionsList;
         }
     }
 
