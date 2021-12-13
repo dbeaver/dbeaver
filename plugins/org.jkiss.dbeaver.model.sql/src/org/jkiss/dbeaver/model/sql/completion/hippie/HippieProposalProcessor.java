@@ -21,9 +21,6 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 
 
-
-import org.jkiss.code.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,114 +34,8 @@ import java.util.List;
  */
 public final class HippieProposalProcessor {
 
-    private static final ICompletionProposal[] NO_PROPOSALS = new ICompletionProposal[0];
-    private static final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
+    private static final String[] NO_PROPOSALS = new String[0];
     private final HippieCompletionEngine fEngine = new HippieCompletionEngine();
-
-    private static final class Proposal implements ICompletionProposal, ICompletionProposalExtension, ICompletionProposalExtension2, ICompletionProposalExtension3 {
-
-
-        private final String fString;
-        private final String fPrefix;
-        private final int fOffset;
-
-
-        public Proposal(String string, String prefix, int offset) {
-            fString = string;
-            fPrefix = prefix;
-            fOffset = offset;
-        }
-
-        @Override
-        public void apply(IDocument document) {
-            apply(null, '\0', 0, fOffset);
-        }
-
-        @Override
-        public Point getSelection(IDocument document) {
-            return new Point(fOffset + fString.length(), 0);
-        }
-
-        @Override
-        public String getAdditionalProposalInfo() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayString() {
-            return fPrefix + fString;
-        }
-
-        @Override
-        public IContextInformation getContextInformation() {
-            return null;
-        }
-
-        @Override
-        public void apply(IDocument document, char trigger, int offset) {
-            try {
-                String replacement = fString.substring(offset - fOffset);
-                document.replace(offset, 0, replacement);
-            } catch (BadLocationException x) {
-                // ignore
-            }
-        }
-
-        @Override
-        public boolean isValidFor(IDocument document, int offset) {
-            return validate(document, offset, null);
-        }
-
-        @Override
-        public char[] getTriggerCharacters() {
-            return null;
-        }
-
-        @Override
-        public int getContextInformationPosition() {
-            return 0;
-        }
-
-        @Override
-        public void apply(@Nullable ITextViewer viewer, char trigger, int stateMask, int offset) {
-            apply(viewer != null ? viewer.getDocument() : null, trigger, offset);
-        }
-
-        public void selected(ITextViewer viewer, boolean smartToggle) {
-            //empty block
-        }
-
-        @Override
-        public void unselected(ITextViewer viewer) {
-            //empty block
-        }
-
-        @Override
-        public boolean validate(IDocument document, int offset, DocumentEvent event) {
-            try {
-                int prefixStart = fOffset - fPrefix.length();
-                return offset >= fOffset && offset < fOffset + fString.length() && document.get(prefixStart, offset - (prefixStart)).equals((fPrefix + fString).substring(0, offset - prefixStart));
-            } catch (BadLocationException x) {
-                return false;
-            }
-        }
-
-        @Override
-        public IInformationControlCreator getInformationControlCreator() {
-            return null;
-        }
-
-        @Override
-        public CharSequence getPrefixCompletionText(IDocument document, int completionOffset) {
-            return fPrefix + fString;
-        }
-
-        @Override
-        public int getPrefixCompletionStart(IDocument document, int completionOffset) {
-            return fOffset - fPrefix.length();
-        }
-
-    }
 
     /**
      * Creates a new hippie completion proposal computer.
@@ -152,19 +43,19 @@ public final class HippieProposalProcessor {
     public HippieProposalProcessor() {
     }
 
-    public ICompletionProposal[] computeCompletionProposals(IDocument document, int offset) {
+    public String[] computeCompletionStrings(IDocument document, int offset) {
         try {
             String prefix = getPrefix(document, offset);
             if (prefix == null || prefix.isEmpty())
                 return NO_PROPOSALS;
 
-            List<ICompletionProposal> result = new ArrayList<>();
+            List<String> result = new ArrayList<>();
             for (String string : getSuggestions(document, offset, prefix)) {
                 if (!string.isEmpty())
-                    result.add(createProposal(string, prefix, offset));
+                    result.add(prefix + string);
             }
 
-            return result.toArray(new ICompletionProposal[0]);
+            return result.toArray(new String[0]);
 
         } catch (BadLocationException x) {
             // ignore and return no proposals
@@ -177,32 +68,11 @@ public final class HippieProposalProcessor {
             return null;
 
         int length = 0;
-        while (--offset >= 0 && Character.isJavaIdentifierPart(document.getChar(offset)))
+        int localOffset = offset;
+        while (--localOffset >= 0 && Character.isJavaIdentifierPart(document.getChar(localOffset)))
             length++;
 
         return document.get(offset + 1, length);
-    }
-
-    private ICompletionProposal createProposal(String string, String prefix, int offset) {
-        return new Proposal(string, prefix, offset);
-    }
-
-    public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
-        // no context informations for hippie completions
-        return NO_CONTEXTS;
-    }
-
-
-    public char[] getCompletionProposalAutoActivationCharacters() {
-        return null;
-    }
-
-    public char[] getContextInformationAutoActivationCharacters() {
-        return null;
-    }
-
-    public IContextInformationValidator getContextInformationValidator() {
-        return null;
     }
 
     /**

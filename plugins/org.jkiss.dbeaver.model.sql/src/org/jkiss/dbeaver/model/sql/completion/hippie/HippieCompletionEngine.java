@@ -410,11 +410,9 @@ public final class HippieCompletionEngine {
                     fCompletionsBackwardIterator = null;
                 }
             }
-            if (fCompletionsBackwardIterator == null) {
-                //only get if backward completions are consumed
-                if (fCompletionsForwardIterator != null && fCompletionsForwardIterator.hasNext()) {
-                    fSuggestions.add(fCompletionsForwardIterator.next());
-                }
+            //only get if backward completions are consumed
+            if (fCompletionsBackwardIterator == null && fCompletionsForwardIterator != null && fCompletionsForwardIterator.hasNext()) {
+                fSuggestions.add(fCompletionsForwardIterator.next());
             }
 
             if (fSuggestions.size() > fCurrSuggestion) {

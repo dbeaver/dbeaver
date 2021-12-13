@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
-import org.jkiss.dbeaver.model.sql.completion.hippie.ICompletionProposal;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -414,15 +413,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private void makeProposalFromHippie() {
         HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor();
-        ICompletionProposal[] iCompletionProposals = hippieProposalProcessor.computeCompletionProposals(request.getDocument(), request.getDocumentOffset());
-        for (ICompletionProposal iCompletionProposal : iCompletionProposals) {
-            iCompletionProposal.getDisplayString();
-            if (!hasProposal(proposals, iCompletionProposal.getDisplayString())) {
+        String[] DisplayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset());
+        for (String word : DisplayNames) {
+            if (!hasProposal(proposals, word)) {
                 proposals.add(request.getContext().createProposal(
                     request,
-                    iCompletionProposal.getDisplayString(),
-                    iCompletionProposal.getDisplayString(), // replacementString
-                    iCompletionProposal.getDisplayString().length(), //cursorPosition the position of the cursor following the insert
+                    word,
+                    word, // replacementString
+                    word.length(), //cursorPosition the position of the cursor following the insert
                     null, //image to display
                     //new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
                     DBPKeywordType.LITERAL,
