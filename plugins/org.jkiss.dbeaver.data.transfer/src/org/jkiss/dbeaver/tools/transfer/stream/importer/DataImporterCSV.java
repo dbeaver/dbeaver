@@ -110,7 +110,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         }
                     }
 
-                    boolean hasUnresolvedColumns = false;
                     for (int i = 0; i < Math.min(line.length, header.length); i++) {
                         Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(line[i]);
                         StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
@@ -138,13 +137,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                 }
                                 break;
                             default:
-                                hasUnresolvedColumns = true;
                                 break;
                         }
-                    }
-
-                    if (!hasUnresolvedColumns) {
-                        break;
                     }
                 }
 
