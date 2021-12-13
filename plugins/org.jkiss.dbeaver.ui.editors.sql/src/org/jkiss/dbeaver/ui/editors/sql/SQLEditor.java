@@ -1112,135 +1112,159 @@ public class SQLEditor extends SQLEditorBase implements
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
-                int pinnedTabsCount = 0;
-                int resultTabsCount = 0;
-                for (CTabItem item : resultTabs.getItems()) {
-                    if (item.getData() instanceof QueryResultsContainer) {
-                        resultTabsCount++;
-                        if (((QueryResultsContainer) item.getData()).isPinned()) {
-                            pinnedTabsCount++;
-                        }
-                    }
-                }
                 final CTabItem activeTab = getActiveResultsTab();
                 if (activeTab != null && activeTab.getData() instanceof QueryResultsContainer) {
-                    {
-                        final QueryResultsContainer resultsContainer = (QueryResultsContainer) activeTab.getData();
-                        if (resultsContainer.getResultSetController().hasData()) {
-                            final boolean isPinned = resultsContainer.isPinned();
-                            manager.add(new Action(isPinned ? SQLEditorMessages.action_result_tabs_unpin_tab : SQLEditorMessages.action_result_tabs_pin_tab) {
+                    final QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
+                    int pinnedTabsCount = 0;
+                    int resultTabsCount = 0;
+
+                    for (CTabItem item : resultTabs.getItems()) {
+                        if (item.getData() instanceof QueryResultsContainer) {
+                            resultTabsCount++;
+                            if (((QueryResultsContainer) item.getData()).isPinned()) {
+                                pinnedTabsCount++;
+                            }
+                        }
+                    }
+
+                    if (activeTab.getShowClose()) {
+                        manager.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_EDITOR_CLOSE_TAB));
+
+                        if (resultTabsCount - pinnedTabsCount > 1) {
+                            manager.add(new Action(SQLEditorMessages.action_result_tabs_close_all_tabs) {
                                 @Override
                                 public void run() {
-                                    resultsContainer.setPinned(!isPinned);
+                                    closeExtraResultTabs(null, false, false);
+                                }
+                            });
 
-                                    CTabItem currTabItem = activeTab;
-                                    CTabItem nextTabItem;
-
-                                    if (isPinned) {
-                                        for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
-                                            nextTabItem = resultTabs.getItem(i);
-                                            if (nextTabItem.getShowClose()) {
-                                                break;
-                                            }
-                                            resultTabsReorder.swapTabs(currTabItem, nextTabItem);
-                                            currTabItem = nextTabItem;
+                            manager.add(new Action(SQLEditorMessages.action_result_tabs_close_query_tabs) {
+                                @Override
+                                public void run() {
+                                    final QueryProcessor processor = ((QueryResultsContainer) activeTab.getData()).queryProcessor;
+                                    final List<CTabItem> tabs = new ArrayList<>();
+                                    for (QueryResultsContainer container : processor.getResultContainers()) {
+                                        if (!container.isPinned() && container.queryProcessor == processor) {
+                                            tabs.add(container.getTabItem());
                                         }
-                                    } else {
-                                        for (int i = resultTabs.indexOf(activeTab) - 1; i >= 0; i--) {
-                                            nextTabItem = resultTabs.getItem(i);
-                                            if (!nextTabItem.getShowClose()) {
-                                                break;
+                                    }
+                                    for (CTabItem tab : tabs) {
+                                        tab.dispose();
+                                    }
+                                }
+                            });
+
+                            manager.add(new Action(SQLEditorMessages.action_result_tabs_close_other_tabs) {
+                                @Override
+                                public void run() {
+                                    final List<CTabItem> tabs = new ArrayList<>();
+                                    for (CTabItem tab : resultTabs.getItems()) {
+                                        if (tab.getShowClose() && tab != activeTab) {
+                                            tabs.add(tab);
+                                        }
+                                    }
+                                    for (CTabItem tab : tabs) {
+                                        tab.dispose();
+                                    }
+                                    setActiveResultsContainer((QueryResultsContainer) activeTab.getData());
+                                }
+                            });
+
+                            if (resultTabs.indexOf(activeTab) - pinnedTabsCount > 0) {
+                                manager.add(new Action(SQLEditorMessages.action_result_tabs_close_tabs_to_the_left) {
+                                    @Override
+                                    public void run() {
+                                        final List<CTabItem> tabs = new ArrayList<>();
+                                        for (int i = 0, last = resultTabs.indexOf(activeTab); i < last; i++) {
+                                            tabs.add(resultTabs.getItem(i));
+                                        }
+                                        for (CTabItem tab : tabs) {
+                                            tab.dispose();
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (resultTabs.indexOf(activeTab) < resultTabsCount - pinnedTabsCount - 1) {
+                                manager.add(new Action(SQLEditorMessages.action_result_tabs_close_tabs_to_the_right) {
+                                    @Override
+                                    public void run() {
+                                        final List<CTabItem> tabs = new ArrayList<>();
+                                        for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
+                                            tabs.add(resultTabs.getItem(i));
+                                        }
+                                        for (CTabItem tab : tabs) {
+                                            tab.dispose();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    if (container.hasData()) {
+                        final boolean isPinned = container.isPinned();
+
+                        manager.add(new Separator());
+                        manager.add(new Action(isPinned ? SQLEditorMessages.action_result_tabs_unpin_tab : SQLEditorMessages.action_result_tabs_pin_tab) {
+                            @Override
+                            public void run() {
+                                container.setPinned(!isPinned);
+
+                                CTabItem currTabItem = activeTab;
+                                CTabItem nextTabItem;
+
+                                if (isPinned) {
+                                    for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
+                                        nextTabItem = resultTabs.getItem(i);
+                                        if (nextTabItem.getShowClose()) {
+                                            break;
+                                        }
+                                        resultTabsReorder.swapTabs(currTabItem, nextTabItem);
+                                        currTabItem = nextTabItem;
+                                    }
+                                } else {
+                                    for (int i = resultTabs.indexOf(activeTab) - 1; i >= 0; i--) {
+                                        nextTabItem = resultTabs.getItem(i);
+                                        if (!nextTabItem.getShowClose()) {
+                                            break;
+                                        }
+                                        resultTabsReorder.swapTabs(currTabItem, nextTabItem);
+                                        currTabItem = nextTabItem;
+                                    }
+                                }
+                            }
+                        });
+
+                        if (isPinned && pinnedTabsCount > 1) {
+                            manager.add(new Action(SQLEditorMessages.action_result_tabs_unpin_all_tabs) {
+                                @Override
+                                public void run() {
+                                    for (CTabItem item : resultTabs.getItems()) {
+                                        if (item.getData() instanceof QueryResultsContainer) {
+                                            if (((QueryResultsContainer) item.getData()).isPinned()) {
+                                                ((QueryResultsContainer) item.getData()).setPinned(false);
                                             }
-                                            resultTabsReorder.swapTabs(currTabItem, nextTabItem);
-                                            currTabItem = nextTabItem;
                                         }
                                     }
                                 }
                             });
                         }
-                    }
-                    manager.add(new Action(SQLEditorMessages.action_result_tabs_set_name) {
-                        @Override
-                        public void run() {
-                            EnterNameDialog dialog = new EnterNameDialog(resultTabs.getShell(), SQLEditorMessages.action_result_tabs_set_name_title, activeTab.getText());
-                            if (dialog.open() == IDialogConstants.OK_ID) {
-                                if (activeTab.getData() instanceof QueryResultsContainer) {
-                                    final QueryResultsContainer resultsContainer = (QueryResultsContainer) activeTab.getData();
-                                    resultsContainer.setTabName(dialog.getResult());
-                                }
-                            }
-                        }
-                    });
-                    if (activeTab.getData() instanceof QueryResultsContainer) {
-                        QueryResultsContainer rc = ((QueryResultsContainer) activeTab.getData());
-                        if (rc.hasData()) {
-                            AssignVariableAction action = new AssignVariableAction(
-                                SQLEditor.this,
-                                rc.getQuery().getText());
-                            action.setEditable(false);
-                            manager.add(action);
-                        }
-                    }
-                }
-                if (pinnedTabsCount > 1 || resultTabsCount > 1 || (activeTab != null && activeTab.getShowClose())) {
-                    manager.add(new Separator());
-                    if (pinnedTabsCount > 1 && activeTab != null && !activeTab.getShowClose()) {
-                        manager.add(new Separator());
-                        manager.add(new Action(SQLEditorMessages.action_result_tabs_unpin_all_tabs) {
+
+                        manager.add(new Action(SQLEditorMessages.action_result_tabs_set_name) {
                             @Override
                             public void run() {
-                                for (CTabItem item : resultTabs.getItems()) {
-                                    if (item.getData() instanceof QueryResultsContainer) {
-                                        if (((QueryResultsContainer) item.getData()).isPinned()) {
-                                            ((QueryResultsContainer) item.getData()).setPinned(false);
-                                        }
-                                    }
+                                EnterNameDialog dialog = new EnterNameDialog(resultTabs.getShell(), SQLEditorMessages.action_result_tabs_set_name_title, activeTab.getText());
+                                if (dialog.open() == IDialogConstants.OK_ID) {
+                                    container.setTabName(dialog.getResult());
                                 }
-                            }
-                        });
-                    }
-                    if (resultTabsCount - pinnedTabsCount > 1 && activeTab != null && activeTab.getShowClose() && activeTab.getData() instanceof QueryResultsContainer) {
-                        manager.add(new Action(SQLEditorMessages.action_result_tabs_close_all_tabs) {
-                            @Override
-                            public void run() {
-                                closeExtraResultTabs(null, false, false);
                             }
                         });
 
-                        manager.add(new Action(SQLEditorMessages.action_result_tabs_close_query_tabs) {
-                            @Override
-                            public void run() {
-                                QueryProcessor processor = ((QueryResultsContainer) activeTab.getData()).queryProcessor;
-                                List<CTabItem> tabsToRemove = new ArrayList<>();
-                                for (QueryResultsContainer container : processor.getResultContainers()) {
-                                    CTabItem tab = container.getTabItem();
-                                    if (tab.getShowClose() && container.queryProcessor == processor) {
-                                        tabsToRemove.add(tab);
-                                    }
-                                }
-                                for (CTabItem tab : tabsToRemove) {
-                                    tab.dispose();
-                                }
-                            }
-                        });
-                        manager.add(new Action(SQLEditorMessages.action_result_tabs_close_other_tabs) {
-                            @Override
-                            public void run() {
-                                List<CTabItem> tabsToRemove = new ArrayList<>();
-                                for (CTabItem tab : resultTabs.getItems()) {
-                                    if (tab.getShowClose() && tab != activeTab) {
-                                        tabsToRemove.add(tab);
-                                    }
-                                }
-                                for (CTabItem tab : tabsToRemove) {
-                                    tab.dispose();
-                                }
-                                setActiveResultsContainer((QueryResultsContainer) activeTab.getData());
-                            }
-                        });
-                    }
-                    if (activeTab != null && activeTab.getShowClose()) {
-                        manager.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_EDITOR_CLOSE_TAB));
+                        manager.add(new Separator());
+                        AssignVariableAction action = new AssignVariableAction(SQLEditor.this, container.getQuery().getText());
+                        action.setEditable(false);
+                        manager.add(action);
                     }
                 }
                 manager.add(new Separator());
