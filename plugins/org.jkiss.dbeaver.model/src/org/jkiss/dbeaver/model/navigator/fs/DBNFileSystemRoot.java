@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -32,7 +33,7 @@ import java.nio.file.Path;
 /**
  * DBNFileSystemRoot
  */
-public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
+public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNContainer
 {
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
@@ -94,5 +95,20 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
             }
         }
         return path;
+    }
+
+    @Override
+    public Object getValueObject() {
+        return path;
+    }
+
+    @Override
+    public String getChildrenType() {
+        return "Folder";
+    }
+
+    @Override
+    public Class<?> getChildrenClass() {
+        return DBNPath.class;
     }
 }
