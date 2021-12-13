@@ -118,8 +118,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
     @Nullable
     @Override
-    public String getClassifier() {
-        return artifact.getClassifier();
+    public String getFallbackVersion() {
+        return artifact.getFallbackVersion();
     }
 
     @NotNull
