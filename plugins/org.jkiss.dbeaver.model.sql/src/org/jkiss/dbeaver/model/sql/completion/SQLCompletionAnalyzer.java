@@ -65,10 +65,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
     private static final String ALL_COLUMNS_PATTERN = "*";
+    private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
     private static final String MATCH_ANY_PATTERN = "%";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
-
     private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
 
@@ -406,8 +406,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     );
                 }
             }
-            //TODO Add preference setting for hippie engine
-            makeProposalFromHippie();
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE))
+                makeProposalFromHippie();
         }
         filterProposals(dataSource);
     }

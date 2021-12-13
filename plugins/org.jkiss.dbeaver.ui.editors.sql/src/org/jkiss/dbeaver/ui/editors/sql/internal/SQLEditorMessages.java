@@ -161,6 +161,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_group_search;
     public static String pref_page_sql_completion_label_match_contains;
     public static String pref_page_sql_completion_label_match_contains_tip;
+    public static String pref_page_sql_completion_label_activate_hippie;
+    public static String pref_page_sql_completion_label_activate_hippie_tip;
     public static String pref_page_sql_completion_label_use_global_search;
     public static String pref_page_sql_completion_label_use_global_search_tip;
     public static String pref_page_sql_completion_label_show_column_procedures;
