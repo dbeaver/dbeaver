@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -362,10 +363,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         if (shell.isVisible() || getSettings().isTruncateBeforeLoad()) {
             String tableNames = getWizard().getSettings().getDataPipes().stream().map(pipe -> pipe.getConsumer() == null ? "" : pipe.getConsumer().getObjectName()).collect(Collectors.joining(","));
             String checkbox_question = NLS.bind(DTUIMessages.database_consumer_wizard_truncate_checkbox_question, tableNames);
-            if (!UIUtils.confirmAction(shell, DTUIMessages.database_consumer_wizard_truncate_checkbox_title, checkbox_question))
-            {
-                return false;
-            }
+            return UIUtils.confirmAction(
+                shell,
+                DTUIMessages.database_consumer_wizard_truncate_checkbox_title,
+                checkbox_question,
+                DBIcon.STATUS_WARNING
+            );
         }
         return true;
     }
