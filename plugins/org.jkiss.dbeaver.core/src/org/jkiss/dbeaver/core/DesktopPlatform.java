@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
+import org.jkiss.dbeaver.registry.BasicWorkspace;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
@@ -52,63 +53,63 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * DBeaverCore
+ * DesktopPlatform
  */
-public class DBeaverCore extends BasePlatformImpl {
+public class DesktopPlatform extends BasePlatformImpl {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 
-    private static final Log log = Log.getLog(DBeaverCore.class);
+    private static final Log log = Log.getLog(DesktopPlatform.class);
 
-    static DBeaverCore instance;
+    static DesktopPlatform instance;
 
     @NotNull
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
-    private DBeaverWorkspace workspace;
+    private BasicWorkspace workspace;
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
 
     private static boolean disposed = false;
 
-    public static DBeaverCore getInstance() {
+    public static DesktopPlatform getInstance() {
         if (instance == null) {
-            synchronized (DBeaverCore.class) {
+            synchronized (DesktopPlatform.class) {
                 if (disposed) {
                     throw new IllegalStateException("DBeaver core already disposed");
                 }
                 if (instance == null) {
                     // Initialize DBeaver Core
-                    DBeaverCore.createInstance();
+                    DesktopPlatform.createInstance();
                 }
             }
         }
         return instance;
     }
 
-    private static DBeaverCore createInstance() {
+    private static DesktopPlatform createInstance() {
         log.debug("Initializing " + GeneralUtils.getProductTitle());
         if (Platform.getProduct() != null) {
             Bundle definingBundle = Platform.getProduct().getDefiningBundle();
             if (definingBundle != null) {
                 log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
             } else {
-                log.debug("!!! No product bundle found");
+                log.debug("No product bundle found");
             }
         }
 
         try {
-            instance = new DBeaverCore();
+            instance = new DesktopPlatform();
             instance.initialize();
             return instance;
         } catch (Throwable e) {
-            log.error("Error initializing DBeaverCore", e);
-            throw new IllegalStateException("Error initializing DBeaverCore", e);
+            log.error("Error initializing desktop platform", e);
+            throw new IllegalStateException("Error initializing desktop platform", e);
         }
     }
 
@@ -138,7 +139,7 @@ public class DBeaverCore extends BasePlatformImpl {
         return DBeaverActivator.getInstance().getPreferences();
     }
 
-    private DBeaverCore() {
+    private DesktopPlatform() {
     }
 
     protected void initialize() {
@@ -154,7 +155,7 @@ public class DBeaverCore extends BasePlatformImpl {
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
         // Register properties adapter
-        this.workspace = new DBeaverWorkspace(this, ResourcesPlugin.getWorkspace());
+        this.workspace = new BasicWorkspace(this, ResourcesPlugin.getWorkspace());
         this.workspace.initializeProjects();
 
         QMUtils.initApplication(this);
@@ -172,7 +173,7 @@ public class DBeaverCore extends BasePlatformImpl {
         long startTime = System.currentTimeMillis();
         log.debug("Shutdown Core...");
 
-        DBeaverCore.setClosing(true);
+        DesktopPlatform.setClosing(true);
         DBPApplication application = getApplication();
         if (application instanceof DBPApplicationController) {
             // Shutdown in headless mode
@@ -211,8 +212,8 @@ public class DBeaverCore extends BasePlatformImpl {
             tempFolder = null;
         }
 
-        DBeaverCore.instance = null;
-        DBeaverCore.disposed = true;
+        DesktopPlatform.instance = null;
+        DesktopPlatform.disposed = true;
         System.gc();
         log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
     }

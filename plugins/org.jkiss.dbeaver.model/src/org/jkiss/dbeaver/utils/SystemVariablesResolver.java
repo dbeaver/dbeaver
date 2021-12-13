@@ -86,7 +86,7 @@ public class SystemVariablesResolver implements IVariableResolver {
 
     private static String getPlainPath(URL url) {
         try {
-            File file = new File(url.toURI());
+            File file = RuntimeUtils.getLocalFileFromURL(url);
             return file.getAbsolutePath();
         } catch (Exception e) {
             return url.toString();

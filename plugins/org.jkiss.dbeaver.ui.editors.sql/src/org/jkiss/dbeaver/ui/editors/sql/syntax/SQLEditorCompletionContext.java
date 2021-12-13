@@ -50,6 +50,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
         return editor.getDataSource();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return editor.getExecutionContext();

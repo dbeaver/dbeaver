@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
-public class DBeaverCoreAdapterFactory implements IAdapterFactory {
+public class DesktopAdapterFactory implements IAdapterFactory {
 
     private static final Class<?>[] CLASSES = new Class[] { DBPPlatform.class, DBPPlatformUI.class };
     
@@ -30,9 +30,9 @@ public class DBeaverCoreAdapterFactory implements IAdapterFactory {
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adaptableObject instanceof DBWorkbench) {
             if (adapterType == DBPPlatform.class) {
-                return adapterType.cast(DBeaverCore.getInstance());
+                return adapterType.cast(DesktopPlatform.getInstance());
             } else if (adapterType == DBPPlatformUI.class) {
-                return adapterType.cast(DBeaverUI.getInstance());
+                return adapterType.cast(DesktopUI.getInstance());
             }
         }
         return null;

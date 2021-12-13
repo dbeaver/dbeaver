@@ -87,7 +87,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
             if (definingBundle != null) {
                 log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
             } else {
-                log.debug("!!! No product bundle found");
+                log.debug("No product bundle found");
             }
         }
 
@@ -96,8 +96,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
             instance.initialize();
             return instance;
         } catch (Throwable e) {
-            log.error("Error initializing DBeaverCore", e);
-            throw new IllegalStateException("Error initializing DBeaverCore", e);
+            log.error("Error initializing test platform", e);
+            throw new IllegalStateException("Error initializing test platform", e);
         }
     }
 

@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 
 /**
  * DBeaver workspace.
@@ -28,11 +27,11 @@ import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
  * Additionally holds information about remote workspace.
  * Identified by unique ID (random UUID).
  */
-public class DBeaverWorkspace extends BaseWorkspaceImpl {
+public class BasicWorkspace extends BaseWorkspaceImpl {
 
     private String workspaceId;
 
-    DBeaverWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
+    public BasicWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);
 
         workspaceId = readWorkspaceId();
