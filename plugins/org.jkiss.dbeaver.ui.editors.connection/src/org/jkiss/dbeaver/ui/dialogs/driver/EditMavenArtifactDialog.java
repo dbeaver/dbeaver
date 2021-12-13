@@ -69,7 +69,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     private Text groupText;
     private Text artifactText;
-    private Combo defaultVersionText;
+    private Combo fallbackVersionText;
     private Text preferredVersionText;
     private Text fieldText;
 
@@ -216,11 +216,11 @@ public class EditMavenArtifactDialog extends BaseDialog {
         artifactText = UIUtils.createLabelText(container, UIConnectionMessages.dialog_edit_driver_edit_maven_artifact_id_label, originalArtifact != null ? originalArtifact.getReference().getArtifactId() : "");
         groupText = UIUtils.createLabelText(container, UIConnectionMessages.dialog_edit_driver_edit_maven_group_id_label, originalArtifact != null ? originalArtifact.getReference().getGroupId() : "");
         preferredVersionText = UIUtils.createLabelText(container, UIConnectionMessages.dialog_edit_driver_edit_maven_version_label, originalArtifact != null ? originalArtifact.getPreferredVersion() : "");
-        defaultVersionText = UIUtils.createLabelCombo(container, UIConnectionMessages.dialog_edit_driver_edit_maven_classfier_label,SWT.DROP_DOWN | SWT.BORDER);
+        fallbackVersionText = UIUtils.createLabelCombo(container, UIConnectionMessages.dialog_edit_driver_edit_maven_fallback_version_label,SWT.DROP_DOWN | SWT.BORDER);
 
-        defaultVersionText.setText(originalArtifact != null ? originalArtifact.getReference().getVersion() : "");
-        defaultVersionText.add(MavenArtifactReference.VERSION_PATTERN_RELEASE);
-        defaultVersionText.add(MavenArtifactReference.VERSION_PATTERN_LATEST);
+        fallbackVersionText.setText(originalArtifact != null ? originalArtifact.getReference().getVersion() : "");
+        fallbackVersionText.add(MavenArtifactReference.VERSION_PATTERN_RELEASE);
+        fallbackVersionText.add(MavenArtifactReference.VERSION_PATTERN_LATEST);
 
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_manual);
@@ -231,7 +231,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         ModifyListener ml = e -> updateButtons();
         groupText.addModifyListener(ml);
         artifactText.addModifyListener(ml);
-        defaultVersionText.addModifyListener(ml);
+        fallbackVersionText.addModifyListener(ml);
         preferredVersionText.addModifyListener(ml);
     }
 
@@ -246,7 +246,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         getButton(IDialogConstants.OK_ID).setEnabled(
             !CommonUtils.isEmpty(groupText.getText()) &&
                 !CommonUtils.isEmpty(artifactText.getText()) &&
-                !CommonUtils.isEmpty(defaultVersionText.getText())
+                !CommonUtils.isEmpty(fallbackVersionText.getText())
         );
     }
 
@@ -379,13 +379,13 @@ public class EditMavenArtifactDialog extends BaseDialog {
     protected void okPressed() {
         if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
-                originalArtifact.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, defaultVersionText.getText()));
+                originalArtifact.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
                 originalArtifact.setPreferredVersion(preferredVersionText.getText());
                 originalArtifact.setIgnoreDependencies(ignoreDependencies);
                 originalArtifact.setLoadOptionalDependencies(loadOptionalDependencies);
             } else {
                 DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", preferredVersionText.getText());
-                lib.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, defaultVersionText.getText()));
+                lib.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
                 lib.setPreferredVersion(preferredVersionText.getText());
                 lib.setLoadOptionalDependencies(loadOptionalDependencies);
                 lib.setIgnoreDependencies(ignoreDependencies);

@@ -31,7 +31,7 @@ public interface IMavenIdentifier
     String getArtifactId();
 
     @Nullable
-    String getClassifier();
+    String getFallbackVersion();
 
     @NotNull
     String getVersion();
