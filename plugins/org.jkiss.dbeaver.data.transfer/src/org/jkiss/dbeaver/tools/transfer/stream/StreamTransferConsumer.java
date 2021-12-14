@@ -330,7 +330,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private void openOutputStreams() throws IOException {
         this.statStream = new StatOutputStream(
-            new FileOutputStream(outputFile, settings.isUseSingleFile()));
+            new FileOutputStream(outputFile, settings.isAddToEnd() || settings.isUseSingleFile()));
         this.outputStream = new BufferedOutputStream(
             statStream,
             OUT_FILE_BUFFER_SIZE);
@@ -340,7 +340,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             this.outputStream = zipStream;
         }
 
-        // If we need to split files - use stream wrapper to calculate fiel size
+        // If we need to split files - use stream wrapper to calculate file size
         if (settings.isSplitOutFiles()) {
             this.outputStream = new OutputStreamStatProxy(this.outputStream);
         }
