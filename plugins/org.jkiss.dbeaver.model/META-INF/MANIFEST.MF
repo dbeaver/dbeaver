@@ -86,6 +86,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
+ org.eclipse.core.filesystem;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
  org.apache.commons.logging,
