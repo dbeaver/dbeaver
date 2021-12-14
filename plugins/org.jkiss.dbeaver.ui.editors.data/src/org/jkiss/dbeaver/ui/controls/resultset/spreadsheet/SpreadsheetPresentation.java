@@ -1762,7 +1762,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             ResultSetRow curRow = controller.getCurrentRow();
                             if (curRow != null) {
                                 Object value = controller.getModel().getCellValue(binding, curRow);
-                                if (value instanceof DBDCollection) {
+                                if (value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
                                     return curRow.getCollectionData(
                                         binding,
                                         ((DBDCollection)value)).getElements();
@@ -1818,11 +1818,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         ResultSetRow curRow = controller.getCurrentRow();
                         if (curRow != null) {
                             Object cellValue = controller.getModel().getCellValue(binding, curRow);
-                            if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 3) {
-                                return ElementState.EXPANDED;
+                            if (cellValue instanceof DBDCollection) {
+                                if (((DBDCollection) cellValue).getItemCount() < 3) {
+                                    return ElementState.EXPANDED;
+                                }
+                                if (!DBUtils.isNullValue(cellValue)) {
+                                    return ElementState.COLLAPSED;
+                                }
                             }
                         }
-                        return ElementState.COLLAPSED;
+                        break;
                     default:
                         break;
                 }
@@ -2018,9 +2023,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (formatString) {
                 if (recordMode) {
-                    if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
+                    if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
                         return "[" + ((DBDCollection) value).getItemCount() + "]";
-                    } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite) {
+                    } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                         return "[" + ((DBDComposite) value).getDataType().getName() + "]";
                     }
                 }
