@@ -333,7 +333,8 @@ public class DatabaseTransferUtils {
         if (CommonUtils.isEmpty(value)) {
             return DATA_TYPE_UNKNOWN;
         }
-        {
+        char firstChar = value.charAt(0);
+        if (Character.isDigit(firstChar) || firstChar == '+' || firstChar == '-' || firstChar == '.') {
             try {
                 Long.parseLong(value);
                 return DATA_TYPE_INTEGER;
