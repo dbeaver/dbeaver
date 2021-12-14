@@ -29,6 +29,11 @@ public class ResultSetMessages extends NLS {
     public static String confirm_filter_resultset_message;
     public static String confirm_filter_resultset_toggleMessage;
 
+    public static String confirm_update_resultset_message_toggleMessage;
+    public static String confirm_update_resultset_message;
+    public static String confirm_update_resultset_title;
+
+
     public static String confirm_fetch_all_rows_title;
     public static String confirm_fetch_all_rows_message;
     public static String confirm_fetch_all_rows_toggleMessage;

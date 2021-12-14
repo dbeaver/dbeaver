@@ -2256,8 +2256,17 @@ public class ResultSetViewer extends Viewer
     }
 
     void appendData(List<Object[]> rows, boolean resetOldRows) {
-        model.appendData(rows, resetOldRows);
-
+        if (model.isDirty() && resetOldRows) {
+            UIUtils.syncExec(() -> {
+                model.appendData(rows, ConfirmationDialog.showConfirmDialog(
+                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                        null,
+                        ResultSetPreferences.CONFIRM_UPDATE_RESULTSET,
+                        ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID);
+            });
+        } else {
+            model.appendData(rows, resetOldRows);
+        }
         UIUtils.asyncExec(() -> {
             setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
