@@ -175,6 +175,10 @@ public abstract class ObjectViewerRenderer {
         return ((TableViewer)itemsViewer).getTable();
     }
 
+    public int getSelectedColumn() {
+        return selectedColumn;
+    }
+
     private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {
         prepareLinkStyle(cellValue, null);
 

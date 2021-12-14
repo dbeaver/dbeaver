@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -67,6 +69,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * ObjectListControl
@@ -79,7 +82,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static Object NULL_VALUE = new Object();
     private static final String EMPTY_STRING = "";
 
+    final private TraverseListener traverseListener;
+
+    private boolean showTableGrid;
     private boolean isFitWidth;
+
+    private int viewerStyle;
 
     private ColumnViewer itemsViewer;
     //private ColumnViewerEditor itemsEditor;
@@ -104,6 +112,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private Object focusObject;
     private ObjectColumn focusColumn;
 
+    private ObjectColumn groupingColumn;
+    private IContentProvider originalContentProvider;
+
     public ObjectListControl(
         Composite parent,
         int style,
@@ -112,21 +123,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super(parent, style);
 
         this.isFitWidth = false;
+        this.originalContentProvider = contentProvider;
 
-        int viewerStyle = getDefaultListStyle();
+        viewerStyle = getDefaultListStyle();
         if ((style & SWT.SHEET) == 0) {
             viewerStyle |= SWT.BORDER;
         }
 
         EditorActivationStrategy editorActivationStrategy;
-        final TraverseListener traverseListener = e -> {
+        traverseListener = e -> {
             if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
                 doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
                 e.doit = false;
             }
         };
 
-        boolean showTableGrid = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID);
+        showTableGrid = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID);
         if (UIStyles.isDarkTheme()) {
             // Do not show grid in dark theme. It is awful
             showTableGrid = false;
@@ -207,6 +219,45 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             setInfo(status);
         });
+    }
+
+    private void initializeContentProvider(IContentProvider contentProvider) {
+        EditorActivationStrategy editorActivationStrategy;
+        if (contentProvider instanceof ITreeContentProvider) {
+            TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
+            final Tree tree = treeViewer.getTree();
+            tree.setHeaderVisible(true);
+            if (showTableGrid) {
+                tree.setLinesVisible(true);
+            }
+            itemsViewer = treeViewer;
+            editorActivationStrategy = new EditorActivationStrategy(treeViewer);
+            TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            // We need measure item listener to prevent collapse/expand on double click
+            // Looks like a bug in SWT: http://www.eclipse.org/forums/index.php/t/257325/
+            treeViewer.getControl().addListener(SWT.MeasureItem, event -> {
+                // Just do nothing
+            });
+            tree.addTraverseListener(traverseListener);
+        } else {
+            TableViewer tableViewer;
+            if ((viewerStyle & SWT.CHECK) == SWT.CHECK) {
+                tableViewer = CheckboxTableViewer.newCheckList(this, viewerStyle);
+            } else {
+                tableViewer = new TableViewer(this, viewerStyle);
+            }
+            final Table table = tableViewer.getTable();
+            table.setHeaderVisible(true);
+            if (showTableGrid) {
+                table.setLinesVisible(true);
+            }
+            itemsViewer = tableViewer;
+            //UIUtils.applyCustomTolTips(table);
+            //itemsEditor = new TableEditor(table);
+            editorActivationStrategy = new EditorActivationStrategy(tableViewer);
+            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.TABBING_HORIZONTAL);
+            table.addTraverseListener(traverseListener);
+        }
     }
 
     /**
@@ -430,14 +481,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 if (reload) {
                     clearListData();
-                    columnController = new ViewerColumnController<>(getListConfigId(classList), getItemsViewer());
+                    columnController = new GroupingViewerColumnController<>(getListConfigId(classList), getItemsViewer());
                 }
 
                 // Create columns from classes' annotations
                 for (ObjectPropertyDescriptor prop : allProps) {
                     if (!propertySource.hasProperty(prop)) {
                         if (prop.isOptional()) {
-                            // Check whether at least one itme has this property
+                            // Check whether at least one item has this property
                             boolean propHasValue = false;
                             if (!CommonUtils.isEmpty(items)) {
                                 for (OBJECT_TYPE item : items) {
@@ -677,6 +728,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         Object objectValue = getObjectValue(object);
         if (objectValue == null) {
+            return null;
+        }
+        if (objectValue instanceof ObjectsGroupingWrapper) {
+            if (objectColumn == groupingColumn) {
+                return ((ObjectsGroupingWrapper) objectValue).getParameterName();
+            }
             return null;
         }
         ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
@@ -990,6 +1047,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         String id;
         String displayName;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();
+        boolean isGrouping;
 
         private ObjectColumn(String id, String displayName) {
             this.id = id;
@@ -1008,6 +1066,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Nullable
         public ObjectPropertyDescriptor getProperty(Object object) {
             return object == null ? null : getPropertyByObject(this, object);
+        }
+
+        public boolean isGrouping() {
+            return isGrouping;
+        }
+
+        public void setGrouping(boolean grouping) {
+            isGrouping = grouping;
         }
     }
 
@@ -1069,6 +1135,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             if (forUI && !sampleItems && renderer.isHyperlink(cellValue)) {
                 return EMPTY_STRING; //$NON-NLS-1$
+            }
+            if (element instanceof ObjectsGroupingWrapper && cellValue != null) {
+                return cellValue.toString();
             }
             final Object objectValue = getObjectValue((OBJECT_TYPE) element);
             if (objectValue == null) {
@@ -1166,6 +1235,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         final boolean isFocusCell = focusObject == object && focusColumn == objectColumn;
 
                         final Object objectValue = getObjectValue(object);
+                        if (objectValue instanceof ObjectsGroupingWrapper) {
+                            if (e.index == 0) {
+                                Object cellValue = ((ObjectsGroupingWrapper) objectValue).getParameterName();
+                                //renderer.paintCell(e, object, cellValue, e.item, 0, (e.detail & SWT.SELECTED) == SWT.SELECTED); // for booleans?
+                            }
+                            break;
+                        }
                         Object cellValue = getCellValue(object, objectColumn, true);
 
                         if (cellValue instanceof LazyValue) {
@@ -1377,5 +1453,137 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         return buf.toString();
+    }
+
+    private class GroupingViewerColumnController<COLUMN, ELEMENT> extends ViewerColumnController<COLUMN, ELEMENT> {
+
+        GroupingViewerColumnController(String id, ColumnViewer viewer) {
+            super(id, viewer);
+        }
+
+        @Override
+        public void fillConfigMenu(IContributionManager menuManager) {
+            super.fillConfigMenu(menuManager);
+            menuManager.add(new Separator());
+            menuManager.add(new Action("Group by column", null) {
+                @Override
+                public void run() {
+                    int selectedColumn = renderer.getSelectedColumn();
+                    if (selectedColumn != -1) {
+                        groupingColumn = getColumnByIndex(selectedColumn);
+                        groupingColumn.setGrouping(true);
+                        GroupingTreeProvider treeProvider = new GroupingTreeProvider();
+                        if (!renderer.isTree()) {
+                            initializeContentProvider(treeProvider);
+                            renderer = createRenderer();
+                        }
+                        itemsViewer.setContentProvider(treeProvider);
+                        //loadData();
+                        itemsViewer.setInput(getListData());
+                        itemsViewer.refresh(getListData());
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return groupingColumn == null;
+                }
+            });
+
+            menuManager.add(new Action("Clear grouping", null) {
+                @Override
+                public void run() {
+                    groupingColumn = null;
+                    initializeContentProvider(originalContentProvider);
+                    itemsViewer.setContentProvider(originalContentProvider);
+                    renderer = createRenderer();
+                    //loadData();
+                    itemsViewer.setInput(getListData());
+                    itemsViewer.refresh(getListData());
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return groupingColumn != null;
+                }
+            });
+        }
+    }
+
+    private class GroupingTreeProvider extends TreeContentProvider {
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            if (groupingColumn != null) {
+                Object[] elements = super.getElements(inputElement);
+
+                if (ArrayUtils.isEmpty(elements)) {
+                    return elements;
+                }
+
+                ObjectPropertyDescriptor groupingDescriptor = groupingColumn.getProperty(elements[0]);
+                if (groupingDescriptor != null) {
+                    final ObjectPropertyDescriptor descriptor = groupingDescriptor;
+
+                    Map<Object, List<Object>> objectListMap = Arrays.stream(elements)
+                        .collect(Collectors.groupingBy(element -> {
+                            try {
+                                Object value = descriptor.readValue(element, null, false);
+                                if (value == null) {
+                                    return "<empty>";
+                                }
+                                return value;
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }));
+
+                    ObjectsGroupingWrapper[] groupArray = new ObjectsGroupingWrapper[objectListMap.size()];
+                    int index = 0;
+                    for (Map.Entry<Object, List<Object>> group : objectListMap.entrySet()) {
+                        groupArray[index] = new ObjectsGroupingWrapper(group.getKey(), group.getValue());
+                        index++;
+                    }
+                    return groupArray;
+                }
+                return elements;
+            }
+            return super.getElements(inputElement);
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            if (groupingColumn != null && parentElement instanceof ObjectsGroupingWrapper) {
+                return ((ObjectsGroupingWrapper) parentElement).getGroupedObjectsList().toArray();
+            }
+            return new Object[0];
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            if (groupingColumn != null) {
+                return element instanceof ObjectsGroupingWrapper;
+            }
+            return false;
+        }
+    }
+
+    private static class ObjectsGroupingWrapper {
+
+        private Object parameterName;
+        private List<Object> groupedObjectsList;
+
+        ObjectsGroupingWrapper(Object parameterName, List<Object> sessionsList) {
+            this.parameterName = parameterName;
+            this.groupedObjectsList = sessionsList;
+        }
+
+        Object getParameterName() {
+            return parameterName;
+        }
+
+        List<Object> getGroupedObjectsList() {
+            return groupedObjectsList;
+        }
     }
 }
