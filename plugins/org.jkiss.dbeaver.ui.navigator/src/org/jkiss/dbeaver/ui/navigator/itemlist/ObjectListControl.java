@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -69,7 +68,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
 
 /**
  * ObjectListControl
@@ -82,7 +80,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static Object NULL_VALUE = new Object();
     private static final String EMPTY_STRING = "";
 
-    final private TraverseListener traverseListener;
+    private final TraverseListener traverseListener;
 
     private boolean showTableGrid;
     private boolean isFitWidth;
@@ -122,6 +120,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         super(parent, style);
 
+        contentProvider = new GroupingTreeProvider((IStructuredContentProvider) contentProvider);
+
         this.isFitWidth = false;
         this.originalContentProvider = contentProvider;
 
@@ -130,7 +130,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             viewerStyle |= SWT.BORDER;
         }
 
-        EditorActivationStrategy editorActivationStrategy;
         traverseListener = e -> {
             if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
                 doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
@@ -143,41 +142,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             // Do not show grid in dark theme. It is awful
             showTableGrid = false;
         }
-        if (contentProvider instanceof ITreeContentProvider) {
-            TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
-            final Tree tree = treeViewer.getTree();
-            tree.setHeaderVisible(true);
-            if (showTableGrid) {
-                tree.setLinesVisible(true);
-            }
-            itemsViewer = treeViewer;
-            editorActivationStrategy = new EditorActivationStrategy(treeViewer);
-            TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
-            // We need measure item listener to prevent collapse/expand on double click
-            // Looks like a bug in SWT: http://www.eclipse.org/forums/index.php/t/257325/
-            treeViewer.getControl().addListener(SWT.MeasureItem, event -> {
-                // Just do nothing
-            });
-            tree.addTraverseListener(traverseListener);
-        } else {
-            TableViewer tableViewer;
-            if ((viewerStyle & SWT.CHECK) == SWT.CHECK) {
-                tableViewer = CheckboxTableViewer.newCheckList(this, viewerStyle);
-            } else {
-                tableViewer = new TableViewer(this, viewerStyle);
-            }
-            final Table table = tableViewer.getTable();
-            table.setHeaderVisible(true);
-            if (showTableGrid) {
-                table.setLinesVisible(true);
-            }
-            itemsViewer = tableViewer;
-            //UIUtils.applyCustomTolTips(table);
-            //itemsEditor = new TableEditor(table);
-            editorActivationStrategy = new EditorActivationStrategy(tableViewer);
-            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.TABBING_HORIZONTAL);
-            table.addTraverseListener(traverseListener);
-        }
+
+        initializeContentProvider(contentProvider);
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         renderer = createRenderer();
         itemsViewer.getColumnViewerEditor().addEditorActivationListener(new EditorActivationListener());
@@ -732,7 +698,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
         if (objectValue instanceof ObjectsGroupingWrapper) {
             if (objectColumn == groupingColumn) {
-                return ((ObjectsGroupingWrapper) objectValue).getParameterName();
+                return ((ObjectsGroupingWrapper) objectValue).groupingKey;
             }
             return null;
         }
@@ -1237,7 +1203,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         final Object objectValue = getObjectValue(object);
                         if (objectValue instanceof ObjectsGroupingWrapper) {
                             if (e.index == 0) {
-                                Object cellValue = ((ObjectsGroupingWrapper) objectValue).getParameterName();
+                                Object cellValue = ((ObjectsGroupingWrapper) objectValue).groupingKey;
                                 //renderer.paintCell(e, object, cellValue, e.item, 0, (e.detail & SWT.SELECTED) == SWT.SELECTED); // for booleans?
                             }
                             break;
@@ -1472,7 +1438,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     if (selectedColumn != -1) {
                         groupingColumn = getColumnByIndex(selectedColumn);
                         groupingColumn.setGrouping(true);
-                        GroupingTreeProvider treeProvider = new GroupingTreeProvider();
+                        // TODO: Only for tree-like content providers
+                        GroupingTreeProvider treeProvider = new GroupingTreeProvider((IStructuredContentProvider) originalContentProvider);
                         if (!renderer.isTree()) {
                             initializeContentProvider(treeProvider);
                             renderer = createRenderer();
@@ -1480,7 +1447,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         itemsViewer.setContentProvider(treeProvider);
                         //loadData();
                         itemsViewer.setInput(getListData());
-                        itemsViewer.refresh(getListData());
+                        itemsViewer.refresh();
                     }
                 }
 
@@ -1510,12 +1477,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private class GroupingTreeProvider extends TreeContentProvider {
+    private class GroupingTreeProvider implements ITreeContentProvider {
+        private final IStructuredContentProvider delegate;
+
+        // First, we will try to use original content provider, and in the grouping case, we will use this grouping tree providers methods
+        GroupingTreeProvider(@NotNull IStructuredContentProvider delegate) {
+            this.delegate = delegate;
+        }
 
         @Override
         public Object[] getElements(Object inputElement) {
             if (groupingColumn != null) {
-                Object[] elements = super.getElements(inputElement);
+                Object[] elements = delegate.getElements(inputElement);
 
                 if (ArrayUtils.isEmpty(elements)) {
                     return elements;
@@ -1523,38 +1496,42 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 ObjectPropertyDescriptor groupingDescriptor = groupingColumn.getProperty(elements[0]);
                 if (groupingDescriptor != null) {
-                    final ObjectPropertyDescriptor descriptor = groupingDescriptor;
+                    final Map<Object, List<Object>> groups = new HashMap<>();
 
-                    Map<Object, List<Object>> objectListMap = Arrays.stream(elements)
-                        .collect(Collectors.groupingBy(element -> {
-                            try {
-                                Object value = descriptor.readValue(element, null, false);
-                                if (value == null) {
-                                    return "<empty>";
-                                }
-                                return value;
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        }));
-
-                    ObjectsGroupingWrapper[] groupArray = new ObjectsGroupingWrapper[objectListMap.size()];
-                    int index = 0;
-                    for (Map.Entry<Object, List<Object>> group : objectListMap.entrySet()) {
-                        groupArray[index] = new ObjectsGroupingWrapper(group.getKey(), group.getValue());
-                        index++;
+                    for (Object element : elements) {
+                        try {
+                            final Object key = groupingDescriptor.readValue(element, null, false);
+                            final List<Object> group = groups.computeIfAbsent(key, x -> new ArrayList<>());
+                            group.add(element);
+                        } catch (Exception e) {
+                            log.error("Can't read value of property '" + groupingDescriptor.getDisplayName() + "'");
+                        }
                     }
-                    return groupArray;
+
+                    return groups.entrySet().stream()
+                        .map(x -> new ObjectsGroupingWrapper(x.getKey(), x.getValue()))
+                        .toArray();
                 }
                 return elements;
             }
-            return super.getElements(inputElement);
+            return delegate.getElements(inputElement);
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            if (delegate instanceof ITreeContentProvider) {
+                return ((ITreeContentProvider) delegate).getParent(element);
+            }
+            return null;
         }
 
         @Override
         public Object[] getChildren(Object parentElement) {
             if (groupingColumn != null && parentElement instanceof ObjectsGroupingWrapper) {
-                return ((ObjectsGroupingWrapper) parentElement).getGroupedObjectsList().toArray();
+                return ((ObjectsGroupingWrapper) parentElement).groupedElements.toArray();
+            }
+            if (delegate instanceof ITreeContentProvider) {
+                return ((ITreeContentProvider) delegate).getChildren(parentElement);
             }
             return new Object[0];
         }
@@ -1564,26 +1541,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (groupingColumn != null) {
                 return element instanceof ObjectsGroupingWrapper;
             }
+            if (delegate instanceof ITreeContentProvider) {
+                return ((ITreeContentProvider) delegate).hasChildren(element);
+            }
             return false;
         }
     }
 
     private static class ObjectsGroupingWrapper {
+        private final Object groupingKey;
+        private final List<Object> groupedElements;
 
-        private Object parameterName;
-        private List<Object> groupedObjectsList;
-
-        ObjectsGroupingWrapper(Object parameterName, List<Object> sessionsList) {
-            this.parameterName = parameterName;
-            this.groupedObjectsList = sessionsList;
-        }
-
-        Object getParameterName() {
-            return parameterName;
-        }
-
-        List<Object> getGroupedObjectsList() {
-            return groupedObjectsList;
+        private ObjectsGroupingWrapper(@NotNull Object groupingKey, @NotNull List<Object> groupedElements) {
+            this.groupingKey = groupingKey;
+            this.groupedElements = groupedElements;
         }
     }
 }
