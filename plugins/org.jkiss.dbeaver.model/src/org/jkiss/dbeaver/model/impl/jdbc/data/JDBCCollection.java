@@ -237,30 +237,32 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         }
 
         try {
-            if (elementType == null) {
-                if (array == null) {
-                    // Null array of unknown type. Just make NULL read-only array
-                    String defDataTypeName = dataSource.getDefaultDataTypeName(DBPDataKind.OBJECT);
-                    DBSDataType defDataType = dataSource.getLocalDataType(defDataTypeName);
-                    DBDValueHandler defValueHandler = session.getDefaultValueHandler();
-                    return new JDBCCollection(defDataType, defValueHandler, null);
-                }
+            if (elementType == null && array == null) {
+                // Null array of unknown type. Just make NULL read-only array
+                String defDataTypeName = dataSource.getDefaultDataTypeName(DBPDataKind.OBJECT);
+                DBSDataType defDataType = dataSource.getLocalDataType(defDataTypeName);
+                DBDValueHandler defValueHandler = session.getDefaultValueHandler();
+                return new JDBCCollection(defDataType, defValueHandler, null);
+            }
+
+            if (elementType != null) {
                 try {
-                    return makeCollectionFromResultSet(session, array, null);
+                    return makeCollectionFromArray(session, array, elementType);
                 } catch (SQLException e) {
-                    throw new DBCException(e, session.getExecutionContext());
+                    if (array == null) {
+                        throw new DBCException(e, session.getExecutionContext());
+                    }
                 }
             }
+
             try {
-                return makeCollectionFromArray(session, array, elementType);
+                return makeCollectionFromResultSet(session, array, null);
             } catch (SQLException e) {
-                if (array == null) {
-                    throw new DBCException(e, session.getExecutionContext());
-                }
                 try {
-                    return makeCollectionFromResultSet(session, array, elementType);
-                } catch (SQLException e1) {
-                    throw new DBCException(e1, session.getExecutionContext());
+                    // Array of unknown type.
+                    return makeCollectionFromJavaArray(session, array.getArray());
+                } catch (SQLException ex) {
+                    throw new DBCException(ex, session.getExecutionContext());
                 }
             }
         } catch (DBException e) {
@@ -269,7 +271,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     }
 
     @NotNull
-    public static JDBCCollection makeCollectionFromJavaArray(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Object array) throws DBCException {
+    public static JDBCCollection makeCollectionFromJavaArray(@NotNull JDBCSession session, Object array) throws DBCException {
         DBSDataType elementType;
         DBPDataKind dataKind;
         DBPDataTypeProvider dataTypeProvider = session.getDataSource();
