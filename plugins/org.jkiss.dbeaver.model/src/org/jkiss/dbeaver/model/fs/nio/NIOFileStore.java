@@ -47,7 +47,7 @@ public class NIOFileStore extends FileStore {
 
     @Override
     public IFileInfo fetchInfo(int options, IProgressMonitor monitor) throws CoreException {
-        return null;
+        return new NIOFileInfo(path);
     }
 
     @Override

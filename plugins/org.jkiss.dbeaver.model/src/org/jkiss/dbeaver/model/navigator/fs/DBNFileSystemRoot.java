@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -45,6 +46,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNCo
         this.root = root;
     }
 
+    @NotNull
     public DBFVirtualFileSystemRoot getRoot() {
         return root;
     }

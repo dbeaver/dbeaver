@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.fs;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -29,12 +30,15 @@ import java.nio.file.Path;
  */
 public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
 
+    @NotNull
     DBFVirtualFileSystem getFileSystem();
 
+    @NotNull
     String getId();
 
     DBPImage getIcon();
 
+    @NotNull
     Path getPath(DBRProgressMonitor monitor) throws DBException;
 
 }

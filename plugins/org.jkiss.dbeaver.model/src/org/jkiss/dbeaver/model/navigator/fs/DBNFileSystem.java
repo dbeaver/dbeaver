@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -42,9 +43,26 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     private DBFVirtualFileSystem fileSystem;
     private DBNFileSystemRoot[] children;
 
-    public DBNFileSystem(DBNNode parentNode, DBFVirtualFileSystem fileSystem) {
+    public DBNFileSystem(@NotNull DBNNode parentNode, @NotNull DBFVirtualFileSystem fileSystem) {
         super(parentNode);
         this.fileSystem = fileSystem;
+    }
+
+    @NotNull
+    public DBFVirtualFileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    public DBNFileSystemRoot getRoot(@NotNull String path) {
+        if (children == null) {
+            return null;
+        }
+        for (DBNFileSystemRoot root : children) {
+            if (root.getRoot().getId().equals(path)) {
+                return root;
+            }
+        }
+        return null;
     }
 
     @Override
