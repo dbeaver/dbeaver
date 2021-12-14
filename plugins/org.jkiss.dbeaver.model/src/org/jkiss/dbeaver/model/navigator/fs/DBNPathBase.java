@@ -17,16 +17,22 @@
 package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.NIOFile;
+import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -262,8 +268,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceLastModified() {
-        return null;//path == null ? null : DATE_FORMAT.format(path.toFile().lastModified());
+    public String getResourceLastModified() throws IOException {
+        return Files.getLastModifiedTime(getPath()).toString();
     }
 
     protected boolean isResourceExists() {
@@ -273,10 +279,27 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == Path.class) {
-            Path path = getPath();
-            if (path != null && adapter.isAssignableFrom(path.getClass())) {
-                return adapter.cast(path);
+            return adapter.cast(getPath());
+        } else if (adapter == IResource.class) {
+            DBNFileSystemRoot rootNode = DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
+            if (rootNode == null) {
+                return null;
             }
+            Path rootPath = rootNode.getPath();
+            DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
+            NIOFileSystemRoot root = new NIOFileSystemRoot(
+                getOwnerProject().getEclipseProject(),
+                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getId(),
+                rootPath
+            );
+            Path path = getPath();
+            IResource resource;
+            if (allowsChildren()) {
+                resource = new NIOFolder(root, path);
+            } else {
+                resource = new NIOFile(root, path);
+            }
+            return adapter.cast(resource);
         }
         return super.getAdapter(adapter);
     }

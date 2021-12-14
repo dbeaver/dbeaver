@@ -14,28 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.fs.nio;
 
-package org.jkiss.dbeaver.model.fs;
+import org.eclipse.core.resources.IProject;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import java.nio.file.Path;
 
 /**
- * Virtual file system
+ * NIOFileSystemRoot
  */
-public interface DBFVirtualFileSystem {
+public class NIOFileSystemRoot {
 
-    String getFileSystemDisplayName();
+    private final IProject project;
+    private final String fsPrefix;
+    private final Path rootPath;
 
-    String getType();
+    public NIOFileSystemRoot(IProject project, String fsPrefix, Path rootPath) {
+        this.project = project;
+        this.fsPrefix = fsPrefix;
+        this.rootPath = rootPath;
+    }
 
-    String getDescription();
+    public IProject getProject() {
+        return project;
+    }
 
-    DBPImage getIcon();
+    public String getPrefix() {
+        return fsPrefix;
+    }
 
-    String getId();
-
-    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
-
+    public Path getRootPath() {
+        return rootPath;
+    }
 }

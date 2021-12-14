@@ -29,6 +29,8 @@ import java.nio.file.Path;
  */
 public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
 
+    DBFVirtualFileSystem getFileSystem();
+
     String getId();
 
     DBPImage getIcon();

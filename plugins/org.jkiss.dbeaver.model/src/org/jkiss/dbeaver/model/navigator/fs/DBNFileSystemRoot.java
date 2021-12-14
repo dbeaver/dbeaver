@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.nio.file.Path;
@@ -41,9 +40,13 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNCo
     private DBNPath[] children;
     private Path path;
 
-    public DBNFileSystemRoot(DBNNode parentNode, DBFVirtualFileSystemRoot root) {
+    public DBNFileSystemRoot(DBNFileSystem parentNode, DBFVirtualFileSystemRoot root) {
         super(parentNode);
         this.root = root;
+    }
+
+    public DBFVirtualFileSystemRoot getRoot() {
+        return root;
     }
 
     @Override

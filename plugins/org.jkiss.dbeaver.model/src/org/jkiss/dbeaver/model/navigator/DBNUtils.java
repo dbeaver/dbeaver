@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -200,4 +201,21 @@ public class DBNUtils {
             return first - second;
         }
     }
+
+    @Nullable
+    public static <T> T getParentOfType(@NotNull Class<T> type, DBNNode node)
+    {
+        if (node == null) {
+            return null;
+        }
+        for (DBNNode parent = node.getParentNode(); parent != null; parent = parent.getParentNode()) {
+            if (type.isInstance(parent)) {
+                return type.cast(parent);
+            } else if (parent instanceof DBNRoot) {
+                break;
+            }
+        }
+        return null;
+    }
+
 }
