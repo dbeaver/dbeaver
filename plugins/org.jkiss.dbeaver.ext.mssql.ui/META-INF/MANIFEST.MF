@@ -28,3 +28,4 @@ Bundle-Vendor: JKISS
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.mssql.ui
 Import-Package: org.jkiss.dbeaver.ui.navigator
+Export-Package: org.jkiss.dbeaver.ext.mssql.ui.editors
