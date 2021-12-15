@@ -65,7 +65,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
         } else if (object instanceof String) {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, (String)object);
         } else if (object.getClass().isArray()) {
-            return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, type, object);
+            return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, object);
         } else if (object instanceof Collection) {
             return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, (Collection) object);
         } else {
