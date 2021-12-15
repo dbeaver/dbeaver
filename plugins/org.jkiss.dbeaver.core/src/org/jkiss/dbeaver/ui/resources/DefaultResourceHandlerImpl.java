@@ -20,14 +20,21 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.fs.nio.NIOFile;
+import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Default resource handler
@@ -65,14 +72,21 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     @Override
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
-        updateNavigatorNode(node, resource);
+        updateNavigatorNodeFromResource(node, resource);
         return node;
     }
 
     @Override
-    public void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource) {
-        super.updateNavigatorNode(node, resource);
-        ProgramInfo program = ProgramInfo.getProgram(resource);
+    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
+        super.updateNavigatorNodeFromResource(node, resource);
+        String fileExtension = resource.getFileExtension();
+        if (!CommonUtils.isEmpty(fileExtension)) {
+            setNodeIconFromFileType(node, fileExtension);
+        }
+    }
+
+    public void setNodeIconFromFileType(@NotNull DBNNodeWithResource node, @NotNull String fileExt) {
+        ProgramInfo program = ProgramInfo.getProgram(fileExt);
         if (program != null && program.getImage() != null) {
             node.setResourceImage(program.getImage());
         }
@@ -80,7 +94,23 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
-        if (resource instanceof IFile) {
+        if (resource instanceof NIOFile) {
+            NIOFileStore fileStore = new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath());
+            FileStoreEditorInput editorInput = new FileStoreEditorInput(fileStore);
+
+            // open the editor on the file
+            IEditorDescriptor editorDesc;
+            try {
+                editorDesc = IDE.getEditorDescriptor((IFile)resource, true, true);
+            } catch (OperationCanceledException ex) {
+                return;
+            }
+
+            IDE.openEditor(
+                UIUtils.getActiveWorkbenchWindow().getActivePage(),
+                editorInput,
+                editorDesc.getId());
+        } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
         } else if (resource instanceof IFolder) {
             DBWorkbench.getPlatformUI().executeShellProgram(resource.getLocation().toOSString());

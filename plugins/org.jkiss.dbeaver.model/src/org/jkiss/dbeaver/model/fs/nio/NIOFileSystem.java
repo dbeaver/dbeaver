@@ -87,7 +87,7 @@ public class NIOFileSystem extends FileSystem {
             log.debug("Invalid " + DBVFS_FS_ID + " URI: " + uri);
             return EFS.getNullFileSystem().getStore(uri);
         }
-        return new NIOFileStore(path);
+        return new NIOFileStore(uri, path);
     }
 
 }

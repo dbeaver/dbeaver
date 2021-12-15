@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * DBNResource
  */
-public class DBNResource extends DBNNode// implements IContributorResourceAdapter
+public class DBNResource extends DBNNode implements DBNNodeWithResource// implements IContributorResourceAdapter
 {
     private static final Log log = Log.getLog(DBNResource.class);
 
@@ -332,6 +332,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         }
     }
 
+    @Override
     @Nullable
     public IResource getResource()
     {
@@ -365,6 +366,12 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         });
     }
 
+    @Override
+    public DBPImage getResourceImage() {
+        return this.resourceImage;
+    }
+
+    @Override
     public void setResourceImage(DBPImage resourceImage)
     {
         this.resourceImage = resourceImage;
@@ -407,7 +414,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             handler = newHandler;
         }
         if (handler != null) {
-            handler.updateNavigatorNode(this, resource);
+            handler.updateNavigatorNodeFromResource(this, resource);
         } else {
             log.error("Can't find handler for resource " + resource.getFullPath());
         }

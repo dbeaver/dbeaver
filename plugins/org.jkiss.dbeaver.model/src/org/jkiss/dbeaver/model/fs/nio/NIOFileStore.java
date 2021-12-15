@@ -34,9 +34,11 @@ import java.nio.file.Path;
  */
 public class NIOFileStore extends FileStore {
 
+    private final URI dbvfsURI;
     private final Path path;
 
-    public NIOFileStore(Path path) {
+    public NIOFileStore(URI dbvfsURI, Path path) {
+        this.dbvfsURI = dbvfsURI;
         this.path = path;
     }
 
@@ -76,7 +78,7 @@ public class NIOFileStore extends FileStore {
 
     @Override
     public URI toURI() {
-        return path.toUri();
+        return dbvfsURI;
     }
 
 }

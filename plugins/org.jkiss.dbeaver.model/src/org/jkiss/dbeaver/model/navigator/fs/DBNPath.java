@@ -17,9 +17,8 @@
 package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +37,8 @@ public class DBNPath extends DBNPathBase
     public DBNPath(DBNNode parentNode, Path path) {
         super(parentNode);
         this.path = path;
+
+        DBWorkbench.getPlatform().getDefaultResourceHandler().updateNavigatorNodeFromResource(this, getResource());
     }
 
     @Override
@@ -59,11 +60,6 @@ public class DBNPath extends DBNPathBase
     @Override
     public String getNodeDescription() {
         return null;
-    }
-
-    @Override
-    public DBPImage getNodeIcon() {
-        return allowsChildren() ? DBIcon.TREE_FOLDER : DBIcon.TREE_FILE;
     }
 
     @Override

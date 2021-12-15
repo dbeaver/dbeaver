@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.fs.nio.NIOFile;
 import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,13 +42,14 @@ import java.util.*;
 /**
  * DBNPath
  */
-public abstract class DBNPathBase extends DBNNode implements DBNLazyNode
+public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource, DBNLazyNode
 {
     private static final Log log = Log.getLog(DBNPathBase.class);
 
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
     private DBNNode[] children;
+    private DBPImage resImage;
 
     protected DBNPathBase(DBNNode parentNode) {
         super(parentNode);
@@ -63,6 +61,21 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode
     protected void dispose(boolean reflect) {
         this.children = null;
         super.dispose(reflect);
+    }
+
+    @Override
+    public IResource getResource() {
+        return getAdapter(IResource.class);
+    }
+
+    @Override
+    public DBPImage getResourceImage() {
+        return resImage;
+    }
+
+    @Override
+    public void setResourceImage(DBPImage resourceImage) {
+        this.resImage = resourceImage;
     }
 
     @Override
@@ -107,11 +120,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-//        try {
-//            return Files.probeContentType(path);
-//        } catch (IOException e) {
-//            log.debug(e);
-//        }
+        if (resImage != null) {
+            return resImage;
+        }
         return allowsChildren() ? DBIcon.TREE_FOLDER : DBIcon.TREE_FILE;
     }
 

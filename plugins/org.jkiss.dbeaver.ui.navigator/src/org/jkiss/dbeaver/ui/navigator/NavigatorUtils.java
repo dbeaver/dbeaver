@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -658,10 +660,11 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
-        if (node instanceof DBNResource) {
+        IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
+        if (resource != null) {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
-                serviceSQL.openResource(((DBNResource) node).getResource());
+                serviceSQL.openResource(resource);
             }
         } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
             Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
