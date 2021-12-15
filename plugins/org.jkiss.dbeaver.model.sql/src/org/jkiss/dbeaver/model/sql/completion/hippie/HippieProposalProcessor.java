@@ -72,7 +72,7 @@ public final class HippieProposalProcessor {
         while (--localOffset >= 0 && Character.isJavaIdentifierPart(document.getChar(localOffset)))
             length++;
 
-        return document.get(offset + 1, length);
+        return document.get(localOffset + 1, length);
     }
 
     /**
