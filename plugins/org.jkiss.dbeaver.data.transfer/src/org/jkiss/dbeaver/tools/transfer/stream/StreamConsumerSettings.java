@@ -76,7 +76,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private DBDDataFormatterProfile formatterProfile;
     @NotNull
     private DBDDisplayFormat valueFormat = DBDDisplayFormat.UI;
-    private boolean addToEnd = false;
+    private boolean appendToFileEnd = false;
     private boolean outputClipboard = false;
     private boolean useSingleFile = false;
     private boolean compressResults = false;
@@ -86,12 +86,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
 
-    public boolean isAddToEnd() {
-        return addToEnd;
+    public boolean isAppendToFileEnd() {
+        return appendToFileEnd;
     }
 
-    public void setAddToEnd(boolean addToEnd) {
-        this.addToEnd = addToEnd;
+    public void setAppendToFileEnd(boolean appendToFileEnd) {
+        this.appendToFileEnd = appendToFileEnd;
     }
 
     public LobExtractType getLobExtractType() {
@@ -245,7 +245,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         outputTimestampPattern = CommonUtils.toString(settings.get("outputTimestampPattern"), outputTimestampPattern);
         outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
         outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
-        addToEnd = CommonUtils.getBoolean(settings.get("appendToFile"), addToEnd);
+        appendToFileEnd = CommonUtils.getBoolean(settings.get("appendToFile"), appendToFileEnd);
         if (dataTransferSettings.getDataPipes().size() > 1) {
             useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
         } else {
@@ -319,7 +319,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public void saveSettings(Map<String, Object> settings) {
         settings.put("lobExtractType", lobExtractType.name());
         settings.put("lobEncoding", lobEncoding.name());
-        settings.put("appendToFile", addToEnd);
+        settings.put("appendToFile", appendToFileEnd);
         settings.put("outputFolder", outputFolder);
         settings.put("outputFilePattern", outputFilePattern);
         settings.put("outputEncoding", outputEncoding);

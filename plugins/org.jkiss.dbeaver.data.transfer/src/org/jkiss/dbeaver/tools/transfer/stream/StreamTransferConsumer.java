@@ -330,7 +330,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private void openOutputStreams() throws IOException {
         this.statStream = new StatOutputStream(
-            new FileOutputStream(outputFile, settings.isAddToEnd() || settings.isUseSingleFile()));
+            new FileOutputStream(outputFile, settings.isAppendToFileEnd() || settings.isUseSingleFile()));
         this.outputStream = new BufferedOutputStream(
             statStream,
             OUT_FILE_BUFFER_SIZE);
