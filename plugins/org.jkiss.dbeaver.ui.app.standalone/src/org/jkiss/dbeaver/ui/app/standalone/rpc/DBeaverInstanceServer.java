@@ -116,12 +116,12 @@ public class DBeaverInstanceServer implements IInstanceController {
             false,
             instanceConParameters.createNewConnection);
         if (dataSource == null) {
+            filesToConnect.clear();
             return;
         }
-        if (this.dataSourceContainer == null){
-            dataSourceContainer = dataSource;
+        if (!CommonUtils.isEmpty(filesToConnect)){
             for (File file : filesToConnect) {
-                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
+                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource ));
             }
         }
         if (instanceConParameters.openConsole) {
@@ -134,6 +134,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         } else if (instanceConParameters.makeConnect) {
             DataSourceHandler.connectToDataSource(null, dataSource, null);
         }
+        filesToConnect.clear();
     }
 
     @Override
