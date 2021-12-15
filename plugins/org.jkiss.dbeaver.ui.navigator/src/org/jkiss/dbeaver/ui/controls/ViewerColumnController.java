@@ -66,6 +66,8 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private transient ObjectViewerRenderer cellRenderer;
     private transient Listener menuListener;
 
+    private int selectedColumnNumber;
+
     public static ViewerColumnController getFromControl(Control control)
     {
         return (ViewerColumnController)control.getData(DATA_KEY);
@@ -89,6 +91,23 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                         clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
                     } else {
                         clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
+                    }
+                }
+                if (clickOnHeader) {
+                    int pointYWithHeader;
+                    // We can't get column number, if we use click on the header, but we can add header height to the y
+                    if (viewer instanceof TableViewer && control instanceof Table) {
+                        pointYWithHeader = pt.y + ((Table) control).getHeaderHeight();
+                        TableItem selectedItem = ((TableViewer) this.viewer).getTable().getItem(new Point(pt.x, pointYWithHeader));
+                        if (selectedItem != null) {
+                            selectedColumnNumber = UIUtils.getColumnAtPos(selectedItem, pt.x, pointYWithHeader);
+                        }
+                    } else if (viewer instanceof TreeViewer && control instanceof Tree) {
+                        pointYWithHeader = pt.y + ((Tree) control).getHeaderHeight();
+                        TreeItem selectedItem = ((TreeViewer) viewer).getTree().getItem(new Point(pt.x, pointYWithHeader));
+                        if (selectedItem != null) {
+                            selectedColumnNumber = UIUtils.getColumnAtPos(selectedItem, pt.x, pointYWithHeader);
+                        }
                     }
                 }
             };
@@ -133,6 +152,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     public void setDefaultIcon(DBIcon defaultIcon) {
         this.defaultIcon = defaultIcon;
+    }
+
+    public int getSelectedColumnNumber() {
+        return selectedColumnNumber;
     }
 
     public void fillConfigMenu(IContributionManager menuManager)
@@ -645,10 +668,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             colTable = new Table(composite, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
             colTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             colTable.setLinesVisible(true);
+            colTable.setHeaderVisible(true);
             colTable.addListener(SWT.Selection, event -> {
-                if( event.detail == SWT.CHECK ) {
-                    if (((TableItem)event.item).getGrayed()) {
-                        ((TableItem)event.item).setChecked(true);
+                if (event.detail == SWT.CHECK) {
+                    if (((TableItem) event.item).getGrayed()) {
+                        ((TableItem) event.item).setChecked(true);
                         event.doit = false;
                     }
                 }

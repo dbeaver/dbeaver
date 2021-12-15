@@ -362,10 +362,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     {
         ISelection selection = sessionTable.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerSession)((IStructuredSelection) selection).getFirstElement();
-        } else {
-            return null;
+            Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+            if (firstElement instanceof DBAServerSession) {
+                return (DBAServerSession) firstElement;
+            }
         }
+        return null;
     }
 
     public List<DBAServerSession> getSelectedSessions()
