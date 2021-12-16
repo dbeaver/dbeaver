@@ -336,19 +336,19 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 UIUtils.packColumns(((TreeViewer) viewer).getTree(), forceAutoSize, ratios);
             } else if (viewer instanceof TableViewer) {
                 itemCount = ((TableViewer) viewer).getTable().getItemCount();
-                UIUtils.packColumns(((TableViewer)viewer).getTable(), forceAutoSize);
+                UIUtils.packColumns(((TableViewer) viewer).getTable(), forceAutoSize);
             }
 
             if (itemCount == 0) {
                 // Fix too narrow width for empty lists
                 for (ColumnInfo columnInfo : getVisibleColumns()) {
                     if (columnInfo.column instanceof TreeColumn) {
-                        if (((TreeColumn) columnInfo.column) .getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                        if (((TreeColumn) columnInfo.column).getWidth() < MIN_COLUMN_AUTO_WIDTH) {
                             ((TreeColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
                             columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
                         }
                     } else if (columnInfo.column instanceof TableColumn) {
-                        if (((TableColumn) columnInfo.column) .getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                        if (((TableColumn) columnInfo.column).getWidth() < MIN_COLUMN_AUTO_WIDTH) {
                             ((TableColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
                             columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
                         }
@@ -534,7 +534,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         }
     }
 
-    public COLUMN getColumnData(int columnIndex) {
+    private ColumnInfo getColumnByIndex(int columnIndex) {
         final Control control = viewer.getControl();
         ColumnInfo columnInfo;
         if (control instanceof Tree) {
@@ -542,7 +542,15 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         } else {
             columnInfo = (ColumnInfo) ((Table) control).getColumn(columnIndex).getData();
         }
-        return (COLUMN) columnInfo.userData;
+        return columnInfo;
+    }
+
+    public COLUMN getColumnData(int columnIndex) {
+        return (COLUMN) getColumnByIndex(columnIndex).userData;
+    }
+
+    public String getColumnName(int columnIndex) {
+        return getColumnByIndex(columnIndex).name;
     }
 
     public COLUMN[] getColumnsData(Class<COLUMN> type) {

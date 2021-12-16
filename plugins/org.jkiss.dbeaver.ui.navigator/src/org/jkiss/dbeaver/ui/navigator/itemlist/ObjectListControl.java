@@ -292,6 +292,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         isFitWidth = fitWidth;
     }
 
+    public boolean supportsDataGrouping() {
+        return true;
+    }
+
     @Override
     public void disposeControl() {
         synchronized (this) {
@@ -1010,8 +1014,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public static class ObjectColumn {
         String id;
         String displayName;
+        int columnIndex;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();
-        boolean isGrouping;
 
         private ObjectColumn(String id, String displayName) {
             this.id = id;
@@ -1030,18 +1034,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Nullable
         public ObjectPropertyDescriptor getProperty(Object object) {
             return object == null ? null : getPropertyByObject(this, object);
-        }
-
-        public Map<Class<?>, ObjectPropertyDescriptor> getPropMap() {
-            return propMap;
-        }
-
-        public boolean isGrouping() {
-            return isGrouping;
-        }
-
-        public void setGrouping(boolean grouping) {
-            isGrouping = grouping;
         }
     }
 
@@ -1079,15 +1071,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public Color getBackground(Object element) {
-            final Color background = getObjectBackground((OBJECT_TYPE) element);
-            if (background == null) {
-
+            if (element instanceof ObjectsGroupingWrapper) {
+                return null;
             }
-            return background;
+            return getObjectBackground((OBJECT_TYPE) element);
         }
 
         @Override
         public Color getForeground(Object element) {
+            if (element instanceof ObjectsGroupingWrapper) {
+                return null;
+            }
             return getObjectForeground((OBJECT_TYPE) element);
         }
 
@@ -1434,22 +1428,28 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             super.fillConfigMenu(menuManager);
             if (isTree) {
                 menuManager.add(new Separator());
-                menuManager.add(new Action("Group by column", null) {
+                int selectedColumnNumber = columnController.getSelectedColumnNumber();
+                String columnName = null;
+                final boolean columnPersist = selectedColumnNumber != -1;
+                if (columnPersist) {
+                    columnName = columnController.getColumnName(selectedColumnNumber);
+                }
+                menuManager.add(new Action("Group by column " + CommonUtils.notEmpty(columnName), null) {
                     @Override
                     public void run() {
-                        int selectedColumn = columnController.getSelectedColumnNumber();
-                        if (selectedColumn != -1) {
-                            groupingColumn = getColumnByIndex(selectedColumn);
-                            groupingColumn.setGrouping(true);
-                            moveGroupingColumnInTheBeginning(selectedColumn);
+                        if (columnPersist) {
+                            groupingColumn = getColumnByIndex(selectedColumnNumber);
+                            groupingColumn.columnIndex = selectedColumnNumber;
+                            moveGroupingColumnInTheBeginning(selectedColumnNumber);
                             itemsViewer.setContentProvider(new GroupingTreeProvider());
                             itemsViewer.refresh();
+                            ((TreeViewer) itemsViewer).expandToLevel(2);
                         }
                     }
 
                     @Override
                     public boolean isEnabled() {
-                        return groupingColumn == null;
+                        return columnPersist;
                     }
                 });
 
@@ -1482,6 +1482,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
             tree.setColumnOrder(newColumnOrder);
+            columnController.repackColumns();
         }
     }
 
@@ -1496,33 +1497,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     return elements;
                 }
 
-                ObjectPropertyDescriptor groupingDescriptor = groupingColumn.getProperty(elements[0]);
-                if (groupingDescriptor == null) {
-                    if (elements[0] instanceof DBDAttributeBinding) {
-                        groupingDescriptor = groupingColumn.getProperty(((DBDAttributeBinding) elements[0]).getMetaAttribute());
+                int columnIndex = groupingColumn.columnIndex;
+                final Map<Object, List<Object>> groups = new HashMap<>();
+
+                for (Object element : elements) {
+                    try {
+                        final Object key = getCellValue(element, columnIndex);
+                        final List<Object> group = groups.computeIfAbsent(key, x -> new ArrayList<>());
+                        group.add(element);
+                    } catch (Exception e) {
+                        log.error("Can't read cell value", e);
                     }
                 }
-                if (groupingDescriptor != null) {
-                    final Map<Object, List<Object>> groups = new HashMap<>();
 
-                    for (Object element : elements) {
-                        try {
-                            if (element instanceof DBDAttributeBinding) {
-                                element = ((DBDAttributeBinding) element).getMetaAttribute();
-                            }
-                            final Object key = groupingDescriptor.readValue(element, null, false);
-                            final List<Object> group = groups.computeIfAbsent(key, x -> new ArrayList<>());
-                            group.add(element);
-                        } catch (Exception e) {
-                            log.error("Can't read value of property '" + groupingDescriptor.getDisplayName() + "'", e);
-                        }
-                    }
-
-                    return groups.entrySet().stream()
-                        .map(x -> new ObjectsGroupingWrapper(x.getKey(), x.getValue()))
-                        .toArray();
-                }
-                return elements;
+                return groups.entrySet().stream()
+                    .map(x -> new ObjectsGroupingWrapper(x.getKey(), x.getValue()))
+                    .toArray();
             }
             return super.getElements(inputElement);
         }

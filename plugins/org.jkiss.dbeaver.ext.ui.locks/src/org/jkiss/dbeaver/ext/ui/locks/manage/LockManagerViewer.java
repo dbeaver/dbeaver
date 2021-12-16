@@ -168,10 +168,12 @@ public class LockManagerViewer {
     private DBAServerLock getSelectedLock() {
         ISelection selection = lockTable.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerLock) ((IStructuredSelection) selection).getFirstElement();
-        } else {
-            return null;
+            Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+            if (firstElement instanceof DBAServerLock) {
+                return (DBAServerLock) firstElement;
+            }
         }
+        return null;
     }
 
     private void refreshGraph(DBAServerLock selected) {
