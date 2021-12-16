@@ -42,6 +42,10 @@ public class ArrayUtils {
         return array == null || array.length == 0;
     }
 
+    public static boolean isArray(@Nullable Object value) {
+        return value != null && value.getClass().isArray();
+    }
+
     public static boolean contains(@Nullable short[] array, short value)
     {
         if (array == null)
