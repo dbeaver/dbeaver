@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IDocumentDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -97,7 +99,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
             out.write(",\n");
         }
         rowNum++;
-        if (isJsonDocumentResults(session.getProgressMonitor(), row)) {
+        if (isJsonDocumentResults(row)) {
             DBDDocument document = (DBDDocument) row[0];
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             document.serializeDocument(session.getProgressMonitor(), buffer, StandardCharsets.UTF_8);
@@ -153,12 +155,13 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         }
     }
 
-    private boolean isJsonDocumentResults(DBRProgressMonitor progressMonitor, Object[] row) {
-        if (columns.length == 1 && columns[0].getDataKind() == DBPDataKind.DOCUMENT) {
-            if (row.length > 0 && !DBUtils.isNullValue(row[0]) && row[0] instanceof DBDDocument) {
-                DBDDocument document = (DBDDocument) row[0];
-                if (MimeTypes.TEXT_JSON.equalsIgnoreCase(document.getDocumentContentType())) {
-                    return true;
+    private boolean isJsonDocumentResults(@NotNull Object[] row) {
+        if (!ArrayUtils.isEmpty(columns)) {
+            DBPDataKind dataKind = columns[0].getDataKind();
+            if (columns.length == 1 && (dataKind == DBPDataKind.DOCUMENT || dataKind == DBPDataKind.STRUCT)) { // STRUCT Kind - this is the case from Couchbase, it can contains JSON document also
+                if (row.length > 0 && !DBUtils.isNullValue(row[0]) && row[0] instanceof DBDDocument) {
+                    DBDDocument document = (DBDDocument) row[0];
+                    return MimeTypes.TEXT_JSON.equalsIgnoreCase(document.getDocumentContentType());
                 }
             }
         }
