@@ -27,6 +27,7 @@ public interface DBTTaskRegistry {
     String EVENT_TASK_EXECUTE = "taskExecuted";
     String EVENT_PARAM_PROJECT = "project";
     String EVENT_PARAM_TASK = "taskId";
+    String EVENT_BEFORE_PROJECT_DELETE = "beforeProjectDelete";
 
     @NotNull
     DBTTaskType[] getAllTaskTypes();

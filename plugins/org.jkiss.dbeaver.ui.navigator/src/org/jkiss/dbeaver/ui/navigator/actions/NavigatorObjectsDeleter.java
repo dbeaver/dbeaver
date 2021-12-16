@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -188,6 +189,10 @@ public class NavigatorObjectsDeleter {
                 ((IFolder)resource).delete(true, true, monitor);
             } else if (resource instanceof IProject) {
                 // Delete project
+                DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(
+                    DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
+                    Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
+                );
                 ((IProject) resource).delete(deleteContent, true, monitor);
             } else if (resource != null) {
                 resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
