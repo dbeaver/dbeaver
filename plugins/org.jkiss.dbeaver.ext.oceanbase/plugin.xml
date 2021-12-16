@@ -25,8 +25,7 @@
             description="Oceanbase"
             id="oceanbase"
             parent="generic"
-            label="Oceanbase"
-            dialect="oceanbase">
+            label="Oceanbase">
             <tree
                 icon="icons/ob_icon.png"
                 label="OceanBase data source"
