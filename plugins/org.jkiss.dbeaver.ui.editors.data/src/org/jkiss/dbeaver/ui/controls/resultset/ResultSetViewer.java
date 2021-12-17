@@ -2256,9 +2256,6 @@ public class ResultSetViewer extends Viewer
     }
 
     void appendData(List<Object[]> rows, boolean resetOldRows) {
-        if (!checkForChanges()) {
-            return;
-        }
         model.appendData(rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
