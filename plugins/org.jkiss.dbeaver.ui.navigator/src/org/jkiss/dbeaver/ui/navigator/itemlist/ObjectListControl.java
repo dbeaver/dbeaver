@@ -41,9 +41,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -81,6 +81,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
     private static final String EMPTY_STRING = "";
+    public static final String EMPTY_GROUPING_LABEL = "<None>";
 
     private boolean isFitWidth;
     private boolean isTree;
@@ -692,7 +693,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (objectColumn == groupingColumn) {
                 Object groupingKey = ((ObjectsGroupingWrapper) element).groupingKey;
                 if (groupingKey == null || "".equals(groupingKey)) {
-                    return "<None>";
+                    return EMPTY_GROUPING_LABEL;
                 }
                 return groupingKey;
             }
@@ -762,6 +763,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     @Nullable
     protected Class<?>[] getListBaseTypes(Collection<OBJECT_TYPE> items) {
+        return null;
+    }
+
+    @Nullable
+    public <T> T getSuitableSelectedElement(@NotNull Class<T> adapterType) {
+        ISelection selection = getSelectionProvider().getSelection();
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+            T adapter = DBUtils.getAdapter(adapterType, firstElement);
+            if (adapter != null) {
+                return (T) firstElement;
+            }
+        }
         return null;
     }
 
@@ -1050,6 +1064,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Nullable
         @Override
         public Image getImage(Object element) {
+            if (element instanceof ObjectsGroupingWrapper) {
+                if (this.objectColumn == groupingColumn) {
+                    List<Object> groupedElements = ((ObjectsGroupingWrapper) element).groupedElements;
+                    element = groupedElements.get(0);
+                } else {
+                    return null;
+                }
+            }
             OBJECT_TYPE object = (OBJECT_TYPE) element;
             final Object objectValue = getObjectValue(object);
             if (objectValue == null) {
@@ -1197,10 +1219,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         final boolean isFocusCell = focusObject == object && focusColumn == objectColumn;
 
                         if (object instanceof ObjectsGroupingWrapper) {
-                            if (e.index == 0) {
-                                Object cellValue = ((ObjectsGroupingWrapper) object).groupingKey;
-                                //renderer.paintCell(e, object, cellValue, e.item, 0, (e.detail & SWT.SELECTED) == SWT.SELECTED); // for booleans?
-                            }
                             break;
                         }
                         final Object objectValue = getObjectValue(object);
@@ -1426,7 +1444,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public void fillConfigMenu(IContributionManager menuManager) {
             super.fillConfigMenu(menuManager);
-            if (isTree) {
+            if (isTree && supportsDataGrouping()) {
                 menuManager.add(new Separator());
                 int selectedColumnNumber = columnController.getSelectedColumnNumber();
                 String columnName = null;
@@ -1501,13 +1519,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 final Map<Object, List<Object>> groups = new HashMap<>();
 
                 for (Object element : elements) {
-                    try {
-                        final Object key = getCellValue(element, columnIndex);
-                        final List<Object> group = groups.computeIfAbsent(key, x -> new ArrayList<>());
-                        group.add(element);
-                    } catch (Exception e) {
-                        log.error("Can't read cell value", e);
-                    }
+                    final Object key = getCellValue(element, columnIndex);
+                    final List<Object> group = groups.computeIfAbsent(key, x -> new ArrayList<>());
+                    group.add(element);
                 }
 
                 return groups.entrySet().stream()
@@ -1538,9 +1552,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         private final Object groupingKey;
         private final List<Object> groupedElements;
 
-        private ObjectsGroupingWrapper(@NotNull Object groupingKey, @NotNull List<Object> groupedElements) {
+        private ObjectsGroupingWrapper(@Nullable Object groupingKey, @NotNull List<Object> groupedElements) {
             this.groupingKey = groupingKey;
             this.groupedElements = groupedElements;
+        }
+
+        @Override
+        public String toString() {
+            return (groupingKey != null ? "Grouped by: " + groupingKey.toString() + ". " : "") + "Elements amount: " + groupedElements.size();
         }
     }
 }

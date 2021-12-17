@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
@@ -358,16 +359,9 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     }
 
-    public DBAServerSession getSelectedSession()
-    {
-        ISelection selection = sessionTable.getSelectionProvider().getSelection();
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            Object firstElement = ((IStructuredSelection) selection).getFirstElement();
-            if (firstElement instanceof DBAServerSession) {
-                return (DBAServerSession) firstElement;
-            }
-        }
-        return null;
+    @Nullable
+    public DBAServerSession getSelectedSession() {
+        return sessionTable.getSuitableSelectedElement(DBAServerSession.class);
     }
 
     public List<DBAServerSession> getSelectedSessions()
