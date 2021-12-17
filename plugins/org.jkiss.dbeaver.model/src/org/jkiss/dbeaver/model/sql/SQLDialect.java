@@ -386,7 +386,7 @@ public interface SQLDialect {
     String getTestSQL();
 
     @NotNull
-    Pair<String, String> getInClauseBrackets();
+    Pair<String, String> getInClauseParentheses();
 
     /**
      * Dual table name.
