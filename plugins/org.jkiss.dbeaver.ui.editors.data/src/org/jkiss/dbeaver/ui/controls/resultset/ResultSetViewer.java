@@ -221,15 +221,6 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
-    private boolean isCancelled = false;
-
-    public boolean isCancelled() {
-        return isCancelled;
-    }
-
-    public void setCancelled(boolean cancelled) {
-        isCancelled = cancelled;
-    }
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3545,7 +3536,8 @@ public class ResultSetViewer extends Viewer
     public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
-            if (isCancelled){
+            //check if update previously was cancelled
+            if (!isHasMoreData()) {
                 return false;
             }
             int checkResult = new UITask<Integer>() {
@@ -3556,7 +3548,7 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
-                    isCancelled = true;
+                    dataReceiver.setHasMoreData(false);;
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
@@ -3711,6 +3703,10 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
+        if (!checkForChanges()) {
+            return;
+        }
+        dataReceiver.setHasMoreData(true);
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && !model.isUpdateInProgress()) {
             dataReceiver.setHasMoreData(false);
@@ -4818,10 +4814,6 @@ public class ResultSetViewer extends Viewer
                 return Status.CANCEL_STATUS;
             }
             beforeDataRead();
-            if (!checkForChanges()){
-                return Status.CANCEL_STATUS;
-            }
-            isCancelled = false;
             try {
                 IStatus status = super.run(monitor);
                 afterDataRead();
