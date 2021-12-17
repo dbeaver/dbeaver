@@ -64,11 +64,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     private String serverVersion;
 
     private volatile transient boolean hasStatistics;
+    private final String initialDatabaseName;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+
+        String configuredDatabaseName = container.getConnectionConfiguration().getDatabaseName();
+        initialDatabaseName = CommonUtils.isNotEmpty(configuredDatabaseName) ? configuredDatabaseName
+                : container.getDriver().getDefaultDatabase();
     }
 
     public boolean supportsColumnProperty() {
@@ -93,7 +98,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverVersion;
     }
 
-    private boolean isNotBabelfishDatasource() {
+    public boolean isNotBabelfishDatasource() {
         boolean isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
         return !isBabelfish;
     }
@@ -507,6 +512,15 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             return new SQLServerDatabase(session, owner, resultSet);
         }
 
+        @Override
+        protected boolean isValidObject(DBRProgressMonitor monitor, SQLServerDataSource sqlServerDataSource, SQLServerDatabase object) throws DBException {
+            if (sqlServerDataSource.isNotBabelfishDatasource()) {
+                return super.isValidObject(monitor, sqlServerDataSource, object);
+            } else {
+                return caseSensitive ? object.getName().equals(sqlServerDataSource.initialDatabaseName)
+                                     : object.getName().equalsIgnoreCase(sqlServerDataSource.initialDatabaseName);
+            }
+        }
     }
 
     private class SystemDataTypeCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDataType> {
