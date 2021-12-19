@@ -64,11 +64,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     private String serverVersion;
 
     private volatile transient boolean hasStatistics;
+    private boolean isBabelfish;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+        isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
     }
 
     public boolean supportsColumnProperty() {
@@ -93,21 +95,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverVersion;
     }
 
-    private boolean isNotBabelfishDatasource() {
-        boolean isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
+    public boolean supportsTriggers() {
         return !isBabelfish;
     }
 
-    public boolean supportsTriggers() {
-        return isNotBabelfishDatasource();
-    }
-
     public boolean supportsSynonyms() {
-        return isNotBabelfishDatasource();
+        return !isBabelfish;
     }
 
     public boolean supportsSequences() {
-        return isNotBabelfishDatasource();
+        return !isBabelfish;
     }
 
     String getServerVersion(DBRProgressMonitor monitor) {
@@ -488,16 +485,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
-            StringBuilder sql;
-            if(owner.isNotBabelfishDatasource()) {
-                sql = new StringBuilder("SELECT db.* FROM sys.databases db");
-            } else {
-                sql = new StringBuilder("SELECT db.* FROM (SELECT * FROM sys.databases WHERE name = db_name()) db");
+            StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
+            if (owner.isBabelfish) {
+                sql.append("\nWHERE db.name = db_name()");
             }
-
             DBSObjectFilter databaseFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
             if (databaseFilters != null && databaseFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", true, owner);
+                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", !owner.isBabelfish, owner);
             }
             sql.append("\nORDER BY db.name");
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
