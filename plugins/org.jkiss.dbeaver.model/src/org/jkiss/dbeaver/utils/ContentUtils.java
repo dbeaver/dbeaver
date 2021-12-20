@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -143,6 +144,8 @@ public class ContentUtils {
         monitor.beginTask("Copy binary content", contentLength < 0 ? STREAM_COPY_BUFFER_SIZE : (int) contentLength);
         try {
             byte[] buffer = new byte[STREAM_COPY_BUFFER_SIZE];
+            long totalCopied = 0;
+            NumberFormat nf = NumberFormat.getInstance();
             for (;;) {
                 if (monitor.isCanceled()) {
                     break;
@@ -151,8 +154,12 @@ public class ContentUtils {
                 if (count <= 0) {
                     break;
                 }
+                totalCopied += count;
                 outputStream.write(buffer, 0, count);
                 monitor.worked(STREAM_COPY_BUFFER_SIZE);
+                if (contentLength > 0) {
+                    monitor.subTask(nf.format(totalCopied) + " of " + nf.format(contentLength));
+                }
             }
         }
         finally {

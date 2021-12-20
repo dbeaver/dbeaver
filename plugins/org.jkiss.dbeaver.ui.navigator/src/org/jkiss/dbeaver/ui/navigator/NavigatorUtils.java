@@ -80,8 +80,10 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
@@ -371,6 +373,7 @@ public class NavigatorUtils {
             final DragSource source = new DragSource(viewer.getControl(), operations);
             source.setTransfer(dragTransferTypes);
             source.addDragListener(new DragSourceListener() {
+                private final List<File> tmpFiles = new ArrayList<>();
 
                 private IStructuredSelection selection;
 
@@ -385,6 +388,8 @@ public class NavigatorUtils {
                         List<DBNNode> nodes = new ArrayList<>();
                         List<DBPNamedObject> objects = new ArrayList<>();
                         List<String> names = new ArrayList<>();
+                        tmpFiles.clear();
+
                         String lineSeparator = CommonUtils.getLineSeparator();
                         StringBuilder buf = new StringBuilder();
                         for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
@@ -406,6 +411,54 @@ public class NavigatorUtils {
                                 DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
                                 nodeName = object.getName();
                                 objects.add(object);
+                            } else if (FileTransfer.getInstance().isSupportedType(event.dataType) &&
+                                nextSelected instanceof DBNStreamData &&
+                                ((DBNStreamData) nextSelected).supportsStreamData())
+                            {
+                                String fileName = node.getNodeName();
+                                try {
+                                    File tmpFile = new File(
+                                        DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files"),
+                                        fileName);
+                                    if (!tmpFile.exists()) {
+                                        if (!tmpFile.createNewFile()) {
+                                            log.error("Can't create new file" + tmpFile.getAbsolutePath());
+                                            continue;
+                                        }
+                                        new AbstractJob("Dump stream data '" + fileName + "' on disk " + tmpFile.getAbsolutePath()) {
+                                            {
+                                                setUser(true);
+                                            }
+                                            @Override
+                                            protected IStatus run(DBRProgressMonitor monitor) {
+                                                log.debug(getName());
+                                                try {
+                                                    long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
+                                                    try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
+                                                        try (OutputStream out = Files.newOutputStream(tmpFile.toPath())) {
+                                                            ContentUtils.copyStreams(is, streamSize, out, monitor);
+                                                        }
+                                                        tmpFiles.add(tmpFile);
+                                                    }
+                                                } catch (Exception e) {
+                                                    if (!tmpFile.delete()) {
+                                                        log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
+                                                    }
+                                                }
+                                                return Status.OK_STATUS;
+                                            }
+
+                                            @Override
+                                            public String toString() {
+                                                return getName();
+                                            }
+                                        }.schedule();
+                                    }
+                                    nodeName = tmpFile.getAbsolutePath();
+                                } catch (Exception e) {
+                                    log.error(e);
+                                    continue;
+                                }
                             } else {
                                 nodeName = node.getNodeTargetName();
                             }
@@ -422,6 +475,7 @@ public class NavigatorUtils {
                         } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = buf.toString();
                         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
+                            names.removeIf(s -> !Files.exists(Path.of(s)));
                             event.data = names.toArray(new String[0]);
                         }
                     } else {
@@ -439,6 +493,13 @@ public class NavigatorUtils {
 
                 @Override
                 public void dragFinished(DragSourceEvent event) {
+                    if (!tmpFiles.isEmpty()) {
+                        for (File tmpFile : tmpFiles) {
+                            if (!tmpFile.delete()) {
+                                log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
+                            }
+                        }
+                    }
                 }
             });
         }
