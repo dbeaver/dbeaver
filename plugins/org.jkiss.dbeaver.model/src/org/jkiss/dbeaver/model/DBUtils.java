@@ -1416,6 +1416,14 @@ public final class DBUtils {
         return null;
     }
 
+    @NotNull
+    public static <T extends DBSTypedObject> T getMoreCommonType(@NotNull T t1, @NotNull T t2) {
+        if (!t1.equals(t2) && t1.getDataKind().getCommonality() < t2.getDataKind().getCommonality()) {
+            return t2;
+        }
+        return t1;
+    }
+
     @Nullable
     public static DBSDataType resolveDataType(
         @NotNull DBRProgressMonitor monitor,
