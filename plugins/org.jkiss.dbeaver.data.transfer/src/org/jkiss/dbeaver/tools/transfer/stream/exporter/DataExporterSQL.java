@@ -56,6 +56,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private static final char STRING_QUOTE = '\'';
     private static final String PROP_LINE_BEFORE_ROWS = "lineBeforeRows";
     private static final String PROP_KEYWORD_CASE = "keywordCase";
+    private static final String PROP_COLUMN_NAMES_CASE = "columnNamesCase";
     private static final String PROP_UPSERT = "upsertKeyword";
     private static final String PROP_ON_CONFLICT = "insertOnConflict";
 
@@ -81,6 +82,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private final static String KEYWORD_ON_CONFLICT = "ON CONFLICT";
 
     private DBPIdentifierCase identifierCase;
+    private DBPIdentifierCase columnsCase;
     private static String onConflictExpression;
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
@@ -153,6 +155,15 @@ public class DataExporterSQL extends StreamExporterAbstract {
             identifierCase = DBPIdentifierCase.LOWER;
         } else {
             identifierCase = DBPIdentifierCase.UPPER;
+        }
+
+        String columnNamesCase = CommonUtils.toString(properties.get(PROP_COLUMN_NAMES_CASE));
+        if (columnNamesCase.equalsIgnoreCase("mixed")) {
+            columnsCase = DBPIdentifierCase.MIXED;
+        } else if (columnNamesCase.equalsIgnoreCase("lower")) {
+            columnsCase = DBPIdentifierCase.LOWER;
+        } else {
+            columnsCase = DBPIdentifierCase.UPPER;
         }
 
         insertKeyword = InsertKeyword.fromValue(CommonUtils.toString(properties.get(PROP_UPSERT)));
@@ -234,7 +245,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     sqlBuffer.append(',');
                 }
                 hasColumn = true;
-                sqlBuffer.append(DBUtils.getQuotedIdentifier(column));
+                sqlBuffer.append(columnsCase.transform(DBUtils.getQuotedIdentifier(column)));
             }
             sqlBuffer.append(") ");
             sqlBuffer.append(identifierCase.transform(KEYWORD_VALUES));
