@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,7 +56,7 @@ public class DTUtils {
     }
 
     public static void addSummary(StringBuilder summary, DataTransferProcessorDescriptor processor, Map<?, ?> props) {
-        summary.append(processor.getName()).append(" settings:\n");
+        summary.append(NLS.bind(DTMessages.data_transfer_summary_title, processor.getName())).append(":\n");
         for (DBPPropertyDescriptor prop : processor.getProperties()) {
             Object propValue = props.get(prop.getId());
             if (propValue == null) {
