@@ -298,7 +298,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
 
     @Deprecated
     public boolean isLocal(int depth) {
-        return true;
+        return false;
     }
 
     public boolean isPhantom() {

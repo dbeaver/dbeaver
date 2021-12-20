@@ -385,6 +385,9 @@ public interface SQLDialect {
     @Nullable
     String getTestSQL();
 
+    @NotNull
+    Pair<String, String> getInClauseParentheses();
+
     /**
      * Dual table name.
      * Used to evaluate expressions, call procedures, etc.

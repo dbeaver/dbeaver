@@ -17,8 +17,12 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -43,6 +47,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -67,10 +73,17 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
@@ -347,15 +360,20 @@ public class NavigatorUtils {
         addDragAndDropSupport(viewer, true, true);
     }
 
-    public static void addDragAndDropSupport(final Viewer viewer, boolean enableDrag, boolean enableDrop)
-    {
-        Transfer[] types = new Transfer[] {TextTransfer.getInstance(), TreeNodeTransfer.getInstance(), DatabaseObjectTransfer.getInstance()};
-        int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
-
+    public static void addDragAndDropSupport(final Viewer viewer, boolean enableDrag, boolean enableDrop) {
         if (enableDrag) {
+            Transfer[] dragTransferTypes = new Transfer[] {
+                TextTransfer.getInstance(),
+                TreeNodeTransfer.getInstance(),
+                DatabaseObjectTransfer.getInstance(),
+                FileTransfer.getInstance()
+            };
+            int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
+
             final DragSource source = new DragSource(viewer.getControl(), operations);
-            source.setTransfer(types);
+            source.setTransfer(dragTransferTypes);
             source.addDragListener(new DragSourceListener() {
+                private final List<File> tmpFiles = new ArrayList<>();
 
                 private IStructuredSelection selection;
 
@@ -369,6 +387,9 @@ public class NavigatorUtils {
                     if (!selection.isEmpty()) {
                         List<DBNNode> nodes = new ArrayList<>();
                         List<DBPNamedObject> objects = new ArrayList<>();
+                        List<String> names = new ArrayList<>();
+                        tmpFiles.clear();
+
                         String lineSeparator = CommonUtils.getLineSeparator();
                         StringBuilder buf = new StringBuilder();
                         for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
@@ -376,7 +397,8 @@ public class NavigatorUtils {
                             if (!(nextSelected instanceof DBNNode)) {
                                 continue;
                             }
-                            nodes.add((DBNNode) nextSelected);
+                            DBNNode node = (DBNNode) nextSelected;
+                            nodes.add(node);
                             String nodeName;
                             if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
                                 DBSObject object = ((DBNDatabaseNode) nextSelected).getObject();
@@ -389,13 +411,62 @@ public class NavigatorUtils {
                                 DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
                                 nodeName = object.getName();
                                 objects.add(object);
+                            } else if (FileTransfer.getInstance().isSupportedType(event.dataType) &&
+                                nextSelected instanceof DBNStreamData &&
+                                ((DBNStreamData) nextSelected).supportsStreamData())
+                            {
+                                String fileName = node.getNodeName();
+                                try {
+                                    File tmpFile = new File(
+                                        DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files"),
+                                        fileName);
+                                    if (!tmpFile.exists()) {
+                                        if (!tmpFile.createNewFile()) {
+                                            log.error("Can't create new file" + tmpFile.getAbsolutePath());
+                                            continue;
+                                        }
+                                        new AbstractJob("Dump stream data '" + fileName + "' on disk " + tmpFile.getAbsolutePath()) {
+                                            {
+                                                setUser(true);
+                                            }
+                                            @Override
+                                            protected IStatus run(DBRProgressMonitor monitor) {
+                                                log.debug(getName());
+                                                try {
+                                                    long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
+                                                    try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
+                                                        try (OutputStream out = Files.newOutputStream(tmpFile.toPath())) {
+                                                            ContentUtils.copyStreams(is, streamSize, out, monitor);
+                                                        }
+                                                        tmpFiles.add(tmpFile);
+                                                    }
+                                                } catch (Exception e) {
+                                                    if (!tmpFile.delete()) {
+                                                        log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
+                                                    }
+                                                }
+                                                return Status.OK_STATUS;
+                                            }
+
+                                            @Override
+                                            public String toString() {
+                                                return getName();
+                                            }
+                                        }.schedule();
+                                    }
+                                    nodeName = tmpFile.getAbsolutePath();
+                                } catch (Exception e) {
+                                    log.error(e);
+                                    continue;
+                                }
                             } else {
-                                nodeName = ((DBNNode) nextSelected).getNodeTargetName();
+                                nodeName = node.getNodeTargetName();
                             }
                             if (buf.length() > 0) {
                                 buf.append(lineSeparator);
                             }
                             buf.append(nodeName);
+                            names.add(nodeName);
                         }
                         if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = nodes;
@@ -403,6 +474,9 @@ public class NavigatorUtils {
                             event.data = objects;
                         } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = buf.toString();
+                        } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
+                            names.removeIf(s -> !Files.exists(Path.of(s)));
+                            event.data = names.toArray(new String[0]);
                         }
                     } else {
                         if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
@@ -411,12 +485,21 @@ public class NavigatorUtils {
                             event.data = Collections.emptyList();
                         } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = "";
+                        } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = new String[0];
                         }
                     }
                 }
 
                 @Override
                 public void dragFinished(DragSourceEvent event) {
+                    if (!tmpFiles.isEmpty()) {
+                        for (File tmpFile : tmpFiles) {
+                            if (!tmpFile.delete()) {
+                                log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -424,6 +507,7 @@ public class NavigatorUtils {
         if (enableDrop) {
             DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
             dropTarget.setTransfer(TreeNodeTransfer.getInstance());
+            dropTarget.setTransfer(FileTransfer.getInstance());
             dropTarget.addDropListener(new DropTargetListener() {
                 @Override
                 public void dragEnter(DropTargetEvent event) {
@@ -464,13 +548,14 @@ public class NavigatorUtils {
                 }
 
                 private boolean isDropSupported(DropTargetEvent event) {
+                    Object curObject;
+                    if (event.item instanceof Item) {
+                        curObject = event.item.getData();
+                    } else {
+                        curObject = null;
+                    }
+
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                        Object curObject;
-                        if (event.item instanceof Item) {
-                            curObject = event.item.getData();
-                        } else {
-                            curObject = null;
-                        }
                         @SuppressWarnings("unchecked")
                         Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
                         if (curObject instanceof DBNNode) {
@@ -502,17 +587,25 @@ public class NavigatorUtils {
                             }
                         }
                     }
+                    // Drop file - over resources
+                    if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                        if (curObject instanceof IAdaptable) {
+                            IResource curResource = ((IAdaptable) curObject).getAdapter(IResource.class);
+                            return curResource != null;
+                        }
+                    }
+
                     return false;
                 }
 
                 private void moveNodes(DropTargetEvent event) {
+                    Object curObject;
+                    if (event.item instanceof Item) {
+                        curObject = event.item.getData();
+                    } else {
+                        curObject = null;
+                    }
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                        Object curObject;
-                        if (event.item instanceof Item) {
-                            curObject = event.item.getData();
-                        } else {
-                            curObject = null;
-                        }
                         if (curObject instanceof DBNNode) {
                             Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
                             try {
@@ -540,8 +633,42 @@ public class NavigatorUtils {
                             }
                         }
                     }
+                    if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                        if (curObject instanceof IAdaptable) {
+                            IResource curResource = ((IAdaptable) curObject).getAdapter(IResource.class);
+                            if (curResource != null) {
+                                if (curResource instanceof IFile) {
+                                    curResource = curResource.getParent();
+                                }
+                                if (curResource instanceof IFolder) {
+                                    IFolder toFolder = (IFolder) curResource;
+                                    new AbstractJob("Copy files to workspace") {
+                                        @Override
+                                        protected IStatus run(DBRProgressMonitor monitor) {
+                                            dropFilesIntoFolder(monitor, toFolder, (String[])event.data);
+                                            return Status.OK_STATUS;
+                                        }
+                                    }.schedule();
+                                }
+                            }
+                        }
+                    }
                 }
             });
+        }
+    }
+
+    private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IFolder toFolder, String[] data) {
+        for (String extFileName : data) {
+            File extFile = new File(extFileName);
+            if (extFile.exists()) {
+                IFile targetFile = toFolder.getFile(extFile.getName());
+                try (InputStream is = Files.newInputStream(extFile.toPath())) {
+                    ContentUtils.copyStreamToFile(monitor, is, extFile.length(), targetFile);
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
         }
     }
 

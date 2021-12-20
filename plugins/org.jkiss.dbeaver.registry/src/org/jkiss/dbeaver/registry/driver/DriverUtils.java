@@ -137,6 +137,10 @@ public class DriverUtils {
             // Already extracted
             return;
         }
+        File localDir = localFile.getParentFile();
+        if (!localDir.exists() && !localDir.mkdirs()) { // in case of localFile located in subdirectory inside zip archive
+            throw new IOException("Can't create local file directory in the cache '" + localDir.getAbsolutePath() + "'");
+        }
         try (FileOutputStream os = new FileOutputStream(localFile)) {
             copyZipStream(zipStream, os);
         }

@@ -87,6 +87,11 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     }
 
+    @Override
+    public boolean supportsDataGrouping() {
+        return false;
+    }
+
     private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
         @Override
         public Object[] getElements(Object inputElement)
