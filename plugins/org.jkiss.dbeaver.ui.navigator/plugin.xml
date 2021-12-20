@@ -123,7 +123,7 @@
             class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             id="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.resource"
-            properties="canOpen,canDelete,canCreateFile,canCreateFolder,canCreateLink,canSetActive,type"
+            properties="canOpen,canDelete,canCreateFile,canCreateFolder,canCreateLink,canSetActive,isLocalFS,type"
             type="org.eclipse.core.resources.IResource"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
@@ -694,7 +694,9 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource"/>
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="org.jkiss.dbeaver.core.resource.isLocalFS"/>
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>
