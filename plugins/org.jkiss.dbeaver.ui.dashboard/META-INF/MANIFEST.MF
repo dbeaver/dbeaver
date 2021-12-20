@@ -31,3 +31,4 @@ Export-Package: org.jkiss.dbeaver.ui.dashboard.control,
  org.jkiss.dbeaver.ui.dashboard.model.data,
  org.jkiss.dbeaver.ui.dashboard.view
 Automatic-Module-Name: org.jkiss.dbeaver.ui.dashboard
+Bundle-Localization: OSGI-INF/l10n/bundle
