@@ -627,7 +627,7 @@ public final class SQLUtils {
                     conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
-                Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseBrackets();
+                Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseParentheses();
                 conString.append(operator.getExpression());
                 conString.append(' ').append(brackets.getFirst());
                 if (!value.getClass().isArray()) {
