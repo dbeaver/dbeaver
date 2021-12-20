@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
@@ -39,15 +42,22 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     @Override
-    protected Control createControl(Composite editPlaceholder)
-    {
-        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-
+    protected Control createControl(Composite editPlaceholder) {
+        Composite panelComposite = valueController.getEditPlaceholder();
+        Object value = valueController.getValue();
+        panelComposite.setLayout(new GridLayout(1, false));
+        valueController.getEditPlaceholder();
         timeEditor = new CustomTimeEditor(
-            valueController.getEditPlaceholder(),
-            (inline ? SWT.BORDER : SWT.MULTI));
+            panelComposite,
+           SWT.MULTI, true);
+        timeEditor.addSelectionAdapter(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                dirty = true;
+            }
+        });
+        primeEditorValue(value);
         timeEditor.setEditable(!valueController.isReadOnly());
-
         return timeEditor.getControl();
     }
 
@@ -60,11 +70,11 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     @Override
-    public void primeEditorValue(@Nullable Object value) throws DBException
+    public void primeEditorValue(@Nullable Object value)
     {
         final String strValue = value == null ?
             "" :
-            valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+                valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
         timeEditor.setValue(strValue);
         if (valueController.getEditType() == IValueController.EditType.INLINE) {
             timeEditor.selectAll();

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.DateTimeInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.DateTimeStandaloneEditor;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 /**
  * Date/time value handler
@@ -53,6 +54,7 @@ public class DateTimeValueManager extends BaseValueManager {
     {
         switch (controller.getEditType()) {
             case INLINE:
+                return new StringInlineEditor(controller);
             case PANEL:
                 return new DateTimeInlineEditor(controller);
             case EDITOR:

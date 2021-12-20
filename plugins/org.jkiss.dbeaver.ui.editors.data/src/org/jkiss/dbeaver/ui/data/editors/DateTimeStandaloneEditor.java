@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -29,6 +27,9 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -49,28 +50,22 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
+    protected Control createDialogArea(Composite parent) {
         IValueController valueController = getValueController();
         Object value = valueController.getValue();
 
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
+        Composite dialogGroup = (Composite) super.createDialogArea(parent);
         Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        int style = SWT.BORDER;
+        int style = SWT.NONE;
         if (valueController.isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
 
         UIUtils.createControlLabel(panel, "Time");
-        timeEditor = new CustomTimeEditor(panel, style);
-        timeEditor.getControl().addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                dirty = true;
-            }
-        });
+        timeEditor = new CustomTimeEditor(panel, style, false);
+        timeEditor.getControl().addListener(SWT.Modify, event -> dirty = true);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
@@ -83,8 +78,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         button.setEnabled(!valueController.isReadOnly());
         button.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 primeEditorValue(new Date());
             }
         });
@@ -94,8 +88,10 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     @Override
     public Object extractEditorValue() throws DBException {
-        final String strValue = timeEditor.getValue();
-        return getValueController().getValueHandler().getValueFromObject(null, getValueController().getValueType(), strValue, false, false);
+        try (DBCSession session = getValueController().getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
+            final String strValue = timeEditor.getValue();
+            return getValueController().getValueHandler().getValueFromObject(session, getValueController().getValueType(), strValue, false, false);
+        }
     }
 
     @Override
