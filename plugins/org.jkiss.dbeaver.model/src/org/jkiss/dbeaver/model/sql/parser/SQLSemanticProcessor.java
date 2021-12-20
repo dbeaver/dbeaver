@@ -35,13 +35,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.DBDAttributeAssociatedExpressionConstraint;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -52,6 +51,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Semantic SQL processor
@@ -146,6 +146,7 @@ public class SQLSemanticProcessor {
     private static boolean patchSelectQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException, DBException {
         // WHERE
         if (filter.hasConditions()) {
+            List<DBDAttributeConstraint> actualConstraints = new ArrayList<>();
             for (DBDAttributeConstraint co : filter.getConstraints()) {
                 if (co.hasCondition()) {
                     Table table = getConstraintTable(select, co);
@@ -159,12 +160,18 @@ public class SQLSemanticProcessor {
                             co.setEntityAlias(table.getName());
                         }
                     } else {
-                        co.setEntityAlias(null);
+                        DBDAttributeConstraint constraintWithExpr = tryRewriteConstraintWithAliasedExpression(co, select);
+                        if (constraintWithExpr != null) {
+                            co = constraintWithExpr;
+                        } else {
+                            co.setEntityAlias(null);
+                        }
                     }
+                    actualConstraints.add(co);
                 }
             }
             StringBuilder whereString = new StringBuilder();
-            SQLUtils.appendConditionString(filter, dataSource, null, whereString, true);
+            SQLUtils.appendConditionString(new DBDDataFilter(actualConstraints), dataSource, null, whereString, true);
             String condString = whereString.toString();
             addWhereToSelect(select, condString);
         }
@@ -202,6 +209,38 @@ public class SQLSemanticProcessor {
 
         }
         return true;
+    }
+
+    private static DBDAttributeConstraint tryRewriteConstraintWithAliasedExpression(DBDAttributeConstraint constraint, PlainSelect select) {
+        String constraintReferencedName = constraint.getAttributeName();
+        DBDAttributeAssociatedExpressionConstraint result;
+
+        if (CommonUtils.isNotEmpty(constraintReferencedName)) {
+            List<SelectItem> selectItems = select.getSelectItems().stream().filter(
+                    item -> CommonUtils.optionalIfInstanceOf(SelectExpressionItem.class, item)
+                            .map(selectExpr -> selectExpr.getAlias())
+                            .map(exprAlias -> exprAlias.getName())
+                            .map(aliasName -> aliasName.equals(constraintReferencedName))
+                            .orElse(false)
+            ).collect(Collectors.toList());
+
+            if (selectItems.size() == 1) {
+                SelectExpressionItem aliasedSelectItem = (SelectExpressionItem)selectItems.get(0);
+                result = new DBDAttributeAssociatedExpressionConstraint(constraint, aliasedSelectItem.getExpression().toString());
+            } else {
+                log.warn(String.format("Failed to bind constraint referenced name [%s] with select query expressions [%s]", constraintReferencedName, select));
+                if (selectItems.size() > 0) {
+                    log.warn(String.format("Selection expression alias is duplicated, consider query revision."));
+                } else {
+                    log.warn(String.format("No matching selection expression found with given alias."));
+                }
+                result = null;
+            }
+        } else {
+            result = null; // constraint seems does not have referenced name
+        }
+
+        return result;
     }
 
     private static boolean isValidTableColumn(DBRProgressMonitor monitor, DBPDataSource dataSource, Table table, DBDAttributeConstraint co) throws DBException {

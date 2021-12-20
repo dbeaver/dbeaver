@@ -476,32 +476,38 @@ public final class SQLUtils {
                 // Constraint may consist of several conditions and we don't want to break operator precedence
                 query.append('(');
             }
-            if (constraint.getEntityAlias() != null) {
-                query.append(constraint.getEntityAlias()).append('.');
-            } else if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
-            // Attribute name could be an expression. So check if this is a real attribute
-            // and generate full/quoted name for it.
-            String attrName;
-            DBSAttributeBase cAttr = constraint.getAttribute();
-            if (cAttr instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
-                if (binding.getEntityAttribute() != null &&
-                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
-                    binding instanceof DBDAttributeBindingType)
-                {
-                    attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
-                } else {
-                    // Most likely it is an expression so we don't want to quote it
-                    attrName = binding.getMetaAttribute().getName();
-                }
-            } else if (cAttr != null) {
-                attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
+            if (constraint instanceof DBDAttributeAssociatedExpressionConstraint) {
+                DBDAttributeAssociatedExpressionConstraint expressionConstraint = (DBDAttributeAssociatedExpressionConstraint)constraint;
+                query.append('(').append(expressionConstraint.getValueExpressionString()).append(')');
             } else {
-                attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
+                if (constraint.getEntityAlias() != null) {
+                    query.append(constraint.getEntityAlias()).append('.');
+                } else if (conditionTable != null) {
+                    query.append(conditionTable).append('.');
+                }
+                // Attribute name could be an expression. So check if this is a real attribute
+                // and generate full/quoted name for it.
+                String attrName;
+                DBSAttributeBase cAttr = constraint.getAttribute();
+                if (cAttr instanceof DBDAttributeBinding) {
+                    DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
+                    if (binding.getEntityAttribute() != null &&
+                        binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
+                        binding instanceof DBDAttributeBindingType)
+                    {
+                        attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
+                    } else {
+                        // Most likely it is an expression so we don't want to quote it
+                        attrName = binding.getMetaAttribute().getName();
+                    }
+                } else if (cAttr != null) {
+                    attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
+                } else {
+                    attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
+                }
+                query.append(attrName);
             }
-            query.append(attrName).append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
+            query.append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
             if (constraints.length > 1) {
                 query.append(')');
             }

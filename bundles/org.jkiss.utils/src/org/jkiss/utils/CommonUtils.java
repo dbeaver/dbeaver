@@ -1028,4 +1028,9 @@ public class CommonUtils {
         matcher.appendTail(sb);
         return sb.toString();
     }
+
+    @NotNull
+    public static <T> Optional<T> optionalIfInstanceOf(@NotNull Class<T> type, Object obj) {
+        return obj != null && type.isAssignableFrom(obj.getClass()) ? Optional.of((T)obj) : Optional.empty();
+    }
 }
