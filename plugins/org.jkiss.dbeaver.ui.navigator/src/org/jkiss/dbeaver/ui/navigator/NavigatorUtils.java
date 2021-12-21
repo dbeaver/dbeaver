@@ -506,8 +506,7 @@ public class NavigatorUtils {
 
         if (enableDrop) {
             DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
-            dropTarget.setTransfer(TreeNodeTransfer.getInstance());
-            dropTarget.setTransfer(FileTransfer.getInstance());
+            dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance());
             dropTarget.addDropListener(new DropTargetListener() {
                 @Override
                 public void dragEnter(DropTargetEvent event) {
