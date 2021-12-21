@@ -342,6 +342,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return new NodeRenderer();
     }
 
+    @Override
+    public boolean supportsDataGrouping() {
+        return false;
+    }
+
     private class NodeRenderer extends ViewerRenderer {
         @Override
         public boolean isHyperlink(Object cellValue)

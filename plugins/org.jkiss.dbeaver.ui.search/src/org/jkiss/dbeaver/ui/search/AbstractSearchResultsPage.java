@@ -238,11 +238,6 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             // No load service
             return null;
         }
-
-        @Override
-        public boolean supportsDataGrouping() {
-            return false;
-        }
     }
 
     private static class ResultsNode {
