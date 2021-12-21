@@ -1437,6 +1437,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private class GroupingViewerColumnController<COLUMN, ELEMENT> extends ViewerColumnController<COLUMN, ELEMENT> {
 
+        private int[] originalColumnOrder;
+
         GroupingViewerColumnController(String id, ColumnViewer viewer) {
             super(id, viewer);
         }
@@ -1458,6 +1460,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         if (columnPersist) {
                             groupingColumn = getColumnByIndex(selectedColumnNumber);
                             groupingColumn.columnIndex = selectedColumnNumber;
+                            originalColumnOrder = ((TreeViewer) itemsViewer).getTree().getColumnOrder();
                             moveGroupingColumnInTheBeginning(selectedColumnNumber);
                             itemsViewer.setContentProvider(new GroupingTreeProvider());
                             itemsViewer.refresh();
@@ -1475,6 +1478,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     @Override
                     public void run() {
                         groupingColumn = null;
+                        restoreOriginalColumnsOrder();
                         itemsViewer.setContentProvider(originalContentProvider);
                         itemsViewer.refresh();
                     }
@@ -1500,6 +1504,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
             tree.setColumnOrder(newColumnOrder);
+            columnController.repackColumns();
+        }
+
+        private void restoreOriginalColumnsOrder() {
+            if (!ArrayUtils.isEmpty(originalColumnOrder)) {
+                ((TreeViewer) itemsViewer).getTree().setColumnOrder(originalColumnOrder);
+            }
             columnController.repackColumns();
         }
     }
