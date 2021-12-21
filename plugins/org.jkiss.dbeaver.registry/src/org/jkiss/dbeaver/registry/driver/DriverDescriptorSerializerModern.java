@@ -144,7 +144,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                 json.name("driver-parameters");
                 json.beginObject();
                 for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
-                    if (!CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
+                    if (driver.isCustom() || !CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
                         json.name(paramEntry.getKey());
                         json.value(CommonUtils.toString(paramEntry.getValue()));
                     }

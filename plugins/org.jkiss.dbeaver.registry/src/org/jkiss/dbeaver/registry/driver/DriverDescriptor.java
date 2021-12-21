@@ -222,11 +222,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         this.origSampleURL = null;
 
-        this.iconPlain = providerDescriptor.getIcon();
+        if (copyFrom != null) {
+            this.iconPlain = copyFrom.iconPlain;
+            this.iconBig = copyFrom.iconBig;
+        } else {
+            this.iconPlain = providerDescriptor.getIcon();
+            this.iconBig = DBIcon.DATABASE_BIG_DEFAULT;
+        }
         if (this.iconPlain == null) {
             this.iconPlain = DBIcon.DATABASE_DEFAULT;
         }
-        this.iconBig = DBIcon.DATABASE_BIG_DEFAULT;
 
         makeIconExtensions();
         if (copyFrom != null) {
@@ -544,6 +549,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     public DBPImage getPlainIcon() {
         return iconPlain;
+    }
+
+    void setIconPlain(DBPImage iconPlain) {
+        this.iconPlain = iconPlain;
     }
 
     /**
