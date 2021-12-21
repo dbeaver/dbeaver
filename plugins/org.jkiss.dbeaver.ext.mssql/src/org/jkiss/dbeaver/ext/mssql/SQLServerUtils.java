@@ -143,14 +143,6 @@ public class SQLServerUtils {
         return true;
     }
 
-    public static boolean supportsExternalTables(@NotNull JDBCDataSource dataSource) {
-        final DBPDriver driver = dataSource.getContainer().getDriver();
-        if (isDriverSqlServer(driver) && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2016_VERSION_MAJOR, 0)) {
-            return true;
-        }
-        return isDriverAzure(driver);
-    }
-
     public static String getSystemSchemaFQN(JDBCDataSource dataSource, String catalog, String systemSchema) {
         return catalog != null && supportsCrossDatabaseQueries(dataSource) ?
                 DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema :

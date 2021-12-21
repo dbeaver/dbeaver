@@ -88,6 +88,13 @@
                                         </folder>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable" label="%tree.externalTables.node.name" icon="#folder_table" description="External tables" visibleIf="object.dataSource.supportsExternalTables()">
+                                    <items label="%tree.externalTable.node.name" path="externalTable" property="externalTables" icon="#table_external">
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
+                                        </folder>
+                                    </items>
+                                </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerView" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
                                     <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                         <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">

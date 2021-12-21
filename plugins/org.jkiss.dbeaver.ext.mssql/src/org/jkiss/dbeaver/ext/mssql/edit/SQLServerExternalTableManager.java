@@ -16,28 +16,70 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class SQLServerExternalTableManager extends SQLServerTableManager {
-    @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
-        final SQLServerExternalTable externalTable = (SQLServerExternalTable) table;
+import java.util.Map;
 
-        ddl.append(" WITH (\n\tLOCATION = ").append(SQLUtils.quoteString(table, externalTable.getExternalLocation()));
-        ddl.append(",\n\tDATA_SOURCE = ").append(DBUtils.getQuotedIdentifier(table.getDataSource(), externalTable.getExternalDataSource()));
-        if (CommonUtils.isNotEmpty(externalTable.getExternalFileFormat())) {
-            ddl.append(",\n\tFILE_FORMAT = ").append(SQLUtils.quoteString(table, externalTable.getExternalFileFormat()));
-        }
-        ddl.append("\n)");
+public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQLServerExternalTable> {
+    private static final Log log = Log.getLog(SQLServerExternalTableManager.class);
+
+    private static final Class<?>[] CHILD_TYPES = {
+        SQLServerTableColumn.class,
+    };
+
+    @Override
+    protected SQLServerExternalTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        final SQLServerSchema schema = (SQLServerSchema) container;
+        final SQLServerExternalTable table = new SQLServerExternalTable(schema);
+        setNewObjectName(monitor, schema, table);
+        return table;
     }
 
     @Override
-    protected String getCreateTableType(SQLServerTableBase table) {
+    public boolean canCreateObject(Object container) {
+        return false;
+    }
+
+    @Override
+    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerExternalTable table, SQLObjectEditor.NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+        try {
+            final SQLServerExternalTable.AdditionalInfo info = table.getAdditionalInfo(monitor);
+            ddl.append(" WITH (\n\tLOCATION = ").append(SQLUtils.quoteString(table, info.getExternalLocation()));
+            ddl.append(",\n\tDATA_SOURCE = ").append(DBUtils.getQuotedIdentifier(table.getDataSource(), info.getExternalDataSource()));
+            if (CommonUtils.isNotEmpty(info.getExternalFileFormat())) {
+                ddl.append(",\n\tFILE_FORMAT = ").append(SQLUtils.quoteString(table, info.getExternalFileFormat()));
+            }
+            ddl.append("\n)");
+        } catch (DBCException e) {
+            log.error("Error retrieving external table info");
+        }
+    }
+
+    @Override
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull SQLServerExternalTable object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
+    }
+
+    @NotNull
+    @Override
+    public Class<?>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
+
+    @Override
+    protected String getCreateTableType(SQLServerExternalTable table) {
         return "EXTERNAL TABLE";
     }
 }
