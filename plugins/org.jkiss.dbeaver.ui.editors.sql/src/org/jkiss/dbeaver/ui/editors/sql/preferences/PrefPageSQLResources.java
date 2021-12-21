@@ -104,9 +104,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                         GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_DATABASE),
                         GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA),
                         GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_PROJECT)));
-            UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
-                    SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME,
-                    SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
+            UIUtils.setContentProposalToolTip(scriptFileNamePattern, "Output file name patterns",
+                SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME,
+                SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
             ContentAssistUtils.installContentProposal(
                 scriptTitlePattern,
                 new SmartTextContentAdapter(),
@@ -117,9 +117,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_FILE_EXT),
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_DATABASE),
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
-            UIUtils.setContentProposalToolTip(scriptFileNamePattern, "Output file name patterns",
-                    SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME, SQLPreferenceConstants.VAR_FILE_NAME, SQLPreferenceConstants.VAR_FILE_EXT,
-                    SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
+            UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
+                SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME, SQLPreferenceConstants.VAR_FILE_NAME, SQLPreferenceConstants.VAR_FILE_EXT,
+                SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
         }
 
         // New Script template
@@ -222,7 +222,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
         connectionFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
-        scriptFileNamePattern.setMessage(store.getString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
+        scriptFileNamePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
         setSQLTemplateText(SQLEditorUtils.getNewScriptTemplate(store), false);
         sqlTemplateEnabledCheckbox.setSelection(store.getBoolean(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED));
         UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());

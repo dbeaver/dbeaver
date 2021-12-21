@@ -123,6 +123,14 @@ public class CommonUtils {
         return str;
     }
 
+    @NotNull
+    public static String removeLeadingSlash(@NotNull String str) {
+        while (str.startsWith("/") || str.startsWith("\\")) {
+            str = str.substring(1);
+        }
+        return str;
+    }
+
     public static String capitalizeWord(String str) {
         if (isEmpty(str) || Character.isUpperCase(str.charAt(0))) {
             return str;

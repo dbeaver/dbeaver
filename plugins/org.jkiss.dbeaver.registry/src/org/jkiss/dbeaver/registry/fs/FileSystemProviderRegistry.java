@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.registry.fs;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
+import org.jkiss.dbeaver.model.fs.DBFRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileSystemProviderRegistry {
+public class FileSystemProviderRegistry implements DBFRegistry {
     private static FileSystemProviderRegistry instance = null;
 
     public synchronized static FileSystemProviderRegistry getInstance() {
@@ -58,4 +60,8 @@ public class FileSystemProviderRegistry {
         return null;
     }
 
+    @Override
+    public DBFFileSystemDescriptor[] getFileSystemProviders() {
+        return descriptors.toArray(new DBFFileSystemDescriptor[0]);
+    }
 }

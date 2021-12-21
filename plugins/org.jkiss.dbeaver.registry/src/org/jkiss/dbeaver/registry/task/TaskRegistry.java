@@ -96,6 +96,20 @@ public class TaskRegistry implements DBTTaskRegistry
                     notifyTaskListeners(event);
                 }
             }
+            if (eventId.equals(EVENT_BEFORE_PROJECT_DELETE)) {
+                final String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
+                final DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                if (project != null) {
+                    final DBTTaskManager manager = project.getTaskManager();
+                    for (DBTTask task : manager.getAllTasks()) {
+                        try {
+                            manager.deleteTaskConfiguration(task);
+                        } catch (DBException e) {
+                            log.warn("Can't delete configuration for task: " + task.getName());
+                        }
+                    }
+                }
+            }
         });
     }
 

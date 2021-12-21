@@ -31,4 +31,6 @@ public interface DBFFileSystemDescriptor extends DBPObjectWithDescription {
 
     DBPImage getIcon();
 
+    DBFFileSystemProvider getInstance() throws IllegalStateException;
+
 }

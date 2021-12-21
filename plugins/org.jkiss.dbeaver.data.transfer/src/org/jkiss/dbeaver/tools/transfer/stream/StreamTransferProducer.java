@@ -148,6 +148,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof StreamTransferProducer) {
+            return CommonUtils.equalObjects(entityMapping, ((StreamTransferProducer) obj).entityMapping);
+        }
+        return super.equals(obj);
+    }
+
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override

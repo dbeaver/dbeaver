@@ -98,9 +98,11 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_close_all_tabs;
     public static String action_result_tabs_close_query_tabs;
     public static String action_result_tabs_close_other_tabs;
-    public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_close_tabs_to_the_left;
+    public static String action_result_tabs_close_tabs_to_the_right;
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
+    public static String action_result_tabs_unpin_all_tabs;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;
@@ -161,6 +163,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_group_search;
     public static String pref_page_sql_completion_label_match_contains;
     public static String pref_page_sql_completion_label_match_contains_tip;
+    public static String pref_page_sql_completion_label_activate_hippie;
+    public static String pref_page_sql_completion_label_activate_hippie_tip;
     public static String pref_page_sql_completion_label_use_global_search;
     public static String pref_page_sql_completion_label_use_global_search_tip;
     public static String pref_page_sql_completion_label_show_column_procedures;

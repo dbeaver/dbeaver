@@ -48,7 +48,18 @@ public class JSONUtils {
         .withZone(ZoneId.of("UTC"));
 
     public static String formatDate(Date date) {
-        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+        try {
+            if (date instanceof java.sql.Time) {
+                return DateTimeFormatter.ISO_TIME.format(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.of("UTC")));
+            } else if (date instanceof java.sql.Date) {
+                return DateTimeFormatter.ISO_DATE.format(((java.sql.Date) date).toLocalDate());
+            } else {
+                return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+            }
+        } catch (Exception ex) {
+            log.warn("Error formatting date to ISO-8601. Falling back to default string representation of " + date.getClass().getName(), ex);
+            return date.toString();
+        }
     }
 
     @Nullable

@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -62,10 +64,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
     private static final String ALL_COLUMNS_PATTERN = "*";
+    private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
     private static final String MATCH_ANY_PATTERN = "%";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
-
     private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
 
@@ -219,7 +221,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                    DBSObject selectedObject = getActiveInstanceObject();
                     if (selectedObject != null) {
                         makeProposalsFromChildren(selectedObject, null, false, parameters);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -246,7 +248,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
                     if (request.getContext().getExecutionContext() != null) {
-                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                        DBSObject selectedObject = getActiveInstanceObject();
                         if (selectedObject instanceof DBSObjectContainer) {
                             sc = (DBSObjectContainer) selectedObject;
                         }
@@ -403,15 +405,45 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     );
                 }
             }
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE))
+                makeProposalFromHippie();
         }
         filterProposals(dataSource);
+    }
+
+    private void makeProposalFromHippie() {
+        HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor();
+        String[] DisplayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset());
+        for (String word : DisplayNames) {
+            if (!hasProposal(proposals, word)) {
+                proposals.add(request.getContext().createProposal(
+                    request,
+                    word,
+                    word, // replacementString
+                    word.length(), //cursorPosition the position of the cursor following the insert
+                    null, //image to display
+                    //new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+                    DBPKeywordType.LITERAL,
+                    null,
+                    null,
+                    Collections.emptyMap()));
+            }
+        }
+    }
+    @Nullable
+    private DBSObject getActiveInstanceObject() {
+        DBCExecutionContext context = request.getContext().getExecutionContext();
+        if (context == null) {
+            return null;
+        }
+        return DBUtils.getActiveInstanceObject(context);
     }
 
     private void makeProceduresProposals(DBPDataSource dataSource, String wordPart, boolean exec) throws DBException {
         // Add procedures/functions for column proposals
         DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
         DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+        DBSObject selectedObject = getActiveInstanceObject();
         if (selectedObject instanceof DBSObjectContainer) {
             if (request.getContext().isSearchGlobally() && !request.getWordDetector().containsSeparator(wordPart)) {
                 // Do not send information about the scheme to the assistant
@@ -1261,7 +1293,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
+                        DBSObject selectedObject = getActiveInstanceObject();
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
                             isSingleObject = false;

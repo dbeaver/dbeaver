@@ -564,7 +564,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     private boolean loadTreeItems(
         DBRProgressMonitor monitor,
         DBXTreeItem meta,
-        final DBNDatabaseNode[] oldList,
+        final DBNDatabaseNode[] oldListCmp,
         final List<DBNDatabaseNode> toList,
         Object source,
         boolean showSystem,
@@ -618,6 +618,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return false;
         }
 
+        List<DBNDatabaseNode> oldList = new LinkedList<>();
+        if (oldListCmp != null) {
+            Collections.addAll(oldList, oldListCmp);
+        }
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -649,9 +653,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             DBSObject object = (DBSObject) childItem;
             boolean added = false;
-            if (oldList != null) {
+            if (!oldList.isEmpty()) {
                 // Check that new object is a replacement of old one
-                for (DBNDatabaseNode oldChild : oldList) {
+                for (Iterator<DBNDatabaseNode> iterator = oldList.iterator(); iterator.hasNext(); ) {
+                    DBNDatabaseNode oldChild = iterator.next();
                     if (oldChild.getMeta() == meta && equalObjects(oldChild.getObject(), object)) {
                         boolean updated = oldChild.reloadObject(monitor, object);
 
@@ -666,6 +671,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
                         toList.add(oldChild);
                         added = true;
+                        iterator.remove();
                         break;
                     }
                 }
@@ -677,7 +683,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
 
-        if (oldList != null) {
+        {
             // Now remove all non-existing items
             for (DBNDatabaseNode oldChild : oldList) {
                 if (oldChild.getMeta() != meta) {

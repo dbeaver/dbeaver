@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import java.io.File;
 import java.util.Arrays;
 
-public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer {
-    public DBeaverPreferencesInitializer() {
+public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer {
+    public DesktopPreferencesInitializer() {
     }
 
     @Override

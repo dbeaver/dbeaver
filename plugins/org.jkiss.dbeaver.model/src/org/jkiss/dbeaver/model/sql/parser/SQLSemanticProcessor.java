@@ -150,7 +150,7 @@ public class SQLSemanticProcessor {
                 if (co.hasCondition()) {
                     Table table = getConstraintTable(select, co);
                     if (!isValidTableColumn(monitor, dataSource, table, co)) {
-                        table = null;
+                        return false;
                     }
                     if (table != null) {
                         if (table.getAlias() != null) {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.fs;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
@@ -66,6 +67,7 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
         return icon;
     }
 
+    @NotNull
     public synchronized DBFFileSystemProvider getInstance() {
         if (instance == null) {
             try {

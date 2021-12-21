@@ -17,21 +17,30 @@
 
 package org.jkiss.dbeaver.model.fs;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
-
-import java.nio.file.FileSystem;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Virtual file system
  */
 public interface DBFVirtualFileSystem {
 
+    @NotNull
     String getFileSystemDisplayName();
+
+    @NotNull
+    String getType();
 
     String getDescription();
 
     DBPImage getIcon();
 
-    FileSystem getFileSystem();
+    @NotNull
+    String getId();
+
+    @NotNull
+    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
 
 }

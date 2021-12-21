@@ -14,34 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.resources.IWorkspace;
+package org.jkiss.dbeaver.model.fs;
+
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.nio.file.Path;
 
 /**
- * DBeaver workspace.
- *
- * Basically just a wrapper around Eclipse workspace.
- * Additionally holds information about remote workspace.
- * Identified by unique ID (random UUID).
+ * Virtual file system root
  */
-public class DBeaverWorkspace extends BaseWorkspaceImpl {
-
-    private String workspaceId;
-
-    DBeaverWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
-        super(platform, eclipseWorkspace);
-
-        workspaceId = readWorkspaceId();
-    }
+public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
 
     @NotNull
-    @Override
-    public String getWorkspaceId() {
-        return workspaceId;
-    }
+    DBFVirtualFileSystem getFileSystem();
+
+    @NotNull
+    String getId();
+
+    DBPImage getIcon();
+
+    @NotNull
+    Path getPath(DBRProgressMonitor monitor) throws DBException;
 
 }

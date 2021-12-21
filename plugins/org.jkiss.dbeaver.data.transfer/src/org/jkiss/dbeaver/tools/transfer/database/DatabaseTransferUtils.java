@@ -333,15 +333,18 @@ public class DatabaseTransferUtils {
         if (CommonUtils.isEmpty(value)) {
             return DATA_TYPE_UNKNOWN;
         }
-        try {
-            Long.parseLong(value);
-            return DATA_TYPE_INTEGER;
-        } catch (NumberFormatException ignored) {
-        }
-        try {
-            Double.parseDouble(value);
-            return DATA_TYPE_REAL;
-        } catch (NumberFormatException ignored) {
+        char firstChar = value.charAt(0);
+        if (Character.isDigit(firstChar) || firstChar == '+' || firstChar == '-' || firstChar == '.') {
+            try {
+                Long.parseLong(value);
+                return DATA_TYPE_INTEGER;
+            } catch (NumberFormatException ignored) {
+            }
+            try {
+                Double.parseDouble(value);
+                return DATA_TYPE_REAL;
+            } catch (NumberFormatException ignored) {
+            }
         }
         if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
             return DATA_TYPE_BOOLEAN;

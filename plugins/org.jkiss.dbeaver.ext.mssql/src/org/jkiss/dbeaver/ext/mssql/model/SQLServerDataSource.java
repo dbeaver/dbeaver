@@ -64,11 +64,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     private String serverVersion;
 
     private volatile transient boolean hasStatistics;
+    private boolean isBabelfish;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+        isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
     }
 
     public boolean supportsColumnProperty() {
@@ -91,6 +93,18 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public String getServerVersion() {
         return serverVersion;
+    }
+
+    public boolean supportsTriggers() {
+        return !isBabelfish;
+    }
+
+    public boolean supportsSynonyms() {
+        return !isBabelfish;
+    }
+
+    public boolean supportsSequences() {
+        return !isBabelfish;
     }
 
     String getServerVersion(DBRProgressMonitor monitor) {
@@ -472,10 +486,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
             StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
-
+            if (owner.isBabelfish) {
+                sql.append("\nWHERE db.name = db_name()");
+            }
             DBSObjectFilter databaseFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
             if (databaseFilters != null && databaseFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", true, owner);
+                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", !owner.isBabelfish, owner);
             }
             sql.append("\nORDER BY db.name");
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

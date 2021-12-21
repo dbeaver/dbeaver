@@ -73,11 +73,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
 
-        final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 1000), 0);
+        final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 100), 0);
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
 
-        try (Reader reader = openStreamReader(inputStream, processorProperties, false)) {
+        try (Reader reader = openStreamReader(inputStream, processorProperties, true)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
                 String[] header = getNextLine(csvReader);
                 if (header == null) {
@@ -135,6 +135,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                     columnInfo.setDataKind(dataType.getFirst());
                                     columnInfo.setTypeName(dataType.getSecond());
                                 }
+                                break;
+                            default:
                                 break;
                         }
                     }

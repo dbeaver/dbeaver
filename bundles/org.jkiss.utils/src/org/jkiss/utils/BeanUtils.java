@@ -429,4 +429,12 @@ public class BeanUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValue(@NotNull Object object, @NotNull String name) throws Throwable {
+        final Field field = object.getClass().getDeclaredField(name);
+        if (!field.canAccess(object)) {
+            field.setAccessible(true);
+        }
+        return (T) field.get(object);
+    }
 }

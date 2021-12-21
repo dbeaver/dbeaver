@@ -56,19 +56,7 @@
     <includes id="org.eclipse.equinox.p2.discovery.feature" version="0.0.0"/>
     <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>
 
-
-
     <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <!-- EGit and other requirements -->
-    <plugin id="org.eclipse.ui.net" download-size="0" install-size="0" version="0.0.0"/>
-    <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
-    <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
-    <plugin id="org.eclipse.core.variables" download-size="0" install-size="0" version="0.0.0"/>
-    <!--<plugin id="org.eclipse.ui.cheatsheets" download-size="0" install-size="0" version="0.0.0"/>-->
-
-    <!-- Include org.eclipse.ui.themes because it was added only in 4.4 -->
-    <plugin id="org.eclipse.ui.themes" download-size="0" install-size="0" version="0.0.0"/>
 
     <!-- Custom stuff -->
     <plugin id="org.apache.commons.cli" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
