@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
@@ -148,11 +149,19 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
             // Parameters
             for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
-                if (!CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
+                if (driver.isCustom() || !CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
+                    // Save custom parameters for custom drivers. It can help with PG drivers, as example (we must store serverType for PG-clones).
                     try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PARAMETER)) {
                         xml.addAttribute(RegistryConstants.ATTR_NAME, paramEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                     }
+                }
+            }
+
+            // Extra icon parameter for the custom driver
+            if (driver.isCustom()) {
+                try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PARAMETER)) {
+                    xml.addAttribute(RegistryConstants.ATTR_ICON, driver.getIcon().getLocation());
                 }
             }
 
@@ -326,6 +335,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
                         if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                             curDriver.setDriverParameter(paramName, paramValue, false);
+                        }
+                        // Read extra icon parameter for custom drivers
+                        if (curDriver.isCustom()) {
+                            final String iconParam = atts.getValue(RegistryConstants.ATTR_ICON);
+                            if (!CommonUtils.isEmpty(iconParam)) {
+                                DBPImage icon = curDriver.iconToImage(iconParam);
+                                curDriver.setIconPlain(icon);
+                            }
                         }
                     }
                     break;
