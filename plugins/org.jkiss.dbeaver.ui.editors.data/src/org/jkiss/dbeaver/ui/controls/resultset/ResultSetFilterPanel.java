@@ -615,12 +615,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         }
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
-        String word = wordDetector.getFullWord();
         final List<IContentProposal> proposals = new ArrayList<>();
 
-        if (CommonUtils.isEmptyTrimmed(word)) word = contents;
-        word = word.toLowerCase(Locale.ENGLISH);
-        String attrName = word;
+        String attrName = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
 
         final DBRRunnableWithProgress reader = monitor -> {
             DBDAttributeBinding[] attributes = viewer.getModel().getAttributes();
