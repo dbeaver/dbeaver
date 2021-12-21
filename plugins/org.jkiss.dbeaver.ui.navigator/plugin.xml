@@ -617,88 +617,110 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive">
+        <handler commandId="org.jkiss.dbeaver.core.project.active"
+                 class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.canSetActive"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.canSetActive"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resource.create.file" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateFile">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.canCreateFile"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.canCreateFile"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateFolder">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.canCreateFolder"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.canCreateFolder"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.ui.navigator.actions.links.LinkFileHandler">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.ui.navigator.actions.links.LinkFolderHandler">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.script.associate" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerAssociateScript">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.show.in.explorer" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerShowInExplorer">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.isLocalFS"/>
-                        </adapt>
-                    </iterate>
-                </with>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.isLocalFS"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
 
