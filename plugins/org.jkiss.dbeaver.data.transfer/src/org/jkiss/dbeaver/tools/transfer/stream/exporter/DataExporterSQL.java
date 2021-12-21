@@ -56,6 +56,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private static final char STRING_QUOTE = '\'';
     private static final String PROP_LINE_BEFORE_ROWS = "lineBeforeRows";
     private static final String PROP_KEYWORD_CASE = "keywordCase";
+    private static final String PROP_IDENTIFIER_CASE = "identifierCase";
     private static final String PROP_UPSERT = "upsertKeyword";
     private static final String PROP_ON_CONFLICT = "insertOnConflict";
 
@@ -81,6 +82,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private final static String KEYWORD_ON_CONFLICT = "ON CONFLICT";
 
     private DBPIdentifierCase identifierCase;
+    private DBPIdentifierCase columnsAndTableNamesCase;
     private static String onConflictExpression;
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
@@ -149,10 +151,19 @@ public class DataExporterSQL extends StreamExporterAbstract {
         }
 
         String keywordCase = CommonUtils.toString(properties.get(PROP_KEYWORD_CASE));
-        if (keywordCase.equalsIgnoreCase("lower")) {
+        if (keywordCase.equals("lower")) {
             identifierCase = DBPIdentifierCase.LOWER;
         } else {
             identifierCase = DBPIdentifierCase.UPPER;
+        }
+
+        String identifierCaseProp = CommonUtils.toString(properties.get(PROP_IDENTIFIER_CASE));
+        if (identifierCaseProp.equals("mixed")) {
+            columnsAndTableNamesCase = DBPIdentifierCase.MIXED;
+        } else if (identifierCaseProp.equals("lower")) {
+            columnsAndTableNamesCase = DBPIdentifierCase.LOWER;
+        } else {
+            columnsAndTableNamesCase = DBPIdentifierCase.UPPER;
         }
 
         insertKeyword = InsertKeyword.fromValue(CommonUtils.toString(properties.get(PROP_UPSERT)));
@@ -224,7 +235,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                         sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_INTO));
                     }
             }
-            sqlBuffer.append(" ").append(tableName).append(" (");
+            sqlBuffer.append(" ").append(columnsAndTableNamesCase.transform(tableName)).append(" (");
             boolean hasColumn = false;
             for (DBDAttributeBinding column : columns) {
                 if (isSkipColumn(column)) {
@@ -234,7 +245,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     sqlBuffer.append(',');
                 }
                 hasColumn = true;
-                sqlBuffer.append(DBUtils.getQuotedIdentifier(column));
+                sqlBuffer.append(columnsAndTableNamesCase.transform(DBUtils.getQuotedIdentifier(column)));
             }
             sqlBuffer.append(") ");
             sqlBuffer.append(identifierCase.transform(KEYWORD_VALUES));
