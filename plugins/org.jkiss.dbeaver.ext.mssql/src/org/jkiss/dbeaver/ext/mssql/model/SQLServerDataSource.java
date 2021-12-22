@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -75,6 +76,14 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public boolean supportsColumnProperty() {
         return supportsColumnProperty;
+    }
+
+    public boolean supportsExternalTables() {
+        final DBPDriver driver = getContainer().getDriver();
+        if (SQLServerUtils.isDriverSqlServer(driver) && isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2016_VERSION_MAJOR, 0)) {
+            return true;
+        }
+        return SQLServerUtils.isDriverAzure(driver);
     }
 
     @Override

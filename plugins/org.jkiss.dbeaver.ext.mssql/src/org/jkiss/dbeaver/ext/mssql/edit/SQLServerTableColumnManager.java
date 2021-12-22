@@ -138,9 +138,8 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     @Override
     protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
     {
-        SQLServerTable table = (SQLServerTable) container;
-
-        DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
+        final SQLServerTableBase table = (SQLServerTableBase) container;
+        final DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
 
         final SQLServerTableColumn column = new SQLServerTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));
