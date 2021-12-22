@@ -138,12 +138,6 @@
     <plugin id="org.eclipse.e4.emf.xpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.commons.jxpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
-    <!-- 3rd party -->
-
-    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
     <!-- OS dependent -->
 
     <plugin id="org.eclipse.core.resources.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>

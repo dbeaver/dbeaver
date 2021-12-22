@@ -22,12 +22,6 @@
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
 
-    <requires>
-        <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
-        <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
-        <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
-    </requires>
-
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
 
     <includes id="org.jkiss.dbeaver.runtime.feature" version="0.0.0"/>
