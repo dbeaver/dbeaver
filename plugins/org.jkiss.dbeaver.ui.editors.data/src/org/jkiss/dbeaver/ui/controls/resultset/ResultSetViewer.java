@@ -222,7 +222,6 @@ public class ResultSetViewer extends Viewer
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
 
-
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
         super();
@@ -3537,6 +3536,10 @@ public class ResultSetViewer extends Viewer
     public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
+            //check if update previously was cancelled
+            if (!isHasMoreData()) {
+                return false;
+            }
             int checkResult = new UITask<Integer>() {
                 @Override
                 protected Integer runTask() {
@@ -3545,6 +3548,7 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
+                    dataReceiver.setHasMoreData(false);;
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
@@ -3699,6 +3703,10 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
+        if (!checkForChanges()) {
+            return;
+        }
+        dataReceiver.setHasMoreData(true);
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && !model.isUpdateInProgress()) {
             dataReceiver.setHasMoreData(false);
