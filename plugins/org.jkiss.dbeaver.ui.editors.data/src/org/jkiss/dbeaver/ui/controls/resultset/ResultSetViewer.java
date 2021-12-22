@@ -221,6 +221,12 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
+    private boolean isCancelled = false;
+    private volatile boolean isAwaitingDialogResult;
+    private volatile boolean isLoadingData;
+    public void setCancelled(boolean cancelled) {
+        isCancelled = cancelled;
+    }
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3536,8 +3542,7 @@ public class ResultSetViewer extends Viewer
     public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
-            //check if update previously was cancelled
-            if (!isHasMoreData()) {
+            if (!dataReceiver.isHasMoreData()) {
                 return false;
             }
             int checkResult = new UITask<Integer>() {
@@ -3548,14 +3553,16 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
-                    dataReceiver.setHasMoreData(false);;
+                    dataReceiver.setHasMoreData(false);
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
+                    isLoadingData = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
-                            UIUtils.asyncExec(() -> refreshData(null));
+                            UIUtils.syncExec(() -> refreshData(null));
                         }
+                        isLoadingData = false;
                     });
                     return false;
                 default:
@@ -3698,30 +3705,34 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    public void readNextSegment()
-    {
-        if (!dataReceiver.isHasMoreData()) {
+    public void readNextSegment() {
+        if (isLoadingData || isAwaitingDialogResult || dataPumpRunning.get() || !dataReceiver.isHasMoreData()) {
             return;
         }
-        if (!checkForChanges()) {
-            return;
-        }
-        dataReceiver.setHasMoreData(true);
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null && !model.isUpdateInProgress()) {
-            dataReceiver.setHasMoreData(false);
-            dataReceiver.setNextSegmentRead(true);
+        try {
+            isAwaitingDialogResult = true;
+            if (!checkForChanges()) {
+                return;
+            }
 
-            runDataPump(
-                dataContainer,
-                model.getDataFilter(),
-                model.getRowCount(),
-                getSegmentMaxRows(),
-                -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                false,
-                true,
-                true,
-                null);
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null && !model.isUpdateInProgress()) {
+                dataReceiver.setHasMoreData(false);
+                dataReceiver.setNextSegmentRead(true);
+
+                runDataPump(
+                    dataContainer,
+                    model.getDataFilter(),
+                    model.getRowCount(),
+                    getSegmentMaxRows(),
+                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                    false,
+                    true,
+                    true,
+                    null);
+            }
+        } finally {
+            isAwaitingDialogResult = false;
         }
     }
 
