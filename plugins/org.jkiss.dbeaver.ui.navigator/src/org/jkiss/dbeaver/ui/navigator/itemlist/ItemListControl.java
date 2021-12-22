@@ -443,6 +443,9 @@ public class ItemListControl extends NodeListControl
         @Override
         public Font getFont(Object element)
         {
+            if (!(element instanceof DBNNode)) {
+                return normalFont;
+            }
             final Object object = getObjectValue((DBNNode) element);
             return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ? boldFont : normalFont;
         }
@@ -456,6 +459,9 @@ public class ItemListControl extends NodeListControl
         @Override
         public Color getBackground(Object element)
         {
+            if (!(element instanceof DBNNode)) {
+                return null;
+            }
             DBNNode node = (DBNNode) element;
             if (node.isDisposed()) {
                 return null;
