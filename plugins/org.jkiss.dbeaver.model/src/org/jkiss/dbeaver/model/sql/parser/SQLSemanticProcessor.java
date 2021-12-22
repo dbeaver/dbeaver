@@ -159,7 +159,7 @@ public class SQLSemanticProcessor {
                             co.setEntityAlias(table.getName());
                         }
                     } else {
-                        co.setEntityAlias(null);
+                        return false;
                     }
                 }
             }
