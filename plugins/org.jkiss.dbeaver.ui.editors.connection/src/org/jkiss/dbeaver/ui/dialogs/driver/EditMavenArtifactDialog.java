@@ -380,13 +380,18 @@ public class EditMavenArtifactDialog extends BaseDialog {
         if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
                 originalArtifact.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
-                originalArtifact.setPreferredVersion(preferredVersionText.getText());
+                originalArtifact.setPreferredVersion(preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText());
                 originalArtifact.setIgnoreDependencies(ignoreDependencies);
                 originalArtifact.setLoadOptionalDependencies(loadOptionalDependencies);
             } else {
-                DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", preferredVersionText.getText());
+                DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(
+                    EditMavenArtifactDialog.this.driver,
+                    DBPDriverLibrary.FileType.jar,
+                    "",
+                    preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText()
+                );
                 lib.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
-                lib.setPreferredVersion(preferredVersionText.getText());
+                lib.setPreferredVersion(preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText());
                 lib.setLoadOptionalDependencies(loadOptionalDependencies);
                 lib.setIgnoreDependencies(ignoreDependencies);
                 artifacts.add(lib);
