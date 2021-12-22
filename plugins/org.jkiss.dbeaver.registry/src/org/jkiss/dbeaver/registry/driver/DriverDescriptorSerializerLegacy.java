@@ -342,6 +342,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             if (!CommonUtils.isEmpty(iconParam)) {
                                 DBPImage icon = curDriver.iconToImage(iconParam);
                                 curDriver.setIconPlain(icon);
+                                curDriver.makeIconExtensions();
                             }
                         }
                     }
