@@ -25,6 +25,7 @@
             description="Oceanbase"
             id="oceanbase"
             parent="generic"
+            dialect="mysql"
             label="Oceanbase">
             <tree
                 icon="icons/ob_icon.png"
@@ -165,6 +166,6 @@
             objectType="org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLCatalog"
             label="%manager.catalog.name"/>
     </extension>
-    
+
 </plugin>
 
