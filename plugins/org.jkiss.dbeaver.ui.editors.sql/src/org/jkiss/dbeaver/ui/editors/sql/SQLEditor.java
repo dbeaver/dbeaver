@@ -3867,7 +3867,11 @@ public class SQLEditor extends SQLEditorBase implements
                     cr.viewer.updateFiltersText(false);
                 }
                 if (!result.hasError() && !queryProcessor.resultContainers.isEmpty()) {
-                    resultTabs.setSelection(queryProcessor.resultContainers.get(0).resultsTab);
+                    if (activeResultsTab != null && !activeResultsTab.isDisposed()) {
+                        resultTabs.setSelection(activeResultsTab);
+                    } else {
+                        resultTabs.setSelection(queryProcessor.resultContainers.get(0).resultsTab);
+                    }
                 }
                 // Set tab names by query results names
                 if (scriptMode || queryProcessor.getResultContainers().size() > 0) {
