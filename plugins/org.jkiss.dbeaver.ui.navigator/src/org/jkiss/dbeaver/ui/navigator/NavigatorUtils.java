@@ -667,7 +667,11 @@ public class NavigatorUtils {
             if (extFile.exists()) {
                 IFile targetFile = toFolder.getFile(extFile.getName());
                 try (InputStream is = Files.newInputStream(extFile.toPath())) {
-                    targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                    if (targetFile.exists()) {
+                        targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                    } else {
+                        targetFile.create(is, true, monitor.getNestedMonitor());
+                    }
                 }
             }
         }
