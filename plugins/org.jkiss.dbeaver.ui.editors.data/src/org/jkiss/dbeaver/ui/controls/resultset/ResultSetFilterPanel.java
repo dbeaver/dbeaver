@@ -147,13 +147,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
             this.filterExpandPanel = new FilterExpandPanel(filterComposite);
 
-            this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
+            this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI | SWT.V_SCROLL);
             this.filtersTextViewer.setDocument(new Document());
             this.filtersTextViewer.getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
             this.filtersTextViewer.setUndoManager(undoManager);
             this.filtersText = this.filtersTextViewer.getTextWidget();
+            this.filtersText.setAlwaysShowScrollBars(false);
 
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.verticalIndent = 1;
@@ -1034,6 +1035,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         GridData gd = (GridData) filtersText.getLayoutData();
         gd.heightHint = filtersText.getLineHeight() * (filterExpanded ? 5 : 1);
 
+        filtersText.setWordWrap(filterExpanded);
         this.getParent().layout(true);
     }
 
