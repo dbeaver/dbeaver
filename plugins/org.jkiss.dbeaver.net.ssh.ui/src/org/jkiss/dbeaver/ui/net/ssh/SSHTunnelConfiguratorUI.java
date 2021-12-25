@@ -443,7 +443,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 hostPortText.setText(String.valueOf(SSHConstants.DEFAULT_SSH_PORT));
             }
             authMethodCombo.select(CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD).ordinal());
-            privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_KEY_PATH)));
+            privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
