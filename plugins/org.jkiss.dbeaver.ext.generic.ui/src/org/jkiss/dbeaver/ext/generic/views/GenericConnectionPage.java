@@ -218,7 +218,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                     public void widgetSelected(SelectionEvent e)
                     {
                         if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
-                            FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
+                            FileDialog dialog = new FileDialog(getShell(), SWT.SAVE | SWT.SINGLE);
                             dialog.setFileName(pathText.getText());
                             dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
                             String file = dialog.open();
