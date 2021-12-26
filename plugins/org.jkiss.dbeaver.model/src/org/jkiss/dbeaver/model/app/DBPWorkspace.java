@@ -38,6 +38,8 @@ public interface DBPWorkspace extends DBAAuthSpace
 {
     String METADATA_FOLDER = ".metadata";
 
+    void initialize();
+
     @NotNull
     DBPPlatform getPlatform();
 

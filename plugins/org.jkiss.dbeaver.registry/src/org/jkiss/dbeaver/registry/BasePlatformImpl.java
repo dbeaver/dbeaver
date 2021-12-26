@@ -70,7 +70,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
 
-    protected void initialize() {
+    @Override
+    public void initialize() {
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefsStore = getPreferenceStore();

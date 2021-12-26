@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
  */
 public class BasicWorkspace extends BaseWorkspaceImpl {
 
-    private String workspaceId;
+    private final String workspaceId;
 
     public BasicWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);

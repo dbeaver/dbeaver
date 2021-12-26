@@ -38,6 +38,8 @@ import java.nio.file.Path;
  */
 public interface DBPPlatform
 {
+    void initialize();
+
     @NotNull
     DBPApplication getApplication();
 

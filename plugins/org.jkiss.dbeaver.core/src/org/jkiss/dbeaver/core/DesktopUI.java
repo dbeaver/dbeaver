@@ -89,7 +89,6 @@ public class DesktopUI implements DBPPlatformUI {
     public static DesktopUI getInstance() {
         if (instance == null) {
             instance = new DesktopUI();
-            instance.initialize();
         }
         return instance;
     }
@@ -121,7 +120,8 @@ public class DesktopUI implements DBPPlatformUI {
         }
     }
 
-    private void initialize() {
+    @Override
+    public void initialize() {
         this.trayItem = new TrayIconHandler();
 
         if (DesktopPlatform.isStandalone()) {

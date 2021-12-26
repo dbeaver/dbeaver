@@ -78,6 +78,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             refreshProjects();
         }
 
+        DBWorkbench.getPlatform().initialize();
         DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);

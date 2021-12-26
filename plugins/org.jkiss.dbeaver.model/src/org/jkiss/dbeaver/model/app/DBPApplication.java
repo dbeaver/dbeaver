@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 
 /**
@@ -68,4 +69,6 @@ public interface DBPApplication
      */
     String getDefaultProjectName();
 
+    @NotNull
+    DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 }

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
@@ -151,6 +152,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
 
         startVersionChecker();
+
+        DBWorkbench.getPlatformUI().initialize();
     }
 
     @Override

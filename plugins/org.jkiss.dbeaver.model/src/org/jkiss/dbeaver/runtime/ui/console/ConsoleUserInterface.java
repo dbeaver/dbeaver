@@ -44,6 +44,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
 
     @Override
+    public void initialize() {
+        // nothing to initialize
+    }
+
+    @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
         System.out.println(title + (message == null ? "" : ": " + message));
         printStatus(status, 0);

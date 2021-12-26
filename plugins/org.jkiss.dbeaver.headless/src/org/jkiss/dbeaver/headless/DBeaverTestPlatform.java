@@ -91,14 +91,9 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
             }
         }
 
-        try {
-            instance = new DBeaverTestPlatform();
-            instance.initialize();
-            return instance;
-        } catch (Throwable e) {
-            log.error("Error initializing test platform", e);
-            throw new IllegalStateException("Error initializing test platform", e);
-        }
+        instance = new DBeaverTestPlatform();
+
+        return instance;
     }
 
     public static String getCorePluginID() {
@@ -120,7 +115,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
     private DBeaverTestPlatform() {
     }
 
-    protected void initialize() {
+    @Override
+    public void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Test Platform...");
 

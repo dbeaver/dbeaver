@@ -53,6 +53,8 @@ public interface DBPPlatformUI {
         RETRY,
     }
 
+    void initialize();
+
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
     UserResponse showError(@NotNull final String title, @Nullable final String message);

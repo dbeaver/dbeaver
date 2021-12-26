@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.model.access.DBASession;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
@@ -75,6 +76,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
+
+        projectListener = new ProjectListener();
+        eclipseWorkspace.addResourceChangeListener(projectListener);
+    }
+
+    @Override
+    public void initialize() {
         this.workspaceAuthContext.addSession(acquireWorkspaceSession());
 
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
@@ -108,15 +116,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             }
         }
 
-        projectListener = new ProjectListener();
-        eclipseWorkspace.addResourceChangeListener(projectListener);
-
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
+        initializeProjects();
     }
 
     @NotNull
-    protected BasicWorkspaceSession acquireWorkspaceSession() {
+    protected DBASession acquireWorkspaceSession() {
         return new BasicWorkspaceSession(this);
     }
 
