@@ -107,6 +107,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1764,7 +1768,7 @@ public class ResultSetViewer extends Viewer
 
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             RowData rd = new RowData();
-            rd.width = 30 * fontHeight;
+            rd.width = 50 * fontHeight;
             statusLabel.setLayoutData(rd);
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
@@ -2060,13 +2064,17 @@ public class ResultSetViewer extends Viewer
                     rowsUpdated = stats.getRowsUpdated();
                 }
                 if (rowsFetched < 0 && rowsUpdated >= 0) {
-                    statusMessage =
-                        ResultSetUtils.formatRowCount(rowsUpdated) +
-                            ResultSetMessages.controls_resultset_viewer_status_rows_updated + getExecutionTimeMessage();
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_updated,
+                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        getExecutionTimeMessage()
+                    );
                 } else {
-                    statusMessage =
-                        ResultSetUtils.formatRowCount(rowsFetched) +
-                            ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_fetched,
+                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        getExecutionTimeMessage()
+                    );
                 }
             }
         }
@@ -2116,10 +2124,28 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
+        final LocalDateTime endTime = LocalDateTime
+            .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
+            .truncatedTo(ChronoUnit.SECONDS);
         if (fetchTime <= 0) {
-            return " - " + RuntimeUtils.formatExecutionTime(totalTime);
+            return NLS.bind(
+                ResultSetMessages.controls_resultset_viewer_status_rows_time,
+                new Object[]{
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    DateTimeFormatter.ISO_DATE.format(endTime),
+                    DateTimeFormatter.ISO_TIME.format(endTime),
+                }
+            );
         } else {
-            return " - " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) + " (+" + RuntimeUtils.formatExecutionTime(fetchTime) + ")";
+            return NLS.bind(
+                ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
+                new Object[]{
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    RuntimeUtils.formatExecutionTime(fetchTime),
+                    DateTimeFormatter.ISO_DATE.format(endTime),
+                    DateTimeFormatter.ISO_TIME.format(endTime),
+                }
+            );
         }
     }
 

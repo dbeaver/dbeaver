@@ -94,10 +94,11 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_empty;
     public static String controls_resultset_viewer_status_no_data;
     public static String controls_resultset_viewer_status_row;
-    public static String controls_resultset_viewer_status_rows;
     public static String controls_resultset_viewer_status_rows_fetched;
     public static String controls_resultset_viewer_status_rows_updated;
     public static String controls_resultset_viewer_status_rows_size;
+    public static String controls_resultset_viewer_status_rows_time;
+    public static String controls_resultset_viewer_status_rows_time_fetch;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;
     public static String controls_resultset_viewer_pin_column;
