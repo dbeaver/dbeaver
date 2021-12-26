@@ -17,15 +17,19 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.text.IPainter;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.WhitespaceCharacterPainter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 
 public class SQLEditorSourceViewer extends ProjectionViewer {
+    private WhitespaceCharacterPainterEx whitespaceCharacterPainter;
 
     /**
      * Creates an instance of this class with the given parameters.
@@ -63,4 +67,29 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         super.setHyperlinkPresenter(hyperlinkPresenter);
     }
 
+    @Override
+    public void addPainter(IPainter painter) {
+        if (painter instanceof WhitespaceCharacterPainter) {
+            super.addPainter(getWhitespacePainter((WhitespaceCharacterPainter) painter));
+        } else {
+            super.addPainter(painter);
+        }
+    }
+
+    @Override
+    public void removePainter(IPainter painter) {
+        if (painter instanceof WhitespaceCharacterPainter) {
+            super.removePainter(getWhitespacePainter((WhitespaceCharacterPainter) painter));
+        } else {
+            super.removePainter(painter);
+        }
+    }
+
+    @NotNull
+    private IPainter getWhitespacePainter(@NotNull WhitespaceCharacterPainter original) {
+        if (whitespaceCharacterPainter == null) {
+            whitespaceCharacterPainter = new WhitespaceCharacterPainterEx(this, original);
+        }
+        return whitespaceCharacterPainter;
+    }
 }
