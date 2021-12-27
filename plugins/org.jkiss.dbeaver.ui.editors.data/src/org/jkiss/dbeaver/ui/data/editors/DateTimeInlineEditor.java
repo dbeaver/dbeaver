@@ -16,20 +16,35 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.compare.internal.ViewerDescriptor;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
 
 /**
 * DateTimeInlineEditor
@@ -43,21 +58,27 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 
     @Override
     protected Control createControl(Composite editPlaceholder) {
-        Composite panelComposite = valueController.getEditPlaceholder();
         Object value = valueController.getValue();
-        panelComposite.setLayout(new GridLayout(1, false));
         valueController.getEditPlaceholder();
+
         timeEditor = new CustomTimeEditor(
-            panelComposite,
-           SWT.MULTI, true);
+            editPlaceholder,
+           SWT.MULTI, false);
         timeEditor.addSelectionAdapter(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 dirty = true;
+                Event selectionEvent = new Event();
+                selectionEvent.widget = timeEditor.getControl();
+                timeEditor.getControl().notifyListeners(SWT.Selection, selectionEvent);
             }
         });
         primeEditorValue(value);
+        timeEditor.createDateFormat(valueController.getValueType());
         timeEditor.setEditable(!valueController.isReadOnly());
+
+
+
         return timeEditor.getControl();
     }
 
@@ -72,10 +93,13 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public void primeEditorValue(@Nullable Object value)
     {
-        final String strValue = value == null ?
-            "" :
-                valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        timeEditor.setValue(strValue);
+        if (value instanceof Time) {
+            timeEditor.setValue((Time) value);
+        } else if (value instanceof Timestamp) {
+            timeEditor.setValue((Timestamp) value);
+        } else if (value instanceof Date) {
+            timeEditor.setValue((Date) value);
+        }
         if (valueController.getEditType() == IValueController.EditType.INLINE) {
             timeEditor.selectAll();
         }

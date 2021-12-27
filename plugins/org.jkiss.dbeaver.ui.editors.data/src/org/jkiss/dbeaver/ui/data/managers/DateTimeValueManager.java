@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -54,6 +55,9 @@ public class DateTimeValueManager extends BaseValueManager {
     {
         switch (controller.getEditType()) {
             case INLINE:
+                if (ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
+                    return new DateTimeInlineEditor(controller);
+                }
                 return new StringInlineEditor(controller);
             case PANEL:
                 return new DateTimeInlineEditor(controller);

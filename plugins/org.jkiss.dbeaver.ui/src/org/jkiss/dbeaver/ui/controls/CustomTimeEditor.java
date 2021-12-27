@@ -16,18 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.lsp4e.ui.UI;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.text.ParseException;
+import java.sql.JDBCType;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,26 +50,78 @@ public class CustomTimeEditor {
     private final DateTime dateEditor;
     private final DateTime timeEditor;
     private final Composite basePart;
+
     private static final String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private String format = "";
-    private static final Log log = Log.getLog(CustomTimeEditor.class);
-    int millis = 0;
+    private DateFormat dateFormat = null;
+    private final Label timeLabel;
+    private final Label dateLabel;
+    private int millis = -1;
+
+
+    InputMode inputMode = InputMode.None;
+    private final Calendar calendar = Calendar.getInstance();
+
+    private enum InputMode {
+        None,
+        Date,
+        Time,
+        DateTime
+    }
+
+    public void setDateFormat(DateFormat dateFormat) {
+        this.dateFormat = dateFormat;
+    }
+
+    public void createDateFormat(@NotNull DBSTypedObject valueType) {
+        final JDBCType jdbcType = JDBCType.valueOf(valueType.getTypeID());
+        switch (jdbcType) {
+            case DATE:
+                setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+
+                inputMode = InputMode.Date;
+                timeEditor.dispose();
+                timeLabel.dispose();
+                break;
+            case TIME_WITH_TIMEZONE:
+                setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSX"));
+                inputMode = InputMode.DateTime;
+                break;
+            case TIME:
+                setDateFormat(new SimpleDateFormat("HH:mm:ss"));
+                inputMode = InputMode.Time;
+                dateEditor.dispose();
+                dateLabel.dispose();
+                break;
+            default:
+                setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
+                inputMode = InputMode.DateTime;
+                break;
+        }
+    }
 
     public CustomTimeEditor(Composite parent, int style, boolean isPanel) {
+
         basePart = new Composite(parent, style);
-        GridLayout layout = new GridLayout(isPanel ? 1 : 2, false);
+        GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.horizontalSpacing = 0;
-        layout.verticalSpacing = 0;
+        layout.marginWidth = 10;
         basePart.setLayout(layout);
-        this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN);
-        dateEditor.setLayoutData(new GridData(SWT.FILL, SWT.UP, true, false, 1, 1));
-        this.timeEditor = new DateTime(basePart, SWT.TIME );
-        this.timeEditor.setLayoutData(new GridData(SWT.FILL , SWT.UP, true, false, 1, 1)   );
+        basePart.setFocus();
+        final GridData layoutData = new GridData(SWT.FILL, isPanel ? SWT.UP : SWT.RIGHT, true, false, 1, 1);
+        dateLabel = UIUtils.createLabel(basePart,"Date");
+        this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM | SWT.NO_FOCUS);
+        this.timeEditor.setLayoutData(layoutData);
+        timeEditor.setFocus();
+        timeLabel = UIUtils.createLabel(basePart, "Time");
+        this.dateEditor = new DateTime(basePart, SWT.DROP_DOWN | SWT.NO_FOCUS);
+        dateEditor.setLayoutData(layoutData);
         this.format = getTimestampFormat();
     }
 
+    public void setFormat(String format) {
+        this.format = format;
+    }
 
     public void addSelectionAdapter(SelectionAdapter listener) {
         if (dateEditor != null && !dateEditor.isDisposed()) {
@@ -83,36 +143,48 @@ public class CustomTimeEditor {
         return TIMESTAMP_DEFAULT_FORMAT;
     }
 
-    public void setValue(@Nullable String value) {
-        Calendar calendar = Calendar.getInstance();
+    public void setValue(@Nullable Date value) {
         if (value != null) {
+            calendar.setTime(value);
+        }
+        if (!dateEditor.isDisposed()) {
+            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+
+        }
+        if (!timeEditor.isDisposed()) {
+            timeEditor.addTraverseListener(e -> {
+                timeEditor.setFocus();
+            });
+            timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+
             try {
-                Date date = new SimpleDateFormat(format).parse(value);
-                calendar.setTime(date);
-            } catch (ParseException e) {
-                log.error("Input value is null", e);
+                millis = calendar.get(Calendar.MILLISECOND);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //Calendar doesn't have any way to
+                millis = -1;
             }
         }
-        dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH));
-        timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
-        try {
-            millis = calendar.get(Calendar.MILLISECOND);
-        } catch (ArrayIndexOutOfBoundsException e){
-            //Calendar doesn't have any way to
-            millis = -1;
-        }
+
     }
 
     public String getValue() throws DBException {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
-            timeEditor.getMinutes(), timeEditor.getSeconds());
+        switch (inputMode) {
+            case Time:
+                calendar.set(0, 0, 0, timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
+                break;
+            case Date:
+                calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay());
+                break;
+            case DateTime:
+                calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
+                    timeEditor.getMinutes(), timeEditor.getSeconds());
+                break;
+        }
         if (millis != -1) {
             calendar.set(Calendar.MILLISECOND, millis);
         }
-        return new SimpleDateFormat(format).format(calendar.getTime());
-
+        return dateFormat.format(calendar.getTime());
     }
 
     public void setEditable(boolean editable) {

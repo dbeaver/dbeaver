@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -35,6 +34,8 @@ import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.dialogs.ValueViewDialog;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -53,7 +54,6 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     protected Control createDialogArea(Composite parent) {
         IValueController valueController = getValueController();
         Object value = valueController.getValue();
-
         Composite dialogGroup = (Composite) super.createDialogArea(parent);
         Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -63,14 +63,13 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             style |= SWT.READ_ONLY;
         }
 
-        UIUtils.createControlLabel(panel, "Time");
         timeEditor = new CustomTimeEditor(panel, style, false);
         timeEditor.getControl().addListener(SWT.Modify, event -> dirty = true);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         timeEditor.getControl().setLayoutData(gd);
-
+        timeEditor.createDateFormat(valueController.getValueType());
         primeEditorValue(value);
 
         Button button = UIUtils.createPushButton(panel, "Set Current", null);
@@ -95,12 +94,14 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     @Override
-    public void primeEditorValue(@Nullable Object value)
-    {
-        final String strValue = value == null ?
-            "" :
-            getValueController().getValueHandler().getValueDisplayString(getValueController().getValueType(), value, DBDDisplayFormat.EDIT);
-        timeEditor.setValue(strValue);
+    public void primeEditorValue(@Nullable Object value) {
+        if (value instanceof Time) {
+            timeEditor.setValue((Time) value);
+        } else if (value instanceof Timestamp) {
+            timeEditor.setValue((Timestamp) value);
+        } else if (value instanceof Date) {
+            timeEditor.setValue((Date) value);
+        }
     }
 
     @Override

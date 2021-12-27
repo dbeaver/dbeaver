@@ -226,6 +226,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
     public static String pref_page_content_editor_checkbox_commit_on_value_apply;
     public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
+    public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
+    public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
     public static String pref_page_content_editor_group_keys;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
     public static String pref_page_content_editor_checkbox_new_rows_after;
