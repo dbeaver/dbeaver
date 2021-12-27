@@ -510,11 +510,12 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         Action crsSelectorAction = new SelectCRSAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
 
-        if (Arrays.stream(lastValue).map(DBGeometry::getSRID).distinct().count() > 1) {
+        //if geometries have different srid show warning and do nothing (see in SelectCRSAction)
+        /*if (Arrays.stream(lastValue).map(DBGeometry::getSRID).distinct().count() > 1) {
             // Disallow changing srid if geometries have different srid
             // Maybe we should transform them into source srid first and then transmute into a desired one?
             crsSelectorAction.setEnabled(false);
-        }
+        }*/
 
         Action tilesSelectorAction = new SelectTilesAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(tilesSelectorAction, true));
