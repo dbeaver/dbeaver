@@ -54,7 +54,7 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
             if (forceComment) {
                 // Add comment
                 document.replace(lineOffset, 0, singleLineComments[0]);
-                selLength += singleLineComments[0].length();
+                selOffset += singleLineComments[0].length();
             } else {
                 String lineComment = null;
                 String lineText = document.get(lineOffset, lineLength);
@@ -74,8 +74,8 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
                 }
                 if (lineComment != null) {
                     // Remove comment
-                    document.replace(lineOffset, checkOffset + lineComment.length(), "");
-                    selLength -= checkOffset + lineComment.length();
+                    document.replace(lineOffset + checkOffset, lineComment.length(), "");
+                    selOffset = Math.max(lineOffset, selOffset - lineComment.length());
                 }
             }
         }
