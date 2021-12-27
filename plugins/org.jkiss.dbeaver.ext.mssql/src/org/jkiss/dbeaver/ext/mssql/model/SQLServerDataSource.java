@@ -80,6 +80,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public boolean supportsExternalTables() {
         final DBPDriver driver = getContainer().getDriver();
+        if (isBabelfish) {
+            return false;
+        }
         if (SQLServerUtils.isDriverSqlServer(driver) && isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2016_VERSION_MAJOR, 0)) {
             return true;
         }
