@@ -487,10 +487,9 @@ public final class SQLUtils {
             DBSAttributeBase cAttr = constraint.getAttribute();
             if (cAttr instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
-                if (binding.getEntityAttribute() != null &&
-                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
-                    binding instanceof DBDAttributeBindingType)
-                {
+                if ((binding.getEntityAttribute() != null &&
+                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName())) ||
+                    binding instanceof DBDAttributeBindingType || binding instanceof DBDAttributeBindingMeta) {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
                 } else {
                     // Most likely it is an expression so we don't want to quote it
