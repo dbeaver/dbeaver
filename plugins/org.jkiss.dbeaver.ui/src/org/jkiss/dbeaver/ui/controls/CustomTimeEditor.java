@@ -16,17 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.lsp4e.ui.UI;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DateTime;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -47,20 +42,21 @@ import java.util.Map;
  */
 public class CustomTimeEditor {
     private final static String FORMAT_PATTERN = "pattern";
-    private final DateTime dateEditor;
-    private final DateTime timeEditor;
+    private DateTime dateEditor;
+    private DateTime timeEditor;
     private final Composite basePart;
 
     private static final String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private String format = "";
     private DateFormat dateFormat = null;
-    private final Label timeLabel;
-    private final Label dateLabel;
+    private Label timeLabel;
+    private Label dateLabel;
     private int millis = -1;
 
 
     InputMode inputMode = InputMode.None;
     private final Calendar calendar = Calendar.getInstance();
+    private Text textEditor;
 
     private enum InputMode {
         None,
@@ -78,10 +74,11 @@ public class CustomTimeEditor {
         switch (jdbcType) {
             case DATE:
                 setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
-
                 inputMode = InputMode.Date;
                 timeEditor.dispose();
-                timeLabel.dispose();
+                if (timeLabel != null){
+                    timeLabel.dispose();
+                }
                 break;
             case TIME_WITH_TIMEZONE:
                 setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSX"));
@@ -91,7 +88,9 @@ public class CustomTimeEditor {
                 setDateFormat(new SimpleDateFormat("HH:mm:ss"));
                 inputMode = InputMode.Time;
                 dateEditor.dispose();
-                dateLabel.dispose();
+                if (dateLabel != null) {
+                    dateLabel.dispose();
+                }
                 break;
             default:
                 setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
@@ -100,30 +99,114 @@ public class CustomTimeEditor {
         }
     }
 
-    public CustomTimeEditor(Composite parent, int style, boolean isPanel) {
 
+    public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
+        basePart = getComposite(parent, style, isPanel, isInline);
+    }
+
+    @NotNull
+    private Composite getComposite(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
+        final Composite basePart;
         basePart = new Composite(parent, style);
-        GridLayout layout = new GridLayout(2, false);
+        GridLayout layout;
+        if (isInline) {
+            layout = new GridLayout(1, false);
+        } else {
+            layout = new GridLayout(2, false);
+        }
         layout.marginHeight = 0;
         layout.marginWidth = 10;
         basePart.setLayout(layout);
         basePart.setFocus();
+
         final GridData layoutData = new GridData(SWT.FILL, isPanel ? SWT.UP : SWT.RIGHT, true, false, 1, 1);
-        dateLabel = UIUtils.createLabel(basePart,"Date");
-        this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM | SWT.NO_FOCUS);
-        this.timeEditor.setLayoutData(layoutData);
-        timeEditor.setFocus();
-        timeLabel = UIUtils.createLabel(basePart, "Time");
-        this.dateEditor = new DateTime(basePart, SWT.DROP_DOWN | SWT.NO_FOCUS);
+
+        if (!isInline)dateLabel = UIUtils.createLabel(basePart, "Date");
+        this.dateEditor = new DateTime(basePart, SWT.DROP_DOWN);
         dateEditor.setLayoutData(layoutData);
+        if (!isInline)timeLabel = UIUtils.createLabel(basePart, "Time");
+        this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM);
+        this.timeEditor.setLayoutData(layoutData);
+        textEditor = new Text(basePart, style);
+        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        textEditor.setLayoutData(gridData);
+        textEditor.setVisible(false);
+        gridData.exclude = true;
+
+        //Magical part which fixes incorrect display of first value in inline mode
+        basePart.pack();
+
+
+        basePart.layout();
         this.format = getTimestampFormat();
+        return basePart;
     }
 
-    public void setFormat(String format) {
+
+    /**
+     * Hides all DateTime editors and shows text editor instead
+     */
+    public void setToTextComposite() {
+        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        textEditor.setLayoutData(gridData);
+        textEditor.setVisible(true);
+        GridLayout layout = new GridLayout(1, false);
+        basePart.setLayout(layout);
+        final GridData layoutData = new GridData(SWT.FILL, SWT.UP, true, false, 1, 1);
+
+        if (!timeEditor.isDisposed()) {
+            timeEditor.setLayoutData(layoutData);
+            timeEditor.setVisible(layoutData.exclude);
+            timeLabel.setLayoutData(layoutData);
+            timeLabel.setVisible(layoutData.exclude);
+        }
+        if (!dateEditor.isDisposed()){
+            dateEditor.setLayoutData(layoutData);
+            dateEditor.setVisible(layoutData.exclude);
+            dateLabel.setLayoutData(layoutData);
+            dateLabel.setVisible(layoutData.exclude);
+        }
+        layoutData.exclude = true;
+        basePart.layout();
+    }
+
+    /**
+     * Hides Text editor and shows DateTime ones
+     */
+    public void setToDateComposite() {
+        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        textEditor.setLayoutData(gridData);
+        textEditor.setVisible(false);
+        gridData.exclude = true;
+        GridLayout layout = new GridLayout(2, false);
+        basePart.setLayout(layout);
+
+        final GridData layoutData = new GridData(SWT.FILL,  SWT.RIGHT, true, false, 1, 1);
+
+        if (!dateEditor.isDisposed()) {
+            dateEditor.setLayoutData(layoutData);
+            dateEditor.setVisible(true);
+            dateLabel.setLayoutData(layoutData);
+            dateLabel.setVisible(true);
+        }
+        if (!timeEditor.isDisposed()) {
+            timeEditor.setLayoutData(layoutData);
+            timeEditor.setVisible(true);
+            timeLabel.setLayoutData(layoutData);
+            timeLabel.setVisible(true);
+        }
+        basePart.layout();
+    }
+
+    public void setFormat(@NotNull String format) {
         this.format = format;
     }
 
-    public void addSelectionAdapter(SelectionAdapter listener) {
+    /**
+     * Creates listeners for all editors
+     * @param listener
+     */
+    public void addSelectionAdapter(@NotNull SelectionAdapter listener) {
         if (dateEditor != null && !dateEditor.isDisposed()) {
             dateEditor.addSelectionListener(listener);
         }
@@ -131,6 +214,13 @@ public class CustomTimeEditor {
             timeEditor.addSelectionListener(listener);
         }
     }
+
+    public void addModifyListener(@NotNull ModifyListener listener){
+        if (textEditor != null && !textEditor.isDisposed()) {
+            textEditor.addModifyListener(listener);
+        }
+    }
+
 
     private String getTimestampFormat() {
         TimestampFormatSample prefFormatt = new TimestampFormatSample();
@@ -141,6 +231,12 @@ public class CustomTimeEditor {
             return format;
         }
         return TIMESTAMP_DEFAULT_FORMAT;
+    }
+
+    public void setTextValue(@Nullable String value){
+        if (textEditor != null && !textEditor.isDisposed()) {
+            textEditor.setText(value!= null ? value.toString() : "");
+        }
     }
 
     public void setValue(@Nullable Date value) {
@@ -168,7 +264,11 @@ public class CustomTimeEditor {
 
     }
 
+    @Nullable
     public String getValue() throws DBException {
+        if (textEditor != null && !textEditor.isDisposed() && textEditor.isVisible()) {
+            return textEditor.getText();
+        }
         switch (inputMode) {
             case Time:
                 calendar.set(0, 0, 0, timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
@@ -191,7 +291,6 @@ public class CustomTimeEditor {
         if (this.dateEditor != null && !this.dateEditor.isDisposed()) {
             this.dateEditor.setEnabled(editable);
         }
-
         if (this.timeEditor != null && !this.timeEditor.isDisposed()) {
             this.timeEditor.setEnabled(editable);
         }

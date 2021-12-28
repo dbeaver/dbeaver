@@ -63,7 +63,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             style |= SWT.READ_ONLY;
         }
 
-        timeEditor = new CustomTimeEditor(panel, style, false);
+        timeEditor = new CustomTimeEditor(panel, style, false, false);
         timeEditor.getControl().addListener(SWT.Modify, event -> dirty = true);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
