@@ -390,22 +390,30 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             // Already quoted
             return str;
         }
+
         String[][] quoteStrings = this.getIdentifierQuoteStrings();
         if (ArrayUtils.isEmpty(quoteStrings)) {
             return str;
         }
 
+        if (mustBeQuoted(str, forceCaseSensitive) || forceQuotes) {
+            return quoteIdentifier(str, quoteStrings);
+        } else {
+            return str;
+        }
+    }
+
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);
-        boolean hasBadChars = forceQuotes ||
-            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
-                this.isQuoteReservedWords());
+        boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
+                this.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {
             hasBadChars = !this.validIdentifierStart(str.charAt(0));
         }
         if (!hasBadChars && forceCaseSensitive) {
-            // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
+            // Check for case of quoted indents. Do not check for unquoted case - we don't need to quote em anyway
             // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
             // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
             if (!this.useCaseInsensitiveNameLookup()) {
@@ -431,11 +439,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                 }
             }
         }
-        if (!hasBadChars) {
-            return str;
-        }
 
-        return quoteIdentifier(str, quoteStrings);
+        return hasBadChars;
     }
 
     @NotNull
