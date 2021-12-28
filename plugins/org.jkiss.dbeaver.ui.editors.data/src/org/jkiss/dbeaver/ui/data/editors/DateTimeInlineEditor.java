@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -100,8 +101,12 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         timeEditor = new CustomTimeEditor(
             editPlaceholder,
             SWT.MULTI, false, inline);
-        dateEditorMode = new DateEditorMode(timeEditor);
         textMode = new TextMode(timeEditor);
+        dateEditorMode = new DateEditorMode(timeEditor);
+        if (ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR))
+            textMode.run();
+        else dateEditorMode.setChecked(true);
+
         timeEditor.addSelectionAdapter(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -139,7 +144,6 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
         super.contributeActions(manager, controller);
-        dateEditorMode.setChecked(true);
         manager.add(textMode);
         manager.add(dateEditorMode);
     }

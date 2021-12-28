@@ -55,10 +55,6 @@ public class DateTimeValueManager extends BaseValueManager {
     {
         switch (controller.getEditType()) {
             case INLINE:
-                if (ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
-                    return new DateTimeInlineEditor(controller);
-                }
-                return new StringInlineEditor(controller);
             case PANEL:
                 return new DateTimeInlineEditor(controller);
             case EDITOR:

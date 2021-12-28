@@ -109,16 +109,12 @@ public class CustomTimeEditor {
         final Composite basePart;
         basePart = new Composite(parent, style);
         GridLayout layout;
-        if (isInline) {
-            layout = new GridLayout(1, false);
-        } else {
-            layout = new GridLayout(2, false);
-        }
-        layout.marginHeight = 0;
-        layout.marginWidth = 10;
-        basePart.setLayout(layout);
-        basePart.setFocus();
 
+        layout = new GridLayout(2, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        basePart.setLayout(layout);
+        basePart.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         final GridData layoutData = new GridData(SWT.FILL, isPanel ? SWT.UP : SWT.RIGHT, true, false, 1, 1);
 
         if (!isInline)dateLabel = UIUtils.createLabel(basePart, "Date");
@@ -128,7 +124,7 @@ public class CustomTimeEditor {
         this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM);
         this.timeEditor.setLayoutData(layoutData);
         textEditor = new Text(basePart, style);
-        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 0, 0);
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(false);
         gridData.exclude = true;
@@ -139,6 +135,7 @@ public class CustomTimeEditor {
 
         basePart.layout();
         this.format = getTimestampFormat();
+
         return basePart;
     }
 
@@ -157,14 +154,18 @@ public class CustomTimeEditor {
         if (!timeEditor.isDisposed()) {
             timeEditor.setLayoutData(layoutData);
             timeEditor.setVisible(layoutData.exclude);
-            timeLabel.setLayoutData(layoutData);
-            timeLabel.setVisible(layoutData.exclude);
+            if (timeLabel != null) {
+                timeLabel.setLayoutData(layoutData);
+                timeLabel.setVisible(layoutData.exclude);
+            }
         }
         if (!dateEditor.isDisposed()){
             dateEditor.setLayoutData(layoutData);
             dateEditor.setVisible(layoutData.exclude);
-            dateLabel.setLayoutData(layoutData);
-            dateLabel.setVisible(layoutData.exclude);
+            if (dateLabel != null) {
+                dateLabel.setLayoutData(layoutData);
+                dateLabel.setVisible(layoutData.exclude);
+            }
         }
         layoutData.exclude = true;
         basePart.layout();
@@ -179,20 +180,23 @@ public class CustomTimeEditor {
         textEditor.setVisible(false);
         gridData.exclude = true;
         GridLayout layout = new GridLayout(2, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 10;
         basePart.setLayout(layout);
 
         final GridData layoutData = new GridData(SWT.FILL,  SWT.RIGHT, true, false, 1, 1);
+        final GridData layoutDataForLabels = new GridData(SWT.FILL,  SWT.CENTER, false, false, 1, 1);
 
         if (!dateEditor.isDisposed()) {
             dateEditor.setLayoutData(layoutData);
             dateEditor.setVisible(true);
-            dateLabel.setLayoutData(layoutData);
+            dateLabel.setLayoutData(layoutDataForLabels);
             dateLabel.setVisible(true);
         }
         if (!timeEditor.isDisposed()) {
             timeEditor.setLayoutData(layoutData);
             timeEditor.setVisible(true);
-            timeLabel.setLayoutData(layoutData);
+            timeLabel.setLayoutData(layoutDataForLabels);
             timeLabel.setVisible(true);
         }
         basePart.layout();
@@ -235,7 +239,7 @@ public class CustomTimeEditor {
 
     public void setTextValue(@Nullable String value){
         if (textEditor != null && !textEditor.isDisposed()) {
-            textEditor.setText(value!= null ? value.toString() : "");
+            textEditor.setText(value!= null ? value : "");
         }
     }
 
@@ -265,8 +269,8 @@ public class CustomTimeEditor {
     }
 
     @Nullable
-    public String getValue() throws DBException {
-        if (textEditor != null && !textEditor.isDisposed() && textEditor.isVisible()) {
+    public String getValue() {
+        if (textEditor != null && !textEditor.isDisposed() && textEditor.isVisible() ) {
             return textEditor.getText();
         }
         switch (inputMode) {
