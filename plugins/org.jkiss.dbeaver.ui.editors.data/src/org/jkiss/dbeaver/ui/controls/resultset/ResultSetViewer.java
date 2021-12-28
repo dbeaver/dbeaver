@@ -215,7 +215,6 @@ public class ResultSetViewer extends Viewer
 
     private final Color defaultBackground;
     private final Color defaultForeground;
-    private final GC sizingGC;
     private VerticalButton recordModeButton;
 
     // Theme listener
@@ -248,7 +247,6 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.sizingGC = new GC(parent);
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
@@ -460,10 +458,6 @@ public class ResultSetViewer extends Viewer
 
     AutoRefreshControl getAutoRefresh() {
         return autoRefreshControl;
-    }
-
-    public GC getSizingGC() {
-        return sizingGC;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1903,8 +1897,6 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
-
-        UIUtils.dispose(this.sizingGC);
     }
 
     @Override
@@ -4607,25 +4599,6 @@ public class ResultSetViewer extends Viewer
             super(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
-
-    String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
-    {
-        Object value = type.getValue(this, attribute, operator, true);
-
-        DBCExecutionContext executionContext = getExecutionContext();
-        String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
-        strValue = strValue.replaceAll("\\s+", " ").replace("@", "^").trim();
-        strValue = UITextUtils.getShortText(sizingGC, strValue, 150);
-        if (operator.getArgumentCount() == 0) {
-            return operator.getExpression();
-        } else {
-            if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
-                strValue = "'" + strValue + "'";
-            }
-            return operator.getExpression() + " " + strValue;
-        }
-    }
-
 
     private class OrderByAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
