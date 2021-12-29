@@ -60,17 +60,21 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     public JDBCCollection(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents, @NotNull DBRProgressMonitor monitor) {
         this.type = type;
         this.valueHandler = valueHandler;
-        this.contents = new Object[contents.length];
-        for (int i = 0; i < contents.length; i++) {
-            Object value = contents[i];
-            if (value instanceof DBDValueCloneable) {
-                try {
-                    value = ((DBDValueCloneable) value).cloneValue(monitor);
-                } catch (DBCException ex) {
-                    log.warn("Failed to clone value of type " + value.getClass().getName(), ex);
+        if (contents != null) {
+            this.contents = new Object[contents.length];
+            for (int i = 0; i < contents.length; i++) {
+                Object value = contents[i];
+                if (value instanceof DBDValueCloneable) {
+                    try {
+                        value = ((DBDValueCloneable) value).cloneValue(monitor);
+                    } catch (DBCException ex) {
+                        log.warn("Failed to clone value of type " + value.getClass().getName(), ex);
+                    }
                 }
+                this.contents[i] = value;
             }
-            this.contents[i] = value;
+        } else {
+            this.contents = null;
         }
     }
 
