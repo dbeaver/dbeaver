@@ -57,7 +57,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     public JDBCCollection() {
     }
 
-    public JDBCCollection(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents, @NotNull DBRProgressMonitor monitor) {
+    public JDBCCollection(@NotNull DBRProgressMonitor monitor, DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents) {
         this.type = type;
         this.valueHandler = valueHandler;
         if (contents != null) {
@@ -92,7 +92,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
 
     @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor) {
-        return new JDBCCollection(type, valueHandler, contents, monitor);
+        return new JDBCCollection(monitor, type, valueHandler, contents);
     }
 
     @Override
@@ -255,7 +255,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 String defDataTypeName = dataSource.getDefaultDataTypeName(DBPDataKind.OBJECT);
                 DBSDataType defDataType = dataSource.getLocalDataType(defDataTypeName);
                 DBDValueHandler defValueHandler = session.getDefaultValueHandler();
-                return new JDBCCollection(defDataType, defValueHandler, null, monitor);
+                return new JDBCCollection(monitor, defDataType, defValueHandler, null);
             }
 
             if (elementType != null) {
@@ -342,7 +342,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             }
             final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
             if (array == null) {
-                return new JDBCCollection(elementType, elementValueHandler, null, session.getProgressMonitor());
+                return new JDBCCollection(session.getProgressMonitor(), elementType, elementValueHandler, null);
             }
             return makeCollectionFromJavaArray(session, elementType, elementValueHandler, array);
         } catch (DBException e) {
@@ -401,7 +401,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                     // Fetch second column - it contains value
                     data.add(valueHandler.fetchValueObject(session, resultSet, elementType, 1));
                 }
-                return new JDBCCollection(elementType, valueHandler, data.toArray(), session.getProgressMonitor());
+                return new JDBCCollection(session.getProgressMonitor(), elementType, valueHandler, data.toArray());
             }
         } finally {
             try {
@@ -416,7 +416,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     private static JDBCCollection makeCollectionFromArray(@NotNull JDBCSession session, @Nullable Array array, @NotNull DBSDataType elementType) throws SQLException, DBCException {
         final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
         if (array == null) {
-            return new JDBCCollection(elementType, elementValueHandler, null, session.getProgressMonitor());
+            return new JDBCCollection(session.getProgressMonitor(), elementType, elementValueHandler, null);
         }
         Object arrObject = array.getArray();
         return makeCollectionFromJavaArray(session, elementType, elementValueHandler, arrObject);
@@ -443,7 +443,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             }
             contents[i] = itemValue;
         }
-        return new JDBCCollection(elementType, elementValueHandler, contents, session.getProgressMonitor());
+        return new JDBCCollection(session.getProgressMonitor(), elementType, elementValueHandler, contents);
     }
 
     @NotNull
@@ -473,10 +473,10 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                     items.add(token);
                 }
 
-                return new JDBCCollectionString(dataType, valueHandler, value, items.toArray(), session.getProgressMonitor());
+                return new JDBCCollectionString(session.getProgressMonitor(), dataType, valueHandler, value, items.toArray());
             }
         }
-        return new JDBCCollectionString(dataType, valueHandler, value, session.getProgressMonitor());
+        return new JDBCCollectionString(session.getProgressMonitor(), dataType, valueHandler, value);
     }
 
     //////////////////////////////////////////

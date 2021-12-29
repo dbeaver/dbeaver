@@ -30,13 +30,13 @@ public class JDBCCollectionString extends JDBCCollection {
 
     private String value;
 
-    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, @NotNull DBRProgressMonitor monitor) {
-        super(type, valueHandler, value == null ? null : new Object[] { value }, monitor);
+    JDBCCollectionString(@NotNull DBRProgressMonitor monitor, DBSDataType type, DBDValueHandler valueHandler, String value) {
+        super(monitor, type, valueHandler, value == null ? null : new Object[] { value });
         this.value = value;
     }
 
-    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents, @NotNull DBRProgressMonitor monitor) {
-        super(type, valueHandler, contents, monitor);
+    JDBCCollectionString(@NotNull DBRProgressMonitor monitor, DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents) {
+        super(monitor, type, valueHandler, contents);
         this.value = value;
     }
 
