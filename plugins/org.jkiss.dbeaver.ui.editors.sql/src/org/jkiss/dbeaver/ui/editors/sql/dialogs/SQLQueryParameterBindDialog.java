@@ -21,6 +21,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
@@ -126,7 +128,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         {
             final Composite paramsComposite = UIUtils.createComposite(sash, 1);
 
-            paramTable = new Table(paramsComposite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+            paramTable = new Table(paramsComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
             final GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 400;
             gd.heightHint = 200;
@@ -142,7 +144,16 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             nameColumn.setWidth(100);
             final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
             valueColumn.setWidth(200);
-
+            paramTable.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.character == SWT.DEL){
+                        for (TableItem tableItem : paramTable.getSelection()) {
+                            tableItem.setText(2, "");
+                        }
+                    }
+                }
+            });
             fillParameterList(isHideIfSet());
 
             final CustomTableEditor tableEditor = new CustomTableEditor(paramTable) {
