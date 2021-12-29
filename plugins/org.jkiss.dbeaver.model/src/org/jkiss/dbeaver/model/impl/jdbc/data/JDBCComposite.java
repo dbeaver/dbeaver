@@ -65,7 +65,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         this.rawStruct = rawStruct;
     }
 
-    protected JDBCComposite(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
+    protected JDBCComposite(@NotNull DBRProgressMonitor monitor, @NotNull JDBCComposite struct) throws DBCException {
         this.type = struct.type;
         this.attributes = Arrays.copyOf(struct.attributes, struct.attributes.length);
         this.values = new Object[struct.values.length];
