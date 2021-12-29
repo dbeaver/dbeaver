@@ -99,7 +99,8 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                     if (replacementSum < docLen) {
                         char nextChar = document.getChar(replacementSum);
                         hasClosingParenthesis = nextChar == ')' || nextChar == '}' || nextChar == ']'
-                            || nextChar == '\'' || nextChar == '"';
+                            || nextChar == '\'' || nextChar == '"' || nextChar == ' ';
+
                     }
                     if (getObject() instanceof DBSObjectContainer) {
                         // Do not append trailing space after schemas/catalogs/etc.
@@ -112,7 +113,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                             insertTrailingSpace = document.getChar(replacementSum) != ' ';
                         }
                         if (insertTrailingSpace) {
-                            replaceOn += " ";
+                            replaceOn += ' ';
                         }
                         cursorPosition++;
                     }
