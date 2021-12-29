@@ -4831,7 +4831,6 @@ public class ResultSetViewer extends Viewer
 
             model.setUpdateInProgress(this);
             model.setStatistics(null);
-            model.releaseAllData();
             if (filtersPanel != null) {
                 UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
             }
