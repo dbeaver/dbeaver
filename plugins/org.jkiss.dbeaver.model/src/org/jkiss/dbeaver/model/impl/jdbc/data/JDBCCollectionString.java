@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
@@ -29,13 +30,13 @@ public class JDBCCollectionString extends JDBCCollection {
 
     private String value;
 
-    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value) {
-        super(type, valueHandler, value == null ? null : new Object[] { value });
+    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, @NotNull DBRProgressMonitor monitor) {
+        super(type, valueHandler, value == null ? null : new Object[] { value }, monitor);
         this.value = value;
     }
 
-    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents) {
-        super(type, valueHandler, contents);
+    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents, @NotNull DBRProgressMonitor monitor) {
+        super(type, valueHandler, contents, monitor);
         this.value = value;
     }
 

@@ -39,10 +39,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Array holder
@@ -59,10 +57,21 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     public JDBCCollection() {
     }
 
-    public JDBCCollection(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents) {
+    public JDBCCollection(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents, @NotNull DBRProgressMonitor monitor) {
         this.type = type;
         this.valueHandler = valueHandler;
-        this.contents = contents;
+        this.contents = new Object[contents.length];
+        for (int i = 0; i < contents.length; i++) {
+            Object value = contents[i];
+            if (value instanceof DBDValueCloneable) {
+                try {
+                    value = ((DBDValueCloneable) value).cloneValue(monitor);
+                } catch (DBCException ex) {
+                    log.warn("Failed to clone value of type " + value.getClass().getName(), ex);
+                }
+            }
+            this.contents[i] = value;
+        }
     }
 
     @NotNull
@@ -79,7 +88,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
 
     @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor) {
-        return new JDBCCollection(type, valueHandler, contents);
+        return new JDBCCollection(type, valueHandler, contents, monitor);
     }
 
     @Override
@@ -242,7 +251,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 String defDataTypeName = dataSource.getDefaultDataTypeName(DBPDataKind.OBJECT);
                 DBSDataType defDataType = dataSource.getLocalDataType(defDataTypeName);
                 DBDValueHandler defValueHandler = session.getDefaultValueHandler();
-                return new JDBCCollection(defDataType, defValueHandler, null);
+                return new JDBCCollection(defDataType, defValueHandler, null, monitor);
             }
 
             if (elementType != null) {
@@ -329,7 +338,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             }
             final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
             if (array == null) {
-                return new JDBCCollection(elementType, elementValueHandler, null);
+                return new JDBCCollection(elementType, elementValueHandler, null, session.getProgressMonitor());
             }
             return makeCollectionFromJavaArray(session, elementType, elementValueHandler, array);
         } catch (DBException e) {
@@ -388,7 +397,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                     // Fetch second column - it contains value
                     data.add(valueHandler.fetchValueObject(session, resultSet, elementType, 1));
                 }
-                return new JDBCCollection(elementType, valueHandler, data.toArray());
+                return new JDBCCollection(elementType, valueHandler, data.toArray(), session.getProgressMonitor());
             }
         } finally {
             try {
@@ -403,7 +412,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     private static JDBCCollection makeCollectionFromArray(@NotNull JDBCSession session, @Nullable Array array, @NotNull DBSDataType elementType) throws SQLException, DBCException {
         final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
         if (array == null) {
-            return new JDBCCollection(elementType, elementValueHandler, null);
+            return new JDBCCollection(elementType, elementValueHandler, null, session.getProgressMonitor());
         }
         Object arrObject = array.getArray();
         return makeCollectionFromJavaArray(session, elementType, elementValueHandler, arrObject);
@@ -430,7 +439,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             }
             contents[i] = itemValue;
         }
-        return new JDBCCollection(elementType, elementValueHandler, contents);
+        return new JDBCCollection(elementType, elementValueHandler, contents, session.getProgressMonitor());
     }
 
     @NotNull
@@ -460,10 +469,10 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                     items.add(token);
                 }
 
-                return new JDBCCollectionString(dataType, valueHandler, value, items.toArray() );
+                return new JDBCCollectionString(dataType, valueHandler, value, items.toArray(), session.getProgressMonitor());
             }
         }
-        return new JDBCCollectionString(dataType, valueHandler, value);
+        return new JDBCCollectionString(dataType, valueHandler, value, session.getProgressMonitor());
     }
 
     //////////////////////////////////////////

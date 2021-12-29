@@ -108,16 +108,19 @@ public class PostgreValueParserTest {
 
         JDBCCollection innerCollection1 = new JDBCCollection(doubleItemType,
                 new JDBCNumberValueHandler(doubleItemType, dbdFormatSettings),
-                new Double[]{1.1, 22.22});
+                new Double[]{1.1, 22.22},
+                session.getProgressMonitor());
         JDBCCollection innerCollection2 = new JDBCCollection(doubleItemType,
                 new JDBCNumberValueHandler(doubleItemType, dbdFormatSettings),
-                new Double[]{3.3, 44.44});
+                new Double[]{3.3, 44.44},
+                session.getProgressMonitor());
         Assert.assertArrayEquals(new Object[]{innerCollection1, innerCollection2},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{1.1,22.22},{3.3,44.44}}"));
 
         JDBCCollection innerCollection3 = new JDBCCollection(doubleItemType,
                 new JDBCNumberValueHandler(doubleItemType, dbdFormatSettings),
-                new Object[]{innerCollection1, innerCollection2});
+                new Object[]{innerCollection1, innerCollection2},
+                session.getProgressMonitor());
         Assert.assertArrayEquals(new Object[]{ innerCollection3, innerCollection3 },
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{{1.1,22.22},{3.3,44.44}}}"));
         Assert.assertEquals("{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}",
@@ -174,8 +177,8 @@ public class PostgreValueParserTest {
         String[] stringItems = new String[] {
             "one", "two", " four with spaces ", "f{i,v}e"
         };
-        JDBCCollection array = new JDBCCollection(stringItemType, arrayVH, stringItems);
-        JDBCCollection array3D = new JDBCCollection(stringItemType, arrayVH, new Object[] { array, array} );
+        JDBCCollection array = new JDBCCollection(stringItemType, arrayVH, stringItems, session.getProgressMonitor());
+        JDBCCollection array3D = new JDBCCollection(stringItemType, arrayVH, new Object[] { array, array}, session.getProgressMonitor());
         String arrayString = arrayVH.getValueDisplayString(arrayStringItemType, array, DBDDisplayFormat.NATIVE);
         Assert.assertEquals("'{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}'", arrayString);
         String arrayString3D = arrayVH.getValueDisplayString(arrayStringItemType, array3D, DBDDisplayFormat.NATIVE);

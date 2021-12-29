@@ -141,14 +141,14 @@ public class PostgreValueParser {
                 if(firstAttempt){
                     return itemValues;
                 } else {
-                    return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), itemValues);
+                    return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), itemValues, session.getProgressMonitor());
                 }
             }
         }
         if (firstAttempt) {
             return values;
         } else {
-            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), values);
+            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), values, session.getProgressMonitor());
 
         }
     }
