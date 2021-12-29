@@ -14,32 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Map;
+
 /**
- * Session context.
- * Holds various auth sessions.
+ * Auth provider
  */
-public interface DBASessionContext {
+public interface DBAAuthProvider<AUTH_SESSION extends DBASession> {
 
-    /**
-     * Find and opens space session
-     * @param space target space
-     * @param open  if true then new session will be opened if possible
-     */
-    @Nullable
-    DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space, boolean open) throws DBException;
+    AUTH_SESSION openSession(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBASession mainSession,
+        @NotNull Map<String, Object> providerConfig, // Auth provider configuration (e.g. 3rd party auth server address)
+        @NotNull Map<String, Object> userCredentials // Saved user credentials (e.g. associated 3rd party provider user name or realm)
+    ) throws DBException;
 
-    DBAAuthToken[] getSavedTokens();
+    void closeSession(
+        @NotNull DBASession mainSession,
+        AUTH_SESSION session) throws DBException;
 
-    void addSession(@NotNull DBASession session);
-
-    boolean removeSession(@NotNull DBASession session);
+    void refreshSession(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBASession mainSession,
+        AUTH_SESSION session) throws DBException;
 
 }
