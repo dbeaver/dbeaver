@@ -106,26 +106,6 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements DBAAut
         return new ArrayList<>(credentialProfiles);
     }
 
-    public DBAAuthCredentialsProfile getCredentialProfileByParameters(Set<String> keySet) {
-        if (credentialProfiles.size() > 1) {
-            for (DBAAuthCredentialsProfile profile : credentialProfiles) {
-                if (profile.getCredentialParameters().size() == keySet.size()) {
-                    boolean matches = true;
-                    for (String paramName : keySet) {
-                        if (profile.getCredentialParameter(paramName) == null) {
-                            matches = false;
-                            break;
-                        }
-                    }
-                    if (matches) {
-                        return profile;
-                    }
-                }
-            }
-        }
-        return credentialProfiles.get(0);
-    }
-
     public List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet) {
         if (credentialProfiles.size() > 1) {
             for (DBAAuthCredentialsProfile profile : credentialProfiles) {
