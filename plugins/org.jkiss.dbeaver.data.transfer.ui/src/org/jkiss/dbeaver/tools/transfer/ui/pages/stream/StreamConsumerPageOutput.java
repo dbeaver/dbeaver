@@ -256,7 +256,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard && !addToEnd);
         splitFilesCheckbox.setEnabled(!clipboard);
-        appendToEndOfFileCheck.setEnabled(!clipboard && !compress);
+        appendToEndOfFileCheck.setEnabled(!isBinary && !clipboard && !compress);
         maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
