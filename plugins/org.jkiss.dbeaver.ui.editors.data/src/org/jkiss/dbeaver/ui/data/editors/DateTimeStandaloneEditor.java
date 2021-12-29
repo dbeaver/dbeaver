@@ -26,6 +26,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -45,6 +47,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     private CustomTimeEditor timeEditor;
     private boolean dirty;
+    private IValueController valueController;
 
     public DateTimeStandaloneEditor(IValueController valueController) {
         super(valueController);
@@ -52,13 +55,12 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        IValueController valueController = getValueController();
+        valueController = getValueController();
         Object value = valueController.getValue();
         Composite dialogGroup = (Composite) super.createDialogArea(parent);
         Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        int style = SWT.NONE;
+        int style = SWT.BORDER;
         if (valueController.isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
@@ -70,6 +72,9 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         gd.grabExcessHorizontalSpace = true;
         timeEditor.getControl().setLayoutData(gd);
         timeEditor.createDateFormat(valueController.getValueType());
+        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
+            timeEditor.setToTextComposite();
+        }
         primeEditorValue(value);
 
         Button button = UIUtils.createPushButton(panel, "Set Current", null);
@@ -95,6 +100,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     @Override
     public void primeEditorValue(@Nullable Object value) {
+        timeEditor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
         if (value instanceof Time) {
             timeEditor.setValue((Time) value);
         } else if (value instanceof Timestamp) {

@@ -21,13 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.DateTimeInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.DateTimeStandaloneEditor;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 /**
  * Date/time value handler
