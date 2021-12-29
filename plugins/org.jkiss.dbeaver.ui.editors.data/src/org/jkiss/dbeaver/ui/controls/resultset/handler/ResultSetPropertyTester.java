@@ -49,6 +49,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_NAVIGATE_HISTORY = "canNavigateHistory";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
+    private static final String PROP_UPDATE_NOT_IN_PROGRESS = "updateNotInProgress";
 
     private static final Log log = Log.getLog(ResultSetPropertyTester.class);
 
@@ -154,6 +155,9 @@ public class ResultSetPropertyTester extends PropertyTester
                         return rsv.getHistoryPosition() > 0;
                     }
                 }
+            case PROP_UPDATE_NOT_IN_PROGRESS:
+                // Disable buttons during the update data process progress
+                return !rsv.getModel().isUpdateInProgress();
         }
         return false;
     }
