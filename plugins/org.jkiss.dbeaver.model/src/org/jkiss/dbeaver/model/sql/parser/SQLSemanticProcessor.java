@@ -308,7 +308,7 @@ public class SQLSemanticProcessor {
             if (fromItem instanceof Table && equalTables((Table) fromItem, tableName)) {
                 return (Table) fromItem;
             }
-            for (Join join : ((PlainSelect) selectBody).getJoins()) {
+            for (Join join : CommonUtils.safeCollection(((PlainSelect) selectBody).getJoins())) {
                 if (join.getRightItem() instanceof Table && equalTables((Table) join.getRightItem(), tableName)) {
                     return (Table) join.getRightItem();
                 }
