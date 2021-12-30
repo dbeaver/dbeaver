@@ -22,26 +22,30 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
-public class RemoveVariableAction extends Action {
-    static protected final Log log = Log.getLog(RemoveVariableAction.class);
+import java.util.List;
+
+public class RemoveVariablesAction extends Action {
+    static protected final Log log = Log.getLog(RemoveVariablesAction.class);
 
     private final SQLEditor editor;
-    private final String varName;
+    private final List<String> varNames;
 
-    public RemoveVariableAction(SQLEditor editor, String varName) {
+    public RemoveVariablesAction(SQLEditor editor, List<String> varNames) {
         super(SQLEditorMessages.action_result_tabs_assign_variable);
         this.editor = editor;
-        this.varName = varName;
+        this.varNames = varNames;
     }
 
     @Override
     public void run() {
         if (UIUtils.confirmAction(
             editor.getSite().getShell(),
-            "Delete variable '" + varName + "'?",
-            "Delete variable '" + varName + "'?"))
+            "Do you want to delete variables?",
+            "Delete variables ?"))
         {
-            editor.getGlobalScriptContext().removeVariable(varName);
+            for (String varName : varNames) {
+                editor.getGlobalScriptContext().removeVariable(varName);
+            }
         }
     }
 }
