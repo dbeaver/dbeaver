@@ -48,4 +48,8 @@ public interface DBTTaskRun {
     @Nullable
     String getErrorStackTrace();
 
+    @Nullable
+    String getExtraMessage();
+
+    void setExtraMessage(String message);
 }

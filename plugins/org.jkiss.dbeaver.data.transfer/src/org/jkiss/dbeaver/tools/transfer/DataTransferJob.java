@@ -18,15 +18,19 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
+import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Data transfer job
@@ -106,12 +110,31 @@ public class DataTransferJob implements DBRRunnableWithProgress {
 
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
             try {
+                DBCStatistics totalStatistics = new DBCStatistics();
                 producer.transferData(
                     monitor,
                     consumer,
                     processor,
                     nodeSettings,
                     task);
+
+                totalStatistics.accumulate(producer.getStatistics());
+                totalStatistics.accumulate(consumer.getStatistics());
+
+                DBTTaskRun taskRun = task.getLastRun();
+                if (taskRun != null) {
+                    ArrayList<String> messageParts = new ArrayList<String>();
+                    if (totalStatistics.getRowsFetched() > 0) {
+                        messageParts.add(String.format("%s: %d", DTMessages.data_transfer_task_rows_fetched_message_part, totalStatistics.getRowsFetched()));
+                    }
+                    if (totalStatistics.getRowsUpdated() > 0) {
+                        messageParts.add(String.format("%s: %d", DTMessages.data_transfer_task_rows_modified_message_part, totalStatistics.getRowsUpdated()));
+                    }
+                    if (totalStatistics.getStatementsCount() > 0) {
+                        messageParts.add(String.format("%s: %d", DTMessages.data_transfer_task_statements_executed_message_part, totalStatistics.getStatementsCount()));
+                    }
+                    taskRun.setExtraMessage(messageParts.stream().collect(Collectors.joining(", ")));
+                }
             } finally {
                 consumer.finishTransfer(monitor, false);
             }

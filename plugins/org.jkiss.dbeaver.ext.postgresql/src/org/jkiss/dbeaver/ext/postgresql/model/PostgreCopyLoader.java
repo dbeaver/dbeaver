@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
@@ -175,12 +172,13 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     }
 
     @Override
-    public void flushRows(@NotNull DBCSession session) throws DBCException {
+    public DBCStatistics flushRows(@NotNull DBCSession session) throws DBCException {
         try {
             csvWriter.flush();
         } catch (IOException e) {
             throw new DBCException("Error saving CSV data", e);
         }
+        return null;
     }
 
     @Override

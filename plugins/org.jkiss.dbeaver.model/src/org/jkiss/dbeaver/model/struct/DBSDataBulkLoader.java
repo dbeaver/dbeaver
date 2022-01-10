@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public interface DBSDataBulkLoader {
     interface BulkLoadManager extends AutoCloseable {
         void addRow(@NotNull DBCSession session, @NotNull Object[] attributeValues) throws DBCException;
 
-        void flushRows(@NotNull DBCSession session) throws DBCException;
+        DBCStatistics flushRows(@NotNull DBCSession session) throws DBCException;
 
         void finishBulkLoad(@NotNull DBCSession session) throws DBCException;
 

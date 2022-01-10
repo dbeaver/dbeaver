@@ -151,25 +151,27 @@ public class DBCStatistics implements DBCExecutionResult {
     }
 
     public void accumulate(DBCStatistics stat) {
-        if (stat.rowsUpdated >= 0) {
-            if (rowsUpdated < 0) rowsUpdated = 0;
-            rowsUpdated += stat.rowsUpdated;
-        }
-        if (stat.rowsFetched > 0) {
-            if (rowsFetched < 0) rowsFetched = 0;
-            rowsFetched += stat.rowsFetched;
-        }
-        executeTime += stat.executeTime;
-        fetchTime += stat.fetchTime;
-        statementsCount += stat.statementsCount;
-        if (!CommonUtils.isEmpty(stat.messages)) {
-            for (String message : stat.messages) {
-                addMessage(message);
+        if (stat != null) {
+            if (stat.rowsUpdated >= 0) {
+                if (rowsUpdated < 0) rowsUpdated = 0;
+                rowsUpdated += stat.rowsUpdated;
             }
-        }
-        if (!CommonUtils.isEmpty(stat.infoMap)) {
-            for (Map.Entry<String, Object> info : stat.infoMap.entrySet()) {
-                addInfo(info.getKey(), info.getValue());
+            if (stat.rowsFetched > 0) {
+                if (rowsFetched < 0) rowsFetched = 0;
+                rowsFetched += stat.rowsFetched;
+            }
+            executeTime += stat.executeTime;
+            fetchTime += stat.fetchTime;
+            statementsCount += stat.statementsCount;
+            if (!CommonUtils.isEmpty(stat.messages)) {
+                for (String message : stat.messages) {
+                    addMessage(message);
+                }
+            }
+            if (!CommonUtils.isEmpty(stat.infoMap)) {
+                for (Map.Entry<String, Object> info : stat.infoMap.entrySet()) {
+                    addInfo(info.getKey(), info.getValue());
+                }
             }
         }
     }
