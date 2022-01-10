@@ -276,7 +276,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         clipboardCheck.setSelection(settings.isOutputClipboard());
         singleFileCheck.setSelection(settings.isUseSingleFile());
-        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd());
+        appendToEndOfFileCheck.setSelection(!settings.isAppendToFileEnd() && !settings.isCompressResults() && settings.isOutputClipboard());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
@@ -287,6 +287,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
 
         if (isBinary) {
+            appendToEndOfFileCheck.setSelection(false);
             clipboardCheck.setSelection(false);
             encodingBOMCheckbox.setSelection(false);
             settings.setOutputClipboard(false);
