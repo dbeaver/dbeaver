@@ -50,6 +50,4 @@ public interface DBTTaskRun {
 
     @Nullable
     String getExtraMessage();
-
-    void setExtraMessage(String message);
 }

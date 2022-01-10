@@ -61,7 +61,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         IDataTransferNodePrimary, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
-    private DBCStatistics statistics = new DBCStatistics();
+    private final DBCStatistics statistics = new DBCStatistics();
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -368,7 +368,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         if (bulkLoadManager != null) {
             if (needCommit) {
-                statistics.accumulate(bulkLoadManager.flushRows(targetSession));
+                bulkLoadManager.flushRows(targetSession);
             }
             return;
         } else {
@@ -823,7 +823,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    @Nullable
+    @NotNull
     public DBCStatistics getStatistics() {
         return statistics;
     }

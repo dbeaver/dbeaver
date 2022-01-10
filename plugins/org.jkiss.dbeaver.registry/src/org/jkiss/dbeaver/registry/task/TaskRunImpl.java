@@ -113,9 +113,13 @@ class TaskRunImpl implements DBTTaskRun {
 
     @Nullable
     @Override
-    public String getExtraMessage() { return extraMessage; }
+    public String getExtraMessage() {
+        return extraMessage;
+    }
 
-    public void setExtraMessage(String message) { extraMessage = message; }
+    public void setExtraMessage(String message) {
+        extraMessage = message;
+    }
 
     @Override
     public String toString() {

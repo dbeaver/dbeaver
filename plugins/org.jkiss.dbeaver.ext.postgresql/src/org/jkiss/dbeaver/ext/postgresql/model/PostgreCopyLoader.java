@@ -172,13 +172,12 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     }
 
     @Override
-    public DBCStatistics flushRows(@NotNull DBCSession session) throws DBCException {
+    public void flushRows(@NotNull DBCSession session) throws DBCException {
         try {
             csvWriter.flush();
         } catch (IOException e) {
             throw new DBCException("Error saving CSV data", e);
         }
-        return null;
     }
 
     @Override

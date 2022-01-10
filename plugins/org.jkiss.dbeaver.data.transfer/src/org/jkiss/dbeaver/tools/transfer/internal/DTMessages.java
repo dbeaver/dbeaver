@@ -160,10 +160,6 @@ public class DTMessages extends NLS {
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message;
 
-	public static String data_transfer_task_rows_fetched_message_part;
-	public static String data_transfer_task_rows_modified_message_part;
-	public static String data_transfer_task_statements_executed_message_part;
-
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTMessages.class);

@@ -29,7 +29,8 @@ import java.util.Locale;
  */
 public interface DBTTaskHandler {
 
-    void executeTask(
+    @NotNull
+    DBTTaskRunStatus executeTask(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
         @NotNull Locale locale,

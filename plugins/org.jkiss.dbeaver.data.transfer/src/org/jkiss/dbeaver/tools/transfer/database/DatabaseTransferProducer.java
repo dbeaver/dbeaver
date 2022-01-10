@@ -62,7 +62,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     private static final Log log = Log.getLog(DatabaseTransferProducer.class);
 
-    private DBCStatistics producerStatistics = new DBCStatistics();
+    private final DBCStatistics producerStatistics = new DBCStatistics();
 
     private DBSDataContainer dataContainer;
     @Nullable
@@ -305,7 +305,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     }
 
     @Override
-    @Nullable
+    @NotNull
     public DBCStatistics getStatistics() {
         return producerStatistics;
     }
