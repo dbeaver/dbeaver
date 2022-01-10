@@ -207,7 +207,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 id="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 namespace="org.jkiss.dbeaver.core.resultset"
-                properties="active,hasData,hasMoreData,hasfilters,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount,updateNotInProgress"
+                properties="active,hasData,hasMoreData,hasfilters,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount,canPersistData"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
@@ -642,7 +642,7 @@
                         <test property="org.jkiss.dbeaver.core.resultset.changed"/>
                     </with>
                     <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.core.resultset.updateNotInProgress"/>
+                        <test property="org.jkiss.dbeaver.core.resultset.canPersistData"/>
                     </with>
                 </and>
             </enabledWhen>
@@ -655,7 +655,7 @@
                         <test property="org.jkiss.dbeaver.core.resultset.changed"/>
                     </with>
                     <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.core.resultset.updateNotInProgress"/>
+                        <test property="org.jkiss.dbeaver.core.resultset.canPersistData"/>
                     </with>
                 </and>
             </enabledWhen>
