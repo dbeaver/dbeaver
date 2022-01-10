@@ -40,7 +40,6 @@ public interface DBCScriptContext {
             return title;
         }
     }
-
     class VariableInfo {
         public String name;
         public Object value;
@@ -52,7 +51,6 @@ public interface DBCScriptContext {
             this.type = type;
         }
     }
-
     boolean hasVariable(String name);
 
     Object getVariable(String name);
@@ -60,6 +58,10 @@ public interface DBCScriptContext {
     void setVariable(String name, Object value);
 
     void removeVariable(String name);
+
+    boolean hasDefaultParameterValue(String name);
+
+    void removeDefaultParameterValue(String name);
 
     List<VariableInfo> getVariables();
 

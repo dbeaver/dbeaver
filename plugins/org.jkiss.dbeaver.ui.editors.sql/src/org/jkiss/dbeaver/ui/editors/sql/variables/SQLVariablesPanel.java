@@ -315,8 +315,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                         null : ((IStructuredSelection) varsTable.getSelection()).getFirstElement();
 
                     deleteAction.setEnabled(
-                        varElement instanceof DBCScriptContext.VariableInfo &&
-                        ((DBCScriptContext.VariableInfo) varElement).type != DBCScriptContext.VariableType.PARAMETER);
+                        varElement instanceof DBCScriptContext.VariableInfo);
                     updateActions();
                 }
                 editCurrentVariable();
@@ -366,8 +365,8 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                     if (!varsTable.getSelection().isEmpty()) {
                         final StructuredSelection selection = (StructuredSelection) varsTable.getSelection();
                         List<String> varsList = Arrays.stream(selection.toArray()).map(el -> ((DBCScriptContext.VariableInfo) el).name).collect(Collectors.toList());
-                        RemoveVariablesAction action = new RemoveVariablesAction(mainEditor, varsList);
-                        action.run();
+                        new RemoveVariablesAction(mainEditor, varsList).run();
+
                     }
                 }
             };

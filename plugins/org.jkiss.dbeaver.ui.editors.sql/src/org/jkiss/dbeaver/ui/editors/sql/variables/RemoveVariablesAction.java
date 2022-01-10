@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.variables;
 
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -40,11 +41,17 @@ public class RemoveVariablesAction extends Action {
     public void run() {
         if (UIUtils.confirmAction(
             editor.getSite().getShell(),
-            "Do you want to delete variables?",
-            "Delete variables ?"))
+            SQLEditorMessages.action_result_tabs_delete_variables,
+            SQLEditorMessages.action_result_tabs_delete_variables_question + ' ' + varNames + "?"))
         {
             for (String varName : varNames) {
-                editor.getGlobalScriptContext().removeVariable(varName);
+                final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();
+
+                if (editor.getGlobalScriptContext().hasDefaultParameterValue(varName) || instance.getParameter(varName) != null){
+                    editor.getGlobalScriptContext().removeDefaultParameterValue(varName);
+                } else {
+                    editor.getGlobalScriptContext().removeVariable(varName);
+                }
             }
         }
     }
