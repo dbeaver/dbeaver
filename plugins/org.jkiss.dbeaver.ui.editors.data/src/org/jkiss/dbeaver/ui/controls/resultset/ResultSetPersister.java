@@ -627,6 +627,7 @@ class ResultSetPersister {
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             model.setUpdateInProgress(this);
+            UIUtils.asyncExec(viewer::fireResultSetChange); // Update "save" and "cancel" buttons
             updateStats = new DBCStatistics();
             insertStats = new DBCStatistics();
             deleteStats = new DBCStatistics();

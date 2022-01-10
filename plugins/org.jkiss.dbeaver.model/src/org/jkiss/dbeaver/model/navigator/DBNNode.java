@@ -41,7 +41,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     public enum NodePathType {
         resource,
-        path,
+        dbvfs,
         folder,
         database,
         ext,

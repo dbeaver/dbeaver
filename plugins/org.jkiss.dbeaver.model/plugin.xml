@@ -39,6 +39,12 @@
         <namespace id="content" class="org.jkiss.dbeaver.registry.expressions.ContentExpressionFunctions" description="Content handling functions"/>
     </extension>
 
+    <extension point="org.eclipse.core.filesystem.filesystems">
+        <filesystem scheme="dbvfs">
+            <run class="org.jkiss.dbeaver.model.fs.nio.NIOFileSystem"/>
+        </filesystem>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataFormatter">
         <formatter id="number" label="%DateFormatter.number.label" class="org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.NumberFormatSample">
             <propertyGroup label="%DateFormatter.number.general.label">

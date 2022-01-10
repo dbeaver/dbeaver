@@ -624,6 +624,7 @@ public class ResultSetModel {
 
     public void setData(@NotNull List<Object[]> rows) {
         // Clear previous data
+        this.releaseAllData();
         this.clearData();
 
         {

@@ -728,7 +728,7 @@ public class DBExecUtils {
                     {
                         SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                         if (selectItem.isPlainColumn()) {
-                            if (DBUtils.isQuotedIdentifier(dataSource, columnName)) {
+                            if (DBUtils.isQuotedIdentifier(dataSource, columnName) || dataSource.getSQLDialect().mustBeQuoted(columnName, true)) {
                                 columnName = DBUtils.getUnQuotedIdentifier(dataSource, selectItem.getName());
                             } else {
                                 // #12008

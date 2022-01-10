@@ -133,7 +133,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             Group miscGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             expandOnConnectCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree, "", false, 2);
-            restoreFilterCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_restore_filter, "", false, 2);
+            restoreFilterCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_restore_filter, UINavigatorMessages.pref_page_database_general_label_restore_filter_tip, false, 2);
 
             longListFetchSizeText = UIUtils.createLabelText(miscGroup, UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size, "", SWT.BORDER);
             longListFetchSizeText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size_tip);

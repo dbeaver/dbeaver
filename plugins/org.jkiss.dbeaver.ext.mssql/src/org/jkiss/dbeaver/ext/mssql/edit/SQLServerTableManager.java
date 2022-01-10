@@ -95,7 +95,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (object.isView() ? "VIEW" : "TABLE") +  //$NON-NLS-2$
+                "DROP " + getCreateTableType(object) +  //$NON-NLS-2$
                     " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE CONSTRAINTS" : "")
             )

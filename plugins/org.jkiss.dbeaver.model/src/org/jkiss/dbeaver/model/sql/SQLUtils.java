@@ -627,8 +627,9 @@ public final class SQLUtils {
                     conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
+                Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseParentheses();
                 conString.append(operator.getExpression());
-                conString.append(" (");
+                conString.append(' ').append(brackets.getFirst());
                 if (!value.getClass().isArray()) {
                     value = new Object[] {value};
                 }
@@ -648,7 +649,7 @@ public final class SQLUtils {
                         conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true));
                     }
                 }
-                conString.append(")");
+                conString.append(brackets.getSecond());
             }
             return conString.toString();
         } else {

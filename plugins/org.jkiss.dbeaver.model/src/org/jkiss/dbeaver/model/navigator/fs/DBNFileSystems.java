@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -73,6 +74,19 @@ public class DBNFileSystems extends DBNNode {
         return true;
     }
 
+    public DBNFileSystem getFileSystem(@NotNull String type, @NotNull String id) {
+        if (children == null) {
+            return null;
+        }
+        for (DBNFileSystem fsNode : children) {
+            DBFVirtualFileSystem fs = fsNode.getFileSystem();
+            if (fs.getType().equals(type) && fs.getId().equals(id)) {
+                return fsNode;
+            }
+        }
+        return null;
+    }
+
     @Override
     public DBNFileSystem[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
@@ -110,7 +124,7 @@ public class DBNFileSystems extends DBNNode {
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.path.getPrefix();
+        return NodePathType.dbvfs.getPrefix();
     }
 
     @Override

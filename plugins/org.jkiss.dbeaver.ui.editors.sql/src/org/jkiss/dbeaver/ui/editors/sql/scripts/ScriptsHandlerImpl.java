@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -82,13 +83,13 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
-        updateNavigatorNode(node, resource);
+        updateNavigatorNodeFromResource(node, resource);
         return node;
     }
 
     @Override
-    public void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource) {
-        super.updateNavigatorNode(node, resource);
+    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
+        super.updateNavigatorNodeFromResource(node, resource);
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IProject) {
                 node.setResourceImage(UIIcon.SCRIPTS);

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-    <description name="DBeaver - SSHJ" url="https://dbeaver.io/update/sshj/latest">DBeaver - SSHJ</description>
-
-    <feature id="org.jkiss.dbeaver.net.sshj.feature">
-        <category name="org.jikss.dbeaver.net.sshj.category"/>
-    </feature>
-    <category-def name="org.jikss.dbeaver.net.sshj.category" label="DBeaver SSH tunnel (SSHJ) implementation"/>
-</site>

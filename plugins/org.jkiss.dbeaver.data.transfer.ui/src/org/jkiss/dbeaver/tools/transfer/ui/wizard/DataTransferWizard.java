@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -31,6 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -91,8 +93,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
 
+                    SQLQueryContainer queryContainer = null;
                     if (databaseObject instanceof SQLQueryContainer) {
-                        Map<String, Object> queryParameters = ((SQLQueryContainer) databaseObject).getQueryParameters();
+                        queryContainer = (SQLQueryContainer) databaseObject;
+                    } else {
+                        queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, databaseObject);
+                    }
+                    if (queryContainer != null) {
+                        Map<String, Object> queryParameters = queryContainer.getQueryParameters();
                         if (!CommonUtils.isEmpty(queryParameters)) {
                             getTaskVariables().putAll(queryParameters);
                         }

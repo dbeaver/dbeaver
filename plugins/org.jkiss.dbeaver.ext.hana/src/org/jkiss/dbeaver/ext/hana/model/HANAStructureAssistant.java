@@ -74,6 +74,15 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     }
 
     @Override
+    public DBSObjectType[] getHyperlinkObjectTypes() {
+        return new DBSObjectType[]{
+            HANAObjectType.TABLE,
+            HANAObjectType.VIEW,
+            HANAObjectType.SYNONYM
+        };
+    }
+
+    @Override
     protected void findObjectsByMask(@NotNull JDBCExecutionContext executionContext, @NotNull JDBCSession session, @NotNull DBSObjectType objectType,
                                      @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> references)
                                         throws SQLException {

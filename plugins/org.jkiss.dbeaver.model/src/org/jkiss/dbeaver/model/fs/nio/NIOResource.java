@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -46,7 +48,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         return root;
     }
 
-    protected Path getNioPath() {
+    public Path getNioPath() {
         return nioPath;
     }
 
@@ -188,12 +190,13 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public IPath getLocation() {
-        return new org.eclipse.core.runtime.Path(nioPath.toAbsolutePath().toString());
+        return new org.eclipse.core.runtime.Path(getLocationURI().toString());
     }
 
     public URI getLocationURI() {
         return URI.create(
-            DBNNode.NodePathType.path.getPrefix() + root.getProject().getName() + "/" + root.getPrefix() + "/" + nioPath.toUri());
+            DBNNode.NodePathType.dbvfs.getPrefix() + root.getProject().getName() + "/" + root.getPrefix() +
+                "/?" + URLEncoder.encode(nioPath.toUri().getPath(), StandardCharsets.UTF_8));
     }
 
     public IMarker getMarker(long id) {
@@ -295,7 +298,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
 
     @Deprecated
     public boolean isLocal(int depth) {
-        return true;
+        return false;
     }
 
     public boolean isPhantom() {
@@ -399,25 +402,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
 
     @Override
     public String toString() {
-        return getTypeString() + getFullPath();
-    }
-
-    private String getTypeString() {
-        switch (getType()) {
-            case FILE:
-                return "L"; //$NON-NLS-1$
-
-            case FOLDER:
-                return "F"; //$NON-NLS-1$
-
-            case PROJECT:
-                return "P"; //$NON-NLS-1$
-
-            case ROOT:
-                return "R"; //$NON-NLS-1$
-        }
-
-        return ""; //$NON-NLS-1$
+        return getLocationURI().toString();
     }
 
     /**

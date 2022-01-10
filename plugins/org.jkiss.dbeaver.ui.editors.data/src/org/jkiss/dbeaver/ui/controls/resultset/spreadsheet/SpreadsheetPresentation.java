@@ -1842,6 +1842,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 final ResultSetRow row = (ResultSetRow) rowElement;
                 if (attr != null) {
                     if (isShowAsCheckbox(attr)) {
+                        if (row.getState() == ResultSetRow.STATE_ADDED) {
+                            return ALIGN_CENTER;
+                        }
                         Object cellValue = controller.getModel().getCellValue(attr, row);
                         if (row.isChanged(attr)) {
                             // Use alignment of an original value to prevent unexpected jumping back and forth.

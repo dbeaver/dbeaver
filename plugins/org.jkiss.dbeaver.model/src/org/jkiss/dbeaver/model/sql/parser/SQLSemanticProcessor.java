@@ -150,7 +150,7 @@ public class SQLSemanticProcessor {
                 if (co.hasCondition()) {
                     Table table = getConstraintTable(select, co);
                     if (!isValidTableColumn(monitor, dataSource, table, co)) {
-                        table = null;
+                        return false;
                     }
                     if (table != null) {
                         if (table.getAlias() != null) {
@@ -159,7 +159,7 @@ public class SQLSemanticProcessor {
                             co.setEntityAlias(table.getName());
                         }
                     } else {
-                        co.setEntityAlias(null);
+                        return false;
                     }
                 }
             }
@@ -308,7 +308,7 @@ public class SQLSemanticProcessor {
             if (fromItem instanceof Table && equalTables((Table) fromItem, tableName)) {
                 return (Table) fromItem;
             }
-            for (Join join : ((PlainSelect) selectBody).getJoins()) {
+            for (Join join : CommonUtils.safeCollection(((PlainSelect) selectBody).getJoins())) {
                 if (join.getRightItem() instanceof Table && equalTables((Table) join.getRightItem(), tableName)) {
                     return (Table) join.getRightItem();
                 }

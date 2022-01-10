@@ -42,6 +42,10 @@ public class ArrayUtils {
         return array == null || array.length == 0;
     }
 
+    public static boolean isArray(@Nullable Object value) {
+        return value != null && value.getClass().isArray();
+    }
+
     public static boolean contains(@Nullable short[] array, short value)
     {
         if (array == null)
@@ -144,11 +148,9 @@ public class ArrayUtils {
         if (isEmpty(array)) {
             return false;
         }
-        for (OBJECT_TYPE item : array) {
-            for (OBJECT_TYPE value : values) {
-                if (!CommonUtils.equalObjects(item, value))
-                    return false;
-            }
+        for (OBJECT_TYPE value : values) {
+            if (!ArrayUtils.contains(array, value))
+                return false;
         }
         return true;
     }

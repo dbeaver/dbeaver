@@ -15,15 +15,25 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.access;
+package org.jkiss.dbeaver.model.navigator;
+
+import org.jkiss.dbeaver.DBException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * Session principal (user)
+ * Node which contains some stream data
  */
-public interface DBASessionPrincipal {
+public interface DBNStreamData {
 
-    String getUserDomain();
+    boolean supportsStreamData();
 
-    String getUserName();
+    long getStreamSize() throws IOException;
+
+    /**
+     * Returns stream if it allowed
+     */
+    InputStream openInputStream() throws DBException, IOException;
 
 }

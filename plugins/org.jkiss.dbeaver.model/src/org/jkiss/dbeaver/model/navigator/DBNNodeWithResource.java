@@ -15,12 +15,20 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.access;
+package org.jkiss.dbeaver.model.navigator;
+
+import org.eclipse.core.resources.IResource;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Federated session
+ * DBNNodeWithImage
  */
-public interface DBASessionFederated extends DBASession {
+public interface DBNNodeWithResource {
 
+    IResource getResource();
+
+    DBPImage getResourceImage();
+
+    void setResourceImage(DBPImage resourceImage);
 
 }
