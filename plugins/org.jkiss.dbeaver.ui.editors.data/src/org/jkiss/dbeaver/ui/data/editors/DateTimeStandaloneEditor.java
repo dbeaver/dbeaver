@@ -60,7 +60,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         Composite dialogGroup = (Composite) super.createDialogArea(parent);
         Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        int style = SWT.BORDER;
+        int style = SWT.NONE;
         if (valueController.isReadOnly()) {
             style |= SWT.READ_ONLY;
         }

@@ -55,6 +55,7 @@ public class CustomTimeEditor {
     private Label dateLabel;
     private int millis = -1;
 
+    private boolean isInline;
 
     InputMode inputMode = InputMode.None;
     private final Calendar calendar = Calendar.getInstance();
@@ -107,6 +108,7 @@ public class CustomTimeEditor {
 
     public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
         basePart = getComposite(parent, style, isPanel, isInline);
+        this.isInline = isInline;
     }
 
     @NotNull
@@ -117,10 +119,7 @@ public class CustomTimeEditor {
 
         layout = new GridLayout(2, false);
 
-        if (isPanel && !isInline) {
-            layout.marginWidth = 10;
-            layout.marginHeight = 10;
-        } else {
+        if (isInline) {
             layout.marginWidth = 0;
             layout.marginHeight = 0;
         }
@@ -135,7 +134,7 @@ public class CustomTimeEditor {
         this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM);
         this.timeEditor.setLayoutData(layoutData);
         textEditor = new Text(basePart, style);
-        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 0, 0);
+        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(false);
         gridData.exclude = true;
@@ -159,6 +158,10 @@ public class CustomTimeEditor {
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(true);
         GridLayout layout = new GridLayout(1, false);
+        if (isInline) {
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+        }
         basePart.setLayout(layout);
         final GridData layoutData = new GridData(SWT.FILL, SWT.UP, true, false, 1, 1);
 
@@ -191,8 +194,10 @@ public class CustomTimeEditor {
         textEditor.setVisible(false);
         gridData.exclude = true;
         GridLayout layout = new GridLayout(2, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 10;
+        if (isInline){
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+        }
         basePart.setLayout(layout);
 
         final GridData layoutData = new GridData(SWT.FILL, SWT.RIGHT, true, false, 1, 1);
