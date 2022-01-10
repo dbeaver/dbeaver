@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -85,8 +85,8 @@ public class SnowflakeDataSource extends GenericDataSource {
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == DBAUserChangePassword.class) {
-            return adapter.cast(new SnowflakeChangeUserPassword(this));
+        if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new SnowflakeChangeUserPasswordManager(this));
         }
         return super.getAdapter(adapter);
     }
