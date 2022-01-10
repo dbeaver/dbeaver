@@ -79,6 +79,11 @@ public class EditorsMessages extends NLS {
 	public static String database_editor_command_refresh_name;
 	public static String database_editor_command_refresh_tip;
 
+	public static String  file_dialog_select_files;
+	public static String file_dialog_save_failed;
+	public static String file_dialog_save_as_file;
+	public static String file_dialog_cannot_load_file;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, EditorsMessages.class);

@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.access;
+package org.jkiss.dbeaver.model.navigator;
+
+import org.jkiss.dbeaver.DBException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * Federated session
+ * Node which contains some stream data
  */
-public interface DBASessionFederated extends DBASession {
+public interface DBNStreamData {
 
+    boolean supportsStreamData();
+
+    long getStreamSize() throws IOException;
+
+    /**
+     * Returns stream if it allowed
+     */
+    InputStream openInputStream() throws DBException, IOException;
 
 }

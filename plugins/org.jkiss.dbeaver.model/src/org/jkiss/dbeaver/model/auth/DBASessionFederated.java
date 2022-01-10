@@ -15,15 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.access;
+package org.jkiss.dbeaver.model.auth;
 
 /**
- * Session principal (user)
+ * Federated session
  */
-public interface DBASessionPrincipal {
+public interface DBASessionFederated extends DBASession {
 
-    String getUserDomain();
-
-    String getUserName();
 
 }

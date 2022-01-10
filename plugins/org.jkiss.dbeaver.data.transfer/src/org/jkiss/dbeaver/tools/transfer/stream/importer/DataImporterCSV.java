@@ -125,6 +125,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                     final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
                                     length = line[i].getBytes(encoding).length;
                                 }
+                                length = roundToNextPowerOf2(length);
                                 if (length > columnInfo.getMaxLength()) {
                                     columnInfo.setMaxLength(length);
                                 }
@@ -155,6 +156,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
         }
 
         return columnsInfo;
+    }
+
+    private int roundToNextPowerOf2(int value) {
+        int power = 1;
+        while(power < value)
+            power*=2;
+        return power;
     }
 
     private HeaderPosition getHeaderPosition(Map<String, Object> processorProperties) {

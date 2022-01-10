@@ -33,7 +33,7 @@ public class ResetRowColorAction extends ColorAction {
         super(rsv, NLS.bind(ResultSetMessages.actions_name_color_reset_by, new Object[]{
             mapping.getAttributeName(),
             mapping.getOperator().getExpression(),
-            UITextUtils.getShortText(rsv.getSizingGC(), CommonUtils.toString(value), 100)
+            UITextUtils.getShortText(rsv.getControl(), CommonUtils.toString(value), 100)
         }));
         this.mapping = mapping;
     }

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +136,18 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
             case IResource.PROJECT: return DBIcon.PROJECT;
             default: return DBIcon.TREE_PAGE;
         }
+    }
+
+    @Override
+    public String getNodeTargetName() {
+        IResource resource = getResource();
+        if (resource != null) {
+            File localFile = resource.getLocation().toFile();
+            if (localFile != null) {
+                return localFile.getAbsolutePath();
+            }
+        }
+        return super.getNodeTargetName();
     }
 
     @Override

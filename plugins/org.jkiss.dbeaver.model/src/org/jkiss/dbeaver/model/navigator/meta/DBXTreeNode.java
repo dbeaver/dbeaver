@@ -247,6 +247,7 @@ public abstract class DBXTreeNode
         try {
             return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
         } catch (JexlException e) {
+            log.debug("Error evaluating expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
             log.warn(e);
             return false;
         }

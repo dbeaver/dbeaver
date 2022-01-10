@@ -22,9 +22,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentDescription;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.nio.file.Files;
@@ -123,7 +127,11 @@ public final class NIOFile extends NIOResource implements IFile {
     }
 
     public void setContents(InputStream source, boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try (OutputStream os = Files.newOutputStream(getNioPath())) {
+            ContentUtils.copyStreams(source, -1, os, new DefaultProgressMonitor(monitor));
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void setContents(IFileState source, boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {

@@ -40,6 +40,7 @@ public class DelphiSQLConverter extends SourceCodeSQLConverter {
                 result.append("Query.Add(");
             }
             String line = sourceLines[i];
+            line = line.replace("'", "''");
             result.append('\'').append(CommonUtils.escapeJavaString(line));
             if (!trailingLineFeed) {
                 result.append(lineDelimiter);
@@ -48,9 +49,9 @@ public class DelphiSQLConverter extends SourceCodeSQLConverter {
             if (trailingLineFeed) {
                 result.append(lineDelimiter);
             }
-            if ((i < sourceLines.length - 1) && (!useStringBuilder)) {
+            if (i < sourceLines.length - 1 && !useStringBuilder) {
                 result.append(" + \n");
-            } else {
+            } else if (useStringBuilder){
                 result.append(");\n");
             }
         }

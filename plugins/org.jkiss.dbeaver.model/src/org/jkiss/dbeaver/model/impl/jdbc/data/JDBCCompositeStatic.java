@@ -44,7 +44,7 @@ public class JDBCCompositeStatic extends JDBCComposite {
     private static final Log log = Log.getLog(JDBCCompositeStatic.class);
 
     public JDBCCompositeStatic(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
-        super(struct, monitor);
+        super(monitor, struct);
     }
 
     public JDBCCompositeStatic(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException {

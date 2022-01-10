@@ -110,12 +110,9 @@ public class MetaDataPanel implements IResultSetPanel {
         return false;
     }
 
+    @Nullable
     private DBDAttributeBinding getSelectedAttribute() {
-        IStructuredSelection selection = attributeList.getItemsViewer().getStructuredSelection();
-        if (!selection.isEmpty()) {
-            return (DBDAttributeBinding) selection.getFirstElement();
-        }
-        return null;
+        return attributeList.getSuitableSelectedElement(DBDAttributeBinding.class);
     }
 
     private boolean isAttributeVisible(DBDAttributeBinding attr) {

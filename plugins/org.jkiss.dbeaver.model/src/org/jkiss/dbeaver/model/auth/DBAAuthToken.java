@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.dbeaver.model.access.DBASession;
-
 /**
  * Auth token.
  * Can be used by services to authenticate automatically.

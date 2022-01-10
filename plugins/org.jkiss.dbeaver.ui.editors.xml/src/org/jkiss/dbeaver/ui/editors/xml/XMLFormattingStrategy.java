@@ -19,61 +19,38 @@ package org.jkiss.dbeaver.ui.editors.xml;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 import java.io.StringWriter;
 
 /**
  * The formatting strategy that transforms SQL keywords to upper case
  */
-public class XMLFormattingStrategy extends ContextBasedFormattingStrategy
-{
+public class XMLFormattingStrategy extends ContextBasedFormattingStrategy {
+
     private static final Log log = Log.getLog(XMLFormattingStrategy.class);
 
-    XMLFormattingStrategy()
-    {
+    XMLFormattingStrategy() {
     }
 
     @Override
-    public void formatterStarts(String initialIndentation)
-    {
+    public void formatterStarts(String initialIndentation) {
     }
 
     @Override
-    public String format(String content, boolean isLineStart, String indentation, int[] positions)
-    {
+    public String format(String content, boolean isLineStart, String indentation, int[] positions) {
         if (CommonUtils.isEmpty(content)) {
             return content;
         }
         try {
-            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(content)));
-
-            {
-                // Remove whitespaces between tags
-                XPath xPath = XPathFactory.newInstance().newXPath();
-                NodeList nodeList = (NodeList) xPath.evaluate("//text()[normalize-space()='']",
-                    document,
-                    XPathConstants.NODESET);
-
-                for (int i = 0; i < nodeList.getLength(); ++i) {
-                    Node node = nodeList.item(i);
-                    node.getParentNode().removeChild(node);
-                }
-            }
-
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setAttribute("indent-number", 2);
             Transformer transformer = transformerFactory.newTransformer();
@@ -82,11 +59,18 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             }
 
-            //StreamSource source = new StreamSource(new StringReader(content));
-            DOMSource source = new DOMSource(document);
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setNamespaceAware(true);
+            Source src = new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(new StringReader(content)));
+
             StreamResult result = new StreamResult(new StringWriter());
-            transformer.transform(source, result);
-            return result.getWriter().toString();
+            transformer.transform(src, result);
+            String resultString = result.getWriter().toString();
+            if (CommonUtils.isEmpty(resultString)) {
+                return content;
+            }
+
+            return resultString.replaceAll("(?m)^[ \\t]*\\r?\\n", ""); // Replace all empty lines
         } catch (Throwable e) {
             log.debug("Error formatting XML: " + e.getMessage());
             return content;
@@ -94,8 +78,7 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy
     }
 
     @Override
-    public void formatterStops()
-    {
+    public void formatterStops() {
     }
 
 }

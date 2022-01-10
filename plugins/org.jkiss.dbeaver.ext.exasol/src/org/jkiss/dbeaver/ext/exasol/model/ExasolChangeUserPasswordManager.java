@@ -14,37 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
+package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
-public class PostgresUserChangePassword implements DBAUserChangePassword {
+public class ExasolChangeUserPasswordManager implements DBAUserPasswordManager {
 
-    private PostgreDataSource dataSource;
+    private ExasolDataSource dataSource;
 
-    public PostgresUserChangePassword(PostgreDataSource dataSource) {
+    ExasolChangeUserPasswordManager(ExasolDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
-        if (CommonUtils.isEmpty(newPassword)) {
-            // User can set new empty password, but then we will get an error when connecting with an empty password
-            throw new DBException("Password change error for user: " + userName + ". New password can not be empty.");
-        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " WITH PASSWORD " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
+                " REPLACE " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }

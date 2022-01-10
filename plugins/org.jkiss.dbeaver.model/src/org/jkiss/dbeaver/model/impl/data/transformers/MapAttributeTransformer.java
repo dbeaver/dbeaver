@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Transforms attribute of map type into hierarchy of attributes
@@ -72,6 +69,7 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                     if (valueAttributes != null) {
                         for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
                             if (pair.getFirst().getName().equals(attr.getName())) {
+                                pair.setFirst(DBUtils.getMoreCommonType(pair.getFirst(), attr));
                                 attrValue = pair;
                                 break;
                             }

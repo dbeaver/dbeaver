@@ -108,6 +108,11 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         return !getWizard().isCurrentTaskSaved();
     }
 
+    @Override
+    protected boolean isDisableControlsOnRun() {
+        return true;
+    }
+
     public TaskConfigurationWizard<?> getTaskWizard() {
         return (TaskConfigurationWizard) super.getWizard();
     }
