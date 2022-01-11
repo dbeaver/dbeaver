@@ -132,6 +132,7 @@
                     <!-- Kerberos config -->
                     <parameter name="krb5.enabled" value="true"/>
                     <parameter name="krb5.loginModule" value="com.sun.security.jgss.krb5.initiate"/>
+                    <parameter name="krb5.sendUserNameToDatabase" value="false"/>
                     <parameter name="krb5.sendPasswordToDatabase" value="false"/>
                 </driver>
             </drivers>
