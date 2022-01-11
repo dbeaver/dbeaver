@@ -77,6 +77,10 @@ public class SQLQueryParameterRegistry
         parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, value));
     }
 
+    public void deleteParameter(String name) {
+        parameterMap.remove(name.toUpperCase(Locale.ENGLISH));
+    }
+
     private void loadParameters()
     {
         File storeFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE_NAME);
