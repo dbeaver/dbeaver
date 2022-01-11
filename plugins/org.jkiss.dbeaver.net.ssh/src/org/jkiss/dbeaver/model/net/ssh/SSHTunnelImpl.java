@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -108,6 +109,13 @@ public class SSHTunnelImpl implements DBWTunnel {
             authType = SSHConstants.AuthType.valueOf(sshAuthType);
         }
         if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
+            String privKeyValue = configuration.getStringProperty(SSHConstants.PROP_KEY_VALUE);
+            if (privKeyValue != null) {
+                byte[] pkBinary = Base64.decode(privKeyValue);
+                if (SSHUtils.isKeyEncrypted(pkBinary)) {
+                    return AuthCredentials.PASSWORD;
+                }
+            }
             // Check whether this key is encrypted
             String privKeyPath = configuration.getStringProperty(SSHConstants.PROP_KEY_PATH);
             if (privKeyPath != null && SSHUtils.isKeyEncrypted(privKeyPath)) {
