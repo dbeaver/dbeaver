@@ -45,8 +45,8 @@ public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> e
         @Nullable DBTTask task)
         throws DBException;
 
-    @Nullable
+    @NotNull
     default DBCStatistics getStatistics() {
-        return null;
+        return new DBCStatistics();
     }
 }

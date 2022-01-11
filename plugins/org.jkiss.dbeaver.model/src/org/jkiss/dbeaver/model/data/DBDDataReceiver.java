@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.code.Nullable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -51,8 +51,8 @@ public interface DBDDataReceiver extends AutoCloseable {
      */
     void close();
 
-    @Nullable
+    @NotNull
     default DBCStatistics getStatistics() {
-        return null;
+        return new DBCStatistics();
     }
 }
