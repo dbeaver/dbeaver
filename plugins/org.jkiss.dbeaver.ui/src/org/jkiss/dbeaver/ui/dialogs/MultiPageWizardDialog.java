@@ -580,7 +580,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (pageEnableState != null) {
                 pageEnableState.restore();
             }
-            if (monitorPart != null) {
+            if (monitorPart != null && !monitorPart.isDisposed()) {
                 monitorPart.done();
                 monitorPart.setVisible(false);
             }
