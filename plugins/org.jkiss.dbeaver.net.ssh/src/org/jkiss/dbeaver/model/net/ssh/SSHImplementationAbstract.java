@@ -208,7 +208,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             case PUBLIC_KEY: {
                 final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
                 if (CommonUtils.isEmpty(path)) {
-                    String privKeyValue = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_VALUE);
+                    String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
                     if (privKeyValue == null) {
                         throw new DBException("Private key not specified");
                     }

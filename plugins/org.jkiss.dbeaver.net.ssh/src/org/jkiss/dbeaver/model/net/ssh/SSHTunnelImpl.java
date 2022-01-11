@@ -109,7 +109,7 @@ public class SSHTunnelImpl implements DBWTunnel {
             authType = SSHConstants.AuthType.valueOf(sshAuthType);
         }
         if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
-            String privKeyValue = configuration.getStringProperty(SSHConstants.PROP_KEY_VALUE);
+            String privKeyValue = configuration.getSecureProperty(SSHConstants.PROP_KEY_VALUE);
             if (privKeyValue != null) {
                 byte[] pkBinary = Base64.decode(privKeyValue);
                 if (SSHUtils.isKeyEncrypted(pkBinary)) {
