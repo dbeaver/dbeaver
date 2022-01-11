@@ -48,8 +48,8 @@ import java.util.Date;
  * DateTimeInlineEditor
  */
 public class DateTimeInlineEditor extends BaseValueEditor<Control> {
-    TextMode textMode;
-    DateEditorMode dateEditorMode;
+    private TextMode textMode;
+    private DateEditorMode dateEditorMode;
     private CustomTimeEditor timeEditor;
 
 
