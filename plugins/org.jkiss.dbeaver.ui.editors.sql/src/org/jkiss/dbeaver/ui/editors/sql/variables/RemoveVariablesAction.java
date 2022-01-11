@@ -42,7 +42,10 @@ public class RemoveVariablesAction extends Action {
         if (UIUtils.confirmAction(
             editor.getSite().getShell(),
             SQLEditorMessages.action_result_tabs_delete_variables,
-            SQLEditorMessages.action_result_tabs_delete_variables_question + ' ' + varNames + "?"))
+            SQLEditorMessages.action_result_tabs_delete_variables_question +
+                ' ' +
+                varNames.toString().replaceAll("^[\\[]|[\\]]$","")
+                + "?"))
         {
             for (String varName : varNames) {
                 final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();
