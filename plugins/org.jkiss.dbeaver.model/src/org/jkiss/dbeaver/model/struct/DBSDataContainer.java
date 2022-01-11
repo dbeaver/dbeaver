@@ -39,6 +39,9 @@ public interface DBSDataContainer extends DBSObject {
     int DATA_FILTER         = 2 << 1;
     int DATA_SEARCH         = 4 << 2;
 
+
+    int DATA_GENERATE_IS_NOT_ALLOWED       = 8 << 3;
+
     long FLAG_NONE                  = 0;
     long FLAG_READ_PSEUDO           = 1 << 1;
     long FLAG_USE_SELECTED_ROWS     = 1 << 2;
