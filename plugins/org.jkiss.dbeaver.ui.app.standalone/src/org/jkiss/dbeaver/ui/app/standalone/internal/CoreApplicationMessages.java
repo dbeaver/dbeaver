@@ -28,6 +28,7 @@ public class CoreApplicationMessages extends NLS {
 	public static String actions_menu_reset_ui_settings_message;
 	public static String actions_menu_reset_workspace_state_title;
 	public static String actions_menu_reset_workspace_state_message;
+	public static String actions_menu_recent_editors;
 
     static {
 		// initialize resource bundle

@@ -991,7 +991,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
         DBEPersistAction[] persistActions = ddl[0];
         if (ArrayUtils.isEmpty(persistActions)) {
-            UIUtils.showMessageBox(getShell(), "No schema changes", "No changes are needed for this mapping", SWT.ICON_INFORMATION);
+            UIUtils.showMessageBox(getShell(), DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_title,
+                    DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_info, SWT.ICON_INFORMATION);
             return;
         }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -1007,8 +1008,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (result == IDialogConstants.PROCEED_ID) {
                 if (UIUtils.confirmAction(
                     getShell(),
-                    "Create target objects",
-                    "Database metadata will be modified by creating new table(s) and column(s).\nAre you sure you want to proceed?")) {
+                    DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
+                    DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
                     // Create target objects
                     if (applySchemaChanges(container, mapping, persistActions)) {
                         autoAssignMappings();
@@ -1039,8 +1040,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             });
             return true;
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Schema changes save",
-                "Error applying schema changes", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_error_schema_save_title,
+                DTUIMessages.database_consumer_page_mapping_error_schema_save_info, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
