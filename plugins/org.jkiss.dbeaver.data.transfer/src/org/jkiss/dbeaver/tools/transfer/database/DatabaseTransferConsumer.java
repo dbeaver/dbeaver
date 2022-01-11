@@ -61,6 +61,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         IDataTransferNodePrimary, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
+    private final DBCStatistics statistics = new DBCStatistics();
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -405,7 +406,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     try {
                         DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
                             try {
-                                executeBatch.execute(targetSession, options);
+                                statistics.accumulate(executeBatch.execute(targetSession, options));
                             } catch (Throwable e) {
                                 throw new InvocationTargetException(e);
                             }
@@ -819,6 +820,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public DatabaseConsumerSettings getSettings() {
         return settings;
+    }
+
+    @Override
+    @NotNull
+    public DBCStatistics getStatistics() {
+        return statistics;
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {

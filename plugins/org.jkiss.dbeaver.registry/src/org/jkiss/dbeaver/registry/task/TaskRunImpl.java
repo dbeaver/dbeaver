@@ -38,6 +38,7 @@ class TaskRunImpl implements DBTTaskRun {
     private long duration;
     private String errorMessage;
     private String errorStackTrace;
+    private String extraMessage;
 
     TaskRunImpl() {
         this.id = "void";
@@ -108,6 +109,16 @@ class TaskRunImpl implements DBTTaskRun {
 
     public void setErrorStackTrace(String errorStackTrace) {
         this.errorStackTrace = errorStackTrace;
+    }
+
+    @Nullable
+    @Override
+    public String getExtraMessage() {
+        return extraMessage;
+    }
+
+    public void setExtraMessage(String message) {
+        extraMessage = message;
     }
 
     @Override
