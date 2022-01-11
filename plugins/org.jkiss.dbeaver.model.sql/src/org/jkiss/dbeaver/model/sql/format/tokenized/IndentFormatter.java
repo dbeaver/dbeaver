@@ -405,6 +405,9 @@ class IndentFormatter {
                     SQLUtils.isCommentLine(formatterCfg.getSyntaxManager().getDialect(), prevToken.getString())) {
                     s = ""; //$NON-NLS-1$
                 }
+            } else if (argList.get(argIndex).getType() == TokenType.COMMENT) {
+                // Do not add line separator before comment
+                s = "";
             }
             for (int index = 0; index < argIndent; index++) {
                 s += formatterCfg.getIndentString();
