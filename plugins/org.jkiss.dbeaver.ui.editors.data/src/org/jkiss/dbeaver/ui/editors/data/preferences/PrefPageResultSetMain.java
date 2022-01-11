@@ -69,6 +69,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button advUseFetchSize;
 
     private Button ignoreColumnLabelCheck;
+    private Button useDateTimeEditor;
 
     public PrefPageResultSetMain()
     {
@@ -175,6 +176,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
             useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
+            useDateTimeEditor = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime, ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime_tip, false, 1);
         }
 
         {
@@ -197,6 +199,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         try {
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
             rereadOnScrollingCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING));
+            useDateTimeEditor.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR));
             int rsSegmentSize = store.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
             if (rsSegmentSize > 0 && rsSegmentSize < ResultSetPreferences.MIN_SEGMENT_SIZE) {
                 rsSegmentSize = ResultSetPreferences.MIN_SEGMENT_SIZE;
@@ -230,6 +233,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
+            store.setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, useDateTimeEditor.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
@@ -259,6 +263,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
+        store.setToDefault(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS);

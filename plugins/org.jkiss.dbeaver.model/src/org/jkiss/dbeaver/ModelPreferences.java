@@ -141,6 +141,7 @@ public final class ModelPreferences
     public static final String TRANSACTIONS_AUTO_CLOSE_TTL = "transaction.auto.close.ttl"; //$NON-NLS-1$
 
     public static final String DICTIONARY_COLUMN_DIVIDER = "resultset.dictionary.columnDivider"; //$NON-NLS-1$
+    public static final String RESULT_SET_USE_DATETIME_EDITOR = "resultset.datetime.editor";
 
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
