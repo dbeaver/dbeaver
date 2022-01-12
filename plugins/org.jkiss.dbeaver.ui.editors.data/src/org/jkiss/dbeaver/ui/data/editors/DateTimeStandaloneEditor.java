@@ -90,11 +90,20 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         return dialogGroup;
     }
 
+    private boolean isCalendarMode() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+    }
+
     @Override
     public Object extractEditorValue() throws DBException {
         try (DBCSession session = getValueController().getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            final String strValue = timeEditor.getValue();
-            return getValueController().getValueHandler().getValueFromObject(session, getValueController().getValueType(), strValue, false, false);
+            if (!isCalendarMode()) {
+                final String strValue = timeEditor.getValueAsString();
+                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, true);
+            } else {
+                final Date dateValue = timeEditor.getValueAsDate();
+                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), dateValue, false, true);
+            }
         }
     }
 
