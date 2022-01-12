@@ -50,7 +50,6 @@ public class CustomTimeEditor {
 
     private static final String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private String format = "";
-    private DateFormat dateFormat = null;
     private Label timeLabel;
     private Label dateLabel;
     private int millis = -1;
@@ -68,15 +67,12 @@ public class CustomTimeEditor {
         DateTime
     }
 
-    public void setDateFormat(DateFormat dateFormat) {
-        this.dateFormat = dateFormat;
-    }
+
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
         final JDBCType jdbcType = JDBCType.valueOf(valueType.getTypeID());
         switch (jdbcType) {
             case DATE:
-                setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
                 inputMode = InputMode.Date;
                 timeEditor.dispose();
                 if (timeLabel != null) {
@@ -84,11 +80,9 @@ public class CustomTimeEditor {
                 }
                 break;
             case TIME_WITH_TIMEZONE:
-                setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSX"));
                 inputMode = InputMode.DateTime;
                 break;
             case TIME:
-                setDateFormat(new SimpleDateFormat("HH:mm:ss"));
                 inputMode = InputMode.Time;
                 dateEditor.dispose();
                 if (dateLabel != null) {
@@ -96,15 +90,12 @@ public class CustomTimeEditor {
                 }
                 break;
             default:
-                setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
                 inputMode = InputMode.DateTime;
                 break;
         }
     }
 
-    public CustomTimeEditor(@NotNull Composite parent, int style) {
-        basePart = getComposite(parent, style, false, false);
-    }
+
 
     public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
         basePart = getComposite(parent, style, isPanel, isInline);
@@ -282,11 +273,18 @@ public class CustomTimeEditor {
 
     }
 
+
     @Nullable
-    public String getValue() {
+    public String getValueAsString() {
         if (textEditor != null && !textEditor.isDisposed() && textEditor.isVisible()) {
             return textEditor.getText();
         }
+        return null;
+    }
+
+    @Nullable
+    public Date getValueAsDate() {
+
         switch (inputMode) {
             case Time:
                 calendar.set(0, Calendar.JANUARY, 0, timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
@@ -305,7 +303,7 @@ public class CustomTimeEditor {
         if (millis != -1) {
             calendar.set(Calendar.MILLISECOND, millis);
         }
-        return dateFormat.format(calendar.getTime());
+        return calendar.getTime();
     }
 
     public void setEditable(boolean editable) {
