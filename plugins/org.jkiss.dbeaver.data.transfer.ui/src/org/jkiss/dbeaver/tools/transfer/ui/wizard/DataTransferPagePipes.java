@@ -251,12 +251,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private void loadNodeSettings() {
         if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle(DTMessages.data_transfer_wizard_export_target_title);
+            setTitle(DTMessages.data_transfer_wizard_init_title);
             setDescription(DTMessages.data_transfer_wizard_init_description);
 
             loadConsumers();
         } else {
-            setTitle(DTMessages.data_transfer_wizard_import_source_title);
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
             setDescription(DTMessages.data_transfer_wizard_producers_description);
 
             loadProducers();
