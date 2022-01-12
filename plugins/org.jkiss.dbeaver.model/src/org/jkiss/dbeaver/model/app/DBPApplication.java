@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 
 /**
@@ -25,6 +26,9 @@ import org.jkiss.code.NotNull;
  */
 public interface DBPApplication
 {
+    @NotNull
+    DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
+
     boolean isStandalone();
 
     /**

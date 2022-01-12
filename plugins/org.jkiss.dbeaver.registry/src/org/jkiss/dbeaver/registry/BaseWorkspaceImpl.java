@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.auth.DBASession;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -116,7 +117,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @NotNull
-    protected BasicWorkspaceSession acquireWorkspaceSession() {
+    protected DBASession acquireWorkspaceSession() {
         return new BasicWorkspaceSession(this);
     }
 
