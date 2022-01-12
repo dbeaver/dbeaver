@@ -174,7 +174,6 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_task_configurator_title_error_opening_data_source;
 	public static String data_transfer_task_configurator_message_error_while_opening_data_source;
 	public static String data_transfer_wizard_message_init_data_transfer;
-	public static String data_transfer_summary_settings_part_header;
 
 	public static String stream_producer_page_preview_error_message_no_entities_specified;
 	public static String stream_producer_page_preview_error_message_wrong_input_object;
