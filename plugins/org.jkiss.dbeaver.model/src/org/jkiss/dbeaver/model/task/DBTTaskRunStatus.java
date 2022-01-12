@@ -25,40 +25,45 @@ import java.util.StringJoiner;
 
 public class DBTTaskRunStatus {
 
-    private String resultMessage;
+    private DBCStatistics statistics;
 
     public DBTTaskRunStatus(){
     }
 
     @Nullable
-    public String getResultMessage() {
-        return resultMessage;
+    public DBCStatistics getStatistics() {
+        return statistics;
     }
 
-    public void setResultMessage(String message) {
-        resultMessage = message;
+    public void setStatistics(DBCStatistics statistics) {
+        this.statistics = statistics;
+    }
+
+    @Nullable
+    public String makeStatisticsMessage() {
+        if (statistics.getRowsFetched() == 0 && 
+            statistics.getRowsUpdated() == 0 &&
+            statistics.getStatementsCount() == 0) {
+            return null;
+        }
+
+        StringJoiner joiner = new StringJoiner(", ");
+        if (statistics.getRowsFetched() > 0) {
+            joiner.add(NLS.bind(ModelMessages.task_rows_fetched_message_part, statistics.getRowsFetched()));
+        }
+        if (statistics.getRowsUpdated() > 0) {
+            joiner.add(NLS.bind(ModelMessages.task_rows_modified_message_part, statistics.getRowsUpdated()));
+        }
+        if (statistics.getStatementsCount() > 0) {
+            joiner.add(NLS.bind(ModelMessages.task_statements_executed_message_part, statistics.getStatementsCount()));
+        }
+
+        return joiner.toString();
     }
 
     public static DBTTaskRunStatus makeStatisticsStatus(DBCStatistics statistics) {
         DBTTaskRunStatus taskResultStatus = new DBTTaskRunStatus();
-
-        if (statistics.getRowsFetched() > 0 ||
-            statistics.getRowsUpdated() > 0 ||
-            statistics.getStatementsCount() > 0) {
-
-            StringJoiner joiner = new StringJoiner(", ");
-            if (statistics.getRowsFetched() > 0) {
-                joiner.add(NLS.bind(ModelMessages.task_rows_fetched_message_part, statistics.getRowsFetched()));
-            }
-            if (statistics.getRowsUpdated() > 0) {
-                joiner.add(NLS.bind(ModelMessages.task_rows_modified_message_part, statistics.getRowsUpdated()));
-            }
-            if (statistics.getStatementsCount() > 0) {
-                joiner.add(NLS.bind(ModelMessages.task_statements_executed_message_part, statistics.getStatementsCount()));
-            }
-            taskResultStatus.setResultMessage(joiner.toString());
-        }
-
+        taskResultStatus.setStatistics(statistics);
         return taskResultStatus;
     }
 }

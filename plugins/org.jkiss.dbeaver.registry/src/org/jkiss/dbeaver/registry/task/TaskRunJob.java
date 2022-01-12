@@ -92,7 +92,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
             try {
                 DBTTaskRunStatus runResultStatus = executeTask(new LoggingProgressMonitor(monitor), logStream);
-                taskRun.setExtraMessage(runResultStatus.getResultMessage());
+                taskRun.setExtraMessage(runResultStatus.makeStatisticsMessage());
             } catch (Throwable e) {
                 taskError = e;
                 taskLog.error("Task fatal error", e);
