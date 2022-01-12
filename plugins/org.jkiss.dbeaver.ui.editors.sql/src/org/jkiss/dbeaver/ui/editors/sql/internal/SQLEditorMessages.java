@@ -107,6 +107,7 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;
     public static String action_result_tabs_assign_variable_sql;
+    public static String action_result_tabs_delete_variables;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
@@ -340,6 +341,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_comments;
     public static String sql_generator_dialog_button_show_permissions;
     public static String sql_generator_dialog_button_show_full_DDL;
+    public static String action_result_tabs_delete_variables_question;
 
 
     static {

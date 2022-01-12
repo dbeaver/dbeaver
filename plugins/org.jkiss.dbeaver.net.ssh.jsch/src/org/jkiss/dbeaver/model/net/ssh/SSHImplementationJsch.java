@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
@@ -65,7 +66,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             if (auth.getType() == AuthType.PUBLIC_KEY) {
                 log.debug("Adding identity key");
                 try {
-                    addIdentityKey(monitor, configuration.getDataSource(), auth.getKey(), auth.getPassword());
+                    if (auth.getKeyFile() != null) {
+                        addIdentityKeyFile(monitor, configuration.getDataSource(), auth.getKeyFile(), auth.getPassword());
+                    } else {
+                        addIdentityKeyValue(auth.getKeyValue(), auth.getPassword());
+                    }
                 } catch (JSchException e) {
                     throw new DBException("Cannot add identity key", e);
                 }
@@ -167,7 +172,16 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private void addIdentityKey(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, File key, String password) throws IOException, JSchException {
+    private void addIdentityKeyValue(String keyValue, String password) throws JSchException {
+        byte[] keyBinary = Base64.decode(keyValue);
+        if (!CommonUtils.isEmpty(password)) {
+            jsch.addIdentity("key", keyBinary, null, password.getBytes());
+        } else {
+            jsch.addIdentity("key", keyBinary, null, null);
+        }
+    }
+
+    private void addIdentityKeyFile(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, File key, String password) throws IOException, JSchException {
         String header;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(key))) {

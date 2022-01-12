@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.Identity;
-import com.jcraft.jsch.IdentityRepository;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -64,4 +61,21 @@ class SSHUtils {
         }
         return false;
     }
+
+
+    public static boolean isKeyEncrypted(byte[] privKeyValue) {
+        // Check whether this key is encrypted
+        if (privKeyValue != null) {
+            try {
+                JSch testSch = new JSch();
+                KeyPair keyPair = KeyPair.load(testSch, privKeyValue, null);
+                return keyPair.isEncrypted();
+            } catch (JSchException e) {
+                // Something went wrong
+                log.debug("Can't check private key encryption: " + e.getMessage());
+            }
+        }
+        return false;
+    }
+
 }

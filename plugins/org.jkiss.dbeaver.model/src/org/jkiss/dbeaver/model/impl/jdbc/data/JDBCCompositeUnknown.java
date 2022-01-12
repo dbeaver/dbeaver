@@ -31,7 +31,7 @@ import java.util.Arrays;
 public class JDBCCompositeUnknown extends JDBCComposite {
 
     public JDBCCompositeUnknown(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
-        super(struct, monitor);
+        super(monitor, struct);
     }
 
     public JDBCCompositeUnknown(@NotNull DBCSession session, @Nullable Object structData) {

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -28,11 +28,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
-public class SQLServerChangeLoginPassword implements DBAUserChangePassword {
+public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
 
-    private SQLServerDataSource dataSource;
+    private final SQLServerDataSource dataSource;
 
-    SQLServerChangeLoginPassword(SQLServerDataSource dataSource) {
+    SQLServerLoginPasswordManager(SQLServerDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

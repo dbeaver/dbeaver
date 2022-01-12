@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.vertica.model;
+package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -28,11 +28,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
-public class VerticaChangeUserPassword implements DBAUserChangePassword {
+public class SnowflakeChangeUserPasswordManager implements DBAUserPasswordManager {
 
-    private VerticaDataSource dataSource;
+    private SnowflakeDataSource dataSource;
 
-    VerticaChangeUserPassword(VerticaDataSource dataSource) {
+    SnowflakeChangeUserPasswordManager(SnowflakeDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -40,7 +40,7 @@ public class VerticaChangeUserPassword implements DBAUserChangePassword {
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " SET PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }

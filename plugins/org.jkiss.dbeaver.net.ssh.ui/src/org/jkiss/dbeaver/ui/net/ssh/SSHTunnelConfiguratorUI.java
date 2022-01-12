@@ -23,6 +23,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -89,6 +91,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             final ExpandableComposite group = new ExpandableComposite(composite, SWT.CHECK);
+            group.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             group.setText("Jump server settings");
 
@@ -111,6 +119,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             final ExpandableComposite group = new ExpandableComposite(composite, SWT.NONE);
+            group.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             group.setText(SSHUIMessages.model_ssh_configurator_group_advanced);
 

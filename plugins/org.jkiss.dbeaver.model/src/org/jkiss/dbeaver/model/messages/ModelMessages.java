@@ -184,6 +184,10 @@ public class ModelMessages extends NLS {
     public static String dbp_permission_import_data_name;
     public static String dbp_permission_import_data_description;
 
+	public static String task_rows_fetched_message_part;
+	public static String task_rows_modified_message_part;
+	public static String task_statements_executed_message_part;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

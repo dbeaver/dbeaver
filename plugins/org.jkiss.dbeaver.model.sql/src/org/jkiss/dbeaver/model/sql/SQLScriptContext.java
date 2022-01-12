@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -101,6 +102,14 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     @Override
+    public boolean hasDefaultParameterValue(String name) {
+        if (defaultParameters.containsKey(name)){
+            return true;
+        }
+        return parentContext != null && parentContext.hasDefaultParameterValue(name);
+    }
+
+    @Override
     public Object getVariable(String name) {
         VariableInfo variableInfo = variables.get(name);
         if (variableInfo == null && parentContext != null) {
@@ -131,6 +140,16 @@ public class SQLScriptContext implements DBCScriptContext {
         if (parentContext != null) {
             parentContext.removeVariable(name);
         }
+    }
+
+    @Override
+    public void removeDefaultParameterValue(String name) {
+        final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();
+        Object p = defaultParameters.remove(name.replace(":",""));
+        instance.deleteParameter(name);
+        instance.save();
+        if (p != null) notifyListeners(DBCScriptContextListener.ContextAction.DELETE, name, p);
+        if (parentContext != null) parentContext.removeDefaultParameterValue(name);
     }
 
     @Override
