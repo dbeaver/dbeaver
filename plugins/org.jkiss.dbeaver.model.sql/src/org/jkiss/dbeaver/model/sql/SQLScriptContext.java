@@ -145,7 +145,7 @@ public class SQLScriptContext implements DBCScriptContext {
     @Override
     public void removeDefaultParameterValue(String name) {
         final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();
-        Object p = defaultParameters.remove(name.replace(":",""));
+        Object p = defaultParameters.remove(SQLQueryParameter.stripVariablePattern(name));
         instance.deleteParameter(name);
         instance.save();
         if (p != null) notifyListeners(DBCScriptContextListener.ContextAction.DELETE, name, p);
