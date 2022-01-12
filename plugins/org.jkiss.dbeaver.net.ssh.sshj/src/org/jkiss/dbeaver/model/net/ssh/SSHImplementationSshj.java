@@ -24,6 +24,7 @@ import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -77,11 +78,17 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                     sshClient.authPassword(host.getUsername(), auth.getPassword());
                     break;
                 case PUBLIC_KEY:
-                    if (!CommonUtils.isEmpty(auth.getPassword())) {
-                        KeyProvider keyProvider = sshClient.loadKeys(auth.getKey().getAbsolutePath(), auth.getPassword().toCharArray());
-                        sshClient.authPublickey(host.getUsername(), keyProvider);
+                    if (auth.getKeyFile() != null) {
+                        if (!CommonUtils.isEmpty(auth.getPassword())) {
+                            KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyFile().getAbsolutePath(), auth.getPassword().toCharArray());
+                            sshClient.authPublickey(host.getUsername(), keyProvider);
+                        } else {
+                            sshClient.authPublickey(host.getUsername(), auth.getKeyFile().getAbsolutePath());
+                        }
                     } else {
-                        sshClient.authPublickey(host.getUsername(), auth.getKey().getAbsolutePath());
+                        KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyValue(), null,
+                            CommonUtils.isEmpty(auth.getPassword()) ? null : PasswordUtils.createOneOff(auth.getPassword().toCharArray()));
+                        sshClient.authPublickey(host.getUsername(), keyProvider);
                     }
                     break;
                 case AGENT: {

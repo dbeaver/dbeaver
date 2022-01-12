@@ -115,16 +115,14 @@ public class CustomTimeEditor {
     private Composite getComposite(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
         final Composite basePart;
         basePart = new Composite(parent, style);
-        GridLayout layout;
-
-        layout = new GridLayout(2, false);
+        GridLayout layout = new GridLayout(2, false);
 
         if (isInline) {
             layout.marginWidth = 0;
             layout.marginHeight = 0;
         }
         basePart.setLayout(layout);
-        basePart.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+
         final GridData layoutData = new GridData(SWT.FILL, SWT.RIGHT, true, false, 1, 1);
 
         if (!isInline) dateLabel = UIUtils.createLabel(basePart, "Date");
@@ -133,7 +131,8 @@ public class CustomTimeEditor {
         if (!isInline) timeLabel = UIUtils.createLabel(basePart, "Time");
         this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM);
         this.timeEditor.setLayoutData(layoutData);
-        textEditor = new Text(basePart, style);
+
+        textEditor = new Text(basePart, isPanel && !isInline ? style : style | SWT.BORDER);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(false);
@@ -158,7 +157,7 @@ public class CustomTimeEditor {
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(true);
         GridLayout layout = new GridLayout(1, false);
-        if (isInline) {
+        {
             layout.marginHeight = 0;
             layout.marginWidth = 0;
         }
@@ -317,7 +316,7 @@ public class CustomTimeEditor {
             this.timeEditor.setEnabled(editable);
         }
         if (this.textEditor != null && !this.textEditor.isDisposed()){
-            this.textEditor.setEnabled(editable);
+            this.textEditor.setEditable(editable);
         }
     }
 

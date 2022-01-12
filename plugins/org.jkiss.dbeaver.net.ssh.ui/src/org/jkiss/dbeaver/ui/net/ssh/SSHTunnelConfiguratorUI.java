@@ -23,6 +23,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -89,15 +91,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             final ExpandableComposite group = new ExpandableComposite(composite, SWT.CHECK);
+            group.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-            group.setText("Jump server settings");
+            group.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
 
             final Composite client = new Composite(group, SWT.BORDER);
             client.setLayout(new GridLayout(2, false));
             client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
             group.setClient(client);
 
-            jumpServerEnabledCheck = UIUtils.createCheckbox(client, "Use jump server", false);
+            jumpServerEnabledCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_group_jump_server_checkbox_label, false);
             jumpServerEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1));
             jumpServerEnabledCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -111,6 +119,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             final ExpandableComposite group = new ExpandableComposite(composite, SWT.NONE);
+            group.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             group.setText(SSHUIMessages.model_ssh_configurator_group_advanced);
 
@@ -172,10 +186,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                     testTunnelConnection();
                 }
             });
-            String hint = "You can use variables in SSH parameters.";
+            String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.CONNECT_VARIABLES, false);
 
-            UIUtils.createLink(controlGroup, "<a>SSH Documentation</a>", new SelectionAdapter() {
+            UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));

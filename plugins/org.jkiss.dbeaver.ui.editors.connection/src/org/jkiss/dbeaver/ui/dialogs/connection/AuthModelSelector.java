@@ -158,6 +158,7 @@ public class AuthModelSelector extends Composite {
                 } finally {
                     authModelCombo.setToolTipText(selectedAuthModel == null ? "" : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
+                UIUtils.resizeShell(authModelCombo.getShell());
             }
         });
         Label authModelDescLabel = new Label(authModelComp, SWT.NONE);

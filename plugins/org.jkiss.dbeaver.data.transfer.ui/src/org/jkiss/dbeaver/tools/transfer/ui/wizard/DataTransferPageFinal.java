@@ -219,7 +219,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             String settingsSummary = settings.getSettingsSummary();
             if (!CommonUtils.isEmpty(settingsSummary)) {
                 if (node != null) {
-                    summary.append(node.getName()).append(" settings:\n");
+                    summary.append(node.getName()).append(DTUIMessages.data_transfer_summary_settings_part_header);
                 }
                 summary.append(CommonUtils.notEmpty(settingsSummary));
             }

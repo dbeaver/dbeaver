@@ -1150,7 +1150,7 @@
         <handler id="projects" class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="Navigator bookmarks" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">
+        <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="%resourceHandler.bookmarks.name" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">
             <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>
