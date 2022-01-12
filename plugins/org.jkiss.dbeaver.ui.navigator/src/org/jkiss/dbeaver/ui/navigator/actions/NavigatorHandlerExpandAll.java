@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -57,7 +58,7 @@ public class NavigatorHandlerExpandAll extends AbstractHandler implements IEleme
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        element.setText("Expand selected");
-        element.setTooltip("Expand selected");
+        element.setText(UINavigatorMessages.navigator_expand_all_text);
+        element.setTooltip(UINavigatorMessages.navigator_expand_all_tip);
     }
 }

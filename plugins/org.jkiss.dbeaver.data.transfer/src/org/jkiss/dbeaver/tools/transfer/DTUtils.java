@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,7 +55,7 @@ public class DTUtils {
     }
 
     public static void addSummary(StringBuilder summary, DataTransferProcessorDescriptor processor, Map<?, ?> props) {
-        summary.append(processor.getName()).append(" settings:\n");
+        summary.append(processor.getName()).append(DTMessages.data_transfer_summary_settings_part_header);
         for (DBPPropertyDescriptor prop : processor.getProperties()) {
             Object propValue = props.get(prop.getId());
             if (propValue == null) {

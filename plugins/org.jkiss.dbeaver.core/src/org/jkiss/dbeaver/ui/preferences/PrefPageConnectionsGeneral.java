@@ -58,7 +58,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group groupDefaults = UIUtils.createControlGroup(composite, "Default settings for new connections", 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group groupDefaults = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_default_settings, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupDefaults);
             connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
