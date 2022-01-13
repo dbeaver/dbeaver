@@ -208,13 +208,18 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             case PUBLIC_KEY: {
                 final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
                 if (CommonUtils.isEmpty(path)) {
-                    throw new DBException("Private key path is empty");
+                    String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
+                    if (privKeyValue == null) {
+                        throw new DBException("Private key not specified");
+                    }
+                    authentication = SSHAuthConfiguration.usingKey(privKeyValue, password, savePassword);
+                } else {
+                    final File file = new File(path);
+                    if (!file.exists()) {
+                        throw new DBException("Private key file '" + path + "' does not exist");
+                    }
+                    authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);
                 }
-                final File file = new File(path);
-                if (!file.exists()) {
-                    throw new DBException("Private key file '" + path + "' does not exist");
-                }
-                authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);
                 break;
             }
             case PASSWORD: {

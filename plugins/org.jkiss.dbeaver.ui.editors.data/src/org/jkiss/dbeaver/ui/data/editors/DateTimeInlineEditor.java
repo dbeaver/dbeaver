@@ -48,8 +48,8 @@ import java.util.Date;
  * DateTimeInlineEditor
  */
 public class DateTimeInlineEditor extends BaseValueEditor<Control> {
-    TextMode textMode;
-    DateEditorMode dateEditorMode;
+    private TextMode textMode;
+    private DateEditorMode dateEditorMode;
     private CustomTimeEditor timeEditor;
 
 
@@ -111,7 +111,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 SWT.MULTI, true, inline);
         textMode = new TextMode(timeEditor);
         dateEditorMode = new DateEditorMode(timeEditor);
-        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)) {
+        if (!isCalendarMode()) {
             textMode.run();
             textMode.setChecked(true);
         } else dateEditorMode.setChecked(true);
@@ -139,19 +139,28 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         return timeEditor.getControl();
     }
 
+    private boolean isCalendarMode() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+    }
+
     @Override
     public Object extractEditorValue() throws DBException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            final String strValue = timeEditor.getValue();
-            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, false);
+            if (!isCalendarMode()) {
+                final String strValue = timeEditor.getValueAsString();
+                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, true);
+            } else {
+                final Date dateValue = timeEditor.getValueAsDate();
+                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), dateValue, false, true);
+            }
         }
     }
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
         super.contributeActions(manager, controller);
-        manager.add(ActionUtils.makeActionContribution(textMode, true));
-        manager.add(ActionUtils.makeActionContribution(dateEditorMode, true));
+        manager.add(ActionUtils.makeActionContribution(textMode, false));
+        manager.add(ActionUtils.makeActionContribution(dateEditorMode, false));
         manager.update(true);
         timeEditor.getControl().layout();
     }

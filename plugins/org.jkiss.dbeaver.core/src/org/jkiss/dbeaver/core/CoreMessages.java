@@ -472,9 +472,26 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_confirm_data_change_tip;
 
 	public static String pref_page_connection_label_general;
-
 	public static String pref_page_connection_label_use_environment;
     public static String pref_page_connections_application_name_text;
+
+	public static String pref_page_connection_label_default_settings;
+
+	public static String pref_page_network_profiles_tool_create_title;
+	public static String pref_page_network_profiles_tool_create_text;
+	public static String pref_page_network_profiles_tool_create_dialog_profile_name;
+	public static String pref_page_network_profiles_tool_create_dialog_error_title;
+	public static String pref_page_network_profiles_tool_create_dialog_error_info;
+	public static String pref_page_network_profiles_tool_delete_title;
+	public static String pref_page_network_profiles_tool_delete_text;
+	public static String pref_page_network_profiles_tool_delete_dialog_error_title;
+	public static String pref_page_network_profiles_tool_delete_dialog_error_info;
+	public static String pref_page_network_profiles_tool_delete_confirmation_title;
+	public static String pref_page_network_profiles_tool_delete_confirmation_question;
+	public static String pref_page_network_profiles_tool_no_profile_error_title;
+	public static String pref_page_network_profiles_tool_no_profile_error_info;
+	public static String pref_page_network_profiles_tool_no_profile_error_information;
+
 
 	public static String transaction_info_dialog_checkbox_show_all_queries;
 

@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.function.Consumer;
 
@@ -136,7 +135,13 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                      }
                    });
                  if (!UIUtils.isInDialog(inlineControl)) {
-                     addAutoSaveSupport(inlineControl);
+                     if (inlineControl instanceof Composite) {
+                         for (Control childControl : ((Composite) inlineControl).getChildren()) {
+                             addAutoSaveSupport(childControl);
+                         }
+                     } else {
+                         addAutoSaveSupport(inlineControl);
+                     }
                  } else {
                      ((IMultiController) valueController).closeInlineEditor();
                  }
