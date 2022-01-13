@@ -76,7 +76,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
-        this.workspaceAuthContext.addSession(acquireWorkspaceSession());
+
+        try {
+            this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            System.exit(101);
+        }
 
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
@@ -117,7 +123,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @NotNull
-    protected DBASession acquireWorkspaceSession() {
+    protected DBASession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
         return new BasicWorkspaceSession(this);
     }
 
