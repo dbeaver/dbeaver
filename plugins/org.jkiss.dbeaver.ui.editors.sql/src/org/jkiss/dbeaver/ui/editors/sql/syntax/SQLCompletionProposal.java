@@ -108,11 +108,13 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                     } else {
                         if (docLen <= replacementSum + 2) {
                             insertTrailingSpace = true;
+                        } else if (Character.isWhitespace(document.getChar(replacementSum))) {
+                            insertTrailingSpace = docLen > replacementSum + 1 && !Character.isWhitespace(document.getChar(replacementSum + 1));
                         } else {
-                            insertTrailingSpace = document.getChar(replacementSum) != ' ';
+                            insertTrailingSpace = true;
                         }
                         if (insertTrailingSpace) {
-                            replaceOn += " ";
+                            replaceOn += ' ';
                         }
                         cursorPosition++;
                     }

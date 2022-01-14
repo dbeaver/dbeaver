@@ -62,6 +62,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     private static final Log log = Log.getLog(DatabaseTransferProducer.class);
 
+    private final DBCStatistics producerStatistics = new DBCStatistics();
+
     private DBSDataContainer dataContainer;
     @Nullable
     private DBDDataFilter dataFilter;
@@ -249,7 +251,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             // Perform export
                             if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                                 // Just do it in single query
-                                dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize());
+                                producerStatistics.accumulate(dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize()));
                             } else {
                                 // Read all data by segments
                                 long offset = 0;
@@ -261,6 +263,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                         // Done
                                         break;
                                     }
+                                    producerStatistics.accumulate(statistics);
                                     offset += statistics.getRowsFetched();
                                 }
                             }
@@ -299,6 +302,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return obj instanceof DatabaseTransferProducer &&
             CommonUtils.equalObjects(dataContainer, ((DatabaseTransferProducer) obj).dataContainer) &&
             CommonUtils.equalObjects(dataFilter, ((DatabaseTransferProducer) obj).dataFilter);
+    }
+
+    @Override
+    @NotNull
+    public DBCStatistics getStatistics() {
+        return producerStatistics;
     }
 
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {

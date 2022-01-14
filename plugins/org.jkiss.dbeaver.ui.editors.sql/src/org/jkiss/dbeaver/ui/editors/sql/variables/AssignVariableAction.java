@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.variables;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -112,7 +113,10 @@ public class AssignVariableAction extends Action {
                 if (checkDuplicates) {
                     String varName = propNameText.getText();
                     if (editor.getGlobalScriptContext().hasVariable(varName)) {
-                        UIUtils.showMessageBox(getShell(), "Duplicate variable", "Variable '" + varName + "' already declared", SWT.ICON_ERROR);
+                        UIUtils.showMessageBox(getShell(),
+                                SQLEditorMessages.action_assign_variables_error_duplicated_title,
+                                NLS.bind(SQLEditorMessages.action_assign_variables_error_duplicated_info, varName),
+                                SWT.ICON_ERROR);
                         return;
                     }
                 }

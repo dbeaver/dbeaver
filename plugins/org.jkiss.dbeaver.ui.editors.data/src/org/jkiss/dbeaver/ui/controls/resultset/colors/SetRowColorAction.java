@@ -36,7 +36,7 @@ public class SetRowColorAction extends ColorAction {
     private final Object value;
     public SetRowColorAction(ResultSetViewer resultSetViewer, DBDAttributeBinding attr, Object value) {
         super(resultSetViewer, NLS.bind(ResultSetMessages.actions_name_color_by,
-            attr.getName() + " = " + UITextUtils.getShortText(resultSetViewer.getSizingGC(), CommonUtils.toString(value), 100)));
+            attr.getName() + " = " + UITextUtils.getShortText(resultSetViewer.getControl(), CommonUtils.toString(value), 100)));
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.value = value;

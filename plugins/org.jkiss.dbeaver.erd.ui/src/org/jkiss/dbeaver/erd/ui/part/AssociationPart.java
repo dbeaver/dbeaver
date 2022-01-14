@@ -248,9 +248,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     private List<AttributePart> getEntityAttributes(EntityPart source, List<ERDEntityAttribute> columns) {
         List<AttributePart> result = new ArrayList<>();
-        for (AttributePart attrPart : (List<AttributePart>) source.getChildren()) {
-            if (columns.contains(attrPart.getAttribute())) {
-                result.add(attrPart);
+        for (Object attrPart : source.getChildren()) {
+            if (attrPart instanceof AttributePart && columns.contains(((AttributePart)attrPart).getAttribute())) {
+                result.add((AttributePart)attrPart);
             }
         }
         return result;

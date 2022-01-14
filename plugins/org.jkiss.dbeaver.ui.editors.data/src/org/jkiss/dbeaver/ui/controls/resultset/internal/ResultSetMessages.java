@@ -94,10 +94,11 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_empty;
     public static String controls_resultset_viewer_status_no_data;
     public static String controls_resultset_viewer_status_row;
-    public static String controls_resultset_viewer_status_rows;
     public static String controls_resultset_viewer_status_rows_fetched;
     public static String controls_resultset_viewer_status_rows_updated;
     public static String controls_resultset_viewer_status_rows_size;
+    public static String controls_resultset_viewer_status_rows_time;
+    public static String controls_resultset_viewer_status_rows_time_fetch;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;
     public static String controls_resultset_viewer_pin_column;
@@ -226,6 +227,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
     public static String pref_page_content_editor_checkbox_commit_on_value_apply;
     public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
+    public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
+    public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
     public static String pref_page_content_editor_group_keys;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
     public static String pref_page_content_editor_checkbox_new_rows_after;

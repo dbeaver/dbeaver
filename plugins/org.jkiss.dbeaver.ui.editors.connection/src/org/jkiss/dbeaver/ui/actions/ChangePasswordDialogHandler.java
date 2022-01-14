@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -52,7 +52,7 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
             DBPDataSourceContainer dataSourceContainer = dataSource.getDataSourceContainer();
             DBPDataSource dbpDataSource = dataSourceContainer.getDataSource();
             if (dbpDataSource instanceof IAdaptable) {
-                DBAUserChangePassword changePassword = ((IAdaptable) dbpDataSource).getAdapter(DBAUserChangePassword.class);
+                DBAUserPasswordManager changePassword = ((IAdaptable) dbpDataSource).getAdapter(DBAUserPasswordManager.class);
                 if (changePassword != null) {
                     DBPConnectionConfiguration connectionInfo = dataSourceContainer.getConnectionConfiguration();
                     String oldPassword = connectionInfo.getUserPassword();

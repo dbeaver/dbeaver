@@ -28,6 +28,7 @@ public class SSHConstants {
     public static final String PROP_IMPLEMENTATION = "implementation";
     public static final String PROP_AUTH_TYPE = "authType";
     public static final String PROP_KEY_PATH = "keyPath";
+    public static final String PROP_KEY_VALUE = "keyValue";
     public static final String PROP_ALIVE_INTERVAL = "aliveInterval";
     public static final String PROP_ALIVE_COUNT = "aliveCount";
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";

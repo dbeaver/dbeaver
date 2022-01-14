@@ -377,9 +377,15 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
-            sql.append("SELECT o.*,t.is_external,ep.value as description FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
+            sql.append("SELECT o.*,ep.value as description");
+            if (owner.getDataSource().supportsExternalTables()) {
+                sql.append(",t.is_external");
+            }
+            sql.append(" FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=o.object_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
-            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t ON t.object_id=o.object_id");
+            if (owner.getDataSource().supportsExternalTables()) {
+                sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t ON t.object_id=o.object_id");
+            }
             sql.append("\nWHERE o.type IN ('U','S','V','TT') AND o.schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND o.name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
@@ -408,7 +414,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Override
         protected SQLServerTableBase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull JDBCResultSet dbResult) {
-            if (JDBCUtils.safeGetBoolean(dbResult, "is_external")) {
+            if (owner.getDataSource().supportsExternalTables() && JDBCUtils.safeGetBoolean(dbResult, "is_external")) {
                 return new SQLServerExternalTable(owner, dbResult);
             }
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");

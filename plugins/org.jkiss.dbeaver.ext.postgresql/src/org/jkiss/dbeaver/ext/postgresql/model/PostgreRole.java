@@ -337,7 +337,7 @@ public class PostgreRole implements
             ddl.append("\tCONNECTION LIMIT ").append(getConnLimit());
         } else {
             ddl.append(lineBreak);
-            ddl.append("\tCONNECTION LIMIT UNLIMITED");
+            ddl.append("\tCONNECTION LIMIT -1");
         }
         if (getValidUntil() != null) {
             ddl.append(lineBreak);

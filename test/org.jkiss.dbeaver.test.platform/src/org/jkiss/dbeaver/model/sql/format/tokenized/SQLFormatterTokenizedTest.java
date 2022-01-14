@@ -122,10 +122,10 @@ public class SQLFormatterTokenizedTest {
     }
 
     @Test
-    public void shouldAddLineBreakIfScriptStartsWithComment() {
+    public void shouldAddLineBreakAfterCommentInTheScript() {
         //given
-        String expectedString = lineBreak + "-- SELECT * FROM mytable;";
-        String inputString = "-- SELECT * FROM mytable;";
+        String expectedString = "-- test" + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "-- test" + lineBreak + "SELECT * FROM mytable;";
 
         //when
         String formattedString = format(inputString);

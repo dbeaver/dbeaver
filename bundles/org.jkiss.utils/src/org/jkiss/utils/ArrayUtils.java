@@ -148,11 +148,9 @@ public class ArrayUtils {
         if (isEmpty(array)) {
             return false;
         }
-        for (OBJECT_TYPE item : array) {
-            for (OBJECT_TYPE value : values) {
-                if (!CommonUtils.equalObjects(item, value))
-                    return false;
-            }
+        for (OBJECT_TYPE value : values) {
+            if (!ArrayUtils.contains(array, value))
+                return false;
         }
         return true;
     }

@@ -107,6 +107,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -215,7 +219,6 @@ public class ResultSetViewer extends Viewer
 
     private final Color defaultBackground;
     private final Color defaultForeground;
-    private final GC sizingGC;
     private VerticalButton recordModeButton;
 
     // Theme listener
@@ -227,6 +230,7 @@ public class ResultSetViewer extends Viewer
     public void setCancelled(boolean cancelled) {
         isCancelled = cancelled;
     }
+
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -253,7 +257,6 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.sizingGC = new GC(parent);
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
@@ -465,10 +468,6 @@ public class ResultSetViewer extends Viewer
 
     AutoRefreshControl getAutoRefresh() {
         return autoRefreshControl;
-    }
-
-    public GC getSizingGC() {
-        return sizingGC;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1769,7 +1768,7 @@ public class ResultSetViewer extends Viewer
 
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             RowData rd = new RowData();
-            rd.width = 30 * fontHeight;
+            rd.width = 50 * fontHeight;
             statusLabel.setLayoutData(rd);
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
@@ -1908,8 +1907,6 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
-
-        UIUtils.dispose(this.sizingGC);
     }
 
     @Override
@@ -2065,13 +2062,17 @@ public class ResultSetViewer extends Viewer
                     rowsUpdated = stats.getRowsUpdated();
                 }
                 if (rowsFetched < 0 && rowsUpdated >= 0) {
-                    statusMessage =
-                        ResultSetUtils.formatRowCount(rowsUpdated) +
-                            ResultSetMessages.controls_resultset_viewer_status_rows_updated + getExecutionTimeMessage();
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_updated,
+                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        getExecutionTimeMessage()
+                    );
                 } else {
-                    statusMessage =
-                        ResultSetUtils.formatRowCount(rowsFetched) +
-                            ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_fetched,
+                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        getExecutionTimeMessage()
+                    );
                 }
             }
         }
@@ -2121,10 +2122,28 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
+        final LocalDateTime endTime = LocalDateTime
+            .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
+            .truncatedTo(ChronoUnit.SECONDS);
         if (fetchTime <= 0) {
-            return " - " + RuntimeUtils.formatExecutionTime(totalTime);
+            return NLS.bind(
+                ResultSetMessages.controls_resultset_viewer_status_rows_time,
+                new Object[]{
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    DateTimeFormatter.ISO_DATE.format(endTime),
+                    DateTimeFormatter.ISO_TIME.format(endTime),
+                }
+            );
         } else {
-            return " - " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) + " (+" + RuntimeUtils.formatExecutionTime(fetchTime) + ")";
+            return NLS.bind(
+                ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
+                new Object[]{
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    RuntimeUtils.formatExecutionTime(fetchTime),
+                    DateTimeFormatter.ISO_DATE.format(endTime),
+                    DateTimeFormatter.ISO_TIME.format(endTime),
+                }
+            );
         }
     }
 
@@ -4627,25 +4646,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
-    {
-        Object value = type.getValue(this, attribute, operator, true);
-
-        DBCExecutionContext executionContext = getExecutionContext();
-        String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
-        strValue = strValue.replaceAll("\\s+", " ").replace("@", "^").trim();
-        strValue = UITextUtils.getShortText(sizingGC, strValue, 150);
-        if (operator.getArgumentCount() == 0) {
-            return operator.getExpression();
-        } else {
-            if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
-                strValue = "'" + strValue + "'";
-            }
-            return operator.getExpression() + " " + strValue;
-        }
-    }
-
-
     private class OrderByAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
         private final ColumnOrder order;
@@ -4850,7 +4850,6 @@ public class ResultSetViewer extends Viewer
 
             model.setUpdateInProgress(this);
             model.setStatistics(null);
-            model.releaseAllData();
             if (filtersPanel != null) {
                 UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
             }

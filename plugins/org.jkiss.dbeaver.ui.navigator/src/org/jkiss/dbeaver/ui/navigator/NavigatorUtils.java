@@ -74,11 +74,11 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -644,7 +644,11 @@ public class NavigatorUtils {
                                     new AbstractJob("Copy files to workspace") {
                                         @Override
                                         protected IStatus run(DBRProgressMonitor monitor) {
-                                            dropFilesIntoFolder(monitor, toFolder, (String[])event.data);
+                                            try {
+                                                dropFilesIntoFolder(monitor, toFolder, (String[])event.data);
+                                            } catch (Exception e) {
+                                                return GeneralUtils.makeExceptionStatus(e);
+                                            }
                                             return Status.OK_STATUS;
                                         }
                                     }.schedule();
@@ -657,15 +661,17 @@ public class NavigatorUtils {
         }
     }
 
-    private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IFolder toFolder, String[] data) {
+    private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IFolder toFolder, String[] data) throws Exception {
         for (String extFileName : data) {
             File extFile = new File(extFileName);
             if (extFile.exists()) {
                 IFile targetFile = toFolder.getFile(extFile.getName());
                 try (InputStream is = Files.newInputStream(extFile.toPath())) {
-                    ContentUtils.copyStreamToFile(monitor, is, extFile.length(), targetFile);
-                } catch (IOException e) {
-                    log.error(e);
+                    if (targetFile.exists()) {
+                        targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                    } else {
+                        targetFile.create(is, true, monitor.getNestedMonitor());
+                    }
                 }
             }
         }

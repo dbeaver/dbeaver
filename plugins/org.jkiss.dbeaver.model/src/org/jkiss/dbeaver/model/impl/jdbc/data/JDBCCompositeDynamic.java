@@ -41,7 +41,7 @@ public class JDBCCompositeDynamic extends JDBCComposite {
 
 
     public JDBCCompositeDynamic(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
-        super(struct, monitor);
+        super(monitor, struct);
     }
 
     public JDBCCompositeDynamic(@NotNull DBCSession session, @Nullable Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException

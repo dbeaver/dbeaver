@@ -306,6 +306,13 @@ public interface SQLDialect {
 
     String getQuotedIdentifier(String identifier, boolean forceCaseSensitive, boolean forceQuotes);
 
+    /**
+     * @param str - string that must be unquoted for this check - otherwise method will return true
+     * @param forceCaseSensitive the level of case sensitivity
+     * @return true if incoming string must be quoted
+     */
+    boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive);
+
     String getUnquotedIdentifier(String identifier);
 
     boolean isQuotedString(String string);

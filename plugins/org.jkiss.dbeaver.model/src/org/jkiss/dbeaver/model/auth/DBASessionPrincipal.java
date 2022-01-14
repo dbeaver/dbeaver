@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.access;
+package org.jkiss.dbeaver.model.auth;
 
 /**
  * Session principal (user)

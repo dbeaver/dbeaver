@@ -66,7 +66,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private List<SQLQueryParameter> parameters;
     private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
 
-    private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
+    private final Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
     private Button hideIfSetCheck;
     private Table paramTable;
     private Object queryPreviewPanel;

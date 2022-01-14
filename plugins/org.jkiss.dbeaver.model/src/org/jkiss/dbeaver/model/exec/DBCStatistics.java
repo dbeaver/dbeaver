@@ -100,6 +100,10 @@ public class DBCStatistics implements DBCExecutionResult {
         return executeTime + fetchTime;
     }
 
+    public long getEndTime() {
+        return startTime + getTotalTime();
+    }
+
     public int getStatementsCount() {
         return statementsCount;
     }
@@ -150,7 +154,10 @@ public class DBCStatistics implements DBCExecutionResult {
         return executeTime <= 0 && fetchTime <= 0 && statementsCount == 0;
     }
 
-    public void accumulate(DBCStatistics stat) {
+    public void accumulate(@Nullable DBCStatistics stat) {
+        if (stat == null) {
+            return;
+        }
         if (stat.rowsUpdated >= 0) {
             if (rowsUpdated < 0) rowsUpdated = 0;
             rowsUpdated += stat.rowsUpdated;

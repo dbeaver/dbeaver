@@ -14,43 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.access;
+package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
+import org.jkiss.dbeaver.model.DBPImage;
+
+import java.util.List;
+import java.util.Set;
 
 /**
- * Access session
+ * Auth provider descriptor
  */
-public interface DBASession extends DBPObject {
+public interface DBAAuthProviderDescriptor {
 
-    /**
-     * Session space
-     */
+    String getId();
+
+    String getLabel();
+
+    String getDescription();
+
+    DBPImage getIcon();
+
+    List<DBAAuthCredentialsProfile> getCredentialProfiles();
+
+    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
+
     @NotNull
-    DBAAuthSpace getSessionSpace();
-
-    DBASessionPrincipal getSessionPrincipal();
-
-    /**
-     * Session unique ID
-     */
-    @NotNull
-    String getSessionId();
-
-    /**
-     * Application session is a global singleton session
-     */
-    boolean isApplicationSession();
-
-    /**
-     * Singleton session project
-     */
-    @Nullable
-    DBPProject getSingletonProject();
+    DBAAuthProvider<?> getInstance();
 
 }

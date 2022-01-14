@@ -566,7 +566,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             //monitorPart.layout();
             monitorPart.attachToCancelComponent(null);
         }
-        disableButtonsOnProgress();
         boolean isDisableControlsOnRun = isDisableControlsOnRun();
         ControlEnableState pageEnableState = isDisableControlsOnRun ? ControlEnableState.disable(wizardSash) : null;
         ControlEnableState buttonsEnableState = isDisableControlsOnRun ? ControlEnableState.disable(getButtonBar()) : null;
@@ -575,14 +574,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
         } finally {
             runningOperations--;
-            enableButtonsAfterProgress();
             if (buttonsEnableState != null) {
                 buttonsEnableState.restore();
             }
             if (pageEnableState != null) {
                 pageEnableState.restore();
             }
-            if (monitorPart != null) {
+            if (monitorPart != null && !monitorPart.isDisposed()) {
                 monitorPart.done();
                 monitorPart.setVisible(false);
             }
