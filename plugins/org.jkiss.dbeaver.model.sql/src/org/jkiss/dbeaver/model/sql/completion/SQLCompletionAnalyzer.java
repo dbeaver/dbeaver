@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -174,11 +175,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (!CommonUtils.isEmpty(prevWords)) {
             previousWord = prevWords.get(0).toUpperCase(Locale.ENGLISH);
         }
+        boolean procExec;
         if (!CommonUtils.isEmpty(prevWords) &&
                 (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord))) {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, false);
+            procExec = false;
         } else {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, true);
+            procExec = true;
         }
         if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
@@ -306,12 +310,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 (queryType == SQLCompletionRequest.QueryType.COLUMN && request.getContext().isSearchProcedures())) &&
                 dataSource instanceof DBSObjectContainer)
             {
-                makeProceduresProposals(dataSource, wordPart, true);
+                makeProceduresProposals(dataSource, wordPart, procExec);
             }
         } else {
             if (!isInLiteral && !request.isSimpleMode() && !CommonUtils.isEmpty(prevWords)) {
                 if (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord)) {
-                    makeProceduresProposals(dataSource, wordPart, false);
+                    makeProceduresProposals(dataSource, wordPart, procExec);
                 }
                 //may be useful in the future for procedures autocomplete
                 /*if (SQLConstants.BLOCK_BEGIN.equalsIgnoreCase(prevWords.get(0))) {
@@ -445,7 +449,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBSObjectContainer sc = (DBSObjectContainer) dataSource;
         DBSObject selectedObject = getActiveInstanceObject();
         if (selectedObject instanceof DBSObjectContainer) {
-            if (request.getContext().isSearchGlobally() && !request.getWordDetector().containsSeparator(wordPart)) {
+            if ((request.getContext().isSearchGlobally() &&
+                !request.getWordDetector().containsSeparator(wordPart)) || // Like "SELECT proc_nam" (and proc_name is from another container)
+                    !wordPart.contains(selectedObject.getName())) { // Like "SELECT schemaN.proc_nam" called from another container editor
                 // Do not send information about the scheme to the assistant
             } else {
                 sc = (DBSObjectContainer) selectedObject;
@@ -1190,13 +1196,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             String[] strings = wordDetector.splitIdentifier(objectName);
             if (rootSC != null) {
                 boolean endsOnStructureSeparator = objectName.charAt(objectName.length() - 1) == wordDetector.getStructSeparator();
-                if (isParentNameInPatternNameArray(strings, rootSC, wordDetector, endsOnStructureSeparator)) {
+                //if (isParentNameInPatternNameArray(strings, rootSC, wordDetector, endsOnStructureSeparator)) {
                     if (endsOnStructureSeparator) {
                         objectName = "";
                     } else {
                         objectName = wordDetector.removeQuotes(strings[strings.length - 1]);
                     }
-                }
+                //}
             }
         } else {
             objectName = wordDetector.removeQuotes(objectName);
@@ -1292,7 +1298,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (!request.getContext().isUseShortNames() && object instanceof DBSObjectReference) {
                 if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
-                    if (structObject.getContainer() != null) {
+                    if (structObject.getContainer() != null && !DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) { // Full procedures/functions names can contain parameters
                         DBSObject selectedObject = getActiveInstanceObject();
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
