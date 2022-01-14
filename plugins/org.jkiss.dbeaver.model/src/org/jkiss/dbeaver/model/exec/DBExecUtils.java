@@ -640,7 +640,7 @@ public class DBExecUtils {
                         Object sourceDescriptor = executionSource.getSourceDescriptor();
                         if (sourceDescriptor instanceof SQLQuery) {
                             sqlQuery = (SQLQuery) sourceDescriptor;
-                            entityMeta = sqlQuery.getSingleSource();
+                            entityMeta = sqlQuery.getEntityMetadata(false);
                         }
                         if (entityMeta != null) {
                             entity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMeta);

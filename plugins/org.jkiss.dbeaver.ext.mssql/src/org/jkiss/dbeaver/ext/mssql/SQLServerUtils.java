@@ -312,7 +312,7 @@ public class SQLServerUtils {
     }
 
     public static SQLServerTableBase getTableFromQuery(DBCSession session, SQLQuery sqlQuery, SQLServerDataSource dataSource) throws DBException, SQLException {
-        DBCEntityMetaData singleSource = sqlQuery.getSingleSource();
+        DBCEntityMetaData singleSource = sqlQuery.getEntityMetadata(false);
         String catalogName = null;
         if (singleSource != null) {
             catalogName = singleSource.getCatalogName();

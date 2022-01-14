@@ -2295,8 +2295,8 @@ public class SQLEditor extends SQLEditorBase implements
             SQLQuery query = (SQLQuery) queries.get(0);
             if (query.isDeleteUpdateDangerous()) {
                 String targetName = "multiple tables";
-                if (query.getSingleSource() != null) {
-                    targetName = query.getSingleSource().getEntityName();
+                if (query.getEntityMetadata(false) != null) {
+                    targetName = query.getEntityMetadata(false).getEntityName();
                 }
                 if (ConfirmationDialog.showConfirmDialogEx(
                     ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
