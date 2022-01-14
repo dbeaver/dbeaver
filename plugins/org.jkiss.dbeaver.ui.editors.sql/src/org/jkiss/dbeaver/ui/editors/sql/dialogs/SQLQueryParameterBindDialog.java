@@ -60,10 +60,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static final Log log = Log.getLog(SQLQueryParameterBindDialog.class);
 
-    private IWorkbenchPartSite site;
-    private SQLScriptContext queryContext;
-    private SQLQuery query;
-    private List<SQLQueryParameter> parameters;
+    private final IWorkbenchPartSite site;
+    private final SQLScriptContext queryContext;
+    private final SQLQuery query;
+    private final List<SQLQueryParameter> parameters;
     private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
 
     private final Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
@@ -188,7 +188,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                                 dup.setVariableSet(!CommonUtils.isEmpty(newValue));
                             }
                         }
-                        queryContext.setVariable(param.getVarName(), param.getValue());
+                        queryContext.setVariable(param.getName(), param.getValue());
                     }
 
                     savedParamValues.put(
