@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 import org.jkiss.dbeaver.model.auth.DBASession;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
@@ -30,13 +31,13 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
-    private final BaseWorkspaceImpl baseWorkspace;
+public class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
+    private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
 
-    public BasicWorkspaceSession(BaseWorkspaceImpl baseWorkspace) {
-        this.baseWorkspace = baseWorkspace;
+    public BasicWorkspaceSession(@NotNull DBPWorkspace workspace) {
+        this.workspace = workspace;
         try {
             if (RuntimeUtils.isWindows()) {
                 NTSystem ntSystem = new NTSystem();
@@ -69,13 +70,13 @@ class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
     @NotNull
     @Override
     public DBAAuthSpace getSessionSpace() {
-        return baseWorkspace;
+        return workspace;
     }
 
     @NotNull
     @Override
     public DBASessionContext getSessionContext() {
-        return baseWorkspace.getAuthContext();
+        return workspace.getAuthContext();
     }
 
     @Override
@@ -86,7 +87,7 @@ class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
     @NotNull
     @Override
     public String getSessionId() {
-        return baseWorkspace.getWorkspaceId();
+        return workspace.getWorkspaceId();
     }
 
     @Override
