@@ -240,6 +240,8 @@ public class JSONUtils {
                 serializeObjectList(json, fieldName, (Collection<?>) propValue);
             } else if (propValue instanceof Map) {
                 serializeProperties(json, fieldName, (Map<String, ?>) propValue);
+            } else if (propValue instanceof Enum) {
+                field(json, fieldName, ((Enum) propValue).name());
             } else {
                 log.debug("Unsupported property type: " + propValue.getClass().getName());
                 field(json, fieldName, propValue.toString());

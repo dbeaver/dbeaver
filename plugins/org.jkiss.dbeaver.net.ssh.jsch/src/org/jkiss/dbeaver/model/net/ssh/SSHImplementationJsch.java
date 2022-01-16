@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
@@ -173,7 +173,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     }
 
     private void addIdentityKeyValue(String keyValue, String password) throws JSchException {
-        byte[] keyBinary = Base64.decode(keyValue);
+        byte[] keyBinary = keyValue.getBytes(StandardCharsets.UTF_8);
         if (!CommonUtils.isEmpty(password)) {
             jsch.addIdentity("key", keyBinary, null, password.getBytes());
         } else {
