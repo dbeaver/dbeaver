@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -116,8 +117,8 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public int getSupportedFeatures() {
-        return DATA_SELECT;
+    public String[] getSupportedFeatures() {
+        return new String[] {FEATURE_DATA_SELECT};
     }
 
     @NotNull
@@ -127,7 +128,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException {
         return -1;
     }
 

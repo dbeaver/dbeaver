@@ -59,8 +59,8 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
     }
 
     @Override
-    public int getSupportedFeatures() {
-        return DATA_SELECT;
+    public String[] getSupportedFeatures() {
+        return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT, FEATURE_DATA_FILTER};
     }
 
     @Override
@@ -182,7 +182,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags)
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags)
         throws DBCException
     {
         return -1;

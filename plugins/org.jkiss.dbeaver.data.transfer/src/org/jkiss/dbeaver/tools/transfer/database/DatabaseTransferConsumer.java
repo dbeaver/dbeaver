@@ -159,9 +159,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         AbstractExecutionSource executionSource = new AbstractExecutionSource(containerMapping.getSource(), targetContext, this);
 
         DBSDataManipulator targetObject = getTargetObject();
-        if (!isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        if (targetObject != null && !isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
-            if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
+            if (targetObject.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_TRUNCATE)) {
                 targetObject.truncateData(
                     targetSession,
                     executionSource);

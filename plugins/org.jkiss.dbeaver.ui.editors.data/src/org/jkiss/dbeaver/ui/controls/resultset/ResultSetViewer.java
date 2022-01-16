@@ -31,7 +31,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
@@ -479,8 +478,7 @@ public class ResultSetViewer extends Viewer
 
     public boolean supportsDataFilter() {
         DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer != null &&
-            (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
+        return dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
     }
 
     public boolean supportsNavigation() {
@@ -2892,7 +2890,7 @@ public class ResultSetViewer extends Viewer
         navigateMenu.add(new Separator());
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-        if (isHasMoreData() && getDataContainer() != null && (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+        if (isHasMoreData() && getDataContainer() != null && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT)) {
             navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
         }
         navigateMenu.add(new Separator());

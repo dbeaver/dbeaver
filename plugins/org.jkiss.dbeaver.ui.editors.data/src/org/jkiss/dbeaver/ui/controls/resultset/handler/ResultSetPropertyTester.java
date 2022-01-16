@@ -134,7 +134,8 @@ public class ResultSetPropertyTester extends PropertyTester
                     !rsv.getAvailablePresentations().isEmpty();
             case PROP_SUPPORTS_COUNT:
                 return rsv.hasData() && rsv.isHasMoreData() &&
-                    (rsv.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0;
+                    rsv.getDataContainer() != null &&
+                    rsv.getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT);
             case PROP_CAN_NAVIGATE_LINK:
                 if (!actionsDisabled && rsv.getModel().hasData()) {
                     final ResultSetRow row = rsv.getCurrentRow();
