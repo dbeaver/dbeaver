@@ -223,7 +223,8 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
-
+    private volatile boolean awaitsReadNextSegment;
+    private volatile boolean awaitsSavingData;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3553,6 +3554,9 @@ public class ResultSetViewer extends Viewer
     public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
+            if (!dataReceiver.isHasMoreData()) {
+                return false;
+            }
             int checkResult = new UITask<Integer>() {
                 @Override
                 protected Integer runTask() {
@@ -3561,13 +3565,16 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
+                    dataReceiver.setHasMoreData(false);
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
+                    awaitsSavingData = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
-                            UIUtils.asyncExec(() -> refreshData(null));
+                            UIUtils.syncExec(() -> refreshData(null));
                         }
+                        awaitsSavingData = false;
                     });
                     return false;
                 default:
@@ -3710,26 +3717,34 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    public void readNextSegment()
-    {
-        if (!dataReceiver.isHasMoreData()) {
+    public void readNextSegment() {
+        if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
             return;
         }
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null && !model.isUpdateInProgress()) {
-            dataReceiver.setHasMoreData(false);
-            dataReceiver.setNextSegmentRead(true);
+        try {
+            awaitsReadNextSegment = true;
+            if (!checkForChanges()) {
+                return;
+            }
 
-            runDataPump(
-                dataContainer,
-                model.getDataFilter(),
-                model.getRowCount(),
-                getSegmentMaxRows(),
-                -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                false,
-                true,
-                true,
-                null);
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null && !model.isUpdateInProgress()) {
+                dataReceiver.setHasMoreData(false);
+                dataReceiver.setNextSegmentRead(true);
+
+                runDataPump(
+                    dataContainer,
+                    model.getDataFilter(),
+                    model.getRowCount(),
+                    getSegmentMaxRows(),
+                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                    false,
+                    true,
+                    true,
+                    null);
+            }
+        } finally {
+            awaitsReadNextSegment = false;
         }
     }
 
