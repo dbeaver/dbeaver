@@ -103,7 +103,7 @@ public class DTUtils {
     public static String getTableNameFromQuery(DBPDataSource dataSource, SQLQueryContainer queryContainer, boolean shortName) {
         SQLScriptElement query = queryContainer.getQuery();
         if (query instanceof SQLQuery) {
-            DBCEntityMetaData singleSource = ((SQLQuery) query).getSingleSource();
+            DBCEntityMetaData singleSource = ((SQLQuery) query).getEntityMetadata(true);
             if (singleSource != null) {
                 SQLDialect dialect = dataSource.getSQLDialect();
                 String entity = transformName(dialect, singleSource.getEntityName());
