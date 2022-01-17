@@ -31,7 +31,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
@@ -224,13 +223,8 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
-    private boolean isCancelled = false;
-    private volatile boolean isAwaitingDialogResult;
-    private volatile boolean isLoadingData;
-    public void setCancelled(boolean cancelled) {
-        isCancelled = cancelled;
-    }
-
+    private volatile boolean awaitsReadNextSegment;
+    private volatile boolean awaitsSavingData;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3576,12 +3570,12 @@ public class ResultSetViewer extends Viewer
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    isLoadingData = true;
+                    awaitsSavingData = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.syncExec(() -> refreshData(null));
                         }
-                        isLoadingData = false;
+                        awaitsSavingData = false;
                     });
                     return false;
                 default:
@@ -3725,11 +3719,11 @@ public class ResultSetViewer extends Viewer
     }
 
     public void readNextSegment() {
-        if (isLoadingData || isAwaitingDialogResult || dataPumpRunning.get() || !dataReceiver.isHasMoreData()) {
+        if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
             return;
         }
         try {
-            isAwaitingDialogResult = true;
+            awaitsReadNextSegment = true;
             if (!checkForChanges()) {
                 return;
             }
@@ -3751,7 +3745,7 @@ public class ResultSetViewer extends Viewer
                     null);
             }
         } finally {
-            isAwaitingDialogResult = false;
+            awaitsReadNextSegment = false;
         }
     }
 
