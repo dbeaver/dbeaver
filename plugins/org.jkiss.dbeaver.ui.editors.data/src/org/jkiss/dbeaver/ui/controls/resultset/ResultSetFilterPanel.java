@@ -401,7 +401,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private boolean isFiltersAvailable() {
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        return dataContainer != null && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0;
+        return dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
     }
 
     private void redrawPanels() {

@@ -26,6 +26,7 @@ import org.eclipse.ui.IMemento;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -159,8 +161,16 @@ public class NavigatorStatePersister {
     private static void initializeNode(DBNNode node, DBRProgressMonitor monitor) throws DBException {
         if (node instanceof DBNDataSource) {
             DBPDataSourceContainer dsContainer = ((DBNDataSource) node).getDataSourceContainer();
-            if (!dsContainer.isConnected())
+            long connectionTimeout = dsContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
+            long connectionStart = System.currentTimeMillis();
+            while (!dsContainer.isConnected()) {
                 dsContainer.connect(monitor, true, false);
+                if (connectionTimeout > 0 && connectionStart + connectionTimeout <= System.currentTimeMillis()) {
+                    break;
+                }
+                // Wait a few seconds to let in-progress connection initialize
+                RuntimeUtils.pause(100);
+            }
         }
         node.getChildren(monitor);
     }

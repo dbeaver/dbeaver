@@ -106,7 +106,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 @Override
                 protected boolean isDatabaseObjectVisible(DBSObject obj) {
                     if (obj instanceof DBSDataContainer && obj instanceof DBSEntity) {
-                        if ((((DBSDataContainer) obj).getSupportedFeatures() & DBSDataContainer.DATA_SEARCH) == 0) {
+                        if (!((DBSDataContainer) obj).isFeatureSupported(DBSDataContainer.FEATURE_DATA_SEARCH)) {
                             return false;
                         }
                     }

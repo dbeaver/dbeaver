@@ -3422,18 +3422,19 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public int getSupportedFeatures()
+        public String[] getSupportedFeatures()
         {
             if (dataContainer != null) {
                 return dataContainer.getSupportedFeatures();
             }
-            int features = DATA_SELECT;
-            features |= DATA_COUNT;
+            List<String> features = new ArrayList<>(3);
+            features.add(FEATURE_DATA_SELECT);
+            features.add(FEATURE_DATA_COUNT);
 
             if (getQueryResultCounts() <= 1) {
-                features |= DATA_FILTER;
+                features.add(FEATURE_DATA_FILTER);
             }
-            return features;
+            return features.toArray(new String[0]);
         }
 
         @NotNull
@@ -3496,7 +3497,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags)
+        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags)
             throws DBCException
         {
             if (dataContainer != null) {

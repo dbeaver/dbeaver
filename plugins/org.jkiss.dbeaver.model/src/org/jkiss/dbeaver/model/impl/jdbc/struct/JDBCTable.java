@@ -108,13 +108,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public int getSupportedFeatures()
+    public String[] getSupportedFeatures()
     {
-        int features = DATA_COUNT | DATA_FILTER | DATA_SEARCH | DATA_INSERT | DATA_UPDATE | DATA_DELETE;
         if (isTruncateSupported()) {
-            features |= DATA_TRUNCATE;
+            return new String[] {FEATURE_DATA_COUNT, FEATURE_DATA_FILTER, FEATURE_DATA_SEARCH, FEATURE_DATA_INSERT, FEATURE_DATA_UPDATE, FEATURE_DATA_DELETE, FEATURE_DATA_TRUNCATE};
+        } else {
+            return new String[] {FEATURE_DATA_COUNT, FEATURE_DATA_FILTER, FEATURE_DATA_SEARCH, FEATURE_DATA_INSERT, FEATURE_DATA_UPDATE, FEATURE_DATA_DELETE};
         }
-        return features;
     }
 
     ////////////////////////////////////////////////////////////////////

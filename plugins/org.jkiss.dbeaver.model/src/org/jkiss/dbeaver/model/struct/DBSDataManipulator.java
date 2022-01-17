@@ -35,10 +35,10 @@ import java.util.Map;
  */
 public interface DBSDataManipulator extends DBSDataContainer {
 
-    int DATA_INSERT         = 1 << 16;
-    int DATA_UPDATE         = 1 << 17;
-    int DATA_DELETE         = 1 << 18;
-    int DATA_TRUNCATE       = 1 << 19;
+    String FEATURE_DATA_INSERT = "data.insert";
+    String FEATURE_DATA_UPDATE = "data.update";
+    String FEATURE_DATA_DELETE = "data.delete";
+    String FEATURE_DATA_TRUNCATE = "data.truncate";
 
     String INSERT_NONE_METHOD = "<None>";
 

@@ -224,7 +224,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
                         }
                         long totalRows = 0;
-                        if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                        if (settings.isQueryRowCount() && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT)) {
                             monitor.beginTask(DTMessages.data_transfer_wizard_job_task_retrieve, 1);
                             try {
                                 totalRows = dataContainer.countData(transferSource, session, dataFilter, readFlags);

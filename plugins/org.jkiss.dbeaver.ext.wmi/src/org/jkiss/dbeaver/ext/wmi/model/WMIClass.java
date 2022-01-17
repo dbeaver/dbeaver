@@ -411,9 +411,9 @@ public class WMIClass extends WMIContainer
     // Data container
 
     @Override
-    public int getSupportedFeatures()
+    public String[] getSupportedFeatures()
     {
-        return DATA_SELECT;
+        return new String[] {FEATURE_DATA_SELECT};
     }
 
     @NotNull
@@ -460,7 +460,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags)
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags)
     {
         return -1;
     }

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.auth.DBASession;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -75,7 +76,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
-        this.workspaceAuthContext.addSession(acquireWorkspaceSession());
+
+        try {
+            this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            System.exit(101);
+        }
 
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
@@ -116,7 +123,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @NotNull
-    protected BasicWorkspaceSession acquireWorkspaceSession() {
+    protected DBASession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
         return new BasicWorkspaceSession(this);
     }
 
