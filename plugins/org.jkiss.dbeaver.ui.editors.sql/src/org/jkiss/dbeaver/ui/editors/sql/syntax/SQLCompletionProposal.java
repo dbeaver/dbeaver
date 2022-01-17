@@ -109,7 +109,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
                         if (docLen <= replacementSum + 2) {
                             insertTrailingSpace = true;
                         } else if (Character.isWhitespace(document.getChar(replacementSum))) {
-                            insertTrailingSpace = docLen > replacementSum + 1 && !Character.isWhitespace(document.getChar(replacementSum + 1));
+                            insertTrailingSpace = docLen > replacementSum + 1 && (!Character.isSpaceChar(document.getChar(replacementSum + 1)));
                         } else {
                             insertTrailingSpace = true;
                         }
