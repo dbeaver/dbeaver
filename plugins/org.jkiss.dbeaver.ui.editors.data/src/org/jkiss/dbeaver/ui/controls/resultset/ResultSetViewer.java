@@ -2062,7 +2062,7 @@ public class ResultSetViewer extends Viewer
                 } else {
                     statusMessage = NLS.bind(
                         ResultSetMessages.controls_resultset_viewer_status_rows_fetched,
-                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        ResultSetUtils.formatRowCount(rowsFetched),
                         getExecutionTimeMessage()
                     );
                 }
