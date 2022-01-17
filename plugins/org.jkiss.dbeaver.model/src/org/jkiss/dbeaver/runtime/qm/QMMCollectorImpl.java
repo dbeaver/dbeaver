@@ -321,26 +321,28 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 sessionsToClose = closedSessions;
                 closedSessions.clear();
             }
-            final List<QMMetaListener> listeners = getListeners();
-            if (!listeners.isEmpty() && !events.isEmpty()) {
-                // Reverse collection. Fresh events must come first.
-                Collections.reverse(events);
-                // Dispatch all events
-                for (QMMetaListener listener : listeners) {
-                    try {
-                        listener.metaInfoChanged(monitor, events);
-                    } catch (Throwable e) {
-                        log.error("Error notifying event listener", e);
+            if (!events.isEmpty()) {
+                final List<QMMetaListener> listeners = getListeners();
+                if (!listeners.isEmpty() && !events.isEmpty()) {
+                    // Reverse collection. Fresh events must come first.
+                    Collections.reverse(events);
+                    // Dispatch all events
+                    for (QMMetaListener listener : listeners) {
+                        try {
+                            listener.metaInfoChanged(monitor, events);
+                        } catch (Throwable e) {
+                            log.error("Error notifying event listener", e);
+                        }
                     }
                 }
-            }
-            synchronized (historySync) {
-                pastEvents.addAll(events);
-                int size = pastEvents.size();
-                if (size > MAX_HISTORY_EVENTS) {
-                    pastEvents = new ArrayList<>(pastEvents.subList(
-                        size - MAX_HISTORY_EVENTS,
-                        size));
+                synchronized (historySync) {
+                    pastEvents.addAll(events);
+                    int size = pastEvents.size();
+                    if (size > MAX_HISTORY_EVENTS) {
+                        pastEvents = new ArrayList<>(pastEvents.subList(
+                            size - MAX_HISTORY_EVENTS,
+                            size));
+                    }
                 }
             }
             // Cleanup closed sessions
