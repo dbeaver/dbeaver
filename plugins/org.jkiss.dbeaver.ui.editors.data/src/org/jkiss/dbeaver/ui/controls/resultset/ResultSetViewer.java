@@ -3554,9 +3554,6 @@ public class ResultSetViewer extends Viewer
     public boolean checkForChanges() {
         // Check if we are dirty
         if (isDirty()) {
-            if (!dataReceiver.isHasMoreData()) {
-                return false;
-            }
             int checkResult = new UITask<Integer>() {
                 @Override
                 protected Integer runTask() {
@@ -3566,13 +3563,14 @@ public class ResultSetViewer extends Viewer
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
                     dataReceiver.setHasMoreData(false);
+                    updatePanelsContent(true);
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
                     awaitsSavingData = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
-                            UIUtils.syncExec(() -> refreshData(null));
+                            UIUtils.asyncExec(() -> refreshData(null));
                         }
                         awaitsSavingData = false;
                     });
@@ -3760,6 +3758,9 @@ public class ResultSetViewer extends Viewer
             ConfirmationDialog.QUESTION,
             ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
         {
+            return;
+        }
+        if (!checkForChanges()){
             return;
         }
 
