@@ -480,7 +480,6 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
                         categories="sql">
-                    <file type="jar" path="C:\Program Files\edb\jdbc\edb-jdbc18.jar"/>
 
                     <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
