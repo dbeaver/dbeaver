@@ -1048,7 +1048,8 @@ public final class SQLUtils {
             return name.split(Pattern.quote(nameSeparator));
         }
         if (!name.contains(nameSeparator)) {
-            return new String[] { DBUtils.getUnQuotedIdentifier(name, quoteStrings) };
+            name = keepQuotes ? name : DBUtils.getUnQuotedIdentifier(name, quoteStrings);
+            return new String[]{name};
         }
         List<String> nameList = new ArrayList<>();
         while (!name.isEmpty()) {
