@@ -62,6 +62,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     @Override
     public void setDocument(IDocument document) {
         this.document = document;
+        this.cache.clear();
     }
 
     @Override
@@ -159,6 +160,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
         if (!editor.isFoldingEnabled()) {
+            cache.clear(); // underlying annotation model being cleared, so reset the cache too
             return;
         }
         ProjectionAnnotationModel model = editor.getAnnotationModel();

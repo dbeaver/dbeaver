@@ -333,6 +333,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void updatePartControl(IEditorInput input) {
         super.updatePartControl(input);
+        
+        ProjectionViewer viewer = ((ProjectionViewer) getSourceViewer());
+        if (viewer != null) {
+            annotationModel = viewer.getProjectionAnnotationModel();
+        }
     }
 
     protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
