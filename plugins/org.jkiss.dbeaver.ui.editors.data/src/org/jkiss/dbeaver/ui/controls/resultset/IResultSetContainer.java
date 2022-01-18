@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 /**
  * Result set provider
  */
-public interface IResultSetContainer extends DBPContextProvider {
+public interface IResultSetContainer extends DBPContextProvider, IResultSetProvider {
 
     /**
      * Owner project.
@@ -36,13 +36,6 @@ public interface IResultSetContainer extends DBPContextProvider {
      */
     @Nullable
     DBPProject getProject();
-
-    /**
-     * Hosted results controller
-     * @return controller or null
-     */
-    @Nullable
-    IResultSetController getResultSetController();
 
     /**
      * Data container (table or something).

@@ -141,7 +141,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         } else if (activePart != null) {
-            return activePart.getAdapter(ResultSetViewer.class);
+            return activePart.getAdapter(IResultSetController.class);
         } else {
             return null;
         }

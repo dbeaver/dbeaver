@@ -156,6 +156,7 @@ public class ResultSetPropertyTester extends PropertyTester
                         return rsv.getHistoryPosition() > 0;
                     }
                 }
+                return false;
             case PROP_CAN_PERSIST_DATA:
                 return !rsv.getModel().isUpdateInProgress();
         }

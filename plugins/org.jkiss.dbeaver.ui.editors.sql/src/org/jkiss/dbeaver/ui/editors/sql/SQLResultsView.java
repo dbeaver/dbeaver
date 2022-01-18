@@ -61,7 +61,7 @@ public class SQLResultsView extends ViewPart
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-        if (adapter == ResultSetViewer.class) {
+        if (adapter == IResultSetController.class || adapter == ResultSetViewer.class) {
             return adapter.cast(viewer);
         }
         return viewer.getAdapter(adapter);

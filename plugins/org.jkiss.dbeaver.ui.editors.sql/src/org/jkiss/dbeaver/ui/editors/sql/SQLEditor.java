@@ -131,6 +131,7 @@ public class SQLEditor extends SQLEditorBase implements
     ISaveablePart2,
     DBPDataSourceTask,
     DBPDataSourceHandler,
+    IResultSetProvider,
     ISmartTransactionManager
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
@@ -726,10 +727,28 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     @Override
+    public IResultSetController getResultSetController() {
+        if (resultTabs != null && !resultTabs.isDisposed()) {
+            CTabItem activeResultsTab = getActiveResultsTab();
+            if (activeResultsTab != null && UIUtils.isUIThread()) {
+                Object tabControl = activeResultsTab.getData();
+                if (tabControl instanceof QueryResultsContainer) {
+                    return ((QueryResultsContainer) tabControl).viewer;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
     public <T> T getAdapter(Class<T> required)
     {
         if (required == INavigatorModelView.class) {
             return null;
+        }
+        if (required == IResultSetController.class || required == ResultSetViewer.class) {
+            return required.cast(getResultSetController());
         }
 
         if (resultTabs != null && !resultTabs.isDisposed()) {
@@ -747,9 +766,6 @@ public class SQLEditor extends SQLEditorBase implements
                     if (adapter != null) {
                         return adapter;
                     }
-                }
-                if (tabControl instanceof ResultSetViewer && (required == IResultSetController.class || required == ResultSetViewer.class)) {
-                    return required.cast(tabControl);
                 }
             }
         }
