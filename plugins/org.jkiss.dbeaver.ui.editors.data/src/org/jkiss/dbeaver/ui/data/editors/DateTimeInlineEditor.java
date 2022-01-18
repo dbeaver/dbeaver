@@ -34,10 +34,12 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 import java.sql.Time;
@@ -57,11 +59,15 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
      * Action which sets edit mode to string edit
      */
     private static class TextMode extends Action {
+        private final DateTimeInlineEditor parent;
         CustomTimeEditor editor;
+        protected final IValueController valueController;
 
-        TextMode(CustomTimeEditor editor) {
+        TextMode(DateTimeInlineEditor parent, CustomTimeEditor editor, IValueController valueController) {
             super("Text", Action.AS_RADIO_BUTTON);
             this.editor = editor;
+            this.valueController = valueController;
+            this.parent = parent;
             super.setText("Text");
             super.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
         }
@@ -69,6 +75,15 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         @Override
         public void run() {
             super.run();
+            if (parent.isDirty()) {
+                try {
+                    Object value = parent.extractEditorValue();
+                    editor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
+                    return;
+                }
+            }
             editor.setToTextComposite();
             ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
         }
@@ -78,19 +93,31 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
      * Action which selects datetime mode
      */
     private static class DateEditorMode extends Action {
+        private final DateTimeInlineEditor parent;
         CustomTimeEditor editor;
 
-
-        DateEditorMode(CustomTimeEditor editor) {
+        DateEditorMode(DateTimeInlineEditor parent, CustomTimeEditor editor) {
             super("Calendar", Action.AS_RADIO_BUTTON);
             this.editor = editor;
             super.setText("Calendar");
             super.setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME));
+            this.parent = parent;
         }
 
         @Override
         public void run() {
             super.run();
+            if (parent.isDirty()) {
+                try {
+                    Object value = parent.extractEditorValue();
+                    if (value instanceof Date){
+                        editor.setValue((Date) value);
+                    }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
+                    return;
+                }
+            }
             editor.setToDateComposite();
             ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, true);
         }
@@ -109,8 +136,8 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         timeEditor = new CustomTimeEditor(
                 editPlaceholder,
                 SWT.MULTI, true, inline);
-        textMode = new TextMode(timeEditor);
-        dateEditorMode = new DateEditorMode(timeEditor);
+        textMode = new TextMode(this, timeEditor, valueController);
+        dateEditorMode = new DateEditorMode(this, timeEditor);
         if (!isCalendarMode()) {
             textMode.run();
             textMode.setChecked(true);

@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.JDBCType;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -54,9 +52,9 @@ public class CustomTimeEditor {
     private Label dateLabel;
     private int millis = -1;
 
-    private boolean isInline;
+    private final boolean isInline;
 
-    InputMode inputMode = InputMode.None;
+    private InputMode inputMode = InputMode.None;
     private final Calendar calendar = Calendar.getInstance();
     private Text textEditor;
 
@@ -67,8 +65,6 @@ public class CustomTimeEditor {
         DateTime
     }
 
-
-
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
         final JDBCType jdbcType = JDBCType.valueOf(valueType.getTypeID());
         switch (jdbcType) {
@@ -78,9 +74,6 @@ public class CustomTimeEditor {
                 if (timeLabel != null) {
                     timeLabel.dispose();
                 }
-                break;
-            case TIME_WITH_TIMEZONE:
-                inputMode = InputMode.DateTime;
                 break;
             case TIME:
                 inputMode = InputMode.Time;
@@ -95,8 +88,6 @@ public class CustomTimeEditor {
         }
     }
 
-
-
     public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
         basePart = getComposite(parent, style, isPanel, isInline);
         this.isInline = isInline;
@@ -107,7 +98,6 @@ public class CustomTimeEditor {
         final Composite basePart;
         basePart = new Composite(parent, style);
         GridLayout layout = new GridLayout(2, false);
-
         if (isInline) {
             layout.marginWidth = 0;
             layout.marginHeight = 0;
@@ -138,7 +128,6 @@ public class CustomTimeEditor {
 
         return basePart;
     }
-
 
     /**
      * Hides all DateTime editors and shows text editor instead
@@ -232,7 +221,6 @@ public class CustomTimeEditor {
         }
     }
 
-
     private String getTimestampFormat() {
         TimestampFormatSample prefFormat = new TimestampFormatSample();
         Map<String, Object> map = prefFormat.getDefaultProperties(Locale.getDefault());
@@ -272,7 +260,6 @@ public class CustomTimeEditor {
         }
 
     }
-
 
     @Nullable
     public String getValueAsString() {
