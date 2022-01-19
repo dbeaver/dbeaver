@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.net.ssh;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,6 +30,7 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -38,6 +42,8 @@ import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -48,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -219,9 +226,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
 
-        try {
-            final String[] tunnelVersions = new String[2];
-            UIUtils.runInProgressDialog(monitor -> {
+        final String[] tunnelVersions = new String[2];
+
+        final TunnelConnectionTestJob job = new TunnelConnectionTestJob() {
+            @Override
+            protected void execute(@NotNull DBRProgressMonitor monitor) throws Throwable {
                 monitor.beginTask("Instantiate SSH tunnel", 2);
                 SSHTunnelImpl tunnel = new SSHTunnelImpl();
                 DBPConnectionConfiguration connectionConfig = new DBPConnectionConfiguration();
@@ -239,19 +248,39 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                     monitor.subTask("Close tunnel");
                     tunnel.closeTunnel(monitor);
                     monitor.worked(1);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
                 }
-                monitor.done();
+            }
+        };
+
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                job.setOwnerMonitor(monitor);
+                job.schedule();
+
+                while (job.getState() == Job.WAITING || job.getState() == Job.RUNNING) {
+                    if (monitor.isCanceled()) {
+                        job.cancel();
+                        throw new InvocationTargetException(null);
+                    }
+                    RuntimeUtils.pause(50);
+                }
+
+                if (job.getConnectError() != null) {
+                    throw new InvocationTargetException(job.getConnectError());
+                }
             });
 
             MessageDialog.openInformation(credentialsPanel.getShell(), ModelMessages.dialog_connection_wizard_start_connection_monitor_success,
                 "Connected!\n\nClient version: " + tunnelVersions[0] + "\nServer version: " + tunnelVersions[1]);
         } catch (InvocationTargetException ex) {
-            DBWorkbench.getPlatformUI().showError(
-                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                null,
-                GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+            if (ex.getTargetException() != null) {
+                DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    null,
+                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+            }
         }
     }
 
@@ -529,5 +558,42 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             UIUtils.setControlVisible(privateKeyLabel, show);
             UIUtils.setControlVisible(privateKeyText, show);
         }
+    }
+
+    private static abstract class TunnelConnectionTestJob extends AbstractJob {
+        private DBRProgressMonitor ownerMonitor;
+        protected Throwable connectError;
+
+        protected TunnelConnectionTestJob() {
+            super("Test tunnel connection");
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            if (ownerMonitor != null) {
+                monitor = ownerMonitor;
+            }
+
+            try {
+                execute(monitor);
+            } catch (Throwable e) {
+                connectError = e;
+            }
+
+            return Status.OK_STATUS;
+        }
+
+        public void setOwnerMonitor(@Nullable DBRProgressMonitor ownerMonitor) {
+            this.ownerMonitor = ownerMonitor;
+        }
+
+        @Nullable
+        public Throwable getConnectError() {
+            return connectError;
+        }
+
+        protected abstract void execute(@NotNull DBRProgressMonitor monitor) throws Throwable;
     }
 }
