@@ -275,9 +275,6 @@ public class SQLVariablesRegistry {
                 log.debug("Both driver and connection are null");
                 return;
             }
-            if (CommonUtils.isEmpty(variables)) {
-                return;
-            }
             Map<String, Object> varMap = new LinkedHashMap<>();
             for (DBCScriptContext.VariableInfo v : variables) {
                 if (v.type == DBCScriptContext.VariableType.VARIABLE) {
