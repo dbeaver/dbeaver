@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -167,7 +168,16 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     private boolean isCalendarMode() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR) && !isPrimitive();
+    }
+
+    private boolean isPrimitive() {
+        boolean isPrimitive = false;
+        DBSDataContainer dataContainer = valueController.getDataController().getDataContainer();
+        if (dataContainer != null && dataContainer.getDataSource() != null) {
+            isPrimitive = dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+        }
+        return isPrimitive || ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
     }
 
     @Override
@@ -187,9 +197,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
         super.contributeActions(manager, controller);
         manager.add(ActionUtils.makeActionContribution(textMode, false));
-        manager.add(ActionUtils.makeActionContribution(dateEditorMode, false));
-        manager.update(true);
-        timeEditor.getControl().layout();
+        if (!isPrimitive()) {
+            manager.add(ActionUtils.makeActionContribution(dateEditorMode, false));
+        }
     }
 
     @Override

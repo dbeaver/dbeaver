@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -72,7 +73,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         gd.grabExcessHorizontalSpace = true;
         timeEditor.getControl().setLayoutData(gd);
         timeEditor.createDateFormat(valueController.getValueType());
-        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
+        if (!isCalendarMode()){
             timeEditor.setToTextComposite();
         }
         primeEditorValue(value);
@@ -91,7 +92,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     private boolean isCalendarMode() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR) && !isPrimitive();
     }
 
     @Override
@@ -106,6 +107,16 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             }
         }
     }
+
+    private boolean isPrimitive() {
+        boolean isPrimitive = false;
+        DBSDataContainer dataContainer = valueController.getDataController().getDataContainer();
+        if (dataContainer != null && dataContainer.getDataSource() != null) {
+            isPrimitive = dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+        }
+        return isPrimitive || ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+    }
+
 
     @Override
     public void primeEditorValue(@Nullable Object value) {
