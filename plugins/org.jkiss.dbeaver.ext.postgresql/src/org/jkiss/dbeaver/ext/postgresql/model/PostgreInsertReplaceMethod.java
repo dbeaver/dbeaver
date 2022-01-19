@@ -62,7 +62,7 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
                             if (hasKey) pkNames.append(",");
                             DBSEntityAttribute attribute = column.getAttribute();
                             if (attribute == null) continue;
-                            pkNames.append(attribute.getName());
+                            pkNames.append(String.format("\"%s\"", attribute.getName()));
                             hasKey = true;
                         }
                         StringBuilder updateExpression = new StringBuilder();
