@@ -148,7 +148,7 @@ public class SQLScriptContext implements DBCScriptContext {
         Object p = defaultParameters.remove(name);
         instance.deleteParameter(name);
         instance.save();
-        if (p != null) notifyListeners(DBCScriptContextListener.ContextAction.DELETE, name, p);
+        notifyListeners(DBCScriptContextListener.ContextAction.DELETE, name, p);
         if (parentContext != null) parentContext.removeDefaultParameterValue(name);
     }
 
