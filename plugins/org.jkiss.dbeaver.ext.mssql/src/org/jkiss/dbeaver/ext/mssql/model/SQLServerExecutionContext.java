@@ -82,7 +82,15 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         }
         try {
             SQLServerDatabase defaultCatalog = getDefaultCatalog();
-            return defaultCatalog == null ? null : defaultCatalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
+            if (defaultCatalog == null) {
+                return null;
+            }
+            SQLServerSchema schema = defaultCatalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
+            if (schema == null) {
+                // If DBO is not the default schema and default schema doesn't exist (or was filtered out) let's try DBO though
+                schema = defaultCatalog.getSchema(new VoidProgressMonitor(), SQLServerConstants.DEFAULT_SCHEMA_NAME);
+            }
+            return schema;
         } catch (DBException e) {
             log.error(e);
             return null;
