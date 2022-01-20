@@ -2109,20 +2109,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
             final boolean recordMode = controller.isRecordMode();
-            final ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
-            final DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
+            final ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
+            final DBDAttributeBinding attribute = (DBDAttributeBinding) (recordMode ? rowElement : colElement);
 
-            if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) && spreadsheet.getCellSelectionSize() == 1) {
-                final GridCell sourceCell = spreadsheet.getCellSelection().get(0);
-                final ResultSetRow sourceRow = (ResultSetRow) (!recordMode ?  sourceCell.row : sourceCell.col);
-                final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding)(!recordMode ?  sourceCell.col : sourceCell.row);
+            if (spreadsheet.getCellSelectionSize() == 1 && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES)) {
+                final GridCell sourceCell = spreadsheet.getCursorCell();
+                if (sourceCell != null) {
+                    final ResultSetRow sourceRow = (ResultSetRow) (recordMode ? sourceCell.col : sourceCell.row);
+                    final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding) (recordMode ? sourceCell.row : sourceCell.col);
 
-                if (sourceRow != row || sourceAttribute != attribute) {
-                    final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false, true);
-                    final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
+                    if (sourceRow != row || sourceAttribute != attribute) {
+                        final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false, true);
+                        final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
 
-                    if (CommonUtils.equalObjects(sourceValue, currentValue)) {
-                        return backgroundMatched;
+                        if (CommonUtils.equalObjects(sourceValue, currentValue)) {
+                            return backgroundMatched;
+                        }
                     }
                 }
             }
