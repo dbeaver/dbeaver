@@ -183,8 +183,10 @@ public class SQLScriptParser
                 }
 
                 boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
-                if ((isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens)
-                        || ((token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos)))) {
+                if (isControl && (
+                        ((scriptMode || cursorInsideToken) && !hasValuableTokens)
+                        || (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos))
+                )) {
                     // Control query
                     String controlText = document.get(tokenOffset, tokenLength);
                     String commandId = null;
