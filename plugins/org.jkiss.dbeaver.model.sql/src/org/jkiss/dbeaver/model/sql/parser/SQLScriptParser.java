@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -282,6 +284,9 @@ public class SQLScriptParser
                 }
             } catch (BadLocationException e) {
                 log.warn("Error parsing query", e);
+                StringWriter buf = new StringWriter();
+                e.printStackTrace(new PrintWriter(buf, true));
+                return new SQLQuery(context.getDataSource(), buf.toString());
             } finally {
                 if (!token.isWhitespace() && !token.isEOF()) {
                     prevNotEmptyTokenType = tokenType;
