@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
-import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -251,7 +250,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             objNames.add(obj.getName());
         }
         message.append("\nObject(s) processed: ").append(String.join(",", objNames));
-        NotificationUtils.sendNotification(task.getName(), task.getName(), message.toString(), null, null);
+        DBWorkbench.getPlatformUI().showNotification(task.getName(), message.toString(), false);
+
     }
 
     protected void onError(DBTTask task, SETTINGS settings, long workTime) {

@@ -49,7 +49,7 @@ class SelectCRSAction extends Action {
     public void run() {
         if (valueEditor instanceof GISLeafletViewer &&
                 Arrays.stream(((GISLeafletViewer) valueEditor).getCurrentValue()).map(DBGeometry::getSRID).distinct().count() > 1) {
-            DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", "Can't change coordinate reference system because geometries have different SRID.");
+            DBWorkbench.getPlatformUI().showWarningNotification("Warning", "Can't change coordinate reference system because geometries have different SRID.");
         } else {
             SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
                     UIUtils.getActiveWorkbenchShell(),

@@ -337,7 +337,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // interrupted
             }
             if (loadingJob != null) {
-                DBWorkbench.getPlatformUI().showMessageBox("Load", "Service is busy", true);
+                DBWorkbench.getPlatformUI().showNotification("Load", "Service is busy", true);
                 return;
             }
             return;
