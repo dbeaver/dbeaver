@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -183,8 +185,10 @@ public class SQLScriptParser
                 }
 
                 boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
-                if (isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens) {
-                    // Control query
+                if (isControl && (
+                        ((scriptMode || cursorInsideToken) && !hasValuableTokens)
+                        || (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos))
+                )) {                    // Control query
                     String controlText = document.get(tokenOffset, tokenLength);
                     String commandId = null;
                     if (token instanceof SQLControlToken) {
@@ -281,6 +285,9 @@ public class SQLScriptParser
                 }
             } catch (BadLocationException e) {
                 log.warn("Error parsing query", e);
+                StringWriter buf = new StringWriter();
+                e.printStackTrace(new PrintWriter(buf, true));
+                return new SQLQuery(context.getDataSource(), buf.toString());
             } finally {
                 if (!token.isWhitespace() && !token.isEOF()) {
                     prevNotEmptyTokenType = tokenType;
