@@ -2108,6 +2108,25 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
+            final boolean recordMode = controller.isRecordMode();
+            final ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
+            final DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
+
+            if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) && spreadsheet.getCellSelectionSize() == 1) {
+                final GridCell sourceCell = spreadsheet.getCellSelection().get(0);
+                final ResultSetRow sourceRow = (ResultSetRow) (!recordMode ?  sourceCell.row : sourceCell.col);
+                final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding)(!recordMode ?  sourceCell.col : sourceCell.row);
+
+                if (sourceRow != row || sourceAttribute != attribute) {
+                    final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false, true);
+                    final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
+
+                    if (CommonUtils.equalObjects(sourceValue, currentValue)) {
+                        return backgroundMatched;
+                    }
+                }
+            }
+
             if (cellSelected) {
                 Color normalColor = getCellBackground(colElement, rowElement, false, true);
                 if (normalColor == null || normalColor == backgroundNormal) {
@@ -2120,9 +2139,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
-            boolean recordMode = controller.isRecordMode();
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
-            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
 
             final SpreadsheetFindReplaceTarget findReplaceTarget = SpreadsheetFindReplaceTarget
                 .getInstance()
