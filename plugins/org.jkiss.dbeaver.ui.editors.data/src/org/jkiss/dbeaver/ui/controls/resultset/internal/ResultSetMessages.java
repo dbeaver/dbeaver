@@ -174,6 +174,11 @@ public class ResultSetMessages extends NLS {
     public static String dialog_value_view_context_name;
     public static String dialog_value_view_dialog_error_updating_message;
     public static String dialog_value_view_dialog_error_updating_title;
+
+    public static String dialog_value_view_error_parsing_date_title;
+    public static String dialog_value_view_error_parsing_date_message;
+
+
     public static String dialog_value_view_job_selector_name;
     public static String dialog_value_view_label_dictionary;
 

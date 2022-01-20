@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -110,7 +111,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             if (parent.isDirty()) {
                 try {
                     Object value = parent.extractEditorValue();
-                    if (value instanceof Date){
+                    if (value instanceof Date) {
                         editor.setValue((Date) value);
                     }
                 } catch (DBException e) {
@@ -118,7 +119,19 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                     return;
                 }
             }
-            editor.setToDateComposite();
+            try {
+                if (!(parent.extractEditorValue() instanceof Date)){
+                    UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, ResultSetMessages.dialog_value_view_error_parsing_date_message));
+                    ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
+                    this.setChecked(false);
+                    parent.textMode.setChecked(true);
+                    return;
+                }
+                editor.setToDateComposite();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
+                return;
+            }
             ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, true);
         }
 
@@ -204,6 +217,11 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             timeEditor.setValue((Timestamp) value);
         } else if (value instanceof Date) {
             timeEditor.setValue((Date) value);
+        } else {
+            if (isCalendarMode()){
+                UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, ResultSetMessages.dialog_value_view_error_parsing_date_message));
+                textMode.run();
+            }
         }
     }
 
