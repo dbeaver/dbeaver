@@ -129,9 +129,14 @@ public class EditorUtils {
                 return location == null ? null : location.toFile();
             }
             if (element instanceof IURIEditorInput) {
-                final File localFile = new File(((IURIEditorInput) element).getURI());
-                if (localFile.exists()) {
-                    return localFile;
+                try {
+                    final File localFile = new File(((IURIEditorInput) element).getURI());
+                    if (localFile.exists()) {
+                        return localFile;
+                    }
+                } catch (Exception e) {
+                    // Something is wrong with URI
+                    return null;
                 }
             }
         }
