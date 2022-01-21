@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -120,8 +120,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 }
             }
             try {
-                if (!(parent.extractEditorValue() instanceof Date)){
-                    UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, ResultSetMessages.dialog_value_view_error_parsing_date_message));
+                Object value = parent.extractEditorValue();
+                if (!(value instanceof Date)){
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, value));
                     ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
                     this.setChecked(false);
                     parent.textMode.setChecked(true);
@@ -219,7 +220,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             timeEditor.setValue((Date) value);
         } else {
             if (isCalendarMode()){
-                UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, ResultSetMessages.dialog_value_view_error_parsing_date_message));
+                DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, ResultSetMessages.dialog_value_view_error_parsing_date_message);
                 textMode.run();
             }
         }
