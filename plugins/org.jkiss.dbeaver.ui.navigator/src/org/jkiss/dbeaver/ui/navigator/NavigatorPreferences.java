@@ -37,6 +37,7 @@ public class NavigatorPreferences {
     public static final String NAVIGATOR_LONG_LIST_FETCH_SIZE = "navigator.long.list.fetch.size"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_STATISTICS_INFO = "navigator.show.statistics.info"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_CONNECTION_HOST_NAME = "navigator.show.connection.host"; //$NON-NLS-1$
+    public static final String NAVIGATOR_SHOW_OBJECTS_DESCRIPTION = "navigator.show.objects.description"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_NODE_ACTIONS = "navigator.show.node.actions"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_SHOW_TOOLTIPS = "navigator.show.tooltips"; //$NON-NLS-1$
