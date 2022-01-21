@@ -659,7 +659,7 @@ public final class SQLUtils {
 
     public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {
         int index = dataFilter.getConstraints().indexOf(constraint);
-        return index == -1 ? index : index +1;
+        return index == -1 ? index : index + 1;
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @Nullable Object value) {
