@@ -104,6 +104,12 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
         if (settings.isNoOwner()) {
             cmd.add("--no-owner");
         }
+        if (settings.isDropObjects()) {
+            cmd.add("--clean");
+        }
+        if (settings.isCreateDatabase()) {
+            cmd.add("--create");
+        }
 
         if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             cmd.add("--file");
