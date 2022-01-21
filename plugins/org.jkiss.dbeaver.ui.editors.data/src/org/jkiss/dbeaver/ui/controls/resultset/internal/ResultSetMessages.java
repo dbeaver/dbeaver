@@ -239,6 +239,10 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_label_max_text_length;
     public static String pref_page_content_editor_group_hex;
     public static String pref_page_content_editor_hex_encoding;
+    public static String pref_page_content_editor_ui_show_errors_in_dialog;
+    public static String pref_page_content_editor_ui_show_errors_in_dialog_tip;
+    public static String pref_page_content_editor_ui_mark_cell_value_occurrences;
+    public static String pref_page_content_editor_ui_mark_cell_value_occurrences_tip;
 
     public static String pref_page_data_format_button_manage_profiles;
     public static String pref_page_data_format_group_settings;
