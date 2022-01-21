@@ -64,12 +64,22 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void showNotification(String title, String message, boolean error) {
+    public void showMessageBox(String title, String message, boolean error) {
         System.out.println(title + (message == null ? "" : ": " + message));
     }
 
     @Override
+    public void showNotification(@NotNull String title, @Nullable String message, boolean error) {
+        showMessageBox(title, message, error);
+    }
+
+    @Override
     public void showWarningNotification(@NotNull String title, @Nullable String message) {
+        showWarningMessageBox(title, message);
+    }
+
+    @Override
+    public void showWarningMessageBox(@NotNull String title, @Nullable String message) {
         System.out.println(title + (message == null ? "" : ": " + message));
     }
 
