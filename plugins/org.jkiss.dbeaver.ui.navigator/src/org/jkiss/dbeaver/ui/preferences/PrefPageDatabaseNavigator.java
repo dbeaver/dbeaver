@@ -59,6 +59,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button sortCaseInsensitiveCheck;
     private Button sortFoldersFirstCheck;
     private Button showConnectionHostCheck;
+    private Button showObjectsDescriptionCheck;
     private Button showStatisticsCheck;
     private Button showNodeActionsCheck;
     private Button colorAllNodesCheck;
@@ -96,6 +97,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             ((GridData)navigatorGroup.getLayoutData()).verticalSpan = 2;
 
             showConnectionHostCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_host_name, UINavigatorMessages.pref_page_database_general_label_show_host_name_tip, false, 2);
+            showObjectsDescriptionCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_objects_description, UINavigatorMessages.pref_page_database_general_label_show_objects_description_tip, false, 2);
             showStatisticsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_statistics, UINavigatorMessages.pref_page_database_general_label_show_statistics_tip, false, 2);
             showNodeActionsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_node_actions, UINavigatorMessages.pref_page_database_general_label_show_node_actions_tip, false, 2);
             showResourceFolderPlaceholdersCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders, UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders_tip, false, 2);
@@ -163,6 +165,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
         sortFoldersFirstCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         showConnectionHostCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME));
+        showObjectsDescriptionCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION));
         showStatisticsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO));
         showNodeActionsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS));
         colorAllNodesCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES));
@@ -205,6 +208,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, showConnectionHostCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION, showObjectsDescriptionCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO, showStatisticsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS, showNodeActionsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, colorAllNodesCheck.getSelection());
