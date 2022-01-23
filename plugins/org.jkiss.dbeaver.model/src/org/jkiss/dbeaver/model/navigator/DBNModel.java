@@ -368,6 +368,8 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
+        log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
+
         for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
             String item = nodePath.pathItems.get(i);
             DBNNode[] children = curNode.getChildren(monitor);
@@ -411,6 +413,8 @@ public class DBNModel implements IResourceChangeListener {
             if (nextChild == null) {
                 log.debug("Node '" + item + "' not found in parent node '" + curNode.getNodeItemPath() + "'." +
                     "\nAllowed children: " + Arrays.toString(children));
+            } else {
+                log.debug("\t-found " + nextChild.getNodeName());
             }
             curNode = nextChild;
             if (curNode == null) {
