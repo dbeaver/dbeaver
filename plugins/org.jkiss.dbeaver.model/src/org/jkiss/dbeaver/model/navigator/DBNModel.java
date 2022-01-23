@@ -373,7 +373,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
-        log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
+        //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
 
         for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
             String item = nodePath.pathItems.get(i);
