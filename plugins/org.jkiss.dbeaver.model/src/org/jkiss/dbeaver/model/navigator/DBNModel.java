@@ -42,10 +42,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -410,6 +407,10 @@ public class DBNModel implements IResourceChangeListener {
                         break;
                     }
                 }
+            }
+            if (nextChild == null) {
+                log.debug("Node '" + item + "' not found in parent node '" + curNode.getNodeItemPath() + "'." +
+                    "\nAllowed children: " + Arrays.toString(children));
             }
             curNode = nextChild;
             if (curNode == null) {
