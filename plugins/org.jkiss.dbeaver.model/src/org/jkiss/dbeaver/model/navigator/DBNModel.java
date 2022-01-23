@@ -69,6 +69,11 @@ public class DBNModel implements IResourceChangeListener {
         public String first() {
             return pathItems.isEmpty() ? null : pathItems.get(0);
         }
+
+        @Override
+        public String toString() {
+            return type.getPrefix() + pathItems.toString();
+        }
     }
 
     private final DBPPlatform platform;
@@ -368,6 +373,8 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
+        log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
+
         for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
             String item = nodePath.pathItems.get(i);
             DBNNode[] children = curNode.getChildren(monitor);
