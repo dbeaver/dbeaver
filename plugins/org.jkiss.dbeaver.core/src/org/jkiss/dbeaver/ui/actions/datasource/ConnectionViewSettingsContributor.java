@@ -66,6 +66,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         menuItems.add(new ActionContributionItem(new ShowSystemObjectsAction(dsContainer)));
         menuItems.add(new Separator());
         menuItems.add(new ActionContributionItem(new ShowHostNameAction(dsContainer)));
+        menuItems.add(new ActionContributionItem(new ShowObjectsDescriptionAction(dsContainer)));
         menuItems.add(new ActionContributionItem(new ShowStatisticsAction(dsContainer)));
         menuItems.add(new ActionContributionItem(new ShowStatusIconsAction(dsContainer)));
     }
@@ -169,6 +170,20 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         @Override
         public void run() {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, isChecked());
+            refreshNavigator();
+        }
+    }
+
+    private static class ShowObjectsDescriptionAction extends SettingsAction {
+        ShowObjectsDescriptionAction(DBPDataSourceContainer container) {
+            super(container, UINavigatorMessages.pref_page_database_general_label_show_objects_description, AS_CHECK_BOX);
+            setToolTipText(UINavigatorMessages.pref_page_database_general_label_show_objects_description_tip);
+            setChecked(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION));
+        }
+
+        @Override
+        public void run() {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION, isChecked());
             refreshNavigator();
         }
     }

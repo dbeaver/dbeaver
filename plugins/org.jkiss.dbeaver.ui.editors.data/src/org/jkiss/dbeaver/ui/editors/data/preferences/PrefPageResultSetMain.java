@@ -65,6 +65,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button useNavigatorFilters;
 
     private Button showErrorsInDialog;
+    private Button markCellValueOccurrences;
 
     private Button advUseFetchSize;
 
@@ -96,6 +97,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
+            store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
             store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
             ;
     }
@@ -183,7 +185,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             Group uiGroup = UIUtils.createControlGroup(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             uiGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            showErrorsInDialog = UIUtils.createCheckbox(uiGroup, "Show errors in dialog", "Show errors in modal dialog. Otherwise show errors in special data presentation (default)", false, 1);
+            showErrorsInDialog = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog_tip, false, 1);
+            markCellValueOccurrences = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences_tip, false, 1);
         }
 
         return composite;
@@ -222,6 +225,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             ignoreColumnLabelCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
 
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
+            markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
 
             updateOptionsEnablement();
         } catch (Exception e) {
@@ -254,6 +258,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL, ignoreColumnLabelCheck.getSelection());
 
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES, markCellValueOccurrences.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -284,6 +289,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
 
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES);
 
         updateOptionsEnablement();
     }
