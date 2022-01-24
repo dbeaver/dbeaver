@@ -48,10 +48,12 @@ class TokenPredicateExpander implements TokenPredicateNodeVisitor<ListNode<SQLTo
     }
 
     private TokenPredicateExpander() {
+
     }
 
     @Override
-    public ListNode<ListNode<SQLTokenEntry>> visitSequence(SequenceTokenPredicateNode sequence, ListNode<SQLTokenEntry> head) {
+    @NotNull
+    public ListNode<ListNode<SQLTokenEntry>> visitSequence(@NotNull SequenceTokenPredicateNode sequence, @NotNull ListNode<SQLTokenEntry> head) {
         ListNode<ListNode<SQLTokenEntry>> results = ListNode.of(head);
         for (TokenPredicateNode child: sequence.childs) {
             ListNode<ListNode<SQLTokenEntry>> step = null;
@@ -66,7 +68,8 @@ class TokenPredicateExpander implements TokenPredicateNodeVisitor<ListNode<SQLTo
     }
 
     @Override
-    public ListNode<ListNode<SQLTokenEntry>> visitAlternative(AlternativeTokenPredicateNode alternative, ListNode<SQLTokenEntry> head) {
+    @NotNull
+    public ListNode<ListNode<SQLTokenEntry>> visitAlternative(@NotNull AlternativeTokenPredicateNode alternative, @NotNull ListNode<SQLTokenEntry> head) {
         ListNode<ListNode<SQLTokenEntry>> results = null;
         for (TokenPredicateNode child: alternative.childs) {
             for (ListNode<SQLTokenEntry> childPath: child.apply(this, head)) {
@@ -77,12 +80,14 @@ class TokenPredicateExpander implements TokenPredicateNodeVisitor<ListNode<SQLTo
     }
 
     @Override
-    public ListNode<ListNode<SQLTokenEntry>> visitOptional(OptionalTokenPredicateNode optional, ListNode<SQLTokenEntry> head) {
+    @NotNull
+    public ListNode<ListNode<SQLTokenEntry>> visitOptional(@NotNull OptionalTokenPredicateNode optional, @NotNull ListNode<SQLTokenEntry> head) {
         return ListNode.push(optional.child.apply(this, head), head);
     }
 
     @Override
-    public ListNode<ListNode<SQLTokenEntry>> visitTokenEntry(SQLTokenEntry token, ListNode<SQLTokenEntry> head) {
+    @NotNull
+    public ListNode<ListNode<SQLTokenEntry>> visitTokenEntry(@NotNull SQLTokenEntry token, @NotNull ListNode<SQLTokenEntry> head) {
         return ListNode.of(ListNode.push(head, token));
     }
 }

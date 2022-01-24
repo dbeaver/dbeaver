@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicatesSet;
-import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicatesSet;
+import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -445,7 +445,7 @@ public interface SQLDialect {
      * @return a set of token predicates
      */
     @NotNull
-    default SQLTokenPredicatesSet getSkipTokenPredicates(DBPDataSource dataSource) {
-        return EmptyTokenPredicatesSet.INSTANCE;
+    default SQLTokenPredicateSet getSkipTokenPredicates(DBPDataSource dataSource) {
+        return EmptyTokenPredicateSet.INSTANCE;
     }
 }

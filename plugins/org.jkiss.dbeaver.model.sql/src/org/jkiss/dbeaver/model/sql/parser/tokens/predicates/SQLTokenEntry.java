@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 
@@ -31,17 +32,19 @@ public class SQLTokenEntry extends TokenPredicateNode implements TokenEntry {
     private final String string;
     private final SQLTokenType type;
 
-    public SQLTokenEntry(String string, SQLTokenType type) {
+    public SQLTokenEntry(@Nullable String string, @Nullable SQLTokenType type) {
         this.string = string;
         this.type = type;
     }
 
     @Override
+    @Nullable
     public String getString() {
         return this.string;
     }
 
     @Override
+    @Nullable
     public Enum getTokenType() {
         return this.type;
     }
@@ -76,7 +79,8 @@ public class SQLTokenEntry extends TokenPredicateNode implements TokenEntry {
     }
 
     @Override
-    protected <T, TRet> TRet applyImpl(@NotNull TokenPredicateNodeVisitor<T, TRet> visitor, T arg) {
+    @NotNull
+    protected <T, R> R applyImpl(@NotNull TokenPredicateNodeVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitTokenEntry(this, arg);
     }
 }

@@ -34,9 +34,12 @@ class TokenPredicateFormatter implements TokenPredicateNodeVisitor<StringBuilder
         return node == null ? "<NULL>" : node.apply(INSTANCE, new StringBuilder()).toString();
     }
 
-    private TokenPredicateFormatter() { }
+    private TokenPredicateFormatter() {
 
-    private StringBuilder visit(TokenPredicateNode parent, TokenPredicateNode node, StringBuilder sb) {
+    }
+
+    @NotNull
+    private StringBuilder visit(@NotNull TokenPredicateNode parent, @NotNull TokenPredicateNode node, @NotNull StringBuilder sb) {
         boolean needsWrapping = (
                 parent instanceof GroupTokenPredicatesNode &&
                 node instanceof GroupTokenPredicatesNode &&
@@ -59,11 +62,13 @@ class TokenPredicateFormatter implements TokenPredicateNodeVisitor<StringBuilder
         return sb;
     }
 
-    private StringBuilder visitUnary(UnaryTokenPredicateNode unary, StringBuilder sb) {
+    @NotNull
+    private StringBuilder visitUnary(@NotNull UnaryTokenPredicateNode unary, @NotNull StringBuilder sb) {
         return this.visit(unary, unary.child, sb);
     }
 
-    private StringBuilder visitGroup(GroupTokenPredicatesNode group, StringBuilder sb, String separator) {
+    @NotNull
+    private StringBuilder visitGroup(@NotNull GroupTokenPredicatesNode group, @NotNull StringBuilder sb, @NotNull String separator) {
         Iterator<TokenPredicateNode> it = group.childs.iterator();
         if (it.hasNext()) {
             this.visit(group, it.next(), sb);
@@ -76,22 +81,26 @@ class TokenPredicateFormatter implements TokenPredicateNodeVisitor<StringBuilder
     }
 
     @Override
-    public StringBuilder visitSequence(SequenceTokenPredicateNode sequence, StringBuilder sb) {
+    @NotNull
+    public StringBuilder visitSequence(@NotNull SequenceTokenPredicateNode sequence, @NotNull StringBuilder sb) {
         return this.visitGroup(sequence, sb, " ");
     }
 
     @Override
-    public StringBuilder visitAlternative(AlternativeTokenPredicateNode alternative, StringBuilder sb) {
+    @NotNull
+    public StringBuilder visitAlternative(@NotNull AlternativeTokenPredicateNode alternative, @NotNull StringBuilder sb) {
         return this.visitGroup(alternative, sb, "|");
     }
 
     @Override
-    public StringBuilder visitOptional(OptionalTokenPredicateNode optional, StringBuilder sb) {
+    @NotNull
+    public StringBuilder visitOptional(@NotNull OptionalTokenPredicateNode optional, @NotNull StringBuilder sb) {
         return this.visitUnary(optional, sb).append("?");
     }
 
     @Override
-    public StringBuilder visitTokenEntry(SQLTokenEntry token, StringBuilder sb) {
+    @NotNull
+    public StringBuilder visitTokenEntry(@NotNull SQLTokenEntry token, @NotNull StringBuilder sb) {
         return token.format(sb);
     }
 }

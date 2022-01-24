@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * A set of connection-specific dialect features which require special handling during SQL parsing
  */
-public interface SQLTokenPredicatesSet {
+public interface SQLTokenPredicateSet {
     /**
      * @return maximum statement prefix length handled by predicates
      */

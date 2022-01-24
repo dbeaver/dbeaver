@@ -28,86 +28,6 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/**
- * Dialect-specific predicate node producer
- */
-class SQLTokenPredicateFabric extends TokenPredicateFabric {
-    private static class StringScanner implements TPCharacterScanner {
-        private final String string;
-        private int pos = 0;
-
-        public StringScanner(String string) {
-            this.string = string;
-        }
-
-        @Override
-        public char[][] getLegalLineDelimiters() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int getColumn() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int read() {
-            return pos < string.length() ? string.charAt(pos++) : -1;
-        }
-
-        @Override
-        public void unread() {
-            pos--;
-        }
-
-        public void reset() {
-            pos = 0;
-        }
-    }
-
-    private final TPRule[] allRules;
-
-    public SQLTokenPredicateFabric(@NotNull SQLRuleManager ruleManager) {
-        super();
-        allRules = ruleManager.getAllRules();
-    }
-
-    @Override
-    @NotNull
-    protected SQLTokenEntry classifyToken(@NotNull String string) {
-        StringScanner scanner = new StringScanner(string);
-        for (TPRule fRule : allRules) {
-            try {
-                scanner.reset();
-                TPToken token = fRule.evaluate(scanner);
-                if (!token.isUndefined()) {
-                    SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault) token).getData() : SQLTokenType.T_OTHER;
-                    return new SQLTokenEntry(string, tokenType);
-                }
-            } catch (Throwable e) {
-                // some rules raise exceptions in a certain situations when the string does not correspond the rule
-                // e.printStackTrace();
-            }
-        }
-        return new SQLTokenEntry(string, null);
-    }
-}
-
-/**
- * Default predicate node producer
- */
-class DefaultTokenPredicateFabric extends TokenPredicateFabric {
-    public DefaultTokenPredicateFabric() {
-        super();
-    }
-
-    @Override
-    @NotNull
-    protected TokenPredicateNode classifyToken(@NotNull String tokenString) {
-        // Knows nothing about particular dialect or used in dialect-agnostic context
-        return new SQLTokenEntry(tokenString, SQLTokenType.T_UNKNOWN);
-    }
-}
 
 /**
  * The producer of all predicate nodes responsible for exact string token entries classification according to dialect.
@@ -138,6 +58,7 @@ public abstract class TokenPredicateFabric {
     }
 
     protected TokenPredicateFabric() {
+
     }
 
     /**

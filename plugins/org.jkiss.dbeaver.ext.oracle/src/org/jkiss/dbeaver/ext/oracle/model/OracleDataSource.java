@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicatesSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.*;
@@ -124,9 +124,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     private final Object cachedDialectSkipTokenPredicatesLock = new Object();
-    private SQLTokenPredicatesSet cachedDialectSkipTokenPredicates = null;
+    private SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
 
-    protected SQLTokenPredicatesSet getSourceSpecificSQLSkipTokenPredicates() {
+    @NotNull
+    protected SQLTokenPredicateSet getSourceSpecificSQLSkipTokenPredicates() {
         synchronized (cachedDialectSkipTokenPredicatesLock) {
             if (cachedDialectSkipTokenPredicates == null) {
                 cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates();
@@ -135,7 +136,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    private SQLTokenPredicatesSet makeDialectSkipTokenPredicates() {
+    @NotNull
+    private SQLTokenPredicateSet makeDialectSkipTokenPredicates() {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(this.getSQLDialect(), this.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
@@ -145,7 +147,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         // Oracle SQL references could be found from https://docs.oracle.com/en/database/oracle/oracle-database/
         // by following through Get Started links till the SQL Language Reference link presented
 
-        TokenPredicatesSet conditions = TokenPredicatesSet.of(
+        TokenPredicateSet conditions = TokenPredicateSet.of(
                 // https://docs.oracle.com/en/database/oracle/oracle-database/12.2/lnpls/CREATE-PACKAGE-BODY-statement.html#GUID-68526FF2-96A1-4F14-A10B-4DD3E1CD80BE
         		// also presented in the earliest found reference on 7.3, so considered as always supported https://docs.oracle.com/pdf/A32538_1.pdf
                 new TokenPredicatesCondition(

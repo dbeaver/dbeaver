@@ -62,7 +62,7 @@ public class Trie<T, V> {
          */
         // public Map<T, TreeNode> childNodesByKey;
 
-        public TreeNode(T term) {
+        public TreeNode(@Nullable T term) {
             this.term = term;
             this.values = new HashSet<>();
             this.childKeys = new ArrayList<>();
@@ -70,6 +70,7 @@ public class Trie<T, V> {
             // this.childNodesByKey = new HashMap<>();
         }
 
+        @NotNull
         public Set<V> getValues() {
             return this.values;
         }
@@ -79,7 +80,8 @@ public class Trie<T, V> {
          * @param term used as key to discover the node during further lookup operations
          * @return node in the trie data structure
          */
-        public TreeNode addOrCreateChild(T term) {
+        @NotNull
+        public TreeNode addOrCreateChild(@NotNull T term) {
             int index = Collections.binarySearch(this.childKeys, term, Trie.this.strongComparer);
             if (index >= 0) {
                 return this.childNodes.get(index);
@@ -104,7 +106,8 @@ public class Trie<T, V> {
         }
 
         @Override
-        public ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(T term, ListNode<TrieNode<T, V>> results) {
+        @Nullable
+        public ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
             // use the best suitable strategy to lookup for children nodes by the given term
             if (this.isStronglyOrdered && lookupPartialComparer.isStronglyComparable(term)) {
                 // TreeNode child = this.childNodesByKey.get(term);
@@ -127,7 +130,9 @@ public class Trie<T, V> {
             return results;
         }
 
-        private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(T term, ListNode<TrieNode<T, V>> results) {
+
+        @Nullable
+        private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
             TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
             for (int i = 0; i < this.childKeys.size(); i++) {
                 if (comparer.match(this.childKeys.get(i), term)) {

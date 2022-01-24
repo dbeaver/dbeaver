@@ -30,7 +30,7 @@ public class SQLTokenPredicateEvaluator {
     /**
      * Complete set of conditions under considerations
      */
-    private final SQLTokenPredicatesSet predicatesSet;
+    private final SQLTokenPredicateSet predicatesSet;
     /**
      * A number of tokens representing prefix of the SQL statement under analysis
      */
@@ -51,7 +51,7 @@ public class SQLTokenPredicateEvaluator {
      */
     private ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> statementPrefixPredicates;
 
-    public SQLTokenPredicateEvaluator(@NotNull SQLTokenPredicatesSet predicatesSet) {
+    public SQLTokenPredicateEvaluator(@NotNull SQLTokenPredicateSet predicatesSet) {
         this.predicatesSet = predicatesSet;
         this.statementPrefixTokens = new ArrayDeque<>(predicatesSet.getMaxPrefixLength());
         this.statementSuffixTokens = new ArrayDeque<>(predicatesSet.getMaxSuffixLength());

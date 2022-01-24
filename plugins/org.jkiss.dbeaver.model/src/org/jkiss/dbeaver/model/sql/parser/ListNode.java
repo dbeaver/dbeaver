@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -28,23 +31,27 @@ public class ListNode<T> implements Iterable<T> {
     public final ListNode<T> next;
     public final T data;
 
-    private ListNode(ListNode<T> next, T data) {
+    private ListNode(@Nullable ListNode<T> next, T data) {
         this.next = next;
         this.data = data;
     }
 
-    public static <T> ListNode<T> of(T data) {
+    @NotNull
+    public static <T> ListNode<T> of(@NotNull T data) {
         return new ListNode<T>(null, data);
     }
 
-    public static <T> ListNode<T> of(T data1, T data2) {
+    @NotNull
+    public static <T> ListNode<T> of(@NotNull T data1, @NotNull T data2) {
         return new ListNode<T>(new ListNode<T>(null, data1), data2);
     }
 
-    public static <T> ListNode<T> push(ListNode<T> node, T data) {
+    @NotNull
+    public static <T> ListNode<T> push(@NotNull ListNode<T> node, @NotNull T data) {
         return new ListNode<T>(node, data);
     }
 
+    @NotNull
     public Iterator<T> iterator() {
         return new Iterator<T>() {
             private ListNode<T> node = ListNode.this;
@@ -55,6 +62,7 @@ public class ListNode<T> implements Iterable<T> {
             }
 
             @Override
+            @NotNull
             public T next() {
                 if (node != null) {
                     T result = node.data;

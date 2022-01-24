@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicate;
-import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicatesSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 import org.jkiss.dbeaver.model.sql.parser.TrieNode;
 
@@ -27,14 +27,11 @@ import java.util.*;
 /**
  * A set of conditions about sequences of terms expressed in form of predicate pairs about term sequence prefix and suffix
  */
-public class TokenPredicatesSet implements SQLTokenPredicatesSet {
+public class TokenPredicateSet implements SQLTokenPredicateSet {
     private final List<TokenPredicatesCondition> conditions = new ArrayList<>();
     private final Trie<TokenEntry, SQLTokenPredicate> conditionsByPrefix = new Trie<>(ExactTokenEntryComparator.INSTANCE, TokenEntryMatchingComparator.INSTANCE);
     private final Trie<TokenEntry, SQLTokenPredicate> conditionsBySuffix = new Trie<>(ExactTokenEntryComparator.INSTANCE, TokenEntryMatchingComparator.INSTANCE);
     private int maxHeadLength = 0, maxTailLength = 0;
-
-    public TokenPredicatesSet() {
-    }
 
     @Override
     @NotNull
@@ -63,8 +60,8 @@ public class TokenPredicatesSet implements SQLTokenPredicatesSet {
     }
 
     @NotNull
-    public static TokenPredicatesSet of(TokenPredicatesCondition... conditions) {
-        TokenPredicatesSet set = new TokenPredicatesSet();
+    public static TokenPredicateSet of(@NotNull TokenPredicatesCondition... conditions) {
+        TokenPredicateSet set = new TokenPredicateSet();
         for (TokenPredicatesCondition cond: conditions) {
             set.add(cond);
         }

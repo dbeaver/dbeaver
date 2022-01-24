@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicatesSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -568,7 +568,8 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     }
 
     @Override
-    public SQLTokenPredicatesSet getSkipTokenPredicates(DBPDataSource dataSource) {
+    @NotNull
+    public SQLTokenPredicateSet getSkipTokenPredicates(DBPDataSource dataSource) {
         if (dataSource instanceof OracleDataSource) {
             return ((OracleDataSource)dataSource).getSourceSpecificSQLSkipTokenPredicates();
         } else {

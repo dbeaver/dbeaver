@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.Collections;
 import java.util.Deque;
@@ -26,11 +27,11 @@ import java.util.Set;
  * Represents empty set of connection-specific dialect features which require special handling during SQL parsing
  * (Used as default implementation for SQL dialects without such special features)
  */
-public class EmptyTokenPredicatesSet implements SQLTokenPredicatesSet {
+public class EmptyTokenPredicateSet implements SQLTokenPredicateSet {
 
-    public static final EmptyTokenPredicatesSet INSTANCE = new EmptyTokenPredicatesSet();
+    public static final EmptyTokenPredicateSet INSTANCE = new EmptyTokenPredicateSet();
 
-    private static final TrieNode<TokenEntry, SQLTokenPredicate> EMPTY_NODE = new TrieNode<TokenEntry, SQLTokenPredicate>() {
+    private static final TrieNode<TokenEntry, SQLTokenPredicate> EMPTY_NODE = new TrieNode<>() {
         @Override
         @NotNull
         public Set<SQLTokenPredicate> getValues() {
@@ -38,12 +39,13 @@ public class EmptyTokenPredicatesSet implements SQLTokenPredicatesSet {
         }
 
         @Override
-        public ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> accumulateSubnodesByTerm(TokenEntry term, ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> results) {
+        public ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> accumulateSubnodesByTerm(@NotNull TokenEntry term, @NotNull ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> results) {
             return results;
         }
     };
 
-    private EmptyTokenPredicatesSet() {
+    private EmptyTokenPredicateSet() {
+
     }
 
     @Override

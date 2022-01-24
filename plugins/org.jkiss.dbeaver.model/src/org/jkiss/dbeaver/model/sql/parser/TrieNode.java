@@ -38,5 +38,6 @@ public interface TrieNode<T, V> {
      * @param results initial state of list to augment
      * @return augmented list of initial state optionally combined with some child nodes of this node
      */
-    ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(@NotNull T term, ListNode<TrieNode<T, V>> results);
+    @NotNull
+    ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results);
 }

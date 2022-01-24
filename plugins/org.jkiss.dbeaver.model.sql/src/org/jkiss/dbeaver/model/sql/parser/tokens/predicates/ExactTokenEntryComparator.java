@@ -19,38 +19,26 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Comparator;
 
 /**
- * Represents node of token predicate tree
+ * Strong comparator implementing foll comparison of data carried by two token entries.
+ * Establishes strong ordering on the continuity of possible token entries.
  */
-public abstract class TokenPredicateNode {
+class ExactTokenEntryComparator extends TokenEntryComparatorBase implements Comparator<TokenEntry> {
+    public static final ExactTokenEntryComparator INSTANCE = new ExactTokenEntryComparator();
 
-    protected TokenPredicateNode() {
+    private ExactTokenEntryComparator() {
 
-    }
-
-    @NotNull
-    public final <T, R> R apply(@NotNull TokenPredicateNodeVisitor<T, R> visitor, @NotNull T arg) {
-        return this.applyImpl(visitor, arg);
-    }
-
-    @NotNull
-    protected abstract <T, R> R applyImpl(@NotNull TokenPredicateNodeVisitor<T, R> visitor, @NotNull T arg);
-
-    /**
-     * Expands the tree into the list of all possible token entry sequences matching the predicate
-     * @return
-     */
-    @NotNull
-    public List<List<TokenEntry>> expand() {
-        return TokenPredicateExpander.expand(this);
     }
 
     @Override
-    public final String toString() {
-        return TokenPredicateFormatter.format(this);
+    public int compare(@NotNull TokenEntry first, @NotNull TokenEntry second) {
+        // keep in sync with TokenEntryMatchingComparator implementation: look at the partially comparable part of the data at first!
+        int result = compareByTokenTypes(first, second);
+        if (result != 0) {
+            return result;
+        }
+        return compareByStrings(first, second);
     }
 }
-

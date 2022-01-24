@@ -21,60 +21,6 @@ import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
 import java.util.Comparator;
 
-abstract class TokenEntryComparatorBase {
-
-    protected int compareByStrings(@NotNull TokenEntry first, @NotNull TokenEntry second) {
-        if (first.getString() == null) {
-            if (second.getString() == null) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else {
-            if (second.getString() == null) {
-                return 1;
-            } else {
-                return first.getString().compareToIgnoreCase(second.getString());
-            }
-        }
-    }
-
-    protected int compareByTokenTypes(@NotNull TokenEntry first, @NotNull TokenEntry second) {
-        if (first.getTokenType() == null) {
-            if (second.getTokenType() == null) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else {
-            if (second.getTokenType() == null) {
-                return 1;
-            } else {
-                return first.getTokenType().compareTo(second.getTokenType());
-            }
-        }
-    }
-}
-
-/**
- * Strong comparator implementing foll comparison of data carried by two token entries.
- * Establishes strong ordering on the continuity of possible token entries.
- */
-class ExactTokenEntryComparator extends TokenEntryComparatorBase implements Comparator<TokenEntry> {
-    public static final ExactTokenEntryComparator INSTANCE = new ExactTokenEntryComparator();
-
-    private ExactTokenEntryComparator() { }
-
-    @Override
-    public int compare(@NotNull TokenEntry first, @NotNull TokenEntry second) {
-        // keep in sync with TokenEntryMatchingComparator implementation: look at the partially comparable part of the data at first!
-        int result = compareByTokenTypes(first, second);
-        if (result != 0) {
-            return result;
-        }
-        return compareByStrings(first, second);
-    }
-}
 
 /**
  * Partial comparator implementing relaxed comparison of data carried by two token entries.
