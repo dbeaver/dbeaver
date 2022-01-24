@@ -229,7 +229,10 @@ public class SQLSemanticProcessor {
         String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttributeName());
         if (forceNumeric || attrName.isEmpty()) {
             int orderColumnIndex = SQLUtils.getConstraintOrderIndex(filter, co);
-            orderExpr = new LongValue(orderColumnIndex == -1 ? co.getOrderPosition() : orderColumnIndex);
+            if (orderColumnIndex == -1) {
+                throw new DBException("Can't generate column order: no position found");
+            }
+            orderExpr = new LongValue(orderColumnIndex);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
             Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
