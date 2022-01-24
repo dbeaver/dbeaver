@@ -273,7 +273,13 @@ public class DataSourceDescriptor
     @Override
     public DBPDataSourceOrigin getOrigin() {
         if (origin instanceof DataSourceOriginLazy) {
-            DBPDataSourceOrigin realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            DBPDataSourceOrigin realOrigin;
+            try {
+                realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            } catch (DBException e) {
+                log.debug("Error reading datasource origin", e);
+                realOrigin = null;
+            }
             if (realOrigin != null) {
                 this.origin = realOrigin;
             } else {

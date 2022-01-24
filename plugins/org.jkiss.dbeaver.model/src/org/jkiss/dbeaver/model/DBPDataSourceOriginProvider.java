@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.DBException;
+
 import java.util.Map;
 
 /**
@@ -23,6 +25,6 @@ import java.util.Map;
  */
 public interface DBPDataSourceOriginProvider {
 
-    DBPDataSourceOrigin getOrigin(Map<String, Object> configuration);
+    DBPDataSourceOrigin getOrigin(Map<String, Object> configuration) throws DBException;
 
 }

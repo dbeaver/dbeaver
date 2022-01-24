@@ -86,7 +86,7 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
     }
 
     @Nullable
-    DBPDataSourceOrigin resolveRealOrigin() {
+    DBPDataSourceOrigin resolveRealOrigin() throws DBException {
         // Loaded from configuration
         // Instantiate in lazy mode
         DBPDataSourceOriginProvider originProvider = DataSourceProviderRegistry.getInstance().getDataSourceOriginProvider(originId);

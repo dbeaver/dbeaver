@@ -90,7 +90,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         IProject[] allProjects = root.getProjects();
         if (ArrayUtils.isEmpty(allProjects)) {
             try {
-                refreshWorkspaceContents(new LoggingProgressMonitor());
+                refreshWorkspaceContents(new LoggingProgressMonitor(log));
             } catch (Throwable e) {
                 log.error(e);
             }
