@@ -41,6 +41,11 @@ import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicatesSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -116,6 +121,76 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
 
         return super.getDataSourceFeature(featureId);
+    }
+
+    private final Object cachedDialectSkipTokenPredicatesLock = new Object();
+    private SQLTokenPredicatesSet cachedDialectSkipTokenPredicates = null;
+
+    protected SQLTokenPredicatesSet getSourceSpecificSQLSkipTokenPredicates() {
+        synchronized (cachedDialectSkipTokenPredicatesLock) {
+            if (cachedDialectSkipTokenPredicates == null) {
+                cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates();
+            }
+            return cachedDialectSkipTokenPredicates;
+        }
+    }
+
+    private SQLTokenPredicatesSet makeDialectSkipTokenPredicates() {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(this.getSQLDialect(), this.getContainer().getPreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(this, false);
+        TokenPredicateFabric tt = TokenPredicateFabric.makeDialectSpecificFabric(ruleManager);
+
+        // Oracle SQL references could be found from https://docs.oracle.com/en/database/oracle/oracle-database/
+        // by following through Get Started links till the SQL Language Reference link presented
+
+        TokenPredicatesSet conditions = TokenPredicatesSet.of(
+                // https://docs.oracle.com/en/database/oracle/oracle-database/12.2/lnpls/CREATE-PACKAGE-BODY-statement.html#GUID-68526FF2-96A1-4F14-A10B-4DD3E1CD80BE
+        		// also presented in the earliest found reference on 7.3, so considered as always supported https://docs.oracle.com/pdf/A32538_1.pdf
+                new TokenPredicatesCondition(
+                        tt.sequence(
+                                "CREATE",
+                                tt.optional("OR", "REPLACE"),
+                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                                "PACKAGE", "BODY"
+                        ),
+                        tt.sequence("END", ";")
+                ),
+                // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-FUNCTION.html#GUID-156AEDAC-ADD0-4E46-AA56-6D1F7CA63306
+                // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-PROCEDURE.html#GUID-771879D8-BBFD-4D87-8A6C-290102142DA3
+                // not fully described, only some cases partially discovered
+                new TokenPredicatesCondition(
+                        tt.sequence(
+                                "CREATE",
+                                tt.optional("OR", "REPLACE"),
+                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                                tt.alternative("FUNCTION", "PROCEDURE")
+                        ),
+                        tt.sequence(tt.alternative(
+                                tt.sequence("RETURN", SQLTokenType.T_TYPE),
+                                "deterministor", "pipelined", "parallel_enable", "result_cache",
+                                ")",
+                                tt.sequence("procedure", SQLTokenType.T_OTHER),
+                                tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
+                        ), ";")
+                )
+        );
+
+
+
+        if (this.isServerVersionAtLeast(12, 1)) {
+        	// for WITH procedures and functions prepending select clause introduced in 12.1
+        	//     https://oracle-base.com/articles/12c/with-clause-enhancements-12cr1
+        	// notation presented in https://docs.oracle.com/en/database/oracle/oracle-database/18/sqlrf/SELECT.html
+        	// but missing in https://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_10002.htm
+        	conditions.add(new TokenPredicatesCondition(
+                    tt.token("WITH"),
+                    tt.sequence("END", ";")
+            ));
+        }
+        
+        return conditions;
     }
 
     public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @Nullable String schemaName, @NotNull String viewName) {
