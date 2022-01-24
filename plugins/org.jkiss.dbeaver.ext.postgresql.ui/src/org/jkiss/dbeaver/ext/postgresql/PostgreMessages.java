@@ -64,6 +64,10 @@ public class PostgreMessages extends NLS {
     public static String wizard_restore_page_setting_btn_clean_first;
     public static String wizard_restore_page_setting_btn_clean_first_tip;
     public static String wizard_backup_page_setting_checkbox_restore_no_owner_tip;
+    public static String wizard_backup_page_setting_checkbox_restore_create_database;
+    public static String wizard_backup_page_setting_checkbox_restore_create_database_tip;
+    public static String wizard_restore_page_setting_confirm_dialog_title;
+    public static String wizard_restore_page_setting_confirm_dialog_message;
     public static String wizard_restore_page_setting_description;
     public static String wizard_restore_page_setting_label_backup_file;
     public static String wizard_restore_page_setting_label_choose_backup_file;
