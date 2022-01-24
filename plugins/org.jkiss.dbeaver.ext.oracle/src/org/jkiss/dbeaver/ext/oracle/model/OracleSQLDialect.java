@@ -579,7 +579,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     @NotNull
     public SQLTokenPredicateSet getSkipTokenPredicates() {
-        return cachedDialectSkipTokenPredicates;
+        return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
     }
 
     @NotNull

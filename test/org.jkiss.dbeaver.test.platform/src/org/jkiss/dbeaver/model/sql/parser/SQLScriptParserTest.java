@@ -22,6 +22,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -41,11 +45,15 @@ import java.util.List;
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserTest {
     @Mock
-    private DBPDataSource dataSource;
+    private JDBCDataSource dataSource;
     @Mock
     private DBPDataSourceContainer dataSourceContainer;
     @Mock
     private DBCExecutionContext executionContext;
+    @Mock
+    private JDBCSession session;
+    @Mock
+    private JDBCDatabaseMetaData databaseMetaData;
 
     @Before
     public void init() {
@@ -333,6 +341,7 @@ public class SQLScriptParserTest {
     private SQLDialect setDialect(String name) throws DBException {
         SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
         SQLDialect dialect = registry.getDialect(name).createInstance();
+        ((JDBCSQLDialect)dialect).initDriverSettings(session, dataSource, databaseMetaData);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         return dialect;
     }
