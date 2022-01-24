@@ -441,11 +441,10 @@ public interface SQLDialect {
     /**
      * Generates a set of connection-specific dialect features which require special handling during SQL parsing
      * (empty by default)
-     * @param dataSource
      * @return a set of token predicates
      */
     @NotNull
-    default SQLTokenPredicateSet getSkipTokenPredicates(DBPDataSource dataSource) {
+    default SQLTokenPredicateSet getSkipTokenPredicates() {
         return EmptyTokenPredicateSet.INSTANCE;
     }
 }

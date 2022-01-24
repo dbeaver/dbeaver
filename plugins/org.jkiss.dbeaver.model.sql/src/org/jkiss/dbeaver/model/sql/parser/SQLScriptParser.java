@@ -62,7 +62,7 @@ public class SQLScriptParser {
             return null;
         }
         SQLDialect dialect = context.getDialect();
-        SQLTokenPredicateEvaluator skipTokenEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates(context.getDataSource()));
+        SQLTokenPredicateEvaluator skipTokenEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -28,6 +29,9 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
  * Dialect-specific predicate node producer
  */
 class SQLTokenPredicateFabric extends TokenPredicateFabric {
+
+    private static final Log log = Log.getLog(SQLTokenPredicateFabric.class);
+
     private static class StringScanner implements TPCharacterScanner {
         private final String string;
         private int pos = 0;
@@ -82,7 +86,7 @@ class SQLTokenPredicateFabric extends TokenPredicateFabric {
                 }
             } catch (Throwable e) {
                 // some rules raise exceptions in a certain situations when the string does not correspond the rule
-                // e.printStackTrace();
+                log.debug(e.getMessage());
             }
         }
         return new SQLTokenEntry(string, null);
