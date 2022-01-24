@@ -32,6 +32,7 @@ public interface SQLEditorCommands
     String CMD_LOAD_PLAN = "org.jkiss.dbeaver.ui.editors.sql.load.plan"; //$NON-NLS-1$
     String CMD_SQL_EDITOR_DEF_COMMAND = "org.jkiss.dbeaver.core.sql.editor.defaultCommand";
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
+    String CMD_SQL_EDITOR_OPEN_ALL = "org.jkiss.dbeaver.core.sql.editor.open.all";
     String CMD_SQL_EDITOR_NEW = "org.jkiss.dbeaver.core.sql.editor.create";
     String CMD_SQL_EDITOR_RECENT = "org.jkiss.dbeaver.core.sql.editor.recent";
     String CMD_SQL_EDITOR_CONSOLE = "org.jkiss.dbeaver.core.sql.editor.console";
@@ -54,5 +55,6 @@ public interface SQLEditorCommands
     String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object";
     String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";
     String CMD_TOGGLE_SEPARATE_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.connection.separate";
+
 
 }

@@ -212,6 +212,7 @@
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.core.sql" name="%category.sqleditor.name" description="%category.sqleditor.description"/>
 
+        <command id="org.jkiss.dbeaver.core.sql.editor.open.all" name="%command.org.jkiss.dbeaver.core.sql.editor.open.all.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.all.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.open" name="%command.org.jkiss.dbeaver.core.sql.editor.open.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.recent" name="%command.org.jkiss.dbeaver.core.sql.editor.recent.name" description="%command.org.jkiss.dbeaver.core.sql.editor.recent.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.create" name="%command.org.jkiss.dbeaver.core.sql.editor.create.name" description="%command.org.jkiss.dbeaver.core.sql.editor.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -228,7 +229,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.load.plan" name="%command.org.jkiss.dbeaver.ui.editors.sql.load.plan.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.load.plan.description" categoryId="org.jkiss.dbeaver.core.sql"/>      
+        <command id="org.jkiss.dbeaver.ui.editors.sql.load.plan" name="%command.org.jkiss.dbeaver.ui.editors.sql.load.plan.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.load.plan.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.count" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.all.rows" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.all.rows.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.all.rows.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.expression" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.expression.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.expression.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -268,6 +269,7 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.open.all" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_recent.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.console" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"/>
@@ -295,7 +297,14 @@
     <extension point="org.eclipse.ui.handlers">
 
         <!-- SQL editor handlers -->
-
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.open.all" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
+            <activeWhen>
+                <or>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                </or>
+            </activeWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.open" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
             <activeWhen>
                 <or>
@@ -662,7 +671,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+A"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+'"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+E"/>
-         
+
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.close.tab" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+\"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
@@ -688,6 +697,8 @@
         <!-- SQL editor open shortcuts. On MacOS we can't use functional key as defaults. On Linux they also have some special OS-wide meaning. -->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F3"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+["/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.open.all" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+F3"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.open.all" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+["/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F3"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+]"/>
 
@@ -700,7 +711,14 @@
             <menu label="%menu.org.jkiss.dbeaver.core.connection.sqleditor">
                 <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                    <visibleWhen>
+                        <reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open.all">
+                    <visibleWhen>
+                        <reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
@@ -724,6 +742,7 @@
 
         <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.sql.open">
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.open.all"/>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
             <separator name="console" visible="true"/>
@@ -761,8 +780,11 @@
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <menu id="menu.org.jkiss.dbeaver.core.connection.sqleditor.open"
+                      label="%menu.open.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png">
+                    <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                    <command commandId="org.jkiss.dbeaver.core.sql.editor.open.all"/>
+                </menu>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>

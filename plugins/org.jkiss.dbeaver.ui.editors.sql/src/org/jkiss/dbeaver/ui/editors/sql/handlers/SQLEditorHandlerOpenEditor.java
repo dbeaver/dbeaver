@@ -61,6 +61,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
 
@@ -110,7 +111,10 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         try {
             switch (actionId) {
                 case SQLEditorCommands.CMD_SQL_EDITOR_OPEN:
-                    openEditor(event);
+                    openEditor(event, false);
+                    break;
+                case SQLEditorCommands.CMD_SQL_EDITOR_OPEN_ALL:
+                    openEditor(event, true);
                     break;
                 case SQLEditorCommands.CMD_SQL_EDITOR_NEW:
                     openNewEditor(event);
@@ -127,19 +131,25 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return null;
     }
 
-    private static void openEditor(ExecutionEvent event) throws ExecutionException, CoreException, InterruptedException {
+    private static void openEditor(ExecutionEvent event, boolean openAllScripts) throws ExecutionException, CoreException, InterruptedException {
         SQLNavigatorContext editorContext = getCurrentContext(event);
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 
-        openEditor(workbenchWindow, editorContext);
+        openEditor(workbenchWindow, editorContext, openAllScripts);
     }
 
-    private static void openEditor(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext) throws CoreException {
+    private static void openEditor(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext, boolean allScripts) throws CoreException {
         DBPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
 
         final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
-        final List<SQLEditorUtils.ResourceInfo> scriptTree = SQLEditorUtils.findScriptTree(project, rootFolder, editorContext.getDataSourceContainer());
+        final List<SQLEditorUtils.ResourceInfo> scriptTree;
+        if (!allScripts) {
+             scriptTree = SQLEditorUtils.findScriptTree(project, rootFolder, editorContext.getDataSourceContainer());
+        } else {
+            //Flatten lists of project data source scripts into result list
+            scriptTree = editorContext.getProject().getDataSourceRegistry().getDataSources().stream().map(it -> SQLEditorUtils.findScriptTree(project, rootFolder, it)).flatMap(List::stream).collect(Collectors.toList());
+        }
         if (scriptTree.isEmpty()) {
             // Create new script
             final IFile newScript = SQLEditorUtils.createNewScript(project, rootFolder, editorContext);
@@ -264,7 +274,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 CommonUtils.equalObjects(res.getResource(), EditorUtils.getFileFromInput(activeEditor.getEditorInput())))
             {
                 // It is already open and active. LEt's open script selector panel
-                openEditor(workbenchWindow, editorContext);
+                openEditor(workbenchWindow, editorContext, false);
             } else {
                 openResourceEditor(workbenchWindow, res, editorContext);
             }

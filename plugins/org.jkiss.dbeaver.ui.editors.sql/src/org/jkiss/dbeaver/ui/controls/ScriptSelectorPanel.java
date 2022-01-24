@@ -168,7 +168,6 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         });
 
         ((GridData) UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
-
         Tree scriptTree = new Tree(composite, SWT.SINGLE | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
@@ -386,7 +385,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             filterJob = null;
-            scriptViewer.setFilters(new ViewerFilter[] { new ScriptFilter() });
+            scriptViewer.setFilters(new ScriptFilter());
             UIUtils.expandAll(scriptViewer);
             final Tree tree = scriptViewer.getTree();
             if (tree.getItemCount() > 0) {
