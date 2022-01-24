@@ -250,7 +250,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             objNames.add(obj.getName());
         }
         message.append("\nObject(s) processed: ").append(String.join(",", objNames));
-        DBWorkbench.getPlatformUI().showMessageBox(task.getName(), message.toString(), false);
+        DBWorkbench.getPlatformUI().showNotification(task.getName(), message.toString(), false);
 
     }
 

@@ -746,7 +746,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
 
     public void notifyVersionUpgrade(@NotNull Version currentVersion, @NotNull VersionDescriptor newVersion, boolean showSkip) {
         VersionUpdateDialog dialog = new VersionUpdateDialog(
-            UIUtils.getActiveWorkbenchShell(),
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
             currentVersion,
             newVersion,
             showSkip);
