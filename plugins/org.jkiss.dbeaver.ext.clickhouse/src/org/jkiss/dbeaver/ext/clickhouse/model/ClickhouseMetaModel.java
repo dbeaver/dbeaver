@@ -24,11 +24,15 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -38,7 +42,7 @@ import java.util.Map;
 /**
  * ClickhouseMetaModel
  */
-public class ClickhouseMetaModel extends GenericMetaModel
+public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
     public ClickhouseMetaModel() {
         super();
@@ -127,4 +131,14 @@ public class ClickhouseMetaModel extends GenericMetaModel
     public boolean supportsNotNullColumnModifiers(DBSObject object) {
         return false;
     }
+
+    @Override
+    @Nullable
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerLimit(false, false);
+        }
+        return null;
+    }
+
 }
