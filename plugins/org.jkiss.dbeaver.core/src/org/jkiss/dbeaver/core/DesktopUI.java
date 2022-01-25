@@ -213,7 +213,7 @@ public class DesktopUI implements DBPPlatformUI {
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
-            StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(),
+            StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getTopActiveWorkbenchShell(),
                     title, message, status, IStatus.ERROR);
             dialog.open();
         };

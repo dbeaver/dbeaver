@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
@@ -1669,6 +1670,42 @@ public class UIUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Starting from root shell iterates through visible child shells to find
+     * shell without any visible children
+     * see #13691
+     * @return child shell without visible children
+     */
+    @Nullable
+    public static Shell getTopActiveWorkbenchShell() {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        Shell shell = workbench.getActiveWorkbenchWindow().getShell();
+        if (shell == null) {
+            return Display.getDefault().getActiveShell();
+        }
+        shell = getLatestShell(shell);
+        return shell;
+    }
+
+    @NotNull
+    private static Shell getLatestShell(Shell shell) {
+        return getShellWithDepth(shell, 0).getFirst();
+    }
+
+    @Nullable
+    private static Pair<Shell, Integer> getShellWithDepth(Shell shell, Integer depth) {
+        Pair<Shell, Integer> result = new Pair<>(shell, depth);
+        for (Control child : shell.getShells()) {
+            if (child.isVisible()) {
+                Pair<Shell, Integer> shellWithDepth = getShellWithDepth(child.getShell(), depth + 1);
+                if (result.getSecond() < shellWithDepth.getSecond()){
+                    result = shellWithDepth;
+                }
+            }
+        }
+        return result;
     }
 
     @Nullable
