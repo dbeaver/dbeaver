@@ -21,6 +21,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 public class OcientSQLDialect extends GenericSQLDialect {
 
     public OcientSQLDialect() {
-	super("Ocient SQL", "ocient");
+        super("Ocient SQL", "ocient");
     }
 }
