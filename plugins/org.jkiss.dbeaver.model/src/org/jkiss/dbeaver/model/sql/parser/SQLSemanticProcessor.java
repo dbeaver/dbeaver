@@ -180,7 +180,7 @@ public class SQLSemanticProcessor {
                 for (DBDAttributeConstraint co : orderConstraints) {
                     String columnName = co.getAttributeName();
                     boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
-                    Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, co, forceNumeric);
+                    Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, filter, co, forceNumeric);
                     OrderByElement element = new OrderByElement();
                     element.setExpression(orderExpr);
                     if (co.isOrderDescending()) {
@@ -224,11 +224,15 @@ public class SQLSemanticProcessor {
         return true;
     }
 
-    private static Expression getOrderConstraintExpression(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint co, boolean forceNumeric) throws JSQLParserException, DBException {
+    private static Expression getOrderConstraintExpression(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter, DBDAttributeConstraint co, boolean forceNumeric) throws JSQLParserException, DBException {
         Expression orderExpr;
         String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttributeName());
         if (forceNumeric || attrName.isEmpty()) {
-            orderExpr = new LongValue(co.getOrderPosition());
+            int orderColumnIndex = SQLUtils.getConstraintOrderIndex(filter, co);
+            if (orderColumnIndex == -1) {
+                throw new DBException("Can't generate column order: no position found");
+            }
+            orderExpr = new LongValue(orderColumnIndex);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
             Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
