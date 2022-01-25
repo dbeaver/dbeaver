@@ -133,7 +133,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
             Button loadOptionalDependenciesCheckbox = UIUtils.createCheckbox(settingsGroup,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies_tip,
-                originalArtifact != null && originalArtifact.isIgnoreDependencies(),
+                originalArtifact != null && originalArtifact.isLoadOptionalDependencies(),
                 2);
             loadOptionalDependenciesCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
