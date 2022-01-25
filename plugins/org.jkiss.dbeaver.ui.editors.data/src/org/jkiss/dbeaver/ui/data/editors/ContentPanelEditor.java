@@ -401,7 +401,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     final CommandContributionItemParameter parameters = new CommandContributionItemParameter(
                         valueController.getValueSite(),
                         manager.getId(),
-                        ResultSetHandlerSwitchContentViewer.CMD_SWITCH_CONTENT_VIEWER,
+                        ResultSetHandlerSwitchContentViewer.COMMAND_ID,
                         CommandContributionItem.STYLE_RADIO
                     );
                     parameters.parameters = Map.of(

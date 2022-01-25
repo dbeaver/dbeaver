@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ResultSetHandlerSwitchContentViewer extends AbstractHandler implements IElementUpdater {
-    public static final String CMD_SWITCH_CONTENT_VIEWER = "org.jkiss.dbeaver.core.resultset.grid.switchContentViewer";
+    public static final String COMMAND_ID = "org.jkiss.dbeaver.core.resultset.grid.switchContentViewer";
     public static final String PARAM_STREAM_MANAGER_ID = "managerId";
 
     @Override
@@ -71,9 +71,11 @@ public class ResultSetHandlerSwitchContentViewer extends AbstractHandler impleme
     @Nullable
     private static ContentPanelEditor getEditor(@NotNull IWorkbenchPart workbenchPart) {
         final ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet(workbenchPart);
+
         if (rsv != null && rsv.isPanelVisible(ValueViewerPanel.PANEL_ID)) {
             return GeneralUtils.adapt(rsv.getVisiblePanel(), ContentPanelEditor.class);
         }
+
         return null;
     }
 
