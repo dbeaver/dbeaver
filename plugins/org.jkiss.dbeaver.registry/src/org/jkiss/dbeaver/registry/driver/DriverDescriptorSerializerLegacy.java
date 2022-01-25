@@ -119,10 +119,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     }
                     if (lib instanceof DriverLibraryMavenArtifact) {
                         if (((DriverLibraryMavenArtifact) lib).isIgnoreDependencies()) {
-                            xml.addAttribute("ignoreDependencies", true);
+                            xml.addAttribute("ignore-dependencies", true);
                         }
                         if (((DriverLibraryMavenArtifact) lib).isLoadOptionalDependencies()) {
-                            xml.addAttribute("loadOptionalDependencies", true);
+                            xml.addAttribute("load-optional-dependencies", true);
                         }
                     }
                     //xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
@@ -308,8 +308,8 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         lib.setPreferredVersion(version);
                     }
                     if (lib instanceof DriverLibraryMavenArtifact) {
-                        ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignoreDependencies")));
-                        ((DriverLibraryMavenArtifact) lib).setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("loadOptionalDependencies")));
+                        ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
+                        ((DriverLibraryMavenArtifact) lib).setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
                     }
                     curLibrary = lib;
                     break;
