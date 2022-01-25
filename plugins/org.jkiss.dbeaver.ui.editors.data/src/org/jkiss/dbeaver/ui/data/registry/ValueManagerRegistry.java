@@ -49,8 +49,8 @@ public class ValueManagerRegistry {
         return instance;
     }
 
-    private List<ValueManagerDescriptor> managers = new ArrayList<>();
-    private List<StreamValueManagerDescriptor> streamManagers = new ArrayList<>();
+    private final List<ValueManagerDescriptor> managers = new ArrayList<>();
+    private final Map<String, StreamValueManagerDescriptor> streamManagers = new HashMap<>();
 
     private ValueManagerRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -59,7 +59,8 @@ public class ValueManagerRegistry {
             if (ValueManagerDescriptor.TAG_MANAGER.equals(ext.getName())) {
                 managers.add(new ValueManagerDescriptor(ext));
             } else if (StreamValueManagerDescriptor.TAG_STREAM_MANAGER.equals(ext.getName())) {
-                streamManagers.add(new StreamValueManagerDescriptor(ext));
+                final StreamValueManagerDescriptor descriptor = new StreamValueManagerDescriptor(ext);
+                streamManagers.put(descriptor.getId(), descriptor);
             }
         }
     }
@@ -98,24 +99,19 @@ public class ValueManagerRegistry {
     }
 
     @NotNull
-    public List<StreamValueManagerDescriptor> getAllStreamManagers() {
-        return Collections.unmodifiableList(streamManagers);
+    public Collection<StreamValueManagerDescriptor> getAllStreamManagers() {
+        return Collections.unmodifiableCollection(streamManagers.values());
     }
 
     @Nullable
     public StreamValueManagerDescriptor getStreamManager(@NotNull String id) {
-        for (StreamValueManagerDescriptor manager : streamManagers) {
-            if (manager.getId().equals(id)) {
-                return manager;
-            }
-        }
-        return null;
+        return streamManagers.get(id);
     }
 
     public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         boolean isTextContent = ContentUtils.isTextContent(value);
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
-        for (StreamValueManagerDescriptor contentManager : streamManagers) {
+        for (StreamValueManagerDescriptor contentManager : streamManagers.values()) {
             if (isTextContent && !contentManager.supportsText()) {
                 // Skip different kind of manager
                 continue;
@@ -141,7 +137,7 @@ public class ValueManagerRegistry {
         MimeType primaryMime = primaryType == null ? null : new MimeType(primaryType);
 
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
-        for (StreamValueManagerDescriptor contentManager : streamManagers) {
+        for (StreamValueManagerDescriptor contentManager : streamManagers.values()) {
             for (String sm : contentManager.getSupportedMime()) {
                 if (!CommonUtils.isEmpty(sm) && mime.match(sm)) {
                     if (!CommonUtils.isEmpty(contentManager.getPrimaryMime()) && primaryMime != null && primaryMime.match(contentManager.getPrimaryMime())) {
