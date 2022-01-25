@@ -1158,10 +1158,11 @@
                 -->
 
                 <!-- Apache Druid / Avatica Calcite -->
+
                 <driver
                     id="apache_calcite_avatica"
                     label="Apache Calcite Avatica"
-                    icon="icons/calcite.png"
+                    icon="icons/calcite_icon.png"
                     class="org.apache.calcite.avatica.remote.Driver"
                     sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/druid/v2/sql/avatica/"
                     defaultPort="8082"
@@ -1170,6 +1171,23 @@
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
                 </driver>
+
+                <!-- Apache Kylin -->
+
+                <driver
+                    id="apache_kylin"
+                    label="Apache Kylin"
+                    icon="icons/apache_icon.png"
+                    class="org.apache.kylin.jdbc.Driver"
+                    sampleURL="jdbc:kylin://{host}:{port}/{database}"
+                    defaultPort="443"
+                    description="Apache Kylin JDBC driver"
+                    webURL="https://kylin.apache.org/docs23/howto/howto_jdbc.html"
+                    categories="sql">
+                    <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
+                </driver>
+
 
                 <!-- Legacy drivers -->
 
