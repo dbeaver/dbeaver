@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.MimeType;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * EntityEditorsRegistry
@@ -98,6 +95,21 @@ public class ValueManagerRegistry {
     @NotNull
     public static IValueManager findValueManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
         return getInstance().getManager(dataSource, typedObject, valueType);
+    }
+
+    @NotNull
+    public List<StreamValueManagerDescriptor> getAllStreamManagers() {
+        return Collections.unmodifiableList(streamManagers);
+    }
+
+    @Nullable
+    public StreamValueManagerDescriptor getStreamManager(@NotNull String id) {
+        for (StreamValueManagerDescriptor manager : streamManagers) {
+            if (manager.getId().equals(id)) {
+                return manager;
+            }
+        }
+        return null;
     }
 
     public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
