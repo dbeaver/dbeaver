@@ -1157,6 +1157,20 @@
                 </driver>
                 -->
 
+                <!-- Apache Druid / Avatica Calcite -->
+                <driver
+                    id="apache_calcite_avatica"
+                    label="Apache Calcite Avatica"
+                    icon="icons/calcite.png"
+                    class="org.apache.calcite.avatica.remote.Driver"
+                    sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/druid/v2/sql/avatica/"
+                    defaultPort="8082"
+                    description="Apache Calcite Avatica JDBC driver. Supports Apache Druid"
+                    webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
+                    categories="sql">
+                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
+                </driver>
+
                 <!-- Legacy drivers -->
 
                 <driver
