@@ -17,9 +17,10 @@
 package org.jkiss.dbeaver.ui.data.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -35,11 +36,9 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
     private static final String ATTR_PRIMARY_MIME = "primaryMime";
     private static final String ATTR_SUPPORTED_MIME = "supportedMime";
 
-    private String id;
-    private ObjectType implType;
-    private final String label;
-    private final String description;
-    private final DBPImage icon;
+    private final String id;
+    private final ObjectType implType;
+    private final String commandId;
     private final String primaryMime;
     private final String[] supportedMime;
     private boolean supportsText;
@@ -52,9 +51,7 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute("id");
         this.implType = new ObjectType(config.getAttribute("class"));
-        this.label = config.getAttribute("label");
-        this.description = config.getAttribute("description");
-        this.icon = iconToImage(config.getAttribute("icon"));
+        this.commandId = config.getAttribute("commandId");
 
         this.primaryMime = config.getAttribute(ATTR_PRIMARY_MIME);
         String supportedMimeString = config.getAttribute(ATTR_SUPPORTED_MIME);
@@ -81,15 +78,15 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
     }
 
     public String getLabel() {
-        return label;
+        return ActionUtils.findCommandName(commandId);
     }
 
     public String getDescription() {
-        return description;
+        return ActionUtils.findCommandDescription(commandId, PlatformUI.getWorkbench(), false);
     }
 
-    public DBPImage getIcon() {
-        return icon;
+    public String getCommandId() {
+        return commandId;
     }
 
     public String[] getSupportedMime() {
@@ -120,7 +117,7 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
 
     @Override
     public String toString() {
-        return id + " (" + label + ")";
+        return id + " (" + getLabel() + ")";
     }
 
 }

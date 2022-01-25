@@ -3,8 +3,19 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.dataManager">
-        <streamManager class="org.jkiss.dbeaver.ui.data.BinaryStreamValueManager" id="binary" label="Binary" primaryMime="octet/binary" supportedMime="text,binary,app,application"
-                       description="Hex editor" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/binary.png"/>
+        <streamManager class="org.jkiss.dbeaver.ui.data.BinaryStreamValueManager" id="binary" commandId="org.jkiss.dbeaver.core.stream.binary" primaryMime="octet/binary" supportedMime="text,binary,app,application"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.stream.binary" name="Binary" description="Hex editor" categoryId="org.jkiss.dbeaver.core.sql"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.stream.binary" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/binary.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.core.stream.binary" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+B"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.service">

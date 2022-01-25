@@ -4,8 +4,19 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataManager">
-        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.XMLStreamValueManager" id="xml" label="XML" primaryMime="text/xml"
-                       description="XML" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/xml.png"/>
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.XMLStreamValueManager" id="xml" commandId="org.jkiss.dbeaver.core.stream.xml" primaryMime="text/xml"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.stream.xml" name="XML" description="XML" categoryId="org.jkiss.dbeaver.core.sql"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.stream.xml" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/xml.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.core.stream.xml" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+X"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">

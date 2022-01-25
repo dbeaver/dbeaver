@@ -16,14 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.core.commands.*;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,10 +44,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
@@ -361,6 +359,22 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             super(null, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PAGES));
             setToolTipText("Content viewer settings");
+
+            // TODO: Find a better way of doing this.
+            //       This probably should be done on IEditorPart activation?
+            //       Either this handler could be implemented and shared across all stream managers
+            for (StreamValueManagerDescriptor descriptor : streamManagers.keySet()) {
+                final Command command = ActionUtils.findCommand(descriptor.getCommandId());
+                if (command != null) {
+                    command.setHandler(new AbstractHandler() {
+                        @Override
+                        public Object execute(ExecutionEvent event) {
+                            setStreamManager(descriptor);
+                            return null;
+                        }
+                    });
+                }
+            }
         }
 
         @Override
@@ -386,10 +400,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 List<StreamValueManagerDescriptor> managers = new ArrayList<>(streamManagers.keySet());
                 managers.sort(Comparator.comparing(StreamValueManagerDescriptor::getLabel));
                 for (StreamValueManagerDescriptor manager : managers) {
-                    MenuItem item = new MenuItem(menu, SWT.RADIO);
-                    item.setText(manager.getLabel());
-                    item.setData(manager);
-                    item.addSelectionListener(this);
+                    ActionUtils
+                        .makeCommandContribution(PlatformUI.getWorkbench(), manager.getCommandId())
+                        .fill(menu, -1);
                 }
                 MenuManager menuManager = new MenuManager();
                 try {
