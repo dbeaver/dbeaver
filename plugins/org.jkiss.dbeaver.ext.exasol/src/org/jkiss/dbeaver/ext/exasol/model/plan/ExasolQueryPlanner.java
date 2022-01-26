@@ -101,13 +101,13 @@ public class ExasolQueryPlanner extends AbstractExecutionPlanSerializer implemen
         });
     }
 
-    private Map<String,String> getNodeAttributes(JsonObject nodeObject){
-        Map<String,String> attributes = new HashMap<>(44);
+    private Map<String, Object> getNodeAttributes(JsonObject nodeObject) {
+        Map<String, Object> attributes = new HashMap<>(44);
 
-        JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-        for(JsonElement attr : attrs) {
+        JsonArray attrs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        for (JsonElement attr : attrs) {
             for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
-                attributes.put(p.getKey(), p.getValue().getAsString());
+                attributes.put(p.getKey(), p.getValue());
             }
         }
 

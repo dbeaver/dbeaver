@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.model.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
@@ -104,28 +105,28 @@ public class ExasolPlanNode extends AbstractExecutionPlanNode {
         fillAttributes();
     }
 
-    public ExasolPlanNode(ExasolPlanNode parent, Map<String, String> attributes) {
+    public ExasolPlanNode(ExasolPlanNode parent, Map<String, Object> attributes) {
         this.parent = parent;
 
-        this.stmtId = getIntFromAttr(attributes, ATTR_STMT_ID);
-        this.commandName = getStringFromAttr(attributes, ATTR_COMMAND_NAME);
-        this.commandClass = getStringFromAttr(attributes, ATTR_COMMAND_CLASS);
-        this.partId = getIntFromAttr(attributes, ATTR_PART_ID);
-        this.partName = getStringFromAttr(attributes, ATTR_PART_NAME);
-        this.partInfo = getStringFromAttr(attributes, ATTR_PART_INFO);
-        this.objectSchema = getStringFromAttr(attributes, ATTR_OBJECT_SCHEMA);
-        this.objectName = getStringFromAttr(attributes, ATTR_OBJECT_NAME);
-        this.objectRows = getDoubleFromAttr(attributes, ATTR_OBJECT_ROWS);
-        this.outRows = getDoubleFromAttr(attributes, ATTR_OUT_ROWS);
-        this.duration = getDoubleFromAttr(attributes, ATTR_DURATION);
-        this.cpu = getDoubleFromAttr(attributes, ATTR_CPU);
-        this.tempDbRamPeak = getDoubleFromAttr(attributes, ATTR_TEMP_DB_RAM_PEAK);
-        this.hddRead = getDoubleFromAttr(attributes, ATTR_HDD_READ);
-        this.hddWrite = getDoubleFromAttr(attributes, ATTR_HDD_WRITE);
-        this.netTransfer = getDoubleFromAttr(attributes, ATTR_NET);
-        this.detailInfo = getStringFromAttr(attributes, ATTR_REMARKS);
+        this.stmtId = JSONUtils.getInteger(attributes, ATTR_STMT_ID);
+        this.commandName = JSONUtils.getString(attributes, ATTR_COMMAND_NAME);
+        this.commandClass = JSONUtils.getString(attributes, ATTR_COMMAND_CLASS);
+        this.partId = JSONUtils.getInteger(attributes, ATTR_PART_ID);
+        this.partName = JSONUtils.getString(attributes, ATTR_PART_NAME);
+        this.partInfo = JSONUtils.getString(attributes, ATTR_PART_INFO);
+        this.objectSchema = JSONUtils.getString(attributes, ATTR_OBJECT_SCHEMA);
+        this.objectName = JSONUtils.getString(attributes, ATTR_OBJECT_NAME);
+        this.objectRows = JSONUtils.getDouble(attributes, ATTR_OBJECT_ROWS);
+        this.outRows = JSONUtils.getDouble(attributes, ATTR_OUT_ROWS);
+        this.duration = JSONUtils.getDouble(attributes, ATTR_DURATION);
+        this.cpu = JSONUtils.getDouble(attributes, ATTR_CPU);
+        this.tempDbRamPeak = JSONUtils.getDouble(attributes, ATTR_TEMP_DB_RAM_PEAK);
+        this.hddRead = JSONUtils.getDouble(attributes, ATTR_HDD_READ);
+        this.hddWrite = JSONUtils.getDouble(attributes, ATTR_HDD_WRITE);
+        this.netTransfer = JSONUtils.getDouble(attributes, ATTR_NET);
+        this.detailInfo = JSONUtils.getString(attributes, ATTR_REMARKS);
 
-        fillAttributes();
+        this.attributes = attributes;
     }
 
     // ----------------------
@@ -286,33 +287,5 @@ public class ExasolPlanNode extends AbstractExecutionPlanNode {
 
     Map<String, Object> getAttributes() {
         return attributes;
-    }
-
-    private String getStringFromAttr(Map<String,String> attributes,String name) {
-        return attributes.getOrDefault(name, "");
-    }
-
-    private Double getDoubleFromAttr(Map<String,String> attributes,String name) {
-        if (attributes.containsKey(name)) {
-            try {
-                return Double.parseDouble(attributes.get(name));
-            } catch (Exception e) {
-                return 0D;
-            }
-        } else {
-            return 0D;
-        }
-    }
-
-    private int getIntFromAttr(Map<String,String> attributes,String name) {
-        if (attributes.containsKey(name)) {
-            try {
-                return Integer.parseInt(attributes.get(name));
-            } catch (Exception e) {
-                return 0;
-            }
-        } else {
-            return 0;
-        }
     }
 }
