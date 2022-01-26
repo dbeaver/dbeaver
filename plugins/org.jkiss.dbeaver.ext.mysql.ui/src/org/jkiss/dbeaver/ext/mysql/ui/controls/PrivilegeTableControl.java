@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -78,9 +79,9 @@ public class PrivilegeTableControl extends Composite {
         gd.minimumWidth = 300;
         privTable.setLayoutData(gd);
 
-        columnsController = new ViewerColumnController<>("MySQLPrivilegesEditor", tableViewer);
+        columnsController = new ViewerColumnController<>("MySQLPrivilegesEditor", tableViewer); //$NON-NLS-1$
 
-        columnsController.addColumn("Privilege", null, SWT.LEFT, true, true, new CellLabelProvider() {
+        columnsController.addColumn(MySQLUIMessages.controls_privilege_table_column_privilege_name, MySQLUIMessages.controls_privilege_table_column_privilege_name_tip, SWT.LEFT, true, true, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 Object element = cell.getElement();
@@ -90,7 +91,7 @@ public class PrivilegeTableControl extends Composite {
             }
         });
 
-        columnsController.addBooleanColumn("Enabled", "Privilege activated", SWT.CENTER, true, true, item -> {
+        columnsController.addBooleanColumn(MySQLUIMessages.controls_privilege_table_column_privilege_status, MySQLUIMessages.controls_privilege_table_column_privilege_status_tip, SWT.CENTER, true, true, item -> {
             if (item instanceof MySQLObjectPrivilege) {
                 return ((MySQLObjectPrivilege) item).enabled;
             }
@@ -126,7 +127,7 @@ public class PrivilegeTableControl extends Composite {
             }
         });
 
-        columnsController.addBooleanColumn("With GRANT", "With GRANT option", SWT.CENTER, true, true, item -> {
+        columnsController.addBooleanColumn(MySQLUIMessages.controls_privilege_table_column_privilege_grant_option, MySQLUIMessages.controls_privilege_table_column_privilege_grant_option_tip, SWT.CENTER, true, true, item -> {
             if (item instanceof MySQLObjectPrivilege) {
                 return ((MySQLObjectPrivilege) item).withGrantOption;
             }
@@ -157,6 +158,7 @@ public class PrivilegeTableControl extends Composite {
                     if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                         elementPriv.withGrantOption = Boolean.TRUE.equals(value);
                         if (elementPriv.withGrantOption && !elementPriv.enabled) {
+                            // Grant Option is connected with the privilege. If the grant option is enabled - privilege must be enabled too.
                             elementPriv.enabled = true;
                         }
                         notifyPrivilegeCheck(elementPriv.privilege, elementPriv.enabled, elementPriv.withGrantOption);
@@ -165,7 +167,7 @@ public class PrivilegeTableControl extends Composite {
             }
         });
 
-        columnsController.addColumn("Description", null, SWT.LEFT, true, true, new CellLabelProvider() {
+        columnsController.addColumn(MySQLUIMessages.controls_privilege_table_column_privilege_description, MySQLUIMessages.controls_privilege_table_column_privilege_description_tip, SWT.LEFT, true, true, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 Object element = cell.getElement();
@@ -182,20 +184,20 @@ public class PrivilegeTableControl extends Composite {
         Composite buttonsPanel = UIUtils.createComposite(privsGroup, 3);
         buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createPushButton(buttonsPanel, "Check All", null, new SelectionAdapter() {
+        UIUtils.createPushButton(buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
                 for (MySQLObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     if (!userPrivilege.enabled) {
                         userPrivilege.enabled = true;
-                        notifyPrivilegeCheck(userPrivilege.privilege, false, false);
+                        notifyPrivilegeCheck(userPrivilege.privilege, true, false);
                     }
                 }
                 drawColumns(currentPrivileges);
             }
         });
-        UIUtils.createPushButton(buttonsPanel, "Clear All", null, new SelectionAdapter() {
+        UIUtils.createPushButton(buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -232,6 +234,7 @@ public class PrivilegeTableControl extends Composite {
         currentPrivileges = new ArrayList<>();
 
         if (CommonUtils.isEmpty(grants)) {
+            // Create simple privileges list
             for (MySQLPrivilege privilege : privileges) {
                 currentPrivileges.add(new MySQLObjectPrivilege(privilege, false, false));
             }
