@@ -44,9 +44,15 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
     private String query;
     private List<ExasolPlanNode> rootNodes;
 
-    public ExasolPlanAnalyser(ExasolDataSource dataSource, String query) {
+    ExasolPlanAnalyser(ExasolDataSource dataSource, String query) {
         this.dataSource = dataSource;
         this.query = query;
+    }
+
+    ExasolPlanAnalyser(ExasolDataSource dataSource, String query, List<ExasolPlanNode> rootNodes) {
+        this.dataSource = dataSource;
+        this.query = query;
+        this.rootNodes = rootNodes;
     }
 
     @Override
