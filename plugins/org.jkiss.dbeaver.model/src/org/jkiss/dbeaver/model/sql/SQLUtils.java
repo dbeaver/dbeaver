@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import net.sf.jsqlparser.expression.LongValue;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -534,13 +535,12 @@ public final class SQLUtils {
             }
             if (orderString == null) {
                 // Use position number
-                int orderIndex = filter.getConstraints().indexOf(co);
-                if (orderIndex != -1) {
-                    orderString = String.valueOf(orderIndex + 1);
-                } else {
+                int orderIndex = getConstraintOrderIndex(filter, co);
+                if (orderIndex == -1) {
                     log.debug("Can't generate column order: no name and no position found");
                     continue;
                 }
+                orderString = String.valueOf(orderIndex);
             }
             query.append(orderString);
             if (co.isOrderDescending()) {
@@ -655,6 +655,11 @@ public final class SQLUtils {
         } else {
             return null;
         }
+    }
+
+    public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {
+        int index = dataFilter.getConstraints().indexOf(constraint);
+        return index == -1 ? index : index + 1;
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @Nullable Object value) {

@@ -151,6 +151,8 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
         final Text nameText = entity != null ? UIUtils.createLabelText(panel, EditorsMessages.dialog_struct_edit_constrain_label_name, constraintName) : null;
         if (nameText != null) {
+            nameText.selectAll();
+            nameText.setFocus();
             nameText.addModifyListener(e -> constraintName = nameText.getText().trim());
         }
 
