@@ -36,9 +36,7 @@ public class JSONStreamValueManager implements IStreamValueManager {
     @Override
     public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         // Applies to text values
-        return ContentUtils.isJSON(value) ?
-            MatchType.PRIMARY :
-            (ContentUtils.isTextContent(value) ? MatchType.APPLIES : MatchType.NONE);
+        return ContentUtils.isJSON(value) ? MatchType.PRIMARY : MatchType.APPLIES;
     }
 
     @Override
