@@ -387,6 +387,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
+    public GenericObjectContainer.GenericSequenceCache getSequenceCache() {
+        return structureContainer.getSequenceCache();
+    }
+
+    @Override
+    public GenericObjectContainer.GenericSynonymCache getSynonymCache() {
+        return structureContainer.getSynonymCache();
+    }
+
+    @Override
     public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
