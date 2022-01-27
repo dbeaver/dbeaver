@@ -37,6 +37,7 @@ public class TableTriggerCache extends JDBCObjectWithParentCache<GenericStructCo
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase tableBase) throws SQLException {
         return genericStructContainer.getDataSource().getMetaModel().prepareTableTriggersLoadStatement(session, genericStructContainer, tableBase);
     }
+
     @Nullable
     @Override
     protected GenericTrigger fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
