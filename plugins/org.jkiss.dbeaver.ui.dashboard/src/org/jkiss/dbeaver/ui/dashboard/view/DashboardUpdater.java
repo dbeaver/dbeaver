@@ -107,6 +107,7 @@ public class DashboardUpdater {
                             try {
                                 readMapQueryData(monitor, mqi);
                             } catch (DBCException e) {
+                                log.debug("Datasource '" + mqi.dashboard.getDataSourceContainer().getName() + "' dashboard query failed. Stopping update of dashboard queries for this datasource.");
                                 brokenDataSources.add(mqi.dashboard.getDataSourceContainer().getId());
                                 throw e;
                             }
@@ -133,6 +134,7 @@ public class DashboardUpdater {
                     try {
                         updateDashboard(monitor, dashboard);
                     } catch (Throwable e) {
+                        log.debug("Datasource '" + dashboard.getDataSourceContainer().getName() + "' dashboard query failed. Stopping update of dashboards for this datasource.");
                         brokenDataSources.add(dashboard.getDataSourceContainer().getId());
                         throw new InvocationTargetException(e);
                     }
