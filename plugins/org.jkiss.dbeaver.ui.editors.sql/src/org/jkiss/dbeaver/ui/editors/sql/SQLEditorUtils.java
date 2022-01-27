@@ -89,18 +89,26 @@ public class SQLEditorUtils {
         return recentFile;
     }
 
-    private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, List<ResourceInfo> result)
-    {
+    private static void findScriptList(@NotNull DBPProject project, List<ResourceInfo> result) {
+        for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
+            String resName = rp.getKey();
+            IResource resource = project.getEclipseProject().findMember(resName);
+            if (resource instanceof IFile) {
+                result.add(new ResourceInfo((IFile) resource, EditorUtils.getFileDataSource((IFile) resource)));
+            }
+        }
+    }
+
+    private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, @NotNull List<ResourceInfo> result) {
         if (folder == null || container == null) {
             return;
         }
         try {
             for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
-                String resName = rp.getKey();
                 Map<String, Object> props = rp.getValue();
                 Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
                 if (CommonUtils.equalObjects(container.getId(), dsId)) {
-                    IResource resource = project.getEclipseProject().findMember(resName);
+                    IResource resource = project.getEclipseProject().findMember(rp.getKey());
                     if (resource instanceof IFile) {
                         result.add(new ResourceInfo((IFile) resource, container));
                     }
@@ -125,6 +133,13 @@ public class SQLEditorUtils {
     {
         List<ResourceInfo> result = new ArrayList<>();
         findScriptList(project, folder, container, result);
+        return result;
+    }
+
+    @NotNull
+    public static List<ResourceInfo> findScriptTree(DBPProject project) {
+        List<ResourceInfo> result = new ArrayList<>();
+        findScriptList(project, result);
         return result;
     }
 

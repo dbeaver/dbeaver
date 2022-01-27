@@ -123,7 +123,7 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
         return null;
     }
 
-    DBPProject getProject() {
+    public DBPProject getProject() {
         DBPDataSourceContainer ds = getDataSourceContainer();
         return ds != null ? ds.getProject() : NavigatorUtils.getSelectedProject();
     }
