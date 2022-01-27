@@ -1026,7 +1026,7 @@ public class MySQLCatalog implements
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=? AND TABLE_TYPE = 'SEQUENCE'");
-            dbStat.setString(1, DBUtils.getQuotedIdentifier(mySQLCatalog));
+            dbStat.setString(1, mySQLCatalog.getName());
             return dbStat;
         }
 
