@@ -228,7 +228,7 @@ public class QMControllerImpl implements QMController {
         }
 
         private boolean matchesObjectType(QMMObject object, QMObjectType[] objectTypes) {
-            if (object instanceof QMMSessionInfo)
+            if (object instanceof QMMConnectionInfo)
                 return ArrayUtils.contains(objectTypes, QMObjectType.session);
             else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo)
                 return ArrayUtils.contains(objectTypes, QMObjectType.txn);

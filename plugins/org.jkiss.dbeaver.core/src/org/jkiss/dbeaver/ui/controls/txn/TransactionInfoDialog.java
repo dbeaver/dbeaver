@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -104,7 +104,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
         final boolean showAll = showAllCheck != null && showAllCheck.getSelection();
         final boolean showPrevious = showPreviousCheck != null && showPreviousCheck.getSelection();
 
-        final QMMSessionInfo currentSession = QMUtils.getCurrentSession(executionContext);
+        final QMMConnectionInfo currentSession = QMUtils.getCurrentSession(executionContext);
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
 
         QMEventFilter filter = event -> {

@@ -44,29 +44,29 @@ class SQLLogFilter implements QMEventFilter {
         // - transaction/savepoint changes (if txn belongs to current datasource)
         // - session changes (if session belongs to active datasource)
         QMMObject object = event.getObject();
-        if (object instanceof QMMSessionInfo) {
-            return editor.getDataSourceContainer() != null && Objects.equals(((QMMSessionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
+        if (object instanceof QMMConnectionInfo) {
+            return editor.getDataSourceContainer() != null && Objects.equals(((QMMConnectionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
                 return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getSession());
             } else if (object instanceof QMMStatementInfo) {
                 return belongsToEditor(((QMMStatementInfo) object).getSession());
             } else if (object instanceof QMMTransactionInfo) {
-                return belongsToEditor(((QMMTransactionInfo)object).getSession());
+                return belongsToEditor(((QMMTransactionInfo) object).getSession());
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                return belongsToEditor(((QMMTransactionSavepointInfo)object).getTransaction().getSession());
+                return belongsToEditor(((QMMTransactionSavepointInfo) object).getTransaction().getSession());
             }
         }
         return false;
     }
 
-    private boolean belongsToEditor(QMMSessionInfo session) {
+    private boolean belongsToEditor(QMMConnectionInfo session) {
         String containerId = session.getContainerId();
         String contextName = session.getContextName();
         DBCExecutionContext executionContext = editor.getExecutionContext();
         return executionContext != null &&
-            Objects.equals(executionContext.getDataSource().getContainer().getId(), containerId) &&
-            Objects.equals(executionContext.getContextName(), contextName);
+                Objects.equals(executionContext.getDataSource().getContainer().getId(), containerId) &&
+                Objects.equals(executionContext.getContextName(), contextName);
     }
 
 }

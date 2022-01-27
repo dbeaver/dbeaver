@@ -156,14 +156,14 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
             }
 
         } else if (object instanceof QMMTransactionInfo) {
-            QMMTransactionInfo transactionInfo = (QMMTransactionInfo)object;
+            QMMTransactionInfo transactionInfo = (QMMTransactionInfo) object;
             if (transactionInfo.isCommitted()) {
                 buffer.append("COMMIT");
             } else {
                 buffer.append("ROLLBACK");
             }
-        } else if (object instanceof QMMSessionInfo) {
-            QMMSessionInfo sessionInfo = (QMMSessionInfo)object;
+        } else if (object instanceof QMMConnectionInfo) {
+            QMMConnectionInfo sessionInfo = (QMMConnectionInfo) object;
             buffer.append(action).append(" SESSION [").append(sessionInfo.getContainerName()).append("]");
         }
         buffer.append(lineSeparator);
