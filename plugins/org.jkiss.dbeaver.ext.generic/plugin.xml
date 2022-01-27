@@ -261,7 +261,8 @@
                     defaultPort="9092"
                     webURL="https://www.h2database.com/"
                     description="H2 Server"
-                    categories="sql">
+                    categories="sql"
+                    dialect="h2">
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.197]" bundle="!drivers.h2"/>
 
@@ -282,7 +283,8 @@
                     webURL="https://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded"
-                    categories="sql,embedded">
+                    categories="sql,embedded"
+                    dialect="h2">
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.197]" bundle="!drivers.h2"/>
 
