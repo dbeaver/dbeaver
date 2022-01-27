@@ -345,6 +345,10 @@ public class JSONUtils {
         return CommonUtils.toLong(map.get(name), defaultValue);
     }
 
+    public static Double getDouble(@NotNull Map<String, Object> map, String name) {
+        return CommonUtils.toDouble(map.get(name));
+    }
+
     @NotNull
     public static List<Map<String, Object>> getObjectList(@NotNull Map<String, Object> map, @NotNull String name) {
         Object value = map.get(name);

@@ -353,7 +353,8 @@ public class CommonUtils {
         } else if (object instanceof String) {
             return (String) object;
         } else {
-            return object.toString();
+            String strValue = object.toString();
+            return strValue == null ? "" : strValue;
         }
     }
 

@@ -556,6 +556,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return true;
     }
 
+    @Override
+    public boolean supportsColumnAutoIncrement() {
+        return false;
+    }
+
     @Nullable
     @Override
     public SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator) {

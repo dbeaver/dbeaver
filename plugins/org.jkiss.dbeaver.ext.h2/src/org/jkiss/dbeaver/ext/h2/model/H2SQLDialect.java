@@ -39,4 +39,9 @@ public class H2SQLDialect extends GenericSQLDialect {
     public boolean supportsAliasInSelect() {
         return true;
     }
+
+    @Override
+    public boolean supportsColumnAutoIncrement() {
+        return true;
+    }
 }

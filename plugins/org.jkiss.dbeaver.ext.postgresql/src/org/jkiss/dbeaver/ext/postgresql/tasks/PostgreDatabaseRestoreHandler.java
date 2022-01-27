@@ -82,6 +82,9 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         if (settings.isNoOwner()) {
             cmd.add("--no-owner");
         }
+        if (settings.isCreateDatabase()) {
+            cmd.add("--create");
+        }
     }
 
     @Override

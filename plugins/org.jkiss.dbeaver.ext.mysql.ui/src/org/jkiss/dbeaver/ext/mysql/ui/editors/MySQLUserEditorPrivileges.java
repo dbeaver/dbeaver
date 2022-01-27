@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.mysql.ui.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -171,16 +172,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             public void handleEvent(Event event)
             {
                 final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
-                final boolean isGrant = event.detail == 1;
+                final boolean isGrant = event.detail >= 1;
+                final boolean withGrantOption = event.detail == 2;
                 final MySQLCatalog curCatalog = selectedCatalog;
                 final MySQLTableBase curTable = selectedTable;
-                updateLocalData(privilege, isGrant, curCatalog, curTable);
+                updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
 
                 // Add command
                 addChangeCommand(
                     new MySQLCommandGrantPrivilege(
                         getDatabaseObject(),
                         isGrant,
+                        withGrantOption,
                         curCatalog,
                         curTable,
                         privilege),
@@ -189,33 +192,34 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, isGrant);
+                                privTable.checkPrivilege(privilege, isGrant, withGrantOption);
                             }
-                            updateLocalData(privilege, isGrant, curCatalog, curTable);
+                            updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
                         }
                         @Override
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, !isGrant);
+                                privTable.checkPrivilege(privilege, !isGrant, !withGrantOption);
                             }
-                            updateLocalData(privilege, !isGrant, curCatalog, curTable);
+                            updateLocalData(privilege, !isGrant, !withGrantOption, curCatalog, curTable);
                         }
                     });
             }
         });
     }
 
-    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLCatalog curCatalog, MySQLTableBase curTable)
+    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption, MySQLCatalog curCatalog, MySQLTableBase curTable)
     {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
         boolean found = false;
         for (MySQLGrant grant : grants) {
             if (grant.matches(curCatalog) && grant.matches(curTable)) {
-                if (privilege.isGrantOption()) {
-                    grant.setGrantOption(isGrant);
-                } else if (isGrant) {
+                //if (privilege.isGrantOption()) {
+                    grant.setGrantOption(withGrantOption);
+                //} else
+                if (isGrant) {
                     if (!ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                         grant.addPrivilege(privilege);
                     }
@@ -237,7 +241,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 curCatalog == null ? "*" : curCatalog.getName(), //$NON-NLS-1$
                 curTable == null ? "*" : curTable.getName(), //$NON-NLS-1$
                 false,
-                privilege.isGrantOption());
+                withGrantOption);
             grants.add(grant);
         }
         highlightCatalogs();
@@ -365,7 +369,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     @Override
     public RefreshResult refreshPart(Object source, boolean force)
     {
-        // do nothing
+        if (force ||
+            (source instanceof DBNEvent && ((DBNEvent) source).getSource() == DBNEvent.UPDATE_ON_SAVE) ||
+            !isLoaded) {
+            isLoaded = false;
+            activatePart();
+            return RefreshResult.REFRESHED;
+        }
         return RefreshResult.IGNORED;
     }
 

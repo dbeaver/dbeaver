@@ -127,20 +127,23 @@ final class SQLTranslateContext {
                     for (String cSpec : new ArrayList<>(cd.getColumnSpecs())) {
                         switch (cSpec.toUpperCase(Locale.ENGLISH)) {
                             case "AUTO_INCREMENT":
-                                String sequenceName = CommonUtils.escapeIdentifier(createTable.getTable().getName()) +
-                                    "_" + CommonUtils.escapeIdentifier(cd.getColumnName());
+                            case "IDENTITY":
+                                if (!targetDialect.supportsColumnAutoIncrement()) {
+                                    String sequenceName = CommonUtils.escapeIdentifier(createTable.getTable().getName()) +
+                                        "_" + CommonUtils.escapeIdentifier(cd.getColumnName());
 
-                                cd.getColumnSpecs().remove(cSpec);
-                                cd.getColumnSpecs().add("DEFAULT");
-                                cd.getColumnSpecs().add("NEXTVAL('" + sequenceName + "')");
-                                defChanged = true;
+                                    cd.getColumnSpecs().remove(cSpec);
+                                    cd.getColumnSpecs().add("DEFAULT");
+                                    cd.getColumnSpecs().add("NEXTVAL('" + sequenceName + "')");
+                                    defChanged = true;
 
-                                String createSeqQuery = "CREATE SEQUENCE " + sequenceName;
+                                    String createSeqQuery = "CREATE SEQUENCE " + sequenceName;
 
-                                if (extraQueries == null) {
-                                    extraQueries = new ArrayList<>();
+                                    if (extraQueries == null) {
+                                        extraQueries = new ArrayList<>();
+                                    }
+                                    extraQueries.add(new SQLQuery(null, createSeqQuery));
                                 }
-                                extraQueries.add(new SQLQuery(null, createSeqQuery));
                                 break;
                         }
                     }

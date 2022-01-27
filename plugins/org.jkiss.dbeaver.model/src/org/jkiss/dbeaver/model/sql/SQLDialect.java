@@ -272,6 +272,8 @@ public interface SQLDialect {
 
     boolean supportsNullability();
 
+    boolean supportsColumnAutoIncrement();
+
     @Nullable
     SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator);
 

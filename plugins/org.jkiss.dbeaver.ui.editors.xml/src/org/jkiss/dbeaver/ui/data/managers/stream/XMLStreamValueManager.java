@@ -36,9 +36,7 @@ public class XMLStreamValueManager implements IStreamValueManager {
     @Override
     public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         // Applies to text values
-        return ContentUtils.isXML(value) ?
-            MatchType.PRIMARY :
-            (ContentUtils.isTextContent(value) ? MatchType.APPLIES : MatchType.NONE);
+        return ContentUtils.isXML(value) ? MatchType.PRIMARY : MatchType.APPLIES;
     }
 
     @Override

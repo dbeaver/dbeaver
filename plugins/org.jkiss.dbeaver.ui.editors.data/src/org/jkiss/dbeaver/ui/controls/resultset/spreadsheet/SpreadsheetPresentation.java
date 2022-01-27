@@ -1950,7 +1950,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     state |= STATE_LINK;
                 } else {
                     String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                    if (strValue.contains("://")) {
+                    if (strValue != null && strValue.contains("://")) {
                         try {
                             new URL(strValue);
                             state |= STATE_HYPER_LINK;
