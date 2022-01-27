@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,20 +32,20 @@ public class OcientDataSourceProvider extends GenericDataSourceProvider {
     @NotNull
     @Override
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
-	    throws DBException {
-	return new OcientDataSource(monitor, container);
+        throws DBException {
+        return new OcientDataSource(monitor, container);
     }
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-	StringBuilder url = new StringBuilder();
-	url.append("jdbc:ocient://").append(connectionInfo.getHostName());
-	if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-	    url.append(":").append(connectionInfo.getHostPort());
-	}
-	if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-	    url.append("/").append(connectionInfo.getDatabaseName());
-	}
-	return url.toString();
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:ocient://").append(connectionInfo.getHostName());
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            url.append(":").append(connectionInfo.getHostPort());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            url.append("/").append(connectionInfo.getDatabaseName());
+        }
+        return url.toString();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1950,7 +1950,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     state |= STATE_LINK;
                 } else {
                     String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                    if (strValue.contains("://")) {
+                    if (strValue != null && strValue.contains("://")) {
                         try {
                             new URL(strValue);
                             state |= STATE_HYPER_LINK;
@@ -2108,6 +2108,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
+            final boolean recordMode = controller.isRecordMode();
+            final ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
+            final DBDAttributeBinding attribute = (DBDAttributeBinding) (recordMode ? rowElement : colElement);
+
+            if (spreadsheet.getCellSelectionSize() == 1 && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES)) {
+                final GridCell sourceCell = spreadsheet.getCursorCell();
+                if (sourceCell != null) {
+                    final ResultSetRow sourceRow = (ResultSetRow) (recordMode ? sourceCell.col : sourceCell.row);
+                    final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding) (recordMode ? sourceCell.row : sourceCell.col);
+
+                    if (sourceRow != row || sourceAttribute != attribute) {
+                        final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false, true);
+                        final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
+
+                        if (CommonUtils.equalObjects(sourceValue, currentValue)) {
+                            return backgroundMatched;
+                        }
+                    }
+                }
+            }
+
             if (cellSelected) {
                 Color normalColor = getCellBackground(colElement, rowElement, false, true);
                 if (normalColor == null || normalColor == backgroundNormal) {
@@ -2120,9 +2141,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
-            boolean recordMode = controller.isRecordMode();
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
-            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
 
             final SpreadsheetFindReplaceTarget findReplaceTarget = SpreadsheetFindReplaceTarget
                 .getInstance()

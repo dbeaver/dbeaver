@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,7 +133,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
             Button loadOptionalDependenciesCheckbox = UIUtils.createCheckbox(settingsGroup,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies_tip,
-                originalArtifact != null && originalArtifact.isIgnoreDependencies(),
+                originalArtifact != null && originalArtifact.isLoadOptionalDependencies(),
                 2);
             loadOptionalDependenciesCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override

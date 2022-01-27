@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,9 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         if (settings.isNoOwner()) {
             cmd.add("--no-owner");
         }
+        if (settings.isCreateDatabase()) {
+            cmd.add("--create");
+        }
     }
 
     @Override
@@ -133,7 +136,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     @Override
     public void validateErrorCode(int exitCode) throws IOException {
     if (exitCode == 1) {
-        DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", "Database restore finished with warnings.\nPlease check the error log to see what is wrong.");
+        DBWorkbench.getPlatformUI().showWarningNotification("Warning", "Database restore finished with warnings.\nPlease check the error log to see what is wrong.");
     } else {
         super.validateErrorCode(exitCode);
     }

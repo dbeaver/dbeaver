@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerSwitchContentViewer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -272,7 +274,16 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             .schedule();
     }
 
-    private void setStreamManager(StreamValueManagerDescriptor newManager) {
+    @Nullable
+    public StreamValueManagerDescriptor getCurrentStreamManager() {
+        return curStreamManager;
+    }
+
+    public void setCurrentStreamManager(@NotNull StreamValueManagerDescriptor newManager) {
+        if (curStreamManager == newManager) {
+            return;
+        }
+
         curStreamManager = newManager;
 
         if (curStreamManager != null) {
@@ -381,24 +392,31 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 menu.dispose();
             }
             {
+                MenuManager menuManager = new MenuManager();
                 ToolBar toolBar = toolItem.getParent();
                 menu = new Menu(toolBar);
                 List<StreamValueManagerDescriptor> managers = new ArrayList<>(streamManagers.keySet());
                 managers.sort(Comparator.comparing(StreamValueManagerDescriptor::getLabel));
                 for (StreamValueManagerDescriptor manager : managers) {
-                    MenuItem item = new MenuItem(menu, SWT.RADIO);
-                    item.setText(manager.getLabel());
-                    item.setData(manager);
-                    item.addSelectionListener(this);
+                    final CommandContributionItemParameter parameters = new CommandContributionItemParameter(
+                        valueController.getValueSite(),
+                        manager.getId(),
+                        ResultSetHandlerSwitchContentViewer.COMMAND_ID,
+                        CommandContributionItem.STYLE_RADIO
+                    );
+                    parameters.parameters = Map.of(
+                        ResultSetHandlerSwitchContentViewer.PARAM_STREAM_MANAGER_ID,
+                        manager.getId()
+                    );
+                    menuManager.add(new CommandContributionItem(parameters));
                 }
-                MenuManager menuManager = new MenuManager();
                 try {
                     streamEditor.contributeSettings(menuManager, editorControl);
-                    for (IContributionItem item : menuManager.getItems()) {
-                        item.fill(menu, -1);
-                    }
                 } catch (DBCException e) {
                     log.error(e);
+                }
+                for (IContributionItem item : menuManager.getItems()) {
+                    item.fill(menu, -1);
                 }
                 toolBar.addDisposeListener(e -> menu.dispose());
             }
@@ -418,7 +436,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     if (itemData instanceof StreamValueManagerDescriptor) {
                         StreamValueManagerDescriptor newManager = (StreamValueManagerDescriptor) itemData;
                         if (newManager != curStreamManager) {
-                            setStreamManager(newManager);
+                            setCurrentStreamManager(newManager);
                         }
                     }
                 }

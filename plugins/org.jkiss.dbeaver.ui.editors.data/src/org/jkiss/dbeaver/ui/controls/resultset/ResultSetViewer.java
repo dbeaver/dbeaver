@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,6 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -144,6 +143,7 @@ public class ResultSetViewer extends Viewer
     public static final String CUSTOM_FILTER_VALUE_STRING = "..";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+    private static final DateTimeFormatter EXECUTION_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
@@ -2115,16 +2115,15 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
-        final LocalDateTime endTime = LocalDateTime
+        final String endTime = LocalDateTime
             .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
-            .truncatedTo(ChronoUnit.SECONDS);
+            .format(EXECUTION_TIME_FORMATTER);
         if (fetchTime <= 0) {
             return NLS.bind(
                 ResultSetMessages.controls_resultset_viewer_status_rows_time,
                 new Object[]{
                     RuntimeUtils.formatExecutionTime(totalTime),
-                    DateTimeFormatter.ISO_DATE.format(endTime),
-                    DateTimeFormatter.ISO_TIME.format(endTime),
+                    endTime
                 }
             );
         } else {
@@ -2133,8 +2132,7 @@ public class ResultSetViewer extends Viewer
                 new Object[]{
                     RuntimeUtils.formatExecutionTime(totalTime),
                     RuntimeUtils.formatExecutionTime(fetchTime),
-                    DateTimeFormatter.ISO_DATE.format(endTime),
-                    DateTimeFormatter.ISO_TIME.format(endTime),
+                    endTime
                 }
             );
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     private Button useInsertsCheck;
     private Button noPrivilegesCheck;
     private Button noOwnerCheck;
+    private Button dropObjects;
+    private Button createDatabase;
 
     PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
@@ -84,7 +86,8 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         for (PostgreDatabaseBackupSettings.ExportFormat format : PostgreDatabaseBackupSettings.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
-        formatCombo.select(wizard.getSettings().getFormat().ordinal());
+        PostgreDatabaseBackupSettings settings = wizard.getSettings();
+        formatCombo.select(settings.getFormat().ordinal());
         formatCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -99,7 +102,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         for (int i = 0; i <= 9; i++) {
             String compStr = String.valueOf(i);
             compressCombo.add(compStr);
-            if (compStr.equals(wizard.getSettings().getCompression())) {
+            if (compStr.equals(settings.getCompression())) {
                 compressCombo.select(i);
             }
         }
@@ -111,48 +114,64 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         UIUtils.createControlLabel(formatGroup, PostgreMessages.wizard_backup_page_setting_label_encoding);
         encodingCombo = UIUtils.createEncodingCombo(formatGroup, null);
         encodingCombo.addSelectionListener(changeListener);
-        encodingCombo.setText(wizard.getSettings().getEncoding());
+        encodingCombo.setText(settings.getEncoding());
 
         useInsertsCheck = UIUtils.createCheckbox(formatGroup,
         	PostgreMessages.wizard_backup_page_setting_checkbox_use_insert,
-            null,
-            wizard.getSettings().isUseInserts(),
+            PostgreMessages.wizard_backup_page_setting_checkbox_use_insert_tip,
+            settings.isUseInserts(),
             2
         );
         useInsertsCheck.addSelectionListener(changeListener);
 
         noPrivilegesCheck = UIUtils.createCheckbox(formatGroup,
             PostgreMessages.wizard_backup_page_setting_checkbox_no_privileges,
-            null,
-            wizard.getSettings().isNoPrivileges(),
+            PostgreMessages.wizard_backup_page_setting_checkbox_no_privileges_tip,
+            settings.isNoPrivileges(),
             2
         );
         noPrivilegesCheck.addSelectionListener(changeListener);
 
         noOwnerCheck = UIUtils.createCheckbox(formatGroup,
             PostgreMessages.wizard_backup_page_setting_checkbox_no_owner,
-            null,
-            wizard.getSettings().isNoOwner(),
+            PostgreMessages.wizard_backup_page_setting_checkbox_no_owner_tip,
+            settings.isNoOwner(),
             2
         );
         noOwnerCheck.addSelectionListener(changeListener);
+
+        dropObjects = UIUtils.createCheckbox(formatGroup,
+            PostgreMessages.wizard_backup_page_setting_checkbox_drop_objects,
+            PostgreMessages.wizard_backup_page_setting_checkbox_drop_objects_tip,
+            settings.isDropObjects(),
+            2
+        );
+        dropObjects.addSelectionListener(changeListener);
+
+        createDatabase = UIUtils.createCheckbox(formatGroup,
+            PostgreMessages.wizard_backup_page_setting_checkbox_create_database,
+            PostgreMessages.wizard_backup_page_setting_checkbox_create_database_tip,
+            settings.isCreateDatabase(),
+            2
+        );
+        createDatabase.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(
             outputGroup,
             PostgreMessages.wizard_backup_page_setting_label_output_folder,
-            wizard.getSettings().getOutputFolder() != null ? wizard.getSettings().getOutputFolder().getAbsolutePath() : null,
+            settings.getOutputFolder() != null ? settings.getOutputFolder().getAbsolutePath() : null,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,
             PostgreMessages.wizard_backup_page_setting_label_file_name_pattern,
-            wizard.getSettings().getOutputFilePattern());
+            settings.getOutputFilePattern());
         UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output, NativeToolUtils.ALL_VARIABLES);
         ContentAssistUtils.installContentProposal(
             outputFileText,
             new SmartTextContentAdapter(),
             new StringContentProposalProvider(Arrays.stream(NativeToolUtils.ALL_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
-        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
+        outputFileText.addModifyListener(e -> settings.setOutputFilePattern(outputFileText.getText()));
         fixOutputFileExtension();
 
         createExtraArgsInput(outputGroup);
@@ -211,6 +230,8 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         settings.setUseInserts(useInsertsCheck.getSelection());
         settings.setNoPrivileges(noPrivilegesCheck.getSelection());
         settings.setNoOwner(noOwnerCheck.getSelection());
+        settings.setDropObjects(dropObjects.getSelection());
+        settings.setCreateDatabase(createDatabase.getSelection());
     }
 
     private PostgreBackupRestoreSettings.ExportFormat getChosenExportFormat() {

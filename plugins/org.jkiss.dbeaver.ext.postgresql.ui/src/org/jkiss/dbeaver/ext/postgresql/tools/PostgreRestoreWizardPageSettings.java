@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,14 @@
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 
@@ -32,6 +35,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
     private Combo formatCombo;
     private Button cleanFirstButton;
     private Button noOwnerCheck;
+    private Button createDatabase;
 
     PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
@@ -62,21 +66,38 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         for (PostgreDatabaseBackupSettings.ExportFormat format : PostgreDatabaseBackupSettings.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
-        formatCombo.select(wizard.getSettings().getFormat().ordinal());
+        PostgreDatabaseRestoreSettings settings = wizard.getSettings();
+        formatCombo.select(settings.getFormat().ordinal());
         formatCombo.addListener(SWT.Selection, updateListener);
 
         cleanFirstButton = UIUtils.createCheckbox(formatGroup,
         	PostgreMessages.wizard_restore_page_setting_btn_clean_first,
-            null,
-            wizard.getSettings().isCleanFirst(),
+            PostgreMessages.wizard_restore_page_setting_btn_clean_first_tip,
+            settings.isCleanFirst(),
             2
         );
+        cleanFirstButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (cleanFirstButton.getSelection() && !confirmDropDatabaseAction()) {
+                    cleanFirstButton.setSelection(false);
+                }
+            }
+        });
         cleanFirstButton.addListener(SWT.Selection, updateListener);
+
+        createDatabase = UIUtils.createCheckbox(formatGroup,
+            PostgreMessages.wizard_backup_page_setting_checkbox_restore_create_database,
+            PostgreMessages.wizard_backup_page_setting_checkbox_restore_create_database_tip,
+            settings.isCreateDatabase(),
+            2
+        );
+        createDatabase.addListener(SWT.Selection, updateListener);
 
         noOwnerCheck = UIUtils.createCheckbox(formatGroup,
             PostgreMessages.wizard_backup_page_setting_checkbox_no_owner,
-            null,
-            wizard.getSettings().isNoOwner(),
+            PostgreMessages.wizard_backup_page_setting_checkbox_restore_no_owner_tip,
+            settings.isNoOwner(),
             2
         );
         noOwnerCheck.addListener(SWT.Selection, updateListener);
@@ -86,7 +107,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*.sql","*"});
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
-        inputFileText.setText(wizard.getSettings().getInputFile());
+        inputFileText.setText(settings.getInputFile());
 
         createExtraArgsInput(inputGroup);
 
@@ -96,6 +117,22 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         setControl(composite);
     }
 
+    private boolean confirmDropDatabaseAction() {
+        Shell shell = getContainer().getShell();
+        if (shell == null) {
+            return false;
+        }
+        if (shell.isVisible() || wizard.getSettings().isCleanFirst()) {
+            return UIUtils.confirmAction(
+                shell,
+                PostgreMessages.wizard_restore_page_setting_confirm_dialog_title,
+                PostgreMessages.wizard_restore_page_setting_confirm_dialog_message,
+                DBIcon.STATUS_WARNING
+            );
+        }
+        return false;
+    }
+
     @Override
     public void saveState()
     {
@@ -103,6 +140,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         settings.setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
         settings.setInputFile(inputFileText.getText());
         settings.setCleanFirst(cleanFirstButton.getSelection());
+        settings.setCreateDatabase(createDatabase.getSelection());
         settings.setNoOwner(noOwnerCheck.getSelection());
     }
 

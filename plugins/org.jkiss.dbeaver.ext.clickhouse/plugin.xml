@@ -39,6 +39,28 @@
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
                 </driver>
+
+<!--
+                <driver
+                    id="com_clickhouse"
+                    label="ClickHouse Binary"
+                    class="com.clickhouse.jdbc.ClickHouseDriver"
+                    sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
+                    defaultPort="8123"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
+                    description="Yandex ClickHouse"
+                    webURL="https://github.com/yandex/clickhouse-jdbc"
+                    categories="sql,analytic,columns">
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]" load-optional-dependencies="true"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-set-array" value="true"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                </driver>
+-->
             </drivers>
 
         </datasource>

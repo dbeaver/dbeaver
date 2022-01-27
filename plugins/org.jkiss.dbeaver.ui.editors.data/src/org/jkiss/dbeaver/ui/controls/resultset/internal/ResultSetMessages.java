@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,6 +174,11 @@ public class ResultSetMessages extends NLS {
     public static String dialog_value_view_context_name;
     public static String dialog_value_view_dialog_error_updating_message;
     public static String dialog_value_view_dialog_error_updating_title;
+
+    public static String dialog_value_view_error_parsing_date_title;
+    public static String dialog_value_view_error_parsing_date_message;
+
+
     public static String dialog_value_view_job_selector_name;
     public static String dialog_value_view_label_dictionary;
 
@@ -239,6 +244,10 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_label_max_text_length;
     public static String pref_page_content_editor_group_hex;
     public static String pref_page_content_editor_hex_encoding;
+    public static String pref_page_content_editor_ui_show_errors_in_dialog;
+    public static String pref_page_content_editor_ui_show_errors_in_dialog_tip;
+    public static String pref_page_content_editor_ui_mark_cell_value_occurrences;
+    public static String pref_page_content_editor_ui_mark_cell_value_occurrences_tip;
 
     public static String pref_page_data_format_button_manage_profiles;
     public static String pref_page_data_format_group_settings;

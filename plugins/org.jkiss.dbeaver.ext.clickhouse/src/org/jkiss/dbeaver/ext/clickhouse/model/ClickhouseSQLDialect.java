@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,10 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         "toLowCardinality",
         "formatRow"
     };
+    private static final String[] CLICKHOUSE_NONKEYWORDS = {
+            "DEFAULT",
+            "SYSTEM"
+    };
 
     public ClickhouseSQLDialect() {
         super("Clickhouse SQL", "clickhouse");
@@ -82,8 +86,9 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
-        removeSQLKeyword("DEFAULT");
-        removeSQLKeyword("SYSTEM");
+        for (String word : CLICKHOUSE_NONKEYWORDS) {
+            removeSQLKeyword(word);
+        }
         addFunctions(Arrays.asList(CLICKHOUSE_FUNCTIONS));
     }
 
@@ -103,5 +108,16 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsNestedComments() {
         return true;
+    }
+
+    //We should quote keywords which is not keywords for clickhouse, otherwise JSQLParser can't parse statements
+    @Override
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
+        for (String word : CLICKHOUSE_NONKEYWORDS) {
+            if (word.equalsIgnoreCase(str)) {
+                return true;
+            }
+        }
+        return super.mustBeQuoted(str, forceCaseSensitive);
     }
 }

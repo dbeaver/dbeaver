@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -293,7 +293,8 @@
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="%driver.postgresql.description"
                     promoted="1"
-                    categories="sql">
+                    categories="sql"
+                    dialect="postgresql">
                     <replace provider="generic" driver="postgresql"/>
                     <replace provider="postgresql" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
@@ -323,38 +324,41 @@
                     defaultPort="5432"
                     webURL="https://jdbc.postgresql.org/"
                     description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
-                    categories="sql">
+                    categories="sql"
+                    dialect="postgresql">
                 </driver>
 
                 <driver
-                        id="postgres-greenplum-jdbc"
-                        label="Greenplum"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        useURL="false"
-                        defaultPort="5432"
-                        defaultDatabase="postgres"
-                        defaultUser="postgres"
-                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                        description="Obsolete">
+                    id="postgres-greenplum-jdbc"
+                    label="Greenplum"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    useURL="false"
+                    defaultPort="5432"
+                    defaultDatabase="postgres"
+                    defaultUser="postgres"
+                    propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    description="Obsolete"
+                    dialect="postgresql">
                     <parameter name="serverType" value="greenplum"/>
                 </driver>
 
                 <driver
-                        id="postgres-timescale-jdbc"
-                        label="TimescaleDB"
-                        icon="icons/timescale_icon.png"
-                        iconBig="icons/timescale_icon_big.png"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        useURL="true"
-                        defaultPort="5432"
-                        defaultDatabase="postgres"
-                        defaultUser="postgres"
-                        webURL="http://timescale.com/"
-                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                        description="%driver.timescale.description"
-                        categories="timeseries">
+                    id="postgres-timescale-jdbc"
+                    label="TimescaleDB"
+                    icon="icons/timescale_icon.png"
+                    iconBig="icons/timescale_icon_big.png"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    useURL="true"
+                    defaultPort="5432"
+                    defaultDatabase="postgres"
+                    defaultUser="postgres"
+                    webURL="http://timescale.com/"
+                    propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    description="%driver.timescale.description"
+                    categories="timeseries"
+                    dialect="postgresql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
@@ -367,18 +371,19 @@
                 </driver>
 
                 <driver
-                        id="postgres-yellowbrick-jdbc"
-                        label="Yellowbrick"
-                        icon="icons/yellowbrick_icon.png"
-                        iconBig="icons/yellowbrick_icon_big.png"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        useURL="true"
-                        defaultPort="5432"
-                        webURL="https://yellowbrick.io/"
-                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                        description="Yellowbrick JDBC driver"
-                        categories="sql">
+                    id="postgres-yellowbrick-jdbc"
+                    label="Yellowbrick"
+                    icon="icons/yellowbrick_icon.png"
+                    iconBig="icons/yellowbrick_icon_big.png"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    useURL="true"
+                    defaultPort="5432"
+                    webURL="https://yellowbrick.io/"
+                    propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    description="Yellowbrick JDBC driver"
+                    categories="sql"
+                    dialect="postgresql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
@@ -438,26 +443,27 @@
                 </driver>
 
                 <driver
-                        id="postgres-redshift-jdbc"
-                        label="Redshift"
-                        icon="icons/redshift_icon.png"
-                        iconBig="icons/redshift_icon_big.png"
-                        category="AWS"
-                        class="com.amazon.redshift.jdbc42.Driver"
-                        sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                        useURL="true"
-                        defaultPort="5439"
-                        defaultDatabase="dev"
-                        defaultUser="awsuser"
-                        description="AWS Redshift JDBC driver"
-                        webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
-                        propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
-                        categories="sql,analytic,bigdata,aws">
+                    id="postgres-redshift-jdbc"
+                    label="Redshift"
+                    icon="icons/redshift_icon.png"
+                    iconBig="icons/redshift_icon_big.png"
+                    category="AWS"
+                    class="com.amazon.redshift.jdbc42.Driver"
+                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                    useURL="true"
+                    defaultPort="5439"
+                    defaultDatabase="dev"
+                    defaultUser="awsuser"
+                    description="AWS Redshift JDBC driver"
+                    webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                    propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
+                    categories="sql,analytic,bigdata,aws"
+                    dialect="postgresql">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
                     <!-- Drivers after 1.2.45 seems to be broken -->
 <!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.0.0.7]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.3]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
                     <parameter name="serverType" value="redshift"/>

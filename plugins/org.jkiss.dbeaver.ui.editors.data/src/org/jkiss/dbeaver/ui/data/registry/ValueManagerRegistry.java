@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.MimeType;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * EntityEditorsRegistry
@@ -52,8 +49,8 @@ public class ValueManagerRegistry {
         return instance;
     }
 
-    private List<ValueManagerDescriptor> managers = new ArrayList<>();
-    private List<StreamValueManagerDescriptor> streamManagers = new ArrayList<>();
+    private final List<ValueManagerDescriptor> managers = new ArrayList<>();
+    private final Map<String, StreamValueManagerDescriptor> streamManagers = new HashMap<>();
 
     private ValueManagerRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -62,7 +59,8 @@ public class ValueManagerRegistry {
             if (ValueManagerDescriptor.TAG_MANAGER.equals(ext.getName())) {
                 managers.add(new ValueManagerDescriptor(ext));
             } else if (StreamValueManagerDescriptor.TAG_STREAM_MANAGER.equals(ext.getName())) {
-                streamManagers.add(new StreamValueManagerDescriptor(ext));
+                final StreamValueManagerDescriptor descriptor = new StreamValueManagerDescriptor(ext);
+                streamManagers.put(descriptor.getId(), descriptor);
             }
         }
     }
@@ -100,10 +98,20 @@ public class ValueManagerRegistry {
         return getInstance().getManager(dataSource, typedObject, valueType);
     }
 
+    @NotNull
+    public Collection<StreamValueManagerDescriptor> getAllStreamManagers() {
+        return Collections.unmodifiableCollection(streamManagers.values());
+    }
+
+    @Nullable
+    public StreamValueManagerDescriptor getStreamManager(@NotNull String id) {
+        return streamManagers.get(id);
+    }
+
     public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         boolean isTextContent = ContentUtils.isTextContent(value);
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
-        for (StreamValueManagerDescriptor contentManager : streamManagers) {
+        for (StreamValueManagerDescriptor contentManager : streamManagers.values()) {
             if (isTextContent && !contentManager.supportsText()) {
                 // Skip different kind of manager
                 continue;
@@ -129,7 +137,7 @@ public class ValueManagerRegistry {
         MimeType primaryMime = primaryType == null ? null : new MimeType(primaryType);
 
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
-        for (StreamValueManagerDescriptor contentManager : streamManagers) {
+        for (StreamValueManagerDescriptor contentManager : streamManagers.values()) {
             for (String sm : contentManager.getSupportedMime()) {
                 if (!CommonUtils.isEmpty(sm) && mime.match(sm)) {
                     if (!CommonUtils.isEmpty(contentManager.getPrimaryMime()) && primaryMime != null && primaryMime.match(contentManager.getPrimaryMime())) {

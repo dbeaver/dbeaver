@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,16 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void showMessageBox(String title, String message, boolean error) {
         System.out.println(title + (message == null ? "" : ": " + message));
+    }
+
+    @Override
+    public void showNotification(@NotNull String title, @Nullable String message, boolean error) {
+        showMessageBox(title, message, error);
+    }
+
+    @Override
+    public void showWarningNotification(@NotNull String title, @Nullable String message) {
+        showWarningMessageBox(title, message);
     }
 
     @Override

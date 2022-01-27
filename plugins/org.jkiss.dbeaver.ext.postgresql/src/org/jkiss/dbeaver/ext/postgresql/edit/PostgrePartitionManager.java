@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,16 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -42,38 +48,32 @@ public class PostgrePartitionManager extends PostgreTableManager {
         };
     
     protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
-        PostgreTable owner = (PostgreTable)container;
-        final PostgreTablePartition table = new PostgreTablePartition(owner);
-        return table;
+        return new PostgreTablePartition((PostgreTable) container);
     }
 
-    private String getParentTable(PostgreTablePartition partition)  {
+    private String getParentTable(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTablePartition partition)  {
         
         List<PostgreTableBase> superTables;
         try {
-            superTables = partition.getSuperTables(new VoidProgressMonitor());
+            superTables = partition.getSuperTables(monitor);
         } catch (DBException e) {
             log.error("Unable to get parent",e);
             return "";//$NON-NLS-1$
         }
         
         if (superTables == null && partition.getPartitionOf() != null) {
-            return partition.getPartitionOf().getSchema().getName() + "." + partition.getPartitionOf().getName();//$NON-NLS-1$
-        } else if (superTables == null || superTables.size() > 1) {
+            return partition.getPartitionOf().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        } else if (CommonUtils.isEmpty(superTables) || superTables.size() > 1) {
             log.error("Unable to get parent");
             return "";//$NON-NLS-1$
-        } 
+        }
         
-        //       final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
-        //table.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(table);
-
-        
-        return superTables.get(0).getSchema().getName() + "." + superTables.get(0).getName();
+        return superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
     }   
     
     @Override
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) {
-        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " + getParentTable((PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " + getParentTable(monitor, (PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

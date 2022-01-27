@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,14 +38,16 @@ import java.util.Map;
 public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
 
     private boolean grant;
+    private boolean withGrantOption;
     private MySQLCatalog schema;
     private MySQLTableBase table;
     private MySQLPrivilege privilege;
 
-    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, MySQLCatalog schema, MySQLTableBase table, MySQLPrivilege privilege)
+    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, boolean withGrantOption, MySQLCatalog schema, MySQLTableBase table, MySQLPrivilege privilege)
     {
         super(user, grant ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.grant = grant;
+        this.withGrantOption = withGrantOption;
         this.schema = schema;
         this.table = table;
         this.privilege = privilege;
@@ -63,7 +65,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         String privName = privilege.getFixedPrivilegeName();
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
             " ON " + getObjectName() + //$NON-NLS-1$
-            " TO " + getObject().getFullName() + ""; //$NON-NLS-1$ //$NON-NLS-2$
+            " TO " + getObject().getFullName() + (withGrantOption ? " WITH GRANT OPTION" : ""); //$NON-NLS-1$ //$NON-NLS-2$
         String revokeScript = "REVOKE " + privName + //$NON-NLS-1$
             " ON " + getObjectName() + //$NON-NLS-1$
             " FROM " + getObject().getFullName() + ""; //$NON-NLS-1$ //$NON-NLS-2$
@@ -78,10 +80,15 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
-            MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;
+            MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege) prevCommand;
             if (prevGrant.schema == schema && prevGrant.table == table && prevGrant.privilege == privilege) {
                 if (prevGrant.grant == grant) {
-                    return prevCommand;
+                    if (prevGrant.withGrantOption == withGrantOption) {
+                        return prevCommand;
+                    } else {
+                        prevGrant.withGrantOption = withGrantOption;
+                        return prevCommand;
+                    }
                 } else {
                     return null;
                 }

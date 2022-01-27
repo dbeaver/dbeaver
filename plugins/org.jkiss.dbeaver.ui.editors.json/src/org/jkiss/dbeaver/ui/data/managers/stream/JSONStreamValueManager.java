@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,7 @@ public class JSONStreamValueManager implements IStreamValueManager {
     @Override
     public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         // Applies to text values
-        return ContentUtils.isJSON(value) ?
-            MatchType.PRIMARY :
-            (ContentUtils.isTextContent(value) ? MatchType.APPLIES : MatchType.NONE);
+        return ContentUtils.isJSON(value) ? MatchType.PRIMARY : MatchType.APPLIES;
     }
 
     @Override

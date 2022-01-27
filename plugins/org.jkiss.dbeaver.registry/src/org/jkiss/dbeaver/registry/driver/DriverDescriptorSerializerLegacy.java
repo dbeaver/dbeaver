@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,6 +116,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     }
                     if (!CommonUtils.isEmpty(lib.getPreferredVersion())) {
                         xml.addAttribute(RegistryConstants.ATTR_VERSION, lib.getPreferredVersion());
+                    }
+                    if (lib instanceof DriverLibraryMavenArtifact) {
+                        if (((DriverLibraryMavenArtifact) lib).isIgnoreDependencies()) {
+                            xml.addAttribute("ignore-dependencies", true);
+                        }
+                        if (((DriverLibraryMavenArtifact) lib).isLoadOptionalDependencies()) {
+                            xml.addAttribute("load-optional-dependencies", true);
+                        }
                     }
                     //xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
                     List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
@@ -298,6 +306,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.addDriverLibrary(lib, false);
                     } else if (!CommonUtils.isEmpty(version)) {
                         lib.setPreferredVersion(version);
+                    }
+                    if (lib instanceof DriverLibraryMavenArtifact) {
+                        ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
+                        ((DriverLibraryMavenArtifact) lib).setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
                     }
                     curLibrary = lib;
                     break;

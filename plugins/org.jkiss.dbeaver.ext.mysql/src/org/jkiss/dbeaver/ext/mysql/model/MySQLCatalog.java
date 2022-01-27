@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1026,7 +1026,7 @@ public class MySQLCatalog implements
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=? AND TABLE_TYPE = 'SEQUENCE'");
-            dbStat.setString(1, DBUtils.getQuotedIdentifier(mySQLCatalog));
+            dbStat.setString(1, mySQLCatalog.getName());
             return dbStat;
         }
 
