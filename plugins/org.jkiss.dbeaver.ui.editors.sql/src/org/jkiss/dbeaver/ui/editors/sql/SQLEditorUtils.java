@@ -42,6 +42,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -89,16 +90,6 @@ public class SQLEditorUtils {
         return recentFile;
     }
 
-    private static void findScriptList(@NotNull DBPProject project, List<ResourceInfo> result) {
-        for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
-            String resName = rp.getKey();
-            IResource resource = project.getEclipseProject().findMember(resName);
-            if (resource instanceof IFile) {
-                result.add(new ResourceInfo((IFile) resource, EditorUtils.getFileDataSource((IFile) resource)));
-            }
-        }
-    }
-
     private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, @NotNull List<ResourceInfo> result) {
         if (folder == null || container == null) {
             return;
@@ -137,10 +128,30 @@ public class SQLEditorUtils {
     }
 
     @NotNull
-    public static List<ResourceInfo> findScriptTree(DBPProject project) {
-        List<ResourceInfo> result = new ArrayList<>();
-        findScriptList(project, result);
-        return result;
+    public static List<ResourceInfo> getScriptsFromProject(@NotNull DBPProject dbpProject) throws CoreException {
+        IFolder resourceDefaultRoot = DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
+        if (resourceDefaultRoot != null) {
+            return getScriptsFromFolder(resourceDefaultRoot);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    @NotNull
+    private static List<ResourceInfo> getScriptsFromFolder(@NotNull IFolder folder) throws CoreException {
+        List<ResourceInfo> scripts = new ArrayList<>();
+        for (IResource member : folder.members()) {
+            if (member instanceof IFile) {
+                IFile iFile = (IFile) member;
+                ResourceInfo resourceInfo = new ResourceInfo(iFile, EditorUtils.getFileDataSource(iFile));
+                scripts.add(resourceInfo);
+            }
+            if (member instanceof IFolder){
+                IFolder iFolder = (IFolder) member;
+                scripts.addAll(getScriptsFromFolder(iFolder));
+            }
+        }
+        return scripts;
     }
 
     public static IFile createNewScript(DBPProject project, @Nullable IFolder folder, @NotNull SQLNavigatorContext navigatorContext) throws CoreException

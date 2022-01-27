@@ -97,7 +97,11 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         this.workbenchWindow = workbenchWindow;
         this.navigatorContext = navigatorContext;
         this.rootFolder = rootFolder;
-        this.projectScriptFiles = SQLEditorUtils.findScriptTree(navigatorContext.getProject());
+        try {
+            this.projectScriptFiles = SQLEditorUtils.getScriptsFromProject(navigatorContext.getProject());
+        } catch (CoreException e) {
+            log.error(e);
+        }
         this.scriptFiles = scriptFiles;
     }
 
