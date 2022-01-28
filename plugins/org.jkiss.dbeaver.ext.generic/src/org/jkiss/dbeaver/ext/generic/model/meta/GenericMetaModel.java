@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -798,8 +799,12 @@ public class GenericMetaModel {
         return false;
     }
 
-    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        return new ArrayList<>();
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        throw new SQLFeatureNotSupportedException();
+    }
+
+    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     //////////////////////////////////////////////////////
@@ -809,8 +814,12 @@ public class GenericMetaModel {
         return false;
     }
 
-    public List<? extends GenericSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        return new ArrayList<>();
+    public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        throw new SQLFeatureNotSupportedException();
+    }
+
+    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     //////////////////////////////////////////////////////
@@ -821,11 +830,11 @@ public class GenericMetaModel {
     }
 
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
-        return null;
+        throw new DBCFeatureNotSupportedException();
     }
 
     // Container triggers (not supported by default)
@@ -835,11 +844,11 @@ public class GenericMetaModel {
     }
 
     public JDBCStatement prepareContainerTriggersLoadStatement(@NotNull JDBCSession session, @Nullable GenericStructContainer forParent) throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     public GenericTrigger createContainerTriggerImpl(@NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws DBException {
-        return null;
+        throw new DBCFeatureNotSupportedException();
     }
 
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {

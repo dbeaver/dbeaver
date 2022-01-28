@@ -52,6 +52,10 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
 
     TableTriggerCache getTableTriggerCache();
 
+    GenericObjectContainer.GenericSequenceCache getSequenceCache();
+
+    GenericObjectContainer.GenericSynonymCache getSynonymCache();
+
     List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException;
     List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
 

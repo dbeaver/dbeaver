@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +31,7 @@ import java.util.Map;
 /**
  * GenericTrigger
  */
-public abstract class GenericTrigger<OWNER extends DBSObject> implements DBSTrigger, GenericScriptObject
+public abstract class GenericTrigger<OWNER extends DBSObject> implements DBSTrigger, GenericScriptObject, DBPNamedObject2
 {
     @NotNull
     private final OWNER container;
@@ -49,6 +50,11 @@ public abstract class GenericTrigger<OWNER extends DBSObject> implements DBSTrig
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Nullable

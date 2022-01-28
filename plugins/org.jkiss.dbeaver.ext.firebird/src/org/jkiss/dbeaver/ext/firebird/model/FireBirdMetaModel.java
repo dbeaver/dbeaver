@@ -89,38 +89,28 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM RDB$GENERATORS")) {
-                List<GenericSequence> result = new ArrayList<>();
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        return session.prepareStatement("SELECT * FROM RDB$GENERATORS");
+    }
 
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$GENERATOR_NAME");
-                        if (name == null) {
-                            continue;
-                        }
-                        String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
-                        boolean isSystem = JDBCUtils.safeGetBoolean(dbResult, "RDB$SYSTEM_FLAG");
-                        FireBirdSequence sequence = new FireBirdSequence(
-                            container,
-                            name,
-                            description,
-                            null,
-                            0,
-                            -1,
-                            1,
-                            isSystem
-                        );
-                        result.add(sequence);
-                    }
-                }
-
-                return result;
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+    @Override
+    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$GENERATOR_NAME");
+        if (CommonUtils.isEmpty(name)) {
+            return null;
         }
+        String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
+        boolean isSystem = JDBCUtils.safeGetBoolean(dbResult, "RDB$SYSTEM_FLAG");
+        return new FireBirdSequence(
+            container,
+            name,
+            description,
+            null,
+            0,
+            -1,
+            1,
+            isSystem
+        );
     }
 
     @Override
