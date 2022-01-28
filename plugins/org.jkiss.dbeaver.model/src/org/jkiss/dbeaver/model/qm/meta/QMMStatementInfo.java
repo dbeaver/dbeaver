@@ -24,21 +24,20 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
  */
 public class QMMStatementInfo extends QMMObject {
 
-    private final QMMSessionInfo session;
+    private final QMMConnectionInfo session;
     private final DBCExecutionPurpose purpose;
     private final QMMStatementInfo previous;
 
     private transient DBCStatement reference;
 
-    public QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementInfo previous)
-    {
+    public QMMStatementInfo(QMMConnectionInfo session, DBCStatement reference, QMMStatementInfo previous) {
         this.session = session;
         this.reference = reference;
         this.purpose = reference.getSession().getPurpose();
         this.previous = previous;
     }
 
-    public QMMStatementInfo(long openTime, long closeTime, QMMSessionInfo session, DBCExecutionPurpose purpose) {
+    public QMMStatementInfo(long openTime, long closeTime, QMMConnectionInfo session, DBCExecutionPurpose purpose) {
         super(openTime, closeTime);
         this.session = session;
         this.purpose = purpose;
@@ -62,8 +61,7 @@ public class QMMStatementInfo extends QMMObject {
         return reference;
     }
 
-    public QMMSessionInfo getSession()
-    {
+    public QMMConnectionInfo getSession() {
         return session;
     }
 

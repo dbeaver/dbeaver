@@ -47,7 +47,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final int MAX_HISTORY_EVENTS = 10000;
 
     // Session map
-    private LongKeyMap<QMMSessionInfo> sessionMap = new LongKeyMap<>();
+    private LongKeyMap<QMMConnectionInfo> sessionMap = new LongKeyMap<>();
     private List<Long> closedSessions = new ArrayList<>();
 
     // External listeners
@@ -69,8 +69,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     public synchronized void dispose()
     {
         if (!sessionMap.isEmpty()) {
-            List<QMMSessionInfo> openSessions = new ArrayList<>();
-            for (QMMSessionInfo session : sessionMap.values()) {
+            List<QMMConnectionInfo> openSessions = new ArrayList<>();
+            for (QMMConnectionInfo session : sessionMap.values()) {
                 if (!session.isClosed()) {
                     openSessions.add(session);
                 }
@@ -144,9 +144,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return events;
     }
 
-    public QMMSessionInfo getSessionInfo(DBCExecutionContext context)
-    {
-        QMMSessionInfo sessionInfo = sessionMap.get(context.getContextId());
+    public QMMConnectionInfo getSessionInfo(DBCExecutionContext context) {
+        QMMConnectionInfo sessionInfo = sessionMap.get(context.getContextId());
         if (sessionInfo == null) {
             log.debug("Can't find sessionInfo meta information: " + context.getContextId() + " (" + context.getContextName() + ")");
         }
@@ -164,11 +163,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
         final long contextId = context.getContextId();
-        QMMSessionInfo session = sessionMap.get(contextId);
+        QMMConnectionInfo session = sessionMap.get(contextId);
         if (session == null) {
-            session = new QMMSessionInfo(
-                context,
-                transactional);
+            session = new QMMConnectionInfo(
+                    context,
+                    transactional);
             sessionMap.put(contextId, session);
         } else {
             // This session may already be in cache in case of reconnect/invalidate
@@ -185,7 +184,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleContextClose(@NotNull DBCExecutionContext context)
     {
-        QMMSessionInfo session = getSessionInfo(context);
+        QMMConnectionInfo session = getSessionInfo(context);
         if (session != null) {
             session.close();
             fireMetaEvent(session, QMMetaEvent.Action.END);
@@ -196,7 +195,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(context);
+        QMMConnectionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
             if (oldTxn != null) {
@@ -209,7 +208,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(context);
+        QMMConnectionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
             if (oldTxn != null) {
@@ -221,7 +220,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(context);
+        QMMConnectionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
             if (oldTxn != null) {
@@ -233,7 +232,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleStatementOpen(@NotNull DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
+        QMMConnectionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
             fireMetaEvent(stat, QMMetaEvent.Action.BEGIN);
@@ -243,7 +242,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleStatementClose(@NotNull DBCStatement statement, long rows)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
+        QMMConnectionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement, rows);
             if (stat == null) {
@@ -257,7 +256,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
+        QMMConnectionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
             if (exec != null) {
@@ -269,7 +268,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
+        QMMConnectionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
             if (exec != null) {
@@ -281,7 +280,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleResultSetOpen(@NotNull DBCResultSet resultSet)
     {
-        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
+        QMMConnectionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
             if (exec != null) {
@@ -293,7 +292,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     @Override
     public synchronized void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount)
     {
-        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
+        QMMConnectionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
             if (exec != null) {
@@ -348,7 +347,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             // Cleanup closed sessions
             synchronized (QMMCollectorImpl.this) {
                 for (Long sessionId : sessionsToClose) {
-                    final QMMSessionInfo session = sessionMap.get(sessionId);
+                    final QMMConnectionInfo session = sessionMap.get(sessionId);
                     if (session != null && !session.isClosed()) {
                         // It is possible (rarely) that session was reopened before event dispatcher run
                         // In that case just ignore it

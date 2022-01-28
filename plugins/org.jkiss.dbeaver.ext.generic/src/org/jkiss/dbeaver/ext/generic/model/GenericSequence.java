@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 /**
  * GenericSequence
  */
-public class GenericSequence implements DBSSequence, DBPQualifiedObject
+public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2
 {
     private GenericStructContainer container;
     private String name;
@@ -54,6 +55,11 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

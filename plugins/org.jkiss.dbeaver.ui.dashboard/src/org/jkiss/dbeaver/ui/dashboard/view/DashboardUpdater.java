@@ -41,14 +41,17 @@ public class DashboardUpdater {
 
     private static final Log log = Log.getLog(DashboardUpdater.class);
     private Map<DBPDataSourceContainer, List<MapQueryInfo>> mapQueries = new HashMap<>();
+    private final Set<String> brokenDataSources = new HashSet<>();
 
     private static class MapQueryInfo {
+        private final DashboardContainer dashboard;
         private final DashboardViewContainer viewContainer;
         private final DashboardMapQuery mapQuery;
         public Date timestamp;
         private Map<String, Object> mapValue = new HashMap<>();
 
-        public MapQueryInfo(DashboardViewContainer viewContainer, DashboardMapQuery mapQuery) {
+        public MapQueryInfo(DashboardContainer dashboard, DashboardViewContainer viewContainer, DashboardMapQuery mapQuery) {
+            this.dashboard = dashboard;
             this.viewContainer = viewContainer;
             this.mapQuery = mapQuery;
         }
@@ -81,7 +84,7 @@ public class DashboardUpdater {
                     }
                 }
                 if (!found) {
-                    queryList.add(new MapQueryInfo(dashboard.getGroup().getView(), mapQuery));
+                    queryList.add(new MapQueryInfo(dashboard, dashboard.getGroup().getView(), mapQuery));
                 }
             }
         }
@@ -97,7 +100,17 @@ public class DashboardUpdater {
                 DBExecUtils.tryExecuteRecover(dashboards, dataSource, param -> {
                     try {
                         for (MapQueryInfo mqi : mqEntry.getValue()) {
-                            readMapQueryData(monitor, mqi);
+                            if (brokenDataSources.contains(mqi.dashboard.getDataSourceContainer().getId())) {
+                                continue;
+                            }
+
+                            try {
+                                readMapQueryData(monitor, mqi);
+                            } catch (DBCException e) {
+                                log.debug("Datasource '" + mqi.dashboard.getDataSourceContainer().getName() + "' dashboard query failed. Stopping update of dashboard queries for this datasource.");
+                                brokenDataSources.add(mqi.dashboard.getDataSourceContainer().getId());
+                                throw e;
+                            }
                         }
                     } catch (Throwable e) {
                         throw new InvocationTargetException(e);
@@ -109,6 +122,9 @@ public class DashboardUpdater {
         }
 
         for (DashboardContainer dashboard : dashboards) {
+            if (brokenDataSources.contains(dashboard.getDataSourceContainer().getId())) {
+                continue;
+            }
             DBPDataSource dataSource = dashboard.getDataSourceContainer().getDataSource();
             if (dataSource == null) {
                 continue;
@@ -118,6 +134,8 @@ public class DashboardUpdater {
                     try {
                         updateDashboard(monitor, dashboard);
                     } catch (Throwable e) {
+                        log.debug("Datasource '" + dashboard.getDataSourceContainer().getName() + "' dashboard query failed. Stopping update of dashboards for this datasource.");
+                        brokenDataSources.add(dashboard.getDataSourceContainer().getId());
                         throw new InvocationTargetException(e);
                     }
                 });

@@ -171,10 +171,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     return SQLEditorMessages.controls_querylog_rollback;
                 }
-            } else if (object instanceof QMMSessionInfo) {
-                String containerName = ((QMMSessionInfo) object).getContainerName();
-                String instanceId = ((QMMSessionInfo) object).getInstanceId();
-                String contextName = ((QMMSessionInfo) object).getContextName();
+            } else if (object instanceof QMMConnectionInfo) {
+                String containerName = ((QMMConnectionInfo) object).getContainerName();
+                String instanceId = ((QMMConnectionInfo) object).getInstanceId();
+                String contextName = ((QMMConnectionInfo) object).getContextName();
                 String containerFullName = containerName;
                 if (!CommonUtils.equalObjects(containerName, instanceId)) {
                     containerFullName += " <" + instanceId + ">";
@@ -219,8 +219,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     return ""; //$NON-NLS-1$
                 }
-            } else if (object instanceof QMMSessionInfo) {
-                QMMSessionInfo session = (QMMSessionInfo) object;
+            } else if (object instanceof QMMConnectionInfo) {
+                QMMConnectionInfo session = (QMMConnectionInfo) object;
                 if (session.isClosed()) {
                     return formatMinutes(session.getCloseTime() - session.getOpenTime());
                 } else {
@@ -280,8 +280,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMMetaEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
             String containerName = null;
-            if (object instanceof QMMSessionInfo) {
-                containerName = ((QMMSessionInfo) object).getContainerName();
+            if (object instanceof QMMConnectionInfo) {
+                containerName = ((QMMConnectionInfo) object).getContainerName();
             } else if (object instanceof QMMTransactionInfo) {
                 containerName = ((QMMTransactionInfo) object).getSession().getContainerName();
             } else if (object instanceof QMMTransactionSavepointInfo) {
@@ -299,8 +299,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMMetaEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
             String contextName = null;
-            if (object instanceof QMMSessionInfo) {
-                contextName = ((QMMSessionInfo) object).getContextName();
+            if (object instanceof QMMConnectionInfo) {
+                contextName = ((QMMConnectionInfo) object).getContextName();
             } else if (object instanceof QMMTransactionInfo) {
                 contextName = ((QMMTransactionInfo) object).getSession().getContextName();
             } else if (object instanceof QMMTransactionSavepointInfo) {
@@ -570,7 +570,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private static String getObjectType(QMMObject object) {
-        if (object instanceof QMMSessionInfo) {
+        if (object instanceof QMMConnectionInfo) {
             return ""; //$NON-NLS-1$
         } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
             QMMStatementInfo statement;
@@ -712,7 +712,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     } else {
                         updateExecutions(event, (QMMTransactionSavepointInfo) object);
                     }
-                } else if (object instanceof QMMSessionInfo) {
+                } else if (object instanceof QMMConnectionInfo) {
                     QMMetaEvent.Action action = event.getAction();
                     if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
                         TableItem item = new TableItem(logTable, SWT.NONE, itemIndex++);
@@ -916,7 +916,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
-                    QMMSessionInfo session = stmtExec.getStatement().getSession();
+                    QMMConnectionInfo session = stmtExec.getStatement().getSession();
                     DBPProject project = session.getProject();
                     String containerId = session.getContainerId();
                     if (project != null) {
