@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils.ResourceInfo;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -295,13 +296,18 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             @Override
             public String getText(Object element) {
                 final ResourceInfo ri = (ResourceInfo) element;
-                return ri.getResource().getParent().getName();
+                IFolder resourceDefaultRoot = DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
+                String path = ri.getLocalFile().getPath();
+                if (resourceDefaultRoot == null){
+                    return "";
+                }
+                return ri.getResource().getParent().equals(resourceDefaultRoot) ? resourceDefaultRoot.getName() : resourceDefaultRoot.getLocationURI().relativize(new File(path).toURI()).getPath();
             }
 
             @Override
             public String getToolTipText(Object element) {
                 final ResourceInfo ri = (ResourceInfo) element;
-                return ri.getResource().getParent().getName();
+                return ri.getLocalFile().getPath();
             }
         });
         columnController.autoSizeColumns();
