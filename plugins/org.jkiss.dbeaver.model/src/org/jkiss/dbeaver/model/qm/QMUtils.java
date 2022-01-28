@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
@@ -86,7 +86,7 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             return false;
         } else {
-            QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+            QMMConnectionInfo sessionInfo = getCurrentSession(executionContext);
             if (sessionInfo != null && sessionInfo.isTransactional()) {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
@@ -114,12 +114,12 @@ public class QMUtils {
         return false;
     }
 
-    public static QMMSessionInfo getCurrentSession(DBCExecutionContext executionContext) {
+    public static QMMConnectionInfo getCurrentSession(DBCExecutionContext executionContext) {
         return application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
     }
 
     public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
-        QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+        QMMConnectionInfo sessionInfo = getCurrentSession(executionContext);
         if (sessionInfo != null && !sessionInfo.isClosed() && sessionInfo.isTransactional()) {
             QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
             if (txnInfo != null) {
@@ -137,7 +137,7 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             txnMode = false;
         } else {
-            QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+            QMMConnectionInfo sessionInfo = getCurrentSession(executionContext);
             if (sessionInfo == null || sessionInfo.isClosed()) {
                 txnMode = false;
             } else if (sessionInfo.isTransactional()) {

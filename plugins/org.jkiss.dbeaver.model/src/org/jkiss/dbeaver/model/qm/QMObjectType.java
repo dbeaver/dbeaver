@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.utils.CommonUtils;
@@ -31,15 +31,14 @@ import java.util.List;
  */
 public enum QMObjectType {
 
-    session("Session", QMMSessionInfo.class),
+    session("Session", QMMConnectionInfo.class),
     txn("Transactions", QMMTransactionInfo.class),
     query("Queries", QMMStatementInfo.class);
 
     private final String title;
     private final Class<? extends QMMObject> type;
 
-    QMObjectType(String title, Class<? extends QMMObject> type)
-    {
+    QMObjectType(String title, Class<? extends QMMObject> type) {
         this.title = title;
         this.type = type;
     }

@@ -47,7 +47,7 @@ public class DefaultEventFilter implements QMEventFilter {
                 eventCriteria.hasQueryType(((QMMStatementExecuteInfo) object).getStatement().getPurpose());
         } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
             return eventCriteria.hasObjectType(QMObjectType.txn);
-        } else if (object instanceof QMMSessionInfo) {
+        } else if (object instanceof QMMConnectionInfo) {
             return eventCriteria.hasObjectType(QMObjectType.session);
         }
         return true;
