@@ -38,6 +38,7 @@ class TokenPredicateExpander implements TokenPredicateNodeVisitor<ListNode<SQLTo
         return node == null
                 ? Collections.emptyList()
                 : StreamSupport.stream(node.apply(INSTANCE, null).spliterator(), false)
+                .filter(p -> p != null)
                 .map(path -> {
                     // expanding traverse walks in the left-to-right order, so we've got the rightmost entry  as head of the list
                     List<TokenEntry> list = StreamSupport.stream(path.spliterator(), false).collect(Collectors.toList());

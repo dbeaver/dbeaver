@@ -53,8 +53,8 @@ public class TokenPredicateSet implements SQLTokenPredicateSet {
      */
     public void add(@NotNull TokenPredicatesCondition cond) {
         this.conditions.add(cond);
-        cond.prefixes.forEach(h -> conditionsByPrefix.add(h.iterator(), cond));
-        cond.suffixes.forEach(t -> conditionsBySuffix.add(new ArrayDeque<TokenEntry>(t).descendingIterator(), cond));
+        cond.getPrefixes().forEach(h -> conditionsByPrefix.add(h.iterator(), cond));
+        cond.getSuffixes().forEach(t -> conditionsBySuffix.add(new ArrayDeque<TokenEntry>(t).descendingIterator(), cond));
         maxHeadLength = Math.max(maxHeadLength, cond.maxPrefixLength);
         maxTailLength = Math.max(maxTailLength, cond.maxSuffixLength);
     }

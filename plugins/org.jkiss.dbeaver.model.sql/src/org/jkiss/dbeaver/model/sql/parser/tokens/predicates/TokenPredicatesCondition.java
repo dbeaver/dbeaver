@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicate;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
@@ -28,19 +29,24 @@ import java.util.List;
  */
 public class TokenPredicatesCondition implements SQLTokenPredicate {
     /**
+     * Action to perform during parse on condition match
+     */
+    private final SQLParserActionKind actionKind;
+    /**
      * Predicate trees representing conditions on possible structure of sequence of terms
      */
-    public final TokenPredicateNode prefixPredicate, suffixPredicate;
+    private final TokenPredicateNode prefixPredicate, suffixPredicate;
     /**
      * Complete list of all possible prefixes and suffixes matching the condition an any combination
      */
-    public final List<List<TokenEntry>> prefixes, suffixes;
+    private final List<List<TokenEntry>> prefixes, suffixes;
     /**
      * Maximum lengths of corresponding prefixes and suffixes under condition
      */
     public final int maxPrefixLength, maxSuffixLength;
 
-    public TokenPredicatesCondition(@NotNull TokenPredicateNode prefixPredicate, @NotNull TokenPredicateNode suffixPredicate) {
+    public TokenPredicatesCondition(@NotNull SQLParserActionKind actionKind, @NotNull TokenPredicateNode prefixPredicate, @NotNull TokenPredicateNode suffixPredicate) {
+        this.actionKind = actionKind;
         this.prefixPredicate = prefixPredicate;
         this.suffixPredicate = suffixPredicate;
         this.prefixes = Collections.unmodifiableList(prefixPredicate.expand());
@@ -50,8 +56,28 @@ public class TokenPredicatesCondition implements SQLTokenPredicate {
     }
 
     @Override
+    public int getMaxSuffixLength() {
+        return maxSuffixLength;
+    }
+
+    public List<List<TokenEntry>> getPrefixes() {
+        return prefixes;
+    }
+
+    public List<List<TokenEntry>> getSuffixes() {
+        return suffixes;
+    }
+
+    @Override
+    @NotNull
+    public SQLParserActionKind getActionKind() {
+        return this.actionKind;
+    }
+
+    @Override
     public String toString() {
         return "TokenEnvironmentCondition[" +
+                "action: [" + this.actionKind + "], " +
                 "prefix: [" + this.prefixPredicate + "], " +
                 "suffix: [" + this.suffixPredicate + "]" +
                 "]";

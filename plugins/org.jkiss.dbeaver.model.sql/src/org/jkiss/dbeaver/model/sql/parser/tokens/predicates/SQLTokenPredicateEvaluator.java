@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.parser.*;
 
 import java.util.*;
@@ -27,6 +29,9 @@ import java.util.*;
  * Tries to distribute the work across the parsing process in a way to reduce the amount of data for analysis on each step.
  */
 public class SQLTokenPredicateEvaluator {
+
+    static protected final Log log = Log.getLog(SQLTokenPredicateEvaluator.class);
+
     /**
      * Complete set of conditions under considerations
      */
@@ -41,9 +46,10 @@ public class SQLTokenPredicateEvaluator {
     private final Deque<TokenEntry> statementSuffixTokens;
     /**
      * A number of conditions considered matching according to the judgement based on the accumulated statement prefix (see {@link #statementPrefixPredicates});
-     * Statement suffix still should be analyzed to be sure if any of them really matched (see {@link #anyPredicateMet()}).
+     * Statement suffix still should be analyzed to be sure if any of them really matched (see {@link #evaluatePredicates()}).
      */
     private final Set<SQLTokenPredicate> plausibleConditions = new HashSet<>();
+    private final Set<SQLTokenPredicate> plausiblePrefixOnlyConditions = new HashSet<>();
     /**
      * A number of nodes describing the prefix conditions under consideration for a next token to judge about.
      * Effectively reduces the amount of conditions to check during each step of analysis by accumulating only the prefix-matched conditions in the {@link #plausibleConditions}
@@ -65,15 +71,23 @@ public class SQLTokenPredicateEvaluator {
      */
     public void captureToken(@NotNull TokenEntry entry) {
         // accumulating statement prefix until there is no more prefix conditions to judge on at this position
-        if (statementPrefixTokens.size() < predicatesSet.getMaxPrefixLength()) {
-            statementPrefixTokens.add(entry);
+        if (statementPrefixTokens.size() <= predicatesSet.getMaxPrefixLength()) {
+            if (statementPrefixTokens.size() < predicatesSet.getMaxPrefixLength()) {
+                statementPrefixTokens.add(entry);
+            }
             ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> accumulator = null;
             for (var node = statementPrefixPredicates; node != null; node = node.next) {
                 Set<SQLTokenPredicate> currentlyMatchedHeads = node.data.getValues();
                 if (currentlyMatchedHeads.size() > 0) {
                     // accumulating conditions consireded matched according to the already captured part of the statement prefix
                     // longer prefixes would be discovered only during the next token analysis among the reduced set of conditions
-                    plausibleConditions.addAll(currentlyMatchedHeads);
+                    for (SQLTokenPredicate matchedByPrefix: currentlyMatchedHeads) {
+                        if (matchedByPrefix.getMaxSuffixLength() == 0) {
+                            plausiblePrefixOnlyConditions.add(matchedByPrefix);
+                        } else {
+                            plausibleConditions.add(matchedByPrefix);
+                        }
+                    }
                 }
                 // accumulating reduced subset of the next to look at conditions according to the token being consumed
                 accumulator = node.data.accumulateSubnodesByTerm(entry, accumulator);
@@ -96,18 +110,25 @@ public class SQLTokenPredicateEvaluator {
      * If sets of conditions being met are not disjoint, then some conditions are actually matched by both the prefix and suffix.
      * @return
      */
-    public boolean anyPredicateMet() {
-        if (plausibleConditions.size() > 0) {
-            // We are inspecting the whole set of suffix predicates here by matching them using trie, so no simple brute force at all.
-            // It can also be optimized even further by using Aho–Corasick algorithm (which is actually an evolution of trie),
-            // if we can associate condition objects with each suffix key token sequence to match.
-            Set<SQLTokenPredicate> tailConditionsMatched = predicatesSet.matchSuffix(statementSuffixTokens);
-            // check out the intersection of conditions matched by the prefix and suffix
-            if (!Collections.disjoint(plausibleConditions, tailConditionsMatched)) {
-                return true;
-            }
+    @Nullable
+    public SQLParserActionKind evaluatePredicates() {
+        // We are inspecting the whole set of suffix predicates here by matching them using trie, so no simple brute force at all.
+        // It can also be optimized even further by using Aho–Corasick algorithm (which is actually an evolution of trie),
+        // if we can associate condition objects with each suffix key token sequence to match.
+        Set<SQLTokenPredicate> tailConditionsMatched = plausibleConditions.size() > 0 ? predicatesSet.matchSuffix(statementSuffixTokens) : Collections.emptySet();
+        // check out the intersection of conditions matched by the prefix and suffix
+        tailConditionsMatched.retainAll(plausibleConditions);
+
+        if (tailConditionsMatched.size() + plausiblePrefixOnlyConditions.size() > 1) {
+            log.warn("Ambiguous token predicates match");
+        } else if (tailConditionsMatched.size() > 0) {
+            return tailConditionsMatched.iterator().next().getActionKind();
+        } else if (plausiblePrefixOnlyConditions.size() > 0){
+            SQLTokenPredicate matchedByPrefix = plausiblePrefixOnlyConditions.iterator().next();
+            plausiblePrefixOnlyConditions.clear();
+            return matchedByPrefix.getActionKind();
         }
-        return false;
+        return null;
     }
 
     /**
@@ -117,6 +138,7 @@ public class SQLTokenPredicateEvaluator {
         statementPrefixTokens.clear();
         statementSuffixTokens.clear();
         plausibleConditions.clear();
+        plausiblePrefixOnlyConditions.clear();
         statementPrefixPredicates = ListNode.of(predicatesSet.getPrefixTreeRoot());
     }
 }

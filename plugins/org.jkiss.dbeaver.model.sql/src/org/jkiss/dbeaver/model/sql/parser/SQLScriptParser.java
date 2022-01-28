@@ -188,8 +188,21 @@ public class SQLScriptParser {
                     }
                 }
 
-
-                if (skipTokenEvaluator.anyPredicateMet()) {
+                SQLParserActionKind actionKind = skipTokenEvaluator.evaluatePredicates();
+                if (actionKind == SQLParserActionKind.BeginBlock) {
+                    // header blocks seems optional and we are in the block either way
+                    while (curBlock != null && curBlock.isHeader) {
+                        curBlock = curBlock.parent;
+                    }
+                    curBlock = new ScriptBlockInfo(curBlock, false);
+                    hasBlocks = true;
+                }
+                if (curBlock != null && !token.isEOF()) {
+                    // if we are still inside of the block, so statement definitely hasn't ended yet
+                    // and will not be ended until we leave the block at least
+                    continue;
+                }
+                if (actionKind == SQLParserActionKind.SkipSuffixTerm) {
                     continue;
                 }
 

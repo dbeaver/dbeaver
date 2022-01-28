@@ -16,21 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.jkiss.code.NotNull;
-
-/**
- * Represents information about the predicate describing one dialect feature which requires special handling during SQL parsing
- */
-public interface SQLTokenPredicate {
-
-    /**
-     * Action to perform during parse on condition match
-     */
-    @NotNull
-    SQLParserActionKind getActionKind();
-
-    /**
-     * Maximum lengths of corresponding suffixes under condition. Zero when prefix is enough to trigger the action.
-     */
-    int getMaxSuffixLength();
+public enum SQLParserActionKind {
+    SkipSuffixTerm,
+    BeginBlock,
 }

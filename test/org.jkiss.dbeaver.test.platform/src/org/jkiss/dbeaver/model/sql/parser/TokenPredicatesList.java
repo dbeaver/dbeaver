@@ -59,7 +59,7 @@ public class TokenPredicatesList {
 
     private boolean conditionMatches(TokenPredicatesCondition cond, Deque<TokenEntry> head, Deque<TokenEntry> tail) {
         boolean tailMatch = false;
-        for (List<TokenEntry> condTail : cond.suffixes) {
+        for (List<TokenEntry> condTail : cond.getSuffixes()) {
             int condTailLen = condTail.size();
             if (condTailLen <= tail.size()) {
                 boolean matched = true;
@@ -82,7 +82,7 @@ public class TokenPredicatesList {
         }
 
         boolean headMatch = false;
-        for (List<TokenEntry> condHead : cond.prefixes) {
+        for (List<TokenEntry> condHead : cond.getPrefixes()) {
             int condHeadLen = condHead.size();
             if (condHeadLen <= head.size()) {
                 boolean matched = true;
