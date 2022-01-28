@@ -66,7 +66,7 @@ import java.util.Locale;
  * Script selector panel (shell)
  */
 public class ScriptSelectorPanel extends AbstractPopupPanel {
-    public static final String SCRIPT_DIALOG_MODE = "script_dialog_mode";
+    public static final String PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS = "script_dialog_mode";
     private static final Log log = Log.getLog(ScriptSelectorPanel.class);
 
     private static final String DIALOG_ID = "DBeaver.ScriptSelectorPopup";
@@ -216,11 +216,11 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         projectCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DBWorkbench.getPlatform().getPreferenceStore().setValue(SCRIPT_DIALOG_MODE, projectCheckbox.getSelection());
-                setDialogInput(projectCheckbox);
+                DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS, projectCheckbox.getSelection());
+                useProjectScripts(projectCheckbox.getSelection());
             }
         });
-        projectCheckbox.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SCRIPT_DIALOG_MODE));
+        projectCheckbox.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS));
         ViewerColumnController columnController = new ViewerColumnController("scriptSelectorViewer", scriptViewer);
         columnController.addColumn(SQLEditorMessages.script_selector_project_table_name_label, SQLEditorMessages.script_selector_project_table_name_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
@@ -270,14 +270,10 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         });
 
         columnController.addColumn(SQLEditorMessages.script_selector_project_table_info_label, SQLEditorMessages.script_selector_project_table_info_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
+
             @Override
             public String getText(Object element) {
                 return "";//((ResourceInfo)element).getDescription();
-            }
-
-            @Override
-            public Color getForeground(Object element) {
-                return getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
             }
 
             @Override
@@ -289,15 +285,12 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         });
 
         columnController.addColumn(SQLEditorMessages.script_selector_project_table_folder_label, SQLEditorMessages.script_selector_project_table_folder_description, SWT.LEFT, true, true, new ColumnLabelProvider(){
-            @Override
-            public Color getForeground(Object element) {
-                return getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-            }
-            @Override
+
+           @Override
             public String getText(Object element) {
                 final ResourceInfo ri = (ResourceInfo) element;
                 IFolder resourceDefaultRoot = DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
-                String path = ri.getLocalFile().getPath();
+                String path = ri.getLocalFile().getParentFile().getPath();
                 if (resourceDefaultRoot == null){
                     return "";
                 }
@@ -315,6 +308,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         columnController.sortByColumn(1, SWT.DOWN);
 
         scriptTree.addSelectionListener(new SelectionAdapter() {
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 List<ResourceInfo> files = new ArrayList<>();
@@ -361,7 +355,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
 
         closeOnFocusLost(patternText, scriptViewer.getTree(), newButton);
 
-        setDialogInput(projectCheckbox);
+        useProjectScripts(projectCheckbox.getSelection());
         UIUtils.expandAll(scriptViewer);
 
         final Tree tree = scriptViewer.getTree();
@@ -377,8 +371,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         return composite;
     }
 
-    private void setDialogInput(Button projectCheckbox) {
-        if (projectCheckbox.getSelection()){
+    private void useProjectScripts(boolean result) {
+        if (result){
             scriptViewer.setInput(projectScriptFiles);
         } else {
             scriptViewer.setInput(scriptFiles);
