@@ -346,6 +346,14 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_delete_variables_question;
     public static String script_selector_create_script;
     public static String script_selector_project_scripts;
+    public static String script_selector_project_table_name_label;
+    public static String script_selector_project_table_name_description;
+    public static String script_selector_project_table_time_label;
+    public static String script_selector_project_table_time_description;
+    public static String script_selector_project_table_info_label;
+    public static String script_selector_project_table_info_description;
+    public static String script_selector_project_table_folder_description;
+    public static String script_selector_project_table_folder_label;
 
 
     static {
