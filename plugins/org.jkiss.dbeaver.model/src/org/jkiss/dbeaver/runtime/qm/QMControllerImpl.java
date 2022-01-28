@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -175,7 +174,6 @@ public class QMControllerImpl implements QMController {
     private class DefaultEventBrowser implements QMEventBrowser {
         @Override
         public QMEventCursor getQueryHistoryCursor(
-            @NotNull DBRProgressMonitor monitor,
             @NotNull QMEventCriteria criteria,
             @Nullable QMEventFilter filter)
             throws DBException

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Event cursor
@@ -27,11 +26,11 @@ public interface QMEventCursor extends AutoCloseable {
 
     long getTotalSize();
 
-    void scroll(int position, DBRProgressMonitor monitor) throws DBException;
+    void scroll(int position) throws DBException;
 
-    boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException;
+    boolean hasNextEvent() throws DBException;
 
-    QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException;
+    QMMetaEvent nextEvent() throws DBException;
 
     void close();
 }

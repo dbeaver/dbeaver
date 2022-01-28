@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Query manager history
@@ -27,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface QMEventBrowser {
 
     QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull QMEventCriteria criteria, QMEventFilter filter)
         throws DBException;
 

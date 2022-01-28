@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -201,19 +200,19 @@ public class QMUtils {
         }
 
         @Override
-        public void scroll(int position, DBRProgressMonitor monitor) throws DBException {
+        public void scroll(int position) throws DBException {
             if (position < 0 || position >= events.size()) {
                 throw new DBException("Position is out of range (" + getTotalSize() + ")");
             }
         }
 
         @Override
-        public boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException {
+        public boolean hasNextEvent() throws DBException {
             return position < events.size();
         }
 
         @Override
-        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEvent nextEvent() throws DBException {
             QMMetaEvent event = events.get(position);
             position++;
             return event;
@@ -234,17 +233,17 @@ public class QMUtils {
         }
 
         @Override
-        public void scroll(int position, DBRProgressMonitor monitor) throws DBException {
+        public void scroll(int position) throws DBException {
             throw new DBException("Empty cursor");
         }
 
         @Override
-        public boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException {
+        public boolean hasNextEvent() throws DBException {
             return false;
         }
 
         @Override
-        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEvent nextEvent() throws DBException {
             throw new DBException("Empty cursor");
         }
 
