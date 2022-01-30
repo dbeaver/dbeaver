@@ -237,7 +237,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             newName = dataSourceDescriptor == null ? "" : settings.getActiveDataSource().getName(); //$NON-NLS-1$
             if (CommonUtils.isEmpty(newName)) {
                 newName = connectionInfo.getDatabaseName();
-                if (CommonUtils.isEmpty(newName)) {
+                if (CommonUtils.isEmpty(newName) || newName.length() < 3 || CommonUtils.isInt(newName)) {
+                    // Database name is too short or not a string
                     newName = connectionInfo.getHostName();
                 }
                 if (CommonUtils.isEmpty(newName)) {
