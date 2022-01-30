@@ -31,6 +31,10 @@ import java.util.*;
  */
 public class Trie<T, V> {
 
+    private final Comparator<T> strongComparer;
+    private final TrieLookupComparator<T> lookupPartialComparer;
+    private TreeNode root = new TreeNode(null);
+
     /**
      * Node of the tree data structure implementing trie data item
      */
@@ -138,40 +142,38 @@ public class Trie<T, V> {
         @Nullable
         private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
             TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
+            ListNode<TrieNode<T, V>> accumulatedResults = results;
             for (int i = 0; i < this.childKeys.size(); i++) {
                 if (comparer.match(this.childKeys.get(i), term)) {
-                    results = ListNode.push(results, this.childNodes.get(i));
+                    accumulatedResults = ListNode.push(accumulatedResults, this.childNodes.get(i));
                 }
             }
-            return results;
+            return accumulatedResults;
         }
 
         @NotNull
         private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
             TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
+            ListNode<TrieNode<T, V>> accumulatedResults = results;
             int index = Collections.binarySearch(this.childKeys, term, comparer);
             if (index >= 0) {
                 if (comparer.match(this.childKeys.get(index), term)) {
-                    results = ListNode.push(results, this.childNodes.get(index));
+                    accumulatedResults = ListNode.push(accumulatedResults, this.childNodes.get(index));
                 }
                 for (int i = index + 1; i < this.childKeys.size() && comparer.compare(this.childKeys.get(i), term) == 0; i++) {
                     if (comparer.match(this.childKeys.get(i), term)) {
-                        results = ListNode.push(results, this.childNodes.get(i));
+                        accumulatedResults = ListNode.push(accumulatedResults, this.childNodes.get(i));
                     }
                 }
                 for (int i = index - 1; i >= 0 && comparer.compare(this.childKeys.get(i), term) == 0; i--) {
                     if (comparer.match(this.childKeys.get(i), term)) {
-                        results = ListNode.push(results, this.childNodes.get(i));
+                        accumulatedResults = ListNode.push(accumulatedResults, this.childNodes.get(i));
                     }
                 }
             }
-            return results;
+            return accumulatedResults;
         }
     }
-
-    private final Comparator<T> strongComparer;
-    private final TrieLookupComparator<T> lookupPartialComparer;
-    private TreeNode root = new TreeNode(null);
 
     public Trie(@NotNull Comparator<T> strongComparer, @NotNull TrieLookupComparator<T> lookupComparer) {
         this.strongComparer = strongComparer;
