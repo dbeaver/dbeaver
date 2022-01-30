@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFabric;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondition;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -589,7 +589,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
-        TokenPredicateFabric tt = TokenPredicateFabric.makeDialectSpecificFabric(ruleManager);
+        TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
 
         // Oracle SQL references could be found from https://docs.oracle.com/en/database/oracle/oracle-database/
         // by following through Get Started links till the SQL Language Reference link presented

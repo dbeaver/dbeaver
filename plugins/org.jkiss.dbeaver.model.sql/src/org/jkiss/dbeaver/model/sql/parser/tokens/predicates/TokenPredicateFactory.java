@@ -37,25 +37,25 @@ import java.util.stream.Collectors;
  * </ul>
  * </p>
  */
-public abstract class TokenPredicateFabric {
+public abstract class TokenPredicateFactory {
 
     /**
-     * Create dialect-agnostinc {@link TokenPredicateFabric}
+     * Create dialect-agnostinc {@link TokenPredicateFactory}
      */
     @NotNull
-    public static TokenPredicateFabric makeDefaultFabric() {
-        return new DefaultTokenPredicateFabric();
+    public static TokenPredicateFactory makeDefaultFactory() {
+        return new DefaultTokenPredicateFactory();
     }
 
     /**
-     * Create dialect-specific {@link TokenPredicateFabric}
+     * Create dialect-specific {@link TokenPredicateFactory}
      */
     @NotNull
-    public static TokenPredicateFabric makeDialectSpecificFabric(@NotNull SQLRuleManager ruleManager) {
-        return new SQLTokenPredicateFabric(ruleManager);
+    public static TokenPredicateFactory makeDialectSpecificFactory(@NotNull SQLRuleManager ruleManager) {
+        return new SQLTokenPredicateFactory(ruleManager);
     }
 
-    protected TokenPredicateFabric() {
+    protected TokenPredicateFactory() {
 
     }
 
@@ -69,7 +69,7 @@ public abstract class TokenPredicateFabric {
 
     /**
      * Materialize token predicate node carrying information about token entry described in a certain way.
-     * @param obj some information about the token entry (see {@link TokenPredicateFabric} for the details)
+     * @param obj some information about the token entry (see {@link TokenPredicateFactory} for the details)
      * @return predicate node carrying information about the token entry
      */
     @NotNull

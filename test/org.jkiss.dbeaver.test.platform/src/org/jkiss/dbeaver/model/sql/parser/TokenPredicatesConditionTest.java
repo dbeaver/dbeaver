@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class TokenPredicatesConditionTest {
 
     private TokenPredicateNode makeTestPredicateTree() {
-        TokenPredicateFabric tt = TokenPredicateFabric.makeDefaultFabric();
+        TokenPredicateFactory tt = TokenPredicateFactory.makeDefaultFactory();
 
         TokenPredicateNode predicate = tt.sequence(
             "CREATE",

@@ -48,6 +48,13 @@ public class SQLScriptParser {
 
     static protected final Log log = Log.getLog(SQLScriptParser.class);
 
+    private static final String CLI_ARG_DEBUG_DISABLE_SKIP_TOKEN_EVALUATION = "dbeaver.debug.sql.disable-skip-token-evaluation";
+
+    private static boolean isPredicateEvaluationEnabled() {
+        String property = System.getProperty(CLI_ARG_DEBUG_DISABLE_SKIP_TOKEN_EVALUATION); // Turn off processor settings save.
+        return CommonUtils.isEmpty(property);
+    }
+
     public static SQLScriptElement parseQuery(
         final SQLParserContext context,
         final int startPos,
@@ -62,7 +69,8 @@ public class SQLScriptParser {
             return null;
         }
         SQLDialect dialect = context.getDialect();
-        SQLTokenPredicateEvaluator skipTokenEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
+        SQLTokenPredicateEvaluator predicateEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
+        boolean isPredicateEvaluationEnabled = isPredicateEvaluationEnabled();
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
@@ -90,9 +98,9 @@ public class SQLScriptParser {
             boolean isControl = false;
             String delimiterText = null;
             try {
-                if (tokenLength > 0 && !token.isWhitespace()) {
+                if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace()) {
                     String tokenText = document.get(tokenOffset, tokenLength);
-                    skipTokenEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType));
+                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType));
                 }
 
                 boolean isDelimiter = (tokenType == SQLTokenType.T_DELIMITER) ||
@@ -188,22 +196,26 @@ public class SQLScriptParser {
                     }
                 }
 
-                SQLParserActionKind actionKind = skipTokenEvaluator.evaluatePredicates();
-                if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
-                    // header blocks seems optional and we are in the block either way
-                    while (curBlock != null && curBlock.isHeader) {
-                        curBlock = curBlock.parent;
+                if (isPredicateEvaluationEnabled) {
+                    SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
+                    if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
+                        // header blocks seems optional and we are in the block either way
+                        while (curBlock != null && curBlock.isHeader) {
+                            curBlock = curBlock.parent;
+                        }
+                        curBlock = new ScriptBlockInfo(curBlock, false);
+                        hasBlocks = true;
                     }
-                    curBlock = new ScriptBlockInfo(curBlock, false);
-                    hasBlocks = true;
-                }
-                if (curBlock != null && !token.isEOF()) {
-                    // if we are still inside of the block, so statement definitely hasn't ended yet
-                    // and will not be ended until we leave the block at least
-                    continue;
-                }
-                if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
-                    continue;
+
+                    if (curBlock != null && !token.isEOF()) {
+                        // if we are still inside of the block, so statement definitely hasn't ended yet
+                        // and will not be ended until we leave the block at least
+                        continue;
+                    }
+
+                    if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
+                        continue;
+                    }
                 }
 
                 boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
@@ -295,11 +307,13 @@ public class SQLScriptParser {
                 }
                 if (isDelimiter) {
                     statementStart = tokenOffset + tokenLength;
-                    firstKeyword = null;
-                    skipTokenEvaluator.reset();
-                    isControl = false;
-                    hasBlocks = false;
-                    hasValuableTokens = false;
+                    if (isPredicateEvaluationEnabled) {
+                        firstKeyword = null;
+                        predicateEvaluator.reset();
+                        isControl = false;
+                        hasBlocks = false;
+                        hasValuableTokens = false;
+                    }
                 }
                 if (token.isEOF()) {
                     return null;

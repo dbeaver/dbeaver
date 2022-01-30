@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 /**
  * Dialect-specific predicate node producer
  */
-class SQLTokenPredicateFabric extends TokenPredicateFabric {
-    private static final Log log = Log.getLog(SQLTokenPredicateFabric.class);
+class SQLTokenPredicateFactory extends TokenPredicateFactory {
+    private static final Log log = Log.getLog(SQLTokenPredicateFactory.class);
 
     private final TPRule[] allRules;
 
@@ -66,7 +66,7 @@ class SQLTokenPredicateFabric extends TokenPredicateFabric {
         }
     }
 
-    public SQLTokenPredicateFabric(@NotNull SQLRuleManager ruleManager) {
+    public SQLTokenPredicateFactory(@NotNull SQLRuleManager ruleManager) {
         super();
         allRules = ruleManager.getAllRules();
     }

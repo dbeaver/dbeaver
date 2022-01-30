@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 /**
  * Default predicate node producer
  */
-class DefaultTokenPredicateFabric extends TokenPredicateFabric {
-    public DefaultTokenPredicateFabric() {
+class DefaultTokenPredicateFactory extends TokenPredicateFactory {
+    public DefaultTokenPredicateFactory() {
         super();
     }
 
