@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
-import java.util.Collections;
 import java.util.List;
 
 /**

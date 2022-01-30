@@ -35,15 +35,18 @@ public class TokenPredicatesCondition implements SQLTokenPredicate {
     /**
      * Predicate trees representing conditions on possible structure of sequence of terms
      */
-    private final TokenPredicateNode prefixPredicate, suffixPredicate;
+    private final TokenPredicateNode prefixPredicate;
+    private final TokenPredicateNode suffixPredicate;
     /**
      * Complete list of all possible prefixes and suffixes matching the condition an any combination
      */
-    private final List<List<TokenEntry>> prefixes, suffixes;
+    private final List<List<TokenEntry>> prefixes;
+    private final List<List<TokenEntry>> suffixes;
     /**
      * Maximum lengths of corresponding prefixes and suffixes under condition
      */
-    public final int maxPrefixLength, maxSuffixLength;
+    public final int maxPrefixLength;
+    public final int maxSuffixLength;
 
     public TokenPredicatesCondition(@NotNull SQLParserActionKind actionKind, @NotNull TokenPredicateNode prefixPredicate, @NotNull TokenPredicateNode suffixPredicate) {
         this.actionKind = actionKind;
@@ -60,10 +63,12 @@ public class TokenPredicatesCondition implements SQLTokenPredicate {
         return maxSuffixLength;
     }
 
+    @NotNull
     public List<List<TokenEntry>> getPrefixes() {
         return prefixes;
     }
 
+    @NotNull
     public List<List<TokenEntry>> getSuffixes() {
         return suffixes;
     }

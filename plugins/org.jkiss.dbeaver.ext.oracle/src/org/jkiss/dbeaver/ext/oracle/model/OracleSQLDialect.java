@@ -598,7 +598,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                 // https://docs.oracle.com/en/database/oracle/oracle-database/12.2/lnpls/CREATE-PACKAGE-BODY-statement.html#GUID-68526FF2-96A1-4F14-A10B-4DD3E1CD80BE
                 // also presented in the earliest found reference on 7.3, so considered as always supported https://docs.oracle.com/pdf/A32538_1.pdf
                 new TokenPredicatesCondition(
-                        SQLParserActionKind.BeginBlock,
+                        SQLParserActionKind.BEGIN_BLOCK,
                         tt.sequence(
                                 "CREATE",
                                 tt.optional("OR", "REPLACE"),
@@ -611,7 +611,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                 // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-PROCEDURE.html#GUID-771879D8-BBFD-4D87-8A6C-290102142DA3
                 // not fully described, only some cases partially discovered
                 new TokenPredicatesCondition(
-                        SQLParserActionKind.SkipSuffixTerm,
+                        SQLParserActionKind.SKIP_SUFFIX_TERM,
                         tt.sequence(
                                 "CREATE",
                                 tt.optional("OR", "REPLACE"),
@@ -636,7 +636,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
             // notation presented in https://docs.oracle.com/en/database/oracle/oracle-database/18/sqlrf/SELECT.html
             // but missing in https://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_10002.htm
             conditions.add(new TokenPredicatesCondition(
-                    SQLParserActionKind.SkipSuffixTerm,
+                    SQLParserActionKind.SKIP_SUFFIX_TERM,
                     tt.token("WITH"),
                     tt.sequence("END", ";")
             ));

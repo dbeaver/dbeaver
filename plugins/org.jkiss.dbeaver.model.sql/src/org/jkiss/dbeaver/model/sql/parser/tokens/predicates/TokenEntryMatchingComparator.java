@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
-import java.util.Comparator;
-
 
 /**
  * Partial comparator implementing relaxed comparison of data carried by two token entries.

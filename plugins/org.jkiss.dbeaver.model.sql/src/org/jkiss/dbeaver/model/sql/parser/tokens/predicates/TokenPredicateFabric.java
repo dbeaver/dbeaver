@@ -20,10 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
-import org.jkiss.dbeaver.model.text.parser.TPToken;
-import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -46,6 +42,7 @@ public abstract class TokenPredicateFabric {
     /**
      * Create dialect-agnostinc {@link TokenPredicateFabric}
      */
+    @NotNull
     public static TokenPredicateFabric makeDefaultFabric() {
         return new DefaultTokenPredicateFabric();
     }
@@ -53,7 +50,8 @@ public abstract class TokenPredicateFabric {
     /**
      * Create dialect-specific {@link TokenPredicateFabric}
      */
-    public static TokenPredicateFabric makeDialectSpecificFabric(SQLRuleManager ruleManager) {
+    @NotNull
+    public static TokenPredicateFabric makeDialectSpecificFabric(@NotNull SQLRuleManager ruleManager) {
         return new SQLTokenPredicateFabric(ruleManager);
     }
 
@@ -90,32 +88,32 @@ public abstract class TokenPredicateFabric {
     }
 
     @NotNull
-    private TokenPredicateNode[] makeGroup(Object ... objs) {
+    private TokenPredicateNode[] makeGroup(@NotNull Object ... objs) {
         return Arrays.stream(objs).map(o -> makeNode(o)).collect(Collectors.toList()).toArray(new TokenPredicateNode[0]);
     }
 
     @NotNull
-    public TokenPredicateNode token(Object obj) {
+    public TokenPredicateNode token(@NotNull Object obj) {
         return this.makeNode(obj);
     }
 
     @NotNull
-    public TokenPredicateNode sequence(TokenPredicateNode ... nodes) {
+    public TokenPredicateNode sequence(@NotNull TokenPredicateNode ... nodes) {
         return new SequenceTokenPredicateNode(nodes);
     }
 
     @NotNull
-    public TokenPredicateNode sequence(Object ... objs) {
+    public TokenPredicateNode sequence(@NotNull Object ... objs) {
         return new SequenceTokenPredicateNode(this.makeGroup(objs));
     }
 
     @NotNull
-    public TokenPredicateNode alternative(TokenPredicateNode ... nodes) {
+    public TokenPredicateNode alternative(@NotNull TokenPredicateNode ... nodes) {
         return new AlternativeTokenPredicateNode(nodes);
     }
 
     @NotNull
-    public TokenPredicateNode alternative(Object ... objs) {
+    public TokenPredicateNode alternative(@NotNull Object ... objs) {
         return new AlternativeTokenPredicateNode(this.makeGroup(objs));
     }
 
@@ -125,7 +123,7 @@ public abstract class TokenPredicateFabric {
     }
 
     @NotNull
-    public TokenPredicateNode optional(Object ... obj) {
+    public TokenPredicateNode optional(@NotNull Object ... obj) {
         return new OptionalTokenPredicateNode(obj.length == 1 ? this.makeNode(obj[0]) : this.sequence(obj));
     }
 }

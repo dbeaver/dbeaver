@@ -46,7 +46,8 @@ public class Trie<T, V> {
         /**
          * some details about what is the most effective lookup strategy available to discover children nodes by a certain key
          */
-        public boolean isStronglyOrdered = true, isPartiallyOrdered = true;
+        public boolean isStronglyOrdered = true;
+        public boolean isPartiallyOrdered = true;
         /**
          * ordered list of keys used to discover children nodes for the paths laying through this node
          */
@@ -108,6 +109,7 @@ public class Trie<T, V> {
         @Override
         @Nullable
         public ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
+            ListNode<TrieNode<T, V>> accumulatedResults;
             // use the best suitable strategy to lookup for children nodes by the given term
             if (this.isStronglyOrdered && lookupPartialComparer.isStronglyComparable(term)) {
                 // TreeNode child = this.childNodesByKey.get(term);
@@ -117,17 +119,19 @@ public class Trie<T, V> {
                 // all the nodes and the key term are strongly distinguishable by comparison
                 int index = Collections.binarySearch(this.childKeys, term, Trie.this.strongComparer);
                 if (index >= 0) {
-                    results = ListNode.push(results, this.childNodes.get(index));
+                    accumulatedResults = ListNode.push(results, this.childNodes.get(index));
+                } else {
+                    accumulatedResults = results;
                 }
             } else if (this.isPartiallyOrdered && lookupPartialComparer.isPartiallyComparable(term)) {
                 // nodes are ordered in common, but some of them (or the key term) couldn't be strongly distinguished by comparison
                 // though we still can find a pivot item and then look around it while partial equality being hold
-                results = this.accumulatePartiallyComparableSubnodes(term, results);
+                accumulatedResults = this.accumulatePartiallyComparableSubnodes(term, results);
             } else {
                 // nodes vs given key comparison does not respect any kind of consistent ordering
-                results = this.accumulateNonComparableSubnodes(term, results);
+                accumulatedResults = this.accumulateNonComparableSubnodes(term, results);
             }
-            return results;
+            return accumulatedResults;
         }
 
 
@@ -142,7 +146,8 @@ public class Trie<T, V> {
             return results;
         }
 
-        private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(T term, ListNode<TrieNode<T, V>> results) {
+        @NotNull
+        private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
             TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
             int index = Collections.binarySearch(this.childKeys, term, comparer);
             if (index >= 0) {
@@ -205,7 +210,7 @@ public class Trie<T, V> {
         // till the end of the key sequence or boundary of the data structure, where no more child nodes could be matched
         ListNode<TrieNode> activeNodes = ListNode.of(root); // - nodes to lookup down the tree by the current term from the key sequence
         ListNode<Set<V>> results = null; // - total accumulated values from all the nodes met along the key sequence path
-        int depth = 0;
+
         do {
             T term = key.next();
             ListNode<TrieNode> nextNodes = null;
@@ -221,7 +226,6 @@ public class Trie<T, V> {
                 nextNodes = node.accumulateSubnodesByTerm(term, nextNodes);
             }
             activeNodes = nextNodes;
-            depth++;
             // proceed to the next level of the tree if there is something to look at
         } while (activeNodes != null && key.hasNext());
 

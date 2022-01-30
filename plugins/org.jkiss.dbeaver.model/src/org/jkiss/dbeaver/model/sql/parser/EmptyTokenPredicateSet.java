@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 import java.util.Collections;
 import java.util.Deque;

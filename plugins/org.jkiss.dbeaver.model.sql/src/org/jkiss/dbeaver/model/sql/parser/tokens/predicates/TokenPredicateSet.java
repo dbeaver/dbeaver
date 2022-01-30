@@ -31,7 +31,8 @@ public class TokenPredicateSet implements SQLTokenPredicateSet {
     private final List<TokenPredicatesCondition> conditions = new ArrayList<>();
     private final Trie<TokenEntry, SQLTokenPredicate> conditionsByPrefix = new Trie<>(ExactTokenEntryComparator.INSTANCE, TokenEntryMatchingComparator.INSTANCE);
     private final Trie<TokenEntry, SQLTokenPredicate> conditionsBySuffix = new Trie<>(ExactTokenEntryComparator.INSTANCE, TokenEntryMatchingComparator.INSTANCE);
-    private int maxHeadLength = 0, maxTailLength = 0;
+    private int maxHeadLength = 0;
+    private int maxTailLength = 0;
 
     @Override
     @NotNull

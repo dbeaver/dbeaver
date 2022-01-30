@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondition;
 
 import java.util.Collections;
@@ -28,7 +29,8 @@ import java.util.List;
  */
 public class TokenPredicatesList {
     private final List<TokenPredicatesCondition> conditions;
-    private final int maxHeadLength, maxTailLength;
+    private final int maxHeadLength;
+    private final int maxTailLength;
 
     public TokenPredicatesList(List<TokenPredicatesCondition> conditions) {
         this.conditions = Collections.unmodifiableList(conditions);
@@ -44,11 +46,12 @@ public class TokenPredicatesList {
         return maxTailLength;
     }
 
-    public static TokenPredicatesList of(TokenPredicatesCondition... conditions) {
+    @NotNull
+    public static TokenPredicatesList of(@NotNull TokenPredicatesCondition... conditions) {
         return new TokenPredicatesList(List.of(conditions));
     }
 
-    public boolean anyMatches(Deque<TokenEntry> head, Deque<TokenEntry> tail) {
+    public boolean anyMatches(@NotNull Deque<TokenEntry> head, @NotNull Deque<TokenEntry> tail) {
         for (TokenPredicatesCondition cond: conditions) {
             if (this.conditionMatches(cond, head, tail)) {
                 return true;
@@ -57,7 +60,7 @@ public class TokenPredicatesList {
         return false;
     }
 
-    private boolean conditionMatches(TokenPredicatesCondition cond, Deque<TokenEntry> head, Deque<TokenEntry> tail) {
+    private boolean conditionMatches(@NotNull TokenPredicatesCondition cond, @NotNull Deque<TokenEntry> head, @NotNull Deque<TokenEntry> tail) {
         boolean tailMatch = false;
         for (List<TokenEntry> condTail : cond.getSuffixes()) {
             int condTailLen = condTail.size();

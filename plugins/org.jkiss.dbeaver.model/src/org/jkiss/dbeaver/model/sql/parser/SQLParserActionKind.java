@@ -17,6 +17,6 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 public enum SQLParserActionKind {
-    SkipSuffixTerm,
-    BeginBlock,
+    SKIP_SUFFIX_TERM,
+    BEGIN_BLOCK,
 }

@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.sql.parser.ListNode;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
 import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;

@@ -189,7 +189,7 @@ public class SQLScriptParser {
                 }
 
                 SQLParserActionKind actionKind = skipTokenEvaluator.evaluatePredicates();
-                if (actionKind == SQLParserActionKind.BeginBlock) {
+                if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
                     // header blocks seems optional and we are in the block either way
                     while (curBlock != null && curBlock.isHeader) {
                         curBlock = curBlock.parent;
@@ -202,7 +202,7 @@ public class SQLScriptParser {
                     // and will not be ended until we leave the block at least
                     continue;
                 }
-                if (actionKind == SQLParserActionKind.SkipSuffixTerm) {
+                if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
                     continue;
                 }
 
