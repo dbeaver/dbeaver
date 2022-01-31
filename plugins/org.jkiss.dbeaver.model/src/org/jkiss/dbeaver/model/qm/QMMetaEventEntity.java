@@ -17,21 +17,33 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 
 /**
- * Event cursor
+ * QM meta event
  */
-public interface QMEventCursor extends AutoCloseable {
+public class QMMetaEventEntity extends QMMetaEvent {
+    private final long id;
 
-    long getTotalSize();
+    public QMMetaEventEntity(QMMObject object, Action action, long id) {
+        super(object, action);
+        this.id = id;
+    }
 
-    void scroll(int position, DBRProgressMonitor monitor) throws DBException;
+    public QMMObject getObject() {
+        return object;
+    }
 
-    boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException;
+    public Action getAction() {
+        return action;
+    }
 
-    QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException;
+    public long getId() {
+        return id;
+    }
 
-    void close();
+    @Override
+    public String toString() {
+        return action + " " + object;
+    }
 }
