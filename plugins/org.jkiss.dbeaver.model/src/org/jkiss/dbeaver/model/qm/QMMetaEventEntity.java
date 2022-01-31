@@ -30,14 +30,6 @@ public class QMMetaEventEntity extends QMMetaEvent {
         this.id = id;
     }
 
-    public QMMObject getObject() {
-        return object;
-    }
-
-    public Action getAction() {
-        return action;
-    }
-
     public long getId() {
         return id;
     }
