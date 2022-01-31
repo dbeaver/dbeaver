@@ -29,8 +29,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
@@ -51,6 +51,7 @@ public class PrivilegeTableControl extends Composite {
 
     private TableViewer tableViewer;
     private ViewerColumnController<Object, Object> columnsController;
+    private Table privTable;
 
     private List<MySQLPrivilege> privileges;
     private List<MySQLObjectPrivilege> currentPrivileges = new ArrayList<>();
@@ -67,12 +68,12 @@ public class PrivilegeTableControl extends Composite {
         setLayout(gl);
 
         Composite privsGroup = UIUtils.createControlGroup(this, title, 1, GridData.FILL_BOTH, 0);
-        GridData gd = (GridData)privsGroup.getLayoutData();
+        GridData gd = (GridData) privsGroup.getLayoutData();
         gd.horizontalSpan = 2;
 
         tableViewer = new TableViewer(privsGroup, SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
-        Table privTable = tableViewer.getTable();
+        privTable = tableViewer.getTable();
         privTable.setHeaderVisible(true);
         privTable.setLinesVisible(true);
         gd = new GridData(GridData.FILL_BOTH);
@@ -121,47 +122,11 @@ public class PrivilegeTableControl extends Composite {
                     MySQLObjectPrivilege elementPriv = (MySQLObjectPrivilege) element;
                     if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                         elementPriv.enabled = Boolean.TRUE.equals(value);
-                        notifyPrivilegeCheck(elementPriv.privilege, elementPriv.enabled, false);
-                    }
-                }
-            }
-        });
-
-        columnsController.addBooleanColumn(MySQLUIMessages.controls_privilege_table_column_privilege_grant_option, MySQLUIMessages.controls_privilege_table_column_privilege_grant_option_tip, SWT.CENTER, true, true, item -> {
-            if (item instanceof MySQLObjectPrivilege) {
-                return ((MySQLObjectPrivilege) item).withGrantOption;
-            }
-            return false;
-        }, new EditingSupport(tableViewer) {
-            @Override
-            protected CellEditor getCellEditor(Object element) {
-                return new CustomCheckboxCellEditor(tableViewer.getTable());
-            }
-
-            @Override
-            protected boolean canEdit(Object element) {
-                return true;
-            }
-
-            @Override
-            protected Object getValue(Object element) {
-                if (element instanceof MySQLObjectPrivilege) {
-                    return ((MySQLObjectPrivilege) element).withGrantOption;
-                }
-                return false;
-            }
-
-            @Override
-            protected void setValue(Object element, Object value) {
-                if (element instanceof MySQLObjectPrivilege) {
-                    MySQLObjectPrivilege elementPriv = (MySQLObjectPrivilege) element;
-                    if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
-                        elementPriv.withGrantOption = Boolean.TRUE.equals(value);
-                        if (elementPriv.withGrantOption && !elementPriv.enabled) {
-                            // Grant Option is connected with the privilege. If the grant option is enabled - privilege must be enabled too.
-                            elementPriv.enabled = true;
+                        boolean withGrantOption = false;
+                        if (elementPriv.enabled && elementPriv.privilege.getName().equals(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
+                            withGrantOption = true;
                         }
-                        notifyPrivilegeCheck(elementPriv.privilege, elementPriv.enabled, elementPriv.withGrantOption);
+                        notifyPrivilegeCheck(elementPriv.privilege, elementPriv.enabled, withGrantOption);
                     }
                 }
             }
@@ -204,7 +169,6 @@ public class PrivilegeTableControl extends Composite {
                 for (MySQLObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     if (userPrivilege.enabled) {
                         userPrivilege.enabled = false;
-                        userPrivilege.withGrantOption = false;
                         notifyPrivilegeCheck(userPrivilege.privilege, false, false);
                     }
                 }
@@ -223,10 +187,35 @@ public class PrivilegeTableControl extends Composite {
 
     public void fillPrivileges(List<MySQLPrivilege> privs) {
         this.privileges = privs;
+        boolean hasGrantOption = false;
+        for (MySQLPrivilege privilege : privileges) {
+            if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
+                hasGrantOption = true;
+                break;
+            }
+        }
+        if (!hasGrantOption) {
+            // Add "With Grant Option" manually. We will use this option to expand grant statements on the "WITH GRANT STATEMENT" string
+            MySQLDataSource dataSource = null;
+            if (!CommonUtils.isEmpty(privileges)) {
+                dataSource = (MySQLDataSource) privileges.get(0).getDataSource();
+            }
+            privileges.add(new MySQLPrivilege(
+                dataSource,
+                MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME,
+                "Databases,Tables,Functions,Procedures",
+                "To give to other users those privileges you possess",
+                MySQLPrivilege.Kind.DDL));
+        }
     }
 
-    public void fillGrants(List<MySQLGrant> grants)
-    {
+    public void fillGrants(List<MySQLGrant> grants, boolean editable) {
+        // Other Privileges table must be disabled if table is in focus
+        privTable.setEnabled(editable);
+        fillGrants(grants);
+    }
+
+    public void fillGrants(List<MySQLGrant> grants) {
         if (CommonUtils.isEmpty(privileges)) {
             return;
         }
@@ -236,7 +225,7 @@ public class PrivilegeTableControl extends Composite {
         if (CommonUtils.isEmpty(grants)) {
             // Create simple privileges list
             for (MySQLPrivilege privilege : privileges) {
-                currentPrivileges.add(new MySQLObjectPrivilege(privilege, false, false));
+                currentPrivileges.add(new MySQLObjectPrivilege(privilege, false));
             }
             drawColumns(currentPrivileges);
             return;
@@ -247,10 +236,11 @@ public class PrivilegeTableControl extends Composite {
                 if (isStatic && !grant.isStatic()) {
                     continue;
                 }
-                if (grant.isAllPrivileges() || (ArrayUtils.contains(grant.getPrivileges(), privilege))) {
-                    currentPrivileges.add(new MySQLObjectPrivilege(privilege, true, grant.isGrantOption()));
+                if (((privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME) && grant.isGrantOption()) || grant.isAllPrivileges()) ||
+                    (ArrayUtils.contains(grant.getPrivileges(), privilege))) {
+                    currentPrivileges.add(new MySQLObjectPrivilege(privilege, true));
                 } else {
-                    currentPrivileges.add(new MySQLObjectPrivilege(privilege, false, false));
+                    currentPrivileges.add(new MySQLObjectPrivilege(privilege, false));
                 }
             }
         }
@@ -264,12 +254,11 @@ public class PrivilegeTableControl extends Composite {
         columnsController.repackColumns();
     }
 
-    public void checkPrivilege(MySQLPrivilege privilege, boolean grant, boolean withGrantOption)
+    public void checkPrivilege(MySQLPrivilege privilege, boolean grant)
     {
         for (MySQLObjectPrivilege basePrivilege : currentPrivileges) {
             if (basePrivilege.privilege == privilege) {
                 basePrivilege.enabled = grant;
-                basePrivilege.withGrantOption = withGrantOption;
             }
         }
         drawColumns(currentPrivileges);
@@ -279,12 +268,10 @@ public class PrivilegeTableControl extends Composite {
 
         private MySQLPrivilege privilege;
         private boolean enabled;
-        private boolean withGrantOption;
 
-        MySQLObjectPrivilege(MySQLPrivilege privilege, boolean enabled, boolean withGrantOption) {
+        MySQLObjectPrivilege(MySQLPrivilege privilege, boolean enabled) {
             this.privilege = privilege;
             this.enabled = enabled;
-            this.withGrantOption = withGrantOption;
         }
     }
 
