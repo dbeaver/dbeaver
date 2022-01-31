@@ -41,7 +41,6 @@ public class DashboardUpdater {
 
     private static final Log log = Log.getLog(DashboardUpdater.class);
     private Map<DBPDataSourceContainer, List<MapQueryInfo>> mapQueries = new HashMap<>();
-    private final Set<String> brokenDataSources = new HashSet<>();
 
     private static class MapQueryInfo {
         private final DashboardContainer dashboard;
@@ -100,7 +99,7 @@ public class DashboardUpdater {
                 DBExecUtils.tryExecuteRecover(dashboards, dataSource, param -> {
                     try {
                         for (MapQueryInfo mqi : mqEntry.getValue()) {
-                            if (brokenDataSources.contains(mqi.dashboard.getDataSourceContainer().getId())) {
+                            if (!mqi.dashboard.isAutoUpdateEnabled()) {
                                 continue;
                             }
 
@@ -108,7 +107,7 @@ public class DashboardUpdater {
                                 readMapQueryData(monitor, mqi);
                             } catch (DBCException e) {
                                 log.debug("Datasource '" + mqi.dashboard.getDataSourceContainer().getName() + "' dashboard query failed. Stopping update of dashboard queries for this datasource.");
-                                brokenDataSources.add(mqi.dashboard.getDataSourceContainer().getId());
+                                mqi.dashboard.disableAutoUpdate();
                                 throw e;
                             }
                         }
@@ -122,7 +121,7 @@ public class DashboardUpdater {
         }
 
         for (DashboardContainer dashboard : dashboards) {
-            if (brokenDataSources.contains(dashboard.getDataSourceContainer().getId())) {
+            if (!dashboard.isAutoUpdateEnabled()) {
                 continue;
             }
             DBPDataSource dataSource = dashboard.getDataSourceContainer().getDataSource();
@@ -135,7 +134,7 @@ public class DashboardUpdater {
                         updateDashboard(monitor, dashboard);
                     } catch (Throwable e) {
                         log.debug("Datasource '" + dashboard.getDataSourceContainer().getName() + "' dashboard query failed. Stopping update of dashboards for this datasource.");
-                        brokenDataSources.add(dashboard.getDataSourceContainer().getId());
+                        dashboard.disableAutoUpdate();
                         throw new InvocationTargetException(e);
                     }
                 });
