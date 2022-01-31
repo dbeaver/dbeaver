@@ -172,15 +172,20 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     public DBDAttributeBinding[] filterAttributeBindings(DBDAttributeBinding[] attributes) {
         DBDDataFilter dataFilter = model.getDataFilter();
         List<DBDAttributeBinding> filtered = new ArrayList<>();
-        for (DBDAttributeBinding attr : attributes) {
+        DBDAttributeBinding[] preFiltered;
+        if (filterAttributes && !options.getSelectedColumns().isEmpty()) {
+            preFiltered = options.getSelectedColumns().toArray(new DBDAttributeBinding[0]);
+        } else {
+            preFiltered = attributes;
+        }
+        for (DBDAttributeBinding attr : preFiltered) {
             DBDAttributeConstraint ac = dataFilter.getConstraint(attr);
             if (ac != null && !ac.isVisible()) {
                 continue;
             }
-            if (!filterAttributes || options.getSelectedColumns().contains(attr)) {
-                filtered.add(attr);
-            }
+            filtered.add(attr);
         }
+
         filtered.sort((o1, o2) -> {
             DBDAttributeConstraint c1 = dataFilter.getConstraint(o1, true);
             DBDAttributeConstraint c2 = dataFilter.getConstraint(o2, true);
