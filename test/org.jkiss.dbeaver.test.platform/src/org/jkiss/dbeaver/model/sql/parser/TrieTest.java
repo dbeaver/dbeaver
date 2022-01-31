@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.*;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.Trie;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TrieLookupComparator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -201,7 +202,7 @@ public class TrieTest {
                 .collect(Collectors.toList());
 
         var expected = makeExpectedResults().stream()
-                .map(s -> new HashSet(s))
+                .map(s -> new HashSet<>(s))
                 .collect(Collectors.toList());
         // expected results are the same as in {@link #trieLookup()} test, but all of them will include root extra values now
         expected.forEach(s -> s.addAll(rootValues));
