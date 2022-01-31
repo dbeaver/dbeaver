@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.*;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
@@ -37,18 +38,22 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
  * SQL parser
  */
-public class SQLScriptParser
-{
+public class SQLScriptParser {
+
     static protected final Log log = Log.getLog(SQLScriptParser.class);
+
+    private static final String CLI_ARG_DEBUG_DISABLE_SKIP_TOKEN_EVALUATION = "dbeaver.debug.sql.disable-skip-token-evaluation";
+
+    private static boolean isPredicateEvaluationEnabled() {
+        String property = System.getProperty(CLI_ARG_DEBUG_DISABLE_SKIP_TOKEN_EVALUATION); // Turn off processor settings save.
+        return CommonUtils.isEmpty(property);
+    }
 
     public static SQLScriptElement parseQuery(
         final SQLParserContext context,
@@ -64,6 +69,8 @@ public class SQLScriptParser
             return null;
         }
         SQLDialect dialect = context.getDialect();
+        SQLTokenPredicateEvaluator predicateEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
+        boolean isPredicateEvaluationEnabled = isPredicateEvaluationEnabled();
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
@@ -91,6 +98,11 @@ public class SQLScriptParser
             boolean isControl = false;
             String delimiterText = null;
             try {
+                if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace()) {
+                    String tokenText = document.get(tokenOffset, tokenLength);
+                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType));
+                }
+
                 boolean isDelimiter = (tokenType == SQLTokenType.T_DELIMITER) ||
                     (lineFeedIsDelimiter && token.isWhitespace() && document.get(tokenOffset, tokenLength).contains("\n"));
                 if (isDelimiter) {
@@ -184,11 +196,34 @@ public class SQLScriptParser
                     }
                 }
 
+                if (isPredicateEvaluationEnabled) {
+                    SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
+                    if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
+                        // header blocks seems optional and we are in the block either way
+                        while (curBlock != null && curBlock.isHeader) {
+                            curBlock = curBlock.parent;
+                        }
+                        curBlock = new ScriptBlockInfo(curBlock, false);
+                        hasBlocks = true;
+                    }
+
+                    if (curBlock != null && !token.isEOF()) {
+                        // if we are still inside of the block, so statement definitely hasn't ended yet
+                        // and will not be ended until we leave the block at least
+                        continue;
+                    }
+
+                    if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
+                        continue;
+                    }
+                }
+
                 boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
                 if (isControl && (
                         ((scriptMode || cursorInsideToken) && !hasValuableTokens)
                         || (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos))
-                )) {                    // Control query
+                )) {
+                    // Control query
                     String controlText = document.get(tokenOffset, tokenLength);
                     String commandId = null;
                     if (token instanceof SQLControlToken) {
@@ -272,6 +307,13 @@ public class SQLScriptParser
                 }
                 if (isDelimiter) {
                     statementStart = tokenOffset + tokenLength;
+                    if (isPredicateEvaluationEnabled) {
+                        firstKeyword = null;
+                        predicateEvaluator.reset();
+                        isControl = false;
+                        hasBlocks = false;
+                        hasValuableTokens = false;
+                    }
                 }
                 if (token.isEOF()) {
                     return null;
@@ -437,7 +479,7 @@ public class SQLScriptParser
                     for (String delim : statementDelimiters) {
                         int delimIndex = lineStr.lastIndexOf(delim);
                         if (delimIndex != -1) {
-                            // There is a dlimiter in current line
+                            // There is a delimiter in current line
                             // Move pos before it if there are no valuable chars between delimiter and cursor position
                             boolean hasValuableChars = false;
                             for (int i = region.getOffset() + delimIndex + delim.length(); i < currentPos; i++) {

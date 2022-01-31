@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -438,4 +440,13 @@ public interface SQLDialect {
 
     boolean supportsInsertAllDefaultValuesStatement();
 
+    /**
+     * Generates a set of connection-specific dialect features which require special handling during SQL parsing
+     * (empty by default)
+     * @return a set of token predicates
+     */
+    @NotNull
+    default SQLTokenPredicateSet getSkipTokenPredicates() {
+        return EmptyTokenPredicateSet.INSTANCE;
+    }
 }
