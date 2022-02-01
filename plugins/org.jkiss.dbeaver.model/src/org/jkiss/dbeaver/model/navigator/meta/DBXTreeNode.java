@@ -76,7 +76,7 @@ public abstract class DBXTreeNode
             try {
                 this.visibleIf = AbstractDescriptor.parseExpression(visibleIf);
             } catch (DBException e) {
-                log.warn(e);
+                log.debug("Error parsing expression '" + visibleIf + "':" + GeneralUtils.getExpressionParseMessage(e));
             }
         }
         if (recursive != null) {
@@ -248,7 +248,6 @@ public abstract class DBXTreeNode
             return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
         } catch (JexlException e) {
             log.debug("Error evaluating expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
-            log.warn(e);
             return false;
         }
     }
