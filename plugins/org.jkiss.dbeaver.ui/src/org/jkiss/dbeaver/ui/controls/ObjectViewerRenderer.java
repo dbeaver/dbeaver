@@ -261,7 +261,11 @@ public abstract class ObjectViewerRenderer {
 //                    Image image = editable ?
 //                        (boolValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
 //                        (boolValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
+                    final boolean disabled = event.widget instanceof Control && !((Control) event.widget).isEnabled();
                     Image image = DBeaverIcons.getImage(booleanStyle.getIcon());
+                    if (disabled) {
+                        image = new Image(image.getDevice(), image, SWT.IMAGE_GRAY);
+                    }
                     final Rectangle imageBounds = image.getBounds();
                     booleanValueWith = imageBounds.width;
 
@@ -278,6 +282,10 @@ public abstract class ObjectViewerRenderer {
                         case RIGHT:
                             gc.drawImage(image, event.x + columnBounds.width - imageBounds.width - 4, event.y + (columnBounds.height - imageBounds.height) / 2);
                             break;
+                    }
+
+                    if (disabled) {
+                        image.dispose();
                     }
                 }
 
