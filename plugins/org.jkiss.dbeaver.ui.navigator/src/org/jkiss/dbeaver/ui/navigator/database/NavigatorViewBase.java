@@ -336,4 +336,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
     }
 
+    protected void redrawTree() {
+        tree.getViewer().refresh();
+    }
+
 }
