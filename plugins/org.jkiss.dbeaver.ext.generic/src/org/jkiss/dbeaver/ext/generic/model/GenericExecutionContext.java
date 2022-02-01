@@ -215,12 +215,13 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsCatalogChange() {
         GenericDataSource dataSource = getDataSource();
+        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
-                return dataSource.hasCatalogs();
+                return dataSource.hasCatalogs() && info.supportsCatalogSelection();
             }
             if (dataSource.hasCatalogs()) {
-                return GenericConstants.ENTITY_TYPE_CATALOG.equals(dataSource.getSelectedEntityType()) || !dataSource.hasSchemas();
+                return (GenericConstants.ENTITY_TYPE_CATALOG.equals(dataSource.getSelectedEntityType()) || !dataSource.hasSchemas()) && info.supportsCatalogSelection();
             }
         }
         return false;
@@ -229,12 +230,13 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsSchemaChange() {
         GenericDataSource dataSource = getDataSource();
+        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
-                return !dataSource.hasCatalogs() && dataSource.hasSchemas();
+                return !dataSource.hasCatalogs() && dataSource.hasSchemas() && info.supportsCatalogSelection();
             }
             if (dataSource.hasSchemas()) {
-                return GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType()) || !dataSource.hasCatalogs();
+                return (GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType()) || !dataSource.hasCatalogs()) && info.supportsCatalogSelection();
             }
         }
         return false;

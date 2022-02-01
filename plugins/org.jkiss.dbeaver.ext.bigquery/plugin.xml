@@ -32,6 +32,7 @@
                         categories="bigdata">
                     <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.16.1020.zip"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <parameter name="supports-catalog-selection" value="false"/>
                 </driver>
 
             </drivers>

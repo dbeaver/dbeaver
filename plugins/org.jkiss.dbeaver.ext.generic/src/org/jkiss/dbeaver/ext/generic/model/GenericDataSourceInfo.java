@@ -29,6 +29,7 @@ import org.jkiss.utils.CommonUtils;
 public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     private final boolean supportsLimits;
+    public boolean supportsCatalogSelection;
     private boolean supportsMultipleResults;
     private boolean supportsNullableUniqueConstraints;
     private final boolean supportsSetArray;
@@ -45,7 +46,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsTransactionsForDDL = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL), true);
         setReadOnlyData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_DATA), false));
         setReadOnlyMetaData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_META_DATA), false));
-
+        supportsCatalogSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
         supportsNullableUniqueConstraints = false;
         supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
     }
@@ -62,6 +63,10 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     public void setSupportsNullableUniqueConstraints(boolean supportsNullableUniqueConstraints) {
         this.supportsNullableUniqueConstraints = supportsNullableUniqueConstraints;
+    }
+
+    public boolean supportsCatalogSelection() {
+        return supportsCatalogSelection;
     }
 
     @Override

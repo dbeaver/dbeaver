@@ -66,6 +66,8 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL = "supports-ddl-transactions";
     public static final String PARAM_READ_ONLY_DATA = "read-only-data";
     public static final String PARAM_READ_ONLY_META_DATA = "read-only-meta-data";
+    public static final String PARAM_SUPPORTS_CATALOG_SELECTION = "supports-catalog-selection";
+
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

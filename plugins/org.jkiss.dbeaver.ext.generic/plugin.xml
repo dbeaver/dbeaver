@@ -118,6 +118,7 @@
 
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
+                    <property id="supports-catalog-selection" label="Driver can change default catalog" description="Driver does support catalog change" type="boolean" required="false" defaultValue="true"/>;
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-table-constraints" label="Driver supports constraints" description="Driver supports table constraints (primary keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>

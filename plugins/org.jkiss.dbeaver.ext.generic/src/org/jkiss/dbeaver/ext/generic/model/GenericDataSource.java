@@ -251,6 +251,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         if (supportsStructCacheParam != null) {
             this.supportsStructCache = CommonUtils.toBoolean(supportsStructCacheParam);
         }
+        final Object supportsCatalogSelection = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION);
+        if (supportsCatalogSelection != null) {
+            info.supportsCatalogSelection = CommonUtils.toBoolean(supportsCatalogSelection);
+        }
         return info;
     }
 
