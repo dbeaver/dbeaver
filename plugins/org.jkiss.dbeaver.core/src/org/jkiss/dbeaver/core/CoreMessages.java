@@ -381,8 +381,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_label_default_schema;
 	public static String dialog_connection_wizard_final_label_default_schema_tooltip;
 	public static String dialog_connection_wizard_final_label_keepalive;
-	public static String dialog_connection_wizard_final_label_isolation_level_tooltip;
 	public static String dialog_connection_wizard_final_label_keepalive_tooltip;
+	public static String dialog_connection_wizard_final_label_isolation_level_tooltip;
+	public static String dialog_connection_wizard_final_label_close_idle_connections;
+	public static String dialog_connection_wizard_final_label_close_idle_connections_tooltip;
 	public static String dialog_connection_wizard_final_label_bootstrap_query;
 	public static String dialog_connection_wizard_configure;
 	public static String dialog_connection_wizard_final_label_shell_command;
