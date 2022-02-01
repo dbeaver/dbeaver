@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -81,16 +82,18 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege) prevCommand;
-            if (prevGrant.schema == schema && prevGrant.table == table && prevGrant.privilege == privilege) {
-                if (prevGrant.grant == grant) {
-                    if (prevGrant.withGrantOption == withGrantOption) {
+            if (prevGrant.schema == schema && prevGrant.table == table) {
+                if (prevGrant.privilege == privilege) {
+                    if (prevGrant.grant == grant) {
                         return prevCommand;
                     } else {
-                        prevGrant.withGrantOption = withGrantOption;
-                        return prevCommand;
+                        return null;
                     }
-                } else {
-                    return null;
+                } else if (MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME.equals(privilege.getName()) && withGrantOption) {
+                    // To add WITH GRANT OPTION part to the GRANT statement
+                    // Just one such addition option is enough to expand this option on the entire table
+                    prevGrant.withGrantOption = true;
+                    return prevCommand;
                 }
             }
         }
