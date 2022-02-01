@@ -28,15 +28,16 @@ import org.jkiss.utils.ArrayUtils;
 public class QMEventCriteria {
 
     @Nullable
-    String containerId;
+    private String containerId;
     @Nullable
-    String sessionId;
+    private String sessionId;
     @NotNull
-    QMObjectType[] objectTypes = new QMObjectType[0];
+    private QMObjectType[] objectTypes = new QMObjectType[0];
     @NotNull
-    DBCExecutionPurpose[] queryTypes = new DBCExecutionPurpose[0];
+    private DBCExecutionPurpose[] queryTypes = new DBCExecutionPurpose[0];
     @Nullable
-    String searchString;
+    private String searchString;
+    private int fetchingSize = 200;
 
     public String getContainerId() {
         return containerId;
@@ -94,5 +95,13 @@ public class QMEventCriteria {
 
     public void setSearchString(String searchString) {
         this.searchString = searchString;
+    }
+
+    public int getFetchingSize() {
+        return fetchingSize;
+    }
+
+    public void setFetchingSize(int fetchingSize) {
+        this.fetchingSize = fetchingSize;
     }
 }
