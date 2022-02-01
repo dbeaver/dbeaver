@@ -66,10 +66,8 @@ import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Structure object editor
@@ -77,161 +75,6 @@ import java.util.Map;
 public class ComplexObjectEditor extends TreeViewer {
 
     private static final Log log = Log.getLog(ComplexObjectEditor.class);
-
-    private abstract static class ComplexElementItem {
-        protected boolean created;
-        protected boolean modified;
-        protected Object value;
-
-        @NotNull
-        public abstract String getName();
-
-        @NotNull
-        public abstract DBSDataType getDataType();
-
-        @NotNull
-        public abstract DBDValueHandler getValueHandler();
-    }
-
-    private interface ComplexElement {
-        @NotNull
-        Object extract(@NotNull DBRProgressMonitor monitor);
-
-        @NotNull
-        ComplexElementItem[] getChildren();
-    }
-
-    private static class CollectionElement implements ComplexElement {
-        private final DBDCollection source;
-        private final List<Item> items;
-
-        public CollectionElement(@NotNull DBDCollection source) {
-            this.source = source;
-            this.items = new ArrayList<>();
-        }
-
-        @NotNull
-        @Override
-        public Object extract(@NotNull DBRProgressMonitor monitor) {
-            DBDCollection collection = source;
-
-            if (collection instanceof DBDValueCloneable) {
-                try {
-                    collection = (DBDCollection) ((DBDValueCloneable) collection).cloneValue(monitor);
-                } catch (DBException e) {
-                    log.error("Error cloning collection value", e);
-                }
-            }
-
-            collection.setContents(items.stream().map(ComplexObjectEditor::unwrap).toArray());
-
-            return collection;
-        }
-
-        @NotNull
-        @Override
-        public ComplexElementItem[] getChildren() {
-            return items.toArray(ComplexElementItem[]::new);
-        }
-
-        private static class Item extends ComplexElementItem {
-            private final CollectionElement collection;
-
-            public Item(CollectionElement collection, Object value) {
-                this.collection = collection;
-                this.value = value;
-            }
-
-            @NotNull
-            @Override
-            public String getName() {
-                return String.valueOf(collection.items.indexOf(this));
-            }
-
-            @NotNull
-            @Override
-            public DBSDataType getDataType() {
-                return collection.source.getComponentType();
-            }
-
-            @NotNull
-            @Override
-            public DBDValueHandler getValueHandler() {
-                return collection.source.getComponentValueHandler();
-            }
-        }
-    }
-
-    private static class CompositeElement implements ComplexElement {
-        private final DBDComposite source;
-        private final List<Item> items;
-        private final DBSDataType type;
-
-        public CompositeElement(@NotNull DBDComposite source) {
-            this.source = source;
-            this.items = new ArrayList<>();
-            this.type = source.getDataType();
-        }
-
-        @NotNull
-        @Override
-        public Object extract(@NotNull DBRProgressMonitor monitor) {
-            DBDComposite composite = source;
-
-            if (composite instanceof DBDValueCloneable) {
-                try {
-                    composite = (DBDComposite) ((DBDValueCloneable) composite).cloneValue(monitor);
-                } catch (DBException e) {
-                    log.error("Error cloning composite value", e);
-                }
-            }
-
-            for (Item item : items) {
-                try {
-                    composite.setAttributeValue(item.attribute, unwrap(item.value));
-                } catch (DBCException e) {
-                    log.error("Error setting composite attribute value", e);
-                }
-            }
-
-            return composite;
-        }
-
-        @NotNull
-        @Override
-        public ComplexElementItem[] getChildren() {
-            return items.toArray(ComplexElementItem[]::new);
-        }
-
-        private static class Item extends ComplexElementItem {
-            private final CompositeElement composite;
-            private final DBSAttributeBase attribute;
-
-            public Item(@NotNull CompositeElement composite, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
-                this.composite = composite;
-                this.attribute = attribute;
-                this.value = value;
-            }
-
-            @NotNull
-            @Override
-            public String getName() {
-                return attribute.getName();
-            }
-
-            @NotNull
-            @Override
-            public DBSDataType getDataType() {
-                return DBUtils.getDataType(attribute);
-            }
-
-            @NotNull
-            @Override
-            public DBDValueHandler getValueHandler() {
-                return DBUtils.findValueHandler(composite.type.getDataSource(), attribute);
-            }
-        }
-    }
 
     private final IValueController parentController;
     private final IValueEditor editor;
@@ -912,6 +755,161 @@ public class ComplexObjectEditor extends TreeViewer {
             removeElementAction.setEnabled(false);
             moveElementUpAction.setEnabled(false);
             moveElementDownAction.setEnabled(false);
+        }
+    }
+
+    private abstract static class ComplexElementItem {
+        protected boolean created;
+        protected boolean modified;
+        protected Object value;
+
+        @NotNull
+        public abstract String getName();
+
+        @NotNull
+        public abstract DBSDataType getDataType();
+
+        @NotNull
+        public abstract DBDValueHandler getValueHandler();
+    }
+
+    private interface ComplexElement {
+        @NotNull
+        Object extract(@NotNull DBRProgressMonitor monitor);
+
+        @NotNull
+        ComplexElementItem[] getChildren();
+    }
+
+    private static class CollectionElement implements ComplexElement {
+        private final DBDCollection source;
+        private final List<Item> items;
+
+        public CollectionElement(@NotNull DBDCollection source) {
+            this.source = source;
+            this.items = new ArrayList<>();
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            DBDCollection collection = source;
+
+            if (collection instanceof DBDValueCloneable) {
+                try {
+                    collection = (DBDCollection) ((DBDValueCloneable) collection).cloneValue(monitor);
+                } catch (DBException e) {
+                    log.error("Error cloning collection value", e);
+                }
+            }
+
+            collection.setContents(items.stream().map(ComplexObjectEditor::unwrap).toArray());
+
+            return collection;
+        }
+
+        @NotNull
+        @Override
+        public ComplexElementItem[] getChildren() {
+            return items.toArray(ComplexElementItem[]::new);
+        }
+
+        private static class Item extends ComplexElementItem {
+            private final CollectionElement collection;
+
+            public Item(CollectionElement collection, Object value) {
+                this.collection = collection;
+                this.value = value;
+            }
+
+            @NotNull
+            @Override
+            public String getName() {
+                return String.valueOf(collection.items.indexOf(this));
+            }
+
+            @NotNull
+            @Override
+            public DBSDataType getDataType() {
+                return collection.source.getComponentType();
+            }
+
+            @NotNull
+            @Override
+            public DBDValueHandler getValueHandler() {
+                return collection.source.getComponentValueHandler();
+            }
+        }
+    }
+
+    private static class CompositeElement implements ComplexElement {
+        private final DBDComposite source;
+        private final List<Item> items;
+        private final DBSDataType type;
+
+        public CompositeElement(@NotNull DBDComposite source) {
+            this.source = source;
+            this.items = new ArrayList<>();
+            this.type = source.getDataType();
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            DBDComposite composite = source;
+
+            if (composite instanceof DBDValueCloneable) {
+                try {
+                    composite = (DBDComposite) ((DBDValueCloneable) composite).cloneValue(monitor);
+                } catch (DBException e) {
+                    log.error("Error cloning composite value", e);
+                }
+            }
+
+            for (Item item : items) {
+                try {
+                    composite.setAttributeValue(item.attribute, unwrap(item.value));
+                } catch (DBCException e) {
+                    log.error("Error setting composite attribute value", e);
+                }
+            }
+
+            return composite;
+        }
+
+        @NotNull
+        @Override
+        public ComplexElementItem[] getChildren() {
+            return items.toArray(ComplexElementItem[]::new);
+        }
+
+        private static class Item extends ComplexElementItem {
+            private final CompositeElement composite;
+            private final DBSAttributeBase attribute;
+
+            public Item(@NotNull CompositeElement composite, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
+                this.composite = composite;
+                this.attribute = attribute;
+                this.value = value;
+            }
+
+            @NotNull
+            @Override
+            public String getName() {
+                return attribute.getName();
+            }
+
+            @NotNull
+            @Override
+            public DBSDataType getDataType() {
+                return Objects.requireNonNull(DBUtils.getDataType(attribute), "Attribute has no type");
+            }
+
+            @NotNull
+            @Override
+            public DBDValueHandler getValueHandler() {
+                return DBUtils.findValueHandler(composite.type.getDataSource(), attribute);
+            }
         }
     }
 }
