@@ -348,8 +348,14 @@ public abstract class DBXTreeNode
             @Override
             public Object get(String name)
             {
-                if (node instanceof DBNDatabaseNode && name.equals("object")) {
-                    return ((DBNDatabaseNode) node).getValueObject();
+                if (node instanceof DBNDatabaseNode) {
+                    if (name.equals("object")) {
+                        return ((DBNDatabaseNode) node).getValueObject();
+                    } else if (name.equals("dataSource")) {
+                        return ((DBNDatabaseNode) node).getDataSource();
+                    } else if (name.equals("connected")) {
+                        return ((DBNDatabaseNode) node).getDataSource() != null;
+                    }
                 }
                 return null;
             }
