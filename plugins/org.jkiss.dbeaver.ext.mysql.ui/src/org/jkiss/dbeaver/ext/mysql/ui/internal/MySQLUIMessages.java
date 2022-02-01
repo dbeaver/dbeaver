@@ -153,8 +153,6 @@ public final class MySQLUIMessages extends NLS {
     public static String controls_privilege_table_column_privilege_name_tip;
     public static String controls_privilege_table_column_privilege_status;
     public static String controls_privilege_table_column_privilege_status_tip;
-    public static String controls_privilege_table_column_privilege_grant_option;
-    public static String controls_privilege_table_column_privilege_grant_option_tip;
     public static String controls_privilege_table_column_privilege_description;
     public static String controls_privilege_table_column_privilege_description_tip;
     public static String controls_privilege_table_push_button_check_all;

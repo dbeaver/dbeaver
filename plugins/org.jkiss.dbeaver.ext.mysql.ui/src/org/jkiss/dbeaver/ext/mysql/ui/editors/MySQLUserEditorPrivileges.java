@@ -192,7 +192,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, isGrant, withGrantOption);
+                                privTable.checkPrivilege(privilege, isGrant);
                             }
                             updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
                         }
@@ -200,7 +200,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, !isGrant, !withGrantOption);
+                                privTable.checkPrivilege(privilege, !isGrant);
                             }
                             updateLocalData(privilege, !isGrant, !withGrantOption, curCatalog, curTable);
                         }
@@ -282,7 +282,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             }
         }
         tablePrivilegesTable.fillGrants(curGrants);
-        otherPrivilegesTable.fillGrants(curGrants);
+        if (selectedTable == null) {
+            otherPrivilegesTable.fillGrants(curGrants, true);
+        } else {
+            // Privilege table will be grayed. No grants for this table
+            otherPrivilegesTable.fillGrants(new ArrayList<>(), false);
+        }
     }
 
     @Override

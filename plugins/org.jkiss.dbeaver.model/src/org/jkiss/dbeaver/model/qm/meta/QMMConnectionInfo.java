@@ -157,10 +157,8 @@ public class QMMConnectionInfo extends QMMObject {
     public QMMStatementInfo closeStatement(DBCStatement statement, long rows)
     {
         QMMStatementExecuteInfo execution = getExecution(statement);
-        if (execution != null) {
-            if (execution.getUpdateRowCount() < 0) {
-                execution.close(rows, null);
-            }
+        if (execution != null && execution.getUpdateRowCount() < 0) {
+            execution.close(rows, null);
         }
         for (QMMStatementInfo stat = this.statementStack; stat != null; stat = stat.getPrevious()) {
             if (stat.getReference() == statement) {

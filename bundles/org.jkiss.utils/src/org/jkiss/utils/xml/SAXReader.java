@@ -112,7 +112,7 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
             saxReader.parse(inputSource);
         } catch (SAXParseException toCatch) {
             throw new XMLException(
-                "Document parse error (line " + toCatch.getLineNumber() + ", pos " + toCatch.getColumnNumber(),
+                "Document parse error (line " + toCatch.getLineNumber() + ", pos " + toCatch.getColumnNumber() + ")",
                 toCatch);
         } catch (SAXException toCatch) {
             throw new XMLException(

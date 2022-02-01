@@ -213,10 +213,10 @@ public class QMUtils {
         }
 
         @Override
-        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
             QMMetaEvent event = events.get(position);
             position++;
-            return event;
+            return new QMMetaEventEntity(event.getObject(), event.getAction(), position);
         }
 
         @Override
@@ -244,7 +244,7 @@ public class QMUtils {
         }
 
         @Override
-        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
             throw new DBException("Empty cursor");
         }
 

@@ -75,6 +75,14 @@ public class MySQLPrivilege implements DBAPrivilege
         }
     }
 
+    public MySQLPrivilege(MySQLDataSource dataSource, String name, String context, String comment, Kind kind) {
+        this.dataSource = dataSource;
+        this.name = name;
+        this.context = context;
+        this.comment = comment;
+        this.kind = kind;
+    }
+
     public Kind getKind()
     {
         return kind;
