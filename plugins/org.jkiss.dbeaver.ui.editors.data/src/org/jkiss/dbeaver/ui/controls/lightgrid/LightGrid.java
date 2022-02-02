@@ -2177,6 +2177,19 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
+    public int getMaxVisibleRows(){
+        int y = 0;
+
+        if (columnHeadersVisible) {
+            y += headerHeight;
+        }
+
+        final Rectangle clientArea = getClientArea();
+        int availableHeight = clientArea.height - y;
+        int itemHeight = getItemHeight();
+        return availableHeight / itemHeight + 1;
+    }
+
     private int getPinnedColumnsWidth() {
         int x = 0;
         for (int k = 0; k < columns.size(); k++) {

@@ -173,7 +173,12 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
-        // Sometimes sqlite_sequence doesn't exist.
+        // The sqlite_sequence table is created and initialized automatically whenever a normal table that contains an AUTOINCREMENT column is created. Not earlier
+        try {
+            JDBCUtils.queryString(session, "SELECT 1 FROM sqlite_sequence");
+        } catch (SQLException e) {
+            throw new SQLException("Error loading SQLite sequences. Probably sqlite_sequence info table doesn't exist yet. Please create table with AUTOINCREMENT column first.", e);
+        }
         return session.prepareStatement("SELECT * FROM sqlite_sequence");
     }
 
