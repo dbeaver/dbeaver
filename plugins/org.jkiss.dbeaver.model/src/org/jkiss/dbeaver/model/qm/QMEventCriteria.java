@@ -35,6 +35,7 @@ public class QMEventCriteria {
     private QMObjectType[] objectTypes = new QMObjectType[0];
     @NotNull
     private DBCExecutionPurpose[] queryTypes = new DBCExecutionPurpose[0];
+    private boolean skipEmptyQueries = false;
     @Nullable
     private String searchString;
     private int fetchingSize = 200;
@@ -103,5 +104,13 @@ public class QMEventCriteria {
 
     public void setFetchingSize(int fetchingSize) {
         this.fetchingSize = fetchingSize;
+    }
+
+    public boolean isSkipEmptyQueries() {
+        return skipEmptyQueries;
+    }
+
+    public void setSkipEmptyQueries(boolean skipEmptyQueries) {
+        this.skipEmptyQueries = skipEmptyQueries;
     }
 }
