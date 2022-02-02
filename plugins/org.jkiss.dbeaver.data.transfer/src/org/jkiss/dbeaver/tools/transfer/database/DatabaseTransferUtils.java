@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -95,9 +96,16 @@ public class DatabaseTransferUtils {
         }
         monitor.subTask("Create table '" + containerMapping.getTargetName() + "'");
         if (USE_STRUCT_DDL) {
-            DBEPersistAction[] ddl = generateStructTableDDL(monitor, executionContext, schema, containerMapping);
-            if (ddl != null) {
-                return ddl;
+            try {
+                return generateStructTableDDL(monitor, executionContext, schema, containerMapping);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
+                if (!DBWorkbench.getPlatformUI().confirmAction(
+                    "Generate DDL automatically",
+                    "Do you want to create or update target object with auto-generated SQL script?"))
+                {
+                    throw new DBException("Target table create or update was canceled");
+                }
             }
         }
 
@@ -165,8 +173,8 @@ public class DatabaseTransferUtils {
         return actions.toArray(new DBEPersistAction[0]);
     }
 
-    private static DBEPersistAction[] generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) {
-        final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+    private static DBEPersistAction[] generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+        final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         try {
             Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
@@ -176,6 +184,9 @@ public class DatabaseTransferUtils {
             SQLObjectEditor<DBSEntity, ?> tableManager = editorsRegistry.getObjectManager(tableClass, SQLObjectEditor.class);
             if (tableManager == null) {
                 throw new DBException("Table manager not found for '" + tableClass.getName() + "'");
+            }
+            if (!tableManager.canCreateObject(schema)) {
+                throw new DBException("Table create is not supported by driver " + schema.getDataSource().getContainer().getDriver().getName());
             }
             Class<? extends DBSEntityAttribute> attrClass;
             SQLObjectEditor<DBSEntityAttribute,?> attributeManager;
@@ -271,8 +282,7 @@ public class DatabaseTransferUtils {
             List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, options, null);
             return actions.toArray(new DBEPersistAction[0]);
         } catch (DBException e) {
-            log.debug(e);
-            return null;
+            throw new DBException("Can't create or modify target table", e);
         }
     }
 
