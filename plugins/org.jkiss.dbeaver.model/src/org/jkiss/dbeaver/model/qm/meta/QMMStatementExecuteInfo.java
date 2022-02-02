@@ -165,13 +165,22 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return '"' + queryString + '"';
     }
 
     @Override
     public String getText() {
         return queryString;
+    }
+
+    @Override
+    public long getDuration() {
+        if (!isClosed()) {
+            return -1;
+        }
+        long execTime = getCloseTime() - getOpenTime();
+        long fetchTime = isFetching() ? 0 : getFetchEndTime() - getFetchBeginTime();
+        return execTime + fetchTime;
     }
 }
