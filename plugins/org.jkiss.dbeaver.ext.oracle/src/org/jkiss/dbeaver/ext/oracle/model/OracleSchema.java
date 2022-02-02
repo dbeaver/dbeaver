@@ -917,7 +917,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                          + "    c.STATUS,\r\n"
                          + "    c.R_OWNER,\r\n"
                          + "    c.R_CONSTRAINT_NAME,\r\n"
-                         + "    rc.TABLE_NAME AS R_TABLE_NAME,\r\n"
+                         + "    NVL(rcP.TABLE_NAME, rcU.TABLE_NAME) AS R_TABLE_NAME,\r\n"
                          + "    c.DELETE_RULE,\r\n"
                          + "    (\r\n"
                          + "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n"
@@ -928,8 +928,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                                  "CONSTRAINTS")
                          + " c\r\n"
                          + "LEFT JOIN " 
-                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),"CONSTRAINTS") + " rc\r\n"
-                         + "ON rc.OWNER = c.r_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME\r\n"
+                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),"CONSTRAINTS") + " rcP\r\n"
+                         + "ON rcP.OWNER = c.r_OWNER AND rcP.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME AND rcP.CONSTRAINT_TYPE='P' \r\n"
+                         + "LEFT JOIN " 
+                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),"CONSTRAINTS") + " rcU\r\n"
+                         + "ON rcU.OWNER = c.r_OWNER AND rcU.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME AND rcU.CONSTRAINT_TYPE='U' \r\n"
                          + "WHERE\r\n" + "    c.CONSTRAINT_TYPE = 'R'\r\n" + "    AND c.OWNER = ?\r\n"
                          + "    AND c.TABLE_NAME = ?");
                  // 1- owner
