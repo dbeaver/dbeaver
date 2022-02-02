@@ -767,7 +767,7 @@ public class ComplexObjectEditor extends TreeViewer {
         public abstract String getName();
 
         @NotNull
-        public abstract DBSDataType getDataType();
+        public abstract DBSTypedObject getDataType();
 
         @NotNull
         public abstract DBDValueHandler getValueHandler();
@@ -830,7 +830,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
             @NotNull
             @Override
-            public DBSDataType getDataType() {
+            public DBSTypedObject getDataType() {
                 return collection.source.getComponentType();
             }
 
@@ -901,8 +901,8 @@ public class ComplexObjectEditor extends TreeViewer {
 
             @NotNull
             @Override
-            public DBSDataType getDataType() {
-                return Objects.requireNonNull(DBUtils.getDataType(attribute), "Attribute has no type");
+            public DBSTypedObject getDataType() {
+                return attribute;
             }
 
             @NotNull
