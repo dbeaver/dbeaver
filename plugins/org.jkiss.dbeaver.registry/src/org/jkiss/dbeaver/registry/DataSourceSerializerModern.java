@@ -566,7 +566,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
                     if (closeIdle > 0) {
-                        config.setCloseIdleInterval(keepAlive);
+                        config.setCloseIdleInterval(closeIdle);
                     }
 
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
