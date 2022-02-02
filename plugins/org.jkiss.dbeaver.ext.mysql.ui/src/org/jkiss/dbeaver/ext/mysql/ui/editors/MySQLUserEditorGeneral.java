@@ -135,14 +135,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                         public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed()) {
-                                privTable.checkPrivilege(privilege, grant, withGrantOption);
+                                privTable.checkPrivilege(privilege, grant);
                             }
                         }
                         @Override
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed()) {
-                                privTable.checkPrivilege(privilege, !grant, !withGrantOption);
+                                privTable.checkPrivilege(privilege, !grant);
                             }
                         }
                     });

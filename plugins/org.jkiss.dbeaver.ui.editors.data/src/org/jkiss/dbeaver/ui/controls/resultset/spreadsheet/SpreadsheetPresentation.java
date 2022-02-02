@@ -2001,6 +2001,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 rowNum > 0 &&
                 rowNum == controller.getModel().getRowCount() - 1 &&
                 autoFetchSegments &&
+                !(getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS) < getSpreadsheet().getMaxVisibleRows()) &&
                 (recordMode || spreadsheet.isRowVisible(rowNum)) && controller.isHasMoreData())
             {
                 controller.readNextSegment();

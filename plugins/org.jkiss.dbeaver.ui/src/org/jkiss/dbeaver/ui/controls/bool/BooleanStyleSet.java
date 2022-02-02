@@ -141,7 +141,7 @@ public class BooleanStyleSet {
         control.addDisposeListener(e -> {
             DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().removePropertyChangeListener(preferenceListener);
             DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(preferenceListener);
-            PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener);
         });
     }
 

@@ -50,17 +50,15 @@ public class QMMetaEvent {
         }
     }
 
-    private final QMMObject object;
-    private final Action action;
+    protected final QMMObject object;
+    protected final Action action;
 
-    public QMMetaEvent(QMMObject object, Action action)
-    {
+    public QMMetaEvent(QMMObject object, Action action) {
         this.object = object;
         this.action = action;
     }
 
-    public QMMObject getObject()
-    {
+    public QMMObject getObject() {
         return object;
     }
 
@@ -70,8 +68,7 @@ public class QMMetaEvent {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return action + " " + object;
     }
 }

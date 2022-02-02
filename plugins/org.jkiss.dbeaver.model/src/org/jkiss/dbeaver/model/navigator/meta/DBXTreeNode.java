@@ -76,7 +76,7 @@ public abstract class DBXTreeNode
             try {
                 this.visibleIf = AbstractDescriptor.parseExpression(visibleIf);
             } catch (DBException e) {
-                log.warn(e);
+                log.debug("Error parsing expression '" + visibleIf + "':" + GeneralUtils.getExpressionParseMessage(e));
             }
         }
         if (recursive != null) {
@@ -248,7 +248,6 @@ public abstract class DBXTreeNode
             return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
         } catch (JexlException e) {
             log.debug("Error evaluating expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
-            log.warn(e);
             return false;
         }
     }
@@ -349,8 +348,14 @@ public abstract class DBXTreeNode
             @Override
             public Object get(String name)
             {
-                if (node instanceof DBNDatabaseNode && name.equals("object")) {
-                    return ((DBNDatabaseNode) node).getValueObject();
+                if (node instanceof DBNDatabaseNode) {
+                    if (name.equals("object")) {
+                        return ((DBNDatabaseNode) node).getValueObject();
+                    } else if (name.equals("dataSource")) {
+                        return ((DBNDatabaseNode) node).getDataSource();
+                    } else if (name.equals("connected")) {
+                        return ((DBNDatabaseNode) node).getDataSource() != null;
+                    }
                 }
                 return null;
             }

@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
  */
 public final class ResultSetPreferences {
 
-    public static final int MIN_SEGMENT_SIZE = 100;
+    public static final int MIN_SEGMENT_SIZE = 1;
     public static final int MAX_DEF_COLUMN_WIDTH = 30;
 
     // ResultSet

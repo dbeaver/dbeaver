@@ -84,6 +84,10 @@ public interface DashboardContainer {
 
     void updateDashboardView();
 
+    boolean isAutoUpdateEnabled();
+
+    void disableAutoUpdate();
+
     Control getDashboardControl();
 
 }

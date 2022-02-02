@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  * Always returns OK status.
  * To get real status use getConectStatus.
  */
-public class DisconnectJob extends AbstractJob
+public class DisconnectJob extends DataSourceUpdaterJob
 {
     private IStatus connectStatus;
     protected final DBPDataSourceContainer container;
@@ -45,8 +45,12 @@ public class DisconnectJob extends AbstractJob
     }
 
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
-    {
+    public DBPDataSource getDataSource() {
+        return container.getDataSource();
+    }
+
+    @Override
+    protected IStatus updateDataSource(DBRProgressMonitor monitor) {
         try {
             long startTime = System.currentTimeMillis();
             container.disconnect(monitor);

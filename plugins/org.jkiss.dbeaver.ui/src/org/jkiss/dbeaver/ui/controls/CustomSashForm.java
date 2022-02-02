@@ -1058,7 +1058,7 @@ public class CustomSashForm extends SashForm {
      */
     public void addCustomSashFormListener(ICustomSashFormListener listener) {
         if (customSashFormListeners == null)
-            customSashFormListeners = new ArrayList();
+            customSashFormListeners = new ArrayList<>();
         customSashFormListeners.add(listener);
     }
 
