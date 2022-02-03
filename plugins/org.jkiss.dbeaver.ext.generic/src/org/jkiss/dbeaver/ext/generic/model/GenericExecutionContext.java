@@ -233,10 +233,10 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
-                return !dataSource.hasCatalogs() && dataSource.hasSchemas() && info.supportsCatalogSelection();
+                return !dataSource.hasCatalogs() && dataSource.hasSchemas() && info.supportsSchemaSelection();
             }
             if (dataSource.hasSchemas()) {
-                return (GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType()) || !dataSource.hasCatalogs()) && info.supportsCatalogSelection();
+                return (GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType()) || !dataSource.hasCatalogs()) && info.supportsSchemaSelection();
             }
         }
         return false;

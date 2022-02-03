@@ -30,6 +30,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     private final boolean supportsLimits;
     public boolean supportsCatalogSelection;
+    public boolean supportsSchemaSelection;
     private boolean supportsMultipleResults;
     private boolean supportsNullableUniqueConstraints;
     private final boolean supportsSetArray;
@@ -47,6 +48,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         setReadOnlyData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_DATA), false));
         setReadOnlyMetaData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_META_DATA), false));
         supportsCatalogSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
+        supportsSchemaSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
         supportsNullableUniqueConstraints = false;
         supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
     }
@@ -67,6 +69,10 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     public boolean supportsCatalogSelection() {
         return supportsCatalogSelection;
+    }
+
+    public boolean supportsSchemaSelection() {
+        return supportsSchemaSelection;
     }
 
     @Override
