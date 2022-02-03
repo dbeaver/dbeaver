@@ -294,6 +294,9 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                 if (resourceDefaultRoot == null){
                     return "";
                 }
+                if (ri.getResource() == null) {
+                    return path;
+                }
                 return ri.getResource().getParent().equals(resourceDefaultRoot) ? resourceDefaultRoot.getName() : resourceDefaultRoot.getLocationURI().relativize(new File(path).toURI()).getPath();
             }
 
