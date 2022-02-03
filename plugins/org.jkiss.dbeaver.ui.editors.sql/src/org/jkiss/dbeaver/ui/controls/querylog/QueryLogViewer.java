@@ -196,38 +196,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         String getText(QMMetaEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
-            if (object instanceof QMMStatementExecuteInfo) {
-                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                if (exec.isClosed()) {
-                    final long execTime = exec.getCloseTime() - exec.getOpenTime();
-                    final long fetchTime = exec.isFetching() ? 0 : exec.getFetchEndTime() - exec.getFetchBeginTime();
-                    return NUMBER_FORMAT.format(execTime + fetchTime);
-                } else {
-                    return ""; //$NON-NLS-1$
-                }
-            } else if (object instanceof QMMTransactionInfo) {
-                QMMTransactionInfo txn = (QMMTransactionInfo) object;
-                if (txn.isClosed()) {
-                    return formatMinutes(txn.getCloseTime() - txn.getOpenTime());
-                } else {
-                    return ""; //$NON-NLS-1$
-                }
-            } else if (object instanceof QMMTransactionSavepointInfo) {
-                QMMTransactionSavepointInfo sp = (QMMTransactionSavepointInfo) object;
-                if (sp.isClosed()) {
-                    return formatMinutes(sp.getCloseTime() - sp.getOpenTime());
-                } else {
-                    return ""; //$NON-NLS-1$
-                }
-            } else if (object instanceof QMMConnectionInfo) {
-                QMMConnectionInfo session = (QMMConnectionInfo) object;
-                if (session.isClosed()) {
-                    return formatMinutes(session.getCloseTime() - session.getOpenTime());
-                } else {
-                    return ""; //$NON-NLS-1$
-                }
+            if (object.isClosed()) {
+                return NUMBER_FORMAT.format(object.getDuration());
+            } else {
+                return ""; //$NON-NLS-1$
             }
-            return ""; //$NON-NLS-1$
         }
     };
     private static LogColumn COLUMN_ROWS = new LogColumn("rows", SQLEditorMessages.controls_querylog_column_rows_name, SQLEditorMessages.controls_querylog_column_rows_tooltip, 120) { //$NON-NLS-1$

@@ -103,15 +103,19 @@ public abstract class QMMObject {
         this.updated = false;
     }
 
-    private static synchronized long generateObjectId()
-    {
+    private static synchronized long generateObjectId() {
         globalObjectId++;
         return globalObjectId;
     }
 
-    protected static long getTimeStamp()
-    {
+    protected static long getTimeStamp() {
         return System.currentTimeMillis();
     }
 
+    public long getDuration() {
+        if (!isClosed()) {
+            return -1L;
+        }
+        return getCloseTime() - getOpenTime();
+    }
 }
