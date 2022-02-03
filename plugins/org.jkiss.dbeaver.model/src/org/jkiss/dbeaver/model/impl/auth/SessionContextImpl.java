@@ -83,7 +83,7 @@ public class SessionContextImpl implements DBASessionContext {
     @Override
     public boolean removeSession(@NotNull DBASession session) {
         if (sessions.remove(session)) {
-            log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session);
+            log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
             return true;
         } else {
             log.debug("Session '" + session + "' was removed twice");
