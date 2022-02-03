@@ -74,7 +74,7 @@ public class SessionContextImpl implements DBASessionContext {
     public void addSession(@NotNull DBASession session) {
         if (!sessions.contains(session)) {
             sessions.add(session);
-            log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session);
+            log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
         } else {
             log.debug("Session '" + session + "' was added twice");
         }
