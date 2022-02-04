@@ -1015,10 +1015,10 @@ public class DataSourceDescriptor
         for (DataSourceHandlerDescriptor handlerDesc : DataSourceProviderRegistry.getInstance().getDataSourceHandlers()) {
             switch (eventType) {
                 case BEFORE_CONNECT:
-                    handlerDesc.getInstance().beforeConnect(this);
+                    handlerDesc.getInstance().beforeConnect(monitor, this);
                     break;
                 case AFTER_DISCONNECT:
-                    handlerDesc.getInstance().beforeDisconnect(this);
+                    handlerDesc.getInstance().beforeDisconnect(monitor, this);
                     break;
             }
         }
