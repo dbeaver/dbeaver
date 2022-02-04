@@ -17,17 +17,12 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-
 /**
- * DBPDataSourceHandler
+ * DBPDataSourceAcquirer
  */
-public interface DBPDataSourceHandler
+public interface DBPDataSourceAcquirer extends DBPDataSourceTask
 {
-    void beforeConnect(@NotNull DBPDataSourceContainer dataSourceContainer)
-        throws DBException;
+    void beforeConnect();
 
-    void beforeDisconnect(@NotNull DBPDataSourceContainer dataSourceContainer)
-        throws DBException;
+    void beforeDisconnect();
 }

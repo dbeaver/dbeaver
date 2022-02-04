@@ -130,7 +130,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPEventListener,
     ISaveablePart2,
     DBPDataSourceTask,
-    DBPDataSourceHandler,
+    DBPDataSourceAcquirer,
     IResultSetProvider,
     ISmartTransactionManager
 {

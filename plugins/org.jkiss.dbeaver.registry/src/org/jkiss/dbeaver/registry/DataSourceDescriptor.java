@@ -780,10 +780,10 @@ public class DataSourceDescriptor
 
         // Update auth properties if possible
 
-        processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
-
         connecting = true;
         try {
+            processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
+
             // 1. Get credentials from origin
             DBPDataSourceOrigin dsOrigin = getOrigin();
             if (dsOrigin instanceof DBAAuthCredentialsProvider) {
@@ -975,8 +975,7 @@ public class DataSourceDescriptor
         }
     }
 
-    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType)
-    {
+    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType) throws DBException {
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
@@ -1011,6 +1010,17 @@ public class DataSourceDescriptor
                 log.debug(processDescriptor.getName() + " result code: " + resultCode);
             }
             addChildProcess(processDescriptor);
+        }
+
+        for (DataSourceHandlerDescriptor handlerDesc : DataSourceProviderRegistry.getInstance().getDataSourceHandlers()) {
+            switch (eventType) {
+                case BEFORE_CONNECT:
+                    handlerDesc.getInstance().beforeConnect(this);
+                    break;
+                case AFTER_DISCONNECT:
+                    handlerDesc.getInstance().beforeDisconnect(this);
+                    break;
+            }
         }
     }
 
@@ -1067,6 +1077,11 @@ public class DataSourceDescriptor
 
             monitor.done();
 
+            return true;
+        } catch (Exception e) {
+            log.error("Error during datasource disconnect", e);
+            return false;
+        } finally {
             // Terminate child processes
             synchronized (childProcesses) {
                 for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
@@ -1090,8 +1105,6 @@ public class DataSourceDescriptor
                     false));
             }
 
-            return true;
-        } finally {
             connecting = false;
             log.debug("Disconnected (" + getId() + ")");
         }
@@ -1109,8 +1122,8 @@ public class DataSourceDescriptor
             if (user instanceof Job) {
                 jobCount++;
             }
-            if (user instanceof DBPDataSourceHandler) {
-                ((DBPDataSourceHandler) user).beforeDisconnect();
+            if (user instanceof DBPDataSourceAcquirer) {
+                ((DBPDataSourceAcquirer) user).beforeDisconnect();
             }
         }
         if (jobCount > 0) {
