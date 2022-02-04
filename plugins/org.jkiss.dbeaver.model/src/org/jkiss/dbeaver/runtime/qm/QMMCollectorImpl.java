@@ -140,10 +140,10 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         try {
             DBPProject project = context.getDataSource().getContainer().getProject();
             DBASession session = project.getSessionContext().getSpaceSession(new LoggingProgressMonitor(), project, false);
-            if (session == null || !DBASessionPersistence.class.isAssignableFrom(session.getClass())) {
+            if (session == null) {
                 return;
             }
-            fireMetaEvent(object, action, (DBASessionPersistence) session);
+            fireMetaEvent(object, action, session);
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }

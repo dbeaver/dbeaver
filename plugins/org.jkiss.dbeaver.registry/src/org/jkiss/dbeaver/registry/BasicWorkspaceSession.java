@@ -23,15 +23,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
-import org.jkiss.dbeaver.model.auth.DBASession;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
-import org.jkiss.dbeaver.model.auth.DBASessionPrincipal;
+import org.jkiss.dbeaver.model.auth.*;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-public class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
+public class BasicWorkspaceSession extends AbstractDBASessionPersistence implements DBASession, DBASessionPrincipal {
     private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
