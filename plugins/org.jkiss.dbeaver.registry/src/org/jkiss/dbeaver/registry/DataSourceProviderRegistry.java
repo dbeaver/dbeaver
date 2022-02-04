@@ -233,9 +233,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        // Load external resources information
+        // Load datasource handlers
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ExternalResourceDescriptor.EXTENSION_ID);
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceHandlerDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 DataSourceHandlerDescriptor descriptor = new DataSourceHandlerDescriptor(ext);
                 dataSourceHandlers.add(descriptor);
