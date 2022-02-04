@@ -50,7 +50,7 @@ public class SessionContextImpl implements DBASessionContext {
                 return session;
             }
         }
-        log.debug(">> Session not found in context " + this + " for space " + space);
+        //log.debug(">> Session not found in context " + this + " for space " + space);
         DBASession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
         if (session == null && open) {
             DBASessionProviderService sessionProviderService = DBWorkbench.getService(DBASessionProviderService.class);
@@ -74,7 +74,7 @@ public class SessionContextImpl implements DBASessionContext {
     public void addSession(@NotNull DBASession session) {
         if (!sessions.contains(session)) {
             sessions.add(session);
-            log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
+            //log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
         } else {
             log.debug("Session '" + session + "' was added twice");
         }
@@ -83,7 +83,7 @@ public class SessionContextImpl implements DBASessionContext {
     @Override
     public boolean removeSession(@NotNull DBASession session) {
         if (sessions.remove(session)) {
-            log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
+            //log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
             return true;
         } else {
             log.debug("Session '" + session + "' was removed twice");
