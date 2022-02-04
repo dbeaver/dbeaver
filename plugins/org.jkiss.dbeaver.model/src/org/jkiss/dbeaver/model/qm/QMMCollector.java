@@ -24,5 +24,5 @@ import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
  */
 public interface QMMCollector extends QMExecutionHandler {
 
-    QMMConnectionInfo getSessionInfo(DBCExecutionContext context);
+    QMMConnectionInfo getConnectionInfo(DBCExecutionContext context);
 }

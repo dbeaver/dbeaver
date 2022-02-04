@@ -52,19 +52,24 @@ public class QMMetaEvent {
 
     protected final QMMObject object;
     protected final Action action;
+    protected final String qmAppSessionId;
 
-    public QMMetaEvent(QMMObject object, Action action) {
+    public QMMetaEvent(QMMObject object, Action action, String qmAppSessionId) {
         this.object = object;
         this.action = action;
+        this.qmAppSessionId = qmAppSessionId;
     }
 
     public QMMObject getObject() {
         return object;
     }
 
-    public Action getAction()
-    {
+    public Action getAction() {
         return action;
+    }
+
+    public String getQmAppSessionId() {
+        return qmAppSessionId;
     }
 
     @Override

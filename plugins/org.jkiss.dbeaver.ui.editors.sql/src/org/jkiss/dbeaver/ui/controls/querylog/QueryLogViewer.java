@@ -256,9 +256,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMConnectionInfo) {
                 containerName = ((QMMConnectionInfo) object).getContainerName();
             } else if (object instanceof QMMTransactionInfo) {
-                containerName = ((QMMTransactionInfo) object).getSession().getContainerName();
+                containerName = ((QMMTransactionInfo) object).getConnection().getContainerName();
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                containerName = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getContainerName();
+                containerName = ((QMMTransactionSavepointInfo) object).getTransaction().getConnection().getContainerName();
             } else if (object instanceof QMMStatementInfo) {
                 containerName = ((QMMStatementInfo) object).getSession().getContainerName();
             } else if (object instanceof QMMStatementExecuteInfo) {
@@ -275,9 +275,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMConnectionInfo) {
                 contextName = ((QMMConnectionInfo) object).getContextName();
             } else if (object instanceof QMMTransactionInfo) {
-                contextName = ((QMMTransactionInfo) object).getSession().getContextName();
+                contextName = ((QMMTransactionInfo) object).getConnection().getContextName();
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                contextName = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getContextName();
+                contextName = ((QMMTransactionSavepointInfo) object).getTransaction().getConnection().getContextName();
             } else if (object instanceof QMMStatementInfo) {
                 contextName = ((QMMStatementInfo) object).getSession().getContextName();
             } else if (object instanceof QMMStatementExecuteInfo) {

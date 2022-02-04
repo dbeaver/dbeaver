@@ -24,19 +24,18 @@ import org.jkiss.dbeaver.model.exec.DBCSavepoint;
  */
 public class QMMTransactionInfo extends QMMObject {
 
-    private final QMMConnectionInfo session;
+    private final QMMConnectionInfo connection;
     private final QMMTransactionInfo previous;
     private boolean committed;
     private QMMTransactionSavepointInfo savepointStack;
 
-    QMMTransactionInfo(QMMConnectionInfo session, QMMTransactionInfo previous) {
-        this.session = session;
+    QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
+        this.connection = connection;
         this.previous = previous;
         this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
     }
 
-    void commit()
-    {
+    void commit() {
         this.committed = true;
         for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
             if (!sp.isClosed()) {
@@ -59,17 +58,15 @@ public class QMMTransactionInfo extends QMMObject {
         super.close();
     }
 
-    public QMMConnectionInfo getSession() {
-        return session;
+    public QMMConnectionInfo getConnection() {
+        return connection;
     }
 
-    public QMMTransactionInfo getPrevious()
-    {
+    public QMMTransactionInfo getPrevious() {
         return previous;
     }
 
-    public boolean isCommitted()
-    {
+    public boolean isCommitted() {
         return committed;
     }
 
@@ -96,6 +93,6 @@ public class QMMTransactionInfo extends QMMObject {
 
     @Override
     public String getText() {
-        return session.getText();
+        return connection.getText();
     }
 }

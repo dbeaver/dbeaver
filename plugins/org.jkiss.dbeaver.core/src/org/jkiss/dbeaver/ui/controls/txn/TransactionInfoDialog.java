@@ -104,7 +104,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
         final boolean showAll = showAllCheck != null && showAllCheck.getSelection();
         final boolean showPrevious = showPreviousCheck != null && showPreviousCheck.getSelection();
 
-        final QMMConnectionInfo currentSession = QMUtils.getCurrentSession(executionContext);
+        final QMMConnectionInfo currentSession = QMUtils.getCurrentConnection(executionContext);
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
 
         QMEventFilter filter = event -> {

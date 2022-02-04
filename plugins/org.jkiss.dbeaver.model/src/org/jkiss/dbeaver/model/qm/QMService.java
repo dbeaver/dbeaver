@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -28,11 +25,7 @@ import java.util.Collection;
 
 
 public interface QMService extends QMEventBrowser {
-    void saveTransactionInfo(DBRProgressMonitor monitor, QMMTransactionInfo transactionInfo, QMMetaEvent.Action action) throws DBException, SQLException;
-
-    void saveConnectionInfo(DBRProgressMonitor monitor, QMMConnectionInfo connectionInfo, QMMetaEvent.Action action) throws SQLException, DBException;
-
-    void saveStatementExecutionInfo(DBRProgressMonitor monitor, QMMStatementExecuteInfo executeInfo, QMMetaEvent.Action action) throws DBException, SQLException;
+    void saveEvent(QMMetaEvent event, DBRProgressMonitor monitor) throws DBException, SQLException;
 
     @NotNull
     Collection<String> getQueryFilterHistory(@NotNull String query) throws DBException;
@@ -41,7 +34,7 @@ public interface QMService extends QMEventBrowser {
 
     void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException;
 
-    void openSession();
+    String openSession(@NotNull QMSessionInfo sessionInfo, @NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void closeSession();
+    void closeSession(String appSessionId, DBRProgressMonitor monitor);
 }
