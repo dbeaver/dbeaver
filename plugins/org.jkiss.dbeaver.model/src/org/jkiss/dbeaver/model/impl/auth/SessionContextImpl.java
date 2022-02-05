@@ -58,6 +58,9 @@ public class SessionContextImpl implements DBASessionContext {
                 try {
                     // Session will be added in this context by itself (if needed)
                     session = sessionProviderService.acquireSession(monitor, this, space);
+                    if (session != null) {
+                        addSession(session);
+                    }
                 } catch (Exception e) {
                     throw new DBException("Error acquiring session", e);
                 }
