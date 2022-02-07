@@ -39,6 +39,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -85,6 +86,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
+    private static final int NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS = 1000;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -189,6 +191,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     private void handleInputChange(IEditorInput input) {
         occurrencesHighlighter.updateInput(input);
+
+        if (input instanceof FileEditorInput) {
+            final long fileTimestamp = ((FileEditorInput) input).getFile().getLocalTimeStamp();
+            final long currentTimestamp = System.currentTimeMillis();
+            if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
+                UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
+            }
+        }
     }
 
     @Override
