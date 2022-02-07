@@ -216,7 +216,7 @@ public class QMUtils {
         public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
             QMMetaEvent event = events.get(position);
             position++;
-            return new QMMetaEventEntity(event.getObject(), event.getAction(), position, null);
+            return new QMMetaEventEntity(event.getObject(), event.getAction(), position, "", null);
         }
 
         @Override

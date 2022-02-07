@@ -28,8 +28,8 @@ public class QMMetaEventEntity extends QMMetaEvent {
     @Nullable
     private final String userId;
 
-    public QMMetaEventEntity(QMMObject object, Action action, long id, @Nullable String userId) {
-        super(object, action, "sessionId");
+    public QMMetaEventEntity(QMMObject object, Action action, long id, String sessionId, @Nullable String userId) {
+        super(object, action, sessionId);
         this.id = id;
         this.userId = userId;
     }
