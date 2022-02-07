@@ -71,6 +71,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -192,8 +193,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private void handleInputChange(IEditorInput input) {
         occurrencesHighlighter.updateInput(input);
 
-        if (input instanceof FileEditorInput) {
-            final long fileTimestamp = ((FileEditorInput) input).getFile().getLocalTimeStamp();
+        final FileEditorInput fileEditorInput = GeneralUtils.adapt(input, FileEditorInput.class);
+        if (fileEditorInput != null) {
+            final long fileTimestamp = fileEditorInput.getFile().getLocalTimeStamp();
             final long currentTimestamp = System.currentTimeMillis();
             if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
                 UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
