@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.DBASession;
 import org.jkiss.dbeaver.model.auth.DBASessionPersistence;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -138,8 +139,13 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     private synchronized void tryFireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBCExecutionContext context) {
         try {
+            DBRProgressMonitor monitor = new LoggingProgressMonitor();
             DBPProject project = context.getDataSource().getContainer().getProject();
-            DBASession session = project.getSessionContext().getSpaceSession(new LoggingProgressMonitor(), project, false);
+            DBASession session = project.getSessionContext().getSpaceSession(monitor, project, false);
+            if (session == null) {
+                DBPWorkspace workspace = project.getWorkspace();
+                session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
+            }
             if (session == null) {
                 return;
             }

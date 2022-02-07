@@ -24,8 +24,7 @@ import org.jkiss.code.NotNull;
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
  */
-public interface DBPApplication
-{
+public interface DBPApplication {
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
