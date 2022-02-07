@@ -71,10 +71,7 @@ public class AbstractDBASessionPersistence implements DBASessionPersistence {
     @Override
     public void setAttribute(String name, Object value, boolean persistent) {
         synchronized (attributes) {
-            if (persistent) {
-                value = new PersistentAttribute(value);
-            }
-            attributes.put(name, value);
+            attributes.put(name, persistent ? new PersistentAttribute(value) : value);
         }
     }
 
