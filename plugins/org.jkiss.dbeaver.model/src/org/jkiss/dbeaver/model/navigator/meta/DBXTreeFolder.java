@@ -106,6 +106,13 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.type = folder.type;
         this.label = folder.label;
         this.description = folder.description;
+
+        this.optionalItem = folder.optionalItem;
+
+        this.isOptional = folder.isOptional;
+
+        this.contributedCategories = folder.contributedCategories == null ? null : new ArrayList<>(folder.contributedCategories);
+        this.itemTypes = folder.itemTypes;
     }
 
     public String getType() {
