@@ -24,8 +24,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
-import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSession;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
+import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -48,6 +48,7 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
 {
     private KillSessionAction terminateQueryAction;
     private boolean showOnlyConnections = true;
+    private Action onlyConnectionsAction;
 
     @Override
     public void createEditorControl(Composite parent) {
@@ -57,24 +58,27 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
 
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
-        return new SessionManagerViewer<SQLServerSession>(this, parent, new SQLServerSessionManager((SQLServerDataSource) executionContext.getDataSource())) {
+        final SQLServerDataSource dataSource = (SQLServerDataSource) executionContext.getDataSource();
+        return new SessionManagerViewer<>(this, parent, new SQLServerSessionManager(dataSource)) {
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
-            {
-                contributionManager.add(ActionUtils.makeActionContribution(
-                    new Action("Only connections", Action.AS_CHECK_BOX) {
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager) {
+                if (!dataSource.isBabelfish()) {
+                    onlyConnectionsAction = new Action(SQLServerUIMessages.session_editor_action_show_connections_text, Action.AS_CHECK_BOX) {
                         {
                             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-                            setToolTipText("Show only physical connections");
+                            setToolTipText(SQLServerUIMessages.session_editor_action_show_connections_tip);
                             setChecked(showOnlyConnections);
                         }
+
                         @Override
                         public void run() {
                             showOnlyConnections = isChecked();
                             refreshPart(SQLServerSessionEditor.this, true);
                         }
-                    }, true));
-                contributionManager.add(new Separator());
+                    };
+                    contributionManager.add(ActionUtils.makeActionContribution(onlyConnectionsAction, true));
+                    contributionManager.add(new Separator());
+                }
                 contributionManager.add(terminateQueryAction);
                 contributionManager.add(new Separator());
             }
@@ -88,14 +92,18 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
 
             @Override
             protected void loadSettings(IDialogSettings settings) {
-                showOnlyConnections = CommonUtils.getBoolean(settings.get("showOnlyConnections"), true);
+                if (onlyConnectionsAction!= null) {
+                    showOnlyConnections = CommonUtils.getBoolean(settings.get("showOnlyConnections"), true);
+                }
                 super.loadSettings(settings);
             }
 
             @Override
             protected void saveSettings(IDialogSettings settings) {
                 super.saveSettings(settings);
-                settings.put("showOnlyConnections", showOnlyConnections);
+                if (onlyConnectionsAction != null) {
+                    settings.put("showOnlyConnections", showOnlyConnections);
+                }
             }
 
             @Override
@@ -115,7 +123,7 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
         KillSessionAction()
         {
             super(
-                "Terminate",
+                SQLServerUIMessages.session_editor_action_kill_session_text,
                 UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP));
         }
 
@@ -126,7 +134,7 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
             if (sessions != null && UIUtils.confirmAction(
                 getSite().getShell(),
                 this.getText(),
-                NLS.bind("Terminate session {0}?", sessions)))
+                NLS.bind(SQLServerUIMessages.session_editor_action_kill_session_message, sessions)))
             {
                 getSessionsViewer().alterSessions(
                     sessions,

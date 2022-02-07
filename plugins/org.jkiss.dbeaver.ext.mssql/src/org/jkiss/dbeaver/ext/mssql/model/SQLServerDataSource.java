@@ -78,6 +78,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return supportsColumnProperty;
     }
 
+    public boolean isBabelfish() {
+        return isBabelfish;
+    }
+
     public boolean supportsExternalTables() {
         final DBPDriver driver = getContainer().getDriver();
         if (isBabelfish) {

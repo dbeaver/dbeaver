@@ -109,6 +109,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution editorId="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="sqlserver"/>
+            <supports dataSource="sqlserver-ee"/>
         </editorContribution>
     </extension>
 

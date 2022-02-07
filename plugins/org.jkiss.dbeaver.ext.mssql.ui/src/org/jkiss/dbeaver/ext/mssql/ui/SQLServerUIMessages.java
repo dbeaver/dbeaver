@@ -47,6 +47,11 @@ public class SQLServerUIMessages extends NLS {
 
     public static String dialog_create_login_shell_title;
 
+    public static String session_editor_action_show_connections_text;
+    public static String session_editor_action_show_connections_tip;
+    public static String session_editor_action_kill_session_text;
+    public static String session_editor_action_kill_session_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLServerUIMessages.class);
