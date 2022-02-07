@@ -41,6 +41,7 @@ public class DBXTreeItem extends DBXTreeNode
     private final String path;
     private final String propertyName;
     private final boolean optional;
+    private final boolean openable;
 
     private final Map<Class<?>, Method> propertyGettersCache = new IdentityHashMap<>();
 
@@ -67,6 +68,7 @@ public class DBXTreeItem extends DBXTreeNode
         boolean inline,
         boolean virtual,
         boolean standalone,
+        boolean openable,
         String visibleIf,
         String recursiveLink)
     {
@@ -79,6 +81,7 @@ public class DBXTreeItem extends DBXTreeNode
         this.path = path;
         this.propertyName = propertyName;
         this.optional = optional;
+        this.openable = openable;
     }
 
     public DBXTreeItem(AbstractDescriptor source, DBXTreeNode parent, DBXTreeItem item) {
@@ -88,6 +91,7 @@ public class DBXTreeItem extends DBXTreeNode
         this.path = item.path;
         this.propertyName = item.propertyName;
         this.optional = item.optional;
+        this.openable = item.openable;
     }
 
     public String getPath()
@@ -103,6 +107,10 @@ public class DBXTreeItem extends DBXTreeNode
     public boolean isOptional()
     {
         return optional;
+    }
+
+    public boolean isOpenable() {
+        return openable;
     }
 
     @Override

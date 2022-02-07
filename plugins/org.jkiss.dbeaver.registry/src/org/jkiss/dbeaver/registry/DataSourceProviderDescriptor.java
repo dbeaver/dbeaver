@@ -190,7 +190,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.description = "Missing datasource provider " + id;
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
-        this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
+        this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, false, null, null);
         this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
     }
 
@@ -387,7 +387,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             config.getAttribute(RegistryConstants.ATTR_PATH),
             null,
             false,
-            true, false, false, false,
+            true, false, false, false, false,
             config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
             null);
         loadTreeChildren(config, treeRoot, null);
@@ -499,6 +499,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE)),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPENABLE)),
                         config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
                         recursive);
                     break;

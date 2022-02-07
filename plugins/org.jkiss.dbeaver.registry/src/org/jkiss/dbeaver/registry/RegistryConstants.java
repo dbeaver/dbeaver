@@ -155,6 +155,7 @@ public class RegistryConstants {
     public static final String ATTR_MANAGABLE = "managable"; //$NON-NLS-1$
     public static final String ATTR_CONTRIBUTOR = "contributor"; //$NON-NLS-1$
     public static final String ATTR_INPUT_FACTORY = "inputFactory"; //$NON-NLS-1$
+    public static final String ATTR_OPENABLE = "openable"; //$NON-NLS-1$
 
     public static final String ATTR_HANDLER_CLASS = "handlerClass"; //$NON-NLS-1$
     public static final String ATTR_UI_CLASS = "uiClass"; //$NON-NLS-1$
