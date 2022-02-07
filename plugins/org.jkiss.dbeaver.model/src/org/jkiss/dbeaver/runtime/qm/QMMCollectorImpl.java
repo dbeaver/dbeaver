@@ -21,18 +21,16 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.DBASession;
-import org.jkiss.dbeaver.model.auth.DBASessionPersistence;
+import org.jkiss.dbeaver.model.auth.DBASessionPersistent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.qm.QMConstants;
-import org.jkiss.dbeaver.model.qm.QMMCollector;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMMetaListener;
+import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -146,16 +144,19 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 DBPWorkspace workspace = project.getWorkspace();
                 session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
             }
-            if (session == null) {
+            DBASessionPersistent sessionPersistent = DBUtils.getAdapter(DBASessionPersistent.class, session);
+            if (sessionPersistent == null) {
+                log.warn("Session persistent not found");
                 return;
             }
-            fireMetaEvent(object, action, session);
+
+            fireMetaEvent(object, action, sessionPersistent);
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
     }
 
-    private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBASessionPersistence session) {
+    private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBASessionPersistent session) {
         String qmSessionId = session.getAttribute(QMConstants.QM_SESSION_ID_ATTR);
         if (CommonUtils.isEmpty(qmSessionId)) {
             return;

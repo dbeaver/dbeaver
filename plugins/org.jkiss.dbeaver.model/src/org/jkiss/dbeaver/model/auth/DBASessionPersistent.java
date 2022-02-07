@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.auth;
 
-public class PersistentAttribute {
-    private final Object value;
+import java.util.Map;
 
-    public PersistentAttribute(Object value) {
-        this.value = value;
-    }
+public interface DBASessionPersistent {
+    Map<String, Object> getAttributes();
 
-    public Object getValue() {
-        return value;
-    }
+    <T> T getAttribute(String name);
+
+    void setAttribute(String name, Object value);
+
+    Object removeAttribute(String name);
 }

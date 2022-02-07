@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-public class BasicWorkspaceSession extends AbstractDBASessionPersistence implements DBASession, DBASessionPrincipal {
+public class BasicWorkspaceSession extends AbstractDBASessionPersistent implements DBASession, DBASessionPrincipal {
     private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
