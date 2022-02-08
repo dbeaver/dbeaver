@@ -667,9 +667,14 @@ public class ComplexObjectEditor extends TreeViewer {
             disposeOldEditor();
 
             final ComplexElementItem element = (ComplexElementItem) getStructuredSelection().getFirstElement();
-            final CollectionElement collection = element.value instanceof CollectionElement
-                ? (CollectionElement) element.value
-                : ((CollectionElement.Item) element).collection;
+            final CollectionElement collection;
+            if (element == null) {
+                collection = (CollectionElement) getInput();
+            } else if (element.value instanceof CollectionElement) {
+                collection = (CollectionElement) element.value;
+            } else {
+                collection = ((CollectionElement.Item) element).collection;
+            }
             final CollectionElement.Item item = new CollectionElement.Item(collection, null);
 
             collection.items.add(item);
@@ -766,6 +771,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private void updateActions() {
         final Object object = getStructuredSelection().getFirstElement();
         final boolean editable = !parentController.isReadOnly() && !isReadOnlyType(object);
+        final boolean extendable = (object != null ? ((ComplexElementItem) object).value : getInput()) instanceof CollectionElement;
 
         copyNameAction.setEnabled(object != null);
         copyValueAction.setEnabled(object != null);
@@ -781,7 +787,7 @@ public class ComplexObjectEditor extends TreeViewer {
             moveElementUpAction.setEnabled(index > 0);
             moveElementDownAction.setEnabled(index < collection.items.size() - 1);
         } else {
-            addElementAction.setEnabled(editable && object != null && ((ComplexElementItem) object).value instanceof CollectionElement);
+            addElementAction.setEnabled(editable && extendable);
             removeElementAction.setEnabled(false);
             moveElementUpAction.setEnabled(false);
             moveElementDownAction.setEnabled(false);
