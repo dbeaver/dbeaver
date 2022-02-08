@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.dialogs;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.MenuManager;
@@ -67,6 +68,7 @@ import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -667,14 +669,7 @@ public class ComplexObjectEditor extends TreeViewer {
             disposeOldEditor();
 
             final ComplexElementItem element = (ComplexElementItem) getStructuredSelection().getFirstElement();
-            final CollectionElement collection;
-            if (element == null) {
-                collection = (CollectionElement) getInput();
-            } else if (element.value instanceof CollectionElement) {
-                collection = (CollectionElement) element.value;
-            } else {
-                collection = ((CollectionElement.Item) element).collection;
-            }
+            final CollectionElement collection = element != null ? GeneralUtils.adapt(element, CollectionElement.class) : (CollectionElement) getInput();
             final CollectionElement.Item item = new CollectionElement.Item(collection, null);
 
             collection.items.add(item);
@@ -771,7 +766,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private void updateActions() {
         final Object object = getStructuredSelection().getFirstElement();
         final boolean editable = !parentController.isReadOnly() && !isReadOnlyType(object);
-        final boolean extendable = (object != null ? ((ComplexElementItem) object).value : getInput()) instanceof CollectionElement;
+        final boolean extendable = GeneralUtils.adapt(object, CollectionElement.class) != null || getInput() instanceof CollectionElement;
 
         copyNameAction.setEnabled(object != null);
         copyValueAction.setEnabled(object != null);
@@ -794,7 +789,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
-    private abstract static class ComplexElementItem {
+    private abstract static class ComplexElementItem implements IAdaptable {
         protected boolean created;
         protected boolean modified;
         protected Object value;
@@ -810,6 +805,16 @@ public class ComplexObjectEditor extends TreeViewer {
 
         @NotNull
         public abstract ComplexElement getParent();
+
+        @Override
+        public <T> T getAdapter(Class<T> adapter) {
+            final ComplexElement parent = getParent();
+            if (adapter.isInstance(parent)) {
+                return adapter.cast(parent);
+            } else {
+                return null;
+            }
+        }
     }
 
     private interface ComplexElement {
