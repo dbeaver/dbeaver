@@ -425,34 +425,22 @@ public class NavigatorUtils {
                                             log.error("Can't create new file" + tmpFile.getAbsolutePath());
                                             continue;
                                         }
-                                        new AbstractJob("Dump stream data '" + fileName + "' on disk " + tmpFile.getAbsolutePath()) {
-                                            {
-                                                setUser(true);
-                                            }
-                                            @Override
-                                            protected IStatus run(DBRProgressMonitor monitor) {
-                                                log.debug(getName());
-                                                try {
-                                                    long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
-                                                    try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
-                                                        try (OutputStream out = Files.newOutputStream(tmpFile.toPath())) {
-                                                            ContentUtils.copyStreams(is, streamSize, out, monitor);
-                                                        }
-                                                        tmpFiles.add(tmpFile);
+                                        UIUtils.runInProgressService(monitor -> {
+                                            try {
+                                                long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
+                                                try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
+                                                    try (OutputStream out = Files.newOutputStream(tmpFile.toPath())) {
+                                                        ContentUtils.copyStreams(is, streamSize, out, monitor);
                                                     }
-                                                } catch (Exception e) {
-                                                    if (!tmpFile.delete()) {
-                                                        log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
-                                                    }
+                                                    tmpFiles.add(tmpFile);
                                                 }
-                                                return Status.OK_STATUS;
+                                            } catch (Exception e) {
+                                                if (!tmpFile.delete()) {
+                                                    log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
+                                                }
+                                                throw new InvocationTargetException(e);
                                             }
-
-                                            @Override
-                                            public String toString() {
-                                                return getName();
-                                            }
-                                        }.schedule();
+                                        });
                                     }
                                     nodeName = tmpFile.getAbsolutePath();
                                 } catch (Exception e) {
@@ -793,7 +781,7 @@ public class NavigatorUtils {
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
         IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
-        if (resource != null) {
+        if (resource instanceof IFile) {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
                 serviceSQL.openResource(resource);

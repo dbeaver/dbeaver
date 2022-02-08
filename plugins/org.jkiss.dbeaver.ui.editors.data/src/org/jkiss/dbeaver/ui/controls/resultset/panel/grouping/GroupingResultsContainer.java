@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -258,7 +256,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
                                     quotedGroupingString(dataSource, groupAttribute))));
                     }
                     for (String func : groupFunctions) {
-                        Expression expression = CCJSqlParserUtil.parseExpression(func);
+                        Expression expression = SQLSemanticProcessor.parseExpression(func);
                         selectItems.add(new SelectExpressionItem(expression));
                     }
                 }
@@ -324,11 +322,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     private String quotedGroupingString(DBPDataSource dataSource, String string) {
         try {
-            Expression expression = CCJSqlParserUtil.parseExpression(string);
+            Expression expression = SQLSemanticProcessor.parseExpression(string);
             if (!(expression instanceof Column)) {
                 return string;
             }
-        } catch (JSQLParserException e) {
+        } catch (DBException e) {
             log.debug("Can't parse expression " + string, e);
         }
         return DBUtils.getQuotedIdentifier(dataSource, string);

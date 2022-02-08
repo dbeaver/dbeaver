@@ -188,6 +188,8 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     public DBDDataFormatter createFormatter(String typeId, DBSTypedObject type)
         throws ReflectiveOperationException
     {
+    	loadProfile(store);
+    	
         DataFormatterDescriptor descriptor = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         if (descriptor == null) {
             throw new IllegalArgumentException("Formatter '" + typeId + "' not found");
