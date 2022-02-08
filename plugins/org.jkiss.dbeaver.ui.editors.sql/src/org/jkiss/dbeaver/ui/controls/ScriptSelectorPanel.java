@@ -172,7 +172,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                         DBWorkbench.getPlatform().getWorkspace().getProject(rootFolder.getProject()),
                         rootFolder,
                         navigatorContext);
-                    SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
+                    SQLEditorHandlerOpenEditor.openResource(scriptFile, null);
                 } catch (CoreException ex) {
                     log.error(ex);
                 }
