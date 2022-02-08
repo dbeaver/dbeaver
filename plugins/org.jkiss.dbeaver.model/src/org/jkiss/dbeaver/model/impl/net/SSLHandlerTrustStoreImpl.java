@@ -97,7 +97,6 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
         Map<String, String> oldProps = new LinkedHashMap<>();
         setSystemProperty("javax.net.ssl.trustStore", keyStorePath, oldProps);
-        setSystemProperty("javax.net.ssl.trustStore", keyStorePath, oldProps);
         setSystemProperty("javax.net.ssl.trustStoreType", keyStoreType, oldProps);
         setSystemProperty("javax.net.ssl.trustStorePassword", String.valueOf(keyStorePass), oldProps);
         setSystemProperty("javax.net.ssl.keyStore", keyStorePath, oldProps);
