@@ -72,6 +72,9 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         try {
             DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
             if (handler != null) {
+                if (resource instanceof IFile && navigatorContext.getDataSourceContainer() != null) {
+                    EditorUtils.setFileDataSource((IFile) resource, navigatorContext);
+                }
                 handler.openResource(resource);
             }
         } catch (Exception e) {
