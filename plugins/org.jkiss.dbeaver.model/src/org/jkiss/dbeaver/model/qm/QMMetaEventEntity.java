@@ -25,13 +25,12 @@ import org.jkiss.dbeaver.model.qm.meta.QMMObject;
  */
 public class QMMetaEventEntity extends QMMetaEvent {
     private final long id;
-    @Nullable
-    private final String userId;
+    private final QMSessionInfo sessionInfo;
 
-    public QMMetaEventEntity(QMMObject object, Action action, long id, String sessionId, @Nullable String userId) {
+    public QMMetaEventEntity(QMMObject object, Action action, long id, String sessionId, @Nullable QMSessionInfo sessionInfo) {
         super(object, action, sessionId);
         this.id = id;
-        this.userId = userId;
+        this.sessionInfo = sessionInfo;
     }
 
     public long getId() {
@@ -39,7 +38,7 @@ public class QMMetaEventEntity extends QMMetaEvent {
     }
 
     @Nullable
-    public String getUserId() {
-        return userId;
+    public QMSessionInfo getSessionInfo() {
+        return sessionInfo;
     }
 }
