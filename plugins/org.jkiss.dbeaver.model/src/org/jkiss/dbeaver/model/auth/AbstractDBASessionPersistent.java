@@ -18,11 +18,9 @@ package org.jkiss.dbeaver.model.auth;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 public abstract class AbstractDBASessionPersistent implements DBASessionPersistent {
     protected final Map<String, Object> attributes = new HashMap<>();
-    protected final Map<String, Function<Object, Object>> attributeDisposers = new HashMap<>();
 
     @Override
     public Map<String, Object> getAttributes() {

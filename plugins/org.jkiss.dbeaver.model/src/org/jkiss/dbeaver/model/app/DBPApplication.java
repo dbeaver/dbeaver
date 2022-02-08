@@ -71,4 +71,9 @@ public interface DBPApplication {
      */
     String getDefaultProjectName();
 
+    /**
+     * Multiple users can login into the app at the same time
+     */
+    boolean isMultiuser();
+
 }
