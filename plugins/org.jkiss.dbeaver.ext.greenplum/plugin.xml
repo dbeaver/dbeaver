@@ -36,11 +36,6 @@
                     </items>
                 </folder>
             </treeInjection>
-            <treeInjection path="postgresql" after="users">
-                <folder label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
-                    <treeContribution category="connectionEditor"/>
-                </folder>
-            </treeInjection>
 
             <drivers managable="true">
                 <driver
