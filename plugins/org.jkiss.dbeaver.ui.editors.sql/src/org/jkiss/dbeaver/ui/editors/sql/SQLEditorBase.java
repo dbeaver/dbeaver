@@ -39,6 +39,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -70,6 +71,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -85,6 +87,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
+    private static final int NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS = 1000;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -189,6 +192,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     private void handleInputChange(IEditorInput input) {
         occurrencesHighlighter.updateInput(input);
+
+        final FileEditorInput fileEditorInput = GeneralUtils.adapt(input, FileEditorInput.class);
+        if (fileEditorInput != null) {
+            final long fileTimestamp = fileEditorInput.getFile().getLocalTimeStamp();
+            final long currentTimestamp = System.currentTimeMillis();
+            if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
+                UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
+            }
+        }
     }
 
     @Override
