@@ -68,11 +68,11 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         openResource(resource, new SQLNavigatorContext());
     }
 
-    public static void openResource(IResource resource, @NotNull SQLNavigatorContext navigatorContext) {
+    public static void openResource(IResource resource, @Nullable SQLNavigatorContext navigatorContext) {
         try {
             DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
             if (handler != null) {
-                if (resource instanceof IFile && navigatorContext.getDataSourceContainer() != null) {
+                if (navigatorContext != null && resource instanceof IFile && navigatorContext.getDataSourceContainer() != null) {
                     EditorUtils.setFileDataSource((IFile) resource, navigatorContext);
                 }
                 handler.openResource(resource);
