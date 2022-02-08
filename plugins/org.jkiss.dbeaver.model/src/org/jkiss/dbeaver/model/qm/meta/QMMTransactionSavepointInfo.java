@@ -138,4 +138,9 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     public String getText() {
         return transaction.getText();
     }
+
+    @Override
+    public QMMConnectionInfo getConnection() {
+        return getTransaction().getConnection();
+    }
 }

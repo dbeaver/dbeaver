@@ -260,9 +260,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else if (object instanceof QMMTransactionSavepointInfo) {
                 containerName = ((QMMTransactionSavepointInfo) object).getTransaction().getConnection().getContainerName();
             } else if (object instanceof QMMStatementInfo) {
-                containerName = ((QMMStatementInfo) object).getSession().getContainerName();
+                containerName = ((QMMStatementInfo) object).getConnection().getContainerName();
             } else if (object instanceof QMMStatementExecuteInfo) {
-                containerName = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContainerName();
+                containerName = ((QMMStatementExecuteInfo) object).getStatement().getConnection().getContainerName();
             }
             return containerName == null ? "?" : containerName; //$NON-NLS-1$
         }
@@ -279,9 +279,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else if (object instanceof QMMTransactionSavepointInfo) {
                 contextName = ((QMMTransactionSavepointInfo) object).getTransaction().getConnection().getContextName();
             } else if (object instanceof QMMStatementInfo) {
-                contextName = ((QMMStatementInfo) object).getSession().getContextName();
+                contextName = ((QMMStatementInfo) object).getConnection().getContextName();
             } else if (object instanceof QMMStatementExecuteInfo) {
-                contextName = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContextName();
+                contextName = ((QMMStatementExecuteInfo) object).getStatement().getConnection().getContextName();
             }
             if (contextName == null) {
                 return "?"; //$NON-NLS-1$
@@ -889,7 +889,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
-                    QMMConnectionInfo session = stmtExec.getStatement().getSession();
+                    QMMConnectionInfo session = stmtExec.getStatement().getConnection();
                     DBPProject project = session.getProject();
                     String containerId = session.getContainerId();
                     if (project != null) {
@@ -1103,7 +1103,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected SQLDialect getSQLDialect() {
             if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                SQLDialect dialect = ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getSQLDialect();
+                SQLDialect dialect = ((QMMStatementExecuteInfo) object.getObject()).getStatement().getConnection().getSQLDialect();
                 if (dialect != null) {
                     return dialect;
                 }

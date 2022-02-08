@@ -114,7 +114,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
                 if (!showPrevious && !CommonUtils.equalObjects(exec.getSavepoint(), currentSP)) {
                     return false;
                 }
-                if (!showAll && !CommonUtils.equalObjects(exec.getStatement().getSession(), currentSession)) {
+                if (!showAll && !CommonUtils.equalObjects(exec.getStatement().getConnection(), currentSession)) {
                     return false;
                 }
                 DBCExecutionPurpose purpose = exec.getStatement().getPurpose();

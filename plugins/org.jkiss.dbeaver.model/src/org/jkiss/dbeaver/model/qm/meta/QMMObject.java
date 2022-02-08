@@ -118,4 +118,6 @@ public abstract class QMMObject {
         }
         return getCloseTime() - getOpenTime();
     }
+
+    public abstract QMMConnectionInfo getConnection();
 }

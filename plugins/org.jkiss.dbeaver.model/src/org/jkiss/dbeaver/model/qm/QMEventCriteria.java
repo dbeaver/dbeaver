@@ -38,6 +38,10 @@ public class QMEventCriteria {
     private boolean skipEmptyQueries = false;
     @Nullable
     private String searchString;
+    @NotNull
+    private String[] users = new String[0];
+    @NotNull
+    private String[] driverIds = new String[0];
     private int fetchingSize = 200;
 
     public String getContainerId() {
@@ -112,5 +116,29 @@ public class QMEventCriteria {
 
     public void setSkipEmptyQueries(boolean skipEmptyQueries) {
         this.skipEmptyQueries = skipEmptyQueries;
+    }
+
+    public void setUsers(@NotNull String[] users) {
+        this.users = users;
+    }
+
+    public String[] getUsers() {
+        return users;
+    }
+
+    public boolean hasUsers() {
+        return users.length > 0;
+    }
+
+    public String[] getDriverIds() {
+        return driverIds;
+    }
+
+    public void setDriverIds(@NotNull String[] driverIds) {
+        this.driverIds = driverIds;
+    }
+
+    public boolean hasDriverIds() {
+        return users.length > 0;
     }
 }

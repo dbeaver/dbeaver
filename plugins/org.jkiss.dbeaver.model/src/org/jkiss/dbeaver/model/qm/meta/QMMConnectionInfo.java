@@ -104,8 +104,12 @@ public class QMMConnectionInfo extends QMMObject {
         return this.containerName + " - " + contextName;
     }
 
-    public QMMTransactionInfo changeTransactional(boolean transactional)
-    {
+    @Override
+    public QMMConnectionInfo getConnection() {
+        return this;
+    }
+
+    public QMMTransactionInfo changeTransactional(boolean transactional) {
         if (this.transactional == transactional) {
             return null;
         }
