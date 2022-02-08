@@ -86,7 +86,7 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             return false;
         } else {
-            QMMConnectionInfo sessionInfo = getCurrentSession(executionContext);
+            QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
             if (sessionInfo != null && sessionInfo.isTransactional()) {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
@@ -114,12 +114,12 @@ public class QMUtils {
         return false;
     }
 
-    public static QMMConnectionInfo getCurrentSession(DBCExecutionContext executionContext) {
-        return application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+    public static QMMConnectionInfo getCurrentConnection(DBCExecutionContext executionContext) {
+        return application.getQueryManager().getMetaCollector().getConnectionInfo(executionContext);
     }
 
     public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
-        QMMConnectionInfo sessionInfo = getCurrentSession(executionContext);
+        QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
         if (sessionInfo != null && !sessionInfo.isClosed() && sessionInfo.isTransactional()) {
             QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
             if (txnInfo != null) {
@@ -137,7 +137,7 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             txnMode = false;
         } else {
-            QMMConnectionInfo sessionInfo = getCurrentSession(executionContext);
+            QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
             if (sessionInfo == null || sessionInfo.isClosed()) {
                 txnMode = false;
             } else if (sessionInfo.isTransactional()) {
@@ -216,7 +216,7 @@ public class QMUtils {
         public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
             QMMetaEvent event = events.get(position);
             position++;
-            return new QMMetaEventEntity(event.getObject(), event.getAction(), position);
+            return new QMMetaEventEntity(event.getObject(), event.getAction(), position, "", null);
         }
 
         @Override

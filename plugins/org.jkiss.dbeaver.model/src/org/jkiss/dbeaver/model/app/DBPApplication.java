@@ -24,8 +24,7 @@ import org.jkiss.code.NotNull;
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
  */
-public interface DBPApplication
-{
+public interface DBPApplication {
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
@@ -71,5 +70,10 @@ public interface DBPApplication
      * Default project name, e.g. 'General'.
      */
     String getDefaultProjectName();
+
+    /**
+     * Multiple users can login into the app at the same time
+     */
+    boolean isMultiuser();
 
 }

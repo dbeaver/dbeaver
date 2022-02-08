@@ -15,30 +15,16 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.qm.meta.QMMObject;
+import java.util.Map;
 
-/**
- * QM meta event
- */
-public class QMMetaEventEntity extends QMMetaEvent {
-    private final long id;
-    private final QMSessionInfo sessionInfo;
+public interface DBASessionPersistent {
+    Map<String, Object> getAttributes();
 
-    public QMMetaEventEntity(QMMObject object, Action action, long id, String sessionId, @Nullable QMSessionInfo sessionInfo) {
-        super(object, action, sessionId);
-        this.id = id;
-        this.sessionInfo = sessionInfo;
-    }
+    <T> T getAttribute(String name);
 
-    public long getId() {
-        return id;
-    }
+    void setAttribute(String name, Object value);
 
-    @Nullable
-    public QMSessionInfo getSessionInfo() {
-        return sessionInfo;
-    }
+    Object removeAttribute(String name);
 }
