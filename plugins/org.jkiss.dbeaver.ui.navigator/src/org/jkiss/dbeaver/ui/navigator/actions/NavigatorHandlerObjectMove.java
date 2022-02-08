@@ -47,9 +47,13 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        final DBNNode[][] nodes = groupConsecutiveNodes(NavigatorUtils.getSelectedNodes(selection));
+        final List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+        final DBNNode[][] consecutiveNodes = groupConsecutiveNodes(nodes);
 
-        for (DBNNode[] partition : nodes) {
+        final int min = getNodePosition(nodes.get(0));
+        final int max = getNodePosition(nodes.get(nodes.size() - 1));
+
+        for (DBNNode[] partition : consecutiveNodes) {
             for (DBNNode node : partition) {
                 if (!(node.getParentNode() instanceof DBNContainer)) {
                     return null;
@@ -87,25 +91,30 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                         null, object.getClass(),
                         false);
 
+                    final int shift;
+
                     switch (event.getCommand().getId()) {
+                        case NavigatorCommands.CMD_OBJECT_MOVE_TOP:
+                            shift = -min + 1;
+                            break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_UP:
-                            objectReorderer.setObjectOrdinalPosition(
-                                commandTarget.getContext(),
-                                object,
-                                siblingObjects,
-                                orderedObject.getOrdinalPosition() - 1);
+                            shift = -1;
+                            break;
+                        case NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM:
+                            shift = max - 1;
                             break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_DOWN:
-                            // Need to take in account total amount of moved objects to avoid overlapping
-                            objectReorderer.setObjectOrdinalPosition(
-                                commandTarget.getContext(),
-                                object,
-                                siblingObjects,
-                                orderedObject.getOrdinalPosition() + partition.length);
+                            shift = partition.length;
                             break;
                         default:
-                            break;
+                            throw new ExecutionException("Unexpected command: " + event.getCommand());
                     }
+
+                    objectReorderer.setObjectOrdinalPosition(
+                        commandTarget.getContext(),
+                        object,
+                        siblingObjects,
+                        orderedObject.getOrdinalPosition() + shift);
 
                     if (object.isPersisted() && commandTarget.getEditor() == null) {
                         Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
