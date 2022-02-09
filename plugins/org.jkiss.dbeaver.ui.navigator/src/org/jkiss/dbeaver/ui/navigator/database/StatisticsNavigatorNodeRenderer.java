@@ -109,20 +109,20 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         if (element instanceof DBNDatabaseNode) {
             final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+            int widthOccupied = 0;
             if (element instanceof DBNDataSource) {
-                int widthOccupied = 0;
                 if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
                     widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
                 }
                 if (preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
                     renderDataSourceHostName((DBNDataSource) element, tree, gc, event, widthOccupied);
                 }
-            } else if (element instanceof DBNDatabaseItem && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
-                renderObjectDescription((DBNDatabaseItem) element, tree, gc, event);
             }
-
             if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
-                renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+                widthOccupied += renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+            }
+            if (element instanceof DBNDatabaseItem && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
+                renderObjectDescription((DBNDatabaseItem) element, tree, gc, event, widthOccupied);
             }
         }
     }
@@ -240,12 +240,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return null;
     }
 
-    private void renderObjectDescription(@NotNull DBNDatabaseItem element, @NotNull Tree tree, @NotNull GC gc, @NotNull Event event) {
+    private void renderObjectDescription(@NotNull DBNDatabaseItem element, @NotNull Tree tree, @NotNull GC gc, @NotNull Event event, int widthOccupied) {
         final DBSObject object = element.getObject();
         if (object != null) {
             final String description = object.getDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
-                drawText(description, null, tree, gc, event, 0);
+                drawText(description, null, tree, gc, event, widthOccupied);
             }
         }
     }
@@ -381,7 +381,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     ///////////////////////////////////////////////////////////////////
     // Statistics renderer
 
-    private void renderObjectStatistics(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
+    private int renderObjectStatistics(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
         DBSObject object = element.getObject();
         if (object instanceof DBPObjectStatistics) {
             String sizeText;
@@ -402,7 +402,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
                 if (statObjectSize <= 0) {
                     // Empty or no size - nothing to show
-                    return;
+                    return 0;
                 }
                 percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
                 if (percentFull < 0 || percentFull > 100) {
@@ -441,7 +441,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                         element.getParentNode(),
                         realParentObject,
                         ((TreeItem) event.item).getParentItem())) {
-                        return;
+                        return 0;
                     }
                 }
             }
@@ -469,8 +469,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 gc.setFont(tree.getFont());
                 gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
                 gc.setFont(oldFont);
+
+                return Math.max(PERCENT_FILL_WIDTH, textSize.x) + 3;
             }
         }
+
+        return 0;
     }
 
     private DBNNode getParentItem(DBNDatabaseNode element) {
