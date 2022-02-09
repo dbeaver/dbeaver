@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.vertica.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -63,20 +61,6 @@ public class VerticaTableColumnManager extends GenericTableColumnManager impleme
             sql.append(" DROP NOT NULL");
         }
     };
-
-    @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
-    {
-        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
-        final GenericTableColumn column = command.getObject();
-        if (column.isAutoIncrement()) {
-            final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);
-            if (autoIncrementClause != null && !autoIncrementClause.isEmpty()) {
-                decl.append(" ").append(autoIncrementClause); //$NON-NLS-1$
-            }
-        }
-        return decl;
-    }
 
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {

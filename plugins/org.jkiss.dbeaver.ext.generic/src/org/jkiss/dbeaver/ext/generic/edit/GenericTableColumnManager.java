@@ -101,6 +101,11 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options) {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
+        addIncrementClauseToNestedDeclaration(command, decl);
+        return decl;
+    }
+
+    public void addIncrementClauseToNestedDeclaration(DBECommandAbstract<GenericTableColumn> command, StringBuilder decl) {
         final GenericTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
             final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);
@@ -108,7 +113,6 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
                 decl.append(" ").append(autoIncrementClause); //$NON-NLS-1$
             }
         }
-        return decl;
     }
 
     @Override
