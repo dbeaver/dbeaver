@@ -48,7 +48,7 @@ import java.util.Locale;
 /**
  * DenodoConnectionPage
  */
-public class DenodoConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider, IDataSourceConnectionTester {
+public class    DenodoConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider, IDataSourceConnectionTester {
 
     private static final Log log = Log.getLog(DenodoConnectionPage.class);
 
