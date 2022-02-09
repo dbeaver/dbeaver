@@ -71,6 +71,7 @@ public class NIOFileSystem extends FileSystem {
                             DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
                             if (fsNodeRoot != null) {
                                 try {
+                                    // FIXME: relpath must contain bucket name
                                     java.nio.file.FileSystem nioFileSystem = fsNodeRoot.getRoot().getPath(new VoidProgressMonitor()).getFileSystem();
                                     path = nioFileSystem.getPath(relPath);
                                 } catch (Exception e) {
