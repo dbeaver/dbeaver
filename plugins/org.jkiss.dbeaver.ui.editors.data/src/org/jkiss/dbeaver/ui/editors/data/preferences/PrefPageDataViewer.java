@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -62,13 +63,13 @@ public class PrefPageDataViewer extends TargetPrefPage {
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            final Group group = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_data_viewer_reference_panel_group, 2, GridData.FILL_BOTH, 300);
+            final Group group = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_data_viewer_reference_panel_group, 2, GridData.FILL_HORIZONTAL, 0);
 
             UIUtils.createControlLabel(group, ResultSetMessages.pref_page_data_viewer_reference_panel_desc_column_keywords_label, 2);
 
             refPanelDescColumnKeywords = new List(group, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
             refPanelDescColumnKeywords.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            ((GridData) refPanelDescColumnKeywords.getLayoutData()).heightHint = 100;
+            ((GridData) refPanelDescColumnKeywords.getLayoutData()).heightHint = UIUtils.getFontHeight(refPanelDescColumnKeywords) * 15;
 
             final ToolBar toolbar = new ToolBar(group, SWT.VERTICAL);
             toolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -76,12 +77,11 @@ public class PrefPageDataViewer extends TargetPrefPage {
             UIUtils.createToolItem(toolbar, ResultSetMessages.pref_page_data_viewer_reference_panel_desc_column_keywords_add_button, UIIcon.ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String name = EnterNameDialog.chooseName(getShell(), ResultSetMessages.pref_page_data_viewer_reference_panel_desc_column_keywords_prompt_title);
+                    final String name = promptKeywordName(null);
                     if (name != null) {
-                        name = name.toLowerCase(Locale.ENGLISH).strip();
-                    }
-                    if (CommonUtils.isNotEmpty(name) && refPanelDescColumnKeywords.indexOf(name) < 0) {
                         refPanelDescColumnKeywords.add(name);
+                        refPanelDescColumnKeywords.select(refPanelDescColumnKeywords.getItemCount() - 1);
+                        refPanelDescColumnKeywords.notifyListeners(SWT.Selection, new Event());
                     }
                 }
             });
@@ -97,9 +97,10 @@ public class PrefPageDataViewer extends TargetPrefPage {
             final ToolItem editButton = UIUtils.createToolItem(toolbar, ResultSetMessages.pref_page_data_viewer_reference_panel_desc_column_keywords_edit_button, UIIcon.EDIT, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    final String name = EnterNameDialog.chooseName(getShell(), ResultSetMessages.pref_page_data_viewer_reference_panel_desc_column_keywords_prompt_title);
-                    if (CommonUtils.isNotEmpty(name)) {
-                        refPanelDescColumnKeywords.setItem(refPanelDescColumnKeywords.getSelectionIndex(), name.toLowerCase(Locale.ENGLISH).strip());
+                    final int index = refPanelDescColumnKeywords.getSelectionIndex();
+                    final String name = promptKeywordName(refPanelDescColumnKeywords.getItem(index));
+                    if (name != null) {
+                        refPanelDescColumnKeywords.setItem(index, name);
                     }
                 }
             });
@@ -120,10 +121,10 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected void loadPreferences(DBPPreferenceStore store) {
         refPanelDescColumnKeywords.removeAll();
-
         for (String pattern : DBVEntity.getDescriptionColumnPatterns(store)) {
             refPanelDescColumnKeywords.add(pattern);
         }
+        refPanelDescColumnKeywords.notifyListeners(SWT.Selection, new Event());
     }
 
     @Override
@@ -132,7 +133,6 @@ public class PrefPageDataViewer extends TargetPrefPage {
         for (String pattern : refPanelDescColumnKeywords.getItems()) {
             buffer.add(pattern);
         }
-
         store.setValue(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS, buffer.toString());
     }
 
@@ -142,7 +142,26 @@ public class PrefPageDataViewer extends TargetPrefPage {
     }
 
     @Override
+    protected void performDefaults() {
+        final DBPPreferenceStore store = getTargetPreferenceStore();
+        clearPreferences(store);
+        loadPreferences(store);
+    }
+
+    @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
+    }
+
+    @Nullable
+    private String promptKeywordName(@Nullable String value) {
+        String name = EnterNameDialog.chooseName(getShell(), ResultSetMessages.pref_page_data_viewer_reference_panel_desc_column_keywords_prompt_title, value);
+        if (name != null) {
+            name = name.toLowerCase(Locale.ENGLISH).strip();
+        }
+        if (CommonUtils.isNotEmpty(name) && refPanelDescColumnKeywords.indexOf(name) < 0) {
+            return name;
+        }
+        return null;
     }
 }
