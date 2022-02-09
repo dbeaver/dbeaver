@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,13 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
 
         final int min = getNodePosition(nodes.get(0));
         final int max = getNodePosition(nodes.get(nodes.size() - 1));
+        final String commandId = event.getCommand().getId();
+        final boolean downwards = commandId.equals(NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM) || commandId.equals(NavigatorCommands.CMD_OBJECT_MOVE_DOWN);
+
+        if (downwards) {
+            // Objects must be moved down in reverse order to avoid overlapping
+            ArrayUtils.reverse(consecutiveNodes);
+        }
 
         for (DBNNode[] partition : consecutiveNodes) {
             for (DBNNode node : partition) {
@@ -93,7 +101,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
 
                     final int shift;
 
-                    switch (event.getCommand().getId()) {
+                    switch (commandId) {
                         case NavigatorCommands.CMD_OBJECT_MOVE_TOP:
                             shift = -min + 1;
                             break;
@@ -101,7 +109,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                             shift = -1;
                             break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM:
-                            shift = max - 1;
+                            shift = objectReorderer.getMaximumOrdinalPosition(object) - max + partition.length - 1;
                             break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_DOWN:
                             shift = partition.length;
