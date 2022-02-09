@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.ui.UIColors;
@@ -88,8 +89,8 @@ public class GeometryDataUtils {
         final Map<String, Object> info = new LinkedHashMap<>();
         for (DBDAttributeBinding binding : geomAttrs.descAttrs) {
             final Object description = model.getCellValue(binding, row);
-            if (!DBUtils.isNullValue(description) && !(description instanceof String && ((String) description).isEmpty())) {
-                info.put(binding.getName(), description);
+            if (!DBUtils.isNullValue(description)) {
+                info.put(binding.getName(), binding.getValueHandler().getValueDisplayString(binding, description, DBDDisplayFormat.NATIVE));
             }
         }
         final Map<String, Object> properties = new LinkedHashMap<>();
