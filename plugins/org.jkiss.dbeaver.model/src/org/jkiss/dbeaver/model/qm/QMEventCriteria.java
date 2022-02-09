@@ -22,6 +22,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * QM event criteria
  */
@@ -39,9 +42,14 @@ public class QMEventCriteria {
     @Nullable
     private String searchString;
     @NotNull
-    private String[] users = new String[0];
+    private Set<String> users = Collections.emptySet();
     @NotNull
-    private String[] driverIds = new String[0];
+    private Set<String> driverIds = Collections.emptySet();
+    @NotNull
+    private Set<QMEventStatus> eventStatuses = Collections.emptySet();
+    @NotNull
+    private QMSortField sortField = QMSortField.DATE;
+    private boolean desc = true;
     private int fetchingSize = 200;
 
     public String getContainerId() {
@@ -118,27 +126,57 @@ public class QMEventCriteria {
         this.skipEmptyQueries = skipEmptyQueries;
     }
 
-    public void setUsers(@NotNull String[] users) {
+    public void setUsers(@NotNull Set<String> users) {
         this.users = users;
     }
 
-    public String[] getUsers() {
+    public Set<String> getUsers() {
         return users;
     }
 
     public boolean hasUsers() {
-        return users.length > 0;
+        return !users.isEmpty();
     }
 
-    public String[] getDriverIds() {
+    public Set<String> getDriverIds() {
         return driverIds;
     }
 
-    public void setDriverIds(@NotNull String[] driverIds) {
+    public void setDriverIds(@NotNull Set<String> driverIds) {
         this.driverIds = driverIds;
     }
 
     public boolean hasDriverIds() {
-        return users.length > 0;
+        return !driverIds.isEmpty();
+    }
+
+    @NotNull
+    public Set<QMEventStatus> getEventStatuses() {
+        return eventStatuses;
+    }
+
+    public void setEventStatuses(@NotNull Set<QMEventStatus> eventStatuses) {
+        this.eventStatuses = eventStatuses;
+    }
+
+    public boolean hasEventStatuses() {
+        return !eventStatuses.isEmpty() && eventStatuses.size() < QMEventStatus.values().length;
+    }
+
+    @NotNull
+    public QMSortField getSortField() {
+        return sortField;
+    }
+
+    public void setSortField(@NotNull QMSortField sortField) {
+        this.sortField = sortField;
+    }
+
+    public boolean isDesc() {
+        return desc;
+    }
+
+    public void setDesc(boolean desc) {
+        this.desc = desc;
     }
 }
