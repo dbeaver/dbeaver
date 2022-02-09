@@ -760,7 +760,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected()
     {
-        return dataSource != null;
+        return dataSource != null && !connecting;
     }
 
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
