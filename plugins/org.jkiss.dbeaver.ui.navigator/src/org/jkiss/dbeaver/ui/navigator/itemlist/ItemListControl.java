@@ -196,12 +196,10 @@ public class ItemListControl extends NodeListControl
             }
             if (hasReorder) {
                 contributionManager.add(new Separator());
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    workbenchSite,
-                    NavigatorCommands.CMD_OBJECT_MOVE_UP));
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    workbenchSite,
-                    NavigatorCommands.CMD_OBJECT_MOVE_DOWN));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_TOP));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_UP));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_DOWN));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM));
             }
         }
 

@@ -4,7 +4,10 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="clickhouse" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel" driverClass="ru.yandex.clickhouse.ClickHouseDriver" dialect="clickhouse"/>
+        <meta id="clickhouse"
+              class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel"
+              driverClass="ru.yandex.clickhouse.ClickHouseDriver,com.clickhouse.jdbc.ClickHouseDriver"
+              dialect="clickhouse"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">

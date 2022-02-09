@@ -48,8 +48,9 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     protected Tree createControl(Composite editPlaceholder)
     {
-        final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        editor = new ComplexObjectEditor(controller, this, inline ? SWT.NONE : SWT.BORDER);
+        final boolean isDialog = valueController.getEditType() == IValueController.EditType.EDITOR;
+        editor = new ComplexObjectEditor(controller, this, isDialog ? SWT.BORDER : SWT.NONE);
+
         editor.setModel(controller.getExecutionContext(), controller.getValue());
         return editor.getTree();
     }

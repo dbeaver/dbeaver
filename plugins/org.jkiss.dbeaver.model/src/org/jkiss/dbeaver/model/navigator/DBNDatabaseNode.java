@@ -435,11 +435,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return;
         }
         monitor.beginTask(ModelMessages.model_navigator_load_items_, childMetas.size());
-        DBNBrowseSettings navSettings = getDataSourceContainer().getNavigatorSettings();
+        DBPDataSourceContainer container = getDataSourceContainer();
+        DBNBrowseSettings navSettings = container.getNavigatorSettings();
         final boolean showSystem = navSettings.isShowSystemObjects();
         final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
         final boolean hideFolders = navSettings.isHideFolders();
         boolean mergeEntities = navSettings.isMergeEntities();
+        boolean supportsOptionalFolders = false;
+        DBPDataSource dataSource = container.getDataSource();
+        if (dataSource instanceof DBPDataSourceWithOptionalElements) {
+            supportsOptionalFolders = ((DBPDataSourceWithOptionalElements) dataSource).hasOptionalFolders();
+        }
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
@@ -463,7 +469,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     }
                 }
             } else if (child instanceof DBXTreeFolder) {
-                if (hideFolders || (mergeEntities && ((DBXTreeFolder)child).isOptional())) {
+                if (hideFolders || ((mergeEntities || supportsOptionalFolders) && ((DBXTreeFolder)child).isOptional())) {
                     if (child.isVirtual()) {
                         continue;
                     }

@@ -272,4 +272,15 @@ public class ArrayUtils {
     public static <T> T[] toArray(Class<T> type, Collection<? extends T> list) {
         return list.toArray((T[]) Array.newInstance(type, list.size()));
     }
+
+    public static void reverse(@Nullable Object[] array) {
+        if (array == null || array.length <= 1) {
+            return;
+        }
+        for (int i = 0, j = array.length - 1; j > i; ++i, j--) {
+            final Object tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+        }
+    }
 }
