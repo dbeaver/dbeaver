@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -103,10 +104,15 @@ public class ObjectBrowserDialog extends Dialog {
             public boolean isLeafObject(Object object) {
                 if (leafTypes != null && leafTypes.length > 0) {
                     if (object instanceof DBNDatabaseNode) {
-                        DBSObject dbObject = ((DBNDatabaseNode) object).getObject();
+                        DBNDatabaseNode node = (DBNDatabaseNode) object;
+                        DBSObject dbObject = node.getObject();
+                        DBXTreeNode meta = node.getMeta();
                         if (dbObject != null) {
                             for (Class<?> leafType : leafTypes) {
                                 if (leafType.isAssignableFrom(dbObject.getClass())) {
+                                    if (DBSObjectContainer.class.isAssignableFrom(leafType)) {
+                                        return !DBNNode.nodeHasStructureContainers(node, meta); // Special case. Node has structure container inside if true (can be recursion)
+                                    }
                                     return true;
                                 }
                             }

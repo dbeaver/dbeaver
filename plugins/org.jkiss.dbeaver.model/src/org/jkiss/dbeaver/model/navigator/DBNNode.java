@@ -25,8 +25,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -290,5 +292,19 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return aClass;
     }
 
+    public static boolean nodeHasStructureContainers(DBNNode node, DBXTreeNode meta) {
+        List<DBXTreeNode> children = meta.getChildren(node);
+        if (!CommonUtils.isEmpty(children)) {
+            for (DBXTreeNode child : children) {
+                if (child instanceof DBXTreeFolder) {
+                    Class<? extends DBSObject> childrenClass = DBNNode.getFolderChildrenClass((DBXTreeFolder) child);
+                    if (childrenClass != null && DBSObjectContainer.class.isAssignableFrom(childrenClass)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
 }
