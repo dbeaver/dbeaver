@@ -53,7 +53,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
-        final SQLDialect sqlDialect = statement.getSession().getSQLDialect();
+        final SQLDialect sqlDialect = statement.getConnection().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
             this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
@@ -182,5 +182,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
         long execTime = getCloseTime() - getOpenTime();
         long fetchTime = isFetching() ? 0 : getFetchEndTime() - getFetchBeginTime();
         return execTime + fetchTime;
+    }
+
+    @Override
+    public QMMConnectionInfo getConnection() {
+        return statement.getConnection();
     }
 }

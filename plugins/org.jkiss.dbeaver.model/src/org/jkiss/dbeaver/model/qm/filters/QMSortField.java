@@ -14,22 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.qm.filters;
 
-package org.jkiss.dbeaver.model.qm;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
-
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria, QMEventFilter filter)
-        throws DBException;
-
+public enum QMSortField {
+    DATE,
+    USER,
+    DRIVER,
+    QUERY_TEXT
 }

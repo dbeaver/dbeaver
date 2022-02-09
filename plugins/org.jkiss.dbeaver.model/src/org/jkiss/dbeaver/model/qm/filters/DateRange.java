@@ -14,22 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.qm.filters;
 
-package org.jkiss.dbeaver.model.qm;
+import org.jkiss.code.Nullable;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import java.time.LocalDateTime;
 
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
+public class DateRange {
+    @Nullable
+    private final LocalDateTime from;
+    @Nullable
+    private final LocalDateTime to;
 
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria, QMEventFilter filter)
-        throws DBException;
+    public DateRange(@Nullable LocalDateTime from, @Nullable LocalDateTime to) {
+        this.from = from;
+        this.to = to;
+    }
 
+    @Nullable
+    public LocalDateTime getFrom() {
+        return from;
+    }
+
+    @Nullable
+    public LocalDateTime getTo() {
+        return to;
+    }
 }

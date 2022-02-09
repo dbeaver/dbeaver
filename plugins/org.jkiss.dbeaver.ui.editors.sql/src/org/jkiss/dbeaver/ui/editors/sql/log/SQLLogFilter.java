@@ -48,9 +48,9 @@ class SQLLogFilter implements QMEventFilter {
             return editor.getDataSourceContainer() != null && Objects.equals(((QMMConnectionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
-                return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getSession());
+                return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getConnection());
             } else if (object instanceof QMMStatementInfo) {
-                return belongsToEditor(((QMMStatementInfo) object).getSession());
+                return belongsToEditor(((QMMStatementInfo) object).getConnection());
             } else if (object instanceof QMMTransactionInfo) {
                 return belongsToEditor(((QMMTransactionInfo) object).getConnection());
             } else if (object instanceof QMMTransactionSavepointInfo) {

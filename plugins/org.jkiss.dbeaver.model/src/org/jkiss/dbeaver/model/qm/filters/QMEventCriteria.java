@@ -15,18 +15,21 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * QM event criteria
  */
 public class QMEventCriteria {
-
     @Nullable
     private String containerId;
     @Nullable
@@ -38,6 +41,17 @@ public class QMEventCriteria {
     private boolean skipEmptyQueries = false;
     @Nullable
     private String searchString;
+    @NotNull
+    private Set<String> users = Collections.emptySet();
+    @NotNull
+    private Set<String> driverIds = Collections.emptySet();
+    @NotNull
+    private Set<QMEventStatus> eventStatuses = Collections.emptySet();
+    @NotNull
+    private QMSortField sortField = QMSortField.DATE;
+    @Nullable
+    private DateRange startDateRange;
+    private boolean desc = true;
     private int fetchingSize = 200;
 
     public String getContainerId() {
@@ -112,5 +126,68 @@ public class QMEventCriteria {
 
     public void setSkipEmptyQueries(boolean skipEmptyQueries) {
         this.skipEmptyQueries = skipEmptyQueries;
+    }
+
+    public void setUsers(@NotNull Set<String> users) {
+        this.users = users;
+    }
+
+    public Set<String> getUsers() {
+        return users;
+    }
+
+    public boolean hasUsers() {
+        return !users.isEmpty();
+    }
+
+    public Set<String> getDriverIds() {
+        return driverIds;
+    }
+
+    public void setDriverIds(@NotNull Set<String> driverIds) {
+        this.driverIds = driverIds;
+    }
+
+    public boolean hasDriverIds() {
+        return !driverIds.isEmpty();
+    }
+
+    @NotNull
+    public Set<QMEventStatus> getEventStatuses() {
+        return eventStatuses;
+    }
+
+    public void setEventStatuses(@NotNull Set<QMEventStatus> eventStatuses) {
+        this.eventStatuses = eventStatuses;
+    }
+
+    public boolean hasEventStatuses() {
+        return !eventStatuses.isEmpty() && eventStatuses.size() < QMEventStatus.values().length;
+    }
+
+    @NotNull
+    public QMSortField getSortField() {
+        return sortField;
+    }
+
+    public void setSortField(@NotNull QMSortField sortField) {
+        this.sortField = sortField;
+    }
+
+    public boolean isDesc() {
+        return desc;
+    }
+
+    public void setDesc(boolean desc) {
+        this.desc = desc;
+    }
+
+    @Nullable
+    public DateRange getStartDateRange() {
+        return startDateRange;
+    }
+
+    public void setStartDateRange(@Nullable DateRange startDateRange) {
+        this.startDateRange = startDateRange;
     }
 }
