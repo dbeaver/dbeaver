@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -108,15 +107,12 @@ public class ObjectBrowserDialog extends Dialog {
                         DBNDatabaseNode node = (DBNDatabaseNode) object;
                         DBSObject dbObject = node.getObject();
                         DBXTreeNode meta = node.getMeta();
-                        if (meta instanceof DBXTreeItem) {
-                            if (((DBXTreeItem) meta).isOpenable()) {
-                                // Special case. This object can has another schemas inside
-                                return false;
-                            }
-                        }
                         if (dbObject != null) {
                             for (Class<?> leafType : leafTypes) {
                                 if (leafType.isAssignableFrom(dbObject.getClass())) {
+                                    if (DBSObjectContainer.class.isAssignableFrom(leafType)) {
+                                        return !DBNNode.nodeHasStructureContainers(node, meta); // Special case. Node has structure container inside if true (can be recursion)
+                                    }
                                     return true;
                                 }
                             }

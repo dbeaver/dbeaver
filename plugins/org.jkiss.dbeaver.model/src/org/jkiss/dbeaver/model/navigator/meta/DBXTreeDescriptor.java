@@ -28,8 +28,8 @@ public class DBXTreeDescriptor extends DBXTreeItem {
 
     private final boolean supportsEntityMerge;
 
-    public DBXTreeDescriptor(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String path, String propertyName, boolean optional, boolean navigable, boolean inline, boolean virtual, boolean standalone, boolean openable, String visibleIf, String recursiveLink) {
-        super(source, parent, config, path, propertyName, optional, navigable, inline, virtual, standalone, openable, visibleIf, recursiveLink);
+    public DBXTreeDescriptor(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String path, String propertyName, boolean optional, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursiveLink) {
+        super(source, parent, config, path, propertyName, optional, navigable, inline, virtual, standalone, visibleIf, recursiveLink);
 
         this.supportsEntityMerge = config != null && CommonUtils.toBoolean(config.getAttribute("supportsEntityMerge"));
     }
