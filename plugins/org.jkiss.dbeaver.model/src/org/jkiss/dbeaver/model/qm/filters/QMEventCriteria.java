@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collections;
@@ -29,7 +30,6 @@ import java.util.Set;
  * QM event criteria
  */
 public class QMEventCriteria {
-
     @Nullable
     private String containerId;
     @Nullable
@@ -49,6 +49,8 @@ public class QMEventCriteria {
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
+    @Nullable
+    private DateRange startDateRange;
     private boolean desc = true;
     private int fetchingSize = 200;
 
@@ -178,5 +180,14 @@ public class QMEventCriteria {
 
     public void setDesc(boolean desc) {
         this.desc = desc;
+    }
+
+    @Nullable
+    public DateRange getStartDateRange() {
+        return startDateRange;
+    }
+
+    public void setStartDateRange(@Nullable DateRange startDateRange) {
+        this.startDateRange = startDateRange;
     }
 }

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;

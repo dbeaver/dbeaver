@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.qm.filters;
 
-public enum QMEventStatus {
-    FAILED,
-    SUCCESS
+public enum QMSortField {
+    DATE,
+    USER,
+    DRIVER,
+    QUERY_TEXT
 }

@@ -14,11 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.qm.filters;
 
-public enum QMSortField {
-    DATE,
-    USER,
-    DRIVER,
-    QUERY_TEXT
+import org.jkiss.code.Nullable;
+
+import java.time.LocalDateTime;
+
+public class DateRange {
+    @Nullable
+    private final LocalDateTime from;
+    @Nullable
+    private final LocalDateTime to;
+
+    public DateRange(@Nullable LocalDateTime from, @Nullable LocalDateTime to) {
+        this.from = from;
+        this.to = to;
+    }
+
+    @Nullable
+    public LocalDateTime getFrom() {
+        return from;
+    }
+
+    @Nullable
+    public LocalDateTime getTo() {
+        return to;
+    }
 }
