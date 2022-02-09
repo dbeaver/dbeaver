@@ -264,6 +264,13 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_format_label_type;
     public static String pref_page_data_format_link_patterns;
 
+    public static String pref_page_data_viewer_reference_panel_group;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_label;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_prompt_title;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_add_button;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_remove_button;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_edit_button;
+
     public static String dialog_data_format_profiles_button_delete_profile;
     public static String dialog_data_format_profiles_button_new_profile;
     public static String dialog_data_format_profiles_confirm_delete_message;
