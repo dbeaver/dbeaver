@@ -25,11 +25,16 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.NIOListener;
+import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
+import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +42,7 @@ import java.util.List;
 /**
  * DBNFileSystems
  */
-public class DBNFileSystems extends DBNNode {
+public class DBNFileSystems extends DBNNode implements NIOListener {
 
     private static final Log log = Log.getLog(DBNFileSystems.class);
 
@@ -45,6 +50,15 @@ public class DBNFileSystems extends DBNNode {
 
     public DBNFileSystems(DBNProject parentNode) {
         super(parentNode);
+
+        NIOMonitor.addListener(this);
+    }
+
+    @Override
+    protected void dispose(boolean reflect) {
+        super.dispose(reflect);
+
+        NIOMonitor.removeListener(this);
     }
 
     @Override
@@ -130,6 +144,46 @@ public class DBNFileSystems extends DBNNode {
     @Override
     public boolean supportsRename() {
         return false;
+    }
+
+    @Override
+    public void resourceChanged(NIOResource resource, Action action) {
+        if (!CommonUtils.equalObjects(getOwnerProject().getEclipseProject(), resource.getProject())) {
+            return;
+        }
+        if (children == null) {
+            return;
+        }
+        DBFVirtualFileSystemRoot dbfRoot = resource.getRoot().getRoot();
+
+        for (DBNFileSystem fs : children) {
+            if (CommonUtils.equalObjects(fs.getFileSystem(), dbfRoot.getFileSystem())) {
+                DBNFileSystemRoot rootNode = fs.getRoot(dbfRoot);
+                if (rootNode != null) {
+                    String[] pathSegments = resource.getFullPath().segments();
+                    DBNPathBase parentNode = rootNode;
+                    for (int i = 1; i < pathSegments.length - 1; i++) {
+                        String itemName = pathSegments[i];
+                        parentNode = parentNode.getChild(itemName);
+                        if (parentNode == null) {
+                            return;
+                        }
+                    }
+
+                    switch (action) {
+                        case CREATE:
+                            parentNode.addChildResource(resource.getNioPath());
+                            break;
+                        case DELETE:
+                            parentNode.removeChildResource(resource.getNioPath());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
+            }
+        }
     }
 
 }

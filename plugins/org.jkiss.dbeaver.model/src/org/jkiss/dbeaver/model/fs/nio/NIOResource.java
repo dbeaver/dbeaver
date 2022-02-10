@@ -45,7 +45,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         this.nioPath = nioPath;
     }
 
-    protected NIOFileSystemRoot getRoot() {
+    public NIOFileSystemRoot getRoot() {
         return root;
     }
 
@@ -122,16 +122,14 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public void delete(boolean force, IProgressMonitor monitor) throws CoreException {
-        try {
-            Files.delete(getNioPath());
-        } catch (IOException e) {
-            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
-        }
+        delete(force ? IResource.FORCE : IResource.NONE, monitor);
     }
 
     public void delete(int updateFlags, IProgressMonitor monitor) throws CoreException {
         try {
             Files.delete(getNioPath());
+
+            NIOMonitor.notifyResourceChange(this, NIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

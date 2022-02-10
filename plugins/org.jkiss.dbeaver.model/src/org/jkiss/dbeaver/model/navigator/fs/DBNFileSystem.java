@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -59,6 +60,18 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         }
         for (DBNFileSystemRoot root : children) {
             if (root.getRoot().getId().equals(path)) {
+                return root;
+            }
+        }
+        return null;
+    }
+
+    public DBNFileSystemRoot getRoot(DBFVirtualFileSystemRoot dbfRoot) {
+        if (children == null) {
+            return null;
+        }
+        for (DBNFileSystemRoot root : children) {
+            if (CommonUtils.equalObjects(root.getRoot(), dbfRoot)) {
                 return root;
             }
         }
@@ -171,4 +184,5 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     public boolean needsInitialization() {
         return children == null;
     }
+
 }
