@@ -39,7 +39,10 @@ public class SnowflakeAuthModelSnowflake extends AuthModelDatabaseNative<AuthMod
 
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-        connProperties.put("authenticator", getAuthenticator());
+        String authenticator = getAuthenticator();
+        if (authenticator != null) {
+            connProperties.put("authenticator", authenticator);
+        }
         String roleName = configuration.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE);
         if (!CommonUtils.isEmpty(roleName)) {
             connProperties.put("role", roleName);

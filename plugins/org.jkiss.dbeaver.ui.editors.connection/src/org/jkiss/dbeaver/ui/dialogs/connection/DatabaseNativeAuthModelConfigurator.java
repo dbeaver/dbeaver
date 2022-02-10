@@ -130,7 +130,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     protected void createPasswordControls(Composite parent, Runnable propertyChangeListener) {
-        passwordLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_password);
+        passwordLabel = UIUtils.createLabel(parent, getPasswordFieldLabel());
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         passPlaceholder = UIUtils.createComposite(parent, 2);
@@ -171,6 +171,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             });
         }
 
+    }
+
+    protected String getPasswordFieldLabel() {
+        return UIConnectionMessages.dialog_connection_auth_label_password;
     }
 
     private void showPasswordText(UIServiceSecurity serviceSecurity) {

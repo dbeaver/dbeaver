@@ -66,7 +66,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="snowflake_snowflake"
-            label="Snowflake"
+            label="Database native"
             description="Snowflake internal authentication (name/password)"
             class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake"
             default="true">
@@ -76,7 +76,7 @@
         </authModel>
         <authModel
             id="snowflake_externalbrowser"
-            label="Browser (SSO)"
+            label="SSO (Browser)"
             description="SSO authentication in web browser."
             class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelExternalBrowser">
             <datasource id="snowflake"/>
