@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -34,7 +35,7 @@ public interface QMService extends QMEventBrowser {
 
     void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException;
 
-    String openSession(@NotNull QMSessionInfo sessionInfo, @NotNull DBRProgressMonitor monitor) throws DBException;
+    String openSession(@Nullable QMSessionInfo sessionInfo, @NotNull DBRProgressMonitor monitor) throws DBException;
 
     void closeSession(String appSessionId, DBRProgressMonitor monitor);
 }
