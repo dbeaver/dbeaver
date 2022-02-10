@@ -30,7 +30,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.qm.*;
+import org.jkiss.dbeaver.model.qm.QMConstants;
+import org.jkiss.dbeaver.model.qm.QMMCollector;
+import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.QMMetaListener;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -159,6 +162,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBASessionPersistent session) {
         String qmSessionId = session.getAttribute(QMConstants.QM_SESSION_ID_ATTR);
         if (CommonUtils.isEmpty(qmSessionId)) {
+            log.warn("QM session not found");
             return;
         }
         eventPool.add(new QMMetaEvent(object, action, qmSessionId));
