@@ -206,7 +206,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
         ProjectionCache()
         {
             super("projection_name");
-            setListOrderComparator(DBUtils.nameComparator());
+            setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
         @NotNull
@@ -258,7 +258,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
         UDFCache()
         {
             super();
-            setListOrderComparator(DBUtils.nameComparator());
+            setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
         @NotNull

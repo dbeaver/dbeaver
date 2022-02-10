@@ -53,7 +53,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         this.dataSource = dataSource;
         this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
         this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
-        setListOrderComparator(DBUtils.<GenericTableBase>nameComparator());
+        setListOrderComparator(DBUtils.<GenericTableBase>nameComparatorIgnoreCase());
     }
 
     public GenericDataSource getDataSource()
