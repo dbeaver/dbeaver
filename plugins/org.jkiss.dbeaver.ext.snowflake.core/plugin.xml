@@ -63,4 +63,25 @@
         <initializer class="org.jkiss.dbeaver.ext.snowflake.internal.SnowflakePreferencesInitializer"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="snowflake_snowflake"
+            label="Database native"
+            description="Snowflake internal authentication (name/password)"
+            class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake"
+            default="true">
+            <replace model="native"/>
+            <datasource id="snowflake"/>
+            <datasource id="snowflake_ee"/>
+        </authModel>
+        <authModel
+            id="snowflake_externalbrowser"
+            label="SSO (Browser)"
+            description="SSO authentication in web browser."
+            class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelExternalBrowser">
+            <datasource id="snowflake"/>
+            <datasource id="snowflake_ee"/>
+        </authModel>
+    </extension>
+
 </plugin>

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -164,7 +165,9 @@ public class NavigatorObjectsDeleter {
             if (obj instanceof DBNDatabaseNode) {
                 deleteDatabaseNode((DBNDatabaseNode)obj);
             } else if (obj instanceof DBNResource) {
-                deleteResource((DBNResource)obj);
+                deleteResource(((DBNResource) obj).getResource());
+            } else if (obj instanceof DBNPath) {
+                deleteResource(((DBNPath) obj).getResource());
             } else if (obj instanceof DBNLocalFolder) {
                 deleteLocalFolder((DBNLocalFolder) obj);
             } else {
@@ -181,8 +184,7 @@ public class NavigatorObjectsDeleter {
         DBNModel.updateConfigAndRefreshDatabases(folder);
     }
 
-    private void deleteResource(final DBNResource resourceNode) {
-        final IResource resource = resourceNode.getResource();
+    private void deleteResource(final IResource resource) {
         try {
             NullProgressMonitor monitor = new NullProgressMonitor();
             if (resource instanceof IFolder) {

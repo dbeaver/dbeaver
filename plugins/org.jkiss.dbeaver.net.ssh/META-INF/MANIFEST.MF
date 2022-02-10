@@ -21,5 +21,6 @@ Require-Bundle: org.eclipse.equinox.security,
  com.sun.jna,
  com.sun.jna.platform,
  com.jcraft.jsch
+Import-Package: org.eclipse.jsch.internal.core
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -164,7 +165,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         }
     }
 
-    private DBNPathBase getChild(Path thePath) {
+    public DBNPathBase getChild(Path thePath) {
         if (children == null) {
             return null;
         }
@@ -174,6 +175,38 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             }
         }
         return null;
+    }
+
+    public DBNPathBase getChild(String name) {
+        if (children == null) {
+            return null;
+        }
+        for (DBNNode child : children) {
+            if (child.getName().equals(name)) {
+                return (DBNPathBase) child;
+            }
+        }
+        return null;
+    }
+
+    void addChildResource(Path path) {
+        if (children == null) {
+            return;
+        }
+        DBNPath child = new DBNPath(this, path);
+        children = ArrayUtils.add(DBNNode.class, children, child);
+        fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, child));
+    }
+
+    void removeChildResource(Path path) {
+        if (children == null) {
+            return;
+        }
+        DBNPathBase child = getChild(path);
+        if (child != null) {
+            children = ArrayUtils.remove(DBNNode.class, children, child);
+            fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, child));
+        }
     }
 
     private DBNPathBase makeNode(Path resource) {
@@ -292,7 +325,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         } else if (adapter == IResource.class) {
-            DBNFileSystemRoot rootNode = DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
+            DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
+                (DBNFileSystemRoot) this :
+                DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
             if (rootNode == null) {
                 return null;
             }
@@ -300,6 +335,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
             NIOFileSystemRoot root = new NIOFileSystemRoot(
                 getOwnerProject().getEclipseProject(),
+                fsRoot,
                 fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getId(),
                 rootPath
             );
@@ -325,4 +361,5 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     public boolean needsInitialization() {
         return children == null;
     }
+
 }

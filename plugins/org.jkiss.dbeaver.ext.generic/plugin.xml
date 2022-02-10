@@ -266,7 +266,7 @@
                     categories="sql"
                     dialect="h2">
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.197]" bundle="!drivers.h2"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
 
                     <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
 
@@ -288,7 +288,7 @@
                     categories="sql,embedded"
                     dialect="h2">
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.197]" bundle="!drivers.h2"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
 
                     <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
 

@@ -48,7 +48,7 @@ public class QMMConnectionInfo extends QMMObject {
     public QMMConnectionInfo(DBCExecutionContext context, boolean transactional) {
         this.project = context.getDataSource().getContainer().getProject();
         this.containerId = context.getDataSource().getContainer().getId();
-        this.driverId = context.getDataSource().getContainer().getDriver().getId();
+        this.driverId = context.getDataSource().getContainer().getDriver().getFullId();
 
         initFromContext(context, transactional);
     }
