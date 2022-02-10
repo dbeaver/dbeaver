@@ -31,6 +31,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -130,26 +131,23 @@ public class SSHUtils {
             String userHomePathString = System.getProperty(IConstants.SYSTEM_PROPERTY_USER_HOME);
             if (userHomePathString != null) {
                 Path userHomeDirPath = Paths.get(userHomePathString);
-                if (userHomeDirPath.toFile().isDirectory()) {
+                if (Files.isDirectory(userHomeDirPath)) {
                     Path sshHomeDirPath = userHomeDirPath.resolve(DEFAULT_SSH_HOME_DIR_NAME);
-                    File sshHomeDir = sshHomeDirPath.toFile();
 
-                    if (RuntimeUtils.isWindows() && (!sshHomeDir.isDirectory() || !sshHomeDir.exists())) {
+                    if (RuntimeUtils.isWindows() && (!Files.isDirectory(sshHomeDirPath) || Files.notExists(sshHomeDirPath))) {
                         Path sshHomeOldDirPath = userHomeDirPath.resolve(DEFAULT_SSH_HOME_DIR_NAME_WIN_OLD);
-                        File sshHomeOldDir = sshHomeDirPath.toFile();
-                        if (sshHomeOldDir.isDirectory()) {
+                        if (Files.isDirectory(sshHomeOldDirPath)) {
                             sshHomeDirPath = sshHomeOldDirPath;
-                            sshHomeDir = sshHomeOldDir;
                         }
                     }
 
-                    if (sshHomeDir.isDirectory() || !sshHomeDir.exists()) {
+                    if (Files.isDirectory(sshHomeDirPath) || Files.notExists(sshHomeDirPath)) {
                         // don't need to create it until we'll need to write known hosts file
 
                         if (updatePreferences) {
                             Platform.getPreferencesService()
                                 .getRootNode().node(PLATFORM_SSH_PREFERENCES_NODE)
-                                .put(PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY, sshHomeDir.getAbsolutePath());
+                                .put(PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY, sshHomeDirPath.toAbsolutePath().toString());
                         }
 
                         return sshHomeDirPath.resolve(KNOWN_SSH_HOSTS_FILE_NAME).toFile();
