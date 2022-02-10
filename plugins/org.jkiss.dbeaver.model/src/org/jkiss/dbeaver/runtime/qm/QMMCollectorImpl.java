@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,7 +31,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.qm.*;
+import org.jkiss.dbeaver.model.qm.QMConstants;
+import org.jkiss.dbeaver.model.qm.QMMCollector;
+import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.QMMetaListener;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -137,30 +141,40 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     private synchronized void tryFireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBCExecutionContext context) {
         try {
-            DBRProgressMonitor monitor = new LoggingProgressMonitor();
-            DBPProject project = context.getDataSource().getContainer().getProject();
-            DBASession session = project.getSessionContext().getSpaceSession(monitor, project, false);
-            if (session == null) {
-                DBPWorkspace workspace = project.getWorkspace();
-                session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
-            }
-            DBASessionPersistent sessionPersistent = DBUtils.getAdapter(DBASessionPersistent.class, session);
-            if (sessionPersistent == null) {
-                log.warn("Session persistent not found");
+            String qmSessionId = extractSessionId(context);
+            if (CommonUtils.isEmpty(qmSessionId)) {
+                log.debug("QM session not found, event skipped");
                 return;
             }
-
-            fireMetaEvent(object, action, sessionPersistent);
+            fireMetaEvent(object, action, qmSessionId);
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
     }
 
-    private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBASessionPersistent session) {
-        String qmSessionId = session.getAttribute(QMConstants.QM_SESSION_ID_ATTR);
-        if (CommonUtils.isEmpty(qmSessionId)) {
-            return;
+    @Nullable
+    private String extractSessionId(DBCExecutionContext context) throws DBException {
+        DBRProgressMonitor monitor = new LoggingProgressMonitor();
+        DBPProject project = context.getDataSource().getContainer().getProject();
+        DBASession session = project.getSessionContext().getSpaceSession(monitor, project, false);
+        DBASessionPersistent sessionPersistent = DBUtils.getAdapter(DBASessionPersistent.class, session);
+        if (sessionPersistent == null || isAnonymousSession(sessionPersistent)) {
+            DBPWorkspace workspace = project.getWorkspace();
+            session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
+            sessionPersistent = DBUtils.getAdapter(DBASessionPersistent.class, session);
         }
+        if (sessionPersistent == null) {
+            log.warn("Session persistent not found");
+            return null;
+        }
+        return sessionPersistent.getAttribute(QMConstants.QM_SESSION_ID_ATTR);
+    }
+
+    private static boolean isAnonymousSession(DBASessionPersistent sessionPersistent) {
+        return (CommonUtils.isEmpty(sessionPersistent.<String>getAttribute(QMConstants.QM_SESSION_ID_ATTR)) && sessionPersistent.getAttribute(QMConstants.QM_IS_ANONYMOUS_SESSION_ATTR) == Boolean.TRUE);
+    }
+
+    private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, String qmSessionId) {
         eventPool.add(new QMMetaEvent(object, action, qmSessionId));
     }
 
