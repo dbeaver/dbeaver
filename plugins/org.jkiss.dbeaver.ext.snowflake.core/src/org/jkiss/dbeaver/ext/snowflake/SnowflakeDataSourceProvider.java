@@ -71,7 +71,9 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
         boolean hasParam = addParameter(url, "db", connectionInfo.getDatabaseName(), false);
         hasParam = addParameter(url, "warehouse", warehouse, hasParam);
         hasParam = addParameter(url, "schema", schemaName, hasParam);
-        addParameter(url, "role", connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE), hasParam);
+
+        // Backward compatibility
+        addParameter(url, "role", connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE_LEGACY), hasParam);
 
         return url.toString();
     }

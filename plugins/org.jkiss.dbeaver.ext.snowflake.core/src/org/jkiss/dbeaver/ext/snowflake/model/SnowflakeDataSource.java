@@ -46,7 +46,10 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) {
         Map<String, String> props = new HashMap<>();
-        String authProp = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
+
+        // Backward compatibility - use legacy provider property
+        // Newer versions use auth model
+        String authProp = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY);
         if (!CommonUtils.isEmpty(authProp)) {
             props.put("authenticator", authProp);
         }

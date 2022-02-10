@@ -621,4 +621,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return null;
     }
 
+    public static boolean matchesId(DBPDataSourceProviderDescriptor providerDescriptor, String id) {
+        for (DBPDataSourceProviderDescriptor dspd = providerDescriptor; dspd != null; dspd = dspd.getParentProvider()) {
+            if (id.equals(dspd.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
