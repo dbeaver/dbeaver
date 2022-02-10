@@ -89,6 +89,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsEventTriggers() {
+        return false;
+    }
+
+    @Override
     public boolean supportsFunctionCreate() {
         return true;
     }

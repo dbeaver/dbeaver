@@ -21,7 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -46,18 +46,18 @@ import java.util.Map;
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject, DBPScriptObjectExt2
+public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityElement
 {
     private static final Log log = Log.getLog(PostgreTrigger.class);
 
     /* Bits within tgtype */
-    public static final int TRIGGER_TYPE_ROW        = (1 << 0);
-    public static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
-    public static final int TRIGGER_TYPE_INSERT     = (1 << 2);
-    public static final int TRIGGER_TYPE_DELETE     = (1 << 3);
-    public static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
-    public static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
-    public static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
+    private static final int TRIGGER_TYPE_ROW        = (1 << 0);
+    private static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
+    private static final int TRIGGER_TYPE_INSERT     = (1 << 2);
+    private static final int TRIGGER_TYPE_DELETE     = (1 << 3);
+    private static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
+    private static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
+    private static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
 
     private PostgreTableReal table;
     private long objectId;
@@ -68,18 +68,16 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private DBSActionTiming actionTiming;
     private DBSManipulationType[] manipulationTypes;
     private PostgreTriggerType type;
-    private boolean persisted;
     private PostgreTableColumn[] columnRefs;
     protected String description;
-    protected String name;
     private String body;
 
     public PostgreTrigger(
-        DBRProgressMonitor monitor,
-        PostgreTableReal table,
-        ResultSet dbResult) throws DBException {
-        this.persisted = true;
-        this.name = JDBCUtils.safeGetString(dbResult, "tgname");
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableReal table,
+        @NotNull String triggerName,
+        @NotNull ResultSet dbResult) throws DBException {
+        super(table.getDatabase(), triggerName, true);
         this.table = table;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.enabledState = JDBCUtils.safeGetString(dbResult, "tgenabled");
@@ -140,8 +138,10 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
-    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent) {
+    public PostgreTrigger(@NotNull PostgreTableReal parent, @NotNull String name) {
+        super(parent.getDatabase(), name, false);
         this.table = parent;
+        this.name = name;
     }
 
     @NotNull
@@ -181,11 +181,6 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     }
 
     @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
     public PostgreTableBase getTable()
     {
         return table;
@@ -203,6 +198,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         return whenExpression;
     }
 
+    @Override
     @Property(viewable = true, order = 12)
     public PostgreProcedure getFunction(DBRProgressMonitor monitor) throws DBException {
         if (functionId == 0) {
@@ -232,6 +228,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         this.description = description;
     }
 
+    @NotNull
     @Override
     public PostgreTableReal getParentObject()
     {
@@ -257,7 +254,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
             return body;
         }
 
-        if (persisted) {
+        if (isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
                 body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
                 if (body != null) {
@@ -286,6 +283,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         return body;
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -293,6 +291,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
                 this);
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         if ("D".equals(enabledState)) {
@@ -302,7 +301,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
             try {
                 enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM pg_catalog.pg_trigger WHERE oid=?", getObjectId());
@@ -311,11 +310,6 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
             }
         }
 
-    }
-
-    @Override
-    public boolean supportsObjectDefinitionOption(String option) {
-        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 
     @Override

@@ -85,4 +85,9 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsCopyFromStdIn() {
         return true;
     }
+
+    @Override
+    public boolean supportsEventTriggers() {
+        return true;
+    }
 }

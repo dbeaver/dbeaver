@@ -264,7 +264,11 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableReal owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreTrigger(session.getProgressMonitor(), owner, dbResult);
+            String name = JDBCUtils.safeGetString(dbResult, "tgname");
+            if (CommonUtils.isEmpty(name)) {
+                return null;
+            }
+            return new PostgreTrigger(session.getProgressMonitor(), owner, name, dbResult);
         }
 
     }
