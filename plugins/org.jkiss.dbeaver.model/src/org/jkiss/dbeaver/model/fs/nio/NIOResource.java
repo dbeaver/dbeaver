@@ -20,6 +20,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -121,11 +122,19 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public void delete(boolean force, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Files.delete(getNioPath());
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void delete(int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Files.delete(getNioPath());
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void deleteMarkers(String type, boolean includeSubtypes, int depth) throws CoreException {
@@ -405,14 +414,11 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         return getLocationURI().toString();
     }
 
-    /**
-     * @author Eike Stepper
-     */
     public static class FeatureNotSupportedException extends CoreException {
         private static final long serialVersionUID = 1L;
 
         public FeatureNotSupportedException() {
-            super(Status.CANCEL_STATUS);
+            super(Status.info("Feature not supported"));
         }
     }
 }

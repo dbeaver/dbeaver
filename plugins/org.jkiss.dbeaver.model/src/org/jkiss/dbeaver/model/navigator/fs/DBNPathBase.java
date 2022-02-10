@@ -292,7 +292,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         } else if (adapter == IResource.class) {
-            DBNFileSystemRoot rootNode = DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
+            DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
+                (DBNFileSystemRoot) this :
+                DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
             if (rootNode == null) {
                 return null;
             }
