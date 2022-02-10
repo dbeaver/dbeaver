@@ -419,6 +419,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
+        hasStatistics = false;
         tableCache.clearCache();
         foreignKeyCache.clearCache();
         constraintCache.clearCache();
