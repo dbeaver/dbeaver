@@ -173,7 +173,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             if (!nullable) {
                 sql.append(" NOT NULL;");
             }
-        } else {
+        } else if (tableTypeId != 0) {
             try {
                 SQLServerTableType tableType = getSysSchema(monitor).getTableType(monitor, tableTypeId);
                 if (tableType != null) {

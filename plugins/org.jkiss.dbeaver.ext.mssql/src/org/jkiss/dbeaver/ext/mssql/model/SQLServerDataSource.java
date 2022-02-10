@@ -66,6 +66,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     private volatile transient boolean hasStatistics;
     private boolean isBabelfish;
+    private boolean isSynapseDatabase;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -119,7 +120,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return !isBabelfish;
     }
 
-    String getServerVersion(DBRProgressMonitor monitor) {
+    boolean isSynapseDatabase() {
+        return isSynapseDatabase;
+    }
+
+    private String getServerVersion(DBRProgressMonitor monitor) {
         if (serverVersion == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
                 serverVersion = JDBCUtils.queryString(session, "SELECT @@VERSION");
@@ -270,6 +275,19 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             } catch (Exception e) {
                 this.supportsColumnProperty = false;
             }
+
+            // Read Database Engine edition of the instance of SQL Server installed on the server.
+            try {
+                String result = JDBCUtils.queryString(session, "SELECT SERVERPROPERTY('EngineEdition')");
+                if ("6".equals(result) || "11".equals(result)) {
+                    // SERVERPROPERTY returns int 6 or 11 if it is Azure Synapse
+                    isSynapseDatabase = true;
+                }
+            } catch (SQLException e) {
+                log.debug("Can't read Database Engine edition info", e);
+            }
+
+
         } catch (Throwable e) {
             log.error("Error during connection initialization", e);
         }
