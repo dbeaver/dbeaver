@@ -42,7 +42,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * VerticaSchema
@@ -164,6 +166,12 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
     @Override
     public boolean isStatisticsCollected() {
         return hasStatistics;
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        hasStatistics = false;
+        return super.refreshObject(monitor);
     }
 
     @Override
