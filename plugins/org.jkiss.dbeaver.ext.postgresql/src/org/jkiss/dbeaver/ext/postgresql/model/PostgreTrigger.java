@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
@@ -250,28 +252,35 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (body != null) {
-            return body;
-        }
-
-        if (isPersisted()) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
-                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
-                if (body != null) {
-                    body = SQLFormatUtils.formatSQL(getDataSource(), body);
+        StringBuilder ddl = new StringBuilder();
+        if (CommonUtils.isEmpty(body)) {
+            if (isPersisted()) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
+                    body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                    if (body != null) {
+                        body = SQLFormatUtils.formatSQL(getDataSource(), body);
+                    }
+                } catch (SQLException e) {
+                    throw new DBException(e, getDataSource());
                 }
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+            } else {
+                body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
+                    + "\n    AFTER INSERT"
+                    + "\n    ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                    + "\n    FOR EACH ROW"
+                    + "\n    EXECUTE PROCEDURE " + getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "();\n";
             }
-        } else {
-            body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
-                       + "\n    AFTER INSERT"
-                       + "\n    ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
-                       + "\n    FOR EACH ROW"
-                       + "\n    EXECUTE PROCEDURE " + getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "();\n";
         }
 
-        return body;
+        ddl.append(body);
+        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+            ddl.append(";\n\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
+                .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
+                .append(" IS ")
+                .append(SQLUtils.quoteString(this, getDescription())).append(";");
+        }
+
+        return ddl.toString();
     }
 
     @Override

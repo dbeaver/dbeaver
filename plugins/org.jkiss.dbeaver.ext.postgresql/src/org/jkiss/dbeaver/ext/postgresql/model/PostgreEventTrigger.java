@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -110,19 +112,26 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
     }
 
     @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (body != null) {
-            return body;
-        }
-
+        StringBuilder ddl = new StringBuilder();
         PostgreProcedure function = getFunction(monitor);
         if (function == null) {
             return "-- Event trigger definition is not available - can't read trigger function";
         }
-        body = "CREATE EVENT TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " ON " +
-            eventType + "\n\tEXECUTE " + function.getProcedureTypeName() + " " + function.getFullQualifiedSignature();
+        if (CommonUtils.isEmpty(body)) {
+            body = "CREATE EVENT TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " ON " +
+                eventType + "\n\tEXECUTE " + function.getProcedureTypeName() + " " + function.getFullQualifiedSignature();
+        }
+        ddl.append(body); // Body is the main part of the trigger DDL. It doesn't include comments
 
-        return body;
+        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+            ddl.append(";\n\nCOMMENT ON EVENT TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
+                .append(" IS ")
+                .append(SQLUtils.quoteString(this, getDescription())).append(";");
+        }
+
+        return ddl.toString();
     }
 
     @Override

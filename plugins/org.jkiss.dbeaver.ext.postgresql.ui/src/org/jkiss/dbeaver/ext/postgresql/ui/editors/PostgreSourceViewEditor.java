@@ -44,10 +44,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     protected boolean isReadOnly()
     {
         PostgreScriptObject sourceObject = getSourceObject();
-        if (sourceObject instanceof PostgreProcedure || sourceObject instanceof PostgreTriggerBase || sourceObject instanceof PostgreViewBase) {
-            return false;
-        }
-        return true;
+        return !(sourceObject instanceof PostgreProcedure) && !(sourceObject instanceof PostgreTriggerBase) && !(sourceObject instanceof PostgreViewBase);
     }
 
     @Override
