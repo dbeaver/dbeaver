@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -124,11 +125,6 @@ public class SSHUtils {
         }
     }
 
-    private static boolean isOnWindows() {
-        String osName = System.getProperty(StandardConstants.ENV_OS_NAME);
-        return osName != null && osName.startsWith("Windows");
-    }
-
     private static File resolveDefaultKnownSshHostsFile(boolean forceFileObjectOnFail, boolean updatePreferences) {
         try {
             String userHomePathString = System.getProperty(IConstants.SYSTEM_PROPERTY_USER_HOME);
@@ -138,7 +134,7 @@ public class SSHUtils {
                     Path sshHomeDirPath = userHomeDirPath.resolve(DEFAULT_SSH_HOME_DIR_NAME);
                     File sshHomeDir = sshHomeDirPath.toFile();
 
-                    if (isOnWindows() && (!sshHomeDir.isDirectory() || !sshHomeDir.exists())) {
+                    if (RuntimeUtils.isWindows() && (!sshHomeDir.isDirectory() || !sshHomeDir.exists())) {
                         Path sshHomeOldDirPath = userHomeDirPath.resolve(DEFAULT_SSH_HOME_DIR_NAME_WIN_OLD);
                         File sshHomeOldDir = sshHomeDirPath.toFile();
                         if (sshHomeOldDir.isDirectory()) {
@@ -172,7 +168,7 @@ public class SSHUtils {
         }
 
         if (forceFileObjectOnFail) {
-            Path forcedUserProfilePath = Paths.get(isOnWindows() ? "%USERPROFILE%" : "~"); // let's pretend it'll resolve itself
+            Path forcedUserProfilePath = Paths.get(RuntimeUtils.isWindows() ? "%USERPROFILE%" : "~"); // let's pretend it'll resolve itself
             return forcedUserProfilePath.resolve(DEFAULT_SSH_HOME_DIR_NAME).resolve(KNOWN_SSH_HOSTS_FILE_NAME).toFile();
         } else {
             return null;
