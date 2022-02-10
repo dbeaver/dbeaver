@@ -48,7 +48,7 @@ import java.util.Locale;
 /**
  * DenodoConnectionPage
  */
-public class    DenodoConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider, IDataSourceConnectionTester {
+public class DenodoConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider, IDataSourceConnectionTester {
 
     private static final Log log = Log.getLog(DenodoConnectionPage.class);
 
@@ -157,7 +157,7 @@ public class    DenodoConnectionPage extends ConnectionPageAbstract implements I
     @Override
     public boolean isComplete() {
         return hostText != null &&
-                !CommonUtils.isEmpty(hostText.getText());
+            !CommonUtils.isEmpty(hostText.getText());
     }
 
     @Override
@@ -255,7 +255,7 @@ public class    DenodoConnectionPage extends ConnectionPageAbstract implements I
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
-                new DriverPropertiesDialogPage(this)
+            new DriverPropertiesDialogPage(this)
         };
     }
 
