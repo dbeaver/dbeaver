@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.nio.file.InvalidPathException;
@@ -43,6 +42,12 @@ import java.util.List;
 public class SSHUtils {
 
     private static final Log log = Log.getLog(SSHUtils.class);
+
+    private static final String PLATFORM_SSH_PREFERENCES_NODE = "org.eclipse.jsch.core"; //$NON-NLS-1$
+    private static final String PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY = IConstants.KEY_SSH2HOME;
+    private static final String DEFAULT_SSH_HOME_DIR_NAME = IConstants.SSH_DEFAULT_HOME;
+    private static final String DEFAULT_SSH_HOME_DIR_NAME_WIN_OLD = IConstants.SSH_OLD_DEFAULT_WIN32_HOME;
+    private static final String KNOWN_SSH_HOSTS_FILE_NAME = "known_hosts";
 
     static int findFreePort(DBPPlatform platform)
     {
@@ -90,11 +95,6 @@ public class SSHUtils {
         return false;
     }
 
-    private static final String PLATFORM_SSH_PREFERENCES_NODE = "org.eclipse.jsch.core"; //$NON-NLS-1$
-    private static final String PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY = IConstants.KEY_SSH2HOME;
-    private static final String DEFAULT_SSH_HOME_DIR_NAME = IConstants.SSH_DEFAULT_HOME;
-    private static final String DEFAULT_SSH_HOME_DIR_NAME_WIN_OLD = IConstants.SSH_OLD_DEFAULT_WIN32_HOME;
-    private static final String KNOWN_SSH_HOSTS_FILE_NAME = "known_hosts";
 
     @NotNull
     public static File getKnownSshHostsFileOrDefault() {
@@ -115,7 +115,7 @@ public class SSHUtils {
                 log.warn("Failed to resolve SSH known hosts file location at " + sshHomePathString, e);
                 if (forceFileObjectOnFail) {
                     return new File(sshHomePathString + File.pathSeparator + KNOWN_SSH_HOSTS_FILE_NAME);
-                } else{
+                } else {
                     return null;
                 }
             }
@@ -148,12 +148,11 @@ public class SSHUtils {
 
                         if (updatePreferences) {
                             Platform.getPreferencesService()
-                                    .getRootNode().node(PLATFORM_SSH_PREFERENCES_NODE)
-                                    .put(PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY, sshHomeDir.getAbsolutePath());
+                                .getRootNode().node(PLATFORM_SSH_PREFERENCES_NODE)
+                                .put(PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY, sshHomeDir.getAbsolutePath());
                         }
 
-                        Path knownSshHostsFilePath = sshHomeDirPath.resolve(KNOWN_SSH_HOSTS_FILE_NAME);
-                        return knownSshHostsFilePath.toFile();
+                        return sshHomeDirPath.resolve(KNOWN_SSH_HOSTS_FILE_NAME).toFile();
                     } else {
                         log.warn("Failed to resolve default SSH known hosts file location due to invalid SSH home directory " + sshHomeDirPath.toAbsolutePath());
                     }
@@ -174,6 +173,7 @@ public class SSHUtils {
             return null;
         }
     }
+
     public static void forcePlatformReloadKnownHostsPreferences() {
         JSchCorePlugin.getPlugin().setNeedToLoadKnownHosts(true);
         JSchCorePlugin.getPlugin().getJSch().setHostKeyRepository(null);

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.net.ssh;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.io.File;
@@ -29,11 +30,12 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
 
     private DBPPlatformUI platformUI;
 
-    public KnownHostsVerifier(File khFile, DBPPlatformUI platformUI) throws IOException {
+    public KnownHostsVerifier(@NotNull File khFile, @NotNull DBPPlatformUI platformUI) throws IOException {
         super(khFile);
         this.platformUI = platformUI;
     }
 
+    @Override
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
         KeyType type = KeyType.fromKey(key);
 
@@ -62,6 +64,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         }
     }
 
+    @Override
     protected boolean hostKeyChangedAction(String hostname, PublicKey key) {
         KeyType type = KeyType.fromKey(key);
         String fp = SecurityUtils.getFingerprint(key);
