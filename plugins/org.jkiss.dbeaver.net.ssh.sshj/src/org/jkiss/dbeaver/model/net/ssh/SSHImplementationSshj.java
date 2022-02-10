@@ -21,7 +21,6 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -33,9 +32,11 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
@@ -62,10 +63,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             Config clientConfig = new DefaultConfig();
             clientConfig.setLoggerFactory(LoggerFactory.DEFAULT);
             sshClient = new SSHClient(clientConfig);
-            // TODO: make real host verifier
-            sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 
             try {
+                File knownHostsFile = SSHUtils.getKnownSshHostsFileOrDefault();
+                sshClient.addHostKeyVerifier(new KnownHostsVerifier(knownHostsFile, DBWorkbench.getPlatformUI()));
                 sshClient.loadKnownHosts();
             } catch (IOException e) {
                 log.debug("Error loading known hosts: " + e.getMessage());
