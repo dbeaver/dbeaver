@@ -599,6 +599,7 @@ public class NavigatorUtils {
                                 ((DBNNode) curObject).dropNodes(nodesToDrop);
                             } catch (DBException e) {
                                 DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
+                                return;
                             }
                         } else if (curObject == null) {
                             for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {

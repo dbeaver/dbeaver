@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,8 +29,11 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -319,30 +324,53 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         }
 
         // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
-        return otherNode instanceof DBNResource
+        return otherNode.getAdapter(IResource.class) != null
             && otherNode != this
-            && otherNode.getParentNode() != this
-            && !this.isChildOf(otherNode)
-            && ((DBNResource)otherNode).handler == this.handler;
+            && otherNode.getParentNode() != this;
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
-    {
-        for (DBNNode node : nodes) {
-            DBNResource resourceNode = (DBNResource) node;
-            IResource otherResource = resourceNode.getResource();
-            if (otherResource != null) {
-                try {
-                    otherResource.move(
-                        resource.getFullPath().append(otherResource.getName()),
-                        true,
-                        new NullProgressMonitor());
-                } catch (CoreException e) {
-                    throw new DBException("Can't delete resource", e);
-                }
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+
+        new AbstractJob("Drop files to workspace") {
+            {
+                setUser(true);
             }
-        }
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Copy files", nodes.size());
+                try {
+                    for (DBNNode node : nodes) {
+                        IResource otherResource = node.getAdapter(IResource.class);
+                        if (otherResource != null) {
+                            try {
+                                if (otherResource instanceof NIOResource) {
+                                    otherResource.copy(
+                                        resource.getRawLocation().append(otherResource.getName()),
+                                        true,
+                                        monitor.getNestedMonitor());
+                                } else {
+                                    otherResource.move(
+                                        resource.getFullPath().append(otherResource.getName()),
+                                        true,
+                                        monitor.getNestedMonitor());
+                                }
+                            } catch (CoreException e) {
+                                throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
+                            }
+                        } else {
+                            throw new DBException("Can't get resource from node " + node.getName());
+                        }
+                        monitor.worked(1);
+                    }
+                } catch (Exception e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     @Override
