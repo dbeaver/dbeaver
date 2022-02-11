@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreEventTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -65,7 +66,7 @@ public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<Po
 
         @Override
         public void addExtraCombo(Composite parent) {
-            eventCombo = UIUtils.createLabelCombo(parent, "Event Type", "Choose trigger event type", SWT.DROP_DOWN | SWT.READ_ONLY);
+            eventCombo = UIUtils.createLabelCombo(parent, PostgreMessages.dialog_trigger_label_combo_event_type, PostgreMessages.dialog_trigger_label_combo_event_type_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (PostgreEventTrigger.TriggerEventTypes type : PostgreEventTrigger.TriggerEventTypes.values()) {
                 eventCombo.add(type.name());
             }
@@ -80,7 +81,7 @@ public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<Po
 
         @Override
         public String getTitle() {
-            return "Create new Event Trigger";
+            return PostgreMessages.dialog_trigger_label_title;
         }
     }
 }

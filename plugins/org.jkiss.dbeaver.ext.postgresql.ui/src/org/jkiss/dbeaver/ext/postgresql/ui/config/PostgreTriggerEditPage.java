@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -52,7 +53,7 @@ public class PostgreTriggerEditPage extends EntityEditPage {
     protected Control createPageContents(Composite parent) {
         Composite pageContents = (Composite) super.createPageContents(parent);
         addExtraCombo(pageContents);
-        UIUtils.createControlLabel(pageContents, "Trigger function");
+        UIUtils.createControlLabel(pageContents, PostgreMessages.dialog_trigger_edit_page_label_trigger_function);
         functionCombo = new PostgreProcedureSelector(pageContents, parent);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = UIUtils.getFontHeight(functionCombo) * 30;
@@ -104,7 +105,7 @@ public class PostgreTriggerEditPage extends EntityEditPage {
                     DBNNode curNode = selectedFunction == null ? null
                         : navigatorModel.getNodeByObject(selectedFunction);
                     DBNNode node = DBWorkbench.getPlatformUI().selectObject(parent.getShell(),
-                        "Select function for ", dsNode, curNode,
+                        PostgreMessages.dialog_trigger_edit_page_select_function_title, dsNode, curNode,
                         new Class[]{ DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class },
                         new Class[]{ PostgreProcedure.class }, null);
                     if (node instanceof DBNDatabaseNode

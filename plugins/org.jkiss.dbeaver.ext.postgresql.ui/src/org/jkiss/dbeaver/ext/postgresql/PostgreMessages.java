@@ -181,6 +181,14 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_tablespace_loc;
     public static String dialog_create_tablespace_options;
 
+    /* Postgre create event trigger dialog */
+    public static String dialog_trigger_label_combo_event_type;
+    public static String dialog_trigger_label_combo_event_type_tip;
+    public static String dialog_trigger_label_title;
+
+    public static String dialog_trigger_edit_page_label_trigger_function;
+    public static String dialog_trigger_edit_page_select_function_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);
