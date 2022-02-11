@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,6 +59,19 @@ public class RedshiftTable extends PostgreTableRegular
                 }
             }
         }
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (hasStatistics()) {
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
+                readTableStatistics((JDBCSession) session);
+            } catch (Exception e) {
+                log.debug("Can't fetch disk space", e);
+            }
+        }
+
+        return super.refreshObject(monitor);
     }
 
     protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {

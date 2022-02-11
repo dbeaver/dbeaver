@@ -41,7 +41,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OracleTable
@@ -339,7 +342,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().foreignKeyCache.clearObjectCache(this);
-        tableSize = null;
+        if (tableSize != null) {
+            getTableSize(monitor);
+        }
         return super.refreshObject(monitor);
     }
 

@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -31,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.sql.SQLException;
@@ -145,6 +148,15 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
     @Override
     public String generateTableUpdateBegin(String tableName) {
         return "ALTER TABLE " + tableName + " UPDATE ";
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        ClickhouseTable dbsObject = (ClickhouseTable) super.refreshObject(monitor);
+        if (!hasStatistics()) {
+            readStatistics(monitor);
+        }
+        return dbsObject;
     }
 
     @Override

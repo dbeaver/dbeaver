@@ -78,6 +78,10 @@ public class RedshiftSchema extends PostgreSchema {
         }
     }
 
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         hasStatistics = false;
