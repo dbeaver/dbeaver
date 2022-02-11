@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.net.ssh;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
@@ -39,28 +40,21 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
         KeyType type = KeyType.fromKey(key);
 
-        String confirmationMessage = new StringBuilder()
-                .append("The authenticity of host can't be established.")
-                .append("host: '").append(hostname).append("'\n")
-                .append(type).append("key fingerprint: ").append(SecurityUtils.getFingerprint(key)).append("\n")
-                .append("Are you sure you want to continue connecting?").toString();
+        boolean isConfirmed = platformUI.confirmAction(SSHJUIMessages.verify_connection_confirmation_title,
+            NLS.bind(SSHJUIMessages.verify_connection_confirmation_message, new String[]{hostname, type.toString(), SecurityUtils.getFingerprint(key)}));
 
-        boolean isConfirmed = platformUI.confirmAction("Connection confirmation", confirmationMessage);
-
-        if(isConfirmed) {
+        if (!isConfirmed) {
+            return false;
+        } else {
             try {
                 this.entries().add(new HostEntry((Marker)null, hostname, KeyType.fromKey(key), key));
                 this.write();
-                String warnMessage = new StringBuilder()
-                        .append("'").append(hostname).append("' (").append(type).append(") ")
-                        .append("permanently added to the list of known hosts.\n").toString();
-                platformUI.showWarningMessageBox("Warning",  warnMessage);
+                platformUI.showWarningMessageBox(SSHJUIMessages.warning_title,
+                    NLS.bind(SSHJUIMessages.known_host_added_warning_message, hostname, type));
                 return true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } else {
-            return false;
         }
     }
 
@@ -69,12 +63,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         KeyType type = KeyType.fromKey(key);
         String fp = SecurityUtils.getFingerprint(key);
         String path = this.getFile().getAbsolutePath();
-        String warnMessage = new StringBuilder()
-                .append("Remote host identification has changed. It could be man-in-the-middle attack or the host key has just been changed \n")
-                .append("The fingerprint for the ").append(type).append("key sent by the remote host is ").append(fp).append("\n")
-                .append("Please contact your system administrator or add correct host key in ").append(path).append("to get rid of this message.")
-                .append("\n").toString();
-        platformUI.showWarningMessageBox("Warning",warnMessage);
+        platformUI.showWarningMessageBox(SSHJUIMessages.warning_title, NLS.bind(SSHJUIMessages.host_key_changed_warning_message, new String[]{type.toString(), fp, path}));
         return false;
     }
 
