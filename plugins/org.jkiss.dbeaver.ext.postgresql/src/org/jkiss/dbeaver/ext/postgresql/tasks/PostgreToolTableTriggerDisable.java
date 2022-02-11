@@ -16,24 +16,32 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreEventTrigger;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 
 import java.util.List;
 
-public class PostgreToolTableTriggerDisable extends PostgreToolWithStatus<PostgreTrigger, PostgreToolTableTriggerSettings> {
+public class PostgreToolTableTriggerDisable extends PostgreToolWithStatus<PostgreTriggerBase, PostgreToolTableTriggerSettings> {
+
+    @NotNull
     @Override
     public PostgreToolTableTriggerSettings createToolSettings() {
         return new PostgreToolTableTriggerSettings();
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, PostgreToolTableTriggerSettings settings, List<DBEPersistAction> queries, PostgreTrigger object) throws DBCException {
-        String sql = "ALTER TABLE " + object.getTable() + " DISABLE TRIGGER " + DBUtils.getQuotedIdentifier(object);
+    public void generateObjectQueries(DBCSession session, PostgreToolTableTriggerSettings settings, List<DBEPersistAction> queries, PostgreTriggerBase object) {
+        String sql;
+        if (object instanceof PostgreEventTrigger) {
+            sql = "ALTER EVENT TRIGGER " + DBUtils.getQuotedIdentifier(object) + " DISABLE";
+        } else {
+            sql = "ALTER TABLE " + object.getTable() + " DISABLE TRIGGER " + DBUtils.getQuotedIdentifier(object);
+        }
         queries.add(new SQLDatabasePersistAction(sql));
     }
 

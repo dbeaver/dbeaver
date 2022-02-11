@@ -157,4 +157,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public boolean supportsDistinctForStatementsWithAcl() {
         return false;
     }
+
+    @Override
+    public boolean supportsEventTriggers() {
+        return dataSource.isServerVersionAtLeast(9, 3);
+    }
 }

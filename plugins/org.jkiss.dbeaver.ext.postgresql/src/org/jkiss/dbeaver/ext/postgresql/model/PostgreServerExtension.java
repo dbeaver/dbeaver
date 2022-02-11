@@ -46,6 +46,8 @@ public interface PostgreServerExtension {
 
     boolean supportsTriggers();
 
+    boolean supportsEventTriggers();
+
     boolean supportsFunctionDefRead();
 
     boolean supportsFunctionCreate();

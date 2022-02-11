@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreEventTrigger;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -41,9 +40,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PostgreTriggerManager
+ * PostgreEventTriggerManager
  */
-public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, PostgreTableReal> implements DBEObjectRenamer<PostgreTrigger> {
+public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTrigger, PostgreDatabase> implements DBEObjectRenamer<PostgreEventTrigger> {
 
     @Override
     public boolean canCreateObject(Object container) {
@@ -56,14 +55,13 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
     @Override
-    public DBSObjectCache<? extends DBSObject, PostgreTrigger> getObjectsCache(PostgreTrigger object) {
-        return object.getParentObject().getTriggerCache();
+    public DBSObjectCache<? extends DBSObject, PostgreEventTrigger> getObjectsCache(PostgreEventTrigger object) {
+        return object.getDatabase().getEventTriggersCache();
     }
 
     @Override
-    protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
-    {
-        return new PostgreTrigger((PostgreTableReal) container, "new_trigger");
+    protected PostgreEventTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+        return new PostgreEventTrigger((PostgreDatabase) container, "new_event_trigger");
     }
 
     @Override
@@ -74,21 +72,22 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreEventTrigger, PropertyHandler> command, Map<String, Object> options) {
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            PostgreEventTrigger trigger = command.getObject();
             actions.add(new SQLDatabasePersistAction(
-                "Comment trigger",
-                "COMMENT ON TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(command.getObject(), CommonUtils.notEmpty(command.getObject().getDescription()))));
+                "Comment event trigger",
+                "COMMENT ON EVENT TRIGGER " + DBUtils.getQuotedIdentifier(trigger) +
+                    " IS " + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription()))));
         }
     }
 
     @Override
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, PostgreEventTrigger trigger, boolean create) {
         if (trigger.isPersisted()) {
             actions.add(new SQLDatabasePersistAction(
-                "Drop trigger",
-                "DROP TRIGGER IF EXISTS " + DBUtils.getQuotedIdentifier(trigger) + " ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
+                "Drop event trigger",
+                "DROP EVENT TRIGGER IF EXISTS " + DBUtils.getQuotedIdentifier(trigger)
             ));
         }
 
@@ -98,21 +97,21 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction(
-                "Drop trigger",
-                "DROP TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
+            "Drop event trigger",
+            "DROP EVENT TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject())
         ));
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTrigger object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreEventTrigger object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction(
-            "Rename trigger",
-            "ALTER TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())
+            "Rename event trigger",
+            "ALTER EVENT TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())
         ));
     }
 }
