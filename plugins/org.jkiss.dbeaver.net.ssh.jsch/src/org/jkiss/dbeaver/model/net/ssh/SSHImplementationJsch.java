@@ -102,11 +102,16 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
                 session.setUserInfo(userInfo);
 
-                File knownHosts = SSHUtils.getKnownSshHostsFileOrNull();
-                if (knownHosts != null) {
-                    jsch.setKnownHosts(knownHosts.getAbsolutePath());
+                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                    session.setConfig("StrictHostKeyChecking", "no");
+                } else {
+                    File knownHosts = SSHUtils.getKnownSshHostsFileOrNull();
+                    if (knownHosts != null) {
+                        jsch.setKnownHosts(knownHosts.getAbsolutePath());
+                    }
+                    session.setConfig("StrictHostKeyChecking", "ask");
                 }
-                session.setConfig("StrictHostKeyChecking", "ask");
+
                 session.setConfig("ConnectTimeout", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
                 session.setConfig("ServerAliveInterval", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
 
