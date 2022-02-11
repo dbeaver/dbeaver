@@ -23,6 +23,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -39,10 +41,14 @@ import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.AdvancedTextCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -157,9 +163,29 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     if (index != 2) {
                         return null;
                     }
+                    final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 0, 0);
+                    gridData.horizontalSpan = 0;
+                    gridData.verticalSpan = 0;
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
-                    Text editor = new Text(table, SWT.NONE);
+                    Composite composite = UIUtils.createComposite(table, 2);
+                    final GridLayout layout = new GridLayout();
+                    layout.horizontalSpacing = 0;
+                    layout.verticalSpacing = 0;
+                    composite.setLayoutData(layout);
+                    composite.setLayoutData(gridData);
+                    Text editor = new Text(composite, SWT.NONE);
+                    editor.setLayoutData(gridData);
+                    Button button = UIUtils.createPushButton(composite, null, DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                     editor.setText(CommonUtils.notEmpty(param.getValue()));
+                    button.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                             editor.setText(EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value, editor.getText()));
+                        }
+                    });
+                    GridData buttonLayoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 0, 0);
+                    buttonLayoutData.heightHint = editor.getSize().y;
+                    button.setLayoutData(buttonLayoutData);
                     editor.selectAll();
 
                     editor.addTraverseListener(e -> {
@@ -169,7 +195,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     });
                     editor.addModifyListener(e -> saveEditorValue(editor, index, item));
 
-                    return editor;
+                    return composite;
                 }
 
                 @Override
@@ -225,7 +251,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         }
 
-        sash.setWeights(new int[] { 600, 400 });
+        sash.setWeights(600, 400);
 
         hideIfSetCheck = UIUtils.createCheckbox(composite,
             SQLEditorMessages.dialog_sql_param_hide_checkbox, SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
