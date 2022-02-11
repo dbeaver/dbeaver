@@ -157,7 +157,7 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
     @Override
     public boolean isComplete() {
         return hostText != null &&
-                !CommonUtils.isEmpty(hostText.getText());
+            !CommonUtils.isEmpty(hostText.getText());
     }
 
     @Override
@@ -255,7 +255,7 @@ public class DenodoConnectionPage extends ConnectionPageAbstract implements IDia
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
-                new DriverPropertiesDialogPage(this)
+            new DriverPropertiesDialogPage(this)
         };
     }
 

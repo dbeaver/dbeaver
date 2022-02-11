@@ -44,7 +44,7 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
     {
         StringBuilder url = new StringBuilder();
 
-        url.append("jdbc:vdb://");
+        url.append("jdbc:denodo://");
 
         url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
