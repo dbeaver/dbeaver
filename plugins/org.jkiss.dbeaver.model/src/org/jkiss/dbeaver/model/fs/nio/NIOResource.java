@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -224,7 +225,15 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public IContainer getParent() {
-        return this.getProject();
+        Path parentPath = nioPath.getParent();
+        if (parentPath == null) {
+            return getProject();
+        }
+        if (CommonUtils.equalObjects(nioPath.toUri(), parentPath.toUri())) {
+            //
+            return getProject();
+        }
+        return new NIOFolder(root, parentPath);
     }
 
     public Map<QualifiedName, String> getPersistentProperties() throws CoreException {

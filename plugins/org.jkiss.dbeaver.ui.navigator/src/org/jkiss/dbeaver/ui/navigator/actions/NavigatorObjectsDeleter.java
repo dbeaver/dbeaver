@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -49,6 +51,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -185,27 +188,32 @@ public class NavigatorObjectsDeleter {
     }
 
     private void deleteResource(final IResource resource) {
-        try {
-            NullProgressMonitor monitor = new NullProgressMonitor();
-            if (resource instanceof IFolder) {
-                ((IFolder)resource).delete(true, true, monitor);
-            } else if (resource instanceof IProject) {
-                // Delete project
-                DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(
-                    DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
-                    Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
-                );
-                ((IProject) resource).delete(deleteContent, true, monitor);
-            } else if (resource != null) {
-                resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
+        new AbstractJob("Delete resources") {
+            {
+                setUser(true);
             }
-        } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError(
-                    UINavigatorMessages.error_deleting_resource_title,
-                    NLS.bind(UINavigatorMessages.error_deleting_resource_message, resource.getFullPath().toString()),
-                    e
-            );
-        }
+            @Override
+            protected IStatus run(DBRProgressMonitor dbrMonitor) {
+                try {
+                    IProgressMonitor monitor = dbrMonitor.getNestedMonitor();
+                    if (resource instanceof IFolder) {
+                        ((IFolder)resource).delete(true, true, monitor);
+                    } else if (resource instanceof IProject) {
+                        // Delete project
+                        DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(
+                            DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
+                            Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
+                        );
+                        ((IProject) resource).delete(deleteContent, true, monitor);
+                    } else if (resource != null) {
+                        resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
+                    }
+                } catch (Exception e) {
+                    return GeneralUtils.makeExceptionStatus(UINavigatorMessages.error_deleting_resource_message, e);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     private void deleteDatabaseNode(final DBNDatabaseNode node) {

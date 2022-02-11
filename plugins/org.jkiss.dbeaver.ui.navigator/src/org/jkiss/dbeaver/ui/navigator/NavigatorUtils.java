@@ -630,16 +630,25 @@ public class NavigatorUtils {
                                 if (curResource instanceof IFolder) {
                                     IFolder toFolder = (IFolder) curResource;
                                     new AbstractJob("Copy files to workspace") {
+                                        {
+                                            setUser(true);
+                                        }
                                         @Override
                                         protected IStatus run(DBRProgressMonitor monitor) {
+                                            String[] fileNames = (String[]) event.data;
+                                            monitor.beginTask("Copy files", fileNames.length);
                                             try {
-                                                dropFilesIntoFolder(monitor, toFolder, (String[])event.data);
+                                                dropFilesIntoFolder(monitor, toFolder, fileNames);
                                             } catch (Exception e) {
                                                 return GeneralUtils.makeExceptionStatus(e);
+                                            } finally {
+                                                monitor.done();
                                             }
                                             return Status.OK_STATUS;
                                         }
                                     }.schedule();
+                                } else {
+                                    DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders.");
                                 }
                             }
                         }
@@ -653,13 +662,23 @@ public class NavigatorUtils {
         for (String extFileName : data) {
             File extFile = new File(extFileName);
             if (extFile.exists()) {
-                IFile targetFile = toFolder.getFile(extFile.getName());
-                try (InputStream is = Files.newInputStream(extFile.toPath())) {
+                monitor.subTask("Copy file " + extFile.getName());
+                try {
+                    IFile targetFile = toFolder.getFile(extFile.getName());
                     if (targetFile.exists()) {
-                        targetFile.setContents(is, true, false, monitor.getNestedMonitor());
-                    } else {
-                        targetFile.create(is, true, monitor.getNestedMonitor());
+                        if (!UIUtils.confirmAction("File exists", "File '" + targetFile.getName() + "' exists. Do you want to overwrite it?")) {
+                            continue;
+                        }
                     }
+                    try (InputStream is = Files.newInputStream(extFile.toPath())) {
+                        if (targetFile.exists()) {
+                            targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                        } else {
+                            targetFile.create(is, true, monitor.getNestedMonitor());
+                        }
+                    }
+                } finally {
+                    monitor.worked(1);
                 }
             }
         }
