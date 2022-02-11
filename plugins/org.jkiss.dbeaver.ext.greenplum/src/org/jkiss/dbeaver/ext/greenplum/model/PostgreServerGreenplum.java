@@ -160,6 +160,6 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsEventTriggers() {
-        return true;
+        return dataSource.isServerVersionAtLeast(9, 3);
     }
 }
