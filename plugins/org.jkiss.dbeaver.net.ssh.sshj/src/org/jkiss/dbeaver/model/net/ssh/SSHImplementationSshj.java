@@ -21,6 +21,7 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -65,8 +66,12 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             sshClient = new SSHClient(clientConfig);
 
             try {
-                File knownHostsFile = SSHUtils.getKnownSshHostsFileOrDefault();
-                sshClient.addHostKeyVerifier(new KnownHostsVerifier(knownHostsFile, DBWorkbench.getPlatformUI()));
+                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                    sshClient.addHostKeyVerifier(new PromiscuousVerifier());
+                } else {
+                    File knownHostsFile = SSHUtils.getKnownSshHostsFileOrDefault();
+                    sshClient.addHostKeyVerifier(new KnownHostsVerifier(knownHostsFile, DBWorkbench.getPlatformUI()));
+                }
                 sshClient.loadKnownHosts();
             } catch (IOException e) {
                 log.debug("Error loading known hosts: " + e.getMessage());
