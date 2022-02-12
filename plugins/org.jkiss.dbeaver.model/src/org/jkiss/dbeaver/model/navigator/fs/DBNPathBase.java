@@ -63,7 +63,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         super(parentNode);
     }
 
-    protected abstract Path getPath();
+    public abstract Path getPath();
 
     @Override
     protected void dispose(boolean reflect) {
