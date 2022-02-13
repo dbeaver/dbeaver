@@ -42,6 +42,8 @@ public interface TPCharacterScanner {
      */
     int getColumn();
 
+    int getOffset();
+
     /**
      * Returns the next character or EOF if end of file has been reached
      *
