@@ -1,0 +1,133 @@
+package org.jkiss.dbeaver.parser.grammar.nfa;
+
+public class GrammarNfaOperation {
+    private final int exprId;
+    private final ParseOperationKind kind;
+    private final String pattern;
+    private final String ruleName;
+    private final Integer minIterations;
+    private final Integer maxIterations;
+    private final Integer exprPosition;
+
+    private GrammarNfaOperation(int exprId, ParseOperationKind kind, String pattern, String ruleName,
+            Integer minIterations, Integer maxIterations, Integer exprPosition) {
+        this.exprId = exprId;
+        this.kind = kind;
+        this.pattern = pattern;
+        this.ruleName = ruleName;
+        this.minIterations = minIterations;
+        this.maxIterations = maxIterations;
+        this.exprPosition = exprPosition;
+        this.Validate();
+    }
+
+    public int getExprId() {
+        return exprId;
+    }
+
+    public ParseOperationKind getKind() {
+        return kind;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public String getRuleName() {
+        return ruleName;
+    }
+
+    public Integer getMinIterations() {
+        return minIterations;
+    }
+
+    public Integer getMaxIterations() {
+        return maxIterations;
+    }
+
+    public Integer getExprPosition() {
+        return exprPosition;
+    }
+
+    private void Validate() {
+        switch (this.kind) {
+        case RULE_START:
+        case RULE_END:
+        case CALL:
+        case RESUME:
+            if (this.ruleName == null)
+                throw new IllegalArgumentException();
+            break;
+        case LOOP_ENTER:
+        case LOOP_INCREMENT:
+        case LOOP_EXIT:
+        case SEQ_ENTER:
+        case SEQ_STEP:
+        case SEQ_EXIT:
+            if (this.maxIterations == null || this.minIterations == null)
+                throw new IllegalArgumentException();
+            if (this.kind == ParseOperationKind.SEQ_STEP && this.exprPosition == null)
+                throw new IllegalArgumentException();
+            break;
+        case TERM:
+            if (this.pattern == null)
+                throw new IllegalArgumentException();
+            break;
+        case NONE:
+            // do nothing
+            break;
+        default:
+            throw new UnsupportedOperationException("Unexpected parse opeation kind " + this.kind);
+        }
+    }
+
+    @Override
+    public String toString() {
+        String result = this.kind.toString() + "#" + this.exprId + "[";
+        switch (this.kind) {
+        case RULE_START:
+        case RULE_END:
+        case CALL:
+        case RESUME:
+            result += this.ruleName;
+            break;
+        case LOOP_ENTER:
+        case LOOP_INCREMENT:
+        case LOOP_EXIT:
+        case SEQ_ENTER:
+        case SEQ_STEP:
+        case SEQ_EXIT:
+            if (this.exprPosition != null) {
+                result += this.exprPosition + "/";
+            }
+            result += this.minIterations + ".." + this.maxIterations;
+            break;
+        case TERM:
+            result += this.pattern;
+            break;
+        case NONE:
+            // do nothing
+            break;
+        default:
+            throw new UnsupportedOperationException("Unexpected parse opeation kind " + this.kind);
+        }
+        return result + "]";
+    }
+
+    public static GrammarNfaOperation makeRuleOperation(int exprId, ParseOperationKind opKind, String ruleName) {
+        return new GrammarNfaOperation(exprId, opKind, null, ruleName, null, null, null);
+    }
+
+    public static GrammarNfaOperation makeSequenceOperation(int exprId, ParseOperationKind opKind, int min, int max,
+            Integer exprPosition) {
+        return new GrammarNfaOperation(exprId, opKind, null, null, min, max, exprPosition);
+    }
+
+    public static GrammarNfaOperation makeTerm(int exprId, String pattern) {
+        return new GrammarNfaOperation(exprId, ParseOperationKind.TERM, pattern, null, null, null, null);
+    }
+
+    public static GrammarNfaOperation makeEmpty(int exprId) {
+        return new GrammarNfaOperation(exprId, ParseOperationKind.NONE, null, null, null, null, null);
+    }
+}
