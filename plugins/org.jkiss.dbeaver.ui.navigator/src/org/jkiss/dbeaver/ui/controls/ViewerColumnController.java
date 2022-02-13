@@ -339,19 +339,23 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 UIUtils.packColumns(((TableViewer) viewer).getTable(), forceAutoSize);
             }
 
-            if (itemCount == 0) {
+            /*if (itemCount == 0) */{
                 // Fix too narrow width for empty lists
                 for (ColumnInfo columnInfo : getVisibleColumns()) {
                     if (columnInfo.column instanceof TreeColumn) {
-                        if (((TreeColumn) columnInfo.column).getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                        int realWidth = ((TreeColumn) columnInfo.column).getWidth();
+                        if (realWidth < MIN_COLUMN_AUTO_WIDTH) {
                             ((TreeColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
-                            columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
+                            realWidth = MIN_COLUMN_AUTO_WIDTH;
                         }
+                        columnInfo.width = realWidth;
                     } else if (columnInfo.column instanceof TableColumn) {
-                        if (((TableColumn) columnInfo.column).getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                        int realWidth = ((TableColumn) columnInfo.column).getWidth();
+                        if (realWidth < MIN_COLUMN_AUTO_WIDTH) {
                             ((TableColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
-                            columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
+                            realWidth = MIN_COLUMN_AUTO_WIDTH;
                         }
+                        columnInfo.width = realWidth;
                     }
                 }
             }

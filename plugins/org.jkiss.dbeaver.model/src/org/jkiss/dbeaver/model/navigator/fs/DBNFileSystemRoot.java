@@ -80,7 +80,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER;
+        return DBIcon.TREE_FOLDER_INFO;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    protected Path getPath() {
+    public Path getPath() {
         if (path == null) {
             try {
                 path = root.getPath(new VoidProgressMonitor());

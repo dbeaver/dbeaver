@@ -34,6 +34,7 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     private static final Log log = Log.getLog(DBNPath.class);
 
     private Path path;
+    private Boolean isDirectory;
 
     public DBNPath(DBNNode parentNode, Path path) {
         super(parentNode);
@@ -48,7 +49,7 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
-    protected Path getPath() {
+    public Path getPath() {
         return path;
     }
 
@@ -70,7 +71,11 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
 
     @Override
     public boolean allowsChildren() {
-        return Files.isDirectory(path);
+        if (isDirectory == null) {
+            // Cache it. It is called very frequently
+            isDirectory = Files.isDirectory(path);
+        }
+        return isDirectory;
     }
 
     @Override

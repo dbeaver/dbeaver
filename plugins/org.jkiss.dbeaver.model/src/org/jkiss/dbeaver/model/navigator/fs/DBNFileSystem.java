@@ -109,7 +109,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER;
+        return DBIcon.TREE_FOLDER_LINK;
     }
 
     @Override

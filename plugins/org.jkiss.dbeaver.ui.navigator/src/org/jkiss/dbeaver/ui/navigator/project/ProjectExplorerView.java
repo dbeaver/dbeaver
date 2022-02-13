@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -49,6 +51,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
+    private final NumberFormat sizeFormat = new DecimalFormat();
 
     public ProjectExplorerView() {
         DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
@@ -209,7 +212,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
                             if (resource instanceof IFile) {
-                                return String.valueOf(resource.getLocation().toFile().length());
+                                return sizeFormat.format(resource.getLocation().toFile().length());
                             }
                         }
                         return "";
