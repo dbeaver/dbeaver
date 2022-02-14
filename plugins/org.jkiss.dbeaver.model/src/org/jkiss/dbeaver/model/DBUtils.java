@@ -1926,8 +1926,8 @@ public final class DBUtils {
         }
         DBSInstance instance = getObjectOwnerInstance(object);
         return instance == null ||
-            (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected()) ||
-            !instance.getDataSource().getContainer().isConnected() ?
+            (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected())/* ||
+            !instance.getDataSource().getContainer().isConnected()*/ ?
             null :
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
