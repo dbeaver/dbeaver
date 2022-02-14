@@ -64,7 +64,7 @@ public class ResultSetRow {
     @Nullable
     public ColorInfo colorInfo;
 
-    ResultSetRow(int rowNumber, @NotNull Object[] values) {
+    public ResultSetRow(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
         this.visualNumber = rowNumber;
         this.values = values;

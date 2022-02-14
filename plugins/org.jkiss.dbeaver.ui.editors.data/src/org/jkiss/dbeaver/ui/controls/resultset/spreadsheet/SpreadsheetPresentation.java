@@ -1755,6 +1755,39 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public Object[] getChildren(Object element) {
+            if (!controller.isRecordMode() && element instanceof ResultSetRow) {
+                final ResultSetRow row = (ResultSetRow) element;
+                final List<DBDAttributeBinding> bindings = controller.getModel().getVisibleAttributes();
+                final Map<DBDAttributeBinding, List<Object>> columns = new HashMap<>();
+
+                for (final DBDAttributeBinding binding : bindings) {
+                    final Object value = controller.getModel().getCellValue(binding, row);
+                    if (value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
+                        final List<Object> column = columns.computeIfAbsent(binding, key -> new ArrayList<>());
+                        Collections.addAll(column, row.getCollectionData(binding, ((DBDCollection) value)).getElements());
+                    }
+                }
+
+                final int elements = columns.values().stream().mapToInt(Collection::size).max().orElse(0);
+
+                if (elements > 0) {
+                    final ResultSetRow[] children = new ResultSetRow[elements];
+
+                    for (int i = 0; i < elements; i++) {
+                        final Object[] values = new Object[bindings.size()];
+                        for (int j = 0; j < bindings.size(); j++) {
+                            final List<Object> list = columns.get(bindings.get(j));
+                            if (list != null && list.size() > i) {
+                                values[j] = list.get(i);
+                            }
+                        }
+                        children[i] = new ResultSetRow(i, values);
+                    }
+
+                    return children;
+                }
+            }
+
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) element;
                 switch (binding.getDataKind()) {
@@ -1833,7 +1866,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         break;
                 }
             }
-            return ElementState.NONE;
+            return ElementState.COLLAPSED;
         }
 
         @Override
@@ -1985,6 +2018,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
             Object value = controller.getModel().getCellValue(attr, row);
+            if (value instanceof DBDAttributeBinding) {
+                attr = ((DBDAttributeBinding) value);
+                value = controller.getModel().getCellValue(attr, row);
+            }
             if (formatString && DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
                 // New row and no value. Let's try to show default value
                 DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
