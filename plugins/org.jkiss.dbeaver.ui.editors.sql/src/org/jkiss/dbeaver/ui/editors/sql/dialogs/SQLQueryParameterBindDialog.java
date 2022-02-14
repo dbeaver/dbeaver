@@ -173,7 +173,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     button.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                             editor.setText(EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value, editor.getText()));
+                            final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value, editor.getText() == null ? "" : editor.getText());
+                            if (result != null) {
+                                editor.setText(result);
+                            }
                         }
                     });
                     GridData buttonLayoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 0, 0);
