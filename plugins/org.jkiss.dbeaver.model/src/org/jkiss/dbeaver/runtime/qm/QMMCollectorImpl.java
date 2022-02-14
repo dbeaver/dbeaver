@@ -162,7 +162,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action, DBASessionPersistent session) {
         String qmSessionId = session.getAttribute(QMConstants.QM_SESSION_ID_ATTR);
         if (CommonUtils.isEmpty(qmSessionId)) {
-            log.warn("QM session not found");
+            log.trace("QM session not found");
             return;
         }
         eventPool.add(new QMMetaEvent(object, action, qmSessionId));
