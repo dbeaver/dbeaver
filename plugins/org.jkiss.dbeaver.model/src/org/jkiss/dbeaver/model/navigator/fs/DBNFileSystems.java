@@ -136,6 +136,10 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
         return this;
     }
 
+    public void resetFileSystems() {
+        children = null;
+    }
+
     @Override
     public String getNodeItemPath() {
         return NodePathType.dbvfs.getPrefix();
