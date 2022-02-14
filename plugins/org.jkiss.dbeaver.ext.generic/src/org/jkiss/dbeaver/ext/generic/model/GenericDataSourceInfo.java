@@ -28,7 +28,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
-    private final boolean supportsLimits;
+    private boolean supportsLimits;
     public boolean supportsCatalogSelection;
     public boolean supportsSchemaSelection;
     private boolean supportsMultipleResults;
@@ -57,7 +57,11 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     public boolean supportsResultSetLimit() {
         return supportsLimits;
     }
-
+    
+    public void setSupportsResultSetLimit(boolean supportsLimits) {
+        this.supportsLimits = supportsLimits;
+    }
+    
     @Override
     public boolean supportsNullableUniqueConstraints() {
         return supportsNullableUniqueConstraints;

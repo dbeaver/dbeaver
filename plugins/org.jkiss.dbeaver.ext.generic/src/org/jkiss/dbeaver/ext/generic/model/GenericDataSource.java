@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
@@ -58,7 +59,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, IAdaptable, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, IAdaptable, GenericStructContainer, DBCQueryTransformProviderExt {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -640,6 +641,14 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             }
         }
         return super.createQueryTransformer(type);
+    }
+    
+    @Override
+    public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
+        if (metaModel instanceof DBCQueryTransformProviderExt) {
+            return ((DBCQueryTransformProviderExt) metaModel).isForceTransform(session, sqlQuery);
+        }
+        return false;
     }
 
     GenericTableBase findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)

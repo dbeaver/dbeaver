@@ -73,6 +73,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         GenericDataSourceInfo info = (GenericDataSourceInfo) super.createDataSourceInfo(monitor, metaData);
         // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
         // So far we turn off indexes
+        info.setSupportsResultSetLimit(false);
         info.setSupportsIndexes(false);
         return info;
     }
