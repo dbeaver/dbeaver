@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.log;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.QMEvent;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
@@ -37,8 +37,7 @@ class SQLLogFilter implements QMEventFilter {
     }
 
     @Override
-    public boolean accept(QMMetaEvent event)
-    {
+    public boolean accept(QMEvent event) {
         // Accept only following events:
         // - statement execution (if statement belongs to specific editor)
         // - transaction/savepoint changes (if txn belongs to current datasource)
