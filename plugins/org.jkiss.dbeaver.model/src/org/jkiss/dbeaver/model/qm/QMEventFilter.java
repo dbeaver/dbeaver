@@ -22,6 +22,6 @@ package org.jkiss.dbeaver.model.qm;
  */
 public interface QMEventFilter {
 
-    boolean accept(QMMetaEvent event);
+    boolean accept(QMEvent event);
 
 }

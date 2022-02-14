@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.QMEvent;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
 
@@ -43,8 +43,7 @@ public class DefaultEventFilter implements QMEventFilter {
     }
 
     @Override
-    public boolean accept(QMMetaEvent event)
-    {
+    public boolean accept(QMEvent event) {
         QMMObject object = event.getObject();
         if (object instanceof QMMStatementExecuteInfo) {
             return eventCriteria.hasObjectType(QMObjectType.query) &&
