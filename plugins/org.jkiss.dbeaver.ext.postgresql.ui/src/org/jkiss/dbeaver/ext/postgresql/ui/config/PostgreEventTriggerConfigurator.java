@@ -70,7 +70,9 @@ public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<Po
             for (PostgreEventTrigger.TriggerEventTypes type : PostgreEventTrigger.TriggerEventTypes.values()) {
                 eventCombo.add(type.name());
             }
-            eventCombo.setText(PostgreEventTrigger.TriggerEventTypes.values()[0].name());
+            PostgreEventTrigger.TriggerEventTypes defaultEvent = PostgreEventTrigger.TriggerEventTypes.values()[0];
+            eventCombo.setText(defaultEvent.name());
+            eventType = defaultEvent;
             eventCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
