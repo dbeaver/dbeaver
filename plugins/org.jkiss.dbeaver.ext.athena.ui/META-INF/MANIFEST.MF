@@ -9,7 +9,9 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.athena,
  org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.navigator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

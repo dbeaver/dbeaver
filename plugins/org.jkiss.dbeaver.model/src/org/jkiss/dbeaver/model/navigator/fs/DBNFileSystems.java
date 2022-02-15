@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -88,14 +89,24 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
         return true;
     }
 
-    public DBNFileSystem getFileSystem(@NotNull String type, @NotNull String id) {
+    public DBNFileSystem getFileSystem(@Nullable String type, @NotNull String id) {
         if (children == null) {
             return null;
         }
         for (DBNFileSystem fsNode : children) {
             DBFVirtualFileSystem fs = fsNode.getFileSystem();
-            if (fs.getType().equals(type) && fs.getId().equals(id)) {
+            if ((type == null || fs.getType().equals(type)) && fs.getId().equals(id)) {
                 return fsNode;
+            }
+        }
+        return null;
+    }
+
+    public DBNFileSystemRoot getRootFolder(@NotNull DBRProgressMonitor monitor, @NotNull String id) throws DBException {
+        for (DBNFileSystem fsNode : getChildren(monitor)) {
+            DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
+            if (rootFolder != null) {
+                return rootFolder;
             }
         }
         return null;
@@ -123,6 +134,36 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
         result.sort(DBUtils.nameComparatorIgnoreCase());
         monitor.done();
         return result.toArray(new DBNFileSystem[0]);
+    }
+
+    public DBNPathBase findNodeByPath(DBRProgressMonitor monitor, String path) throws DBException {
+        getChildren(monitor);
+
+        DBNFileSystemRoot fsNode = null;
+        DBNPathBase curPath = null;
+        for (String name : path.split("/")) {
+            if (name.isEmpty() || name.equals("s3:")) {
+                continue;
+            }
+            if (fsNode == null) {
+                fsNode = getRootFolder(monitor, name);
+                if (fsNode == null) {
+                    return null;
+                }
+            } else {
+                if (curPath == null) {
+                    fsNode.getChildren(monitor);
+                    curPath = fsNode.getChild(name);
+                } else {
+                    curPath.getChildren(monitor);
+                    curPath = curPath.getChild(name);
+                }
+                if (curPath == null) {
+                    return null;
+                }
+            }
+        }
+        return curPath == null ? fsNode : curPath;
     }
 
     @Override
