@@ -37,7 +37,6 @@ import java.util.List;
 public class GlobalProxySelector extends ProxySelector {
 
     private static final Log log = Log.getLog(GlobalProxySelector.class);
-    private static final String[] LOCAL_HOSTS = { "localhost", "127.0.0.1" };
 
     private final ProxySelector parent;
 

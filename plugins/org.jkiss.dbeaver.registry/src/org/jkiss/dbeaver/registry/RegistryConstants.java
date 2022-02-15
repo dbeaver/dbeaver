@@ -76,6 +76,7 @@ public class RegistryConstants {
 
     public static final String ATTR_CODE = "code"; //$NON-NLS-1$
     public static final String ATTR_LABEL = "label"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_HOST = "defaultHost"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_PORT = "defaultPort"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_DATABASE = "defaultDatabase"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_SERVER = "defaultServer"; //$NON-NLS-1$

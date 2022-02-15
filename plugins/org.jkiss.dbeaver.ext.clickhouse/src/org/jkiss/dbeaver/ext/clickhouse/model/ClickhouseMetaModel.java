@@ -136,7 +136,7 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
     @Nullable
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit(false, false);
+            return new QueryTransformerLimit(true, true);
         }
         return null;
     }
