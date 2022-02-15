@@ -241,7 +241,7 @@ public class DatabaseTransferUtils {
                 }
                 if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
                     tableManager.deleteObject(commandContext, table, options);
-                    table = tableManager.createNewObject(monitor, commandContext, table.getParentObject(), table, options);
+                    table = tableManager.createNewObject(monitor, commandContext, table.getParentObject(), null, options);
                     tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
