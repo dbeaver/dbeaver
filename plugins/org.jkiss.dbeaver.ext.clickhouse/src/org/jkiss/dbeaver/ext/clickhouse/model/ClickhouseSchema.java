@@ -65,8 +65,12 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
 
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        hasStatistics = false;
+        resetStatistics();
         return super.refreshObject(monitor);
+    }
+
+    void resetStatistics() {
+        hasStatistics = false;
     }
 
     @Override
