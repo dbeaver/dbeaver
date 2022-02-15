@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -342,7 +343,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         }
         connectionTypeFolder.setSelection(connectionType.ordinal());
         if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            hostText.setText("localhost");
+            hostText.setText(DBConstants.HOST_LOCALHOST);
         } else {
             hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
         }

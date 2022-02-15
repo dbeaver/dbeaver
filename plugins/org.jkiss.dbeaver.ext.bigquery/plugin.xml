@@ -25,6 +25,7 @@
                         iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
                         sampleURL="jdbc:bigquery://{host}:{port};ProjectId={database};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={server};"
+                        defaultHost="https://www.googleapis.com/bigquery/v2"
                         defaultPort="443"
                         description="Google BigQuery driver"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
