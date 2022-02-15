@@ -59,6 +59,10 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     private final TriggerCache triggerCache = new TriggerCache();
     private final RuleCache ruleCache = new RuleCache();
 
+    public boolean isRefreshSchemaStatisticsOnTableRefresh () {
+        return true;
+    }
+
     protected PostgreTableReal(PostgreTableContainer container)
     {
         super(container);
@@ -208,12 +212,12 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (this.diskSpace != null) {
+        if (this.diskSpace != null && isRefreshSchemaStatisticsOnTableRefresh()) {
             // Re-read statistics on the next try
             getSchema().resetStatistics();
+            this.diskSpace = null;
         }
         this.rowCount = null;
-        this.diskSpace = null;
         this.tableRelSize = 0;
 
         return super.refreshObject(monitor);

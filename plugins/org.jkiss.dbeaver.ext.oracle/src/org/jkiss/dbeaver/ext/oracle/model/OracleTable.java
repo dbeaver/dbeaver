@@ -343,6 +343,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     {
         getContainer().foreignKeyCache.clearObjectCache(this);
         if (tableSize != null) {
+            tableSize = null;
             getTableSize(monitor);
         }
         return super.refreshObject(monitor);

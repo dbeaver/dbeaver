@@ -39,6 +39,11 @@ public class RedshiftTable extends PostgreTableRegular
 {
     private static final Log log = Log.getLog(RedshiftTable.class);
 
+    @Override
+    public boolean isRefreshSchemaStatisticsOnTableRefresh() {
+        return false;
+    }
+
     public RedshiftTable(PostgreSchema catalog) {
         super(catalog);
     }
@@ -64,14 +69,15 @@ public class RedshiftTable extends PostgreTableRegular
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (hasStatistics()) {
+            diskSpace = null;
             try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
                 readTableStatistics((JDBCSession) session);
             } catch (Exception e) {
                 log.debug("Can't fetch disk space", e);
             }
         }
-
-        return super.refreshObject(monitor);
+        RedshiftTable dbsObject = ((RedshiftTable) super.refreshObject(monitor));
+        return dbsObject;
     }
 
     protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {

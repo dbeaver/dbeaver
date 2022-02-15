@@ -101,10 +101,10 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-            if (tableSize != -1) {
-                ((VerticaSchema) getSchema()).resetStatistics();
-            }
-            return super.refreshObject(monitor);
+        if (tableSize != -1) {
+            ((VerticaSchema) getSchema()).resetStatistics();
+        }
+        return super.refreshObject(monitor);
     }
 
     @Nullable
