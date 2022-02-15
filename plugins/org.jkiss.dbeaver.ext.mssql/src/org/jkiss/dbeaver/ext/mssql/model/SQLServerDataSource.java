@@ -109,7 +109,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     public boolean supportsTriggers() {
-        return !isBabelfish;
+        return !isBabelfish && !isSynapseDatabase;
     }
 
     public boolean supportsSynonyms() {
@@ -117,7 +117,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     public boolean supportsSequences() {
-        return !isBabelfish;
+        return !isBabelfish && !isSynapseDatabase;
     }
 
     boolean isSynapseDatabase() {
