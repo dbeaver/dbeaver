@@ -76,8 +76,7 @@ public class RedshiftTable extends PostgreTableRegular
                 log.debug("Can't fetch disk space", e);
             }
         }
-        RedshiftTable dbsObject = ((RedshiftTable) super.refreshObject(monitor));
-        return dbsObject;
+        return super.refreshObject(monitor);
     }
 
     protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {

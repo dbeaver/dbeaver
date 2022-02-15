@@ -152,10 +152,8 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        ClickhouseTable dbsObject = (ClickhouseTable) super.refreshObject(monitor);
-        if (!hasStatistics()) {
-            readStatistics(monitor);
-        }
+        DBSObject dbsObject = super.refreshObject(monitor);
+        readStatistics(monitor);
         return dbsObject;
     }
 
