@@ -70,6 +70,23 @@
                     <property name="connectTimeout" value="20"/>
                 </driver>
             </drivers>
+
+            <nativeClients>
+                <client id="postgresql_client" label="PostgreSQL Binaries">
+                    <dist os="win32" targetPath="clients/postgresql/win/13" remotePath="repo:/drivers/postgresql/client/win/13" resourcePath="clients/postgresql/win/13">
+                        <file type="exec" name="psql.exe"/>
+                        <file type="exec" name="pg_dump.exe"/>
+                        <file type="exec" name="pg_restore.exe"/>
+                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
+                        <file type="lib" name="libiconv-2.dll"/>
+                        <file type="lib" name="libintl-8.dll"/>
+                        <file type="lib" name="libpq.dll"/>
+                        <file type="lib" name="libssl-1_1-x64.dll"/>
+                        <file type="lib" name="libwinpthread-1.dll"/>
+                        <file type="lib" name="zlib1.dll"/>
+                    </dist>
+                </client>
+            </nativeClients>
         </datasource>
     </extension>
 
