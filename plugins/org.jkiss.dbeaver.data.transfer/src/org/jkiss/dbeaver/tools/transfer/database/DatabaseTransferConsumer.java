@@ -610,6 +610,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 switch (containerMapping.getMappingType()) {
                     case create:
+                    case recreate:
                     case existing:
                         return createTargetTable(session, containerMapping);
                     default:
@@ -721,6 +722,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         switch (containerMapping.getMappingType()) {
             case create:
                 return targetName + " [Create]";
+            case recreate:
+                return targetName + " [Recreate]";
             case existing:
                 for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == DatabaseMappingType.create) {

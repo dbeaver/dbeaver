@@ -515,7 +515,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         return newName;
                     }
                     if (mapping instanceof DatabaseMappingContainer) {
-                        if (mapping.getMappingType() == DatabaseMappingType.existing) {
+                        if (mapping.getMappingType() == DatabaseMappingType.existing || mapping.getMappingType() == DatabaseMappingType.recreate) {
                             return ((DatabaseMappingContainer) mapping).getTarget();
                         }
                         return mapping.getTargetName();
@@ -571,6 +571,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     if (mappingType != DatabaseMappingType.skip) {
                         mappingTypes.add(mappingType.name());
                     }
+                    if (mapping instanceof DatabaseMappingContainer) {
+                        if (mappingType == DatabaseMappingType.existing) {
+                            mappingTypes.add(DatabaseMappingType.recreate.name());
+                        } else if (mappingType == DatabaseMappingType.recreate) {
+                            mappingTypes.add(DatabaseMappingType.existing.name());
+                        }
+                    }
                     if (mapping instanceof DatabaseMappingAttribute) {
                         DatabaseMappingType parentMapping = ((DatabaseMappingAttribute) mapping).getParent().getMappingType();
                         if (mappingType != parentMapping && parentMapping == DatabaseMappingType.create) {
@@ -604,7 +611,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (mapping instanceof DatabaseMappingAttribute) {
                             ((DatabaseMappingAttribute) mapping).setMappingType(mappingType);
                         } else {
-                            ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
+                            DatabaseMappingType previousMapping = mapping.getMappingType();
+                            if (previousMapping == DatabaseMappingType.recreate || mappingType == DatabaseMappingType.recreate) {
+                                ((DatabaseMappingContainer) mapping).refreshAttributesAndMappingType(getWizard().getRunnableContext(), mappingType, false);
+                            } else {
+                                ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
+                            }
                         }
                         mappingViewer.refresh();
                         setErrorMessage(null);
@@ -866,7 +878,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean hasUnassigned = false;
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         for (DatabaseMappingContainer mapping : settings.getDataMappings().values()) {
-            if (mapping.getMappingType() != DatabaseMappingType.create && mapping.getMappingType() != DatabaseMappingType.existing) {
+            if (mapping.getMappingType() == DatabaseMappingType.unspecified || mapping.getMappingType() == DatabaseMappingType.skip) {
                 hasUnassigned = true;
                 break;
             }
