@@ -174,6 +174,10 @@ public class CommonUtils {
         return value == null || value.length() == 0;
     }
 
+    public static <T> boolean isEmpty(@Nullable T[] value) {
+        return value == null || value.length == 0;
+    }
+
     public static boolean isEmpty(@Nullable String value) {
         return value == null || value.length() == 0;
     }
