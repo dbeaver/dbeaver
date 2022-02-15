@@ -35,8 +35,7 @@ import java.util.Date;
 /**
  * VerticaTable
  */
-public class VerticaTable extends GenericTable implements DBPObjectStatistics, DBPSystemObject
-{
+public class VerticaTable extends GenericTable implements DBPObjectStatistics, DBPSystemObject {
     private long tableSize = -1;
 
     private String partitionExpression;
@@ -102,6 +101,7 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (tableSize != -1) {
+            tableSize = -1;
             ((VerticaSchema) getSchema()).resetStatistics();
         }
         return super.refreshObject(monitor);
