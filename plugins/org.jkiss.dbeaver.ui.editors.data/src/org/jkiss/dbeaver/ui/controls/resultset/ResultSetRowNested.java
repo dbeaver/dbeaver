@@ -24,22 +24,15 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import java.util.Map;
 
 public class ResultSetRowNested extends ResultSetRow {
-    private final ResultSetRow parent;
     private final Map<DBDAttributeBinding, DBDAttributeBindingElement> elements;
 
-    public ResultSetRowNested(int index, @NotNull ResultSetRow parent, @NotNull Object[] values, @NotNull Map<DBDAttributeBinding, DBDAttributeBindingElement> elements) {
+    public ResultSetRowNested(int index, @NotNull Object[] values, @NotNull Map<DBDAttributeBinding, DBDAttributeBindingElement> elements) {
         super(index, values);
-        this.parent = parent;
         this.elements = elements;
     }
 
     @Nullable
     public DBDAttributeBindingElement getElement(@NotNull DBDAttributeBinding attribute) {
         return elements.get(attribute);
-    }
-
-    @NotNull
-    public ResultSetRow getParent() {
-        return parent;
     }
 }

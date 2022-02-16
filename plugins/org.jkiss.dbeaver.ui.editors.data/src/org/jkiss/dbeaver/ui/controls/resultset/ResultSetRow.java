@@ -65,7 +65,7 @@ public class ResultSetRow {
     @Nullable
     public ColorInfo colorInfo;
 
-    public ResultSetRow(int rowNumber, @NotNull Object[] values) {
+    ResultSetRow(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
         this.visualNumber = rowNumber;
         this.values = values;
@@ -186,7 +186,7 @@ public class ResultSetRow {
                             elements.put(binding, list.get(i));
                         }
                     }
-                    children[i] = new ResultSetRowNested(i, this, values, elements);
+                    children[i] = new ResultSetRowNested(i, values, elements);
                 }
             }
         }
