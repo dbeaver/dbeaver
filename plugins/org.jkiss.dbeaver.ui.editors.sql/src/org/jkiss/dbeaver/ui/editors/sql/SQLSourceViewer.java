@@ -124,6 +124,16 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
     }
+    
+    @Override
+    public void activatePart() {
+        super.activatePart();
+
+        T sourceObject = getSourceObject();
+        if (sourceObject != null && !sourceObject.isPersisted() && this.isReadOnly()) {
+            refreshPart(this, true);
+        }
+    }
 
     @Override
     protected void contributeEditorCommands(IContributionManager toolBarManager) {
