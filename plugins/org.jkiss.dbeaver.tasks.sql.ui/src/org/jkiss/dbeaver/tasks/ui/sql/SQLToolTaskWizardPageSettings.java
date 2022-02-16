@@ -306,8 +306,10 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         }
         SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
 
-        settings.setObjectList(selectedObjects);
-        taskOptionsViewer.saveEditorValues();
+        if (taskOptionsViewer != null) {
+            settings.setObjectList(selectedObjects);
+            taskOptionsViewer.saveEditorValues();
+        }
     }
 
     @Nullable
