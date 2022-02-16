@@ -528,9 +528,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     @Override
     public IStructuredSelection getSelection() {
         TableItem[] items = logTable.getSelection();
-        QMMetaEvent[] data = new QMMetaEvent[items.length];
+        QMEvent[] data = new QMEvent[items.length];
         for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-            data[i] = (QMMetaEvent) items[i].getData();
+            data[i] = (QMEvent) items[i].getData();
         }
         return new StructuredSelection(data);
     }
@@ -801,7 +801,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
             boolean hasStatements = false;
             for (TableItem item : logTable.getSelection()) {
-                if (((QMMetaEvent) item.getData()).getObject() instanceof QMMStatementExecuteInfo) {
+                if (((QMEvent) item.getData()).getObject() instanceof QMMStatementExecuteInfo) {
                     hasStatements = true;
                     break;
                 }
@@ -886,7 +886,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         StringBuilder sql = new StringBuilder();
         TableItem[] items = logTable.getSelection();
         for (TableItem item : items) {
-            QMMetaEvent event = (QMMetaEvent) item.getData();
+            QMEvent event = (QMEvent) item.getData();
             QMMObject object = event.getObject();
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
