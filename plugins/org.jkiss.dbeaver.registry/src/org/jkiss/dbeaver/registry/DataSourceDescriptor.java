@@ -901,20 +901,46 @@ public class DataSourceDescriptor
 
                 monitor.subTask("Connect to data source");
 
-                this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
-                this.connectTime = new Date();
-                monitor.worked(1);
+/*
+                AccessControlContext noPermissionsAccessControlContext;
+                {
+                    Permissions noPermissions = new Permissions();
+                    noPermissions.add(new SocketPermission("*", "connect"));
+                    noPermissions.add(new NetPermission("*"));
+                    noPermissions.add(new ReflectPermission("*"));
+                    noPermissions.add(new ReflectPermission("accessDeclaredMembers"));
+                    noPermissions.setReadOnly();
 
-                if (initialize) {
-                    monitor.subTask("Initialize data source");
-                    try {
-                        dataSource.initialize(monitor);
-                    } catch (Throwable e) {
-                        log.error("Error initializing datasource", e);
-                        throw e;
-                    }
+                    noPermissionsAccessControlContext = new AccessControlContext(
+                        new ProtectionDomain[] { new ProtectionDomain(null, noPermissions) }
+                    );
                 }
+                Policy.setPolicy(new Policy() {
+                    @Override public boolean implies(ProtectionDomain domain, Permission permission) {
+                        return true;
+                    }
+                });
+                System.setSecurityManager(new SecurityManager());
 
+                try {
+                    AccessController.doPrivileged(
+                        (PrivilegedAction<Object>) () -> {
+                            try {
+                                openDataSource(monitor, initialize);
+                                return null;
+                            } catch (Throwable e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        noPermissionsAccessControlContext);
+                } catch (Throwable e) {
+                    if (e instanceof RuntimeException && e.getCause() != null) {
+                        e = e.getCause();
+                    }
+                    throw e;
+                }
+*/
+                openDataSource(monitor, initialize);
                 this.connectFailed = false;
             } finally {
                 exclusiveLock.releaseExclusiveLock(dsLock);
@@ -934,7 +960,7 @@ public class DataSourceDescriptor
                 log.debug("Connected (" + getId() + ", driver unknown)");
             }
             return true;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
@@ -972,6 +998,22 @@ public class DataSourceDescriptor
         } finally {
             monitor.done();
             connecting = false;
+        }
+    }
+
+    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+        this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+        this.connectTime = new Date();
+        monitor.worked(1);
+
+        if (initialize) {
+            monitor.subTask("Initialize data source");
+            try {
+                dataSource.initialize(monitor);
+            } catch (Throwable e) {
+                log.error("Error initializing datasource", e);
+                throw e;
+            }
         }
     }
 
