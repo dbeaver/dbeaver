@@ -449,6 +449,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return "Schema " + name;
     }
 
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
     private static OracleTableColumn getTableColumn(JDBCSession session, OracleTableBase parent, ResultSet dbResult,String columnName) throws DBException
     {
 

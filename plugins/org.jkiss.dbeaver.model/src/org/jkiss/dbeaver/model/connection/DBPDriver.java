@@ -77,6 +77,9 @@ public interface DBPDriver extends DBPNamedObject
     String getDriverClassName();
 
     @Nullable
+    String getDefaultHost();
+
+    @Nullable
     String getDefaultPort();
 
     @Nullable

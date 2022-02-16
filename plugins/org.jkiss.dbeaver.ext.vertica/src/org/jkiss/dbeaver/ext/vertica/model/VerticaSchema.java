@@ -174,6 +174,10 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
         return super.refreshObject(monitor);
     }
 
+    void resetStatistics() {
+        hasStatistics = false;
+    }
+
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {

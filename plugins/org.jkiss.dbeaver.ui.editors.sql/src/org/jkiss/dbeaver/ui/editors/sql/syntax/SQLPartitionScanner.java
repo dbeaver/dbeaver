@@ -129,6 +129,11 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         return regions;
     }
 
+    @Override
+    public int getOffset() {
+        return fOffset;
+    }
+
     private class PredicateRuleAdapter implements IPredicateRule {
         private final TPPredicateRule rule;
 

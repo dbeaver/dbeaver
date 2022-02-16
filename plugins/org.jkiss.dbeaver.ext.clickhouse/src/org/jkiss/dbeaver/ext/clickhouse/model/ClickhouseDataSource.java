@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -74,6 +75,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
         // So far we turn off indexes
         info.setSupportsIndexes(false);
+        this.getContainer().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
         return info;
     }
 }

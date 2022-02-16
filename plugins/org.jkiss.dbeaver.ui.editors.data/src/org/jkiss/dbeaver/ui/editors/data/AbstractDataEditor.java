@@ -22,6 +22,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -57,6 +60,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     //private boolean running = false;
     private Composite parent;
     private DBPProject project;
+    private IContextActivation rscContext;
 
     @Override
     public void createPartControl(Composite parent)
@@ -78,8 +82,20 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                 loaded = true;
             }
         }
+        rscContext = PlatformUI.getWorkbench().getService(IContextService.class).activateContext(IResultSetController.RESULTS_CONTEXT_ID);
         //resultSetView.setSelection(resultSetView.getSelection());
     }
+
+    @Override
+    public void deactivatePart()
+    {
+        if (rscContext != null) {
+            PlatformUI.getWorkbench().getService(IContextService.class).deactivateContext(rscContext);
+            rscContext = null;
+        }
+        super.deactivatePart();
+    }
+
 
     protected abstract DBDDataFilter getEditorDataFilter();
 
@@ -98,11 +114,6 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
             // Set selection provider from resultset
             getSite().setSelectionProvider(resultSetView);
         }
-    }
-
-    @Override
-    public void deactivatePart()
-    {
     }
 
     @Override

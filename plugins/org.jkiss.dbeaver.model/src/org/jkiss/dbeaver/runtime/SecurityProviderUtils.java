@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jkiss.dbeaver.Log;
 
 import java.security.Provider;
@@ -27,8 +28,6 @@ import java.security.Security;
 public class SecurityProviderUtils {
     private static final Log log = Log.getLog(SecurityProviderUtils.class);
 
-    public static final String BC_SECURITY_PROVIDER_CLASS = "org.bouncycastle.jce.provider.BouncyCastleProvider";
-
     private static String securityProvider = null;
     private static boolean registrationDone;
 
@@ -36,7 +35,7 @@ public class SecurityProviderUtils {
         if (!registrationDone) {
             try {
                 if (securityProvider == null) {
-                    registerSecurityProvider(BC_SECURITY_PROVIDER_CLASS);
+                    registerBouncyCastleSecurityProvider();
                     if (securityProvider == null) {
                         log.debug("BouncyCastle not registered, using the default JCE provider");
                     }
@@ -47,20 +46,10 @@ public class SecurityProviderUtils {
         }
     }
 
-    private static boolean registerSecurityProvider(String providerClassName) {
-        Provider provider = null;
+    private static boolean registerBouncyCastleSecurityProvider() {
         try {
-            Class<?> name = Class.forName(providerClassName);
-            provider = (Provider) name.newInstance();
-        } catch (Exception e) {
-            log.debug("Can't find BC security provider. Use default JCE.");
-        }
+            Provider provider = new BouncyCastleProvider();
 
-        if (provider == null) {
-            return false;
-        }
-
-        try {
             if (Security.getProvider(provider.getName()) == null) {
                 Security.addProvider(provider);
             }
@@ -71,7 +60,7 @@ public class SecurityProviderUtils {
                 return true;
             }
         } catch (Exception e) {
-            log.warn("Registration of Security Provider '" + providerClassName + "' unexpectedly failed", e);
+            log.warn("Registration of BC Security Provider unexpectedly failed", e);
         }
         return false;
     }

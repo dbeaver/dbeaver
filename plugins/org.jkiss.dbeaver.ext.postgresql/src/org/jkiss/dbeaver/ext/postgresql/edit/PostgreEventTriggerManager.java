@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreEventTrigger;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -109,9 +110,10 @@ public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTr
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+        PostgreDataSource dataSource = command.getObject().getDataSource();
         actions.add(new SQLDatabasePersistAction(
             "Rename event trigger",
-            "ALTER EVENT TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())
+            "ALTER EVENT TRIGGER " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())
         ));
     }
 }

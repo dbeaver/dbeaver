@@ -1144,13 +1144,19 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    static class EventTriggersCache extends PostgreDatabaseJDBCObjectCache<PostgreEventTrigger> {
+    static class EventTriggersCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreEventTrigger> {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database) throws SQLException {
-            return session.prepareStatement("SELECT pet.*, d.description FROM pg_catalog.pg_event_trigger pet\n" +
-                "LEFT OUTER JOIN pg_catalog.pg_description d ON pet.\"oid\" = d.objoid");
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreEventTrigger object, @Nullable String objectName) throws SQLException {
+            String statement = "SELECT pet.*, d.description FROM pg_catalog.pg_event_trigger pet\n" +
+                "LEFT OUTER JOIN pg_catalog.pg_description d ON pet.\"oid\" = d.objoid" +
+                (object != null || CommonUtils.isNotEmpty(objectName) ? " WHERE pet.evtname = ?" : "");
+            JDBCPreparedStatement prepareStatement = session.prepareStatement(statement);
+            if (object != null || CommonUtils.isNotEmpty(objectName)) {
+                prepareStatement.setString(1, object != null ? object.getName() : objectName);
+            }
+            return prepareStatement;
         }
 
         @Nullable
@@ -1160,7 +1166,17 @@ public class PostgreDatabase extends JDBCRemoteInstance
             if (CommonUtils.isEmpty(eventTriggerName)) {
                 return null;
             }
-            return new PostgreEventTrigger(database, eventTriggerName, true, resultSet);
+            return new PostgreEventTrigger(database, eventTriggerName, resultSet);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            if (error instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) error).getDatabaseState())) {
+                log.warn(error);
+                setCache(Collections.emptyList());
+                return true;
+            }
+            return false;
         }
     }
     

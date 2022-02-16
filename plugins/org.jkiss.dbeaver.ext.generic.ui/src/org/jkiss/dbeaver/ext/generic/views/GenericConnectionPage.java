@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.internal.GenericMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -349,7 +350,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                     hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
                 } else {
-                    hostText.setText("localhost"); //$NON-NLS-1$
+                    hostText.setText(CommonUtils.toString(site.getDriver().getDefaultHost(), DBConstants.HOST_LOCALHOST)); //$NON-NLS-1$
                 }
             }
             if (portText != null) {

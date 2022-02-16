@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -44,10 +43,8 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
         if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
-        DBSDataType dataType;
-        if (attribute.getAttribute() instanceof DBSTypedObjectEx) {
-            dataType = ((DBSTypedObjectEx) attribute.getAttribute()).getDataType();
-        } else {
+        DBSDataType dataType = DBUtils.getDataType(attribute);
+        if (dataType == null) {
             dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
         }
         if (dataType instanceof DBSEntity) {

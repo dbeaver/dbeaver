@@ -150,6 +150,11 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
 	}
 
 	@Override
+	public int getOffset() {
+		return fOffset;
+	}
+
+	@Override
 	public char[][] getLegalLineDelimiters() {
 		return fDelimiters;
 	}

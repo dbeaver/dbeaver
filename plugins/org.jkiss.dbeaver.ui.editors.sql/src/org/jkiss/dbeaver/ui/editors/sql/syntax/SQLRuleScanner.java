@@ -146,6 +146,10 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         return color;
     }
 
+    @Override
+    public int getOffset() {
+        return fOffset;
+    }
 
 
     private class SimpleRuleAdapter<RULE extends TPRule> implements IRule {

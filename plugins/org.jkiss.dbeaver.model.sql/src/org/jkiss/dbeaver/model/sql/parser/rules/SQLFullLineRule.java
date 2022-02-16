@@ -42,7 +42,7 @@ public class SQLFullLineRule extends EndOfLineRule {
     @Override
     public TPToken evaluate(TPCharacterScanner scanner) {
         // Must be in the beginning of line
-        {
+        if (scanner.getOffset() > 0) {
             scanner.unread();
             int prevChar = scanner.read();
             if (prevChar != TPCharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {

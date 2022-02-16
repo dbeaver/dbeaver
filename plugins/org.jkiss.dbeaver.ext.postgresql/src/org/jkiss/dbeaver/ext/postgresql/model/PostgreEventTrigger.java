@@ -55,8 +55,8 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
     private String description;
     private String body;
 
-    PostgreEventTrigger(@NotNull PostgreDatabase database, @NotNull String name, boolean persisted, @NotNull JDBCResultSet dbResult) {
-        super(database, name, persisted);
+    PostgreEventTrigger(@NotNull PostgreDatabase database, @NotNull String name, @NotNull JDBCResultSet dbResult) {
+        super(database, name, true);
         this.database = database;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.routineId = JDBCUtils.safeGetLong(dbResult, "evtfoid");
@@ -142,6 +142,12 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
     @Override
     public String getBody() {
         return body;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getDatabase().getEventTriggersCache().refreshObject(monitor, getDatabase(), this);
     }
 
     @NotNull

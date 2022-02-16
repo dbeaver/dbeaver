@@ -53,6 +53,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String MENU_GROUP_EDIT = "edit";
     String MENU_GROUP_EXPORT = "results_export";
     String MENU_GROUP_ADDITIONS = "results_additions";//IWorkbenchActionConstants.MB_ADDITIONS;
+    String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
 
     enum ColumnOrder {
         ASC,
