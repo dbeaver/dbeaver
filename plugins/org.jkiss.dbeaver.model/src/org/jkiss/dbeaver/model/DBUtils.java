@@ -1822,6 +1822,10 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isDynamicAttribute(DBSAttributeBase attr) {
+        return attr instanceof DBSAttributeDynamic && ((DBSAttributeDynamic) attr).isDynamicAttribute();
+    }
+
     public static boolean isRowIdAttribute(DBSEntityAttribute attr) {
         DBDPseudoAttribute rowIdAttribute = getRowIdAttribute(attr.getParentObject());
         return rowIdAttribute != null && rowIdAttribute.getName().equals(attr.getName());
