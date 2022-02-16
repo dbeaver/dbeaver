@@ -21,12 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValue;
 
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Row data
@@ -61,6 +60,8 @@ public class ResultSetRow {
     private byte state;
     @Nullable
     public Map<DBDValue, CollectionElementData> collections;
+    @Nullable
+    public ResultSetRowNested[] children;
     @Nullable
     public ColorInfo colorInfo;
 
@@ -153,6 +154,44 @@ public class ResultSetRow {
             collections.put(collection, ced);
         }
         return ced;
+    }
+
+    @Nullable
+    public ResultSetRowNested[] getCollectionRows(@NotNull IResultSetController controller) {
+        if (children == null) {
+            final List<DBDAttributeBinding> bindings = controller.getModel().getVisibleAttributes();
+            final Map<DBDAttributeBinding, List<DBDAttributeBindingElement>> columns = new HashMap<>();
+
+            for (final DBDAttributeBinding binding : bindings) {
+                final Object value = controller.getModel().getCellValue(binding, this);
+                if (value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
+                    final List<DBDAttributeBindingElement> column = columns.computeIfAbsent(binding, key -> new ArrayList<>());
+                    Collections.addAll(column, getCollectionData(binding, ((DBDCollection) value)).getElements());
+                }
+            }
+
+            final int rows = columns.values().stream().mapToInt(Collection::size).max().orElse(0);
+
+            if (rows > 0) {
+                children = new ResultSetRowNested[rows];
+
+                for (int i = 0; i < rows; i++) {
+                    final Object[] values = new Object[bindings.size()];
+                    final Map<DBDAttributeBinding, DBDAttributeBindingElement> elements = new HashMap<>();
+                    for (int j = 0; j < bindings.size(); j++) {
+                        final DBDAttributeBinding binding = bindings.get(j);
+                        final List<DBDAttributeBindingElement> list = columns.get(binding);
+                        if (list != null && list.size() > i) {
+                            values[j] = list.get(i);
+                            elements.put(binding, list.get(i));
+                        }
+                    }
+                    children[i] = new ResultSetRowNested(i, this, values, elements);
+                }
+            }
+        }
+
+        return children;
     }
 
     @Override

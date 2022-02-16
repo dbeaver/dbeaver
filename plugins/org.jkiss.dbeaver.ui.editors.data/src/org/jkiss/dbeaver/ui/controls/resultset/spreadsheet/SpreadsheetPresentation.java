@@ -1757,6 +1757,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Object[] getChildren(Object element) {
             if (!controller.isRecordMode() && element instanceof ResultSetRow) {
                 final ResultSetRow row = (ResultSetRow) element;
+                final ResultSetRow[] rows = row.getCollectionRows(controller);
+                if (!ArrayUtils.isEmpty(rows)) {
+                    return rows;
+                }
+            }
+            if (!controller.isRecordMode() && element instanceof ResultSetRow) {
+                final ResultSetRow row = (ResultSetRow) element;
                 final List<DBDAttributeBinding> bindings = controller.getModel().getVisibleAttributes();
                 final Map<DBDAttributeBinding, List<Object>> columns = new HashMap<>();
 
@@ -1866,7 +1873,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         break;
                 }
             }
-            return ElementState.COLLAPSED;
+            if (!controller.isRecordMode() && element instanceof ResultSetRow) {
+                final ResultSetRow row = (ResultSetRow) element;
+                final ResultSetRow[] rows = row.getCollectionRows(controller);
+                if (!ArrayUtils.isEmpty(rows)) {
+                    return ElementState.COLLAPSED;
+                }
+            }
+            return ElementState.NONE;
         }
 
         @Override
@@ -2070,6 +2084,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                         return "[" + ((DBDComposite) value).getDataType().getName() + "]";
                     }
+                }
+                if (row instanceof ResultSetRowNested && ((ResultSetRowNested) row).getElement(attr) == null) {
+                    return "";
                 }
                 try {
                     return attr.getValueRenderer().getValueDisplayString(

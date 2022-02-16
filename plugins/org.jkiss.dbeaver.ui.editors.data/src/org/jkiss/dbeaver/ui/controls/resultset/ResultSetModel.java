@@ -356,6 +356,15 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+        if (row instanceof ResultSetRowNested) {
+            final ResultSetRowNested nested = (ResultSetRowNested) row;
+            final DBDAttributeBindingElement element = nested.getElement(attribute);
+            if (element != null) {
+                return DBUtils.getAttributeValue(element, attributes, nested.values);
+            } else {
+                return null;
+            }
+        }
         return DBUtils.getAttributeValue(attribute, attributes, row.values);
     }
 
