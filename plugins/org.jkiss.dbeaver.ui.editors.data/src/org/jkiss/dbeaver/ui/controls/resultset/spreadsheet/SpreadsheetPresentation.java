@@ -1999,10 +1999,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
             Object value = controller.getModel().getCellValue(attr, row);
-            if (value instanceof DBDAttributeBinding) {
-                attr = ((DBDAttributeBinding) value);
-                value = controller.getModel().getCellValue(attr, row);
-            }
             if (formatString && DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
                 // New row and no value. Let's try to show default value
                 DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
