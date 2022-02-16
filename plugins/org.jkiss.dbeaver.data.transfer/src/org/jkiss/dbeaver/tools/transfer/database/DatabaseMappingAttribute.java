@@ -144,10 +144,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
-        boolean recreate = false;
         switch (parent.getMappingType()) {
             case recreate:
-                recreate = true;
             case existing: {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
@@ -199,7 +197,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                         }
                     }
                     if (this.target != null) {
-                        if (recreate) {
+                        if (parent.getMappingType() == DatabaseMappingType.recreate) {
                             mappingType = DatabaseMappingType.create;
                         } else {
                             mappingType = DatabaseMappingType.existing;

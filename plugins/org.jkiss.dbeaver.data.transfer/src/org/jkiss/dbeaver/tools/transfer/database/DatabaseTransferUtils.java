@@ -183,10 +183,10 @@ public class DatabaseTransferUtils {
 
     private static void getTableFullName(@Nullable DBSObjectContainer schema, @NotNull DBPDataSource dataSource, @NotNull StringBuilder sql, @NotNull String tableName) {
         if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
-            sql.append(DBUtils.getQuotedIdentifier(schema));
-            sql.append(dataSource.getSQLDialect().getCatalogSeparator());
+            sql.append(DBUtils.getFullyQualifiedName(dataSource, schema.getName(), tableName));
+        } else {
+            sql.append(DBUtils.getQuotedIdentifier(dataSource, tableName));
         }
-        sql.append(DBUtils.getQuotedIdentifier(dataSource, tableName));
     }
 
     private static DBEPersistAction[] generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {

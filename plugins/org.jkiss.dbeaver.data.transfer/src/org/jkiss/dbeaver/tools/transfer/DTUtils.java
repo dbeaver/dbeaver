@@ -139,7 +139,8 @@ public class DTUtils {
 
     @NotNull
     public static List<DBSAttributeBase> getSourceAndTargetAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity target, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
-        final Set<DBSAttributeBase> attributes = new HashSet<>();
+        // In some cases, we need a list of target columns with the list of source columns
+        final List<DBSAttributeBase> attributes = new ArrayList<>();
         for (DBSEntityAttribute attr : CommonUtils.safeList(target.getAttributes(monitor))) {
             if (DBUtils.isHiddenObject(attr)) {
                 continue;
@@ -153,7 +154,7 @@ public class DTUtils {
                 attributes.add(attribute);
             }
         }
-        return new ArrayList<>(attributes);
+        return attributes;
     }
 
     @NotNull
