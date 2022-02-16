@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Type attribute value binding info
@@ -150,6 +151,8 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         }
         if (ownerValue instanceof DBDComposite) {
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
+        } else if (ownerValue instanceof Map) {
+            return ((Map<?, ?>) ownerValue).get(getName());
         }
 
         DBDAttributeBinding parent = getParent(1);
