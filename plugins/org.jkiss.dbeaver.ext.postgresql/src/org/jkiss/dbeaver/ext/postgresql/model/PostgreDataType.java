@@ -602,7 +602,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
-        if (owner == null || owner.getName().equals(PostgreConstants.PUBLIC_SCHEMA_NAME) || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+        if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
         } else {
             return DBUtils.getQuotedIdentifier(owner) + "." + DBUtils.getQuotedIdentifier(this);
