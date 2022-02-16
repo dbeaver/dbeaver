@@ -116,8 +116,6 @@ public class DTMessages extends NLS {
 	public static String data_transfer_db_consumer_up_tooltip;
 	public static String data_transfer_db_consumer_down_label;
 	public static String data_transfer_db_consumer_down_tooltip;
-	public static String data_transfer_wizard_export_target_title;
-	public static String data_transfer_wizard_import_source_title;
 
 	public static String sql_script_task_title;
 	public static String sql_script_task_page_settings_title;

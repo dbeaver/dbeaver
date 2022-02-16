@@ -38,9 +38,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract node
@@ -137,6 +135,26 @@ public class DTUtils {
         }
         DBPIdentifierCase identifierCase = dialect.storesUnquotedCase();
         return identifierCase.transform(name);
+    }
+
+    @NotNull
+    public static List<DBSAttributeBase> getSourceAndTargetAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity target, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
+        // In some cases, we need a list of target columns with the list of source columns
+        final List<DBSAttributeBase> attributes = new ArrayList<>();
+        for (DBSEntityAttribute attr : CommonUtils.safeList(target.getAttributes(monitor))) {
+            if (DBUtils.isHiddenObject(attr)) {
+                continue;
+            }
+            attributes.add(attr);
+        }
+        List<DBSAttributeBase> sourceAttributes = getAttributes(monitor, container, controller);
+        for (DBSAttributeBase attribute : sourceAttributes) {
+            boolean match = attributes.stream().anyMatch(attr -> attr.getName().equalsIgnoreCase(attribute.getName())); // Usually we ignore attributes names case in Data Transfer process
+            if (!match) {
+                attributes.add(attribute);
+            }
+        }
+        return attributes;
     }
 
     @NotNull

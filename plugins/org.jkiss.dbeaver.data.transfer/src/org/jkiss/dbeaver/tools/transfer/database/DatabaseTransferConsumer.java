@@ -610,6 +610,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 switch (containerMapping.getMappingType()) {
                     case create:
+                    case recreate:
                     case existing:
                         return createTargetTable(session, containerMapping);
                     default:
@@ -638,8 +639,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, true);
+            } else if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, false);
             }
             return true;
         } else {
@@ -721,6 +724,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         switch (containerMapping.getMappingType()) {
             case create:
                 return targetName + " [Create]";
+            case recreate:
+                return targetName + " [Recreate]";
             case existing:
                 for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == DatabaseMappingType.create) {
