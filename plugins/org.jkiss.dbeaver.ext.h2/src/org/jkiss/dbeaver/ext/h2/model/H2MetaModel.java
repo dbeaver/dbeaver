@@ -212,27 +212,18 @@ public class H2MetaModel extends GenericMetaModel
             return null;
         }
         String description = JDBCUtils.safeGetString(dbResult, "REMARKS");
-        if (container.getDataSource().isServerVersionAtLeast(2, 0)) {
-            // Some columns are changed in H2 version 2 and some new columns added
-            return new H2Sequence(
-                container,
-                name,
-                description,
-                JDBCUtils.safeGetLong(dbResult, "BASE_VALUE"),
-                JDBCUtils.safeGetLong(dbResult, "MINIMUM_VALUE"),
-                JDBCUtils.safeGetLong(dbResult, "MAXIMUM_VALUE"),
-                JDBCUtils.safeGetLong(dbResult, "INCREMENT"),
-                dbResult
-            );
-        }
-        return new GenericSequence(
+        boolean isVersion2 = container.getDataSource().isServerVersionAtLeast(2, 0);
+
+        // Some columns are changed in H2 version 2 and some new columns added
+        return new H2Sequence(
             container,
             name,
             description,
-            JDBCUtils.safeGetLong(dbResult, "CURRENT_VALUE"),
-            JDBCUtils.safeGetLong(dbResult, "MIN_VALUE"),
-            JDBCUtils.safeGetLong(dbResult, "MAX_VALUE"),
-            JDBCUtils.safeGetLong(dbResult, "INCREMENT")
+            isVersion2 ? JDBCUtils.safeGetLong(dbResult, "BASE_VALUE") : JDBCUtils.safeGetLong(dbResult, "CURRENT_VALUE"),
+            isVersion2 ? JDBCUtils.safeGetLong(dbResult, "MINIMUM_VALUE") : JDBCUtils.safeGetLong(dbResult, "MIN_VALUE"),
+            isVersion2 ? JDBCUtils.safeGetLong(dbResult, "MAXIMUM_VALUE") : JDBCUtils.safeGetLong(dbResult, "MAX_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "INCREMENT"),
+            dbResult
         );
     }
 
