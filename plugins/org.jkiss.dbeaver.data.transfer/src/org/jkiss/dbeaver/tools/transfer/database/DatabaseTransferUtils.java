@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -118,15 +119,22 @@ public class DatabaseTransferUtils {
         String tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
 
+        if (CommonUtils.isEmpty(tableName)) {
+            return new DBEPersistAction[0];
+        }
+
         List<DBEPersistAction> actions = new ArrayList<>();
+
+        if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+            sql.append("DROP TABLE ");
+            getTableFullName(schema, dataSource, sql, tableName);
+            sql.append(dataSource.getSQLDialect().getScriptDelimiters()[0]);
+        }
 
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             sql.append("CREATE TABLE ");
-            if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
-                sql.append(DBUtils.getQuotedIdentifier(schema));
-                sql.append(dataSource.getSQLDialect().getCatalogSeparator());
-            }
-            sql.append(DBUtils.getQuotedIdentifier(dataSource, tableName)).append("(\n");
+            getTableFullName(schema, dataSource, sql, tableName);
+            sql.append("(\n");
             Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<>();
             for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                 if (attr.getMappingType() != DatabaseMappingType.create) {
@@ -173,6 +181,14 @@ public class DatabaseTransferUtils {
         return actions.toArray(new DBEPersistAction[0]);
     }
 
+    private static void getTableFullName(@Nullable DBSObjectContainer schema, @NotNull DBPDataSource dataSource, @NotNull StringBuilder sql, @NotNull String tableName) {
+        if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
+            sql.append(DBUtils.getFullyQualifiedName(dataSource, schema.getName(), tableName));
+        } else {
+            sql.append(DBUtils.getQuotedIdentifier(dataSource, tableName));
+        }
+    }
+
     private static DBEPersistAction[] generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
@@ -216,20 +232,21 @@ public class DatabaseTransferUtils {
             DBECommand createCommand = null;
             if (containerMapping.getMappingType() == DatabaseMappingType.create) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
-                tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), containerMapping.getTargetName());
-                if (table instanceof DBPNamedObject2) {
-                    ((DBPNamedObject2) table).setName(tableFinalName);
-                } else {
-                    throw new DBException("Table name cannot be set for " + tableClass.getName());
-                }
-
+                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
                 table = (DBSEntity) containerMapping.getTarget();
                 if (table == null) {
                     throw new DBException("Internal error - target table not set");
                 }
-                tableFinalName = table.getName();
+                if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+                    tableManager.deleteObject(commandContext, table, options);
+                    table = tableManager.createNewObject(monitor, commandContext, table.getParentObject(), null, options);
+                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
+                    createCommand = tableManager.makeCreateCommand(table, options);
+                } else {
+                    tableFinalName = table.getName();
+                }
             }
 
             if (attributeManager != null) {
@@ -286,6 +303,19 @@ public class DatabaseTransferUtils {
         }
     }
 
+    private static String getTableFinalName(String targetName, @NotNull Class<? extends DBSObject> tableClass, DBSEntity table) throws DBException {
+        if (table == null) {
+            throw new DBException("Internal error - target table not set");
+        }
+        String tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+        if (table instanceof DBPNamedObject2) {
+            ((DBPNamedObject2) table).setName(tableFinalName);
+        } else {
+            throw new DBException("Table name cannot be set for " + tableClass.getName());
+        }
+        return tableFinalName;
+    }
+
     @NotNull
     static DBEPersistAction generateTargetAttributeDDL(DBPDataSource dataSource, DatabaseMappingAttribute attribute) {
         StringBuilder sql = new StringBuilder(500);
@@ -313,7 +343,7 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static void createTargetDynamicTable(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+    static void createTargetDynamicTable(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull DBSObjectContainer schema, @NotNull DatabaseMappingContainer containerMapping, boolean recreate) throws DBException {
         final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
 
         Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
@@ -327,6 +357,10 @@ public class DatabaseTransferUtils {
         DBECommandContext commandContext = new TargetCommandContext(executionContext);
         Map<String, Object> options = new HashMap<>();
         options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+        if (recreate && containerMapping.getTarget() != null) {
+            tableManager.deleteObject(commandContext, containerMapping.getTarget(), options);
+            commandContext.saveChanges(monitor, options);
+        }
         DBSObject targetEntity = tableManager.createNewObject(monitor, commandContext, schema, null, options);
         if (targetEntity == null) {
             throw new DBException("Null target entity returned");

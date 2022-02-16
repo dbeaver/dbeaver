@@ -172,9 +172,10 @@ class ColumnsMappingDialog extends BaseDialog {
                 try {
                     java.util.List<String> items = new ArrayList<>();
                     DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
-                    if (mapping.getParent().getMappingType() == DatabaseMappingType.existing &&
-                        mapping.getParent().getTarget() instanceof DBSEntity) {
-                        DBSEntity parentEntity = (DBSEntity) mapping.getParent().getTarget();
+                    DatabaseMappingContainer container = mapping.getParent();
+                    if ((container.getMappingType() == DatabaseMappingType.existing || container.getMappingType() == DatabaseMappingType.recreate) &&
+                        container.getTarget() instanceof DBSEntity) {
+                        DBSEntity parentEntity = (DBSEntity) container.getTarget();
                         for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                             items.add(attr.getName());
                         }
@@ -210,9 +211,10 @@ class ColumnsMappingDialog extends BaseDialog {
                     if (DatabaseMappingAttribute.TARGET_NAME_SKIP.equals(name)) {
                         attrMapping.setMappingType(DatabaseMappingType.skip);
                     } else {
-                        if (attrMapping.getParent().getMappingType() == DatabaseMappingType.existing &&
-                            attrMapping.getParent().getTarget() instanceof DBSEntity) {
-                            DBSEntity parentEntity = (DBSEntity) attrMapping.getParent().getTarget();
+                        DatabaseMappingContainer container = attrMapping.getParent();
+                        if ((container.getMappingType() == DatabaseMappingType.existing || container.getMappingType() == DatabaseMappingType.recreate) &&
+                            container.getTarget() instanceof DBSEntity) {
+                            DBSEntity parentEntity = (DBSEntity) container.getTarget();
                             for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                                 if (name.equalsIgnoreCase(attr.getName())) {
                                     attrMapping.setTarget(attr);

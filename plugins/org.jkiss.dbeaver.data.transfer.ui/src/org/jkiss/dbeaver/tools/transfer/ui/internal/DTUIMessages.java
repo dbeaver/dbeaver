@@ -91,6 +91,8 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_label_hint;
 	public static String database_consumer_page_mapping_monitor_task;
 	public static String database_consumer_page_mapping_sqlviewer_title;
+	public static String database_consumer_page_mapping_recreate_confirm_title;
+	public static String database_consumer_page_mapping_recreate_confirm_tip;
 
 	public static String database_producer_page_extract_settings_name_and_title;
 	public static String database_producer_page_extract_settings_description;
