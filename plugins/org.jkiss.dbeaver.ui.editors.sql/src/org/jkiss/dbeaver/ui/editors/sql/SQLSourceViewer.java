@@ -21,6 +21,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
@@ -49,11 +50,15 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected Boolean showColumnComments;
     protected Boolean showFullDDL;
 
-    private IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+    private final IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
         @Override
         public void run() 
         {
-            String sqlText = getDocument().get();
+            IDocument document = getDocument();
+            if (document == null) {
+                return;
+            }
+            String sqlText = document.get();
             ISelection selection = getSelectionProvider().getSelection();
             if (selection instanceof TextSelection) {
                 if (((TextSelection) selection).getLength() > 0) {
@@ -82,7 +87,8 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
-        return getSourceObject().getObjectDefinitionText(monitor, getSourceOptions());
+        T sourceObject = getSourceObject();
+        return sourceObject == null ? null : sourceObject.getObjectDefinitionText(monitor, getSourceOptions());
     }
 
     protected Map<String, Object> getSourceOptions() {

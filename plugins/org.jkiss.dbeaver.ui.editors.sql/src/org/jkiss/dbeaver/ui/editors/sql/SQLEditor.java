@@ -197,7 +197,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private SQLPresentationDescriptor extraPresentationDescriptor;
     private SQLEditorPresentation extraPresentation;
-    private Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
+    private final Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
     private SQLEditorPresentationPanel extraPresentationCurrentPanel;
     private VerticalFolder presentationSwitchFolder;
 
@@ -217,7 +217,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private DisposeListener resultTabDisposeListener = new DisposeListener() {
+    private final DisposeListener resultTabDisposeListener = new DisposeListener() {
         @Override
         public void widgetDisposed(DisposeEvent e) {
             Object data = e.widget.getData();
@@ -457,7 +457,7 @@ public class SQLEditor extends SQLEditorBase implements
                 dsInstance = selectedInstance;
             }
         }
-        if (dsInstance != null) {
+        {
             final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
             job.schedule();
         }
@@ -679,7 +679,7 @@ public class SQLEditor extends SQLEditorBase implements
             getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
     }
 
-    private class CloseContextJob extends AbstractJob {
+    private static class CloseContextJob extends AbstractJob {
         private final DBCExecutionContext context;
         CloseContextJob(DBCExecutionContext context) {
             super("Close context " + context.getContextName());
@@ -716,7 +716,7 @@ public class SQLEditor extends SQLEditorBase implements
                 return true;
             }
         }
-        if (executionContext != null && QMUtils.isTransactionActive(executionContext)) {
+        if (QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
         if (isNonPersistentEditor()) {
@@ -1083,15 +1083,18 @@ public class SQLEditor extends SQLEditorBase implements
         });
         restoreSashRatio(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
 
-        getTextViewer().getTextWidget().addTraverseListener(e -> {
-            if (e.detail == SWT.TRAVERSE_TAB_NEXT && e.stateMask == SWT.MOD1) {
-                ResultSetViewer viewer = getActiveResultSetViewer();
-                if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
-                    viewer.getActivePresentation().getControl().setFocus();
-                    e.detail = SWT.TRAVERSE_NONE;
+        TextViewer textViewer = getTextViewer();
+        if (textViewer != null) {
+            textViewer.getTextWidget().addTraverseListener(e -> {
+                if (e.detail == SWT.TRAVERSE_TAB_NEXT && e.stateMask == SWT.MOD1) {
+                    ResultSetViewer viewer = getActiveResultSetViewer();
+                    if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
+                        viewer.getActivePresentation().getControl().setFocus();
+                        e.detail = SWT.TRAVERSE_NONE;
+                    }
                 }
-            }
-        });
+            });
+        }
         resultTabs.setSimple(true);
 
         resultTabs.addMouseListener(new MouseAdapter() {
@@ -1695,7 +1698,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private Control getExtraPresentationControl() {
-        return presentationStack.getChildren()[EXTRA_CONTROL_INDEX];
+        return presentationStack == null ? null : presentationStack.getChildren()[EXTRA_CONTROL_INDEX];
     }
 
     public void toggleResultPanel(boolean switchFocus, boolean createQueryProcessor) {
@@ -3998,10 +4001,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             lastFocusInEditor = focusInEditor;
             if (!focusInEditor && rsv != null) {
-                IFindReplaceTarget nested = rsv.getAdapter(IFindReplaceTarget.class);
-                if (nested != null) {
-                    return nested;
-                }
+                return rsv.getAdapter(IFindReplaceTarget.class);
             } else if (textViewer != null) {
                 return textViewer.getFindReplaceTarget();
             }
@@ -4066,7 +4066,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             // Refresh active object
             if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
-                DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     new AbstractJob("Refresh default object") {
                         @Override
@@ -4114,9 +4114,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
             monitor.beginTask("Auto-save SQL script", 1);
             try {
-                UIUtils.asyncExec(() -> {
-                    SQLEditor.this.doTextEditorSave(monitor);
-                });
+                UIUtils.asyncExec(() ->
+                    SQLEditor.this.doTextEditorSave(monitor));
             } catch (Throwable e) {
                 log.debug(e);
             } finally {
@@ -4176,12 +4175,12 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void flush() throws IOException {
+        public void flush() {
             outputViewer.getOutputWriter().flush();
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
 
         }
     }

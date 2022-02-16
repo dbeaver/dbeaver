@@ -27,13 +27,11 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
@@ -43,6 +41,8 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -96,7 +96,9 @@ public abstract class SQLEditorNested<T extends DBSObject>
         return (IDatabaseEditorInput)super.getEditorInput();
     }
 
+    @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public T getSourceObject()
     {
         IEditorInput editorInput = getEditorInput();
@@ -106,6 +108,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         return (T) ((IDatabaseEditorInput)editorInput).getDatabaseObject();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         IEditorInput editorInput = getEditorInput();
@@ -141,7 +144,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         pageControl.setInfo("Source");
 
         if (hasCompiler) {
-            editorSash.setWeights(new int[]{70, 30});
+            editorSash.setWeights(70, 30);
             editorSash.setMaximizedControl(editorControl);
         }
 
@@ -171,7 +174,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void runPostSaveCommands(Map<String, Object> context) {
+    public void runPostSaveCommands(@NotNull Map<String, Object> context) {
         String compileCommandId = getCompileCommandId();
         if (compileCommandId != null && context.get(SAVE_CONTEXT_COMPILE_PARAM) == null) {
             // Compile after save
@@ -209,14 +212,17 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         final IDocumentProvider documentProvider = getDocumentProvider();
         if (documentProvider instanceof SQLEditorNested.ObjectDocumentProvider) {
-            ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceText = null;
+            ((SQLEditorNested<?>.ObjectDocumentProvider) documentProvider).sourceText = null;
         }
         if (force) {
-            int caretOffset = getEditorControl().getCaretOffset();
-            super.setInput(getEditorInput());
-            // Try to keep cursor position
-            if (caretOffset < getEditorControl().getCharCount()) {
-                getEditorControl().setCaretOffset(caretOffset);
+            StyledText editorControl = getEditorControl();
+            if (editorControl != null) {
+                int caretOffset = editorControl.getCaretOffset();
+                super.setInput(getEditorInput());
+                // Try to keep cursor position
+                if (caretOffset < editorControl.getCharCount()) {
+                    editorControl.setCaretOffset(caretOffset);
+                }
             }
         }
         reloadSyntaxRules();
@@ -232,7 +238,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     public boolean isDocumentLoaded() {
         final IDocumentProvider documentProvider = getDocumentProvider();
         if (documentProvider instanceof SQLEditorNested.ObjectDocumentProvider) {
-            return ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceLoaded;
+            return ((SQLEditorNested<?>.ObjectDocumentProvider) documentProvider).sourceLoaded;
         }
         return true;
     }
@@ -253,7 +259,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
 
         @Override
-        protected IDocument createDocument(Object element) throws CoreException {
+        protected IDocument createDocument(Object element) {
             final Document document = new Document();
 
             if (sourceText == null) {
@@ -310,16 +316,18 @@ public abstract class SQLEditorNested<T extends DBSObject>
         @Override
         protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
             DBSObject databaseObject = getSourceObject();
-            DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(databaseObject);
-            IResource resource = node == null || node.getOwnerProject() == null ? null : node.getOwnerProject().getEclipseProject();
-            if (resource != null) {
-                return new DatabaseMarkerAnnotationModel(databaseObject, node, resource);
+            if (databaseObject != null) {
+                DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(databaseObject);
+                IResource resource = node == null || node.getOwnerProject() == null ? null : node.getOwnerProject().getEclipseProject();
+                if (resource != null) {
+                    return new DatabaseMarkerAnnotationModel(databaseObject, node, resource);
+                }
             }
             return super.createAnnotationModel(element);
         }
         
         @Override
-        protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
+        protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) {
             DBRProgressMonitor pm = RuntimeUtils.makeMonitor(monitor);
             pm.beginTask("Save nested editor", 1);
             try {
@@ -346,9 +354,12 @@ public abstract class SQLEditorNested<T extends DBSObject>
     public void positionSource(int line, int position)
     {
         try {
-            final IRegion lineInfo = getTextViewer().getDocument().getLineInformation(line - 1);
-            final int offset = lineInfo.getOffset() + position - 1;
-            super.selectAndReveal(offset, 1);
+            TextViewer textViewer = getTextViewer();
+            if (textViewer != null) {
+                final IRegion lineInfo = textViewer.getDocument().getLineInformation(line - 1);
+                final int offset = lineInfo.getOffset() + position - 1;
+                super.selectAndReveal(offset, 1);
+            }
             //textEditor.setFocus();
         } catch (BadLocationException e) {
             log.warn(e);
@@ -419,7 +430,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
         @Override
         public void run()
         {
-            if (getTextViewer().getControl().isDisposed()) {
+            TextViewer textViewer = getTextViewer();
+            if (textViewer == null || textViewer.getControl().isDisposed()) {
                 return;
             }
             if (editorSash.getMaximizedControl() == null) {
