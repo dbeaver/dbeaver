@@ -18,7 +18,8 @@
                 parent="postgresql"
                 label="Greenplum"
                 icon="icons/greenplum_icon.png"
-                dialect="greenplum">
+                dialect="greenplum"
+                inheritClients="true">
 
             <treeInjection path="postgresql/database/schema/table"
                            changeFolderType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
