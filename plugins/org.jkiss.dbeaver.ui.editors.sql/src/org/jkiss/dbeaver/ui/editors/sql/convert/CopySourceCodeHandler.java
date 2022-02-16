@@ -38,6 +38,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -188,7 +189,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                 createSQLPanel(sash);
                 Composite targetGroup = UIUtils.createPlaceholder(sash, 1, 5);
                 targetGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-                UIUtils.createControlLabel(targetGroup, SQLEditorMessages.controls_querylog_column_result_name);
+                UIUtils.createControlLabel(targetGroup, ModelMessages.controls_querylog_column_result_name);
                 targetText = new StyledText(targetGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
                 targetText.setLayoutData(new GridData(GridData.FILL_BOTH));
                 targetText.setFont(UIUtils.getMonospaceFont());

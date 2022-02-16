@@ -109,7 +109,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER;
+        return DBIcon.TREE_FOLDER_LINK;
     }
 
     @Override
@@ -123,6 +123,15 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
             this.children = readChildNodes(monitor);
         }
         return children;
+    }
+
+    public DBNFileSystemRoot getChild(DBRProgressMonitor monitor, String name) throws DBException {
+        for (DBNFileSystemRoot root : getChildren(monitor)) {
+            if (root.getName().equals(name)) {
+                return root;
+            }
+        }
+        return null;
     }
 
     protected DBNFileSystemRoot[] readChildNodes(DBRProgressMonitor monitor) throws DBException {

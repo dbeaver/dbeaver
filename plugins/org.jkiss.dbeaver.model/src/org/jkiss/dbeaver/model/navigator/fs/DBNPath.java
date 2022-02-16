@@ -49,7 +49,7 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
-    protected Path getPath() {
+    public Path getPath() {
         return path;
     }
 

@@ -20,6 +20,7 @@ import org.eclipse.swt.custom.StyledTextContent;
 import org.eclipse.swt.custom.TextChangeListener;
 import org.eclipse.swt.custom.TextChangedEvent;
 import org.eclipse.swt.custom.TextChangingEvent;
+import org.jkiss.dbeaver.Log;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,6 +34,7 @@ import java.util.Set;
  */
 public class DisplayedContent implements StyledTextContent {
 
+    private static final Log log = Log.getLog(DisplayedContent.class);
 
     private StringBuilder data = null;
     private Set<TextChangeListener> textListeners = null;
@@ -163,7 +165,11 @@ public class DisplayedContent implements StyledTextContent {
 
         TextChangedEvent changedEvent = new TextChangedEvent(this);
         for (TextChangeListener textListener : textListeners) {
-            textListener.textSet(changedEvent);
+            try {
+                textListener.textSet(changedEvent);
+            } catch (Exception e) {
+                log.debug("Internal error while notifying display content listeners: " + e.getClass().getName() + ": " + e.getMessage());
+            }
         }
     }
 

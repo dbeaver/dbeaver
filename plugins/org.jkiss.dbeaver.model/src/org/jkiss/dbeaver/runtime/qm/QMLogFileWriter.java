@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
-import org.jkiss.dbeaver.model.qm.QMConstants;
-import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMMetaListener;
+import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -127,10 +124,10 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     private void writeEvent(StringBuilder buffer, QMMetaEvent event)
     {
         QMMObject object = event.getObject();
-        QMMetaEvent.Action action = event.getAction();
+        QMEventAction action = event.getAction();
         // Filter
         if (object instanceof QMMStatementInfo || object instanceof QMMTransactionSavepointInfo ||
-            (object instanceof QMMStatementExecuteInfo && action != QMMetaEvent.Action.END)) {
+            (object instanceof QMMStatementExecuteInfo && action != QMEventAction.END)) {
             return;
         }
 

@@ -215,6 +215,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsCatalogChange() {
         GenericDataSource dataSource = getDataSource();
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
+            return true;
+        }
         final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
@@ -230,6 +233,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsSchemaChange() {
         GenericDataSource dataSource = getDataSource();
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
+            return true;
+        }
         final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {

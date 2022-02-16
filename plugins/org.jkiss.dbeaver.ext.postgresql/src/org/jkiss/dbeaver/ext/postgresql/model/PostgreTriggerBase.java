@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
-public abstract class PostgreTriggerBase implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject, DBPScriptObjectExt2, DBPNamedObject2 {
+public abstract class PostgreTriggerBase implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject, DBPScriptObjectExt2, DBPNamedObject2, DBPRefreshableObject, DBPSaveableObject {
 
     private final PostgreDatabase database;
     protected String name;
@@ -61,6 +61,11 @@ public abstract class PostgreTriggerBase implements DBSTrigger, DBPQualifiedObje
     @Override
     public boolean isPersisted() {
         return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
     }
 
     public abstract String getEnabledState();

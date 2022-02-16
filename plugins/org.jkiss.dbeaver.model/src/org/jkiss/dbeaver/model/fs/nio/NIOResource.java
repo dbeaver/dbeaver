@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Map;
 
@@ -97,19 +99,13 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
 
     public void copy(IPath destination, boolean force, IProgressMonitor monitor) throws CoreException {
         try {
-            IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFile(destination);
+            File targetFile = destination.toFile();
             if (targetFile != null) {
-                if (!targetFile.exists()) {
-                    targetFile.create(
-                        new ByteArrayInputStream(new byte[0]),
-                        force,
-                        monitor);
-                } else {
-                    targetFile.setContents(
-                        Files.newInputStream(nioPath),
-                        force,
-                        true,
-                        monitor);
+                try (InputStream is = Files.newInputStream(nioPath)) {
+                    Files.copy(
+                        is,
+                        targetFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
                 }
             } else {
                 throw new IOException("Can't find file for location " + destination);
