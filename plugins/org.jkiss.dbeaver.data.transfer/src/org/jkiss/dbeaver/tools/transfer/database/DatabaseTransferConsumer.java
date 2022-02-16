@@ -639,8 +639,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, true);
+            } else if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, false);
             }
             return true;
         } else {

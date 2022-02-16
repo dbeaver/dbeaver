@@ -343,7 +343,7 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static void createTargetDynamicTable(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+    static void createTargetDynamicTable(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull DBSObjectContainer schema, @NotNull DatabaseMappingContainer containerMapping, boolean recreate) throws DBException {
         final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
 
         Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
@@ -357,6 +357,10 @@ public class DatabaseTransferUtils {
         DBECommandContext commandContext = new TargetCommandContext(executionContext);
         Map<String, Object> options = new HashMap<>();
         options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+        if (recreate && containerMapping.getTarget() != null) {
+            tableManager.deleteObject(commandContext, containerMapping.getTarget(), options);
+            commandContext.saveChanges(monitor, options);
+        }
         DBSObject targetEntity = tableManager.createNewObject(monitor, commandContext, schema, null, options);
         if (targetEntity == null) {
             throw new DBException("Null target entity returned");
