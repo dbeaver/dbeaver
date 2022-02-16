@@ -72,6 +72,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
     @NotNull
     private SQLDialectMetadata scriptDialect;
+    private boolean inheritClients;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -174,6 +175,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
         // Load native clients
         {
+            inheritClients = CommonUtils.getBoolean(config.getAttribute("inheritClients"), false); // Will be "true" if we can use native clients list from the parent
+
             for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
                 for (IConfigurationElement clientElement : nativeClientsElement.getChildren("client")) {
                     this.nativeClients.add(new NativeClientDescriptor(clientElement));
@@ -367,6 +370,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     // Native clients
 
     public List<NativeClientDescriptor> getNativeClients() {
+        if (inheritClients && parentProvider != null) {
+            nativeClients.addAll(parentProvider.getNativeClients());
+        }
         return nativeClients;
     }
 
