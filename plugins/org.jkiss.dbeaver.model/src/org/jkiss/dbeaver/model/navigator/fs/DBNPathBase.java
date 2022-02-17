@@ -103,10 +103,11 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         Path path = getPath();
         Path fileName = path.getFileName();
         if (fileName == null) {
+            // Use host name (the first part)
             String virtName = null;
             URI uri = path.toUri();
             if (uri != null) {
-                String uriPath = uri.getPath();
+                String uriPath = uri.getHost();
                 if (!CommonUtils.isEmpty(uriPath)) {
                     virtName = uriPath;
                 }

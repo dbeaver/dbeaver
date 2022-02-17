@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -71,9 +70,7 @@ public class NIOFileSystem extends FileSystem {
                             DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
                             if (fsNodeRoot != null) {
                                 try {
-                                    // FIXME: relpath must contain bucket name
-                                    java.nio.file.FileSystem nioFileSystem = fsNodeRoot.getRoot().getPath(new VoidProgressMonitor()).getFileSystem();
-                                    path = nioFileSystem.getPath(relPath);
+                                    path = fsNodeRoot.getPath().resolve(CommonUtils.removeLeadingSlash(relPath));
                                 } catch (Exception e) {
                                     log.debug("Error resolving path", e);
                                 }
