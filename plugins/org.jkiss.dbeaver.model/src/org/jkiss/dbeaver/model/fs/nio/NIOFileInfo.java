@@ -30,7 +30,7 @@ public class NIOFileInfo extends FileInfo {
     private final Path path;
 
     public NIOFileInfo(Path path) {
-        super(path.getFileName().toString());
+        super(NIOResource.getPathFileNameOrHost(path));
         this.path = path;
     }
 

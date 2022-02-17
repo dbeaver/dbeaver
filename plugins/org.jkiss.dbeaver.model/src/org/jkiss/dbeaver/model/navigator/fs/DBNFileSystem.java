@@ -161,7 +161,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + fileSystem.getType();
+        return getParentNode().getNodeItemPath() + "/" + getName();
     }
 
     @Override

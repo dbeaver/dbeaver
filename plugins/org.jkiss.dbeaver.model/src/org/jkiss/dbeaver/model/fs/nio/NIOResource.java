@@ -456,4 +456,26 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
             super(Status.info("Feature not supported"));
         }
     }
+
+    public static String getPathFileNameOrHost(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            // Use host name (the first part)
+            String virtName = null;
+            URI uri = path.toUri();
+            if (uri != null) {
+                String uriPath = uri.getHost();
+                if (!CommonUtils.isEmpty(uriPath)) {
+                    virtName = uriPath;
+                }
+            }
+            if (virtName == null) {
+                virtName = path.toString();
+            }
+            return CommonUtils.removeTrailingSlash(
+                CommonUtils.removeLeadingSlash(virtName));
+        }
+        return fileName.toString();
+    }
+
 }

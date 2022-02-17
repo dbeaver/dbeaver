@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -268,6 +269,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Override
     public String getNodeItemPath() {
+        String projectPath = getRawNodeItemPath();
+        return NodePathType.resource.getPrefix() + projectPath;
+    }
+
+    @NotNull
+    public String getRawNodeItemPath() {
         StringBuilder pathName = new StringBuilder();
 
         for (DBNNode node = this; node instanceof DBNResource; node = node.getParentNode()) {
@@ -281,7 +288,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                 pathName.insert(0, "?");
             }
         }
-        return NodePathType.resource.getPrefix() + pathName.toString();
+        String projectPath = pathName.toString();
+        return projectPath;
     }
 
     @Override
