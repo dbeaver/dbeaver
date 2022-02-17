@@ -240,7 +240,7 @@ public class SQLServerUtils {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
             String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver())) {
+            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
                 sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
