@@ -120,7 +120,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return !isBabelfish && !isSynapseDatabase;
     }
 
-    boolean isSynapseDatabase() {
+    public boolean isSynapseDatabase() {
         return isSynapseDatabase;
     }
 
