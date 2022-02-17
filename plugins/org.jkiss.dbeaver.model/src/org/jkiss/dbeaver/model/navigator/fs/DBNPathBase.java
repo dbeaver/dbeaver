@@ -32,19 +32,19 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOFile;
 import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
+import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.*;
 
 /**
@@ -100,25 +100,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     // Path's file name may be null (e.g. forFS root folder)
     // Then try to extract it from URI or from toString
     private String getFileName() {
-        Path path = getPath();
-        Path fileName = path.getFileName();
-        if (fileName == null) {
-            // Use host name (the first part)
-            String virtName = null;
-            URI uri = path.toUri();
-            if (uri != null) {
-                String uriPath = uri.getHost();
-                if (!CommonUtils.isEmpty(uriPath)) {
-                    virtName = uriPath;
-                }
-            }
-            if (virtName == null) {
-                virtName = path.toString();
-            }
-            return CommonUtils.removeTrailingSlash(
-                CommonUtils.removeLeadingSlash(virtName));
-        }
-        return fileName.toString();
+        return NIOResource.getPathFileNameOrHost(getPath());
     }
 
     @Override
@@ -236,7 +218,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getFileName();
+        return getParentNode().getNodeItemPath() + "/" + getName();
     }
 
     @Override
@@ -365,7 +347,11 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws IOException {
-        return Files.getLastModifiedTime(getPath()).toString();
+        FileTime time = Files.getLastModifiedTime(getPath());
+        if (time.toMillis() <= 0) {
+            return null;
+        }
+        return time.toString();
     }
 
     protected boolean isResourceExists() {

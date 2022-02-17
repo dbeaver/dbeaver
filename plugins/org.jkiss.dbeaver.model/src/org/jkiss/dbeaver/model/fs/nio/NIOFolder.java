@@ -21,8 +21,11 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -56,7 +59,11 @@ public final class NIOFolder extends NIOContainer implements IFolder {
     }
 
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Files.delete(getNioPath());
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public IFile getFile(String name) {

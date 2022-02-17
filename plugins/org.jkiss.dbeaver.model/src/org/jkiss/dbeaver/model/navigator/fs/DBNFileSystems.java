@@ -142,7 +142,7 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
         DBNFileSystemRoot fsNode = null;
         DBNPathBase curPath = null;
         for (String name : path.split("/")) {
-            if (name.isEmpty() || name.equals("s3:")) {
+            if (name.isEmpty() || (curPath == null && name.endsWith(":"))) {
                 continue;
             }
             if (fsNode == null) {
@@ -183,7 +183,7 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.dbvfs.getPrefix();
+        return NodePathType.dbvfs.getPrefix() + ((DBNProject)getParentNode()).getRawNodeItemPath() + "/" + getNodeName();
     }
 
     @Override
@@ -231,4 +231,8 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
         }
     }
 
+    @Override
+    public String toString() {
+        return "FileSystems(" + getOwnerProject().getName()  +")";
+    }
 }

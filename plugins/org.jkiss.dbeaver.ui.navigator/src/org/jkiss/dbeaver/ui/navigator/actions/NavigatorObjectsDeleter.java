@@ -209,7 +209,8 @@ public class NavigatorObjectsDeleter {
                         resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
                     }
                 } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus(UINavigatorMessages.error_deleting_resource_message, e);
+                    return GeneralUtils.makeExceptionStatus(
+                        NLS.bind(UINavigatorMessages.error_deleting_resource_message, resource.getFullPath().toString()), e);
                 }
                 return Status.OK_STATUS;
             }
