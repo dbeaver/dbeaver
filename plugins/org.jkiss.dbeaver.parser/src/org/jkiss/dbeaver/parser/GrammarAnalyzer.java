@@ -1,21 +1,26 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2022 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.parser;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.stream.Collectors;
-
 import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaBuilder.NfaFragment;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaState;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaTransition;
-import org.jkiss.dbeaver.parser.grammar.nfa.ParseOperationKind;
+import org.jkiss.dbeaver.parser.grammar.nfa.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GrammarAnalyzer {
 
@@ -44,8 +49,8 @@ public class GrammarAnalyzer {
 
         @Override
         public String toString() {
-            var steps = new ArrayList<String>();
-            for (var x = this; x != null; x = x.prev) {
+            ArrayList<String> steps = new ArrayList<>();
+            for (Step x = this; x != null; x = x.prev) {
                 steps.add(x.transition.toString());
             }
             return "Path of " + String.join(", ", steps);
@@ -126,7 +131,7 @@ public class GrammarAnalyzer {
             states.get(transition).connectTo(states.get(path.transition), path.transition.getOperation().getPattern(),
                     ops);
             System.out.println(transition.getOperation() + " --> " + path.transition.getOperation() + " { "
-                    + String.join(", ", ops.stream().map(o -> o.toString()).collect(Collectors.toList())) + " } ");
+                    + String.join(", ", ops.stream().map(GrammarNfaOperation::toString).collect(Collectors.toList())) + " } ");
         }
     }
 

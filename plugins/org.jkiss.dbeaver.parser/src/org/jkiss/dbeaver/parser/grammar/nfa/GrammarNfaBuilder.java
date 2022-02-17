@@ -1,20 +1,26 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2022 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.parser.grammar.nfa;
+
+import org.jkiss.dbeaver.parser.grammar.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import org.jkiss.dbeaver.parser.grammar.AlternativeExpression;
-import org.jkiss.dbeaver.parser.grammar.CheckExpression;
-import org.jkiss.dbeaver.parser.grammar.CheckNotExpression;
-import org.jkiss.dbeaver.parser.grammar.ExpressionVisitor;
-import org.jkiss.dbeaver.parser.grammar.GrammarRule;
-import org.jkiss.dbeaver.parser.grammar.NumberExpression;
-import org.jkiss.dbeaver.parser.grammar.RegexExpression;
-import org.jkiss.dbeaver.parser.grammar.RuleCallExpression;
-import org.jkiss.dbeaver.parser.grammar.RuleExpression;
-import org.jkiss.dbeaver.parser.grammar.SequenceExpression;
-import org.jkiss.dbeaver.parser.grammar.CharactersExpression;
 
 public class GrammarNfaBuilder implements ExpressionVisitor<Object, GrammarNfaBuilder.NfaFragment> {
 
@@ -22,7 +28,7 @@ public class GrammarNfaBuilder implements ExpressionVisitor<Object, GrammarNfaBu
     private GrammarRule rule;
     private int exprId = 0;
 
-    private final List<GrammarNfaTransition> terminalTransitions = new ArrayList<GrammarNfaTransition>();
+    private final List<GrammarNfaTransition> terminalTransitions = new ArrayList<>();
 
     public static class NfaFragment {
         private final GrammarNfaState from;
@@ -57,9 +63,9 @@ public class GrammarNfaBuilder implements ExpressionVisitor<Object, GrammarNfaBu
     public NfaFragment traverseRule(GrammarRule rule) {
         int exprId = this.nextExprId();
         this.rule = rule;
-        var fragment = rule.expression.apply(this, null);
-        var start = nfa.createState(rule);
-        var end = nfa.createState(rule);
+        NfaFragment fragment = rule.expression.apply(this, null);
+        GrammarNfaState start = nfa.createState(rule);
+        GrammarNfaState end = nfa.createState(rule);
         nfa.createTransition(start, fragment.from,
                 GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RULE_START, rule.name));
         nfa.createTransition(fragment.to, end,

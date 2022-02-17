@@ -1,14 +1,27 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2022 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
+
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
 
 public class ParseState {
     private static class TermGroup {
@@ -26,7 +39,7 @@ public class ParseState {
 
     private final int id;
     private final List<ParseStep> steps = new ArrayList<>();
-    private final Map<String, TermGroup> stepsByTermGroup = new HashMap<String, TermGroup>();
+    private final Map<String, TermGroup> stepsByTermGroup = new HashMap<>();
     private final List<ParseStep> finalSteps = new ArrayList<>();
     private final boolean isEnd;
     private Pattern pattern;
@@ -53,7 +66,7 @@ public class ParseState {
     }
 
     public void prepare() {
-        Map<String, List<ParseStep>> stepsByTerm = new HashMap<String, List<ParseStep>>();
+        Map<String, List<ParseStep>> stepsByTerm = new HashMap<>();
         for (ParseStep s : this.steps) {
             if (s.getPattern() != null) {
                 stepsByTerm.computeIfAbsent(s.getPattern(), p -> new ArrayList<>()).add(s);
@@ -62,7 +75,7 @@ public class ParseState {
             }
         }
 
-        List<String> parts = new ArrayList<String>(stepsByTerm.size());
+        List<String> parts = new ArrayList<>(stepsByTerm.size());
         for (Entry<String, List<ParseStep>> ss : stepsByTerm.entrySet()) {
             String groupName = "g" + this.stepsByTermGroup.size();
             parts.add("(?<" + groupName + ">(" + ss.getKey() + "))");
@@ -75,7 +88,7 @@ public class ParseState {
         ArrayList<ParseDispatchResult> results = new ArrayList<>();
         Matcher matcher = this.pattern.matcher(text);
         if (matcher.find(position)) {
-            for (var g : this.stepsByTermGroup.values()) {
+            for (TermGroup g : this.stepsByTermGroup.values()) {
                 int end = matcher.end(g.groupName);
                 if (end >= 0 && matcher.start(g.groupName) == position) {
                     for (ParseStep s : g.steps) {
@@ -89,7 +102,7 @@ public class ParseState {
             }
         }
 
-        for (var s : finalSteps) {
+        for (ParseStep s : finalSteps) {
             results.add(new ParseDispatchResult(position, s));
         }
 

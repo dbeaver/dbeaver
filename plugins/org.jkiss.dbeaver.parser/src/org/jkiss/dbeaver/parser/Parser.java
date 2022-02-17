@@ -1,10 +1,22 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2022 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.parser;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
 
@@ -82,7 +94,7 @@ public class Parser {
 
     public void parse(String text) {
         Deque<State> queue = new ArrayDeque<>();
-        for (var s : fsm.getInitialStates()) {
+        for (ParseState s : fsm.getInitialStates()) {
             queue.addLast(State.initial(s));
         }
 
@@ -188,7 +200,7 @@ public class Parser {
 
     private ParseTreeNode makeParseTree(String text, List<State> states) {
         System.out.println("Tree operations:");
-        ParseTreeNode treeRoot = new ParseTreeNode("s", null, new ArrayList<ParseTreeNode>());
+        ParseTreeNode treeRoot = new ParseTreeNode("s", null, new ArrayList<>());
         ParseTreeNode current = treeRoot;
         int pos = 0;
         for (State state : states) {
@@ -197,7 +209,7 @@ public class Parser {
                     switch (op.getKind()) {
                     case RULE_START:
                         current.getChilds()
-                                .add(new ParseTreeNode(op.getRuleName(), current, new ArrayList<ParseTreeNode>()));
+                                .add(new ParseTreeNode(op.getRuleName(), current, new ArrayList<>()));
                     case RULE_END:
                         current = current.getParent();
                         System.out.println("    " + op);
