@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,6 +98,9 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         for (int k = 0; k < handlers.length; k++) {
             DBSAttributeBase attribute = attributes[k];
             if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[k]))) {
+                continue;
+            }
+            if (allNulls && attributeHasDefaultValue(attribute)) {
                 continue;
             }
             handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);
@@ -183,6 +187,8 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                     rowValuesPart.add(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[k]));
                 } else if (skipBindValues) {
                     rowValuesPart.add(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE));
+                } else if (allNulls && attributeHasDefaultValue(attribute)) {
+                    rowValuesPart.add("DEFAULT");
                 } else {
                     rowValuesPart.add("?");
                 }
@@ -198,5 +204,16 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         }
 
         return query;
+    }
+
+    private boolean attributeHasDefaultValue(@NotNull DBSAttributeBase attribute) {
+        if (DBUtils.isPseudoAttribute(attribute) || DBUtils.isHiddenObject(attribute)) {
+            return false;
+        }
+        if (attribute instanceof DBDAttributeBinding) {
+            DBSEntityAttribute entityAttribute = ((DBDAttributeBinding) attribute).getEntityAttribute();
+            return entityAttribute != null && (CommonUtils.isNotEmpty(entityAttribute.getDefaultValue()));
+        }
+        return false;
     }
 }
