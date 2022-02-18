@@ -19,26 +19,28 @@ package org.jkiss.dbeaver.parser;
 import java.util.List;
 
 public class ParseTreeNode {
-    private final String ruleName;
-    private final ParseTreeNode parent;
-    private final List<ParseTreeNode> childs;
-
-    public ParseTreeNode(String ruleName, ParseTreeNode parent, List<ParseTreeNode> childs) {
+    public final String ruleName;
+    public final int position;
+    public final ParseTreeNode parent;
+    public final List<ParseTreeNode> childs;
+    
+    public ParseTreeNode(String ruleName, int position, ParseTreeNode parent, List<ParseTreeNode> childs) {
         this.ruleName = ruleName;
+        this.position = position;
         this.parent = parent;
         this.childs = childs;
     }
-
-    public String getRuleName() {
-        return ruleName;
+    
+    public String collectString() {
+        StringBuilder sb = new StringBuilder();
+        this.collectStringImpl(sb, "");
+        return sb.toString();
     }
-
-    public ParseTreeNode getParent() {
-        return parent;
+    
+    private void collectStringImpl(StringBuilder sb, String indent) {
+        sb.append(indent + this.ruleName + "@" + this.position + "\n");
+        for (ParseTreeNode child: this.childs) {
+            child.collectStringImpl(sb, indent + "  ");
+        }
     }
-
-    public List<ParseTreeNode> getChilds() {
-        return childs;
-    }
-
 }

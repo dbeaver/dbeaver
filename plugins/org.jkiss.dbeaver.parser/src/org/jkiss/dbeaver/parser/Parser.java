@@ -92,7 +92,7 @@ public class Parser {
         this.fsm = fsm;
     }
 
-    public void parse(String text) {
+    public ParseTreeNode parse(String text) {
         Deque<State> queue = new ArrayDeque<>();
         for (ParseState s : fsm.getInitialStates()) {
             queue.addLast(State.initial(s));
@@ -136,9 +136,12 @@ public class Parser {
                 pos = s.position;
             }
 
-            makeParseTree(text, states);
+            ParseTreeNode tree = makeParseTree(text, states);
+            System.out.println(tree.collectString());
+            return tree;
         }
         System.out.println("} ");
+        return null;
     }
 
     private Stack evaluateOperations(Stack stack, List<GrammarNfaOperation> ops) {
@@ -200,7 +203,7 @@ public class Parser {
 
     private ParseTreeNode makeParseTree(String text, List<State> states) {
         System.out.println("Tree operations:");
-        ParseTreeNode treeRoot = new ParseTreeNode("s", null, new ArrayList<>());
+        ParseTreeNode treeRoot = new ParseTreeNode("s", 0, null, new ArrayList<ParseTreeNode>());
         ParseTreeNode current = treeRoot;
         int pos = 0;
         for (State state : states) {
@@ -208,21 +211,28 @@ public class Parser {
                 for (GrammarNfaOperation op : state.step.getOperations()) {
                     switch (op.getKind()) {
                     case RULE_START:
-                        current.getChilds()
-                                .add(new ParseTreeNode(op.getRuleName(), current, new ArrayList<>()));
-                    case RULE_END:
-                        current = current.getParent();
+                        ParseTreeNode newNode = new ParseTreeNode(op.getRuleName(), pos, current, new ArrayList<ParseTreeNode>());
+                        current.childs.add(newNode);
+                        current = newNode;
                         System.out.println("    " + op);
+                        break;
+                    case RULE_END:
+                        current = current.parent;
+                        System.out.println("    " + op);
+                        break;
                     default:
                         break;
                     }
                 }
-                System.out.println("  capture term \"" + text.substring(pos, state.position) + "\" @" + pos + " is "
-                        + state.step.getPattern());
+                if (state.step.getPattern() != null) {
+                    current.childs.add(new ParseTreeNode("$", pos, current, new ArrayList<ParseTreeNode>()));
+                }
+                System.out.println("  capture term \"" + text.substring(pos, state.position) + "\" @" + pos + " is " + state.step.getPattern());
                 pos = state.position;
             }
         }
         return treeRoot;
     }
+    
 
 }
