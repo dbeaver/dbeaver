@@ -91,10 +91,8 @@ public class GrammarNfaBuilder implements ExpressionVisitor<Object, GrammarNfaBu
         int exprId = this.nextExprId();
         GrammarNfaState from = nfa.createState(rule);
         GrammarNfaState to = nfa.createState(rule);
-        // TODO escape string literal, see
-        // https://docs.oracle.com/javase/tutorial/essential/regex/literals.html
         this.terminalTransitions.add(nfa.createTransition(from, to,
-                GrammarNfaOperation.makeTerm(exprId, Pattern.quote(charactersExpression.pattern))));
+                GrammarNfaOperation.makeTerm(exprId, RegexExpression.escapeRegex(charactersExpression.pattern))));
         return new NfaFragment(from, to);
     }
 

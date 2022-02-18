@@ -21,7 +21,9 @@ import java.util.*;
 import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
 
 public class Parser {
-    
+
+    private final ParseFsm fsm;
+
     private static class State {
         private final State prev;
         private final ParseState fsmState;
@@ -86,16 +88,14 @@ public class Parser {
         }
     }
 
-    private final ParseFsm fsm;
-
     public Parser(ParseFsm fsm) {
         this.fsm = fsm;
     }
 
-    public ParseTreeNode parse(String text) {
+    public List<ParseTreeNode> parse(String text) {
         Deque<State> queue = new ArrayDeque<>();
-        for (ParseState s : fsm.getInitialStates()) {
-            queue.addLast(State.initial(s));
+        for (ParseState initialState : fsm.getInitialStates()) {
+            queue.addLast(State.initial(initialState));
         }
 
         List<State> results = new ArrayList<>();
@@ -120,31 +120,34 @@ public class Parser {
             }
         }
 
+        List<ParseTreeNode> trees = new ArrayList<>();
         System.out.println("Results { ");
-        for (State r : results) {
+        for (State result : results) {
             List<State> states = new ArrayList<>();
-            for (State s = r; s != null; s = s.prev) {
-                states.add(s);
+            for (State state = result; state != null; state = state.prev) {
+                states.add(state);
             }
             Collections.reverse(states);
             int pos = 0;
-            for (State s : states) {
-                if (s.step != null && s.step.getPattern() != null) {
+            for (State state : states) {
+                if (state.step != null && state.step.getPattern() != null) {
                     System.out.println(
-                            "\t\t\"" + text.substring(pos, s.position) + "\" @" + pos + " is " + s.step.getPattern());
+                            "\t\t\"" + text.substring(pos, state.position) + "\" @" + pos + " is " + state.step.getPattern());
                 }
-                pos = s.position;
+                pos = state.position;
             }
 
             ParseTreeNode tree = makeParseTree(text, states);
             System.out.println(tree.collectString());
-            return tree;
+            trees.add(tree);
         }
         System.out.println("} ");
-        return null;
+        return trees;
     }
 
     private Stack evaluateOperations(Stack stack, List<GrammarNfaOperation> ops) {
+        Stack newStack = stack;
+
         for (GrammarNfaOperation op : ops) {
             // System.out.println("\t\t" + op);
             switch (op.getKind()) {
@@ -152,42 +155,42 @@ public class Parser {
             case CALL:
             case LOOP_ENTER:
             case SEQ_ENTER:
-                stack = stack.push(op.getExprId(), 0, op.getRuleName());
+                newStack = newStack.push(op.getExprId(), 0, op.getRuleName());
                 break;
             case RULE_END:
             case RESUME:
-                if (stack.exprId == op.getExprId() && stack.ruleName.equals(op.getRuleName())) {
-                    stack = stack.pop();
+                if (newStack.exprId == op.getExprId() && newStack.ruleName.equals(op.getRuleName())) {
+                    newStack = newStack.pop();
                 } else {
                     return null;
                 }
                 break;
             case LOOP_INCREMENT:
-                if (stack.exprId == op.getExprId() && stack.exprPosition <= op.getMaxIterations()) {
-                    stack = stack.pop().push(op.getExprId(), stack.exprPosition + 1, op.getRuleName());
+                if (newStack.exprId == op.getExprId() && newStack.exprPosition <= op.getMaxIterations()) {
+                    newStack = newStack.pop().push(op.getExprId(), newStack.exprPosition + 1, op.getRuleName());
                 } else {
                     return null;
                 }
                 break;
             case LOOP_EXIT:
-                if (stack.exprId == op.getExprId() && stack.exprPosition <= op.getMaxIterations()
-                        && stack.exprPosition >= op.getMinIterations()) {
-                    stack = stack.pop();
+                if (newStack.exprId == op.getExprId() && newStack.exprPosition <= op.getMaxIterations()
+                        && newStack.exprPosition >= op.getMinIterations()) {
+                    newStack = newStack.pop();
                 } else {
                     return null;
                 }
                 break;
             case SEQ_STEP:
-                if (stack.exprId == op.getExprId() && stack.exprPosition <= op.getMaxIterations()
-                        && stack.exprPosition + 1 == op.getExprPosition()) {
-                    stack = stack.pop().push(op.getExprId(), op.getExprPosition(), op.getRuleName());
+                if (newStack.exprId == op.getExprId() && newStack.exprPosition <= op.getMaxIterations()
+                        && newStack.exprPosition + 1 == op.getExprPosition()) {
+                    newStack = newStack.pop().push(op.getExprId(), op.getExprPosition(), op.getRuleName());
                 } else {
                     return null;
                 }
                 break;
             case SEQ_EXIT:
-                if (stack.exprId == op.getExprId() && stack.exprPosition + 1 == op.getMaxIterations()) {
-                    stack = stack.pop();
+                if (newStack.exprId == op.getExprId() && newStack.exprPosition + 1 == op.getMaxIterations()) {
+                    newStack = newStack.pop();
                 } else {
                     return null;
                 }
@@ -198,7 +201,7 @@ public class Parser {
                 throw new UnsupportedOperationException("Unexpected parse opeation kind " + op.getKind());
             }
         }
-        return stack;
+        return newStack;
     }
 
     private ParseTreeNode makeParseTree(String text, List<State> states) {

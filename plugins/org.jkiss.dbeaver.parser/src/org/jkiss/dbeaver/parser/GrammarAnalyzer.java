@@ -24,6 +24,10 @@ import java.util.stream.Collectors;
 
 public class GrammarAnalyzer {
 
+    final List<GrammarNfaTransition> terminalTransitions;
+    final NfaFragment root;
+    final Map<GrammarNfaState, Set<GrammarNfaState>> paths = new HashMap<>();
+
     private static class Step implements Iterable<GrammarNfaTransition> {
         private final Step prev;
         private final boolean isUp;
@@ -77,10 +81,6 @@ public class GrammarAnalyzer {
 
     }
 
-    final List<GrammarNfaTransition> terminalTransitions;
-    final NfaFragment root;
-    final Map<GrammarNfaState, Set<GrammarNfaState>> paths = new HashMap<>();
-
     public GrammarAnalyzer(List<GrammarNfaTransition> terminalTransitions, NfaFragment root) {
         this.terminalTransitions = terminalTransitions;
         this.root = root;
@@ -105,11 +105,6 @@ public class GrammarAnalyzer {
         for (GrammarNfaTransition transition : this.terminalTransitions) {
             findPathsFrom(states, transition);
         }
-
-//		System.out.println(graph.size() + " paths found ");
-//		for (var term: states.) {
-//			System.out.println(term. src.getOperation() + " --> " + term.transition.getOperation() + " { " + String.join(", ", ops) + " }");
-//		}
 
         List<ParseState> parseFsmStates = new ArrayList<>(states.values());
         parseFsmStates.add(endState);

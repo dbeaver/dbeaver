@@ -24,6 +24,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ParseState {
+
+    private final int id;
+    private final List<ParseStep> steps = new ArrayList<>();
+    private final Map<String, TermGroup> stepsByTermGroup = new HashMap<>();
+    private final List<ParseStep> finalSteps = new ArrayList<>();
+    private final boolean isEnd;
+    private Pattern pattern;
+
     private static class TermGroup {
         private final String groupName;
         private final String pattern;
@@ -36,13 +44,6 @@ public class ParseState {
         }      
         
     }
-
-    private final int id;
-    private final List<ParseStep> steps = new ArrayList<>();
-    private final Map<String, TermGroup> stepsByTermGroup = new HashMap<>();
-    private final List<ParseStep> finalSteps = new ArrayList<>();
-    private final boolean isEnd;
-    private Pattern pattern;
 
     public ParseState(int id, boolean isEnd) {
         this.id = id;

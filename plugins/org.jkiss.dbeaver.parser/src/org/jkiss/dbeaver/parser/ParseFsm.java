@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.parser;
 import java.util.List;
 
 public class ParseFsm {
-    private final List<ParseState> initialStates, allStates;
+    private final List<ParseState> initialStates;
+    private final List<ParseState> allStates;
 
     public ParseFsm(List<ParseState> initialStates, List<ParseState> parseFsmStates) {
         this.initialStates = initialStates;

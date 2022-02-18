@@ -34,7 +34,7 @@ public class GrammarNfaOperation {
         this.minIterations = minIterations;
         this.maxIterations = maxIterations;
         this.exprPosition = exprPosition;
-        this.Validate();
+        this.validate();
     }
 
     public int getExprId() {
@@ -65,7 +65,7 @@ public class GrammarNfaOperation {
         return exprPosition;
     }
 
-    private void Validate() {
+    private void validate() {
         switch (this.kind) {
         case RULE_START:
         case RULE_END:

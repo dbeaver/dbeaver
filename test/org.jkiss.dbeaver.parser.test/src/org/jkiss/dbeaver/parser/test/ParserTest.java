@@ -20,8 +20,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import java.util.List;
 
 import static org.jkiss.dbeaver.parser.grammar.ExpressionFactory.*;
+
 import org.jkiss.dbeaver.parser.*;
 import org.jkiss.dbeaver.parser.grammar.*;
 
@@ -38,9 +40,11 @@ public class ParserTest {
             rule("numb", regex("[0-9]+"))
         );
         
-        Parser p = ParserFabric.getFabric(gr).createParser();
-        ParseTreeNode tree = p.parse("(1+2+(3*4/5))+6+7");
-        
+        Parser p = ParserFactory.getFactory(gr).createParser();
+        List<ParseTreeNode> tree = p.parse("(1+2+(3*4/5))+6+7");
+
+        Assert.assertEquals(1, tree.size());
+
         String expectedTreeDesc = "s@0\n"
                 + "  expr@0\n"
                 + "    opnd@0\n"
@@ -87,7 +91,7 @@ public class ParserTest {
                 + "      numb@16\n"
                 + "        $@16\n";
         
-        Assert.assertEquals(expectedTreeDesc, tree.collectString());
+        Assert.assertEquals(expectedTreeDesc, tree.get(0).collectString());
     }
 
 }
