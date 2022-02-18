@@ -141,6 +141,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {
+            comment = "";
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
                 comment = queryTableComment(session);
                 if (comment == null) {
