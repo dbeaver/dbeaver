@@ -807,6 +807,10 @@ public class GenericMetaModel {
         throw new DBCFeatureNotSupportedException();
     }
 
+    public boolean handleSequenceCacheReadingError(Exception error) {
+        return false;
+    }
+
     //////////////////////////////////////////////////////
     // Synonyms
 
