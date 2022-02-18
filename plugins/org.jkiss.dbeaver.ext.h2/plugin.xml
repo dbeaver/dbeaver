@@ -75,8 +75,8 @@
                 <driver
                         id="h2_embedded_v2"
                         label="H2 Embedded V.2"
-                        icon="icons/h2_icon.png"
-                        iconBig="icons/h2_icon_big.png"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
                         class="org.h2.Driver"
                         sampleURL="jdbc:h2:{file}"
@@ -85,7 +85,6 @@
                         description="H2 Embedded V.2"
                         categories="sql,embedded"
                         dialect="h2">
-                    <replace provider="generic" driver="h2_embedded_v2"/>
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.1.210]" bundle="!drivers.h2_v2"/>
                     <file type="jar" path="drivers/h2_v2" bundle="drivers.h2_v2"/>
