@@ -420,7 +420,7 @@ public abstract class LightGrid extends Canvas {
         recalculateSizes();
 
         addDragAndDropSupport();
-        setDragDetect(true);
+        setDragDetect(false);
     }
 
     @NotNull
