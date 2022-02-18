@@ -500,6 +500,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         protected GenericSequence fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return container.getDataSource().getMetaModel().createSequenceImpl(session, container, resultSet);
         }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            return getDataSource().getMetaModel().handleSequenceCacheReadingError(error);
+        }
     }
 
     class GenericSynonymCache extends JDBCObjectCache<GenericObjectContainer, GenericSynonym> {
