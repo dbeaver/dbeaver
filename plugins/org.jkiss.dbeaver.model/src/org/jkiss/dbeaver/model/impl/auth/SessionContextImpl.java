@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.access.DBASession;
-import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
-import org.jkiss.dbeaver.model.auth.DBAAuthToken;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
-import org.jkiss.dbeaver.model.auth.DBASessionProviderService;
+import org.jkiss.dbeaver.model.auth.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -54,6 +50,7 @@ public class SessionContextImpl implements DBASessionContext {
                 return session;
             }
         }
+        //log.debug(">> Session not found in context " + this + " for space " + space);
         DBASession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
         if (session == null && open) {
             DBASessionProviderService sessionProviderService = DBWorkbench.getService(DBASessionProviderService.class);
@@ -61,6 +58,9 @@ public class SessionContextImpl implements DBASessionContext {
                 try {
                     // Session will be added in this context by itself (if needed)
                     session = sessionProviderService.acquireSession(monitor, this, space);
+                    if (session != null) {
+                        addSession(session);
+                    }
                 } catch (Exception e) {
                     throw new DBException("Error acquiring session", e);
                 }
@@ -77,6 +77,7 @@ public class SessionContextImpl implements DBASessionContext {
     public void addSession(@NotNull DBASession session) {
         if (!sessions.contains(session)) {
             sessions.add(session);
+            //log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
         } else {
             log.debug("Session '" + session + "' was added twice");
         }
@@ -85,6 +86,7 @@ public class SessionContextImpl implements DBASessionContext {
     @Override
     public boolean removeSession(@NotNull DBASession session) {
         if (sessions.remove(session)) {
+            //log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
             return true;
         } else {
             log.debug("Session '" + session + "' was removed twice");

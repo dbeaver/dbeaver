@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         String queryText = null;
         try {
             // Remove orderings (#4652)
-            Statement statement = CCJSqlParserUtil.parse(query.getText());
+            Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
             if (statement instanceof Select) {
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
@@ -85,7 +84,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
 
     private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
         try {
-            Statement statement = CCJSqlParserUtil.parse(query.getText());
+            Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
                 if (select.getHaving() != null) {
@@ -126,7 +125,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
             } else {
                 throw new DBException("Query [" + query.getText() + "] can't be modified");
             }
-        } catch (JSQLParserException e) {
+        } catch (DBException e) {
             throw new DBException("Can't transform query to SELECT count(*)", e);
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         } else if (activePart != null) {
-            return activePart.getAdapter(ResultSetViewer.class);
+            return activePart.getAdapter(IResultSetController.class);
         } else {
             return null;
         }

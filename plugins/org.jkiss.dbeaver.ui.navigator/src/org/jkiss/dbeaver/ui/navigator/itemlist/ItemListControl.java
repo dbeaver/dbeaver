@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -196,12 +196,10 @@ public class ItemListControl extends NodeListControl
             }
             if (hasReorder) {
                 contributionManager.add(new Separator());
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    workbenchSite,
-                    NavigatorCommands.CMD_OBJECT_MOVE_UP));
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    workbenchSite,
-                    NavigatorCommands.CMD_OBJECT_MOVE_DOWN));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_TOP));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_UP));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_DOWN));
+                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM));
             }
         }
 
@@ -443,6 +441,9 @@ public class ItemListControl extends NodeListControl
         @Override
         public Font getFont(Object element)
         {
+            if (!(element instanceof DBNNode)) {
+                return normalFont;
+            }
             final Object object = getObjectValue((DBNNode) element);
             return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ? boldFont : normalFont;
         }
@@ -456,6 +457,9 @@ public class ItemListControl extends NodeListControl
         @Override
         public Color getBackground(Object element)
         {
+            if (!(element instanceof DBNNode)) {
+                return null;
+            }
             DBNNode node = (DBNNode) element;
             if (node.isDisposed()) {
                 return null;

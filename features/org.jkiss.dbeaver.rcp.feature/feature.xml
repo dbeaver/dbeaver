@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.rcp.feature"
       label="%featureName"
-      version="2.1.146.qualifier"
+      version="2.1.151.qualifier"
       provider-name="%providerName">
 
     <description>
@@ -137,12 +137,6 @@
     <plugin id="org.eclipse.e4.core.di.annotations" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.emf.xpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.commons.jxpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <!-- 3rd party -->
-
-    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- OS dependent -->
 

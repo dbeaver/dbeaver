@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -237,7 +237,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             newName = dataSourceDescriptor == null ? "" : settings.getActiveDataSource().getName(); //$NON-NLS-1$
             if (CommonUtils.isEmpty(newName)) {
                 newName = connectionInfo.getDatabaseName();
-                if (CommonUtils.isEmpty(newName)) {
+                if (CommonUtils.isEmpty(newName) || newName.length() < 3 || CommonUtils.isInt(newName)) {
+                    // Database name is too short or not a string
                     newName = connectionInfo.getHostName();
                 }
                 if (CommonUtils.isEmpty(newName)) {

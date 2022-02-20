@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,8 @@ import java.util.Map;
 public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings>, IDataTransferNodePrimary {
 
     private static final Log log = Log.getLog(DatabaseTransferProducer.class);
+
+    private final DBCStatistics producerStatistics = new DBCStatistics();
 
     private DBSDataContainer dataContainer;
     @Nullable
@@ -222,7 +224,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
                         }
                         long totalRows = 0;
-                        if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                        if (settings.isQueryRowCount() && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT)) {
                             monitor.beginTask(DTMessages.data_transfer_wizard_job_task_retrieve, 1);
                             try {
                                 totalRows = dataContainer.countData(transferSource, session, dataFilter, readFlags);
@@ -249,7 +251,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             // Perform export
                             if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                                 // Just do it in single query
-                                dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize());
+                                producerStatistics.accumulate(dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize()));
                             } else {
                                 // Read all data by segments
                                 long offset = 0;
@@ -261,6 +263,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                         // Done
                                         break;
                                     }
+                                    producerStatistics.accumulate(statistics);
                                     offset += statistics.getRowsFetched();
                                 }
                             }
@@ -299,6 +302,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return obj instanceof DatabaseTransferProducer &&
             CommonUtils.equalObjects(dataContainer, ((DatabaseTransferProducer) obj).dataContainer) &&
             CommonUtils.equalObjects(dataFilter, ((DatabaseTransferProducer) obj).dataFilter);
+    }
+
+    @Override
+    @NotNull
+    public DBCStatistics getStatistics() {
+        return producerStatistics;
     }
 
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {

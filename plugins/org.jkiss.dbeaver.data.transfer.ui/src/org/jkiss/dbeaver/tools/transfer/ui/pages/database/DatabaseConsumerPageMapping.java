@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,22 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -54,7 +64,11 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransforme
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
+import org.jkiss.dbeaver.ui.SharedTextColors;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -515,7 +529,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         return newName;
                     }
                     if (mapping instanceof DatabaseMappingContainer) {
-                        if (mapping.getMappingType() == DatabaseMappingType.existing) {
+                        if (mapping.getMappingType() == DatabaseMappingType.existing || mapping.getMappingType() == DatabaseMappingType.recreate) {
                             return ((DatabaseMappingContainer) mapping).getTarget();
                         }
                         return mapping.getTargetName();
@@ -571,6 +585,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     if (mappingType != DatabaseMappingType.skip) {
                         mappingTypes.add(mappingType.name());
                     }
+                    if (mapping instanceof DatabaseMappingContainer) {
+                        if (mappingType == DatabaseMappingType.existing) {
+                            mappingTypes.add(DatabaseMappingType.recreate.name());
+                        } else if (mappingType == DatabaseMappingType.recreate) {
+                            mappingTypes.add(DatabaseMappingType.existing.name());
+                        }
+                    }
                     if (mapping instanceof DatabaseMappingAttribute) {
                         DatabaseMappingType parentMapping = ((DatabaseMappingAttribute) mapping).getParent().getMappingType();
                         if (mappingType != parentMapping && parentMapping == DatabaseMappingType.create) {
@@ -601,10 +622,26 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     try {
                         DatabaseMappingObject mapping = (DatabaseMappingObject) element;
                         DatabaseMappingType mappingType = DatabaseMappingType.valueOf(value.toString());
+                        if (mappingType == DatabaseMappingType.recreate) {
+                            boolean confirmed = UIUtils.confirmAction(
+                                getShell(),
+                                DTUIMessages.database_consumer_page_mapping_recreate_confirm_title,
+                                DTUIMessages.database_consumer_page_mapping_recreate_confirm_tip,
+                                DBIcon.STATUS_WARNING
+                            );
+                            if (!confirmed) {
+                                return;
+                            }
+                        }
                         if (mapping instanceof DatabaseMappingAttribute) {
                             ((DatabaseMappingAttribute) mapping).setMappingType(mappingType);
                         } else {
-                            ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
+                            DatabaseMappingType previousMapping = mapping.getMappingType();
+                            if (previousMapping == DatabaseMappingType.recreate || mappingType == DatabaseMappingType.recreate) {
+                                ((DatabaseMappingContainer) mapping).refreshAttributesAndMappingType(getWizard().getRunnableContext(), mappingType, false);
+                            } else {
+                                ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
+                            }
                         }
                         mappingViewer.refresh();
                         setErrorMessage(null);
@@ -866,7 +903,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean hasUnassigned = false;
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         for (DatabaseMappingContainer mapping : settings.getDataMappings().values()) {
-            if (mapping.getMappingType() != DatabaseMappingType.create && mapping.getMappingType() != DatabaseMappingType.existing) {
+            if (mapping.getMappingType() == DatabaseMappingType.unspecified || mapping.getMappingType() == DatabaseMappingType.skip) {
                 hasUnassigned = true;
                 break;
             }
@@ -991,7 +1028,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
         DBEPersistAction[] persistActions = ddl[0];
         if (ArrayUtils.isEmpty(persistActions)) {
-            UIUtils.showMessageBox(getShell(), "No schema changes", "No changes are needed for this mapping", SWT.ICON_INFORMATION);
+            UIUtils.showMessageBox(getShell(), DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_title,
+                    DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_info, SWT.ICON_INFORMATION);
             return;
         }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -1007,8 +1045,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (result == IDialogConstants.PROCEED_ID) {
                 if (UIUtils.confirmAction(
                     getShell(),
-                    "Create target objects",
-                    "Database metadata will be modified by creating new table(s) and column(s).\nAre you sure you want to proceed?")) {
+                    DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
+                    DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
                     // Create target objects
                     if (applySchemaChanges(container, mapping, persistActions)) {
                         autoAssignMappings();
@@ -1039,8 +1077,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             });
             return true;
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Schema changes save",
-                "Error applying schema changes", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_error_schema_save_title,
+                DTUIMessages.database_consumer_page_mapping_error_schema_save_info, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

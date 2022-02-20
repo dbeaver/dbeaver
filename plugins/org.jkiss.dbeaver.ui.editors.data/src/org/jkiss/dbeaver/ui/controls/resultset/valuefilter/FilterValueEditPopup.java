@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private Object value;
     private GenericFilterValueEdit filter;
     private Point location;
+    private Button caseInsensitiveSearchCheck;
     private Button showRowCountCheck;
 
     public FilterValueEditPopup(Shell parentShell, @NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows) {
@@ -187,7 +188,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         optionsGroup.moveAbove(filter.getButtonsPanel());
         {
             if (isAttributeSupportsLike()) {
-                final Button caseInsensitiveSearchCheck = UIUtils.createCheckbox(
+                caseInsensitiveSearchCheck = UIUtils.createCheckbox(
                     optionsGroup,
                     ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_case_insensitive_label,
                     ResultSetMessages.dialog_filter_value_edit_table_options_checkbox_case_insensitive_description,
@@ -202,6 +203,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     }
                 });
                 caseInsensitiveSearchCheck.setEnabled(isQueryDatabaseEnabled());
+                closeOnFocusLost(caseInsensitiveSearchCheck);
                 ((GridLayout) optionsGroup.getLayout()).numColumns++;
             }
             Button queryDatabaseCheck = UIUtils.createCheckbox(
@@ -218,6 +220,9 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     getDialogBoundsSettings().put(PROP_QUERY_DATABASE, isEnabled);
                     if (showRowCountCheck != null) {
                         showRowCountCheck.setEnabled(isEnabled);
+                    }
+                    if (caseInsensitiveSearchCheck != null) {
+                        caseInsensitiveSearchCheck.setEnabled(isEnabled);
                     }
                     reloadFilterValues();
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -441,15 +441,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 MavenArtifactDependency dmInfo = depManagement ? null : findDependencyManagement(groupId, artifactId);
 
                 // Resolve scope
-                MavenArtifactDependency.Scope scope = null;
                 String scopeName = XMLUtils.getChildElementBody(dep, "scope");
-                if (!CommonUtils.isEmpty(scopeName)) {
-                    try {
-                        scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
-                    } catch (IllegalArgumentException e) {
-                        log.debug("Bad artifact '" + getArtifactId() + "' scope: " + scopeName);
-                    }
-                }
+                MavenArtifactDependency.Scope scope = scopeName == null ? null : CommonUtils.valueOf(
+                    MavenArtifactDependency.Scope.class, scopeName.toUpperCase(Locale.ENGLISH), null);
                 if (scope == null && dmInfo != null) {
                     scope = dmInfo.getScope();
                 }
@@ -488,7 +482,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                         imports = new ArrayList<>();
                     }
                     imports.add(importedVersion);
-                } else if (depManagement || (!optional && includesScope(scope))) {
+                } else if (depManagement || (!optional && includesScope(scope, resolveOptionalDependencies))) {
                     // TODO: maybe we should include optional or PROVIDED
 
                     if (version == null && dmInfo != null) {
@@ -534,11 +528,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return result;
     }
 
-    private boolean includesScope(MavenArtifactDependency.Scope scope) {
+    private boolean includesScope(MavenArtifactDependency.Scope scope, boolean resolveOptionalDependencies) {
         return
             scope == MavenArtifactDependency.Scope.COMPILE ||
-            scope == MavenArtifactDependency.Scope.RUNTIME/* ||
-            scope == MavenArtifactDependency.Scope.PROVIDED*/;
+            scope == MavenArtifactDependency.Scope.RUNTIME ||
+            (resolveOptionalDependencies && scope == MavenArtifactDependency.Scope.PROVIDED);
     }
 
     private MavenArtifactDependency findDependencyManagement(String groupId, String artifactId) {

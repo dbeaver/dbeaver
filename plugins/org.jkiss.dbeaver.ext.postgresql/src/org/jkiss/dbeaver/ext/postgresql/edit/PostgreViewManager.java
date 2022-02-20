@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,10 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     @Override
-    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         PostgreSchema schema = (PostgreSchema) container;
-        PostgreView newView = new PostgreView(schema);
+        PostgreView newView = (PostgreView) schema.getDataSource().getServerType().createNewRelation(
+            monitor, schema, PostgreClass.RelKind.v, null);
         setNewObjectName(monitor, schema, newView);
         return newView;
     }

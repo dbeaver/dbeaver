@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class PostgreRole implements
     protected boolean bypassRls;
     protected int connLimit;
     protected String password;
-    protected Date validUntil;
+    protected String validUntil;
     protected boolean persisted;
     private MembersCache membersCache = new MembersCache(true);
     private MembersCache belongsCache = new MembersCache(false);
@@ -139,7 +139,7 @@ public class PostgreRole implements
         this.bypassRls = JDBCUtils.safeGetBoolean(dbResult, "rolbypassrls");
         this.connLimit = JDBCUtils.safeGetInt(dbResult, "rolconnlimit");
         this.password = JDBCUtils.safeGetString(dbResult, "rolpassword");
-        this.validUntil = JDBCUtils.safeGetTimestamp(dbResult, "rolvaliduntil");
+        this.validUntil = JDBCUtils.safeGetString(dbResult, "rolvaliduntil");
     }
 
     @Nullable
@@ -280,11 +280,11 @@ public class PostgreRole implements
     }
 
     @Property(category = CAT_SETTINGS, editable = true, updatable = true, order = 22)
-    public Date getValidUntil() {
+    public String getValidUntil() {
         return validUntil;
     }
 
-    public void setValidUntil(Date validUntil) {
+    public void setValidUntil(String validUntil) {
         this.validUntil = validUntil;
     }
 
@@ -337,7 +337,7 @@ public class PostgreRole implements
             ddl.append("\tCONNECTION LIMIT ").append(getConnLimit());
         } else {
             ddl.append(lineBreak);
-            ddl.append("\tCONNECTION LIMIT UNLIMITED");
+            ddl.append("\tCONNECTION LIMIT -1");
         }
         if (getValidUntil() != null) {
             ddl.append(lineBreak);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
-        dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+        if (this.savePasswordCheck != null) {
+            dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+        }
     }
 
     @Override
@@ -128,7 +130,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     protected void createPasswordControls(Composite parent, Runnable propertyChangeListener) {
-        passwordLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_password);
+        passwordLabel = UIUtils.createLabel(parent, getPasswordFieldLabel());
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         passPlaceholder = UIUtils.createComposite(parent, 2);
@@ -169,6 +171,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             });
         }
 
+    }
+
+    protected String getPasswordFieldLabel() {
+        return UIConnectionMessages.dialog_connection_auth_label_password;
     }
 
     private void showPasswordText(UIServiceSecurity serviceSecurity) {

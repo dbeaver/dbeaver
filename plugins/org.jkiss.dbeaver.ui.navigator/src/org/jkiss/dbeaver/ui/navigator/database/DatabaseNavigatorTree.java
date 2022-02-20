@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -478,22 +478,28 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    private DBNNode findActiveNode(DBRProgressMonitor monitor, DBNNode node) throws DBException
-    {
+    @NotNull
+    private DBNNode findActiveNode(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node) throws DBException {
+        return findActiveNode(monitor, node, node);
+    }
+
+    @NotNull
+    private DBNNode findActiveNode(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode parent, @NotNull DBNNode node) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
         if (!ArrayUtils.isEmpty(children)) {
             if (children[0] instanceof DBNContainer) {
                 // Use only first folder to search
-                return findActiveNode(monitor, children[0]);
+                return findActiveNode(monitor, node, children[0]);
             }
             for (DBNNode child : children) {
                 if (DBNUtils.isDefaultElement(child)) {
-                    return child;
+                    // Find the deepest default element (either catalog or schema)
+                    return findActiveNode(monitor, node, child);
                 }
             }
         }
 
-        return node;
+        return parent;
     }
 
     private Object getViewerObject(DBNNode node)

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondition;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -117,6 +121,8 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     };
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
+
+    private SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
 
     public OracleSQLDialect() {
         super("Oracle", "oracle");
@@ -359,6 +365,8 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
         addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
         turnFunctionIntoKeyword("TRUNCATE");
+
+        cachedDialectSkipTokenPredicates = makeDialectSkipTokenPredicates(dataSource);
     }
 
     @Override
@@ -569,6 +577,73 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         return localDataType;
     }
 
+    @Override
+    @NotNull
+    public SQLTokenPredicateSet getSkipTokenPredicates() {
+        return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
+    }
+
+    @NotNull
+    private SQLTokenPredicateSet makeDialectSkipTokenPredicates(JDBCDataSource dataSource) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+        TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
+
+        // Oracle SQL references could be found from https://docs.oracle.com/en/database/oracle/oracle-database/
+        // by following through Get Started links till the SQL Language Reference link presented
+
+        TokenPredicateSet conditions = TokenPredicateSet.of(
+                // https://docs.oracle.com/en/database/oracle/oracle-database/12.2/lnpls/CREATE-PACKAGE-BODY-statement.html#GUID-68526FF2-96A1-4F14-A10B-4DD3E1CD80BE
+                // also presented in the earliest found reference on 7.3, so considered as always supported https://docs.oracle.com/pdf/A32538_1.pdf
+                new TokenPredicatesCondition(
+                        SQLParserActionKind.BEGIN_BLOCK,
+                        tt.sequence(
+                                "CREATE",
+                                tt.optional("OR", "REPLACE"),
+                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                                "PACKAGE", "BODY"
+                        ),
+                        tt.sequence()
+                ),
+                // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-FUNCTION.html#GUID-156AEDAC-ADD0-4E46-AA56-6D1F7CA63306
+                // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-PROCEDURE.html#GUID-771879D8-BBFD-4D87-8A6C-290102142DA3
+                // not fully described, only some cases partially discovered
+                new TokenPredicatesCondition(
+                        SQLParserActionKind.SKIP_SUFFIX_TERM,
+                        tt.sequence(
+                                "CREATE",
+                                tt.optional("OR", "REPLACE"),
+                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                                tt.alternative("FUNCTION", "PROCEDURE")
+                        ),
+                        tt.sequence(tt.alternative(
+                                tt.sequence("RETURN", SQLTokenType.T_TYPE),
+                                "deterministor", "pipelined", "parallel_enable", "result_cache",
+                                ")",
+                                tt.sequence("procedure", SQLTokenType.T_OTHER),
+                                tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
+                        ), ";")
+                )
+        );
+
+
+
+        if (dataSource.isServerVersionAtLeast(12, 1)) {
+            // for WITH procedures and functions prepending select clause introduced in 12.1
+            //     https://oracle-base.com/articles/12c/with-clause-enhancements-12cr1
+            // notation presented in https://docs.oracle.com/en/database/oracle/oracle-database/18/sqlrf/SELECT.html
+            // but missing in https://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_10002.htm
+            conditions.add(new TokenPredicatesCondition(
+                    SQLParserActionKind.SKIP_SUFFIX_TERM,
+                    tt.token("WITH"),
+                    tt.sequence("END", ";")
+            ));
+        }
+
+        return conditions;
+    }
 
 
 }

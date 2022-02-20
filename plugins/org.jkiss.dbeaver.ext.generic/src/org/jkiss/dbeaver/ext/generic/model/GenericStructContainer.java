@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,10 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
     ForeignKeysCache getForeignKeysCache();
 
     TableTriggerCache getTableTriggerCache();
+
+    GenericObjectContainer.GenericSequenceCache getSequenceCache();
+
+    GenericObjectContainer.GenericSynonymCache getSynonymCache();
 
     List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException;
     List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;

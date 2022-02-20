@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,12 +215,16 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsCatalogChange() {
         GenericDataSource dataSource = getDataSource();
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
+            return true;
+        }
+        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
-                return dataSource.hasCatalogs();
+                return dataSource.hasCatalogs() && info.supportsCatalogSelection();
             }
             if (dataSource.hasCatalogs()) {
-                return GenericConstants.ENTITY_TYPE_CATALOG.equals(dataSource.getSelectedEntityType()) || !dataSource.hasSchemas();
+                return (GenericConstants.ENTITY_TYPE_CATALOG.equals(dataSource.getSelectedEntityType()) || !dataSource.hasSchemas()) && info.supportsCatalogSelection();
             }
         }
         return false;
@@ -229,12 +233,16 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsSchemaChange() {
         GenericDataSource dataSource = getDataSource();
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
+            return true;
+        }
+        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
-                return !dataSource.hasCatalogs() && dataSource.hasSchemas();
+                return !dataSource.hasCatalogs() && dataSource.hasSchemas() && info.supportsSchemaSelection();
             }
             if (dataSource.hasSchemas()) {
-                return GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType()) || !dataSource.hasCatalogs();
+                return (GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType()) || !dataSource.hasCatalogs()) && info.supportsSchemaSelection();
             }
         }
         return false;

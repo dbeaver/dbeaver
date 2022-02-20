@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,10 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -64,15 +65,29 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     private String serverVersion;
 
     private volatile transient boolean hasStatistics;
+    private boolean isBabelfish;
+    private boolean isSynapseDatabase;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+        isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
     }
 
     public boolean supportsColumnProperty() {
         return supportsColumnProperty;
+    }
+
+    public boolean supportsExternalTables() {
+        final DBPDriver driver = getContainer().getDriver();
+        if (isBabelfish) {
+            return false;
+        }
+        if (SQLServerUtils.isDriverSqlServer(driver) && isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2016_VERSION_MAJOR, 0)) {
+            return true;
+        }
+        return SQLServerUtils.isDriverAzure(driver);
     }
 
     @Override
@@ -93,24 +108,23 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverVersion;
     }
 
-    private boolean isNotBabelfishDatasource() {
-        boolean isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
-        return !isBabelfish;
-    }
-
     public boolean supportsTriggers() {
-        return isNotBabelfishDatasource();
+        return !isBabelfish && !isSynapseDatabase;
     }
 
     public boolean supportsSynonyms() {
-        return isNotBabelfishDatasource();
+        return !isBabelfish;
     }
 
     public boolean supportsSequences() {
-        return isNotBabelfishDatasource();
+        return !isBabelfish && !isSynapseDatabase;
     }
 
-    String getServerVersion(DBRProgressMonitor monitor) {
+    public boolean isSynapseDatabase() {
+        return isSynapseDatabase;
+    }
+
+    private String getServerVersion(DBRProgressMonitor monitor) {
         if (serverVersion == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
                 serverVersion = JDBCUtils.queryString(session, "SELECT @@VERSION");
@@ -261,6 +275,19 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             } catch (Exception e) {
                 this.supportsColumnProperty = false;
             }
+
+            // Read Database Engine edition of the instance of SQL Server installed on the server.
+            try {
+                String result = JDBCUtils.queryString(session, "SELECT SERVERPROPERTY('EngineEdition')");
+                if ("6".equals(result) || "11".equals(result)) {
+                    // SERVERPROPERTY returns int 6 or 11 if it is Azure Synapse
+                    isSynapseDatabase = true;
+                }
+            } catch (SQLException e) {
+                log.debug("Can't read Database Engine edition info", e);
+            }
+
+
         } catch (Throwable e) {
             log.error("Error during connection initialization", e);
         }
@@ -404,8 +431,8 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             return adapter.cast(new SQLServerStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new SQLServerSessionManager(this));
-        } else if (adapter == DBAUserChangePassword.class) {
-            return adapter.cast(new SQLServerChangeLoginPassword(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new SQLServerLoginPasswordManager(this));
         }
         return super.getAdapter(adapter);
     }
@@ -489,10 +516,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
             StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
-
+            if (owner.isBabelfish) {
+                sql.append("\nWHERE db.name = db_name()");
+            }
             DBSObjectFilter databaseFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
             if (databaseFilters != null && databaseFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", true, owner);
+                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", !owner.isBabelfish, owner);
             }
             sql.append("\nORDER BY db.name");
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

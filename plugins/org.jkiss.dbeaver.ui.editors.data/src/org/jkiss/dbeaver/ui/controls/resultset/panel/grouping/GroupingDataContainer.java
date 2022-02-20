@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -63,8 +64,8 @@ public class GroupingDataContainer implements DBSDataContainer {
     }
 
     @Override
-    public int getSupportedFeatures() {
-        return DATA_SELECT;
+    public String[] getSupportedFeatures() {
+        return new String[] {FEATURE_DATA_SELECT};
     }
 
     @NotNull
@@ -135,7 +136,7 @@ public class GroupingDataContainer implements DBSDataContainer {
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException {
         return 0;
     }
 

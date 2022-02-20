@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.fs.nio;
 
 import org.eclipse.core.resources.IProject;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 
 import java.nio.file.Path;
 
@@ -26,17 +27,23 @@ import java.nio.file.Path;
 public class NIOFileSystemRoot {
 
     private final IProject project;
+    private final DBFVirtualFileSystemRoot fsRoot;
     private final String fsPrefix;
     private final Path rootPath;
 
-    public NIOFileSystemRoot(IProject project, String fsPrefix, Path rootPath) {
+    public NIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot, String fsPrefix, Path rootPath) {
         this.project = project;
+        this.fsRoot = fsRoot;
         this.fsPrefix = fsPrefix;
         this.rootPath = rootPath;
     }
 
     public IProject getProject() {
         return project;
+    }
+
+    public DBFVirtualFileSystemRoot getRoot() {
+        return fsRoot;
     }
 
     public String getPrefix() {

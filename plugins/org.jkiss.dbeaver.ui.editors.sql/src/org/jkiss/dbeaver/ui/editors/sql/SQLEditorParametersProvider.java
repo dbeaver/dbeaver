@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,16 +42,19 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
     @Override
     public Boolean prepareStatementParameters(@NotNull SQLScriptContext scriptContext, @NotNull SQLQuery sqlStatement, @NotNull List<SQLQueryParameter> parameters, boolean useDefaults) {
         for (SQLQueryParameter param : parameters) {
-            String paramName = param.getVarName();
+            String paramName = param.getName();
             Object defValue = useDefaults ? scriptContext.getParameterDefaultValue(paramName) : null;
             if (defValue != null || scriptContext.hasVariable(paramName)) {
-                Object varValue = defValue != null ? defValue : scriptContext.getVariable(paramName);
-                String strValue = varValue == null ? null : varValue.toString();
-                param.setValue(strValue);
-                param.setVariableSet(true);
+                assignVariable(scriptContext, param, paramName, defValue);
             } else {
-                if (!useDefaults) {
-                    param.setVariableSet(false);
+                paramName = param.getVarName();
+                defValue = useDefaults ? scriptContext.getParameterDefaultValue(paramName) : null;
+                if (defValue != null || scriptContext.hasVariable(paramName)) {
+                    assignVariable(scriptContext, param, paramName, defValue);
+                } else {
+                    if (!useDefaults) {
+                        param.setVariableSet(false);
+                    }
                 }
             }
         }
@@ -78,10 +81,12 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
             for (SQLQueryParameter param : parameters) {
                 if (param.isNamed()) {
                     String strValue = param.getValue();
-                    if (scriptContext.hasVariable(param.getVarName())) {
+                    if (scriptContext.hasVariable(param.getName())) {
+                        scriptContext.setVariable(param.getName(), strValue);
+                    } else if (scriptContext.hasVariable(param.getVarName())){
                         scriptContext.setVariable(param.getVarName(), strValue);
                     } else {
-                        scriptContext.setParameterDefaultValue(param.getVarName(), strValue);
+                        scriptContext.setParameterDefaultValue(param.getName(), strValue);
                     }
                 }
             }
@@ -91,6 +96,15 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
             return null;
         }
         return false;
+    }
+
+
+
+    private void assignVariable(@NotNull SQLScriptContext scriptContext, SQLQueryParameter param, String paramName, Object defValue) {
+        Object varValue = defValue != null ? defValue : scriptContext.getVariable(paramName);
+        String strValue = varValue == null ? null : varValue.toString();
+        param.setValue(strValue);
+        param.setVariableSet(true);
     }
 
 }

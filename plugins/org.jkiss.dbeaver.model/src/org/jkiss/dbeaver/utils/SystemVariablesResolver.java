@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Locale;
 
 /**
  * SystemVariablesResolver
@@ -44,7 +43,7 @@ public class SystemVariablesResolver implements IVariableResolver {
 
     @Override
     public String get(String name) {
-        name = name.toLowerCase(Locale.ENGLISH);
+        //name = name.toLowerCase(Locale.ENGLISH);
         switch (name) {
             case VAR_APP_NAME:
                 return GeneralUtils.getProductName();

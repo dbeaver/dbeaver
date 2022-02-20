@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -153,8 +154,22 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @Override
+    @Property(viewable = true, editable = true, order = 52, visibleIf = FireBirdColumnIncrementValueValidator.class)
+    public boolean isAutoIncrement() {
+        return super.isAutoIncrement();
+    }
+
+    @Override
     public void setDataType(FireBirdDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
+    }
+
+    public static class FireBirdColumnIncrementValueValidator implements IPropertyValueValidator<FireBirdTableColumn, Object> {
+
+        @Override
+        public boolean isValidValue(FireBirdTableColumn column, Object value) throws IllegalArgumentException {
+            return column.getDataSource().isServerVersionAtLeast(3, 0);
+        }
     }
 }

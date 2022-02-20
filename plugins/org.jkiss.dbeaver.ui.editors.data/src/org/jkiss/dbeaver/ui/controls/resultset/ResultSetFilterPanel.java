@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private final Color hoverBgColor;
     private final Color shadowColor;
-    private final GC sizingGC;
 
     private String activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
 
@@ -122,8 +121,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         super(parent, SWT.NONE);
         this.viewer = rsv;
         CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
-        this.sizingGC = new GC(this);
 
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 3;
@@ -329,7 +326,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 historyMenu.dispose();
                 historyMenu = null;
             }
-            UIUtils.dispose(sizingGC);
         });
 
     }
@@ -405,7 +401,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private boolean isFiltersAvailable() {
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        return dataContainer != null && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0;
+        return dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
     }
 
     private void redrawPanels() {
@@ -615,12 +611,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         }
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
-        String word = wordDetector.getFullWord();
         final List<IContentProposal> proposals = new ArrayList<>();
 
-        if (CommonUtils.isEmptyTrimmed(word)) word = contents;
-        word = word.toLowerCase(Locale.ENGLISH);
-        String attrName = word;
+        String attrName = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
 
         final DBRRunnableWithProgress reader = monitor -> {
             DBDAttributeBinding[] attributes = viewer.getModel().getAttributes();
@@ -706,6 +699,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         static final int MIN_INFO_PANEL_WIDTH = 300;
         static final int MIN_INFO_PANEL_HEIGHT = 100;
         static final int MAX_INFO_PANEL_HEIGHT = 400;
+        private final GC sizingGC;
         private Shell popup;
 
         ActiveObjectPanel(Composite addressBar) {
@@ -713,6 +707,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_open_console);
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            this.sizingGC = new GC(this);
             this.addMouseListener(new DoubleClickMouseAdapter() {
                 @Override
                 public void onMouseDoubleClick(@NotNull MouseEvent e) {
@@ -724,6 +719,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     UIUtils.asyncExec(() -> showObjectInfoPopup(e));
                 }
             });
+        }
+
+        @Override
+        public void dispose() {
+            sizingGC.dispose();
+            super.dispose();
         }
 
         private void showObjectInfoPopup(MouseEvent e) {

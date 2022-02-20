@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,7 +133,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
             Button loadOptionalDependenciesCheckbox = UIUtils.createCheckbox(settingsGroup,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies_tip,
-                originalArtifact != null && originalArtifact.isIgnoreDependencies(),
+                originalArtifact != null && originalArtifact.isLoadOptionalDependencies(),
                 2);
             loadOptionalDependenciesCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -380,13 +380,18 @@ public class EditMavenArtifactDialog extends BaseDialog {
         if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
                 originalArtifact.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
-                originalArtifact.setPreferredVersion(preferredVersionText.getText());
+                originalArtifact.setPreferredVersion(preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText());
                 originalArtifact.setIgnoreDependencies(ignoreDependencies);
                 originalArtifact.setLoadOptionalDependencies(loadOptionalDependencies);
             } else {
-                DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", preferredVersionText.getText());
+                DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(
+                    EditMavenArtifactDialog.this.driver,
+                    DBPDriverLibrary.FileType.jar,
+                    "",
+                    preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText()
+                );
                 lib.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
-                lib.setPreferredVersion(preferredVersionText.getText());
+                lib.setPreferredVersion(preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText());
                 lib.setLoadOptionalDependencies(loadOptionalDependencies);
                 lib.setIgnoreDependencies(ignoreDependencies);
                 artifacts.add(lib);

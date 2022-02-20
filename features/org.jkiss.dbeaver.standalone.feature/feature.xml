@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="21.3.1.qualifier"
+        version="21.3.5.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
@@ -21,12 +21,6 @@
     <url>
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
-
-    <requires>
-        <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
-        <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
-        <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
-    </requires>
 
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
 

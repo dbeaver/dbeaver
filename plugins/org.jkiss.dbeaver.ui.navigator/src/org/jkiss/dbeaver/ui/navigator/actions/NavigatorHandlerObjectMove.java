@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +48,20 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        final DBNNode[][] nodes = groupConsecutiveNodes(NavigatorUtils.getSelectedNodes(selection));
+        final List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+        final DBNNode[][] consecutiveNodes = groupConsecutiveNodes(nodes);
 
-        for (DBNNode[] partition : nodes) {
+        final int min = getNodePosition(nodes.get(0));
+        final int max = getNodePosition(nodes.get(nodes.size() - 1));
+        final String commandId = event.getCommand().getId();
+        final boolean downwards = commandId.equals(NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM) || commandId.equals(NavigatorCommands.CMD_OBJECT_MOVE_DOWN);
+
+        if (downwards) {
+            // Objects must be moved down in reverse order to avoid overlapping
+            ArrayUtils.reverse(consecutiveNodes);
+        }
+
+        for (DBNNode[] partition : consecutiveNodes) {
             for (DBNNode node : partition) {
                 if (!(node.getParentNode() instanceof DBNContainer)) {
                     return null;
@@ -87,25 +99,30 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                         null, object.getClass(),
                         false);
 
-                    switch (event.getCommand().getId()) {
+                    final int shift;
+
+                    switch (commandId) {
+                        case NavigatorCommands.CMD_OBJECT_MOVE_TOP:
+                            shift = -min + 1;
+                            break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_UP:
-                            objectReorderer.setObjectOrdinalPosition(
-                                commandTarget.getContext(),
-                                object,
-                                siblingObjects,
-                                orderedObject.getOrdinalPosition() - 1);
+                            shift = -1;
+                            break;
+                        case NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM:
+                            shift = objectReorderer.getMaximumOrdinalPosition(object) - max + partition.length - 1;
                             break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_DOWN:
-                            // Need to take in account total amount of moved objects to avoid overlapping
-                            objectReorderer.setObjectOrdinalPosition(
-                                commandTarget.getContext(),
-                                object,
-                                siblingObjects,
-                                orderedObject.getOrdinalPosition() + partition.length);
+                            shift = partition.length;
                             break;
                         default:
-                            break;
+                            throw new ExecutionException("Unexpected command: " + event.getCommand());
                     }
+
+                    objectReorderer.setObjectOrdinalPosition(
+                        commandTarget.getContext(),
+                        object,
+                        siblingObjects,
+                        orderedObject.getOrdinalPosition() + shift);
 
                     if (object.isPersisted() && commandTarget.getEditor() == null) {
                         Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import java.util.Vector;
 
 public class DBeaverIdentityRepository implements IdentityRepository {
     
-    private SSHImplementationAbstract impl;
-    private List<SSHAgentIdentity> identities;
+    private final SSHImplementationAbstract impl;
+    private final List<SSHAgentIdentity> identities;
 
     public DBeaverIdentityRepository(SSHImplementationAbstract impl, List<SSHAgentIdentity> identities) {
         this.impl = impl;
@@ -35,26 +35,12 @@ public class DBeaverIdentityRepository implements IdentityRepository {
 
     @Override
     public Vector<?> getIdentities() {
-        Vector<com.jcraft.jsch.Identity> result = new Vector<com.jcraft.jsch.Identity>(); 
+        Vector<AgentIdentity> result = new Vector<>();
 
         for (SSHAgentIdentity identity : identities) {
             byte [] blob = identity.getBlob();
             byte [] comment = identity.getComment();
-            com.jcraft.jsch.Identity id = new com.jcraft.jsch.Identity() {
-                String algname = new String((new Buffer(blob)).getString());
-                public boolean setPassphrase(byte[] passphrase) throws JSchException {
-                	return true;
-                }
-                public byte[] getPublicKeyBlob() { return blob; }
-                public byte[] getSignature(byte[] data){
-                	return impl.agentSign(blob, data);
-                }
-                public boolean decrypt() { return true; }
-                public String getAlgName() { return algname; }
-                public String getName() { return new String(comment); }
-                public boolean isEncrypted() { return false; }
-                public void clear() { /* NO NEED TO IMPLEMENT */ }
-            };
+            AgentIdentity id = new AgentIdentity(blob, comment);
             result.addElement(id);
         }
 
@@ -84,5 +70,37 @@ public class DBeaverIdentityRepository implements IdentityRepository {
     @Override
     public int getStatus() {
         return RUNNING;
+    }
+
+    private class AgentIdentity implements com.jcraft.jsch.Identity {
+        private final byte[] blob;
+        private final byte[] comment;
+        String algname;
+
+        public AgentIdentity(byte[] blob, byte[] comment) {
+            this.blob = blob;
+            this.comment = comment;
+            algname = new String((new Buffer(blob)).getString());
+        }
+
+        public boolean setPassphrase(byte[] passphrase) throws JSchException {
+            return true;
+        }
+
+        public byte[] getPublicKeyBlob() { return blob; }
+
+        public byte[] getSignature(byte[] data){
+            return impl.agentSign(blob, data);
+        }
+
+        public boolean decrypt() { return true; }
+
+        public String getAlgName() { return algname; }
+
+        public String getName() { return new String(comment); }
+
+        public boolean isEncrypted() { return false; }
+
+        public void clear() { /* NO NEED TO IMPLEMENT */ }
     }
 }

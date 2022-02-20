@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -485,9 +485,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             if (getDataSource().getServerType().supportsCopyFromStdIn()) {
                 return adapter.cast(new PostgreCopyLoader(this));
             }
-        } else if (adapter == DBAUserChangePassword.class) {
+        } else if (adapter == DBAUserPasswordManager.class) {
             if (getServerType().supportsAlterUserChangePassword()) {
-                return adapter.cast(new PostgresUserChangePassword(this));
+                return adapter.cast(new PostgresUserPasswordManager(this));
             }
         }
         return super.getAdapter(adapter);

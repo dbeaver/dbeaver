@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,10 @@ public class SQLQueryParameterRegistry
     public void setParameter(String name, String value)
     {
         parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, value));
+    }
+
+    public void deleteParameter(String name) {
+        parameterMap.remove(name.toUpperCase(Locale.ENGLISH));
     }
 
     private void loadParameters()

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.slf4j.impl;
 import org.jkiss.dbeaver.Log;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
+import org.slf4j.helpers.MessageFormatter;
 
 class SLFLogger implements Logger {
     private final Log log;
@@ -160,17 +161,17 @@ class SLFLogger implements Logger {
 
     @Override
     public void info(String s, Object o) {
-        log.info(s);
+        log.info(formatMessage(s, o));
     }
 
     @Override
     public void info(String s, Object o, Object o1) {
-        log.info(s);
+        log.info(formatMessage(s, o, o1));
     }
 
     @Override
     public void info(String s, Object... objects) {
-        log.info(s);
+        log.info(formatMessage(s, objects));
     }
 
     @Override
@@ -215,17 +216,17 @@ class SLFLogger implements Logger {
 
     @Override
     public void warn(String s, Object o) {
-        log.warn(s);
+        log.warn(formatMessage(s, o));
     }
 
     @Override
     public void warn(String s, Object... objects) {
-        log.warn(s);
+        log.warn(formatMessage(s, objects));
     }
 
     @Override
     public void warn(String s, Object o, Object o1) {
-        log.warn(s);
+        log.warn(formatMessage(s, o1, o1));
     }
 
     @Override
@@ -270,17 +271,17 @@ class SLFLogger implements Logger {
 
     @Override
     public void error(String s, Object o) {
-        log.error(s);
+        log.error(formatMessage(s, o));
     }
 
     @Override
     public void error(String s, Object o, Object o1) {
-        log.error(s);
+        log.error(formatMessage(s, o, o1));
     }
 
     @Override
     public void error(String s, Object... objects) {
-        log.error(s);
+        log.error(formatMessage(s, objects));
     }
 
     @Override
@@ -311,6 +312,10 @@ class SLFLogger implements Logger {
 
     @Override
     public void error(Marker marker, String s, Throwable throwable) {
+    }
+
+    private Object formatMessage(String message, Object... params) {
+        return MessageFormatter.arrayFormat(message, params).getMessage();
     }
 
 }

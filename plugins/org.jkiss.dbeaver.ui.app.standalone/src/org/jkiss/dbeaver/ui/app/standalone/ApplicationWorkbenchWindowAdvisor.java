@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
+import org.eclipse.ui.internal.registry.EditorRegistry;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
@@ -293,9 +294,8 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-        UIUtils.asyncExec(() -> {
+        closeEmptyEditors();
 
-        });
         try {
             ApplicationCSSManager.updateApplicationCSS(Display.getCurrent());
         } catch (Throwable e) {
@@ -365,6 +365,28 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     public class EditorAreaDropAdapter extends DropTargetAdapter {
+    }
+
+    /**
+     * Closes all empty editors that has no persisted state associated with it.
+     * <p>
+     * This can be achieved by causing the workbench to persist its state without
+     * actually closing the application (e.g. using workbench auto-save feature),
+     * and then force-closing the application (via task manager, etc.), so exit
+     * hooks are not called. In fact, we do manually close non-persistable editors
+     * using such hook, so empty editors do not appear under normal circumstances.
+     * <p>
+     * Since such editors lack any data, Eclipse doesn't know what editor it is,
+     * and marks it with {@link EditorRegistry#EMPTY_EDITOR_ID}.
+     */
+    private void closeEmptyEditors() {
+        for (IWorkbenchPage page : getWindowConfigurer().getWindow().getPages()) {
+            for (IEditorReference reference : page.getEditorReferences()) {
+                if (EditorRegistry.EMPTY_EDITOR_ID.equals(reference.getId())) {
+                    page.closeEditors(new IEditorReference[]{reference}, false);
+                }
+            }
+        }
     }
 
     private void updateTitle(boolean editorHidden) {

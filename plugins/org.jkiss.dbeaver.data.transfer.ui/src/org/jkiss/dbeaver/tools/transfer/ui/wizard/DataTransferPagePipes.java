@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,12 +251,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private void loadNodeSettings() {
         if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle("Export target");
+            setTitle(DTMessages.data_transfer_wizard_init_title);
             setDescription(DTMessages.data_transfer_wizard_init_description);
 
             loadConsumers();
         } else {
-            setTitle("Import source");
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
             setDescription(DTMessages.data_transfer_wizard_producers_description);
 
             loadProducers();

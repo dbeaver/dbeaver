@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -44,8 +45,8 @@ public class DiagramExportAction extends Action {
     private final Shell shell;
 
     public DiagramExportAction(ERDEditorPart editor, Shell shell) {
-        super("Export diagram", DBeaverIcons.getImageDescriptor(UIIcon.EXPORT));
-        setDescription("Export diagram into a ERD file");
+        super(ERDUIMessages.erd_action_diagram_export_text, DBeaverIcons.getImageDescriptor(UIIcon.EXPORT));
+        setDescription(ERDUIMessages.erd_action_diagram_export_description);
         setToolTipText(getDescription());
         this.editor = editor;
         this.shell = shell;
@@ -54,7 +55,7 @@ public class DiagramExportAction extends Action {
     @Override
     public void run() {
         try {
-            final File path = DialogUtils.selectFileForSave(shell, "Save diagram as", new String[]{"*.erd"}, null);
+            final File path = DialogUtils.selectFileForSave(shell, ERDUIMessages.erd_action_diagram_export_dialog_save_as_title, new String[]{"*.erd"}, null);
             if (path != null) {
                 try (FileWriter writer = new FileWriter(path, GeneralUtils.UTF8_CHARSET)) {
                     writer.write(DiagramLoader.serializeDiagram(new VoidProgressMonitor(), editor.getDiagramPart(), editor.getDiagram(), false, true));

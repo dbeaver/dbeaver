@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -90,7 +91,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
             try {
-                executeTask(new LoggingProgressMonitor(monitor), logStream);
+                DBTTaskRunStatus runResultStatus = executeTask(new LoggingProgressMonitor(monitor), logStream);
+                taskRun.setExtraMessage(runResultStatus.getResultMessage());
             } catch (Throwable e) {
                 taskError = e;
                 taskLog.error("Task fatal error", e);
@@ -118,10 +120,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         return Status.OK_STATUS;
     }
 
-    private void executeTask(DBRProgressMonitor monitor, PrintStream logWriter) throws DBException {
+    private DBTTaskRunStatus executeTask(DBRProgressMonitor monitor, PrintStream logWriter) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
@@ -43,8 +45,11 @@ import java.util.Locale;
 public class DTTaskHandlerTransfer implements DBTTaskHandler {
     private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
+    private final DBCStatistics totalStatistics = new DBCStatistics();
+
     @Override
-    public void executeTask(
+    @NotNull
+    public DBTTaskRunStatus executeTask(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
         @NotNull Locale locale,
@@ -61,9 +66,11 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         } catch (InvocationTargetException e) {
             throw new DBException("Error loading task settings", e.getTargetException());
         } catch (InterruptedException e) {
-            return;
+            return new DBTTaskRunStatus();
         }
         executeWithSettings(runnableContext, task, locale, log, listener, settings[0]);
+
+        return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
     public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale,
@@ -137,6 +144,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener);
             try {
                 runnableContext.run(true, true, job);
+                totalStatistics.accumulate(job.getTotalStatistics());
             } catch (InvocationTargetException e) {
                 error = e.getTargetException();
             } catch (InterruptedException e) {

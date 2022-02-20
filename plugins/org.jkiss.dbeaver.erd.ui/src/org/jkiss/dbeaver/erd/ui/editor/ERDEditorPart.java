@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1291,8 +1291,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             resultsFound = false;
             ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
             graphicalViewer.deselectAll();
-            List nodes = getDiagramPart().getChildren();
-            List allNodesChildren = new ArrayList();
+            List<Object> nodes = getDiagramPart().getChildren();
+            List<?> allNodesChildren = new ArrayList<>();
             for (Object node : nodes) {
                 if (node instanceof EntityPart) {
                     List children = ((EntityPart) node).getChildren();

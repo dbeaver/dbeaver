@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -70,6 +71,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -85,6 +87,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
+    private static final int NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS = 1000;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -122,7 +125,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
-    private SQLEditorCompletionContext completionContext;
+    private final SQLEditorCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
@@ -189,6 +192,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     private void handleInputChange(IEditorInput input) {
         occurrencesHighlighter.updateInput(input);
+
+        final FileEditorInput fileEditorInput = GeneralUtils.adapt(input, FileEditorInput.class);
+        if (fileEditorInput != null) {
+            final long fileTimestamp = fileEditorInput.getFile().getLocalTimeStamp();
+            final long currentTimestamp = System.currentTimeMillis();
+            if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
+                UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
+            }
+        }
     }
 
     @Override
@@ -284,18 +296,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             occurrencesHighlighter.installOccurrencesFinder();
         }
 
-        ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
-            viewer,
+            projectionViewer,
             getAnnotationAccess(),
             getSharedColors());
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error"); //$NON-NLS-1$
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
 
-        viewer.doOperation(ProjectionViewer.TOGGLE);
+        projectionViewer.doOperation(ProjectionViewer.TOGGLE);
 
-        annotationModel = viewer.getProjectionAnnotationModel();
+        annotationModel = projectionViewer.getProjectionAnnotationModel();
+
+        ISourceViewer sourceViewer = getSourceViewer();
 
         // Symbol inserter
         {
@@ -303,15 +317,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
             loadActivePreferenceSettings();
 
-            ISourceViewer sourceViewer = getSourceViewer();
             if (sourceViewer instanceof ITextViewerExtension) {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(sqlSymbolInserter);
             }
         }
 
-        {
+        if (sourceViewer != null) {
             // Context listener
-            EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+            EditorUtils.trackControlContext(getSite(), sourceViewer.getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
         }
     }
 
@@ -333,6 +346,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void updatePartControl(IEditorInput input) {
         super.updatePartControl(input);
+        
+        ProjectionViewer viewer = ((ProjectionViewer) getSourceViewer());
+        if (viewer != null) {
+            annotationModel = viewer.getProjectionAnnotationModel();
+        }
     }
 
     protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
@@ -577,7 +595,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
         menu.insertBefore(ITextEditorActionConstants.GROUP_COPY, ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_NAVIGATE_OBJECT));
 
-        if (!isReadOnly() && getTextViewer().isEditable()) {
+        TextViewer textViewer = getTextViewer();
+        if (!isReadOnly() && textViewer != null && textViewer.isEditable()) {
             MenuManager formatMenu = new MenuManager(SQLEditorMessages.sql_editor_menu_format, "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
             if (formatAction != null) {

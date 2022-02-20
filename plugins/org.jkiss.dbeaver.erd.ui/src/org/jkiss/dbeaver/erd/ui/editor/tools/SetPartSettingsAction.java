@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.ICustomizablePart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
@@ -59,8 +60,8 @@ public class SetPartSettingsAction extends SelectionAction {
         super(part);
         this.selection = selection;
 
-        this.setText("Customize ...");
-        this.setToolTipText("Figure node view settings");
+        this.setText(ERDUIMessages.erd_settings_action_customize);
+        this.setToolTipText(ERDUIMessages.erd_settings_action_customize_tip);
         this.setId("setPartSettings"); //$NON-NLS-1$
     }
 
@@ -180,7 +181,7 @@ public class SetPartSettingsAction extends SelectionAction {
         private ViewSettings newSettings = new ViewSettings();
 
         public PartSettingsDialog(Shell parentShell, NodePart node, boolean noteStyles, boolean entityStyles) {
-            super(parentShell, "Node view settings", null);
+            super(parentShell, ERDUIMessages.erd_settings_dialog_text_title, null);
             this.node = node;
             this.noteStyles = noteStyles;
             this.entityStyles = entityStyles;
@@ -190,36 +191,36 @@ public class SetPartSettingsAction extends SelectionAction {
         protected Composite createDialogArea(Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
 
-            Group settingsGroup = UIUtils.createControlGroup(dialogArea, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+            Group settingsGroup = UIUtils.createControlGroup(dialogArea, ERDUIMessages.erd_settings_dialog_group_label, 2, GridData.FILL_HORIZONTAL, 0);
 
             if (noteStyles) {
-                transparentCheckbox = UIUtils.createCheckbox(settingsGroup, "Transparent", "Make figure transparent (no background)",
-                    node != null && node.getCustomTransparency(), 2);
+                transparentCheckbox = UIUtils.createCheckbox(settingsGroup, ERDUIMessages.erd_settings_checkbox_transparent_label,
+                        ERDUIMessages.erd_settings_checkbox_transparent_tip, node != null && node.getCustomTransparency(), 2);
             }
-            UIUtils.createControlLabel(settingsGroup, "Background");
+            UIUtils.createControlLabel(settingsGroup, ERDUIMessages.erd_settings_color_picker_background_label);
             backgroundColorPicker = new ColorSelector(settingsGroup);
             if (node != null) {
                 backgroundColorPicker.setColorValue(node.getCustomBackgroundColor().getRGB());
             }
             if (noteStyles) {
-                UIUtils.createControlLabel(settingsGroup, "Foreground");
+                UIUtils.createControlLabel(settingsGroup, ERDUIMessages.erd_settings_color_picker_foreground_label);
                 foregroundColorPicker = new ColorSelector(settingsGroup);
                 if (node != null) {
                     foregroundColorPicker.setColorValue(node.getCustomForegroundColor().getRGB());
                 }
 
-                borderWidthText = UIUtils.createLabelText(settingsGroup, "Border width", String.valueOf(node == null ? 1 : node.getCustomBorderWidth()));
+                borderWidthText = UIUtils.createLabelText(settingsGroup, ERDUIMessages.erd_settings_border_width_label, String.valueOf(node == null ? 1 : node.getCustomBorderWidth()));
                 GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.widthHint = 30;
                 borderWidthText.setLayoutData(gd);
                 borderWidthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
 
-                UIUtils.createControlLabel(settingsGroup, "Font");
-                Button changeFontButton = UIUtils.createPushButton(settingsGroup, "Customize...", null, null);
+                UIUtils.createControlLabel(settingsGroup, ERDUIMessages.erd_settings_font_label);
+                Button changeFontButton = UIUtils.createPushButton(settingsGroup, ERDUIMessages.erd_settings_button_change_font_label, null, null);
                 changeFontButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
                 Text previewText = new Text(settingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI);
-                previewText.setText("ERD Node Text");
+                previewText.setText(ERDUIMessages.erd_settings_font_preview_text);
                 gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
                 gd.horizontalSpan = 2;
                 previewText.setLayoutData(gd);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,8 +258,17 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         IEditorInput editorInput = getEditorInput();
         // Sync file changes
         IFile file = EditorUtils.getFileFromInput(editorInput);
+        IPath absolutePath = null;
         if (file != null) {
-            final IPath absolutePath = file.getLocation();
+            absolutePath = file.getLocation();
+        } else if (editorInput instanceof IPathEditorInput) {
+            // no IFile for files outside of workspace (hex editor temporary files for example)
+            IPath path = ((IPathEditorInput)editorInput).getPath();
+            if (path != null) {
+                absolutePath = path.makeAbsolute();
+            }
+        }
+        if (absolutePath != null) {
             File systemFile = absolutePath.toFile();
             // Save to file
             try {
@@ -268,8 +277,10 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             catch (IOException e) {
                 log.error("Can't save binary content", e);
             }
-            // Sync file changes
-            ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
+            // Sync workspace-related file changes
+            if (file != null) {
+                ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
+            }
         }
     }
 

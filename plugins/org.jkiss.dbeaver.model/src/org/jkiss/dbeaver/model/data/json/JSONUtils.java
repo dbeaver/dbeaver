@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -240,6 +240,8 @@ public class JSONUtils {
                 serializeObjectList(json, fieldName, (Collection<?>) propValue);
             } else if (propValue instanceof Map) {
                 serializeProperties(json, fieldName, (Map<String, ?>) propValue);
+            } else if (propValue instanceof Enum) {
+                field(json, fieldName, ((Enum) propValue).name());
             } else {
                 log.debug("Unsupported property type: " + propValue.getClass().getName());
                 field(json, fieldName, propValue.toString());
@@ -341,6 +343,10 @@ public class JSONUtils {
 
     public static long getLong(Map<String, Object> map, String name, long defaultValue) {
         return CommonUtils.toLong(map.get(name), defaultValue);
+    }
+
+    public static Double getDouble(@NotNull Map<String, Object> map, String name) {
+        return CommonUtils.toDouble(map.get(name));
     }
 
     @NotNull

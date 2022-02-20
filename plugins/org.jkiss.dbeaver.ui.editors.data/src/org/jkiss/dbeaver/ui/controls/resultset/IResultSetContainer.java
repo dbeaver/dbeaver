@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 /**
  * Result set provider
  */
-public interface IResultSetContainer extends DBPContextProvider {
+public interface IResultSetContainer extends DBPContextProvider, IResultSetProvider {
 
     /**
      * Owner project.
@@ -36,13 +36,6 @@ public interface IResultSetContainer extends DBPContextProvider {
      */
     @Nullable
     DBPProject getProject();
-
-    /**
-     * Hosted results controller
-     * @return controller or null
-     */
-    @Nullable
-    IResultSetController getResultSetController();
 
     /**
      * Data container (table or something).

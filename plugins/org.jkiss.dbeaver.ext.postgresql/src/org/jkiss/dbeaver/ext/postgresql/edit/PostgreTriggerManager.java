@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -43,7 +44,7 @@ import java.util.Map;
 /**
  * PostgreTriggerManager
  */
-public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, PostgreTableReal> implements DBEObjectRenamer<PostgreTrigger> {//implements DBEObjectRenamer<PostgreTrigger> {
+public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, PostgreTableReal> implements DBEObjectRenamer<PostgreTrigger> {
 
     @Override
     public boolean canCreateObject(Object container) {
@@ -63,7 +64,7 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     @Override
     protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
     {
-        return new PostgreTrigger(monitor, (PostgreTableReal) container);
+        return new PostgreTrigger((PostgreTableReal) container, "new_trigger");
     }
 
     @Override
@@ -110,9 +111,11 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+        PostgreTrigger trigger = command.getObject();
+        PostgreDataSource dataSource = trigger.getDataSource();
         actions.add(new SQLDatabasePersistAction(
             "Rename trigger",
-            "ALTER TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())
+            "ALTER TRIGGER " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())
         ));
     }
 }

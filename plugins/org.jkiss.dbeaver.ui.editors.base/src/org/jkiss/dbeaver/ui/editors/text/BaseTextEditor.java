@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,16 @@ import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -234,35 +238,30 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         return false;
     }
 
-    public void loadFromExternalFile()
-    {
-        final File loadFile = DialogUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*", "*.*"});
+    public void loadFromExternalFile() {
+        final File[] loadFile = DialogUtils.openFileList(getSite().getShell(), EditorsMessages.file_dialog_select_files, new String[]{"*.sql", "*.txt", "*", "*.*"});
         if (loadFile == null) {
             return;
         }
 
-        String newContent = null;
-        try {
-            try (Reader reader = new InputStreamReader(
-                new FileInputStream(loadFile),
-                GeneralUtils.DEFAULT_FILE_CHARSET))
-            {
-                StringWriter buffer = new StringWriter();
-                IOUtils.copyText(reader, buffer);
-                newContent = buffer.toString();
+        StringBuilder newContent = new StringBuilder();
+        for (File file : loadFile) {
+            try {
+                newContent.append(Files.readString(file.toPath(), GeneralUtils.DEFAULT_FILE_CHARSET));
+                newContent.append(System.lineSeparator());
+            } catch (IOException e) {
+                DBWorkbench.getPlatformUI().showError(
+                        EditorsMessages.file_dialog_cannot_load_file,
+                        EditorsMessages.file_dialog_cannot_load_file + " '" + file.getAbsolutePath() + "' - " + e.getMessage());
             }
         }
-        catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError(
-                    "Can't load file",
-                "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
-        }
-        if (newContent != null) {
+        if (!CommonUtils.isEmpty(newContent)) {
             IDocument document = getDocument();
             if (document != null) {
-                document.set(newContent);
+                document.set(newContent.toString());
             }
         }
+
     }
 
     public void saveToExternalFile()
@@ -272,7 +271,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         String fileName = curFile == null ? null : curFile.getName();
 
         final IDocument document = getDocument();
-        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save as file", new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
+        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), EditorsMessages.file_dialog_save_as_file, new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
         if (document == null || saveFile == null) {
             return;
         }
@@ -289,7 +288,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         } catch (InterruptedException e) {
             // do nothing
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Save failed", null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(EditorsMessages.file_dialog_save_failed, null, e.getTargetException());
         }
 
         afterSaveToFile(saveFile);

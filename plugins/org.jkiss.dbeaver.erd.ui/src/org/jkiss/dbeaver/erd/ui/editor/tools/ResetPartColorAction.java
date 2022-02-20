@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.gef3.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.part.ICustomizablePart;
 
 import java.util.HashMap;
@@ -34,8 +35,8 @@ public class ResetPartColorAction extends SelectionAction {
         super(part);
         this.selection = selection;
 
-        this.setText("Remove color");
-        this.setToolTipText("Reset figure color");
+        this.setText(ERDUIMessages.erd_tool_color_action_text_reset_color);
+        this.setToolTipText(ERDUIMessages.erd_tool_color_action_tip_text_reset_figure_color);
         this.setId("removeFigureColor");
     }
 

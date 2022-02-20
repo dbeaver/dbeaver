@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -30,6 +32,7 @@ import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.preferences.PrefPageGIS;
 
+import java.util.Arrays;
 import java.util.List;
 
 class SelectCRSAction extends Action {
@@ -44,11 +47,16 @@ class SelectCRSAction extends Action {
 
     @Override
     public void run() {
-        SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
-            UIUtils.getActiveWorkbenchShell(),
-            valueEditor.getValueSRID());
-        if (manageCRSDialog.open() == IDialogConstants.OK_ID) {
-            valueEditor.setValueSRID(manageCRSDialog.getSelectedSRID());
+        if (valueEditor instanceof GISLeafletViewer &&
+                Arrays.stream(((GISLeafletViewer) valueEditor).getCurrentValue()).map(DBGeometry::getSRID).distinct().count() > 1) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", "Can't change coordinate reference system because geometries have different SRID.");
+        } else {
+            SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
+                    UIUtils.getActiveWorkbenchShell(),
+                    valueEditor.getValueSRID());
+            if (manageCRSDialog.open() == IDialogConstants.OK_ID) {
+                valueEditor.setValueSRID(manageCRSDialog.getSelectedSRID());
+            }
         }
     }
 

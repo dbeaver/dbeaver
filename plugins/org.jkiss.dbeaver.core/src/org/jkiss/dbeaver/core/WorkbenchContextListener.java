@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,9 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
@@ -46,12 +42,8 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     //private static final Log log = Log.getLog(WorkbenchContextListener.class);
 
-    private static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
-    private static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
+    public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
-//    private IContextActivation activationNavigator;
-    private IContextActivation activationSQL;
-    private IContextActivation activationResults;
     private CommandExecutionListener commandExecutionListener;
 
     public WorkbenchContextListener() {
@@ -212,15 +204,6 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 //                }
 //                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
 //            }
-            if (part.getAdapter(ResultSetViewer.class) != null ||
-                (part instanceof SQLEditor) ||
-                (part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
-            {
-                if (activationResults != null) {
-                    contextService.deactivateContext(activationResults);
-                }
-                activationResults = contextService.activateContext(RESULTS_CONTEXT_ID);
-            }
             // Refresh auto-commit element state (#3315)
             // Refresh OpenSeparateConnection
             ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT, SQLEditorCommands.CMD_TOGGLE_SEPARATE_CONNECTION);
@@ -237,28 +220,6 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     }
 
     void deactivatePartContexts(IWorkbenchPart part) {
-        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
-        if (contextService == null) {
-            return;
-        }
-        try {
-            contextService.deferUpdates(true);
-//            if (activationNavigator != null && part instanceof INavigatorModelView) {
-//                contextService.deactivateContext(activationNavigator);
-//                activationNavigator = null;
-//            }
-//            if (activationSQL != null) {
-//                contextService.deactivateContext(activationSQL);
-//                activationSQL = null;
-//            }
-            if (activationResults != null) {
-                contextService.deactivateContext(activationResults);
-                activationResults = null;
-            }
-        }
-        finally {
-            contextService.deferUpdates(false);
-        }
     }
 
     @Override

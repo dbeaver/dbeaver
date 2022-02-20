@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,39 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.swt.graphics.Drawable;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.code.NotNull;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Text utils
  */
 public class UITextUtils {
+    /**
+     * Shortens a supplied string so that it fits within the area specified by
+     * the width argument. Strings that have been shorted have an "..." attached
+     * to the end of the string. The width is computed using the
+     * {@link org.eclipse.swt.graphics.GC#textExtent(String)}.
+     * <p>
+     * This method creates a new {@link GC} from a given {@code drawable} object
+     * and then disposes it afterwards.
+     * <p>
+     * This method should not be used for real-time rendering.
+     *
+     * @see #getShortText(GC, String, int)
+     */
+    @NotNull
+    public static String getShortText(@NotNull Drawable drawable, @NotNull String text, int width) {
+        final GC gc = new GC(drawable);
+        try {
+            return getShortText(gc, text, width);
+        } finally {
+            UIUtils.dispose(gc);
+        }
+    }
 
     /**
      * Shortens a supplied string so that it fits within the area specified by

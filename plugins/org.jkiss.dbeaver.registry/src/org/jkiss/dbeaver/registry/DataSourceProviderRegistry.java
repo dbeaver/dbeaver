@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
+    private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
     private final Map<String, ExternalResourceDescriptor> resourceContributions = new LinkedHashMap<>();
 
@@ -218,9 +219,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        // Load external resources information
+        // Load datasource handlers
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ExternalResourceDescriptor.EXTENSION_ID);
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceHandlerDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 ExternalResourceDescriptor resource = new ExternalResourceDescriptor(ext);
                 resourceContributions.put(resource.getName(), resource);
@@ -229,6 +230,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         resourceContributions.put(alias, resource);
                     }
                 }
+            }
+        }
+
+        // Load datasource handlers
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceHandlerDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                DataSourceHandlerDescriptor descriptor = new DataSourceHandlerDescriptor(ext);
+                dataSourceHandlers.add(descriptor);
             }
         }
 
@@ -515,6 +525,13 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             log.error(e);
             return null;
         }
+    }
+
+    //////////////////////////////////////////////
+    // Handlers
+
+    public List<DataSourceHandlerDescriptor> getDataSourceHandlers() {
+        return dataSourceHandlers;
     }
 
     //////////////////////////////////////////////

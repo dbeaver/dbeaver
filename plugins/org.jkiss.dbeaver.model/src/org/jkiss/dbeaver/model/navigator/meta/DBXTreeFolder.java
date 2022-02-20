@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,13 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.type = folder.type;
         this.label = folder.label;
         this.description = folder.description;
+
+        this.optionalItem = folder.optionalItem;
+
+        this.isOptional = folder.isOptional;
+
+        this.contributedCategories = folder.contributedCategories == null ? null : new ArrayList<>(folder.contributedCategories);
+        this.itemTypes = folder.itemTypes;
     }
 
     public String getType() {

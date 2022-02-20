@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2017 Liu, Yuanyuan (liuyuanyuan@highgo.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,8 +39,15 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_label_compression;
     public static String wizard_backup_page_setting_label_encoding;
     public static String wizard_backup_page_setting_checkbox_use_insert;
+    public static String wizard_backup_page_setting_checkbox_use_insert_tip;
     public static String wizard_backup_page_setting_checkbox_no_privileges;
+    public static String wizard_backup_page_setting_checkbox_no_privileges_tip;
     public static String wizard_backup_page_setting_checkbox_no_owner;
+    public static String wizard_backup_page_setting_checkbox_no_owner_tip;
+    public static String wizard_backup_page_setting_checkbox_drop_objects;
+    public static String wizard_backup_page_setting_checkbox_drop_objects_tip;
+    public static String wizard_backup_page_setting_checkbox_create_database;
+    public static String wizard_backup_page_setting_checkbox_create_database_tip;
     public static String wizard_backup_page_setting_group_output;
     public static String wizard_backup_page_setting_label_output_folder;
     public static String wizard_backup_page_setting_label_file_name_pattern;
@@ -55,6 +62,12 @@ public class PostgreMessages extends NLS {
     /* wizard restore*/
     public static String wizard_restore_title;
     public static String wizard_restore_page_setting_btn_clean_first;
+    public static String wizard_restore_page_setting_btn_clean_first_tip;
+    public static String wizard_backup_page_setting_checkbox_restore_no_owner_tip;
+    public static String wizard_backup_page_setting_checkbox_restore_create_database;
+    public static String wizard_backup_page_setting_checkbox_restore_create_database_tip;
+    public static String wizard_restore_page_setting_confirm_dialog_title;
+    public static String wizard_restore_page_setting_confirm_dialog_message;
     public static String wizard_restore_page_setting_description;
     public static String wizard_restore_page_setting_label_backup_file;
     public static String wizard_restore_page_setting_label_choose_backup_file;
@@ -167,6 +180,14 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_tablespace_owner;
     public static String dialog_create_tablespace_loc;
     public static String dialog_create_tablespace_options;
+
+    /* Postgre create event trigger dialog */
+    public static String dialog_trigger_label_combo_event_type;
+    public static String dialog_trigger_label_combo_event_type_tip;
+    public static String dialog_trigger_label_title;
+
+    public static String dialog_trigger_edit_page_label_trigger_function;
+    public static String dialog_trigger_edit_page_select_function_title;
 
     static {
         // initialize resource bundle

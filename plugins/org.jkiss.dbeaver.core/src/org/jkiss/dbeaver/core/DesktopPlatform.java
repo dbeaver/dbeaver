@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.BaseApplicationImpl;
-import org.jkiss.dbeaver.registry.BasePlatformImpl;
-import org.jkiss.dbeaver.registry.BasicWorkspace;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
@@ -70,7 +67,7 @@ public class DesktopPlatform extends BasePlatformImpl {
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
-    private BasicWorkspace workspace;
+    private BaseWorkspaceImpl workspace;
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
@@ -155,7 +152,7 @@ public class DesktopPlatform extends BasePlatformImpl {
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
         // Register properties adapter
-        this.workspace = new BasicWorkspace(this, ResourcesPlugin.getWorkspace());
+        this.workspace = (BaseWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
         this.workspace.initializeProjects();
 
         QMUtils.initApplication(this);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,28 +61,9 @@ class OracleDialectRules implements TPRuleProvider {
                     if (!Character.isLetterOrDigit(quoteStartChar)) {
                         // Probably a Q-string
                         char quoteEndChar = getQuoteEndChar(quoteStartChar);
-                        int charsRead = 0;
-                        boolean isQuote = true;
-                        for (;;) {
-                            c = scanner.read();
-                            charsRead++;
-                            if (c == quoteEndChar) {
-                                c = scanner.read();
-                                charsRead++;
-                                if (c == '\'') {
-                                    break;
-                                }
-                            } else if (c == TPCharacterScanner.EOF) {
-                                isQuote = false;
-                                break;
-                            }
-                        }
-                        if (isQuote) {
+
+                        if (tryReadQString(scanner, quoteEndChar)) {
                             return stringToken;
-                        } else {
-                            for (int i = 0; i < charsRead; i++) {
-                                scanner.unread();
-                            }
                         }
                     } else {
                         quoteStartChar = (char) -1;
@@ -97,6 +78,26 @@ class OracleDialectRules implements TPRuleProvider {
                 scanner.unread();
             }
             return TPTokenAbstract.UNDEFINED;
+        }
+
+        private boolean tryReadQString(TPCharacterScanner scanner, char quoteEndChar) {
+            int charsRead = 0;
+            int prevChar = -1, currChar = -1;
+            boolean isEndOfLiteral, isEndOfText;
+            do {
+                prevChar = currChar;
+                currChar = scanner.read();
+                charsRead++;
+                isEndOfLiteral = prevChar == quoteEndChar && currChar == '\'';
+                isEndOfText = currChar == TPCharacterScanner.EOF;
+            } while (!isEndOfLiteral && !isEndOfText);
+
+            if (isEndOfText) {
+                for (int i = 0; i < charsRead; i++) {
+                    scanner.unread();
+                }
+            }
+            return isEndOfLiteral;
         }
 
         private static char getQuoteEndChar(char startChar) {

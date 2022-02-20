@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
@@ -33,7 +32,7 @@ import java.nio.file.Path;
 /**
  * DBNFileSystemRoot
  */
-public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNContainer
+public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 {
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
@@ -81,7 +80,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNCo
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER;
+        return DBIcon.TREE_FOLDER_INFO;
     }
 
     @Override
@@ -90,7 +89,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNCo
     }
 
     @Override
-    protected Path getPath() {
+    public Path getPath() {
         if (path == null) {
             try {
                 path = root.getPath(new VoidProgressMonitor());
@@ -102,18 +101,4 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode, DBNCo
         return path;
     }
 
-    @Override
-    public Object getValueObject() {
-        return path;
-    }
-
-    @Override
-    public String getChildrenType() {
-        return "Folder";
-    }
-
-    @Override
-    public Class<?> getChildrenClass() {
-        return DBNPath.class;
-    }
 }

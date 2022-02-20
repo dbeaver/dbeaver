@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.mysql.ui.config.UserPropertyHandler;
 import org.jkiss.dbeaver.ext.mysql.ui.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -119,11 +120,13 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
             privTable.addListener(SWT.Modify, event -> {
                 final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
-                final boolean grant = event.detail == 1;
+                final boolean grant = event.detail >= 1;
+                final boolean withGrantOption = event.detail == 2;
                 addChangeCommand(
                     new MySQLCommandGrantPrivilege(
                         getDatabaseObject(),
                         grant,
+                        withGrantOption,
                         null,
                         null,
                         privilege),
@@ -149,14 +152,18 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         pageControl.createProgressPanel();
 
         commandlistener = new CommandListener();
-        getEditorInput().getCommandContext().addCommandListener(commandlistener);
+        DBECommandContext context = getEditorInput().getCommandContext();
+        if (context != null) {
+            context.addCommandListener(commandlistener);
+        }
     }
 
     @Override
     public void dispose()
     {
-        if (commandlistener != null) {
-            getEditorInput().getCommandContext().removeCommandListener(commandlistener);
+        DBECommandContext commandContext = getEditorInput().getCommandContext();
+        if (commandlistener != null && commandContext != null) {
+            commandContext.removeCommandListener(commandlistener);
         }
         super.dispose();
     }
@@ -259,8 +266,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
         private void setUsernameAndHost(@NotNull String username, @NotNull String host) {
             UIUtils.asyncExec(() -> {
-                userNameText.setText(username);
-                hostText.setText(host);
+                if (!privTable.isDisposed()) {
+                    userNameText.setText(username);
+                    hostText.setText(host);
+                }
             });
         }
     }

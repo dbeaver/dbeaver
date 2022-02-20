@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -95,13 +96,17 @@ public class EditorContributionDescriptor extends AbstractContextDescriptor impl
         if (supportedDataSources.isEmpty() && supportedDrivers.isEmpty()) {
             return true;
         }
-        if (!supportedDataSources.isEmpty() && !supportedDataSources.contains(dataSource.getDriver().getProviderId())) {
-            return false;
+        if (!supportedDataSources.isEmpty()) {
+            boolean supportsProvider = false;
+            for (DBPDataSourceProviderDescriptor dspd = dataSource.getDriver().getProviderDescriptor(); dspd != null; dspd = dspd.getParentProvider()) {
+                if (supportedDataSources.contains(dspd.getId())) {
+                    supportsProvider = true;
+                    break;
+                }
+            }
+            return supportsProvider;
         }
-        if (!supportedDrivers.isEmpty() && !supportedDrivers.contains(dataSource.getDriver().getId())) {
-            return false;
-        }
-        return true;
+        return supportedDrivers.contains(dataSource.getDriver().getId());
     }
 
     @Override

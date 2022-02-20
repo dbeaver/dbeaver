@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -59,6 +60,18 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         }
         for (DBNFileSystemRoot root : children) {
             if (root.getRoot().getId().equals(path)) {
+                return root;
+            }
+        }
+        return null;
+    }
+
+    public DBNFileSystemRoot getRoot(DBFVirtualFileSystemRoot dbfRoot) {
+        if (children == null) {
+            return null;
+        }
+        for (DBNFileSystemRoot root : children) {
+            if (CommonUtils.equalObjects(root.getRoot(), dbfRoot)) {
                 return root;
             }
         }
@@ -96,7 +109,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER;
+        return DBIcon.TREE_FOLDER_LINK;
     }
 
     @Override
@@ -110,6 +123,15 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
             this.children = readChildNodes(monitor);
         }
         return children;
+    }
+
+    public DBNFileSystemRoot getChild(DBRProgressMonitor monitor, String name) throws DBException {
+        for (DBNFileSystemRoot root : getChildren(monitor)) {
+            if (root.getName().equals(name)) {
+                return root;
+            }
+        }
+        return null;
     }
 
     protected DBNFileSystemRoot[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
@@ -139,7 +161,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + fileSystem.getType();
+        return getParentNode().getNodeItemPath() + "/" + getName();
     }
 
     @Override
@@ -171,4 +193,5 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     public boolean needsInitialization() {
         return children == null;
     }
+
 }

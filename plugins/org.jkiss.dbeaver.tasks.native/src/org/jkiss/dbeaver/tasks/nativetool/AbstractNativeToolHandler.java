@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -52,7 +53,8 @@ import java.util.*;
 public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
 
     @Override
-    public void executeTask(
+    @NotNull
+    public DBTTaskRunStatus executeTask(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
         @NotNull Locale locale,
@@ -62,7 +64,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         SETTINGS settings = createTaskSettings(runnableContext, task);
         settings.setLogWriter(logStream);
         if (!validateTaskParameters(task, settings, log)) {
-            return;
+            return new DBTTaskRunStatus();
         }
         try {
             runnableContext.run(true, true, monitor -> {
@@ -89,6 +91,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         } catch (InterruptedException e) {
             // ignore
         }
+        return new DBTTaskRunStatus();
     }
 
     protected boolean isNativeClientHomeRequired() {
@@ -247,7 +250,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             objNames.add(obj.getName());
         }
         message.append("\nObject(s) processed: ").append(String.join(",", objNames));
-        DBWorkbench.getPlatformUI().showMessageBox(task.getName(), message.toString(), false);
+        DBWorkbench.getPlatformUI().showNotification(task.getName(), message.toString(), false);
 
     }
 

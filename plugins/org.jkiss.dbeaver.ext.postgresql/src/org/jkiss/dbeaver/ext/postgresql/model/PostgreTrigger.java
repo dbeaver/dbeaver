@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -29,12 +31,13 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -46,18 +49,18 @@ import java.util.Map;
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject, DBPScriptObjectExt2
+public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityElement
 {
     private static final Log log = Log.getLog(PostgreTrigger.class);
 
     /* Bits within tgtype */
-    public static final int TRIGGER_TYPE_ROW        = (1 << 0);
-    public static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
-    public static final int TRIGGER_TYPE_INSERT     = (1 << 2);
-    public static final int TRIGGER_TYPE_DELETE     = (1 << 3);
-    public static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
-    public static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
-    public static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
+    private static final int TRIGGER_TYPE_ROW        = (1 << 0);
+    private static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
+    private static final int TRIGGER_TYPE_INSERT     = (1 << 2);
+    private static final int TRIGGER_TYPE_DELETE     = (1 << 3);
+    private static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
+    private static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
+    private static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
 
     private PostgreTableReal table;
     private long objectId;
@@ -68,18 +71,16 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private DBSActionTiming actionTiming;
     private DBSManipulationType[] manipulationTypes;
     private PostgreTriggerType type;
-    private boolean persisted;
     private PostgreTableColumn[] columnRefs;
     protected String description;
-    protected String name;
     private String body;
 
     public PostgreTrigger(
-        DBRProgressMonitor monitor,
-        PostgreTableReal table,
-        ResultSet dbResult) throws DBException {
-        this.persisted = true;
-        this.name = JDBCUtils.safeGetString(dbResult, "tgname");
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableReal table,
+        @NotNull String triggerName,
+        @NotNull ResultSet dbResult) throws DBException {
+        super(table.getDatabase(), triggerName, true);
         this.table = table;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.enabledState = JDBCUtils.safeGetString(dbResult, "tgenabled");
@@ -140,8 +141,10 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
-    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent) {
+    public PostgreTrigger(@NotNull PostgreTableReal parent, @NotNull String name) {
+        super(parent.getDatabase(), name, false);
         this.table = parent;
+        this.name = name;
     }
 
     @NotNull
@@ -181,11 +184,6 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     }
 
     @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
     public PostgreTableBase getTable()
     {
         return table;
@@ -203,6 +201,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         return whenExpression;
     }
 
+    @Override
     @Property(viewable = true, order = 12)
     public PostgreProcedure getFunction(DBRProgressMonitor monitor) throws DBException {
         if (functionId == 0) {
@@ -232,6 +231,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         this.description = description;
     }
 
+    @NotNull
     @Override
     public PostgreTableReal getParentObject()
     {
@@ -253,28 +253,35 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (body != null) {
-            return body;
-        }
-
-        if (persisted) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
-                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
-                if (body != null) {
-                    body = SQLFormatUtils.formatSQL(getDataSource(), body);
+        StringBuilder ddl = new StringBuilder();
+        if (CommonUtils.isEmpty(body)) {
+            if (isPersisted()) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
+                    body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                    if (body != null) {
+                        body = SQLFormatUtils.formatSQL(getDataSource(), body);
+                    }
+                } catch (SQLException e) {
+                    throw new DBException(e, getDataSource());
                 }
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+            } else {
+                body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
+                    + "\n    AFTER INSERT"
+                    + "\n    ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                    + "\n    FOR EACH ROW"
+                    + "\n    EXECUTE PROCEDURE " + getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "();\n";
             }
-        } else {
-            body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
-                       + "\n    AFTER INSERT"
-                       + "\n    ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
-                       + "\n    FOR EACH ROW"
-                       + "\n    EXECUTE PROCEDURE " + getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "();\n";
         }
 
-        return body;
+        ddl.append(body);
+        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+            ddl.append(";\n\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
+                .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
+                .append(" IS ")
+                .append(SQLUtils.quoteString(this, getDescription())).append(";");
+        }
+
+        return ddl.toString();
     }
 
     @Override
@@ -286,6 +293,13 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         return body;
     }
 
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getParentObject().getTriggerCache().refreshObject(monitor, getParentObject(), this);
+    }
+
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -293,6 +307,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
                 this);
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         if ("D".equals(enabledState)) {
@@ -302,7 +317,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
             try {
                 enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM pg_catalog.pg_trigger WHERE oid=?", getObjectId());
@@ -311,11 +326,6 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
             }
         }
 
-    }
-
-    @Override
-    public boolean supportsObjectDefinitionOption(String option) {
-        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 
     @Override

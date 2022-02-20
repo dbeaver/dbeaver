@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 @Override
                 protected boolean isDatabaseObjectVisible(DBSObject obj) {
                     if (obj instanceof DBSDataContainer && obj instanceof DBSEntity) {
-                        if ((((DBSDataContainer) obj).getSupportedFeatures() & DBSDataContainer.DATA_SEARCH) == 0) {
+                        if (!((DBSDataContainer) obj).isFeatureSupported(DBSDataContainer.FEATURE_DATA_SEARCH)) {
                             return false;
                         }
                     }

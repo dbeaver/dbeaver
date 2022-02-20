@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -28,15 +32,19 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOFile;
 import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
+import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.io.IOException;
-import java.net.URI;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.*;
 
 /**
@@ -55,7 +63,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         super(parentNode);
     }
 
-    protected abstract Path getPath();
+    public abstract Path getPath();
 
     @Override
     protected void dispose(boolean reflect) {
@@ -92,24 +100,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     // Path's file name may be null (e.g. forFS root folder)
     // Then try to extract it from URI or from toString
     private String getFileName() {
-        Path path = getPath();
-        Path fileName = path.getFileName();
-        if (fileName == null) {
-            String virtName = null;
-            URI uri = path.toUri();
-            if (uri != null) {
-                String uriPath = uri.getPath();
-                if (!CommonUtils.isEmpty(uriPath)) {
-                    virtName = uriPath;
-                }
-            }
-            if (virtName == null) {
-                virtName = path.toString();
-            }
-            return CommonUtils.removeTrailingSlash(
-                CommonUtils.removeLeadingSlash(virtName));
-        }
-        return fileName.toString();
+        return NIOResource.getPathFileNameOrHost(getPath());
     }
 
     @Override
@@ -164,7 +155,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         }
     }
 
-    private DBNPathBase getChild(Path thePath) {
+    public DBNPathBase getChild(Path thePath) {
         if (children == null) {
             return null;
         }
@@ -174,6 +165,38 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             }
         }
         return null;
+    }
+
+    public DBNPathBase getChild(String name) {
+        if (children == null) {
+            return null;
+        }
+        for (DBNNode child : children) {
+            if (child.getName().equals(name)) {
+                return (DBNPathBase) child;
+            }
+        }
+        return null;
+    }
+
+    void addChildResource(Path path) {
+        if (children == null) {
+            return;
+        }
+        DBNPath child = new DBNPath(this, path);
+        children = ArrayUtils.add(DBNNode.class, children, child);
+        fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, child));
+    }
+
+    void removeChildResource(Path path) {
+        if (children == null) {
+            return;
+        }
+        DBNPathBase child = getChild(path);
+        if (child != null) {
+            children = ArrayUtils.remove(DBNNode.class, children, child);
+            fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, child));
+        }
     }
 
     private DBNPathBase makeNode(Path resource) {
@@ -195,7 +218,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getFileName();
+        return getParentNode().getNodeItemPath() + "/" + getName();
     }
 
     @Override
@@ -215,16 +238,13 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public boolean supportsDrop(DBNNode otherNode) {
-        if (!allowsChildren()) {
-            return false;
-        }
         if (otherNode == null) {
             // Potentially any other node could be dropped in the folder
             return true;
         }
 
         // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
-        return otherNode instanceof DBNPathBase
+        return otherNode.getAdapter(IResource.class) != null
             && otherNode != this
             && otherNode.getParentNode() != this
             && !this.isChildOf(otherNode);
@@ -232,7 +252,54 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public void dropNodes(Collection<DBNNode> nodes) throws DBException {
-        throw new DBException("Not implemented");
+        IContainer folder;
+        IResource thisResource = getResource();
+        if (thisResource instanceof IContainer) {
+            folder = (IContainer) thisResource;
+        } else {
+            folder = thisResource.getParent();
+        }
+        if (!(folder instanceof IFolder)) {
+            throw new DBException("Can't drop files into non-folder");
+        }
+        new AbstractJob("Copy files to workspace") {
+            {
+                setUser(true);
+            }
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Copy files", nodes.size());
+                try {
+                    for (DBNNode node : nodes) {
+                        IResource resource = node.getAdapter(IResource.class);
+                        if (resource == null || !resource.exists()) {
+                            continue;
+                        }
+                        if (!(resource instanceof IFile)) {
+                            continue;
+                        }
+                        monitor.subTask("Copy file " + resource.getName());
+                        try {
+                            IFile targetFile = ((IFolder)folder).getFile(resource.getName());
+                            try (InputStream is = ((IFile) resource).getContents()) {
+                                if (targetFile.exists()) {
+                                    targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                                } else {
+                                    targetFile.create(is, true, monitor.getNestedMonitor());
+                                }
+                            }
+                        } finally {
+                            monitor.worked(1);
+                        }
+                    }
+                } catch (Exception e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     protected void filterChildren(List<DBNNode> list) {
@@ -280,7 +347,11 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws IOException {
-        return Files.getLastModifiedTime(getPath()).toString();
+        FileTime time = Files.getLastModifiedTime(getPath());
+        if (time.toMillis() <= 0) {
+            return null;
+        }
+        return time.toString();
     }
 
     protected boolean isResourceExists() {
@@ -292,7 +363,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         } else if (adapter == IResource.class) {
-            DBNFileSystemRoot rootNode = DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
+            DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
+                (DBNFileSystemRoot) this :
+                DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
             if (rootNode == null) {
                 return null;
             }
@@ -300,6 +373,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
             NIOFileSystemRoot root = new NIOFileSystemRoot(
                 getOwnerProject().getEclipseProject(),
+                fsRoot,
                 fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getId(),
                 rootPath
             );
@@ -325,4 +399,5 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     public boolean needsInitialization() {
         return children == null;
     }
+
 }

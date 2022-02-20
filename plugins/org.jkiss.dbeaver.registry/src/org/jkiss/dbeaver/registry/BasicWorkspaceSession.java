@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,20 @@ import com.sun.security.auth.module.UnixSystem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.access.DBASession;
-import org.jkiss.dbeaver.model.access.DBASessionPrincipal;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.*;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
-    private final BaseWorkspaceImpl baseWorkspace;
+public class BasicWorkspaceSession extends AbstractDBASessionPersistent implements DBASession, DBASessionPrincipal {
+    private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
 
-    public BasicWorkspaceSession(BaseWorkspaceImpl baseWorkspace) {
-        this.baseWorkspace = baseWorkspace;
+    public BasicWorkspaceSession(@NotNull DBPWorkspace workspace) {
+        this.workspace = workspace;
         try {
             if (RuntimeUtils.isWindows()) {
                 NTSystem ntSystem = new NTSystem();
@@ -68,7 +67,13 @@ class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
     @NotNull
     @Override
     public DBAAuthSpace getSessionSpace() {
-        return baseWorkspace;
+        return workspace;
+    }
+
+    @NotNull
+    @Override
+    public DBASessionContext getSessionContext() {
+        return workspace.getAuthContext();
     }
 
     @Override
@@ -79,7 +84,7 @@ class BasicWorkspaceSession implements DBASession, DBASessionPrincipal {
     @NotNull
     @Override
     public String getSessionId() {
-        return baseWorkspace.getWorkspaceId();
+        return workspace.getWorkspaceId();
     }
 
     @Override

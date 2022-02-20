@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,14 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +39,7 @@ import java.util.*;
  */
 public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject, DBSDictionary, IAdaptable {
 
-    private static final String[] DESC_COLUMN_PATTERNS = {
+    public static final String[] DEFAULT_DESCRIPTION_COLUMN_PATTERNS = {
         "title",
         "name",
         "label",
@@ -527,7 +529,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
         if (stringColumns.size() > 1) {
             // Make some tests
-            for (String pattern : DESC_COLUMN_PATTERNS) {
+            for (String pattern : getDescriptionColumnPatterns(keyColumn.getDataSource().getContainer().getPreferenceStore())) {
                 for (String columnName : stringColumns.keySet()) {
                     if (columnName.toLowerCase(Locale.ENGLISH).contains(pattern)) {
                         return DBUtils.getQuotedIdentifier(stringColumns.get(columnName));
@@ -537,6 +539,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
         // No columns match pattern
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
+    }
+
+    @NotNull
+    public static List<String> getDescriptionColumnPatterns(@NotNull DBPPreferenceStore store) {
+        return CommonUtils.splitString(store.getString(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS), '|');
     }
 
     @NotNull

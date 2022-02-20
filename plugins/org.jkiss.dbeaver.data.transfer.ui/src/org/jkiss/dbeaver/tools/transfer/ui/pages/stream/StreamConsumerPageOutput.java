@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,7 +256,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard && !addToEnd);
         splitFilesCheckbox.setEnabled(!clipboard);
-        appendToEndOfFileCheck.setEnabled(!clipboard && !compress);
+        appendToEndOfFileCheck.setEnabled(!isBinary && !clipboard && !compress);
         maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
@@ -276,7 +276,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         clipboardCheck.setSelection(settings.isOutputClipboard());
         singleFileCheck.setSelection(settings.isUseSingleFile());
-        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd());
+        appendToEndOfFileCheck.setSelection(!settings.isAppendToFileEnd() && !settings.isCompressResults() && settings.isOutputClipboard());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
@@ -287,6 +287,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
 
         if (isBinary) {
+            appendToEndOfFileCheck.setSelection(false);
             clipboardCheck.setSelection(false);
             encodingBOMCheckbox.setSelection(false);
             settings.setOutputClipboard(false);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,6 +50,8 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private boolean useInserts;
     private boolean noPrivileges;
     private boolean noOwner;
+    private boolean dropObjects;
+    private boolean createDatabase;
 
     @NotNull
     public List<PostgreDatabaseBackupInfo> getExportObjects() {
@@ -108,6 +110,22 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         this.noOwner = noOwner;
     }
 
+    public boolean isDropObjects() {
+        return dropObjects;
+    }
+
+    public void setDropObjects(boolean dropObjects) {
+        this.dropObjects = dropObjects;
+    }
+
+    public boolean isCreateDatabase() {
+        return createDatabase;
+    }
+
+    public void setCreateDatabase(boolean createDatabase) {
+        this.createDatabase = createDatabase;
+    }
+
     public void fillExportObjectsFromInput() {
         Map<PostgreDatabase, PostgreDatabaseBackupInfo> objMap = new LinkedHashMap<>();
         for (DBSObject object : getDatabaseObjects()) {
@@ -160,6 +178,8 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         useInserts = store.getBoolean("pg.export.useInserts");
         noPrivileges = store.getBoolean("pg.export.noPrivileges");
         noOwner = store.getBoolean("pg.export.noOwner");
+        dropObjects = store.getBoolean("pg.export.dropObjects");
+        createDatabase = store.getBoolean("pg.export.createDatabase");
 
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
@@ -237,6 +257,8 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         store.setValue("pg.export.useInserts", useInserts);
         store.setValue("pg.export.noPrivileges", noPrivileges);
         store.setValue("pg.export.noOwner", noOwner);
+        store.setValue("pg.export.dropObjects", dropObjects);
+        store.setValue("pg.export.createDatabase", createDatabase);
 
         if (store instanceof DBPPreferenceMap && !CommonUtils.isEmpty(exportObjects)) {
             // Save input objects to task properties

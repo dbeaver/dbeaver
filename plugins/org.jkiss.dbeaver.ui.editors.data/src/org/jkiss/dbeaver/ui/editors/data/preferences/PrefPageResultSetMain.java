@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,10 +65,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button useNavigatorFilters;
 
     private Button showErrorsInDialog;
+    private Button markCellValueOccurrences;
 
     private Button advUseFetchSize;
 
     private Button ignoreColumnLabelCheck;
+    private Button useDateTimeEditor;
 
     public PrefPageResultSetMain()
     {
@@ -95,6 +97,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
+            store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
             store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
             ;
     }
@@ -175,13 +178,15 @@ public class PrefPageResultSetMain extends TargetPrefPage
             newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
             useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
+            useDateTimeEditor = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime, ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime_tip, false, 1);
         }
 
         {
             Group uiGroup = UIUtils.createControlGroup(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             uiGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            showErrorsInDialog = UIUtils.createCheckbox(uiGroup, "Show errors in dialog", "Show errors in modal dialog. Otherwise show errors in special data presentation (default)", false, 1);
+            showErrorsInDialog = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog_tip, false, 1);
+            markCellValueOccurrences = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences_tip, false, 1);
         }
 
         return composite;
@@ -197,6 +202,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         try {
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
             rereadOnScrollingCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING));
+            useDateTimeEditor.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR));
             int rsSegmentSize = store.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
             if (rsSegmentSize > 0 && rsSegmentSize < ResultSetPreferences.MIN_SEGMENT_SIZE) {
                 rsSegmentSize = ResultSetPreferences.MIN_SEGMENT_SIZE;
@@ -219,6 +225,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             ignoreColumnLabelCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
 
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
+            markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
 
             updateOptionsEnablement();
         } catch (Exception e) {
@@ -230,6 +237,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
+            store.setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, useDateTimeEditor.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
@@ -250,6 +258,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL, ignoreColumnLabelCheck.getSelection());
 
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES, markCellValueOccurrences.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -259,6 +268,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
+        store.setToDefault(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS);
@@ -279,6 +289,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
 
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES);
 
         updateOptionsEnablement();
     }

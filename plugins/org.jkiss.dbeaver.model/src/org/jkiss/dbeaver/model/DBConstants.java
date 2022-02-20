@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,4 +137,6 @@ public class DBConstants {
     public static final String PROP_FEATURE_VIEWABLE = "viewable";
 
     public static final String LOCAL_DOMAIN_NAME = "local";
+
+    public static final String HOST_LOCALHOST = "localhost";
 }

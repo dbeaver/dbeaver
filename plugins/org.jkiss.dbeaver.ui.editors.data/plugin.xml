@@ -207,7 +207,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 id="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 namespace="org.jkiss.dbeaver.core.resultset"
-                properties="active,hasData,hasMoreData,hasfilters,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount"
+                properties="active,hasData,hasMoreData,hasfilters,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount,canPersistData"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
@@ -264,6 +264,14 @@
                     name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.param.panelId.name"
                     optional="false"
                     values="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerTogglePanel$PanelIdParameterValues">
+            </commandParameter>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.switchContentViewer" name="%command.org.jkiss.dbeaver.core.resultset.grid.switchContentViewer.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.switchContentViewer.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter
+                    id="managerId"
+                    name="%command.org.jkiss.dbeaver.core.resultset.grid.switchContentViewer.param.managerId.name"
+                    optional="false"
+                    values="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerSwitchContentViewer$StreamManagerIdParameterValues">
             </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resultset.openWith" name="%command.org.jkiss.dbeaver.core.resultset.openWith.name" description="%command.org.jkiss.dbeaver.core.resultset.openWith.description" categoryId="org.jkiss.dbeaver.core.rs">
@@ -329,6 +337,13 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_input.png"/>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.eclipse.ui.IWorkbenchPart" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+            <adapter type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+        </factory>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.core.ui.resultset.presentation.control">
             <with variable="activeFocusControlId">
@@ -338,6 +353,11 @@
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
             <with variable="activePart">
                 <test property="org.jkiss.dbeaver.core.resultset.active"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.resultset.container">
+            <with variable="activePart">
+                <adapt type="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
             </with>
         </definition>
     </extension>
@@ -350,6 +370,9 @@
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.activatePreview" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain"/>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain"/>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerTogglePanel">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.grid.switchContentViewer" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerSwitchContentViewer">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith">
@@ -482,15 +505,15 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.navigate.backwardHistory" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.container"/></activeWhen>
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.canNavigateHistory" value="-1" forcePluginActivation="true"/>
+                    <test property="org.jkiss.dbeaver.core.resultset.canNavigateHistory" value="-1"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.navigate.forwardHistory" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.container"/></activeWhen>
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.canNavigateHistory" value="1"/>
@@ -637,17 +660,27 @@
         <handler commandId="org.jkiss.dbeaver.core.resultset.applyChanges" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
             <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.changed"/>
-                </with>
+                <and>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.core.resultset.changed"/>
+                    </with>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.core.resultset.canPersistData"/>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
             <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.changed"/>
-                </with>
+                <and>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.core.resultset.changed"/>
+                    </with>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.core.resultset.canPersistData"/>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.generateScript" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -33,9 +34,9 @@ public class DiagramTogglePersistAction extends Action {
     private final ERDEditorEmbedded editor;
 
     public DiagramTogglePersistAction(ERDEditorEmbedded editor) {
-        super("Keep layout", AS_CHECK_BOX);
+        super(ERDUIMessages.erd_action_diagram_toggle_persist_text, AS_CHECK_BOX);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(ERDIcon.LAYOUT_SAVE));
-        setDescription("Save diagram layout locally.\nOtherwise entities layout will be reverted on editor reopen.");
+        setDescription(ERDUIMessages.erd_action_diagram_toggle_persist_description);
         setToolTipText(getDescription());
         this.editor = editor;
     }
@@ -48,7 +49,8 @@ public class DiagramTogglePersistAction extends Action {
     @Override
     public void run() {
         if (isChecked()) {
-            boolean refreshDiagram = UIUtils.confirmAction("Refresh diagram", "Diagram persisted state was reset.\nDo you want to reload diagram view?");
+            boolean refreshDiagram = UIUtils.confirmAction(ERDUIMessages.erd_action_diagram_toggle_persist_confirmation_title,
+                    ERDUIMessages.erd_action_diagram_toggle_persist_confirmation_description);
             editor.resetSavedState(refreshDiagram);
         } else {
             editor.doSave(new NullProgressMonitor());

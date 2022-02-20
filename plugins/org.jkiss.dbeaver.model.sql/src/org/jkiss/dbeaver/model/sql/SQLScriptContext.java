@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -101,6 +102,14 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     @Override
+    public boolean hasDefaultParameterValue(String name) {
+        if (defaultParameters.containsKey(name)){
+            return true;
+        }
+        return parentContext != null && parentContext.hasDefaultParameterValue(name);
+    }
+
+    @Override
     public Object getVariable(String name) {
         VariableInfo variableInfo = variables.get(name);
         if (variableInfo == null && parentContext != null) {
@@ -131,6 +140,16 @@ public class SQLScriptContext implements DBCScriptContext {
         if (parentContext != null) {
             parentContext.removeVariable(name);
         }
+    }
+
+    @Override
+    public void removeDefaultParameterValue(String name) {
+        final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();
+        Object p = defaultParameters.remove(name);
+        instance.deleteParameter(name);
+        instance.save();
+        notifyListeners(DBCScriptContextListener.ContextAction.DELETE, name, p);
+        if (parentContext != null) parentContext.removeDefaultParameterValue(name);
     }
 
     @Override
@@ -258,7 +277,7 @@ public class SQLScriptContext implements DBCScriptContext {
             for (SQLQueryParameter parameter : parameters) {
                 Object varValue = variables.get(parameter.getVarName());
                 if (varValue == null) {
-                    varValue = defaultParameters.get(parameter.getVarName());
+                    varValue = defaultParameters.get(parameter.getName());
                 } else {
                     varValue = ((VariableInfo)varValue).value;
                 }

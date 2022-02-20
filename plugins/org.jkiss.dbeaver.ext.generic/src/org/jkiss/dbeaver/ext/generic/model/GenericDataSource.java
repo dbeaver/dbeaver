@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,6 +251,14 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         if (supportsStructCacheParam != null) {
             this.supportsStructCache = CommonUtils.toBoolean(supportsStructCacheParam);
         }
+        final Object supportsCatalogSelection = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION);
+        if (supportsCatalogSelection != null) {
+            info.supportsCatalogSelection = CommonUtils.toBoolean(supportsCatalogSelection);
+        }
+        final Object supportSchemaSelection = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCHEMA_SELECTION);
+        if (supportSchemaSelection != null) {
+            info.supportsSchemaSelection = CommonUtils.toBoolean(supportSchemaSelection);
+        }
         return info;
     }
 
@@ -384,6 +392,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     @Override
     public TableTriggerCache getTableTriggerCache() {
         return structureContainer.getTableTriggerCache();
+    }
+
+    @Override
+    public GenericObjectContainer.GenericSequenceCache getSequenceCache() {
+        return structureContainer.getSequenceCache();
+    }
+
+    @Override
+    public GenericObjectContainer.GenericSynonymCache getSynonymCache() {
+        return structureContainer.getSynonymCache();
     }
 
     @Override

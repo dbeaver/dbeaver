@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,11 +30,15 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +142,18 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
             case IResource.PROJECT: return DBIcon.PROJECT;
             default: return DBIcon.TREE_PAGE;
         }
+    }
+
+    @Override
+    public String getNodeTargetName() {
+        IResource resource = getResource();
+        if (resource != null) {
+            File localFile = resource.getLocation().toFile();
+            if (localFile != null) {
+                return localFile.getAbsolutePath();
+            }
+        }
+        return super.getNodeTargetName();
     }
 
     @Override
@@ -250,6 +269,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Override
     public String getNodeItemPath() {
+        String projectPath = getRawNodeItemPath();
+        return NodePathType.resource.getPrefix() + projectPath;
+    }
+
+    @NotNull
+    public String getRawNodeItemPath() {
         StringBuilder pathName = new StringBuilder();
 
         for (DBNNode node = this; node instanceof DBNResource; node = node.getParentNode()) {
@@ -263,7 +288,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                 pathName.insert(0, "?");
             }
         }
-        return NodePathType.resource.getPrefix() + pathName.toString();
+        String projectPath = pathName.toString();
+        return projectPath;
     }
 
     @Override
@@ -306,30 +332,54 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         }
 
         // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
-        return otherNode instanceof DBNResource
+        return otherNode.getAdapter(IResource.class) != null
             && otherNode != this
-            && otherNode.getParentNode() != this
-            && !this.isChildOf(otherNode)
-            && ((DBNResource)otherNode).handler == this.handler;
+            && otherNode.getParentNode() != this;
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
-    {
-        for (DBNNode node : nodes) {
-            DBNResource resourceNode = (DBNResource) node;
-            IResource otherResource = resourceNode.getResource();
-            if (otherResource != null) {
-                try {
-                    otherResource.move(
-                        resource.getFullPath().append(otherResource.getName()),
-                        true,
-                        new NullProgressMonitor());
-                } catch (CoreException e) {
-                    throw new DBException("Can't delete resource", e);
-                }
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+
+        new AbstractJob("Drop files to workspace") {
+            {
+                setUser(true);
             }
-        }
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Copy files", nodes.size());
+                try {
+                    for (DBNNode node : nodes) {
+                        IResource otherResource = node.getAdapter(IResource.class);
+                        if (otherResource != null) {
+                            try {
+                                if (otherResource instanceof NIOResource) {
+                                    otherResource.copy(
+                                        resource.getRawLocation().append(otherResource.getName()),
+                                        true,
+                                        monitor.getNestedMonitor());
+                                } else {
+                                    otherResource.move(
+                                        resource.getFullPath().append(otherResource.getName()),
+                                        true,
+                                        monitor.getNestedMonitor());
+                                }
+                                resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+                            } catch (CoreException e) {
+                                throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
+                            }
+                        } else {
+                            throw new DBException("Can't get resource from node " + node.getName());
+                        }
+                        monitor.worked(1);
+                    }
+                } catch (Exception e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     @Override

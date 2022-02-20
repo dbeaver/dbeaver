@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ import java.util.Map;
  */
 public interface DBSDataManipulator extends DBSDataContainer {
 
-    int DATA_INSERT         = 1 << 16;
-    int DATA_UPDATE         = 1 << 17;
-    int DATA_DELETE         = 1 << 18;
-    int DATA_TRUNCATE       = 1 << 19;
+    String FEATURE_DATA_INSERT = "data.insert";
+    String FEATURE_DATA_UPDATE = "data.update";
+    String FEATURE_DATA_DELETE = "data.delete";
+    String FEATURE_DATA_TRUNCATE = "data.truncate";
 
     String INSERT_NONE_METHOD = "<None>";
 

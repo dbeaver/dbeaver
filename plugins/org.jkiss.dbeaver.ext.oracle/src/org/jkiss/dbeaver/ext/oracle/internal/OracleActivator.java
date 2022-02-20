@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,8 @@
 package org.jkiss.dbeaver.ext.oracle.internal;
 
 import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.PrefUtils;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -35,6 +32,8 @@ public class OracleActivator extends Plugin {
     // The shared instance
     private static OracleActivator plugin;
     private BundlePreferenceStore preferenceStore;
+    // The preferences
+    private DBPPreferenceStore preferences;
 
     /**
      * The constructor
@@ -49,14 +48,7 @@ public class OracleActivator extends Plugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        PrefUtils.setDefaultPreferenceValue(
-            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
-        PrefUtils.setDefaultPreferenceValue(
-            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
-        PrefUtils.setDefaultPreferenceValue(
-            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, true);
-        PrefUtils.setDefaultPreferenceValue(
-            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, true);
+        preferences = new BundlePreferenceStore(getBundle());
     }
 
     /*

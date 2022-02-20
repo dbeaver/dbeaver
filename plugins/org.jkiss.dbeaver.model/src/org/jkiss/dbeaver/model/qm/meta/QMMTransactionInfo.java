@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,18 @@ import org.jkiss.dbeaver.model.exec.DBCSavepoint;
  */
 public class QMMTransactionInfo extends QMMObject {
 
-    private final QMMSessionInfo session;
+    private final QMMConnectionInfo connection;
     private final QMMTransactionInfo previous;
     private boolean committed;
     private QMMTransactionSavepointInfo savepointStack;
 
-    QMMTransactionInfo(QMMSessionInfo session, QMMTransactionInfo previous)
-    {
-        this.session = session;
+    QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
+        this.connection = connection;
         this.previous = previous;
         this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
     }
 
-    void commit()
-    {
+    void commit() {
         this.committed = true;
         for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
             if (!sp.isClosed()) {
@@ -60,18 +58,15 @@ public class QMMTransactionInfo extends QMMObject {
         super.close();
     }
 
-    public QMMSessionInfo getSession()
-    {
-        return session;
+    public QMMConnectionInfo getConnection() {
+        return connection;
     }
 
-    public QMMTransactionInfo getPrevious()
-    {
+    public QMMTransactionInfo getPrevious() {
         return previous;
     }
 
-    public boolean isCommitted()
-    {
+    public boolean isCommitted() {
         return committed;
     }
 
@@ -98,6 +93,6 @@ public class QMMTransactionInfo extends QMMObject {
 
     @Override
     public String getText() {
-        return session.getText();
+        return connection.getText();
     }
 }

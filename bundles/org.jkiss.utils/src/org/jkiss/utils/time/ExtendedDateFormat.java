@@ -62,13 +62,16 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 nanoStart = i;
                 nanoOptional = true;
                 for (int k = i + 1; k < pattern.length(); k++) {
-                    if (pattern.charAt(k) == 'f') {
+                    if (pattern.charAt(k) == 'f' || pattern.charAt(k) == 'S') {
                         nanoLength++;
                         if (nanoPrefix == null) {
                             nanoPrefix = pattern.substring(i + 1, k);
                         }
                     }
                     if (pattern.charAt(k) == ']') {
+                        if (nanoPrefix == null){
+                            break;
+                        }
                         nanoPostfix = pattern.substring(i + 1 + nanoPrefix.length() + nanoLength, k);
                         i = k + 1;
                         break;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import java.util.List;
 public class GlobalProxySelector extends ProxySelector {
 
     private static final Log log = Log.getLog(GlobalProxySelector.class);
-    private static final String[] LOCAL_HOSTS = { "localhost", "127.0.0.1" };
 
     private final ProxySelector parent;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -177,14 +177,56 @@ public class ModelMessages extends NLS {
 
     public static String dbp_permission_edit_data_name;
     public static String dbp_permission_edit_data_description;
-    public static String dbp_permission_edit_metadata_name;
-    public static String dbp_permission_edit_metadata_description;
-    public static String dbp_permission_execute_scripts_name;
-    public static String dbp_permission_execute_scripts_description;
-    public static String dbp_permission_import_data_name;
-    public static String dbp_permission_import_data_description;
+	public static String dbp_permission_edit_metadata_name;
+	public static String dbp_permission_edit_metadata_description;
+	public static String dbp_permission_execute_scripts_name;
+	public static String dbp_permission_execute_scripts_description;
+	public static String dbp_permission_import_data_name;
+	public static String dbp_permission_import_data_description;
 
-    static {
+	public static String task_rows_fetched_message_part;
+	public static String task_rows_modified_message_part;
+	public static String task_statements_executed_message_part;
+
+	public static String controls_querylog__ms;
+	public static String controls_querylog_action_clear_log;
+	public static String controls_querylog_action_copy;
+	public static String controls_querylog_action_copy_all_fields;
+	public static String controls_querylog_action_select_all;
+	public static String controls_querylog_column_duration_name;
+	public static String controls_querylog_column_duration_tooltip;
+	public static String controls_querylog_column_result_name;
+	public static String controls_querylog_column_result_tooltip;
+	public static String controls_querylog_column_rows_name;
+	public static String controls_querylog_column_rows_tooltip;
+	public static String controls_querylog_column_text_name;
+	public static String controls_querylog_column_text_tooltip;
+	public static String controls_querylog_column_time_name;
+	public static String controls_querylog_column_time_tooltip;
+	public static String controls_querylog_column_type_name;
+	public static String controls_querylog_column_type_tooltip;
+	public static String controls_querylog_column_connection_name;
+	public static String controls_querylog_column_connection_tooltip;
+	public static String controls_querylog_column_context_name;
+	public static String controls_querylog_column_context_tooltip;
+	public static String controls_querylog_commit;
+	public static String controls_querylog_connected_to;
+	public static String controls_querylog_disconnected_from;
+	public static String controls_querylog_error;
+	public static String controls_querylog_format_minutes;
+	public static String controls_querylog_job_refresh;
+	public static String controls_querylog_label_result;
+	public static String controls_querylog_label_text;
+	public static String controls_querylog_label_time;
+	public static String controls_querylog_label_type;
+	public static String controls_querylog_rollback;
+	public static String controls_querylog_savepoint;
+	public static String controls_querylog_script;
+	public static String controls_querylog_shell_text;
+	public static String controls_querylog_success;
+	public static String controls_querylog_transaction;
+
+	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
 	}

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -74,6 +74,8 @@ public class ERDUIMessages extends NLS {
 	public static String erd_preference_page_title_change_header_colors;
 	public static String erd_tool_color_action_text_set_color;
     public static String erd_tool_color_action_tip_text_set_figure_color;
+	public static String erd_tool_color_action_text_reset_color;
+	public static String erd_tool_color_action_tip_text_reset_figure_color;
     public static String erd_tool_create_connection;
 	public static String erd_tool_create_connection_tip;
 	public static String erd_tool_create_note;
@@ -100,6 +102,33 @@ public class ERDUIMessages extends NLS {
 	public static String menu_attribute_visibility;
 	public static String menu_attribute_visibility_default;
 	public static String menu_attribute_visibility_entity;
+
+	public static String erd_settings_action_customize;
+	public static String erd_settings_action_customize_tip;
+	public static String erd_settings_dialog_text_title;
+	public static String erd_settings_dialog_group_label;
+	public static String erd_settings_checkbox_transparent_label;
+	public static String erd_settings_checkbox_transparent_tip;
+	public static String erd_settings_color_picker_background_label;
+	public static String erd_settings_color_picker_foreground_label;
+	public static String erd_settings_border_width_label;
+	public static String erd_settings_font_label;
+	public static String erd_settings_button_change_font_label;
+	public static String erd_settings_font_preview_text;
+
+	public static String erd_action_delete_text;
+	public static String erd_action_remove_text;
+	public static String erd_action_diagram_toggle_persist_text;
+	public static String erd_action_diagram_toggle_persist_description;
+	public static String erd_action_diagram_toggle_persist_confirmation_title;
+	public static String erd_action_diagram_toggle_persist_confirmation_description;
+	public static String erd_action_diagram_toggle_hand_checkbox_text;
+	public static String erd_action_diagram_export_text;
+	public static String erd_action_diagram_export_description;
+	public static String erd_action_diagram_export_dialog_save_as_title;
+
+	public static String erd_navigator_entity_diagram_name;
+
 
 	private ERDUIMessages() {
 	}

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
@@ -107,6 +106,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -141,6 +143,7 @@ public class ResultSetViewer extends Viewer
     public static final String CUSTOM_FILTER_VALUE_STRING = "..";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+    private static final DateTimeFormatter EXECUTION_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
@@ -215,13 +218,13 @@ public class ResultSetViewer extends Viewer
 
     private final Color defaultBackground;
     private final Color defaultForeground;
-    private final GC sizingGC;
     private VerticalButton recordModeButton;
 
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
-
+    private volatile boolean awaitsReadNextSegment;
+    private volatile boolean awaitsSavingData;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -248,7 +251,6 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.sizingGC = new GC(parent);
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
@@ -462,10 +464,6 @@ public class ResultSetViewer extends Viewer
         return autoRefreshControl;
     }
 
-    public GC getSizingGC() {
-        return sizingGC;
-    }
-
     ////////////////////////////////////////////////////////////
     // Filters
 
@@ -481,8 +479,7 @@ public class ResultSetViewer extends Viewer
 
     public boolean supportsDataFilter() {
         DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer != null &&
-            (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
+        return dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
     }
 
     public boolean supportsNavigation() {
@@ -1764,7 +1761,7 @@ public class ResultSetViewer extends Viewer
 
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             RowData rd = new RowData();
-            rd.width = 30 * fontHeight;
+            rd.width = 50 * fontHeight;
             statusLabel.setLayoutData(rd);
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
@@ -1903,8 +1900,6 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
-
-        UIUtils.dispose(this.sizingGC);
     }
 
     @Override
@@ -2060,13 +2055,17 @@ public class ResultSetViewer extends Viewer
                     rowsUpdated = stats.getRowsUpdated();
                 }
                 if (rowsFetched < 0 && rowsUpdated >= 0) {
-                    statusMessage =
-                        ResultSetUtils.formatRowCount(rowsUpdated) +
-                            ResultSetMessages.controls_resultset_viewer_status_rows_updated + getExecutionTimeMessage();
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_updated,
+                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        getExecutionTimeMessage()
+                    );
                 } else {
-                    statusMessage =
-                        ResultSetUtils.formatRowCount(rowsFetched) +
-                            ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_fetched,
+                        ResultSetUtils.formatRowCount(rowsFetched),
+                        getExecutionTimeMessage()
+                    );
                 }
             }
         }
@@ -2116,10 +2115,26 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
+        final String endTime = LocalDateTime
+            .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
+            .format(EXECUTION_TIME_FORMATTER);
         if (fetchTime <= 0) {
-            return " - " + RuntimeUtils.formatExecutionTime(totalTime);
+            return NLS.bind(
+                ResultSetMessages.controls_resultset_viewer_status_rows_time,
+                new Object[]{
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    endTime
+                }
+            );
         } else {
-            return " - " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) + " (+" + RuntimeUtils.formatExecutionTime(fetchTime) + ")";
+            return NLS.bind(
+                ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
+                new Object[]{
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    RuntimeUtils.formatExecutionTime(fetchTime),
+                    endTime
+                }
+            );
         }
     }
 
@@ -2256,9 +2271,6 @@ public class ResultSetViewer extends Viewer
     }
 
     void appendData(List<Object[]> rows, boolean resetOldRows) {
-        if (!checkForChanges()) {
-            return;
-        }
         model.appendData(rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
@@ -2877,7 +2889,7 @@ public class ResultSetViewer extends Viewer
         navigateMenu.add(new Separator());
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-        if (isHasMoreData() && getDataContainer() != null && (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+        if (isHasMoreData() && getDataContainer() != null && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT)) {
             navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
         }
         navigateMenu.add(new Separator());
@@ -3548,13 +3560,17 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
+                    dataReceiver.setHasMoreData(false);
+                    updatePanelsContent(true);
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
+                    awaitsSavingData = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.asyncExec(() -> refreshData(null));
                         }
+                        awaitsSavingData = false;
                     });
                     return false;
                 default:
@@ -3697,26 +3713,34 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    public void readNextSegment()
-    {
-        if (!dataReceiver.isHasMoreData()) {
+    public void readNextSegment() {
+        if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
             return;
         }
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null && !model.isUpdateInProgress()) {
-            dataReceiver.setHasMoreData(false);
-            dataReceiver.setNextSegmentRead(true);
+        try {
+            awaitsReadNextSegment = true;
+            if (!checkForChanges()) {
+                return;
+            }
 
-            runDataPump(
-                dataContainer,
-                model.getDataFilter(),
-                model.getRowCount(),
-                getSegmentMaxRows(),
-                -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                false,
-                true,
-                true,
-                null);
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null && !model.isUpdateInProgress()) {
+                dataReceiver.setHasMoreData(false);
+                dataReceiver.setNextSegmentRead(true);
+
+                runDataPump(
+                    dataContainer,
+                    model.getDataFilter(),
+                    model.getRowCount(),
+                    getSegmentMaxRows(),
+                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                    false,
+                    true,
+                    true,
+                    null);
+            }
+        } finally {
+            awaitsReadNextSegment = false;
         }
     }
 
@@ -3732,6 +3756,9 @@ public class ResultSetViewer extends Viewer
             ConfirmationDialog.QUESTION,
             ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
         {
+            return;
+        }
+        if (!checkForChanges()){
             return;
         }
 
@@ -4611,25 +4638,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
-    {
-        Object value = type.getValue(this, attribute, operator, true);
-
-        DBCExecutionContext executionContext = getExecutionContext();
-        String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
-        strValue = strValue.replaceAll("\\s+", " ").replace("@", "^").trim();
-        strValue = UITextUtils.getShortText(sizingGC, strValue, 150);
-        if (operator.getArgumentCount() == 0) {
-            return operator.getExpression();
-        } else {
-            if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
-                strValue = "'" + strValue + "'";
-            }
-            return operator.getExpression() + " " + strValue;
-        }
-    }
-
-
     private class OrderByAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
         private final ColumnOrder order;
@@ -4834,7 +4842,6 @@ public class ResultSetViewer extends Viewer
 
             model.setUpdateInProgress(this);
             model.setStatistics(null);
-            model.releaseAllData();
             if (filtersPanel != null) {
                 UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,11 +110,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         {
             final Group performanceGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
-            useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
-
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
+
+            useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
+            useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
 
             useSimpleConstraints = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
 

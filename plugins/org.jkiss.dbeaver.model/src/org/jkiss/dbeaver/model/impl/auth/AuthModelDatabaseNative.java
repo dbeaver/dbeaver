@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,14 +81,26 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         String userName = credentials.getUserName();
         String userPassword = credentials.getUserPassword();
 
-        if (!CommonUtils.isEmpty(userName)) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
+        if (isUserNameNeeded(dataSource)) {
+            if (!CommonUtils.isEmpty(userName)) {
+                connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
+            }
         }
-        if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
+        if (isUserPasswordNeeded(dataSource)) {
+            if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
+                connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
+            }
         }
 
         return credentials;
+    }
+
+    protected boolean isUserNameNeeded(@NotNull DBPDataSource dataSource) {
+        return true;
+    }
+
+    protected boolean isUserPasswordNeeded(@NotNull DBPDataSource dataSource) {
+        return true;
     }
 
     @Override

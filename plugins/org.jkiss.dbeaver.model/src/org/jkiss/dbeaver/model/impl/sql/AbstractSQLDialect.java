@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[0][];
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[0];
     public static final String[] DML_KEYWORDS = new String[0];
+    public static final Pair<String, String> IN_CLAUSE_PARENTHESES = new Pair<>("(", ")");
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -116,6 +117,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         for (String kw : allKeywords) {
             addSQLKeyword(kw);
         }
+    }
+
+    @NotNull
+    @Override
+    public Pair<String, String> getInClauseParentheses() {
+        return IN_CLAUSE_PARENTHESES;
     }
 
     protected void setKeywordIndent(String ketyword, int indent) {
@@ -383,22 +390,30 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             // Already quoted
             return str;
         }
+
         String[][] quoteStrings = this.getIdentifierQuoteStrings();
         if (ArrayUtils.isEmpty(quoteStrings)) {
             return str;
         }
 
+        if (mustBeQuoted(str, forceCaseSensitive) || forceQuotes) {
+            return quoteIdentifier(str, quoteStrings);
+        } else {
+            return str;
+        }
+    }
+
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);
-        boolean hasBadChars = forceQuotes ||
-            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
-                this.isQuoteReservedWords());
+        boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
+                this.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {
             hasBadChars = !this.validIdentifierStart(str.charAt(0));
         }
         if (!hasBadChars && forceCaseSensitive) {
-            // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
+            // Check for case of quoted indents. Do not check for unquoted case - we don't need to quote em anyway
             // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
             // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
             if (!this.useCaseInsensitiveNameLookup()) {
@@ -424,11 +439,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                 }
             }
         }
-        if (!hasBadChars) {
-            return str;
-        }
 
-        return quoteIdentifier(str, quoteStrings);
+        return hasBadChars;
     }
 
     @NotNull
@@ -542,6 +554,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean supportsNullability() {
         return true;
+    }
+
+    @Override
+    public boolean supportsColumnAutoIncrement() {
+        return false;
     }
 
     @Nullable

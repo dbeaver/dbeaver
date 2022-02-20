@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.vertica.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -42,12 +41,12 @@ import java.util.Map;
  */
 public class VerticaTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
 
-    protected final ColumnModifier<GenericTableColumn> VerticaDataTypeModifier = (monitor, column, sql, command) -> {
+    private final ColumnModifier<GenericTableColumn> VerticaDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(" SET DATA TYPE ");
         DataTypeModifier.appendModifier(monitor, column, sql, command);
     };
 
-    protected final ColumnModifier<GenericTableColumn> VerticaDefaultModifier = (monitor, column, sql, command) -> {
+    private final ColumnModifier<GenericTableColumn> VerticaDefaultModifier = (monitor, column, sql, command) -> {
         if (CommonUtils.isEmpty(command.getObject().getDefaultValue())) {
             sql.append(" DROP DEFAULT");
         } else {
@@ -56,7 +55,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager impleme
         }
     };
 
-    protected final ColumnModifier<GenericTableColumn> VerticaNotNullModifier = (monitor, column, sql, command) -> {
+    private final ColumnModifier<GenericTableColumn> VerticaNotNullModifier = (monitor, column, sql, command) -> {
         if (command.getObject().isRequired()) {
             sql.append(" SET NOT NULL");
         } else {
@@ -64,24 +63,28 @@ public class VerticaTableColumnManager extends GenericTableColumnManager impleme
         }
     };
 
-    @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
-    {
-        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
-        final GenericTableColumn column = command.getObject();
+    private final ColumnModifier<GenericTableColumn> IncrementModifier = (monitor, column, sql, command) -> {
         if (column.isAutoIncrement()) {
-            final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);
-            if (autoIncrementClause != null && !autoIncrementClause.isEmpty()) {
-                decl.append(" ").append(autoIncrementClause); //$NON-NLS-1$
-            }
+            sql.append(" IDENTITY"); //$NON-NLS-1$
         }
-        return decl;
-    }
+    };
 
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
-        // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[] {VerticaDataTypeModifier, VerticaDefaultModifier, VerticaNotNullModifier};
+        if (column.isAutoIncrement() && !column.isPersisted()) {
+            // DefaultModifier and DataTypeModifier not supported in this case, IncrementModifier must be before NotNullModifier
+            return new ColumnModifier[] {IncrementModifier, NotNullModifier};
+        }
+        if (column.isPersisted()) {
+            // According to SQL92 DEFAULT comes before constraints
+            return new ColumnModifier[]{VerticaDataTypeModifier, VerticaDefaultModifier, VerticaNotNullModifier};
+        }
+        return super.getSupportedModifiers(column, options);
+    }
+
+    @Override
+    public void addIncrementClauseToNestedDeclaration(DBECommandAbstract<GenericTableColumn> command, StringBuilder decl) {
+        // Increment clause already append with the IncrementModifier
     }
 
     /**

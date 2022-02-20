@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,18 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Map;
 
@@ -44,7 +49,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         this.nioPath = nioPath;
     }
 
-    protected NIOFileSystemRoot getRoot() {
+    public NIOFileSystemRoot getRoot() {
         return root;
     }
 
@@ -93,11 +98,36 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public void copy(IPath destination, boolean force, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            File targetFile = destination.toFile();
+            if (targetFile != null) {
+                try (InputStream is = Files.newInputStream(nioPath)) {
+                    Files.copy(
+                        is,
+                        targetFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+                }
+            } else {
+                throw new IOException("Can't find file for location " + destination);
+            }
+        } catch (Exception e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void copy(IPath destination, int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            if (destination instanceof IFile) {
+                ((IFile) destination).setContents(
+                    Files.newInputStream(nioPath),
+                    updateFlags,
+                    monitor);
+            } else {
+                throw new IOException("Can't copy to " + destination);
+            }
+        } catch (Exception e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void copy(IProjectDescription description, boolean force, IProgressMonitor monitor) throws CoreException {
@@ -121,11 +151,17 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public void delete(boolean force, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        delete(force ? IResource.FORCE : IResource.NONE, monitor);
     }
 
     public void delete(int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Files.delete(getNioPath());
+
+            NIOMonitor.notifyResourceChange(this, NIOListener.Action.DELETE);
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void deleteMarkers(String type, boolean includeSubtypes, int depth) throws CoreException {
@@ -217,7 +253,15 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public IContainer getParent() {
-        return this.getProject();
+        Path parentPath = nioPath.getParent();
+        if (parentPath == null) {
+            return getProject();
+        }
+        if (CommonUtils.equalObjects(nioPath.toUri(), parentPath.toUri())) {
+            //
+            return getProject();
+        }
+        return new NIOFolder(root, parentPath);
     }
 
     public Map<QualifiedName, String> getPersistentProperties() throws CoreException {
@@ -405,14 +449,33 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         return getLocationURI().toString();
     }
 
-    /**
-     * @author Eike Stepper
-     */
     public static class FeatureNotSupportedException extends CoreException {
         private static final long serialVersionUID = 1L;
 
         public FeatureNotSupportedException() {
-            super(Status.CANCEL_STATUS);
+            super(Status.info("Feature not supported"));
         }
     }
+
+    public static String getPathFileNameOrHost(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            // Use host name (the first part)
+            String virtName = null;
+            URI uri = path.toUri();
+            if (uri != null) {
+                String uriPath = uri.getHost();
+                if (!CommonUtils.isEmpty(uriPath)) {
+                    virtName = uriPath;
+                }
+            }
+            if (virtName == null) {
+                virtName = path.toString();
+            }
+            return CommonUtils.removeTrailingSlash(
+                CommonUtils.removeLeadingSlash(virtName));
+        }
+        return fileName.toString();
+    }
+
 }

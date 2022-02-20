@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -564,6 +564,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (keepAlive > 0) {
                         config.setKeepAliveInterval(keepAlive);
                     }
+                    int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
+                    if (closeIdle > 0) {
+                        config.setCloseIdleInterval(closeIdle);
+                    }
+
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
                     config.setAuthModelId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_AUTH_MODEL));
@@ -822,6 +827,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Save other
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
+            }
+            if (connectionInfo.getCloseIdleInterval() > 0) {
+                JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());

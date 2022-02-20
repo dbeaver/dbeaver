@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,23 @@ package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
  * DBNPath
  */
-public class DBNPath extends DBNPathBase
+public class DBNPath extends DBNPathBase implements DBNStreamData
 {
     private static final Log log = Log.getLog(DBNPath.class);
 
-    private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
-
     private Path path;
+    private Boolean isDirectory;
 
     public DBNPath(DBNNode parentNode, Path path) {
         super(parentNode);
@@ -47,7 +49,7 @@ public class DBNPath extends DBNPathBase
     }
 
     @Override
-    protected Path getPath() {
+    public Path getPath() {
         return path;
     }
 
@@ -63,8 +65,35 @@ public class DBNPath extends DBNPathBase
     }
 
     @Override
+    public String getNodeTargetName() {
+        return super.getNodeTargetName();
+    }
+
+    @Override
     public boolean allowsChildren() {
-        return Files.isDirectory(path);
+        if (isDirectory == null) {
+            // Cache it. It is called very frequently
+            isDirectory = Files.isDirectory(path);
+        }
+        return isDirectory;
+    }
+
+    @Override
+    public boolean supportsStreamData() {
+        return !allowsChildren();
+    }
+
+    @Override
+    public long getStreamSize() throws IOException {
+        return Files.size(path);
+    }
+
+    @Override
+    public InputStream openInputStream() throws IOException {
+        if (allowsChildren()) {
+            return null;
+        }
+        return Files.newInputStream(path);
     }
 
 }

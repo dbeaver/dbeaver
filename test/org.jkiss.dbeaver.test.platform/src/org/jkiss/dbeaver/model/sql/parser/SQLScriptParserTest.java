@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -36,16 +39,23 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserTest {
     @Mock
-    private DBPDataSource dataSource;
+    private JDBCDataSource dataSource;
     @Mock
     private DBPDataSourceContainer dataSourceContainer;
     @Mock
     private DBCExecutionContext executionContext;
+    @Mock
+    private JDBCSession session;
+    @Mock
+    private JDBCDatabaseMetaData databaseMetaData;
 
     @Before
     public void init() {
@@ -312,6 +322,162 @@ public class SQLScriptParserTest {
             });
     }
 
+    @Test
+    public void parseOracleWithBlock() throws DBException {
+        String[] withStatements = new String[] {
+                "WITH dept_count AS (\n" +
+                "  SELECT deptno, COUNT(*) AS dept_count\n" +
+                "    FROM emp\n" +
+                "   GROUP BY deptno)\n" +
+                "SELECT e.ename AS employee_name,\n" +
+                "       dc.dept_count AS emp_dept_count\n" +
+                "  FROM emp e\n" +
+                "  JOIN dept_count dc ON e.deptno = dc.deptno;",
+            	null,
+                "WITH\n" +
+                "  dept_costs AS (\n" +
+                "    SELECT dname, SUM(sal) dept_total\n" +
+                "      FROM   emp e, dept d\n" +
+                "     WHERE  e.deptno = d.deptno\n" +
+                "     GROUP BY dname\n" +
+                "\t ),\n" +
+                "  avg_cost AS (\n" +
+                "    SELECT SUM(dept_total)/COUNT(*) avg\n" +
+                "      FROM dept_costs\n" +
+                "\t  )\n" +
+                "SELECT *\n" +
+                "  FROM dept_costs\n" +
+                " WHERE  dept_total > (SELECT avg FROM avg_cost)\n" +
+                " ORDER BY dname;",
+                null,
+                "WITH\n" +
+                "  FUNCTION with_function(p_id IN NUMBER) RETURN NUMBER IS\n" +
+                "  BEGIN\n" +
+                "    RETURN p_id;\n" +
+                "  END;\n" +
+                "  FUNCTION with_function2(p_id IN NUMBER) RETURN NUMBER IS\n" +
+                "  BEGIN\n" +
+                "    RETURN p_id;\n" +
+                "  END;\n" +
+                "SELECT with_function(id)\n" +
+                "  FROM   t1\n" +
+                " WHERE  rownum = 1;",
+                null,
+                "WITH\n" +
+                "  PROCEDURE with_procedure(p_id IN NUMBER) IS\n" +
+                "  BEGIN\n" +
+                "    DBMS_OUTPUT.put_line('p_id=' || p_id);\n" +
+                "  END;\n" +
+                "SELECT id\n" +
+                "  FROM   t1\n" +
+                " WHERE  rownum = 1;",
+                null,
+        };
+        assertParse("oracle", withStatements);
+    }
+
+    @Test
+    public void parseOraclePackageBodyBlock() throws DBException {
+        String[] packageBodyStatements = new String[] {
+                "CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY order_mgmt\n" +
+                "AS\n" +
+                "  -- get net value of a order\n" +
+                "  FUNCTION get_net_value(\n" +
+                "      p_order_id NUMBER)\n" +
+                "    RETURN NUMBER\n" +
+                "  IS\n" +
+                "    ln_net_value NUMBER \n" +
+                "  BEGIN\n" +
+                "    SELECT\n" +
+                "      SUM(unit_price * quantity)\n" +
+                "    INTO\n" +
+                "      ln_net_value\n" +
+                "    FROM\n" +
+                "      order_items\n" +
+                "    WHERE\n" +
+                "      order_id = p_order_id;\n" +
+                "\n" +
+                "    RETURN p_order_id;\n" +
+                "\n" +
+                "  EXCEPTION\n" +
+                "  WHEN no_data_found THEN\n" +
+                "    DBMS_OUTPUT.PUT_LINE( SQLERRM );\n" +
+                "  END get_net_value;\n" +
+                "\n" +
+                "-- Get net value by customer\n" +
+                "  FUNCTION get_net_value_by_customer(\n" +
+                "      p_customer_id NUMBER,\n" +
+                "      p_year        NUMBER)\n" +
+                "    RETURN NUMBER\n" +
+                "  IS\n" +
+                "    ln_net_value NUMBER \n" +
+                "  BEGIN\n" +
+                "    SELECT\n" +
+                "      SUM(quantity * unit_price)\n" +
+                "    INTO\n" +
+                "      ln_net_value\n" +
+                "    FROM\n" +
+                "      order_items\n" +
+                "    INNER JOIN orders USING (order_id)\n" +
+                "    WHERE\n" +
+                "      extract(YEAR FROM order_date) = p_year\n" +
+                "    AND customer_id                 = p_customer_id\n" +
+                "    AND status                      = gc_shipped_status;\n" +
+                "    RETURN ln_net_value;\n" +
+                "  EXCEPTION\n" +
+                "  WHEN no_data_found THEN\n" +
+                "    DBMS_OUTPUT.PUT_LINE( SQLERRM );\n" +
+                "  END get_net_value_by_customer;\n" +
+                "\n" +
+                "END order_mgmt;",
+
+                "CREATE OR REPLACE EDITIONABLE PACKAGE BODY synchronize_my_data \n" +
+                "IS\n" +
+                "  PROCEDURE synchronize_data(p_run_date IN date) IS\n" +
+                "      PROCEDURE process_deletes(p_run_date IN date) IS\n" +
+                "      BEGIN\n" +
+                "          dbms_output.put_line('Run Date: ' || to_char(p_run_date, 'MM/DD/YYYY'));      \n" +
+                "      END;\n" +
+                "  BEGIN\n" +
+                "    process_deletes(p_run_date);\n" +
+                "  END;\n" +
+                "\n" +
+                "END;",
+            	
+                "CREATE OR REPLACE PACKAGE BODY synchronize_my_data \n" +
+                "IS\n" +
+                "  PROCEDURE process_deletes(p_run_date IN date) \n" +
+                "  IS\n" +
+                "  BEGIN\n" +
+                "      dbms_output.put_line('Run Date: ' || to_char(p_run_date, 'MM/DD/YYYY'));      \n" +
+                "  END process_deletes;\n" +
+                "\n" +
+                "  PROCEDURE synchronize_data(p_run_date IN date) \n" +
+                "  IS\n" +
+                "  BEGIN\n" +
+                "    process_deletes(p_run_date);\n" +
+                "  END synchronize_data;\n" +
+                "\n" +
+                "END synchronize_my_data;"
+
+        };
+        assertParse("oracle", packageBodyStatements);
+    }
+
+    private void assertParse(String dialectName, String[] expected) throws DBException {
+    	String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
+    	List<String> expectedParts = new ArrayList<>(expected.length);
+    	for (int i = 0; i < expected.length; i++) {
+    		if (i + 1 < expected.length && expected[i + 1] == null) {
+    			expectedParts.add(expected[i].replaceAll("[\\;]+$", ""));
+    			i++;
+    		} else {
+    			expectedParts.add(expected[i]);
+    		}
+    	}
+        assertParse(dialectName, source, expectedParts.toArray(new String[0]));    
+    }
+
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, context.getDocument().getLength(), false, false, false);
@@ -333,6 +499,8 @@ public class SQLScriptParserTest {
     private SQLDialect setDialect(String name) throws DBException {
         SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
         SQLDialect dialect = registry.getDialect(name).createInstance();
+        Mockito.when(dataSource.isServerVersionAtLeast(12, 1)).thenReturn(true);
+        ((JDBCSQLDialect)dialect).initDriverSettings(session, dataSource, databaseMetaData);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         return dialect;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.net.ssh.config;
 
-import org.eclipse.core.runtime.Assert;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
@@ -26,23 +25,37 @@ import java.io.File;
 public class SSHAuthConfiguration {
     private final SSHConstants.AuthType type;
     private final String password;
-    private final File key;
+    private final File keyFile;
+    private final String keyValue;
     private final boolean savePassword;
 
-    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @Nullable File key, @Nullable String password, boolean savePassword) {
+    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @Nullable String password, boolean savePassword) {
         this.type = type;
         this.password = password;
-        this.key = key;
+        this.keyFile = null;
+        this.keyValue = null;
         this.savePassword = savePassword;
+    }
 
-        Assert.isLegal(type != SSHConstants.AuthType.PASSWORD || password != null, "Password must not be null");
-        Assert.isLegal(type != SSHConstants.AuthType.PUBLIC_KEY || (key != null && key.exists()), "Key must be present");
-        Assert.isLegal(type != SSHConstants.AuthType.AGENT || (password == null && key == null && !savePassword), "Password and key may not be present");
+    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @Nullable File keyFile, @Nullable String password, boolean savePassword) {
+        this.type = type;
+        this.password = password;
+        this.keyFile = keyFile;
+        this.keyValue = null;
+        this.savePassword = savePassword;
+    }
+
+    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @NotNull String keyValue, @Nullable String password, boolean savePassword) {
+        this.type = type;
+        this.password = password;
+        this.keyFile = null;
+        this.keyValue = keyValue;
+        this.savePassword = savePassword;
     }
 
     @NotNull
     public static SSHAuthConfiguration usingPassword(@NotNull String password, boolean savePassword) {
-        return new SSHAuthConfiguration(SSHConstants.AuthType.PASSWORD, null, password, savePassword);
+        return new SSHAuthConfiguration(SSHConstants.AuthType.PASSWORD, password, savePassword);
     }
 
     @NotNull
@@ -51,8 +64,13 @@ public class SSHAuthConfiguration {
     }
 
     @NotNull
+    public static SSHAuthConfiguration usingKey(@NotNull String keyValue, @Nullable String passphrase, boolean savePassword) {
+        return new SSHAuthConfiguration(SSHConstants.AuthType.PUBLIC_KEY, keyValue, passphrase, savePassword);
+    }
+
+    @NotNull
     public static SSHAuthConfiguration usingAgent() {
-        return new SSHAuthConfiguration(SSHConstants.AuthType.AGENT, null, null, false);
+        return new SSHAuthConfiguration(SSHConstants.AuthType.AGENT, null, false);
     }
 
     @NotNull
@@ -60,20 +78,23 @@ public class SSHAuthConfiguration {
         return type;
     }
 
-    @NotNull
+    @Nullable
     public String getPassword() {
-        Assert.isLegal(type.usesPassword());
         return password;
     }
 
-    @NotNull
-    public File getKey() {
-        Assert.isLegal(type == SSHConstants.AuthType.PUBLIC_KEY);
-        return key;
+    @Nullable
+    public File getKeyFile() {
+        return keyFile;
+    }
+
+    @Nullable
+    public String getKeyValue() {
+        return keyValue;
     }
 
     public boolean isSavePassword() {
-        Assert.isLegal(type.usesPassword());
         return savePassword;
     }
+
 }

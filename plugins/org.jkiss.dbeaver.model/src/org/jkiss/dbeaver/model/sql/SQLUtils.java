@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import net.sf.jsqlparser.expression.LongValue;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -534,13 +535,12 @@ public final class SQLUtils {
             }
             if (orderString == null) {
                 // Use position number
-                int orderIndex = filter.getConstraints().indexOf(co);
-                if (orderIndex != -1) {
-                    orderString = String.valueOf(orderIndex + 1);
-                } else {
+                int orderIndex = getConstraintOrderIndex(filter, co);
+                if (orderIndex == -1) {
                     log.debug("Can't generate column order: no name and no position found");
                     continue;
                 }
+                orderString = String.valueOf(orderIndex);
             }
             query.append(orderString);
             if (co.isOrderDescending()) {
@@ -627,8 +627,9 @@ public final class SQLUtils {
                     conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
+                Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseParentheses();
                 conString.append(operator.getExpression());
-                conString.append(" (");
+                conString.append(' ').append(brackets.getFirst());
                 if (!value.getClass().isArray()) {
                     value = new Object[] {value};
                 }
@@ -648,12 +649,17 @@ public final class SQLUtils {
                         conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true));
                     }
                 }
-                conString.append(")");
+                conString.append(brackets.getSecond());
             }
             return conString.toString();
         } else {
             return null;
         }
+    }
+
+    public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {
+        int index = dataFilter.getConstraints().indexOf(constraint);
+        return index == -1 ? index : index + 1;
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @Nullable Object value) {
@@ -1047,7 +1053,8 @@ public final class SQLUtils {
             return name.split(Pattern.quote(nameSeparator));
         }
         if (!name.contains(nameSeparator)) {
-            return new String[] { DBUtils.getUnQuotedIdentifier(name, quoteStrings) };
+            name = keepQuotes ? name : DBUtils.getUnQuotedIdentifier(name, quoteStrings);
+            return new String[]{name};
         }
         List<String> nameList = new ArrayList<>();
         while (!name.isEmpty()) {

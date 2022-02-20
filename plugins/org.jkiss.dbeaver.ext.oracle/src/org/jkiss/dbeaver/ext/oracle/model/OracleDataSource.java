@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -242,6 +242,12 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
 
             try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
+                try {
+                    readDatabaseServerVersion(session.getMetaData());
+                } catch (SQLException e) {
+                    log.debug("Error reading metadata", e);
+                }
+
                 // Set session settings
                 String sessionLanguage = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
@@ -268,13 +274,23 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
 
-                if (JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName())) {
-                    if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER))) {
+                boolean isMetadataContext =
+                    getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION) ?
+                        JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName()) :
+                        JDBCExecutionContext.TYPE_MAIN.equals(context.getContextName());
+
+                if (isMetadataContext) {
+                    if (CommonUtils.getBoolean(
+                        connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER),
+                        getContainer().getPreferenceStore().getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER))) {
                         // See #5633
                         try {
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_push_pred_cost_based\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_squ_bottomup\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_cost_based_transformation\" = 'OFF'");
+                            if (isServerVersionAtLeast(10, 2)) {
+                                JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='10.2.0.5'");
+                            }
                         } catch (Throwable e) {
                             log.warn("Can't set session optimizer parameters", e);
                         }
@@ -523,8 +539,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             return adapter.cast(new OracleServerSessionManager(this));
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new OracleQueryPlanner(this));
-        } else if(adapter == DBAUserChangePassword.class) {
-            return adapter.cast(new OracleChangeUserPassword(this));
+        } else if(adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new OracleChangeUserPasswordManager(this));
         }
         return super.getAdapter(adapter);
     }

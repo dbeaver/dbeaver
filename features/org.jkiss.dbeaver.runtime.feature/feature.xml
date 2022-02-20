@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="21.3.1.qualifier"
+        version="21.3.5.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -31,6 +31,7 @@
     <plugin id="org.jkiss.dbeaver.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.net.ssh.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.cmp.simple" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.tasks.native" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -40,12 +41,17 @@
     <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.bundle.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
+    <!-- Bouncycastle -->
+    <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
     <!-- 3rd party -->
     <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.bundle.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
-    <!-- Bouncycastle -->
-    <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 </feature>

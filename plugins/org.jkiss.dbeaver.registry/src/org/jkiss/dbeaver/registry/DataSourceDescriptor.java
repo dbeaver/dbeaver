@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,7 +273,13 @@ public class DataSourceDescriptor
     @Override
     public DBPDataSourceOrigin getOrigin() {
         if (origin instanceof DataSourceOriginLazy) {
-            DBPDataSourceOrigin realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            DBPDataSourceOrigin realOrigin;
+            try {
+                realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            } catch (DBException e) {
+                log.debug("Error reading datasource origin", e);
+                realOrigin = null;
+            }
             if (realOrigin != null) {
                 this.origin = realOrigin;
             } else {
@@ -754,7 +760,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected()
     {
-        return dataSource != null;
+        return dataSource != null && !connecting;
     }
 
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
@@ -774,10 +780,10 @@ public class DataSourceDescriptor
 
         // Update auth properties if possible
 
-        processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
-
         connecting = true;
         try {
+            processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
+
             // 1. Get credentials from origin
             DBPDataSourceOrigin dsOrigin = getOrigin();
             if (dsOrigin instanceof DBAAuthCredentialsProvider) {
@@ -895,20 +901,46 @@ public class DataSourceDescriptor
 
                 monitor.subTask("Connect to data source");
 
-                this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
-                this.connectTime = new Date();
-                monitor.worked(1);
+/*
+                AccessControlContext noPermissionsAccessControlContext;
+                {
+                    Permissions noPermissions = new Permissions();
+                    noPermissions.add(new SocketPermission("*", "connect"));
+                    noPermissions.add(new NetPermission("*"));
+                    noPermissions.add(new ReflectPermission("*"));
+                    noPermissions.add(new ReflectPermission("accessDeclaredMembers"));
+                    noPermissions.setReadOnly();
 
-                if (initialize) {
-                    monitor.subTask("Initialize data source");
-                    try {
-                        dataSource.initialize(monitor);
-                    } catch (Throwable e) {
-                        log.error("Error initializing datasource", e);
-                        throw e;
-                    }
+                    noPermissionsAccessControlContext = new AccessControlContext(
+                        new ProtectionDomain[] { new ProtectionDomain(null, noPermissions) }
+                    );
                 }
+                Policy.setPolicy(new Policy() {
+                    @Override public boolean implies(ProtectionDomain domain, Permission permission) {
+                        return true;
+                    }
+                });
+                System.setSecurityManager(new SecurityManager());
 
+                try {
+                    AccessController.doPrivileged(
+                        (PrivilegedAction<Object>) () -> {
+                            try {
+                                openDataSource(monitor, initialize);
+                                return null;
+                            } catch (Throwable e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        noPermissionsAccessControlContext);
+                } catch (Throwable e) {
+                    if (e instanceof RuntimeException && e.getCause() != null) {
+                        e = e.getCause();
+                    }
+                    throw e;
+                }
+*/
+                openDataSource(monitor, initialize);
                 this.connectFailed = false;
             } finally {
                 exclusiveLock.releaseExclusiveLock(dsLock);
@@ -928,7 +960,7 @@ public class DataSourceDescriptor
                 log.debug("Connected (" + getId() + ", driver unknown)");
             }
             return true;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
@@ -969,8 +1001,23 @@ public class DataSourceDescriptor
         }
     }
 
-    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType)
-    {
+    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+        this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+        this.connectTime = new Date();
+        monitor.worked(1);
+
+        if (initialize) {
+            monitor.subTask("Initialize data source");
+            try {
+                dataSource.initialize(monitor);
+            } catch (Throwable e) {
+                log.error("Error initializing datasource", e);
+                throw e;
+            }
+        }
+    }
+
+    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType) throws DBException {
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
@@ -1005,6 +1052,17 @@ public class DataSourceDescriptor
                 log.debug(processDescriptor.getName() + " result code: " + resultCode);
             }
             addChildProcess(processDescriptor);
+        }
+
+        for (DataSourceHandlerDescriptor handlerDesc : DataSourceProviderRegistry.getInstance().getDataSourceHandlers()) {
+            switch (eventType) {
+                case BEFORE_CONNECT:
+                    handlerDesc.getInstance().beforeConnect(monitor, this);
+                    break;
+                case AFTER_DISCONNECT:
+                    handlerDesc.getInstance().beforeDisconnect(monitor, this);
+                    break;
+            }
         }
     }
 
@@ -1061,6 +1119,11 @@ public class DataSourceDescriptor
 
             monitor.done();
 
+            return true;
+        } catch (Exception e) {
+            log.error("Error during datasource disconnect", e);
+            return false;
+        } finally {
             // Terminate child processes
             synchronized (childProcesses) {
                 for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
@@ -1084,8 +1147,6 @@ public class DataSourceDescriptor
                     false));
             }
 
-            return true;
-        } finally {
             connecting = false;
             log.debug("Disconnected (" + getId() + ")");
         }
@@ -1103,8 +1164,8 @@ public class DataSourceDescriptor
             if (user instanceof Job) {
                 jobCount++;
             }
-            if (user instanceof DBPDataSourceHandler) {
-                ((DBPDataSourceHandler) user).beforeDisconnect();
+            if (user instanceof DBPDataSourceAcquirer) {
+                ((DBPDataSourceAcquirer) user).beforeDisconnect();
             }
         }
         if (jobCount > 0) {

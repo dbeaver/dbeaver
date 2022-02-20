@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -419,6 +419,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
+        hasStatistics = false;
         tableCache.clearCache();
         foreignKeyCache.clearCache();
         constraintCache.clearCache();
@@ -446,6 +447,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public String toString()
     {
         return "Schema " + name;
+    }
+
+    void resetStatistics() {
+        this.hasStatistics = false;
     }
 
     private static OracleTableColumn getTableColumn(JDBCSession session, OracleTableBase parent, ResultSet dbResult,String columnName) throws DBException
@@ -909,27 +914,25 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
             StringBuilder sql = new StringBuilder(500);
             JDBCPreparedStatement dbStat;
-             if (owner.getDataSource().isAtLeastV11() && forTable != null && !useSimpleConnection) {
-                 sql.append("SELECT \r\n" 
-                         + "    c.TABLE_NAME,\r\n" 
+            String constraintsView = OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS");
+            if (owner.getDataSource().isAtLeastV11() && forTable != null && !useSimpleConnection) {
+                 sql.append("SELECT \r\n"
+                         + "    c.TABLE_NAME,\r\n"
                          + "    c.CONSTRAINT_NAME,\r\n"
-                         + "    c.CONSTRAINT_TYPE,\r\n" 
-                         + "    c.STATUS,\r\n" 
+                         + "    c.CONSTRAINT_TYPE,\r\n"
+                         + "    c.STATUS,\r\n"
                          + "    c.R_OWNER,\r\n"
-                         + "    c.R_CONSTRAINT_NAME,\r\n" 
-                         + "    (SELECT rc.TABLE_NAME FROM "
-                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),"CONSTRAINTS")
-                         + " rc WHERE rc.OWNER = c.r_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME) AS R_TABLE_NAME,\r\n"
-                         + "    c.DELETE_RULE,\r\n" 
+                         + "    c.R_CONSTRAINT_NAME,\r\n"
+                         + "    rc.TABLE_NAME AS R_TABLE_NAME,\r\n"
+                         + "    c.DELETE_RULE,\r\n"
                          + "    (\r\n"
-                         + "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n" 
-                         + "      FROM ALL_CONS_COLUMNS col\r\n" 
+                         + "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n"
+                         + "      FROM ALL_CONS_COLUMNS col\r\n"
                          + "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"
-                         + "    ) COLUMN_NAMES_NUMS\r\n" + "FROM\r\n" + "    "
-                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),
-                                 "CONSTRAINTS")
-                         + " c\r\n" + "WHERE\r\n" + "    c.CONSTRAINT_TYPE = 'R'\r\n" + "    AND c.OWNER = ?\r\n"
-                         + "    AND c.TABLE_NAME = ?");
+                         + "    ) COLUMN_NAMES_NUMS\r\nFROM " + constraintsView + " c\r\n"
+                         + "LEFT JOIN " + constraintsView + " rc\r\n"
+                         + "ON rc.OWNER = c.r_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME AND rc.CONSTRAINT_TYPE='P'\r\n"
+                         + "WHERE c.OWNER = ? AND c.TABLE_NAME = ? AND c.CONSTRAINT_TYPE = 'R'");
                  // 1- owner
                  // 2-table name
                  // 3-owner
@@ -942,60 +945,55 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                  dbStat.setString(4, forTable.getName());
 
 
-             }else if (owner.getDataSource().isAtLeastV10() && forTable != null && !useSimpleConnection) {
-                sql.append("SELECT \r\n" + "    c.TABLE_NAME,\r\n" + "    c.CONSTRAINT_NAME,\r\n"
-                        + "    c.CONSTRAINT_TYPE,\r\n" + "    c.STATUS,\r\n" + "    c.R_OWNER,\r\n"
-                        + "    c.R_CONSTRAINT_NAME,\r\n" + "    (SELECT rc.TABLE_NAME FROM "
-                        + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),
-                                "CONSTRAINTS")
-                        + " rc WHERE rc.OWNER = c.r_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME) AS R_TABLE_NAME,\r\n"
-                        + "    c.DELETE_RULE,\r\n" + "    (\r\n"
-                        + "        SELECT LTRIM(MAX(SYS_CONNECT_BY_PATH(cname || ':' || p,','))    KEEP (DENSE_RANK LAST ORDER BY curr),',') \r\n"
-                        + "        FROM   (SELECT \r\n"
-                        + "                       col.CONSTRAINT_NAME cn,col.POSITION p,col.COLUMN_NAME cname,\r\n"
-                        + "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) AS curr,\r\n"
-                        + "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) -1 AS prev\r\n"
-                        + "                FROM   "
-                        + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS")
-                        + " col \r\n"
-                        + "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? \r\n"
-                        + "                )  WHERE cn = c.CONSTRAINT_NAME GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n"
-                        + "        ) COLUMN_NAMES_NUMS\r\n" + "FROM\r\n" + "    "
-                        + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),
-                                "CONSTRAINTS")
-                        + " c\r\n" + "WHERE\r\n" + "    c.CONSTRAINT_TYPE = 'R'\r\n" + "    AND c.OWNER = ?\r\n"
-                        + "    AND c.TABLE_NAME = ?");
-                // 1- owner
-                // 2-table name
-                // 3-owner
-                // 4-table name
+            }else {
+                String consColumnsView = OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS");
 
-                dbStat = session.prepareStatement(sql.toString());
-                dbStat.setString(1, OracleSchema.this.getName());
-                dbStat.setString(2, forTable.getName());
-                dbStat.setString(3, OracleSchema.this.getName());
-                dbStat.setString(4, forTable.getName());
+                if (owner.getDataSource().isAtLeastV10() && forTable != null && !useSimpleConnection) {
+                    sql.append("SELECT c.TABLE_NAME,c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,\r\n"
+                            + "    c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,\r\n"
+                            + "    (SELECT rc.TABLE_NAME FROM " + constraintsView
+                            + " rc WHERE rc.OWNER = c.r_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME) AS R_TABLE_NAME,\r\n"
+                            + "    c.DELETE_RULE,\r\n" + "    (\r\n"
+                            + "        SELECT LTRIM(MAX(SYS_CONNECT_BY_PATH(cname || ':' || p,','))    KEEP (DENSE_RANK LAST ORDER BY curr),',') \r\n"
+                            + "        FROM   (SELECT \r\n"
+                            + "                       col.CONSTRAINT_NAME cn,col.POSITION p,col.COLUMN_NAME cname,\r\n"
+                            + "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) AS curr,\r\n"
+                            + "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) -1 AS prev\r\n"
+                            + "                FROM   " + consColumnsView + " col \r\n"
+                            + "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? \r\n"
+                            + "                )  WHERE cn = c.CONSTRAINT_NAME GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n"
+                            + "        ) COLUMN_NAMES_NUMS\r\n" + "FROM " + constraintsView + " c\r\n"
+                            + "WHERE c.OWNER = ? AND c.TABLE_NAME = ? AND c.CONSTRAINT_TYPE = 'R'");
+                    // 1- owner
+                    // 2-table name
+                    // 3-owner
+                    // 4-table name
 
-            } else {
-            
-                sql.append("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
-                    "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,rc.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
-                    "col.COLUMN_NAME,col.POSITION\r\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") +
-                    " c, " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col, " +
-                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") + " rc\n" +
-                    "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?\n" +
-                    "AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
-                    "AND rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME");
-                if (forTable != null) {
-                    sql.append(" AND c.TABLE_NAME=?");
-                }
-                sql.append("\nORDER BY c.CONSTRAINT_NAME,col.POSITION");
-    
-                dbStat = session.prepareStatement(sql.toString());
-                dbStat.setString(1, OracleSchema.this.getName());
-                if (forTable != null) {
+                    dbStat = session.prepareStatement(sql.toString());
+                    dbStat.setString(1, OracleSchema.this.getName());
                     dbStat.setString(2, forTable.getName());
+                    dbStat.setString(3, OracleSchema.this.getName());
+                    dbStat.setString(4, forTable.getName());
+
+                } else {
+
+                    sql.append("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
+                        "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,rc.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
+                        "col.COLUMN_NAME,col.POSITION\r\n" +
+                        "FROM " + constraintsView + " c, " + consColumnsView + " col, " + constraintsView + " rc\n" +
+                        "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?\n" +
+                        "AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
+                        "AND rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME");
+                    if (forTable != null) {
+                        sql.append(" AND c.TABLE_NAME=?");
+                    }
+                    sql.append("\r\nORDER BY c.CONSTRAINT_NAME,col.POSITION");
+
+                    dbStat = session.prepareStatement(sql.toString());
+                    dbStat.setString(1, OracleSchema.this.getName());
+                    if (forTable != null) {
+                        dbStat.setString(2, forTable.getName());
+                    }
                 }
             }
             return dbStat;

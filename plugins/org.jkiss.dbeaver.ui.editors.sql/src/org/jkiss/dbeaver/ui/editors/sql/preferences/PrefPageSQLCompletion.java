@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -228,6 +228,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
+        store.setToDefault(SQLPreferenceConstants.ENABLE_HIPPIE);
 
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD);
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);

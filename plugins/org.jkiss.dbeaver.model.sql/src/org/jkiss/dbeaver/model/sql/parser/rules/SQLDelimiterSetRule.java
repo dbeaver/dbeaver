@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,12 @@ public class SQLDelimiterSetRule implements TPRule {
     public TPToken evaluate(TPCharacterScanner scanner) {
         // Must be in the beginning of line
         {
-            scanner.unread();
-            int prevChar = scanner.read();
-            if (prevChar != TPCharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
-                return TPTokenAbstract.UNDEFINED;
+            if (scanner.getOffset() > 0) {
+                scanner.unread();
+                int prevChar = scanner.read();
+                if (prevChar != TPCharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
+                    return TPTokenAbstract.UNDEFINED;
+                }
             }
         }
 

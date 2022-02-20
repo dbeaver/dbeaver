@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                 json.name("driver-parameters");
                 json.beginObject();
                 for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
-                    if (!CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
+                    if (driver.isCustom() || !CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
                         json.name(paramEntry.getKey());
                         json.value(CommonUtils.toString(paramEntry.getValue()));
                     }

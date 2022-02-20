@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.ERDDatabaseObjectModifyCommand;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -107,10 +108,10 @@ public class ERDHandlerDelete extends AbstractHandler implements IElementUpdater
         ERDEditorPart editor = RuntimeUtils.getObjectAdapter(activeEditor, ERDEditorPart.class);
         if (editor != null) {
             if (editor.getDiagram().isEditEnabled()) {
-                element.setText("Delete object(s)");
+                element.setText(ERDUIMessages.erd_action_delete_text);
                 element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
             } else {
-                element.setText("Remove from diagram");
+                element.setText(ERDUIMessages.erd_action_remove_text);
                 element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REMOVE));
             }
         }

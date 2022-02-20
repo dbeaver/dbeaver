@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,15 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
     private String query;
     private List<ExasolPlanNode> rootNodes;
 
-    public ExasolPlanAnalyser(ExasolDataSource dataSource, String query) {
+    ExasolPlanAnalyser(ExasolDataSource dataSource, String query) {
         this.dataSource = dataSource;
         this.query = query;
+    }
+
+    ExasolPlanAnalyser(ExasolDataSource dataSource, String query, List<ExasolPlanNode> rootNodes) {
+        this.dataSource = dataSource;
+        this.query = query;
+        this.rootNodes = rootNodes;
     }
 
     @Override

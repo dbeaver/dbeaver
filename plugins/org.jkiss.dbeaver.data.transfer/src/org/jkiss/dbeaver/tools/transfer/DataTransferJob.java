@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -33,6 +34,7 @@ import java.util.Locale;
  */
 public class DataTransferJob implements DBRRunnableWithProgress {
 
+    private final DBCStatistics totalStatistics = new DBCStatistics();
     private final DataTransferSettings settings;
     private final DBTTask task;
     private long elapsedTime;
@@ -61,6 +63,10 @@ public class DataTransferJob implements DBRRunnableWithProgress {
 
     public boolean isHasErrors() {
         return hasErrors;
+    }
+
+    public DBCStatistics getTotalStatistics() {
+        return totalStatistics;
     }
 
     @Override
@@ -112,6 +118,9 @@ public class DataTransferJob implements DBRRunnableWithProgress {
                     processor,
                     nodeSettings,
                     task);
+
+                totalStatistics.accumulate(producer.getStatistics());
+                totalStatistics.accumulate(consumer.getStatistics());
             } finally {
                 consumer.finishTransfer(monitor, false);
             }

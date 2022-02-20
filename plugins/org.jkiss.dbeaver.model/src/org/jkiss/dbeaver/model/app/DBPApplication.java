@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,17 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 
 /**
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
  */
-public interface DBPApplication
-{
+public interface DBPApplication {
+    @NotNull
+    DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
+
     boolean isStandalone();
 
     /**
@@ -67,5 +70,10 @@ public interface DBPApplication
      * Default project name, e.g. 'General'.
      */
     String getDefaultProjectName();
+
+    /**
+     * Multiple users can login into the app at the same time
+     */
+    boolean isMultiuser();
 
 }

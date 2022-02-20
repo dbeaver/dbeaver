@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ public class DelphiSQLConverter extends SourceCodeSQLConverter {
                 result.append("Query.Add(");
             }
             String line = sourceLines[i];
+            line = line.replace("'", "''");
             result.append('\'').append(CommonUtils.escapeJavaString(line));
             if (!trailingLineFeed) {
                 result.append(lineDelimiter);
@@ -48,9 +49,9 @@ public class DelphiSQLConverter extends SourceCodeSQLConverter {
             if (trailingLineFeed) {
                 result.append(lineDelimiter);
             }
-            if ((i < sourceLines.length - 1) && (!useStringBuilder)) {
+            if (i < sourceLines.length - 1 && !useStringBuilder) {
                 result.append(" + \n");
-            } else {
+            } else if (useStringBuilder){
                 result.append(");\n");
             }
         }

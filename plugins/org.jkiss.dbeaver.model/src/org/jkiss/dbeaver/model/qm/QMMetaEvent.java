@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,61 +17,37 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.dbeaver.model.auth.DBASessionPersistent;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 
 /**
  * QM meta event
  */
-public class QMMetaEvent {
+public class QMMetaEvent implements QMEvent {
+    protected final QMMObject object;
+    protected final QMEventAction action;
+    protected final DBASessionPersistent qmAppSessionPersistent;
 
-    public enum Action {
-        BEGIN(0),
-        END(1),
-        UPDATE(2),
-        ;
-
-        private final int id;
-
-        Action(int id) {
-            this.id = id;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public static Action getById(int id) {
-            for (Action action : values()) {
-                if (action.id == id) {
-                    return action;
-                }
-            }
-            return BEGIN;
-        }
-    }
-
-    private final QMMObject object;
-    private final Action action;
-
-    public QMMetaEvent(QMMObject object, Action action)
-    {
+    public QMMetaEvent(QMMObject object, QMEventAction action, DBASessionPersistent qmAppSessionPersistent) {
         this.object = object;
         this.action = action;
+        this.qmAppSessionPersistent = qmAppSessionPersistent;
     }
 
-    public QMMObject getObject()
-    {
+    public QMMObject getObject() {
         return object;
     }
 
-    public Action getAction()
-    {
+    public QMEventAction getAction() {
         return action;
     }
 
+    public DBASessionPersistent getQmAppSessionPersistent() {
+        return qmAppSessionPersistent;
+    }
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return action + " " + object;
     }
 }

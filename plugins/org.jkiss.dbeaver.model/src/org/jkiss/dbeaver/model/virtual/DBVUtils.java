@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,9 @@ public abstract class DBVUtils {
 
     @Nullable
     public static DBVTransformSettings getTransformSettings(@NotNull DBDAttributeBinding binding, boolean create) {
+        if (DBUtils.isDynamicAttribute(binding.getAttribute())) {
+            return null;
+        }
         DBVEntity vEntity = getVirtualEntity(binding, create);
         if (vEntity != null) {
             DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, create);
@@ -140,6 +143,9 @@ public abstract class DBVUtils {
 
     @NotNull
     public static Map<String, Object> getAttributeTransformersOptions(@NotNull DBDAttributeBinding binding) {
+        if (DBUtils.isDynamicAttribute(binding.getAttribute())) {
+            return Collections.emptyMap();
+        }
         Map<String, Object> options = null;
         final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
         if (transformSettings != null) {
@@ -161,24 +167,26 @@ public abstract class DBVUtils {
         if (tdList == null || tdList.isEmpty()) {
             return null;
         }
-        boolean filtered = false;
-        final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
-        if (transformSettings != null) {
-            filtered = transformSettings.filterTransformers(tdList);
-        }
+        {
+            boolean filtered = false;
+            final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
+            if (transformSettings != null) {
+                filtered = transformSettings.filterTransformers(tdList);
+            }
 
-        if (!filtered) {
-            // Leave only default transformers
-            for (int i = 0; i < tdList.size();) {
-                if (tdList.get(i).isCustom() || !tdList.get(i).isApplicableByDefault()) {
-                    tdList.remove(i);
-                } else {
-                    i++;
+            if (!filtered) {
+                // Leave only default transformers
+                for (int i = 0; i < tdList.size(); ) {
+                    if (tdList.get(i).isCustom() || !tdList.get(i).isApplicableByDefault()) {
+                        tdList.remove(i);
+                    } else {
+                        i++;
+                    }
                 }
             }
-        }
-        if (tdList.isEmpty()) {
-            return null;
+            if (tdList.isEmpty()) {
+                return null;
+            }
         }
         DBDAttributeTransformer[] result = new DBDAttributeTransformer[tdList.size()];
         for (int i = 0; i < tdList.size(); i++) {

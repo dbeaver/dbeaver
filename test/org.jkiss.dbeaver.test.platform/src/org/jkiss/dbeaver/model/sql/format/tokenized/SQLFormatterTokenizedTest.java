@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,10 +122,10 @@ public class SQLFormatterTokenizedTest {
     }
 
     @Test
-    public void shouldAddLineBreakIfScriptStartsWithComment() {
+    public void shouldAddLineBreakAfterCommentInTheScript() {
         //given
-        String expectedString = lineBreak + "-- SELECT * FROM mytable;";
-        String inputString = "-- SELECT * FROM mytable;";
+        String expectedString = "-- test" + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "-- test" + lineBreak + "SELECT * FROM mytable;";
 
         //when
         String formattedString = format(inputString);

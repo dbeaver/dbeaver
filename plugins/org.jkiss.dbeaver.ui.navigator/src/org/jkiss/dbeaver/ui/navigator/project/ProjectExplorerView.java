@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,12 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -48,6 +51,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
+    private final NumberFormat sizeFormat = new DecimalFormat();
 
     public ProjectExplorerView() {
         DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
@@ -97,143 +101,160 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
         columnController = new ViewerColumnController("projectExplorer", viewer);
         columnController.setForceAutoSize(true);
-        columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return mainLabelProvider.getText(element);
-            }
+        columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_name_text,
+                UINavigatorMessages.navigator_project_explorer_columns_name_description,
+                SWT.LEFT, true, true,
+                new ColumnLabelProvider() {
+                    @Override
+                    public String getText(Object element) {
+                        return mainLabelProvider.getText(element);
+                    }
 
-            @Override
-            public Image getImage(Object element) {
-                Image image = mainLabelProvider.getImage(element);
-                if (element instanceof DBNResource) {
-                    image = labelDecorator.decorateImage(image, element);
-                }
-                return image;
-            }
-
-            @Override
-            public String getToolTipText(Object element) {
-                if (mainLabelProvider instanceof IToolTipProvider) {
-                    return ((IToolTipProvider) mainLabelProvider).getToolTipText(element);
-                }
-                return null;
-            }
-        });
-
-        columnController.addColumn("DataSource", "Datasource(s) associated with resource", SWT.LEFT, true, false, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                if (element instanceof DBNDatabaseNode) {
-                    return ((DBNDatabaseNode) element).getDataSourceContainer().getName();
-                } else if (element instanceof DBNResource) {
-                    Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
-                    if (!CommonUtils.isEmpty(containers)) {
-                        StringBuilder text = new StringBuilder();
-                        for (DBPDataSourceContainer container : containers) {
-                            if (text.length() > 0) {
-                                text.append(", ");
-                            }
-                            text.append(container.getName());
+                    @Override
+                    public Image getImage(Object element) {
+                        Image image = mainLabelProvider.getImage(element);
+                        if (element instanceof DBNResource) {
+                            image = labelDecorator.decorateImage(image, element);
                         }
-                        return text.toString();
+                        return image;
                     }
-                }
-                return "";
-            }
 
-            @Override
-            public Image getImage(Object element) {
-/*
-                DBNNode node = (DBNNode) element;
-                if (node instanceof DBNDatabaseNode) {
-                    return DBeaverIcons.getImage(((DBNDatabaseNode) node).getDataSourceContainer().getDriver().getIcon());
-                } else if (node instanceof DBNResource) {
-                    Collection<DBPDataSourceContainer> containers = ((DBNResource) node).getAssociatedDataSources();
-                    if (containers != null && containers.size() == 1) {
-                        return DBeaverIcons.getImage((containers.iterator().next().getDriver().getIcon()));
+                    @Override
+                    public String getToolTipText(Object element) {
+                        if (mainLabelProvider instanceof IToolTipProvider) {
+                            return ((IToolTipProvider) mainLabelProvider).getToolTipText(element);
+                        }
+                        return null;
                     }
-                }
-*/
-                return null;
-            }
-            @Override
-            public String getToolTipText(Object element) {
-                if (element instanceof DBNResource) {
-                    Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
-                    if (!CommonUtils.isEmpty(containers)) {
-                        StringBuilder text = new StringBuilder();
-                        for (DBPDataSourceContainer container : containers) {
-                            String description = container.getDescription();
-                            if (CommonUtils.isEmpty(description)) {
-                                description = container.getName();
-                            }
-                            if (!CommonUtils.isEmpty(description)) {
-                                if (text.length() > 0) {
-                                    text.append(", ");
+                });
+
+        columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_datasource_text,
+                UINavigatorMessages.navigator_project_explorer_columns_datasource_description,
+                SWT.LEFT, true, false,
+                new ColumnLabelProvider() {
+                    @Override
+                    public String getText(Object element) {
+                        if (element instanceof DBNDatabaseNode) {
+                            return ((DBNDatabaseNode) element).getDataSourceContainer().getName();
+                        } else if (element instanceof DBNResource) {
+                            Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
+                            if (!CommonUtils.isEmpty(containers)) {
+                                StringBuilder text = new StringBuilder();
+                                for (DBPDataSourceContainer container : containers) {
+                                    if (text.length() > 0) {
+                                        text.append(", ");
+                                    }
+                                    text.append(container.getName());
                                 }
-                                text.append(description);
+                                return text.toString();
                             }
                         }
-                        return text.toString();
+                        return "";
                     }
-                }                return null;
-            }
 
-        });
-        columnController.addColumn("Preview", "Script content preview", SWT.LEFT, false, false, new LazyLabelProvider(shadowColor) {
-            @Override
-            public String getLazyText(Object element) {
-                if (element instanceof DBNNode) {
-                    return ((DBNNode) element).getNodeDescription();
-                } else {
-                    return null;
-                }
-            }
-        });
-        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, true, null, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                if (element instanceof DBNResource) {
-                    IResource resource = ((DBNResource) element).getResource();
-                    if (resource instanceof IFile) {
-                        return String.valueOf(resource.getLocation().toFile().length());
-                    }
-                }
-                return "";
-            }
-        }, null);
-        columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new ColumnLabelProvider() {
-            private SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
-
-            @Override
-            public String getText(Object element) {
-                if (element instanceof DBNResource) {
-                    IResource resource = ((DBNResource) element).getResource();
-                    if (resource instanceof IFile || resource instanceof IFolder) {
-                        long lastModified = resource.getLocation().toFile().lastModified();
-                        if (lastModified <= 0) {
-                            return "";
+                    @Override
+                    public Image getImage(Object element) {
+        /*
+                        DBNNode node = (DBNNode) element;
+                        if (node instanceof DBNDatabaseNode) {
+                            return DBeaverIcons.getImage(((DBNDatabaseNode) node).getDataSourceContainer().getDriver().getIcon());
+                        } else if (node instanceof DBNResource) {
+                            Collection<DBPDataSourceContainer> containers = ((DBNResource) node).getAssociatedDataSources();
+                            if (containers != null && containers.size() == 1) {
+                                return DBeaverIcons.getImage((containers.iterator().next().getDriver().getIcon()));
+                            }
                         }
-                        return sdf.format(new Date(lastModified));
+        */
+                        return null;
                     }
-                }
-                return "";
-            }
-        });
-        columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                if (element instanceof DBNResource) {
-                    IResource resource = ((DBNResource) element).getResource();
-                    ProgramInfo program = ProgramInfo.getProgram(resource);
-                    if (program != null) {
-                        return program.getProgram().getName();
+                    @Override
+                    public String getToolTipText(Object element) {
+                        if (element instanceof DBNResource) {
+                            Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
+                            if (!CommonUtils.isEmpty(containers)) {
+                                StringBuilder text = new StringBuilder();
+                                for (DBPDataSourceContainer container : containers) {
+                                    String description = container.getDescription();
+                                    if (CommonUtils.isEmpty(description)) {
+                                        description = container.getName();
+                                    }
+                                    if (!CommonUtils.isEmpty(description)) {
+                                        if (text.length() > 0) {
+                                            text.append(", ");
+                                        }
+                                        text.append(description);
+                                    }
+                                }
+                                return text.toString();
+                            }
+                        }                return null;
                     }
-                }
-                return "";
-            }
-        });
+
+                });
+        columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_preview_text,
+                UINavigatorMessages.navigator_project_explorer_columns_preview_description, SWT.LEFT, false, false,
+                new LazyLabelProvider(shadowColor) {
+                    @Override
+                    public String getLazyText(Object element) {
+                        if (element instanceof DBNNode) {
+                            return ((DBNNode) element).getNodeDescription();
+                        } else {
+                            return null;
+                        }
+                    }
+                });
+        columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_size_text,
+                UINavigatorMessages.navigator_project_explorer_columns_size_description,
+                SWT.LEFT, false, false, true, null,
+                new ColumnLabelProvider() {
+                    @Override
+                    public String getText(Object element) {
+                        if (element instanceof DBNResource) {
+                            IResource resource = ((DBNResource) element).getResource();
+                            if (resource instanceof IFile) {
+                                return sizeFormat.format(resource.getLocation().toFile().length());
+                            }
+                        }
+                        return "";
+                    }
+                }, null);
+        columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_modified_text,
+                UINavigatorMessages.navigator_project_explorer_columns_modified_description,
+                SWT.LEFT, false, false,
+                new ColumnLabelProvider() {
+                    private SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+
+                    @Override
+                    public String getText(Object element) {
+                        if (element instanceof DBNResource) {
+                            IResource resource = ((DBNResource) element).getResource();
+                            if (resource instanceof IFile || resource instanceof IFolder) {
+                                long lastModified = resource.getLocation().toFile().lastModified();
+                                if (lastModified <= 0) {
+                                    return "";
+                                }
+                                return sdf.format(new Date(lastModified));
+                            }
+                        }
+                        return "";
+                    }
+                });
+        columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_type_text,
+                UINavigatorMessages.navigator_project_explorer_columns_type_description,
+                SWT.LEFT, false, false,
+                new ColumnLabelProvider() {
+                    @Override
+                    public String getText(Object element) {
+                        if (element instanceof DBNResource) {
+                            IResource resource = ((DBNResource) element).getResource();
+                            ProgramInfo program = ProgramInfo.getProgram(resource);
+                            if (program != null) {
+                                return program.getProgram().getName();
+                            }
+                        }
+                        return "";
+                    }
+                });
         UIUtils.asyncExec(() -> columnController.createColumns(true));
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -128,19 +130,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final String id;
     private String category;
     private List<String> categories;
-    private final String origName;
-    private final String origDescription;
-    private final String origClassName;
-    private final String origDefaultPort, origDefaultDatabase, origDefaultServer, origDefaultUser;
-    private final String origSampleURL;
     private String name;
     private String description;
     private String driverClassName;
+    private String driverDefaultHost;
     private String driverDefaultPort;
     private String driverDefaultDatabase;
     private String driverDefaultServer;
     private String driverDefaultUser;
     private String sampleURL;
+    private String dialectId;
+
+    private final String origName;
+    private final String origDescription;
+    private final String origClassName;
+    private final String origDefaultHost, origDefaultPort, origDefaultDatabase, origDefaultServer, origDefaultUser;
+    private final String origSampleURL;
+    private String origDialectId;
 
     private String webURL;
     private String propertiesWebURL;
@@ -215,18 +221,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origName = null;
         this.origDescription = null;
         this.origClassName = null;
+        this.origDefaultHost = null;
         this.origDefaultPort = null;
         this.origDefaultDatabase = null;
         this.origDefaultServer = null;
         this.origDefaultUser = null;
 
         this.origSampleURL = null;
+        this.origDialectId = null;
 
-        this.iconPlain = providerDescriptor.getIcon();
+        if (copyFrom != null) {
+            this.iconPlain = copyFrom.iconPlain;
+            this.iconBig = copyFrom.iconBig;
+        } else {
+            this.iconPlain = providerDescriptor.getIcon();
+            this.iconBig = DBIcon.DATABASE_BIG_DEFAULT;
+        }
         if (this.iconPlain == null) {
             this.iconPlain = DBIcon.DATABASE_DEFAULT;
         }
-        this.iconBig = DBIcon.DATABASE_BIG_DEFAULT;
 
         makeIconExtensions();
         if (copyFrom != null) {
@@ -236,11 +249,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.name = copyFrom.name;
             this.description = copyFrom.description;
             this.driverClassName = copyFrom.driverClassName;
+            this.driverDefaultHost = copyFrom.driverDefaultHost;
             this.driverDefaultPort = copyFrom.driverDefaultPort;
             this.driverDefaultDatabase = copyFrom.driverDefaultDatabase;
             this.driverDefaultServer = copyFrom.driverDefaultServer;
             this.driverDefaultUser = copyFrom.driverDefaultUser;
             this.sampleURL = copyFrom.sampleURL;
+            this.dialectId = copyFrom.dialectId;
 
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
@@ -289,11 +304,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.origDefaultHost = this.driverDefaultHost = config.getAttribute(RegistryConstants.ATTR_DEFAULT_HOST);
         this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
         this.origDefaultDatabase = this.driverDefaultDatabase = config.getAttribute(RegistryConstants.ATTR_DEFAULT_DATABASE);
         this.origDefaultServer = this.driverDefaultServer = config.getAttribute(RegistryConstants.ATTR_DEFAULT_SERVER);
         this.origDefaultUser = this.driverDefaultUser = config.getAttribute(RegistryConstants.ATTR_DEFAULT_USER);
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
+        this.origDialectId = this.dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
@@ -438,7 +455,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
 
-    private void makeIconExtensions() {
+    void makeIconExtensions() {
         if (isCustom()) {
             this.iconNormal = new DBIconComposite(this.iconPlain, false, null, null, DBIcon.OVER_LAMP, null);
         } else {
@@ -546,6 +563,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return iconPlain;
     }
 
+    void setIconPlain(DBPImage iconPlain) {
+        this.iconPlain = iconPlain;
+    }
+
     /**
      * Driver icon, includes overlays for driver conditions (custom, invalid, etc)..
      *
@@ -643,6 +664,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
+    public String getDefaultHost() {
+        return driverDefaultHost;
+    }
+
+    public void setDriverDefaultHost(String driverDefaultHost) {
+        this.driverDefaultHost = driverDefaultHost;
+    }
+
+    @Nullable
+    @Override
     public String getDefaultPort() {
         return driverDefaultPort;
     }
@@ -707,6 +738,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     @Override
     public SQLDialectMetadata getScriptDialect() {
+        if (!CommonUtils.isEmpty(dialectId)) {
+            SQLDialectDescriptor dialect = SQLDialectRegistry.getInstance().getDialect(dialectId);
+            if (dialect != null) {
+                return dialect;
+            } else {
+                log.debug("SQL dialect '" + dialectId + "' not found for driver '" + getFullId() + "'. Using default dialect.");
+            }
+        }
         return providerDescriptor.getScriptDialect();
     }
 
@@ -1050,6 +1089,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         driverCopy.setDescription(this.getOrigDescription());
         driverCopy.setDriverClassName(this.getOrigClassName());
         driverCopy.setSampleURL(this.getOrigSampleURL());
+        driverCopy.setDriverDefaultHost(this.getDefaultHost());
         driverCopy.setDriverDefaultPort(this.getDefaultPort());
         driverCopy.setDriverDefaultDatabase(this.getDefaultDatabase());
         driverCopy.setDriverDefaultUser(this.getDefaultUser());

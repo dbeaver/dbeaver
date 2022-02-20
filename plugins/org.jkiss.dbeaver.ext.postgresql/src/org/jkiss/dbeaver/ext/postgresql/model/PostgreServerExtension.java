@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,8 @@ public interface PostgreServerExtension {
     boolean supportsInheritance();
 
     boolean supportsTriggers();
+
+    boolean supportsEventTriggers();
 
     boolean supportsFunctionDefRead();
 
@@ -126,8 +128,10 @@ public interface PostgreServerExtension {
     // It works for original PG driver but doesn't work for many forks (e.g. Redshift).
     boolean supportsEntityMetadataInResults();
 
+    /** True if supports special column with check constraint expression */
     boolean supportsPGConstraintExpressionColumn();
 
+    /** True if supports special "Has OIDs" metadata column*/
     boolean supportsHasOidsColumn();
 
     boolean supportsDatabaseSize();
@@ -138,27 +142,35 @@ public interface PostgreServerExtension {
 
     boolean supportsRolesWithCreateDBAbility();
 
+    /** True if supports serials - serial types are auto-incrementing integer data types */
     boolean supportSerialTypes();
 
+    /** True if supports external types - types from another databases (like Athena). These types in this case will be turned into fake types */
     boolean supportsExternalTypes();
 
     boolean supportsBackslashStringEscape();
 
+    /** The ability to disable triggers need for the data transfer */
     boolean supportsDisablingAllTriggers();
 
+    /** True if supports table generated columns */
     boolean supportsGeneratedColumns();
 
     boolean supportsKeyAndIndexRename();
 
+    /** Makes it possible to change the name of the user of the current user via UI */
     boolean supportsAlterUserChangePassword();
 
+    /** COPY FROM STDIN is special command for the better table insert performance */
     boolean supportsCopyFromStdIn();
 
     int getParameterBindType(DBSTypedObject type, Object value);
 
+    /** Necessary for the "Truncate table" tool */
     int getTruncateToolModes();
 
     boolean supportsDistinctForStatementsWithAcl();
 
+    /** True if supports operator families as access methods (System Info) */
     boolean supportsOpFamily();
 }

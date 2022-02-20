@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,13 @@
                                         </folder>
                                         <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExtendedProperty" label="%tree.extendedProperties.node.name" icon="#extended-properties" description="Table extended properties">
                                             <items label="%tree.extendedProperty.node.name" path="extendedProperty" property="extendedProperties" icon="#extended-property"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable" label="%tree.externalTables.node.name" icon="#folder_table" description="External tables" visibleIf="object.dataSource.supportsExternalTables()">
+                                    <items label="%tree.externalTable.node.name" path="externalTable" property="externalTables" icon="#table_external">
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
                                         </folder>
                                     </items>
                                 </folder>
@@ -489,6 +496,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDatabaseManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerExternalTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>

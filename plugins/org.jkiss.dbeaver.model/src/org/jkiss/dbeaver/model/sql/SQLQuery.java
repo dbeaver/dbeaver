@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     private SQLQueryType type;
     private Statement statement;
-    private SingleTableMeta singleTableMeta;
+    private SingleTableMeta singleTableMeta, rawSingleTableMetadata;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
 
@@ -214,18 +214,27 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     private void fillSingleSource(Table fromItem) {
-        singleTableMeta = createTableMetaData(fromItem);
+        rawSingleTableMetadata = createOriginalSourceTableMetaData(fromItem);
+        singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
     }
 
     SingleTableMeta createTableMetaData(Table fromItem) {
+        return createUnquotedTableMetaData(createOriginalSourceTableMetaData(fromItem));
+    }
+
+    private SingleTableMeta createOriginalSourceTableMetaData(Table fromItem) {
         Database database = fromItem.getDatabase();
         String catalogName = database == null ? null : database.getDatabaseName();
         String schemaName = fromItem.getSchemaName();
         String tableName = fromItem.getName();
+        return new SingleTableMeta(catalogName, schemaName, tableName);
+    }
+
+    private SingleTableMeta createUnquotedTableMetaData(SingleTableMeta tableMeta) {
         return new SingleTableMeta(
-            unquoteIdentifier(catalogName),
-            unquoteIdentifier(schemaName),
-            unquoteIdentifier(tableName));
+            unquoteIdentifier(tableMeta.getCatalogName()),
+            unquoteIdentifier(tableMeta.getSchemaName()),
+            unquoteIdentifier(tableMeta.getEntityName()));
     }
 
     private String unquoteIdentifier(String name) {
@@ -345,9 +354,9 @@ public class SQLQuery implements SQLScriptElement {
         return type;
     }
 
-    public DBCEntityMetaData getSingleSource() {
+    public DBCEntityMetaData getEntityMetadata(boolean raw) {
         parseQuery();
-        return singleTableMeta;
+        return raw? rawSingleTableMetadata : singleTableMeta;
     }
 
     public void setParameters(List<SQLQueryParameter> parameters) {

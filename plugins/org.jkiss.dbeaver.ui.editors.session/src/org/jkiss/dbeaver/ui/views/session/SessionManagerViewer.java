@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
@@ -358,14 +359,9 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     }
 
-    public DBAServerSession getSelectedSession()
-    {
-        ISelection selection = sessionTable.getSelectionProvider().getSelection();
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerSession)((IStructuredSelection) selection).getFirstElement();
-        } else {
-            return null;
-        }
+    @Nullable
+    public DBAServerSession getSelectedSession() {
+        return sessionTable.getSuitableSelectedElement(DBAServerSession.class);
     }
 
     public List<DBAServerSession> getSelectedSessions()

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,9 +86,10 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     } else {
                         log.error("Can't parse array");
                         return new JDBCCollection(
-                            itemType,
+                                session.getProgressMonitor(), itemType,
                             DBUtils.findValueHandler(session, itemType),
-                            value == null ? null : new Object[]{value});
+                            value == null ? null : new Object[]{value}
+                        );
                     }
                 } else {
                     return convertStringToCollection(session, type, itemType, (String) object);
@@ -117,24 +118,24 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false, false);
                 itemValues[i] = itemValue;
             }
-            return new JDBCCollection(itemType, itemValueHandler, itemValues);
+            return new JDBCCollection(session.getProgressMonitor(), itemType, itemValueHandler, itemValues);
         } else {
             List<Object> strings = PostgreValueParser.parseArrayString(value, delimiter);
             Object[] contents = new Object[strings.size()];
             for (int i = 0; i < strings.size(); i++) {
                 contents[i] = PostgreValueParser.convertStringToValue(session, itemType, String.valueOf(strings.get(i)));
             }
-            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
+            return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), contents);
         }
     }
 
     private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType arrayType, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
         Object parsedArray = PostgreValueParser.convertStringToValue(session, arrayType, strValue);
         if (parsedArray instanceof Object[]){
-            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), (Object[]) parsedArray);
+            return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), (Object[]) parsedArray);
         } else {
             log.error("Can't parse array");
-            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[]{parsedArray});
+            return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), new Object[]{parsedArray});
         }
     }
 

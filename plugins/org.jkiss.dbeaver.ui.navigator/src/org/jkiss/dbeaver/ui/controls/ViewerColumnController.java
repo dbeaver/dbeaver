@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,8 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private transient ObjectViewerRenderer cellRenderer;
     private transient Listener menuListener;
 
+    private int selectedColumnNumber;
+
     public static ViewerColumnController getFromControl(Control control)
     {
         return (ViewerColumnController)control.getData(DATA_KEY);
@@ -89,6 +91,23 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                         clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
                     } else {
                         clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
+                    }
+                }
+                if (clickOnHeader) {
+                    int pointYWithHeader;
+                    // We can't get column number, if we use click on the header, but we can add header height to the y
+                    if (viewer instanceof TableViewer && control instanceof Table) {
+                        pointYWithHeader = pt.y + ((Table) control).getHeaderHeight();
+                        TableItem selectedItem = ((TableViewer) this.viewer).getTable().getItem(new Point(pt.x, pointYWithHeader));
+                        if (selectedItem != null) {
+                            selectedColumnNumber = UIUtils.getColumnAtPos(selectedItem, pt.x, pointYWithHeader);
+                        }
+                    } else if (viewer instanceof TreeViewer && control instanceof Tree) {
+                        pointYWithHeader = pt.y + ((Tree) control).getHeaderHeight();
+                        TreeItem selectedItem = ((TreeViewer) viewer).getTree().getItem(new Point(pt.x, pointYWithHeader));
+                        if (selectedItem != null) {
+                            selectedColumnNumber = UIUtils.getColumnAtPos(selectedItem, pt.x, pointYWithHeader);
+                        }
                     }
                 }
             };
@@ -133,6 +152,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     public void setDefaultIcon(DBIcon defaultIcon) {
         this.defaultIcon = defaultIcon;
+    }
+
+    public int getSelectedColumnNumber() {
+        return selectedColumnNumber;
     }
 
     public void fillConfigMenu(IContributionManager menuManager)
@@ -313,22 +336,26 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 UIUtils.packColumns(((TreeViewer) viewer).getTree(), forceAutoSize, ratios);
             } else if (viewer instanceof TableViewer) {
                 itemCount = ((TableViewer) viewer).getTable().getItemCount();
-                UIUtils.packColumns(((TableViewer)viewer).getTable(), forceAutoSize);
+                UIUtils.packColumns(((TableViewer) viewer).getTable(), forceAutoSize);
             }
 
-            if (itemCount == 0) {
+            /*if (itemCount == 0) */{
                 // Fix too narrow width for empty lists
                 for (ColumnInfo columnInfo : getVisibleColumns()) {
                     if (columnInfo.column instanceof TreeColumn) {
-                        if (((TreeColumn) columnInfo.column) .getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                        int realWidth = ((TreeColumn) columnInfo.column).getWidth();
+                        if (realWidth < MIN_COLUMN_AUTO_WIDTH) {
                             ((TreeColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
-                            columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
+                            realWidth = MIN_COLUMN_AUTO_WIDTH;
                         }
+                        columnInfo.width = realWidth;
                     } else if (columnInfo.column instanceof TableColumn) {
-                        if (((TableColumn) columnInfo.column) .getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                        int realWidth = ((TableColumn) columnInfo.column).getWidth();
+                        if (realWidth < MIN_COLUMN_AUTO_WIDTH) {
                             ((TableColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
-                            columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
+                            realWidth = MIN_COLUMN_AUTO_WIDTH;
                         }
+                        columnInfo.width = realWidth;
                     }
                 }
             }
@@ -511,7 +538,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         }
     }
 
-    public COLUMN getColumnData(int columnIndex) {
+    private ColumnInfo getColumnByIndex(int columnIndex) {
         final Control control = viewer.getControl();
         ColumnInfo columnInfo;
         if (control instanceof Tree) {
@@ -519,7 +546,15 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         } else {
             columnInfo = (ColumnInfo) ((Table) control).getColumn(columnIndex).getData();
         }
-        return (COLUMN) columnInfo.userData;
+        return columnInfo;
+    }
+
+    public COLUMN getColumnData(int columnIndex) {
+        return (COLUMN) getColumnByIndex(columnIndex).userData;
+    }
+
+    public String getColumnName(int columnIndex) {
+        return getColumnByIndex(columnIndex).name;
     }
 
     public COLUMN[] getColumnsData(Class<COLUMN> type) {
@@ -645,10 +680,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             colTable = new Table(composite, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
             colTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             colTable.setLinesVisible(true);
+            colTable.setHeaderVisible(true);
             colTable.addListener(SWT.Selection, event -> {
-                if( event.detail == SWT.CHECK ) {
-                    if (((TableItem)event.item).getGrayed()) {
-                        ((TableItem)event.item).setChecked(true);
+                if (event.detail == SWT.CHECK) {
+                    if (((TableItem) event.item).getGrayed()) {
+                        ((TableItem) event.item).setChecked(true);
                         event.doit = false;
                     }
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -104,7 +104,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
         final boolean showAll = showAllCheck != null && showAllCheck.getSelection();
         final boolean showPrevious = showPreviousCheck != null && showPreviousCheck.getSelection();
 
-        final QMMSessionInfo currentSession = QMUtils.getCurrentSession(executionContext);
+        final QMMConnectionInfo currentSession = QMUtils.getCurrentConnection(executionContext);
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
 
         QMEventFilter filter = event -> {
@@ -114,7 +114,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
                 if (!showPrevious && !CommonUtils.equalObjects(exec.getSavepoint(), currentSP)) {
                     return false;
                 }
-                if (!showAll && !CommonUtils.equalObjects(exec.getStatement().getSession(), currentSession)) {
+                if (!showAll && !CommonUtils.equalObjects(exec.getStatement().getConnection(), currentSession)) {
                     return false;
                 }
                 DBCExecutionPurpose purpose = exec.getStatement().getPurpose();

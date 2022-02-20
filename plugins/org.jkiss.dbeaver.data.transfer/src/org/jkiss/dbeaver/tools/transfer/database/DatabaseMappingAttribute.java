@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     public String getTargetName() {
         switch (mappingType) {
             case existing:
+            case recreate:
                 if (target != null) {
                     return DBUtils.getObjectFullName(target, DBPEvaluationContext.UI);
                 } else {
@@ -144,6 +145,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         switch (parent.getMappingType()) {
+            case recreate:
             case existing: {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
@@ -195,7 +197,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                         }
                     }
                     if (this.target != null) {
-                        mappingType = DatabaseMappingType.existing;
+                        if (parent.getMappingType() == DatabaseMappingType.recreate) {
+                            mappingType = DatabaseMappingType.create;
+                        } else {
+                            mappingType = DatabaseMappingType.existing;
+                        }
                     } else {
                         mappingType = DatabaseMappingType.create;
                     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ public class RegistryConstants {
 
     public static final String ATTR_CODE = "code"; //$NON-NLS-1$
     public static final String ATTR_LABEL = "label"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_HOST = "defaultHost"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_PORT = "defaultPort"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_DATABASE = "defaultDatabase"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_SERVER = "defaultServer"; //$NON-NLS-1$
@@ -99,6 +100,7 @@ public class RegistryConstants {
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_IDLE = "closeIdle";
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_OBJECT = "defaultObject"; //$NON-NLS-1$

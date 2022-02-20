@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,8 +215,6 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                 } else {
                     query.append(identifier).append(" LIKE ?");
                 }
-            } else if (getDataKind() == DBPDataKind.NUMERIC) {
-                query.append(identifier).append(" >= ?");
             } else {
                 query.append(identifier).append(" = ?");
             }

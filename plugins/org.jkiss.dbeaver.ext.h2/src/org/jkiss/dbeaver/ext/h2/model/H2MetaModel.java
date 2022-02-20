@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,35 +76,26 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES")) {
-                List<GenericSequence> result = new ArrayList<>();
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES");
+    }
 
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, "SEQUENCE_NAME");
-                        if (name == null) {
-                            continue;
-                        }
-                        String description = JDBCUtils.safeGetString(dbResult, "REMARKS");
-                        GenericSequence sequence = new GenericSequence(
-                            container,
-                            name,
-                            description,
-                            JDBCUtils.safeGetLong(dbResult, "CURRENT_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "MIN_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "MAX_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "INCREMENT")
-                        );
-                        result.add(sequence);
-                    }
-                }
-                return result;
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+    @Override
+    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+        String name = JDBCUtils.safeGetString(dbResult, "SEQUENCE_NAME");
+        if (CommonUtils.isEmpty(name)) {
+            return null;
         }
+        String description = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        return new GenericSequence(
+            container,
+            name,
+            description,
+            JDBCUtils.safeGetLong(dbResult, "CURRENT_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "MIN_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "MAX_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "INCREMENT")
+        );
     }
 
     @Override

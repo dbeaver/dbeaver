@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -46,7 +46,10 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) {
         Map<String, String> props = new HashMap<>();
-        String authProp = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
+
+        // Backward compatibility - use legacy provider property
+        // Newer versions use auth model
+        String authProp = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY);
         if (!CommonUtils.isEmpty(authProp)) {
             props.put("authenticator", authProp);
         }
@@ -85,8 +88,8 @@ public class SnowflakeDataSource extends GenericDataSource {
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == DBAUserChangePassword.class) {
-            return adapter.cast(new SnowflakeChangeUserPassword(this));
+        if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new SnowflakeChangeUserPasswordManager(this));
         }
         return super.getAdapter(adapter);
     }

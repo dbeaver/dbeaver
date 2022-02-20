@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,8 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         itemControl.loadData();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
-        history.add(getRootNode().getNodeItemPath());
+        DBNNode rootNode = getRootNode();
+        history.add(rootNode.getNodeItemPath());
     }
 
     @Override
@@ -165,14 +166,18 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         if (position < 0 || position >= history.size()) {
             return;
         }
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
         String nodePath = history.get(position);
         try {
-            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
+            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, nodePath);
             if (node != null) {
                 historyPosition = position;
                 itemControl.changeCurrentNode(node);
+            } else {
+                DBWorkbench.getPlatformUI().showMessageBox("Can't navigator to node", "Node '" + nodePath + "' not found", true);
             }
         } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Can't obtain navigator to node", "Error reading navigator node", e);
             log.error(e);
         }
 

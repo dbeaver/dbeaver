@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class SetRowColorAction extends ColorAction {
     private final Object value;
     public SetRowColorAction(ResultSetViewer resultSetViewer, DBDAttributeBinding attr, Object value) {
         super(resultSetViewer, NLS.bind(ResultSetMessages.actions_name_color_by,
-            attr.getName() + " = " + UITextUtils.getShortText(resultSetViewer.getSizingGC(), CommonUtils.toString(value), 100)));
+            attr.getName() + " = " + UITextUtils.getShortText(resultSetViewer.getControl(), CommonUtils.toString(value), 100)));
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.value = value;

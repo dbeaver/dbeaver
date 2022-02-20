@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,8 @@ public abstract class JDBCDataSource
     protected final JDBCFactory jdbcFactory;
     private JDBCRemoteInstance defaultRemoteInstance;
 
-    private int databaseMajorVersion;
-    private int databaseMinorVersion;
+    private int databaseMajorVersion = 0;
+    private int databaseMinorVersion = 0;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
 
@@ -447,11 +447,13 @@ public abstract class JDBCDataSource
     }
 
     protected void readDatabaseServerVersion(DatabaseMetaData metaData) {
-        try {
-            databaseMajorVersion = metaData.getDatabaseMajorVersion();
-            databaseMinorVersion = metaData.getDatabaseMinorVersion();
-        } catch (Throwable e) {
-            log.error("Error determining server version", e);
+        if (databaseMajorVersion <= 0 && databaseMinorVersion <= 0) {
+            try {
+                databaseMajorVersion = metaData.getDatabaseMajorVersion();
+                databaseMinorVersion = metaData.getDatabaseMinorVersion();
+            } catch (Throwable e) {
+                log.error("Error determining server version", e);
+            }
         }
     }
 

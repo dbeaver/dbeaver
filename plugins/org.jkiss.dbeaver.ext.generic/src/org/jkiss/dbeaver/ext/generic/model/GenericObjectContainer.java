@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     private final ConstraintKeysCache constraintKeysCache;
     private final ContainerTriggerCache containerTriggerCache;
     private final TableTriggerCache tableTriggerCache;
+    private final GenericSequenceCache sequenceCache;
+    private final GenericSynonymCache synonymCache;
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
     protected List<? extends GenericSequence> sequences;
@@ -67,6 +69,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         this.foreignKeysCache = new ForeignKeysCache(tableCache);
         this.containerTriggerCache = new ContainerTriggerCache();
         this.tableTriggerCache = new TableTriggerCache(tableCache);
+        this.sequenceCache = new GenericSequenceCache();
+        this.synonymCache = new GenericSynonymCache();
     }
 
     public TableCache createTableCache(GenericDataSource datasource) {
@@ -96,6 +100,15 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public TableTriggerCache getTableTriggerCache() {
         return tableTriggerCache;
+    }
+
+    @Override
+    public GenericSequenceCache getSequenceCache() {
+        return sequenceCache;
+    }
+
+    public GenericSynonymCache getSynonymCache() {
+        return synonymCache;
     }
 
     @NotNull
@@ -350,32 +363,20 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
     @Override
     public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
-        if (sequences == null) {
-            loadSequences(monitor);
-        }
-        return sequences;
+        return sequenceCache.getAllObjects(monitor, this);
     }
 
     public GenericSequence getSequence(DBRProgressMonitor monitor, String name) throws DBException {
-        if (sequences == null) {
-            loadSequences(monitor);
-        }
-        return DBUtils.findObject(sequences, name);
+        return sequenceCache.getObject(monitor, this, name);
     }
 
     @Override
     public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
-        if (synonyms == null) {
-            loadSynonyms(monitor);
-        }
-        return synonyms;
+        return synonymCache.getAllObjects(monitor, this);
     }
 
     public GenericSynonym getSynonym(DBRProgressMonitor monitor, String name) throws DBException {
-        if (synonyms == null) {
-            loadSynonyms(monitor);
-        }
-        return DBUtils.findObject(synonyms, name);
+        return synonymCache.getObject(monitor, this, name);
     }
 
     @Override
@@ -418,6 +419,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         this.foreignKeysCache.clearCache();
         this.containerTriggerCache.clearCache();
         this.tableTriggerCache.clearCache();
+        this.sequenceCache.clearCache();
+        this.synonymCache.clearCache();
         this.packages = null;
         this.procedures = null;
         this.sequences = null;
@@ -469,30 +472,6 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         packages.add(procedurePackage);
     }
 
-    private synchronized void loadSequences(DBRProgressMonitor monitor)
-        throws DBException {
-        sequences = dataSource.getMetaModel().loadSequences(monitor, this);
-
-        // Order procedures
-        if (sequences == null) {
-            sequences = new ArrayList<>();
-        } else {
-            DBUtils.orderObjects(sequences);
-        }
-    }
-
-    private synchronized void loadSynonyms(DBRProgressMonitor monitor)
-        throws DBException {
-        synonyms = dataSource.getMetaModel().loadSynonyms(monitor, this);
-
-        // Order procedures
-        if (synonyms == null) {
-            synonyms = new ArrayList<>();
-        } else {
-            DBUtils.orderObjects(synonyms);
-        }
-    }
-
     public class ContainerTriggerCache extends JDBCObjectCache<GenericStructContainer, GenericTrigger> {
 
         @NotNull
@@ -505,6 +484,41 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         @Override
         protected GenericTrigger fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return container.getDataSource().getMetaModel().createContainerTriggerImpl(container, resultSet);
+        }
+    }
+
+    class GenericSequenceCache extends JDBCObjectCache<GenericObjectContainer, GenericSequence> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericObjectContainer container) throws SQLException {
+            return container.getDataSource().getMetaModel().prepareSequencesLoadStatement(session, container);
+        }
+
+        @Nullable
+        @Override
+        protected GenericSequence fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return container.getDataSource().getMetaModel().createSequenceImpl(session, container, resultSet);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            return getDataSource().getMetaModel().handleSequenceCacheReadingError(error);
+        }
+    }
+
+    class GenericSynonymCache extends JDBCObjectCache<GenericObjectContainer, GenericSynonym> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericObjectContainer container) throws SQLException {
+            return container.getDataSource().getMetaModel().prepareSynonymsLoadStatement(session, container);
+        }
+
+        @Nullable
+        @Override
+        protected GenericSynonym fetchObject(@NotNull JDBCSession session, @NotNull GenericObjectContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return container.getDataSource().getMetaModel().createSynonymImpl(session, container, resultSet);
         }
     }
 

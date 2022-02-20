@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -115,7 +116,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         });
 
         createAuthPanel(addrGroup, 1);
-
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
@@ -308,8 +308,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         super.loadSettings();
 
         // Load values from new connection info
@@ -343,42 +342,29 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             connectionType = OracleConstants.ConnectionType.BASIC;
         }
         connectionTypeFolder.setSelection(connectionType.ordinal());
-
-        switch (connectionType) {
-            case BASIC:
-                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    hostText.setText("localhost");
-                } else {
-                    hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(connectionInfo.getHostPort());
-                } else {
-                    portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
-                }
-
-                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    serviceNameCombo.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
-                } else {
-                    serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-                }
-                break;
-            case TNS: {
-                tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-                String tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH);
-//                if (tnsPathProperty == null) {
-//                    tnsPathProperty = System.getenv(OracleConstants.VAR_TNS_ADMIN);
-//                }
-                if (tnsPathProperty != null) {
-                    tnsPathText.setText(tnsPathProperty);
-                }
-                break;
-            }
-            case CUSTOM:
-                connectionUrlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
-                break;
+        if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            hostText.setText(DBConstants.HOST_LOCALHOST);
+        } else {
+            hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
         }
-
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            portText.setText(connectionInfo.getHostPort());
+        } else {
+            portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
+        }
+        if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            serviceNameCombo.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
+        } else {
+            serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+        }
+        if (connectionType == OracleConstants.ConnectionType.TNS) {
+            tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+            String tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH);
+            if (tnsPathProperty != null) {
+                tnsPathText.setText(tnsPathProperty);
+            }
+        }
+        connectionUrlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
         activated = true;
     }
 
@@ -411,6 +397,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText().trim());
+                connectionInfo.setHostName(hostText.getText().trim());
+                connectionInfo.setHostPort(portText.getText().trim());
+                connectionInfo.setDatabaseName(serviceNameCombo.getText().trim());
                 break;
         }
         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,10 +44,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     protected boolean isReadOnly()
     {
         PostgreScriptObject sourceObject = getSourceObject();
-        if (sourceObject instanceof PostgreProcedure || sourceObject instanceof PostgreTrigger || sourceObject instanceof PostgreViewBase) {
-            return false;
-        }
-        return true;
+        return !(sourceObject instanceof PostgreProcedure) && !(sourceObject instanceof PostgreTriggerBase) && !(sourceObject instanceof PostgreViewBase);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
-        final SQLDialect sqlDialect = statement.getSession().getSQLDialect();
+        final SQLDialect sqlDialect = statement.getConnection().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
             this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
@@ -165,13 +165,27 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return '"' + queryString + '"';
     }
 
     @Override
     public String getText() {
         return queryString;
+    }
+
+    @Override
+    public long getDuration() {
+        if (!isClosed()) {
+            return -1;
+        }
+        long execTime = getCloseTime() - getOpenTime();
+        long fetchTime = isFetching() ? 0 : getFetchEndTime() - getFetchBeginTime();
+        return execTime + fetchTime;
+    }
+
+    @Override
+    public QMMConnectionInfo getConnection() {
+        return statement.getConnection();
     }
 }

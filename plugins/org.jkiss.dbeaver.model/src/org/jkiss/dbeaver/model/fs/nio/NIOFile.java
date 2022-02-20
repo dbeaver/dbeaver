@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,20 @@ package org.jkiss.dbeaver.model.fs.nio;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFileState;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /**
  * NIOFile
@@ -52,11 +55,17 @@ public final class NIOFile extends NIOResource implements IFile {
     }
 
     public void create(InputStream source, boolean force, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        create(source, (force ? IResource.FORCE : IResource.NONE), monitor);
     }
 
     public void create(InputStream source, int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Files.copy(source, getNioPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            NIOMonitor.notifyResourceChange(this, NIOListener.Action.CREATE);
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void createLink(IPath localLocation, int updateFlags, IProgressMonitor monitor) throws CoreException {
@@ -68,7 +77,9 @@ public final class NIOFile extends NIOResource implements IFile {
     }
 
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        int updateFlags = force ? IResource.FORCE : IResource.NONE;
+        updateFlags |= keepHistory ? IResource.KEEP_HISTORY : IResource.NONE;
+        delete(updateFlags, monitor);
     }
 
     public String getCharset() throws CoreException {
@@ -123,18 +134,31 @@ public final class NIOFile extends NIOResource implements IFile {
     }
 
     public void setContents(InputStream source, boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        // funnel all operations to central method
+        int updateFlags = force ? IResource.FORCE : IResource.NONE;
+        updateFlags |= keepHistory ? IResource.KEEP_HISTORY : IResource.NONE;
+        setContents(source, updateFlags, monitor);
     }
 
     public void setContents(IFileState source, boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
-    }
-
-    public void setContents(InputStream source, int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        // funnel all operations to central method
+        int updateFlags = force ? IResource.FORCE : IResource.NONE;
+        updateFlags |= keepHistory ? IResource.KEEP_HISTORY : IResource.NONE;
+        setContents(source, updateFlags, monitor);
     }
 
     public void setContents(IFileState source, int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        setContents(source.getContents(), updateFlags, monitor);
     }
+
+    public void setContents(InputStream source, int updateFlags, IProgressMonitor monitor) throws CoreException {
+        try {
+            Files.copy(source, getNioPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            NIOMonitor.notifyResourceChange(this, NIOListener.Action.CHANGE);
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
+    }
+
 }

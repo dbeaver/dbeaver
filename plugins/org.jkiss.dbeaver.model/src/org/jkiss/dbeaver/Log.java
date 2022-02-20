@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,15 +32,43 @@ import java.io.PrintStream;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Log
  */
 public class Log
 {
+    public static class Context {
+        private final String contextName;
+        private final Map<String, Object> contextParameters = new LinkedHashMap<>();
+
+        private Context(String contextName) {
+            this.contextName = contextName;
+        }
+
+        public Context withParameter(String name, Object value) {
+            this.contextParameters.put(name, value);
+            return this;
+        }
+
+        public String getContextName() {
+            return contextName;
+        }
+
+        public Map<String, Object> getContextParameters() {
+            return contextParameters;
+        }
+    }
+
+    public static Context buildContext(String name) {
+        return new Context(name);
+    }
+
     private static final boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 
     private static ILog eclipseLog;
     private static Listener[] listeners = new Listener[0];
@@ -56,9 +84,11 @@ public class Log
         quietMode = ArrayUtils.contains(Platform.getApplicationArgs(), "-q");
     }
 
+    private static final ThreadLocal<Context> activeContext = new ThreadLocal<>();
+
     private final String name;
-    private static ThreadLocal<PrintStream> logWriter = new ThreadLocal<>();
-    private static boolean quietMode;
+    private static final ThreadLocal<PrintStream> logWriter = new ThreadLocal<>();
+    private static final boolean quietMode;
     private final boolean doEclipseLog;
 
     @Nullable
@@ -66,6 +96,10 @@ public class Log
 
     public static void setDefaultDebugStream(@NotNull PrintStream defaultDebugStream) {
         Log.defaultDebugStream = defaultDebugStream;
+    }
+
+    public static void setContext(Context context) {
+        activeContext.set(context);
     }
 
     public static Log getLog(Class<?> forClass) {
@@ -215,6 +249,11 @@ public class Log
             }
             if (debugWriter == null) {
                 return;
+            }
+
+            Context context = activeContext.get();
+            if (context != null) {
+                debugWriter.print("[" + context.getContextName() + "] ");
             }
 
             debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$

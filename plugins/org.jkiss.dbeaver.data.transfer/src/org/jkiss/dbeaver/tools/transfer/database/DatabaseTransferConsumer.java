@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         IDataTransferNodePrimary, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
+    private final DBCStatistics statistics = new DBCStatistics();
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -158,9 +159,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         AbstractExecutionSource executionSource = new AbstractExecutionSource(containerMapping.getSource(), targetContext, this);
 
         DBSDataManipulator targetObject = getTargetObject();
-        if (!isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        if (targetObject != null && !isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
-            if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
+            if (targetObject.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_TRUNCATE)) {
                 targetObject.truncateData(
                     targetSession,
                     executionSource);
@@ -405,7 +406,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     try {
                         DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
                             try {
-                                executeBatch.execute(targetSession, options);
+                                statistics.accumulate(executeBatch.execute(targetSession, options));
                             } catch (Throwable e) {
                                 throw new InvocationTargetException(e);
                             }
@@ -609,6 +610,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 switch (containerMapping.getMappingType()) {
                     case create:
+                    case recreate:
                     case existing:
                         return createTargetTable(session, containerMapping);
                     default:
@@ -637,7 +639,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, true);
+            } else if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, false);
+            }
             return true;
         } else {
             DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
@@ -718,6 +724,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         switch (containerMapping.getMappingType()) {
             case create:
                 return targetName + " [Create]";
+            case recreate:
+                return targetName + " [Recreate]";
             case existing:
                 for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == DatabaseMappingType.create) {
@@ -819,6 +827,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public DatabaseConsumerSettings getSettings() {
         return settings;
+    }
+
+    @Override
+    @NotNull
+    public DBCStatistics getStatistics() {
+        return statistics;
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {

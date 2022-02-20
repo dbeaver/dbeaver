@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.auth.DBASession;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -75,7 +76,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
-        this.workspaceAuthContext.addSession(acquireWorkspaceSession());
+
+        try {
+            this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            System.exit(101);
+        }
 
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
@@ -83,7 +90,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         IProject[] allProjects = root.getProjects();
         if (ArrayUtils.isEmpty(allProjects)) {
             try {
-                refreshWorkspaceContents(new LoggingProgressMonitor());
+                refreshWorkspaceContents(new LoggingProgressMonitor(log));
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -116,7 +123,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @NotNull
-    protected BasicWorkspaceSession acquireWorkspaceSession() {
+    protected DBASession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
         return new BasicWorkspaceSession(this);
     }
 

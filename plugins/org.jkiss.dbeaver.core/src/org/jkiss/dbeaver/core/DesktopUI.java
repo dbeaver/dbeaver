@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
+import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -240,19 +241,33 @@ public class DesktopUI implements DBPPlatformUI {
         }
     }
 
+    private static void showMessageBox(@NotNull String title, @NotNull String message, @NotNull DBPImage image) {
+        UIUtils.syncExec(() -> MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                .setTitle(title)
+                .setMessage(message)
+                .setPrimaryImage(image)
+                .setReplies(Reply.OK)
+                .showMessageBox()
+        );
+    }
+
     @Override
     public void showWarningMessageBox(@NotNull String title, String message) {
         showMessageBox(title, message, DBIcon.STATUS_WARNING);
     }
 
-    private static void showMessageBox(@NotNull String title, @NotNull String message, @NotNull DBPImage image) {
-        UIUtils.syncExec(() -> MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
-            .setTitle(title)
-            .setMessage(message)
-            .setPrimaryImage(image)
-            .setReplies(Reply.OK)
-            .showMessageBox()
-        );
+    @Override
+    public void showNotification(@NotNull String title, String message, boolean error) {
+        showNotification(title, message, error ? DBPMessageType.ERROR : DBPMessageType.INFORMATION);
+    }
+
+    @Override
+    public void showWarningNotification(@NotNull String title, String message) {
+        showNotification(title, message, DBPMessageType.WARNING);
+    }
+
+    private static void showNotification(@NotNull String title, @NotNull String message, @NotNull DBPMessageType type) {
+        NotificationUtils.sendNotification(title, title, message, type, null);
     }
 
     @Override

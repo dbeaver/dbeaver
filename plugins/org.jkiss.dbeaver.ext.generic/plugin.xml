@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,6 +118,8 @@
 
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
+                    <property id="supports-catalog-selection" label="Driver can change default catalog" description="Driver does support catalog change" type="boolean" required="false" defaultValue="true"/>;
+                    <property id="supports-schema-selection" label="Driver can change default schema" description="Driver does support schema change" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-table-constraints" label="Driver supports constraints" description="Driver supports table constraints (primary keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
@@ -261,9 +263,10 @@
                     defaultPort="9092"
                     webURL="https://www.h2database.com/"
                     description="H2 Server"
-                    categories="sql">
+                    categories="sql"
+                    dialect="h2">
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.197]" bundle="!drivers.h2"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
 
                     <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
 
@@ -282,9 +285,10 @@
                     webURL="https://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded"
-                    categories="sql,embedded">
+                    categories="sql,embedded"
+                    dialect="h2">
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.197]" bundle="!drivers.h2"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
 
                     <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
 
@@ -352,6 +356,7 @@
                     description="Derby (Java DB) server driver"
                     categories="sql">
 
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
@@ -949,7 +954,7 @@
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
                     <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
-
+                    <parameter name="read-only-meta-data" value="true"/>
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>
                     <parameter name="krb5.show-ssl-jks" value="true"/>
@@ -1101,7 +1106,7 @@
                 <driver
                     id="pervasive_jdbc"
                     label="Pervasive SQL"
-                    iconBig="icons/pervasive_icon_big.png"
+                    iconBig="icons/pervasive_icon_big@2x.png"
                     class="com.pervasive.jdbc.v2.Driver"
                     sampleURL="jdbc:pervasive://{host}:{port}/{database}?transport=tcp"
                     defaultPort="1583"
@@ -1155,6 +1160,40 @@
                     <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
                 </driver>
                 -->
+
+                <!-- Apache Druid / Avatica Calcite -->
+
+                <driver
+                    id="apache_calcite_avatica"
+                    label="Apache Calcite Avatica"
+                    icon="icons/calcite_icon.png"
+                    iconBig="icons/calcite_icon_big.png"
+                    class="org.apache.calcite.avatica.remote.Driver"
+                    sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/druid/v2/sql/avatica/"
+                    defaultPort="8082"
+                    description="Apache Calcite Avatica JDBC driver. Supports Apache Druid"
+                    webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
+                    categories="sql">
+                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
+                </driver>
+
+                <!-- Apache Kylin -->
+
+                <driver
+                    id="apache_kylin"
+                    label="Apache Kylin"
+                    icon="icons/apache_icon.png"
+                    iconBig="icons/apache_icon_big.png"
+                    class="org.apache.kylin.jdbc.Driver"
+                    sampleURL="jdbc:kylin://{host}:{port}/{database}"
+                    defaultPort="443"
+                    description="Apache Kylin JDBC driver"
+                    webURL="https://kylin.apache.org/docs23/howto/howto_jdbc.html"
+                    categories="sql">
+                    <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
+                </driver>
+
 
                 <!-- Legacy drivers -->
 
@@ -1415,19 +1454,19 @@
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
-                <!-- SalesForce -->
+                <!-- Salesforce CDP-->
                 <driver
                         id="salesforce_jdbc"
-                        label="SalesForce"
+                        label="Salesforce CDP"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="SalesForce JDBC driver"
+                        description="Salesforce CDP JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2021.10A/Salesforce-CDP-jdbc-1.10.0.jar"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2021.12A/Salesforce-CDP-jdbc-1.11.0.jar"/>
                 </driver>
 
                 <!-- AWS -->

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -58,6 +59,10 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     protected transient volatile long tableRelSize;
     private final TriggerCache triggerCache = new TriggerCache();
     private final RuleCache ruleCache = new RuleCache();
+
+    public boolean isRefreshSchemaStatisticsOnTableRefresh () {
+        return true;
+    }
 
     protected PostgreTableReal(PostgreTableContainer container)
     {
@@ -208,12 +213,12 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (this.diskSpace != null) {
+        if (this.diskSpace != null && isRefreshSchemaStatisticsOnTableRefresh()) {
             // Re-read statistics on the next try
             getSchema().resetStatistics();
+            this.diskSpace = null;
         }
         this.rowCount = null;
-        this.diskSpace = null;
         this.tableRelSize = 0;
 
         return super.refreshObject(monitor);
@@ -245,26 +250,35 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         throw new DBException("Table DDL is read-only");
     }
 
-    class TriggerCache extends JDBCObjectCache<PostgreTableReal, PostgreTrigger> {
+    class TriggerCache extends JDBCObjectLookupCache<PostgreTableReal, PostgreTrigger> {
+
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableReal owner)
-            throws SQLException
-        {
-            return session.prepareStatement(
-                "SELECT x.oid,x.*,p.pronamespace as func_schema_id,d.description" +
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreTableReal owner, @Nullable PostgreTrigger object, @Nullable String objectName) throws SQLException {
+            String statement = "SELECT x.oid,x.*,p.pronamespace as func_schema_id,d.description" +
                 "\nFROM pg_catalog.pg_trigger x" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=x.tgfoid " +
                 "\nLEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=x.oid AND d.objsubid=0 " +
-                "\nWHERE x.tgrelid=" + owner.getObjectId() +
-                (getDataSource().isServerVersionAtLeast(9, 0) ? " AND NOT x.tgisinternal" : ""));
+                "\nWHERE x.tgrelid = ?" +
+                (object != null || CommonUtils.isNotEmpty(objectName) ? "\nAND x.tgname = ?" : "") +
+                (getDataSource().isServerVersionAtLeast(9, 0) ? " AND NOT x.tgisinternal" : "");
+            JDBCPreparedStatement prepareStatement = session.prepareStatement(statement);
+            prepareStatement.setLong(1, owner.getObjectId());
+            if (object != null || CommonUtils.isNotEmpty(objectName)) {
+                prepareStatement.setString(2, object != null ? object.getName() : objectName);
+            }
+            return prepareStatement;
         }
 
         @Override
         protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableReal owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreTrigger(session.getProgressMonitor(), owner, dbResult);
+            String name = JDBCUtils.safeGetString(dbResult, "tgname");
+            if (CommonUtils.isEmpty(name)) {
+                return null;
+            }
+            return new PostgreTrigger(session.getProgressMonitor(), owner, name, dbResult);
         }
 
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.data.transformers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -41,8 +42,7 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
-        if (!CommonUtils.isEmpty(attribute.getNestedBindings()) ||
-            !session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
+        if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
         resolveMapsFromData(session, attribute, rows);
@@ -66,17 +66,10 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             }
 
             if (value instanceof DBDComposite) {
+                // Fill value attributes for all rows
                 DBSAttributeBase[] attributes = ((DBDComposite) value).getAttributes();
                 for (DBSAttributeBase attr : attributes) {
-                    Pair<DBSAttributeBase, Object[]> attrValue = null;
-                    if (valueAttributes != null) {
-                        for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
-                            if (pair.getFirst().getName().equals(attr.getName())) {
-                                attrValue = pair;
-                                break;
-                            }
-                        }
-                    }
+                    Pair<DBSAttributeBase, Object[]> attrValue = findAttributeValue(attr, valueAttributes);
                     if (attrValue != null) {
                         // Update attr value
                         attrValue.getSecond()[i] = ((DBDComposite) value).getAttributeValue(attr);
@@ -99,7 +92,28 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
         }
     }
 
-    private static void createNestedMapBindings(DBCSession session, DBDAttributeBinding topAttribute, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes, List<Object[]> rows) throws DBException {
+    private static Pair<DBSAttributeBase, Object[]> findAttributeValue(
+        @NotNull DBSAttributeBase attr,
+        @Nullable List<Pair<DBSAttributeBase, Object[]>> valueAttributes)
+    {
+        if (valueAttributes == null) {
+            return null;
+        }
+        for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
+            if (pair.getFirst().getName().equals(attr.getName())) {
+                pair.setFirst(DBUtils.getMoreCommonType(pair.getFirst(), attr));
+                return pair;
+            }
+        }
+        return null;
+    }
+
+    private static void createNestedMapBindings(
+        DBCSession session,
+        DBDAttributeBinding topAttribute,
+        List<Pair<DBSAttributeBase, Object[]>> nestedAttributes,
+        List<Object[]> rows) throws DBException
+    {
         int maxPosition = 0;
         List<DBDAttributeBinding> nestedBindings = topAttribute.getNestedBindings();
         if (nestedBindings == null) {

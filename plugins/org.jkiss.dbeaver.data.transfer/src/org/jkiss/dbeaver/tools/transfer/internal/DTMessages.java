@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -159,6 +159,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_task_handler_unexpected_error_message;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message;
+
+	public static String data_transfer_summary_title;
 
 	static {
 		// initialize resource bundle
