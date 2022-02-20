@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar;
 
+/**
+ * Represents any node of grammar rule expression tree carrying only one child node
+ */
 public abstract class UnaryExpression extends RuleExpression {
 
     public final RuleExpression child;

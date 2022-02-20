@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.parser.grammar;
 
 import java.util.List;
 
+/**
+ * Represents node of grammar rule expression describing a sequence of some tokens
+ */
 public class SequenceExpression extends GroupExpression {
 
     protected SequenceExpression(List<RuleExpression> exprs) {

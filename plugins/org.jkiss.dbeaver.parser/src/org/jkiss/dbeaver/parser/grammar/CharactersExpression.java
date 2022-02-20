@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar;
 
+/**
+ * Represents terminal part of the text with exact sequence of characters
+ */
 public class CharactersExpression extends TerminalExpression {
 
     public CharactersExpression(String characters) {

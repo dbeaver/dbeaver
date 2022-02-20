@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar;
 
+/**
+ * Represents terminal part of the text
+ */
 public abstract class TerminalExpression extends RuleExpression {
 
     public final String pattern;

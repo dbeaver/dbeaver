@@ -18,19 +18,40 @@ package org.jkiss.dbeaver.parser;
 
 import java.util.List;
 
+import org.jkiss.dbeaver.parser.grammar.GrammarRule;
+
+/**
+ * Parsing tree
+ */
 public class ParseTreeNode {
-    public final String ruleName;
-    public final int position;
-    public final ParseTreeNode parent;
-    public final List<ParseTreeNode> childs;
+    private final GrammarRule rule;
+    private final int position;
+    private final ParseTreeNode parent;
+    private final List<ParseTreeNode> childs;
     
-    public ParseTreeNode(String ruleName, int position, ParseTreeNode parent, List<ParseTreeNode> childs) {
-        this.ruleName = ruleName;
+    public ParseTreeNode(GrammarRule rule, int position, ParseTreeNode parent, List<ParseTreeNode> childs) {
+        this.rule = rule;
         this.position = position;
         this.parent = parent;
         this.childs = childs;
     }
-    
+       
+    public GrammarRule getRule() {
+        return rule;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public ParseTreeNode getParent() {
+        return parent;
+    }
+
+    public List<ParseTreeNode> getChilds() {
+        return childs;
+    }
+
     public String collectString() {
         StringBuilder sb = new StringBuilder();
         this.collectStringImpl(sb, "");
@@ -38,7 +59,11 @@ public class ParseTreeNode {
     }
     
     private void collectStringImpl(StringBuilder sb, String indent) {
-        sb.append(indent + this.ruleName + "@" + this.position + "\n");
+        sb.append(indent).append(this.rule == null ? "<NULL>" : this.rule.getName());
+        if (this.childs.size() == 0) {
+            sb.append("@").append(this.position);
+        }
+        sb.append("\n");
         for (ParseTreeNode child: this.childs) {
             child.collectStringImpl(sb, indent + "  ");
         }

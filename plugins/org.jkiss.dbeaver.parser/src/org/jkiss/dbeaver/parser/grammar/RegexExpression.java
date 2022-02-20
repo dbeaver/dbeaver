@@ -18,8 +18,12 @@ package org.jkiss.dbeaver.parser.grammar;
 
 import java.util.regex.Pattern;
 
+/**
+ * Represents terminal part of the text with regular pattern
+ */
 public class RegexExpression extends TerminalExpression {
-
+    
+    // see https://docs.oracle.com/javase/tutorial/essential/regex/literals.html
     private static final Pattern _regexEscapeCharsPattern = Pattern.compile("([\\\\\\.\\?\\!\\[\\]\\{\\}\\(\\)\\<\\>\\*\\+\\-\\=\\^\\$\\|])");
 
     public RegexExpression(String pattern) {
@@ -31,7 +35,7 @@ public class RegexExpression extends TerminalExpression {
         return visitor.visitRegex(this, arg);
     }
 
-    public static String escapeRegex(String str) {
+    public static String escapeSpecialChars(String str) {
         return  str == null || str.length() == 0 ? "" : _regexEscapeCharsPattern.matcher(str).replaceAll("\\\\$0");
     }
 }

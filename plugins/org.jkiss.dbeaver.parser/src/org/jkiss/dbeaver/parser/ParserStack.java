@@ -14,45 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.parser.grammar.nfa;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.jkiss.dbeaver.parser;
 
 import org.jkiss.dbeaver.parser.grammar.GrammarRule;
 
 /**
- * State in the grammar graph
+ * Parsing context
  */
-public class GrammarNfaState {
-    private final int id;
+class ParserStack {
+    private final ParserStack prev;
+
+    private final int exprId;
+    private final int exprPosition;
     private final GrammarRule rule;
-    private final List<GrammarNfaTransition> next;
 
-    public GrammarNfaState(int id, GrammarRule rule) {
-        this.id = id;
+    private ParserStack(ParserStack prev, int exprId, int exprPosition, GrammarRule rule) {
+        this.prev = prev;
+        this.exprId = exprId;
+        this.exprPosition = exprPosition;
         this.rule = rule;
-        this.next = new ArrayList<>();
     }
 
-    @Override
-    public String toString() {
-        return "GrammarNfaState#" + this.id;
+    public int getExprId() {
+        return exprId;
     }
 
-    public int getId() {
-        return id;
+    public int getExprPosition() {
+        return exprPosition;
     }
 
     public GrammarRule getRule() {
         return rule;
     }
 
-    public List<GrammarNfaTransition> getNext() {
-        return next;
+    public static ParserStack initial() {
+        return new ParserStack(null, -1, 0, null);
     }
 
-    public void remove(GrammarNfaTransition t) {
-        this.next.remove(t);
+    public ParserStack push(int exprId, int exprPosition, GrammarRule rule) {
+        return new ParserStack(this, exprId, exprPosition, rule);
+    }
+
+    public ParserStack pop() {
+        return this.prev;
     }
 }
+

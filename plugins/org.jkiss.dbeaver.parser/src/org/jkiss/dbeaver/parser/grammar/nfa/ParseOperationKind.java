@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar.nfa;
 
+/**
+ * Kind of the concrete operation on the parser state according to the part of expression
+ */
 public enum ParseOperationKind {
     RULE_START,
     RULE_END,

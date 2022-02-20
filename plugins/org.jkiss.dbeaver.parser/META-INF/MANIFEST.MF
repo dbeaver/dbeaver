@@ -10,5 +10,4 @@ Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.parser
 Export-Package: org.jkiss.dbeaver.parser,
- org.jkiss.dbeaver.parser.grammar,
- org.jkiss.dbeaver.parser.grammar.nfa
+ org.jkiss.dbeaver.parser.grammar

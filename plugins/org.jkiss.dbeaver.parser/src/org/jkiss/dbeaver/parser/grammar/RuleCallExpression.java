@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar;
 
+/**
+ * Represents non-terminal part of grammar rule
+ */
 public class RuleCallExpression extends RuleExpression {
 
     public final String ruleName;

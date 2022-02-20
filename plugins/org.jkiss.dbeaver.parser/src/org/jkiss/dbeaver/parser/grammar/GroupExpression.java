@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.parser.grammar;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents any node of grammar rule expression tree carrying a number of children nodes
+ */
 public abstract class GroupExpression extends RuleExpression {
 
     public final List<RuleExpression> children;

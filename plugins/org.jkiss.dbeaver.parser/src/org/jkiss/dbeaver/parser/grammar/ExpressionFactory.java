@@ -64,10 +64,6 @@ public class ExpressionFactory {
         return new NumberExpression(seq(exprs), 1, Integer.MAX_VALUE);
     }
 
-    public static GrammarRule rule(String name, Object... expr) {
-        return new GrammarRule(name, seq(expr));
-    }
-
     public static RegexExpression regex(String regex) {
         return new RegexExpression(regex);
     }

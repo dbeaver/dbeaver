@@ -16,21 +16,23 @@
  */
 package org.jkiss.dbeaver.parser.grammar.nfa;
 
+import org.jkiss.dbeaver.parser.grammar.GrammarRule;
+
 public class GrammarNfaOperation {
     private final int exprId;
     private final ParseOperationKind kind;
     private final String pattern;
-    private final String ruleName;
+    private final GrammarRule rule;
     private final Integer minIterations;
     private final Integer maxIterations;
     private final Integer exprPosition;
 
-    private GrammarNfaOperation(int exprId, ParseOperationKind kind, String pattern, String ruleName,
+    private GrammarNfaOperation(int exprId, ParseOperationKind kind, String pattern, GrammarRule ruleName,
             Integer minIterations, Integer maxIterations, Integer exprPosition) {
         this.exprId = exprId;
         this.kind = kind;
         this.pattern = pattern;
-        this.ruleName = ruleName;
+        this.rule = ruleName;
         this.minIterations = minIterations;
         this.maxIterations = maxIterations;
         this.exprPosition = exprPosition;
@@ -49,8 +51,8 @@ public class GrammarNfaOperation {
         return pattern;
     }
 
-    public String getRuleName() {
-        return ruleName;
+    public GrammarRule getRule() {
+        return rule;
     }
 
     public Integer getMinIterations() {
@@ -65,13 +67,16 @@ public class GrammarNfaOperation {
         return exprPosition;
     }
 
+    /**
+     * Checks correctness of operation itself
+     */
     private void validate() {
         switch (this.kind) {
         case RULE_START:
         case RULE_END:
         case CALL:
         case RESUME:
-            if (this.ruleName == null)
+            if (this.rule == null)
                 throw new IllegalArgumentException();
             break;
         case LOOP_ENTER:
@@ -105,7 +110,7 @@ public class GrammarNfaOperation {
         case RULE_END:
         case CALL:
         case RESUME:
-            result += this.ruleName;
+            result += this.rule;
             break;
         case LOOP_ENTER:
         case LOOP_INCREMENT:
@@ -130,8 +135,8 @@ public class GrammarNfaOperation {
         return result + "]";
     }
 
-    public static GrammarNfaOperation makeRuleOperation(int exprId, ParseOperationKind opKind, String ruleName) {
-        return new GrammarNfaOperation(exprId, opKind, null, ruleName, null, null, null);
+    public static GrammarNfaOperation makeRuleOperation(int exprId, ParseOperationKind opKind, GrammarRule rule) {
+        return new GrammarNfaOperation(exprId, opKind, null, rule, null, null, null);
     }
 
     public static GrammarNfaOperation makeSequenceOperation(int exprId, ParseOperationKind opKind, int min, int max,

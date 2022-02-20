@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar;
 
+/**
+ * Represents repeating part of a grammar rule expression
+ */
 public class NumberExpression extends UnaryExpression {
 
     public final int min;

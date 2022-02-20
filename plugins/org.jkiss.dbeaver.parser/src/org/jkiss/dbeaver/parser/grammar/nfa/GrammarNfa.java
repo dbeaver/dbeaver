@@ -21,6 +21,9 @@ import java.util.List;
 
 import org.jkiss.dbeaver.parser.grammar.GrammarRule;
 
+/**
+ * Non-determenistic finite automaton representing complete graph of the grammar
+ */
 public class GrammarNfa {
     private final List<GrammarNfaState> states = new ArrayList<>();
     private final List<GrammarNfaTransition> transitions = new ArrayList<>();

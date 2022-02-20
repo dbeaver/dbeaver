@@ -17,17 +17,37 @@
 package org.jkiss.dbeaver.parser.grammar;
 
 public class GrammarRule {
-    public final String name;
-    public final RuleExpression expression;
+    private final int id;
+    private final String name;
+    private final boolean useSkipRule;
+    private final RuleExpression expression;
 
-    public GrammarRule(String name, RuleExpression expression) {
+    public GrammarRule(int id, String name, boolean useSkipRule, RuleExpression expression) {
+        this.id = id;
         this.name = name;
+        this.useSkipRule = useSkipRule;
         this.expression = expression;
     }
 
     @Override
     public String toString() {
         return this.name + ": " + this.expression + ";";
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isUseSkipRule() {
+        return useSkipRule;
+    }
+
+    public RuleExpression getExpression() {
+        return expression;
     }
 
 }

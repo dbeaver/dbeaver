@@ -18,26 +18,51 @@ package org.jkiss.dbeaver.parser.grammar;
 
 import java.util.*;
 
+/**
+ * Parsing rule set describing logical structure of some text
+ */
 public class GrammarInfo {
-    public final String name;
-    public final String startRule;
-    public final Map<String, GrammarRule> rules;
+    private final String name;
+    private final String startRuleName;
+    private final String skipRuleName;
+    private final Map<String, GrammarRule> rules;
 
-    public GrammarInfo(String name, String startRule, Map<String, GrammarRule> rules) {
+    public GrammarInfo(String name, String startRule, String skipRule, Map<String, GrammarRule> rules) {
         this.name = name;
-        this.startRule = startRule;
+        this.startRuleName = startRule;
+        this.skipRuleName = skipRule;
         this.rules = Collections.unmodifiableMap(rules);
     }
+    
+    public String getName() {
+        return this.name;
+    }
 
+    public String getStartRuleName() {
+        return this.startRuleName;
+    }
+
+    public String getSkipRuleName() {
+        return this.skipRuleName;
+    }
+
+    public GrammarRule findRule(String name) {
+        return this.rules.get(name);
+    }
+    
+    public Collection<GrammarRule> getRules() {
+        return Collections.unmodifiableCollection(this.rules.values());
+    }
+    
     public static GrammarInfo ofRules(String name, GrammarRule... rules) {
         Map<String, GrammarRule> rulesByName = new HashMap<>();
         for (GrammarRule rule : rules) {
-            if (rulesByName.containsKey(rule.name)) {
-                throw new RuntimeException("Ambiguity at '" + rule.name + "' was met");
+            if (rulesByName.containsKey(rule.getName())) {
+                throw new RuntimeException("Ambiguity at '" + rule.getName() + "' was met");
             } else {
-                rulesByName.put(rule.name, rule);
+                rulesByName.put(rule.getName(), rule);
             }
         }
-        return new GrammarInfo(name, rules.length > 0 ? rules[0].name : null, rulesByName);
+        return new GrammarInfo(name, rules.length > 0 ? rules[0].getName() : null, null, rulesByName);
     }
 }

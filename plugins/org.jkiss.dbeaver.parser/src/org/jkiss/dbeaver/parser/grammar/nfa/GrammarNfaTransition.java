@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar.nfa;
 
+/**
+ * Transition in the grammar graph
+ */
 public class GrammarNfaTransition {
     private final GrammarNfaState from;
     private final GrammarNfaState to;

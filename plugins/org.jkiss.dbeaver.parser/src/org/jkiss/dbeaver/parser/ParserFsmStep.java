@@ -20,24 +20,27 @@ import java.util.List;
 
 import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
 
-public class ParseStep {
-    private final ParseState from;
-    private final ParseState to;
+/**
+ * Transition between parser finite state machine nodes
+ */
+class ParserFsmStep {
+    private final ParserFsmNode from;
+    private final ParserFsmNode to;
     private final String pattern;
     private final List<GrammarNfaOperation> operations;
 
-    public ParseStep(ParseState from, ParseState to, String pattern, List<GrammarNfaOperation> operations) {
+    public ParserFsmStep(ParserFsmNode from, ParserFsmNode to, String pattern, List<GrammarNfaOperation> operations) {
         this.operations = operations;
         this.from = from;
         this.to = to;
         this.pattern = pattern;
     }
 
-    public ParseState getFrom() {
+    public ParserFsmNode getFrom() {
         return from;
     }
 
-    public ParseState getTo() {
+    public ParserFsmNode getTo() {
         return to;
     }
 
@@ -47,8 +50,5 @@ public class ParseStep {
 
     public List<GrammarNfaOperation> getOperations() {
         return operations;
-    }
-
-    
-    
+    }    
 }

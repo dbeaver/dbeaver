@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.parser.grammar;
 
+/**
+ * Represents node of rule expression tree
+ */
 public abstract class RuleExpression {
 
     public final <T, R> R apply(ExpressionVisitor<T, R> visitor, T arg) {

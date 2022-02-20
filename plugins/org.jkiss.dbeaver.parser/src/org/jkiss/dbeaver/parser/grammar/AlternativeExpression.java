@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.parser.grammar;
 
 import java.util.List;
 
+/**
+ * Represents node of grammar rule expression describing one possible of alternatives of token subsequences
+ */
 public class AlternativeExpression extends GroupExpression {
 
     protected AlternativeExpression(List<RuleExpression> alts) {

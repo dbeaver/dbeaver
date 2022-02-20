@@ -18,22 +18,29 @@ package org.jkiss.dbeaver.parser;
 
 import java.util.List;
 
-public class ParseFsm {
-    private final List<ParseState> initialStates;
-    private final List<ParseState> allStates;
+/**
+ * Parser finite state machine
+ */
+class ParserFsm {
+    private final List<ParserFsmNode> initialStates;
+    private final List<ParserFsmNode> allStates;
 
-    public ParseFsm(List<ParseState> initialStates, List<ParseState> parseFsmStates) {
+    public ParserFsm(List<ParserFsmNode> initialStates, List<ParserFsmNode> parseFsmStates) {
         this.initialStates = initialStates;
         this.allStates = parseFsmStates;
     }
 
-    public Iterable<ParseState> getInitialStates() {
+    public Iterable<ParserFsmNode> getInitialStates() {
         return initialStates;
     }
 
+    /**
+     * Prepare common recognizing pattern for all possible terminals associated with presented parsing steps
+     * for all finite state machine states
+     */
     public void prepare() {
-        for (ParseState s : this.allStates) {
-            s.prepare();
+        for (ParserFsmNode state : this.allStates) {
+            state.prepare();
         }
     }
 

@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.parser;
 
-class ParseDispatchResult {
+/**
+ * Parsing step by the terminal matched at the given position in the text
+ */
+class ParserDispatchResult {
     private final int end;
-    private final ParseStep step;
+    private final ParserFsmStep step;
 
-    public ParseDispatchResult(int end, ParseStep step) {
+    public ParserDispatchResult(int end, ParserFsmStep step) {
         this.end = end;
         this.step = step;
     }
@@ -29,9 +32,8 @@ class ParseDispatchResult {
         return end;
     }
 
-    public ParseStep getStep() {
+    public ParserFsmStep getStep() {
         return step;
     }
-    
-    
+
 }

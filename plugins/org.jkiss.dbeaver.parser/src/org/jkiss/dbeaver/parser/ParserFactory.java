@@ -16,53 +16,39 @@
  */
 package org.jkiss.dbeaver.parser;
 
-import java.util.HashMap;
 import java.util.List;
 
-import org.jkiss.dbeaver.parser.grammar.GrammarInfo;
-import org.jkiss.dbeaver.parser.grammar.GrammarRule;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfa;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaBuilder;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
-import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaTransition;
-import org.jkiss.dbeaver.parser.grammar.nfa.ParseOperationKind;
+import org.jkiss.dbeaver.parser.grammar.*;
+import org.jkiss.dbeaver.parser.grammar.nfa.*;
+import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaBuilder.NfaFragment;
 
+/**
+ * Factory of parsers caching parser finite state machine
+ */
 public class ParserFactory {
     
-    private final ParseFsm parseFsm;
+    private final GrammarInfo grammar;
+    private final ParserFsm parserFsm;
 
-    private ParserFactory(ParseFsm parseFsm) {
-        this.parseFsm = parseFsm;
+    private ParserFactory(GrammarInfo grammar, ParserFsm parserFsm) {
+        this.grammar = grammar;
+        this.parserFsm = parserFsm;
     }
     
     public Parser createParser() {
-        return new Parser(parseFsm); 
+        return new Parser(grammar, parserFsm);
     }
     
     public static ParserFactory getFactory(GrammarInfo grammar) {
-        GrammarNfa nfa = new GrammarNfa();
-        GrammarNfaBuilder builder = new GrammarNfaBuilder(nfa);
-        HashMap<String, GrammarNfaBuilder.NfaFragment> ruleFragments = new HashMap<>();
-        for(GrammarRule rule : grammar.rules.values()) {
-            ruleFragments.put(rule.name, builder.traverseRule(rule));
-        }
-
-        for (GrammarNfaTransition n : nfa.getTransitions().toArray(new GrammarNfaTransition[0])) {
-            if(n.getOperation().getKind() == ParseOperationKind.CALL) {
-                nfa.removeTransition(n);
-                nfa.createTransition(n.getFrom(), ruleFragments.get(n.getOperation().getRuleName()).getFrom(), GrammarNfaOperation.makeEmpty(n.getOperation().getExprId()));
-            }
-            if(n.getOperation().getKind() == ParseOperationKind.RESUME) {
-                nfa.removeTransition(n);
-                nfa.createTransition(ruleFragments.get(n.getOperation().getRuleName()).getTo(), n.getTo(), GrammarNfaOperation.makeEmpty(n.getOperation().getExprId()));
-            }
-        }
-
+        GrammarNfaBuilder builder = new GrammarNfaBuilder(grammar);
+        
+        NfaFragment root = builder.traverseGrammar();
         List<GrammarNfaTransition> terminalTransitions = builder.getTerminalTransitions();
-        GrammarAnalyzer analyzer = new GrammarAnalyzer(terminalTransitions, ruleFragments.get(grammar.startRule));
-        ParseFsm parseFsm = analyzer.buildTerminalsGraph();
-        parseFsm.prepare();
 
-        return new ParserFactory(parseFsm);
+        GrammarAnalyzer analyzer = new GrammarAnalyzer(terminalTransitions, root);
+        ParserFsm parserFsm = analyzer.buildTerminalsGraph();
+        parserFsm.prepare();
+
+        return new ParserFactory(grammar, parserFsm);
     }
 }
