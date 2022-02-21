@@ -847,7 +847,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
                 filterManager.createControl(parent);
 
-                parent.addDisposeListener(e -> filterManager.dispose());
+//                parent.addDisposeListener(e -> filterManager.dispose());
             }
 
             return parent;
