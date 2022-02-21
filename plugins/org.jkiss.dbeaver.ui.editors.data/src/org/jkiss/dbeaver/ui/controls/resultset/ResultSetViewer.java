@@ -3657,7 +3657,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean refreshData(@Nullable Runnable onSuccess) {
-        if (!checkForChanges()) {
+        if (verifyQuerySafety() && !checkForChanges()) {
             return false;
         }
 
@@ -3714,6 +3714,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void readNextSegment() {
+        if (verifyQuerySafety()) {
+            return;
+        }
         if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
             return;
         }
@@ -3744,8 +3747,20 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private boolean verifyQuerySafety() {
+        return ((SQLQueryContainer) container).isModifying() && ConfirmationDialog.showConfirmDialogNoToggle(
+            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+            viewerPanel.getShell(),
+            ResultSetPreferences.CONFIRM_MODIFYING_QUERY,
+            ConfirmationDialog.QUESTION,
+            ConfirmationDialog.WARNING) != IDialogConstants.YES_ID;
+    }
+
     @Override
     public void readAllData() {
+        if (verifyQuerySafety()) {
+            return;
+        }
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
