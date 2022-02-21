@@ -3539,7 +3539,7 @@ public class SQLEditor extends SQLEditorBase implements
                     countQuery.setParameters(parseQueryParameters(countQuery));
                 }
 
-                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
+                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.SCRIPT, countQuery, 0, 0)) {
                     if (dbStatement.executeStatement()) {
                         try (DBCResultSet rs = dbStatement.openResultSet()) {
                             if (rs.nextRow()) {
