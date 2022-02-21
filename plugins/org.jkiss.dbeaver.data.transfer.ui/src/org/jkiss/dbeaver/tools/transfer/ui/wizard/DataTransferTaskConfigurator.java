@@ -369,7 +369,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setData(pipe);
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
-            item.setText(0, CommonUtils.toString(node.getObjectName(), "?"));
+            item.setText(0, CommonUtils.getSingleLineString(CommonUtils.toString(node.getObjectName(), "?")));
 
             DBSObject object = node.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {
