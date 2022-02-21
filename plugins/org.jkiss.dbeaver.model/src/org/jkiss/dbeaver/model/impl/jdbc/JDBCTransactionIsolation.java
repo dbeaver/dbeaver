@@ -27,8 +27,8 @@ import java.sql.Connection;
 public enum JDBCTransactionIsolation implements DBPTransactionIsolation 
 {
     NONE(Connection.TRANSACTION_NONE, ModelMessages.model_jdbc_None),
-    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, ModelMessages.model_jdbc_read_committed),
     READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED, ModelMessages.model_jdbc_read_uncommitted),
+    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, ModelMessages.model_jdbc_read_committed),
     REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, ModelMessages.model_jdbc_repeatable_read),
     SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE, ModelMessages.model_jdbc_Serializable),
     ;
