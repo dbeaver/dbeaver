@@ -41,11 +41,9 @@ public class SmartTextContentAdapter extends TextContentAdapter {
             String contentsUC = contents.toUpperCase();
             for (int i = selection.x - 1; i >= 0; i--) {
                 String prefix = curValue.substring(i, selection.x);
-                if (contentsUC.startsWith(prefix)) {
-                    if (i == 0 || !Character.isJavaIdentifierPart(curValue.charAt(i - 1))) {
-                        text.setSelection(i, selection.x);
-                        break;
-                    }
+                if (contentsUC.startsWith(prefix) && selection.x >= i && selection.x < i + contents.length()) {
+                    text.setSelection(i, selection.x);
+                    break;
                 }
                 char ch = curValue.charAt(i);
                 if (!Character.isLetterOrDigit(ch) && contentsUC.indexOf(ch) == -1) {
