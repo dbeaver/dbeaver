@@ -192,15 +192,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     private void handleInputChange(IEditorInput input) {
         occurrencesHighlighter.updateInput(input);
-
-        final FileEditorInput fileEditorInput = GeneralUtils.adapt(input, FileEditorInput.class);
-        if (fileEditorInput != null) {
-            final long fileTimestamp = fileEditorInput.getFile().getLocalTimeStamp();
-            final long currentTimestamp = System.currentTimeMillis();
-            if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
-                UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
-            }
-        }
     }
 
     @Override
@@ -396,6 +387,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
         handleInputChange(input);
+
+        final FileEditorInput fileEditorInput = GeneralUtils.adapt(input, FileEditorInput.class);
+        if (fileEditorInput != null) {
+            final long fileTimestamp = fileEditorInput.getFile().getLocalTimeStamp();
+            final long currentTimestamp = System.currentTimeMillis();
+            if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
+                UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
+            }
+        }
+
         super.doSetInput(input);
     }
 
