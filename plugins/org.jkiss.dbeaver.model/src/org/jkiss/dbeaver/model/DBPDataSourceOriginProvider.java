@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.Map;
@@ -25,6 +27,9 @@ import java.util.Map;
  */
 public interface DBPDataSourceOriginProvider {
 
-    DBPDataSourceOrigin getOrigin(Map<String, Object> configuration) throws DBException;
+    @NotNull
+    DBPDataSourceOrigin getOrigin(
+        @NotNull Map<String, Object> dsConfiguration,
+        @Nullable DBPExternalConfiguration externalConfiguration) throws DBException;
 
 }
