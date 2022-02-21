@@ -194,7 +194,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_task_id, task.getId(), SWT.BORDER | SWT.READ_ONLY);
                 }
 
-                UIUtils.asyncExec(() -> (taskSaved ? taskDescriptionText : taskLabelText).setFocus());
+                UIUtils.asyncExec(() -> {
+                    Text widgetToFocus = taskSaved ? taskDescriptionText : taskLabelText;
+                    if (widgetToFocus != null && !widgetToFocus.isDisposed()) {
+                        widgetToFocus.setFocus();
+                    }
+                });
 
                 if (task != null) {
                     UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_category);
