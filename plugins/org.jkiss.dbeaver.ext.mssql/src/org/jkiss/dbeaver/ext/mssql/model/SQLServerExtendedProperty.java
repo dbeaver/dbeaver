@@ -130,6 +130,12 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
         return owner;
     }
 
+    @NotNull
+    @Override
+    public SQLServerDatabase getDatabase() {
+        return owner.getDatabase();
+    }
+
     @Override
     public long getObjectId() {
         return owner.getMinorObjectId();

@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -29,4 +31,7 @@ public interface SQLServerObject extends DBPNamedObject, DBSObject, DBPObjectWit
 {
     @NotNull
     SQLServerDataSource getDataSource();
+
+    @Nullable
+    SQLServerDatabase getDatabase();
 }
