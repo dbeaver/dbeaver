@@ -30,6 +30,11 @@ public class SnowflakeAuthExternalBrowserConfigurator extends SnowflakeAuthSnowf
     }
 
     @Override
+    protected boolean needsAuthTypeSelector() {
+        return false;
+    }
+
+    @Override
     public void loadSettings(DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
     }
