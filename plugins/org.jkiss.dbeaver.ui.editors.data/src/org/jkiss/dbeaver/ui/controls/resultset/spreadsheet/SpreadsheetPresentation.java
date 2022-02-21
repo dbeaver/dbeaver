@@ -816,6 +816,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
+        if (spreadsheet.isDisposed()) {
+            return;
+        }
+
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
