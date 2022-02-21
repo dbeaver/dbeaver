@@ -43,7 +43,7 @@ public class SnowflakeAuthModelExternalBrowser extends SnowflakeAuthModelSnowfla
     }
 
     @Override
-    protected String getAuthenticator() {
+    protected String getAuthenticator(DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration) {
         return "externalbrowser";
     }
 

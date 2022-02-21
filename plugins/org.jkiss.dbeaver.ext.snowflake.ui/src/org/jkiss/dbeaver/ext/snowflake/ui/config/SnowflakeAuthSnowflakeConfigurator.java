@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.snowflake.ui.config;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -24,6 +25,7 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -35,9 +37,12 @@ import org.jkiss.utils.CommonUtils;
 public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelConfigurator {
 
     private Combo userRoleCombo;
+    private Combo authTypeCombo;
 
     @Override
     public void createControl(Composite parent, Runnable propertyChangeListener) {
+        ModifyListener textListener = e -> propertyChangeListener.run();
+
         usernameLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -55,15 +60,39 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 10;
         userRoleCombo.setLayoutData(gd);
         userRoleCombo.select(0);
+        userRoleCombo.addModifyListener(textListener);
+
+        if (needsAuthTypeSelector()) {
+            UIUtils.createControlLabel(parent, SnowflakeMessages.label_authenticator);
+            authTypeCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN);
+            authTypeCombo.add(""); //$NON-NLS-1$
+            authTypeCombo.add("snowflake"); //$NON-NLS-1$
+            authTypeCombo.add("externalbrowser"); //$NON-NLS-1$
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            authTypeCombo.setLayoutData(gd);
+            authTypeCombo.addModifyListener(textListener);
+        }
+    }
+
+    protected boolean needsAuthTypeSelector() {
+        return true;
     }
 
     @Override
     public void loadSettings(DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
 
-        String roleName = dataSource.getConnectionConfiguration().getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE);
+        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+        String roleName = connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE);
         if (roleName != null) {
             userRoleCombo.setText(roleName);
+        }
+        if (authTypeCombo != null) {
+            String authName = connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
+            if (CommonUtils.isEmpty(authName)) {
+                authName = CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY));
+            }
+            authTypeCombo.setText(authName);
         }
     }
 
@@ -72,15 +101,20 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         super.saveSettings(dataSource);
 
         String roleName = userRoleCombo.getText();
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
         if (!CommonUtils.isEmpty(roleName)) {
-            dataSource.getConnectionConfiguration().setAuthProperty(
+            configuration.setAuthProperty(
                 SnowflakeConstants.PROP_AUTH_ROLE,
                 roleName);
         }
 
         // Remove legacy properties
-        dataSource.getConnectionConfiguration().removeProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY);
-        dataSource.getConnectionConfiguration().removeProviderProperty(SnowflakeConstants.PROP_ROLE_LEGACY);
+        if (authTypeCombo != null) {
+            configuration.setAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR, authTypeCombo.getText().trim());
+        }
+
+        configuration.removeProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY);
+        configuration.removeProviderProperty(SnowflakeConstants.PROP_ROLE_LEGACY);
     }
 
     @Override
