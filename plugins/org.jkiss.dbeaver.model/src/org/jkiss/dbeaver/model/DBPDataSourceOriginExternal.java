@@ -16,38 +16,17 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.Map;
-
 /**
- * Configuration origin.
- * It can be local configuration or some cloud provider.
+ * External datasource provider origin.
  */
-public interface DBPDataSourceOrigin extends DBPObjectWithDetails<DBPDataSourceContainer> {
+public interface DBPDataSourceOriginExternal extends DBPDataSourceOrigin {
 
     /**
-     * Origin type. Unique
-     */
-    @NotNull
-    String getType();
-
-    /**
-     * Origin sub type
+     * Returns external configuration ID.
      */
     @Nullable
-    String getSubType();
-
-    @NotNull
-    String getDisplayName();
-
-    @Nullable
-    DBPImage getIcon();
-
-    boolean isDynamic();
-
-    @NotNull
-    Map<String, Object> getDataSourceConfiguration();
+    DBPExternalConfiguration getExternalConfiguration();
 
 }

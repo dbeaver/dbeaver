@@ -69,7 +69,7 @@ public class DataSourceOriginLocal implements DBPDataSourceOrigin
 
     @NotNull
     @Override
-    public Map<String, Object> getConfiguration() {
+    public Map<String, Object> getDataSourceConfiguration() {
         return Collections.emptyMap();
     }
 

@@ -28,14 +28,20 @@ import java.util.Map;
 /**
  * DataSourceOriginProviderLocal
  */
-class DataSourceOriginLazy implements DBPDataSourceOrigin
+class DataSourceOriginLazy implements DBPDataSourceOriginExternal
 {
-    private String originId;
-    private Map<String, Object> originProperties;
+    private final String originId;
+    private final Map<String, Object> originProperties;
+    private final DBPExternalConfiguration externalConfiguration;
 
-    public DataSourceOriginLazy(String originId, Map<String, Object> originProperties) {
+    public DataSourceOriginLazy(
+        String originId,
+        Map<String, Object> originProperties,
+        DBPExternalConfiguration externalConfiguration)
+    {
         this.originId = originId;
         this.originProperties = originProperties;
+        this.externalConfiguration = externalConfiguration;
     }
 
     @NotNull
@@ -69,7 +75,7 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
 
     @NotNull
     @Override
-    public Map<String, Object> getConfiguration() {
+    public Map<String, Object> getDataSourceConfiguration() {
         return originProperties;
     }
 
@@ -91,9 +97,14 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
         // Instantiate in lazy mode
         DBPDataSourceOriginProvider originProvider = DataSourceProviderRegistry.getInstance().getDataSourceOriginProvider(originId);
         if (originProvider != null) {
-            return originProvider.getOrigin(originProperties);
+            return originProvider.getOrigin(originProperties, externalConfiguration);
         }
         return null;
     }
 
+    @Nullable
+    @Override
+    public DBPExternalConfiguration getExternalConfiguration() {
+        return externalConfiguration;
+    }
 }
