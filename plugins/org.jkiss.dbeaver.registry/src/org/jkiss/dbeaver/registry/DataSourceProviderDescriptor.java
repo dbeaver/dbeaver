@@ -372,7 +372,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     public List<NativeClientDescriptor> getNativeClients() {
         if (inheritClients && parentProvider != null) {
             List<NativeClientDescriptor> clients = new ArrayList<>(nativeClients);
-            nativeClients.addAll(parentProvider.getNativeClients());
+            clients.addAll(parentProvider.getNativeClients());
             return clients;
         }
         return nativeClients;
