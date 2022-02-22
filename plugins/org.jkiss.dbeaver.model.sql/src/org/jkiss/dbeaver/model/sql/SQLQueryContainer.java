@@ -33,5 +33,4 @@ public interface SQLQueryContainer extends IDataSourceContainerProvider, DBPCont
 
     Map<String, Object> getQueryParameters();
 
-    boolean isModifying();
 }

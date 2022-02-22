@@ -3371,16 +3371,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        @Override
-        public boolean isModifying() {
-            return
-                    query instanceof SQLQuery &&
-                            ((SQLQuery) query).getType() == SQLQueryType.INSERT ||
-                            ((SQLQuery) query).getType() == SQLQueryType.UPDATE ||
-                            ((SQLQuery) query).getType() == SQLQueryType.MERGE ||
-                            ((SQLQuery) query).getType() == SQLQueryType.DELETE;
-        }
-
         boolean isPinned() {
             CTabItem tabItem = getTabItem();
             return tabItem != null && !tabItem.isDisposed() && !tabItem.getShowClose();
@@ -3462,8 +3452,10 @@ public class SQLEditor extends SQLEditorBase implements
             }
             List<String> features = new ArrayList<>(3);
             features.add(FEATURE_DATA_SELECT);
+            if (query instanceof SQLQuery && (((SQLQuery) query).getType() != SQLQueryType.SELECT)) {
+                features.add(FEATURE_DATA_MODIFIED_ON_REFRESH);
+            }
             features.add(FEATURE_DATA_COUNT);
-
             if (getQueryResultCounts() <= 1) {
                 features.add(FEATURE_DATA_FILTER);
             }

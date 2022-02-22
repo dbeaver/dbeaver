@@ -263,9 +263,4 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return obj instanceof SQLQueryDataContainer &&
             CommonUtils.equalObjects(query, ((SQLQueryDataContainer) obj).query);
     }
-
-    @Override
-    public boolean isModifying() {
-        return false;
-    }
 }

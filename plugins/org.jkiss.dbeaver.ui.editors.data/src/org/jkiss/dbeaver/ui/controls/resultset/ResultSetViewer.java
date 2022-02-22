@@ -3748,7 +3748,9 @@ public class ResultSetViewer extends Viewer
     }
 
     private boolean verifyQuerySafety() {
-        return !(container instanceof SQLQueryContainer && ((SQLQueryContainer) container).isModifying() && UIUtils.confirmAction(null, ResultSetMessages.confirm_modifying_query_title, ResultSetMessages.confirm_modifying_query_message, DBIcon.STATUS_WARNING));
+        return !(container.getDataContainer() != null &&
+                container.getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH) &&
+                UIUtils.confirmAction(null, ResultSetMessages.confirm_modifying_query_title, ResultSetMessages.confirm_modifying_query_message, DBIcon.STATUS_WARNING));
     }
 
     @Override
