@@ -3748,12 +3748,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private boolean verifyQuerySafety() {
-        return ((SQLQueryContainer) container).isModifying() && ConfirmationDialog.showConfirmDialogNoToggle(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
-            viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_MODIFYING_QUERY,
-            ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING) != IDialogConstants.YES_ID;
+        return !(container instanceof SQLQueryContainer && ((SQLQueryContainer) container).isModifying() && UIUtils.confirmAction(null, ResultSetMessages.confirm_modifying_query_title, ResultSetMessages.confirm_modifying_query_message, DBIcon.STATUS_WARNING));
     }
 
     @Override
