@@ -2004,7 +2004,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             if (!lockData &&
                 rowNum > 0 &&
-                !((SQLQueryContainer)controller.getContainer()).isModifying() &&
+                !(controller.getContainer() instanceof SQLQueryContainer && ((SQLQueryContainer)controller.getContainer()).isModifying()) &&
                 rowNum == controller.getModel().getRowCount() - 1 &&
                 autoFetchSegments &&
                 !(getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS) < getSpreadsheet().getMaxVisibleRows()) &&

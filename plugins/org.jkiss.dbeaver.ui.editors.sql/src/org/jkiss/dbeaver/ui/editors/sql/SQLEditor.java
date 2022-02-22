@@ -3374,10 +3374,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public boolean isModifying() {
             return
-                query instanceof SQLQuery &&
-                ((SQLQuery) query).getType() == SQLQueryType.INSERT ||
-                ((SQLQuery) query).getType() == SQLQueryType.UPDATE ||
-                ((SQLQuery) query).getType() == SQLQueryType.DELETE;
+                    query instanceof SQLQuery &&
+                            ((SQLQuery) query).getType() == SQLQueryType.INSERT ||
+                            ((SQLQuery) query).getType() == SQLQueryType.UPDATE ||
+                            ((SQLQuery) query).getType() == SQLQueryType.MERGE ||
+                            ((SQLQuery) query).getType() == SQLQueryType.DELETE;
         }
 
         boolean isPinned() {
