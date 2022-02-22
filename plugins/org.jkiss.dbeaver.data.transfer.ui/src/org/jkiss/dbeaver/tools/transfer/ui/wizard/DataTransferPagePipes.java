@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -295,13 +296,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         updatePageCompletion();
     }
 
-    private void loadConsumers()
-    {
+    private void loadConsumers() {
         DataTransferSettings settings = getWizard().getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objects)) {
+            if (consumer.isAdvancedNode() &&
+                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+                continue;
+            }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
             if (CommonUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(consumer, null));
@@ -314,13 +318,17 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         nodesTable.setInput(transferTargets);
     }
 
-    private void loadProducers()
-    {
+    private void loadProducers() {
         DataTransferSettings settings = getWizard().getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
+            if (producer.isAdvancedNode() &&
+                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+                continue;
+            }
+
             Collection<DataTransferProcessorDescriptor> processors = producer.getAvailableProcessors(objects);
             if (CommonUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(producer, null));
