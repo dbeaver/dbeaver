@@ -172,7 +172,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     if (element instanceof DBDLabelValuePairExt) {
                         return numberFormat.format(((DBDLabelValuePairExt) element).getCount());
                     } else {
-                        return CommonUtils.notEmpty(((DBDLabelValuePair) element).getLabel());
+                        return null;
                     }
                 }
             }, null);
