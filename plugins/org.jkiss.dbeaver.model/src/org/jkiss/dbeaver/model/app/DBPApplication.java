@@ -25,6 +25,9 @@ import org.jkiss.code.NotNull;
  * Application implementors may redefine core app behavior and/or settings.
  */
 public interface DBPApplication {
+
+    String PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION = "simpleDatabaseAdministration";
+
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
@@ -47,6 +50,11 @@ public interface DBPApplication {
      * Many UI-specific functions are disabled
      */
     boolean isExclusiveMode();
+
+    /**
+     * Multiple users can login into the app at the same time
+     */
+    boolean isMultiuser();
 
     @NotNull
     DBASecureStorage getSecureStorage();
@@ -71,9 +79,8 @@ public interface DBPApplication {
      */
     String getDefaultProjectName();
 
-    /**
-     * Multiple users can login into the app at the same time
-     */
-    boolean isMultiuser();
+    String getProductProperty(String propName);
+
+    boolean hasProductFeature(String featureName);
 
 }

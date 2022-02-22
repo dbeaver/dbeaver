@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
@@ -118,7 +120,8 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         createAuthPanel(addrGroup, 1);
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        {
+
+        if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBPApplication.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)) {
             createClientHomeGroup(bottomControls);
         }
 
@@ -208,7 +211,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             }
             return Collections.emptyList();
         }
-        String oraHome = oraHomeSelector.getSelectedHome();
+        String oraHome = oraHomeSelector == null ? null : oraHomeSelector.getSelectedHome();
         if (CommonUtils.isEmpty(oraHome)) {
             return OCIUtils.readTnsNames(null, true).keySet();
         } else {
@@ -319,9 +322,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             sidServiceCombo.setText(OracleConnectionType.valueOf(sidService).getTitle());
         }
 
-        //if (isOCI) {
-        oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
-        //}
+        if (oraHomeSelector != null) {
+            oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
+        }
 
         if (tnsNameCombo.getItemCount() == 0) {
             UIUtils.asyncExec(this::populateTnsNameCombo);
@@ -382,7 +385,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
+        if (oraHomeSelector != null) {
+            connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
+        }
 
         connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
         switch (connectionType) {

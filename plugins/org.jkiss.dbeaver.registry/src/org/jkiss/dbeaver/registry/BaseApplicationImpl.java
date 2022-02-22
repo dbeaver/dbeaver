@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Base application implementation
@@ -102,6 +104,17 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public long getLastUserActivityTime() {
         return -1;
+    }
+
+    @Override
+    public String getProductProperty(String propName) {
+        return Platform.getProduct().getProperty(propName);
+    }
+
+    @Override
+    public boolean hasProductFeature(String featureName) {
+        return CommonUtils.toBoolean(
+            Platform.getProduct().getProperty("feature." + featureName));
     }
 
     /////////////////////////////////////////
