@@ -157,7 +157,17 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             SQLServerDatabase database = schema.getDatabase();
             databases = Collections.singletonList(database);
         } else {
-            return Collections.emptyList();
+            if (parentObject instanceof SQLServerObject) {
+                databases = Collections.singletonList(((SQLServerObject) parentObject).getDatabase());
+            } else if (parentObject instanceof DBPDataSourceContainer) {
+                SQLServerDatabase database = executionContext.getContextDefaults().getDefaultCatalog();
+                if (database == null) {
+                    database = executionContext.getDataSource().getDefaultDatabase(monitor);
+                }
+                databases = Collections.singletonList(database);
+            } else {
+                return Collections.emptyList();
+            }
         }
 
         if (CommonUtils.isEmpty(databases)) {

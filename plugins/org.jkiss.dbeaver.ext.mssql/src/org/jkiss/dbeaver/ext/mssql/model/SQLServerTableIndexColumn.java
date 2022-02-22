@@ -139,4 +139,10 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
     public long getObjectId() {
         return objectId;
     }
+
+    @Nullable
+    @Override
+    public SQLServerDatabase getDatabase() {
+        return index.getDatabase();
+    }
 }

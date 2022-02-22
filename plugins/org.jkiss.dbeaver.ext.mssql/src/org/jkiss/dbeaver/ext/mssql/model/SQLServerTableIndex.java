@@ -261,7 +261,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         }
     }
 
-    private SQLServerDatabase getDatabase() {
+    public SQLServerDatabase getDatabase() {
         return getTable().getDatabase();
     }
 
