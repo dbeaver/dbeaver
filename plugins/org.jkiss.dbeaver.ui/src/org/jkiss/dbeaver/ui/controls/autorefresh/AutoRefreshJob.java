@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,6 +45,8 @@ public class AutoRefreshJob extends AbstractJob {
                 return GeneralUtils.makeErrorStatus("Auto-refresh error", e.getTargetException());
             } catch (InterruptedException e) {
                 // ignore
+            } finally {
+                UIUtils.syncExec(() -> refreshControl.scheduleAutoRefresh(true));
             }
         }
         return Status.OK_STATUS;

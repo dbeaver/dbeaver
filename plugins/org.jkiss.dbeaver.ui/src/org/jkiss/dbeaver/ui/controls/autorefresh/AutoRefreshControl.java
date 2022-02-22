@@ -103,6 +103,8 @@ public class AutoRefreshControl {
         }
         RefreshSettings settings = getRefreshSettings();
         if (afterError && settings.isStopOnError()) {
+            autoRefreshEnabled = false;
+            updateAutoRefreshToolbar();
             return;
         }
         autoRefreshJob = new AutoRefreshJob(this);
