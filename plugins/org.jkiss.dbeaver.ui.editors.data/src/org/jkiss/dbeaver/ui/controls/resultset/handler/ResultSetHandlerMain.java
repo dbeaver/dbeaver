@@ -227,6 +227,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 boolean insertAfter = rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
                 if (shiftPressed) insertAfter = !insertAfter;
                 rsv.addNewRow(copy, insertAfter, true);
+                rsv.getActivePresentation().getControl().setFocus();
                 break;
             }
             case CMD_ROW_COPY_FROM_ABOVE:
