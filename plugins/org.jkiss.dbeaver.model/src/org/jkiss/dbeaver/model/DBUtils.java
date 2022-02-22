@@ -1521,9 +1521,6 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (object instanceof IDataSourceContainerProvider) {
-            // No need to wrap in quotes content providers names
-            return object.getName();
         } else if (object instanceof DBSObject) {
             return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {

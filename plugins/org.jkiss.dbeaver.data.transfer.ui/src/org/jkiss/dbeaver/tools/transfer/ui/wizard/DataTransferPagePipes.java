@@ -214,8 +214,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     cell.setImage(DBeaverIcons.getImage(icon));
                     final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
                     if (queryContainer != null) {
-                        // We don't need extra quotes for queries
-                        cell.setText(queryContainer.getQuery().getText());
+                        cell.setText(CommonUtils.getSingleLineString(queryContainer.getQuery().getText()));
                     } else {
                         cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
                     }
