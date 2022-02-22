@@ -38,9 +38,14 @@ public class NavigatorHandlerConnectionFilter extends AbstractHandler implements
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof DatabaseNavigatorView) {
-            DatabaseNavigatorTree navigatorTree = ((DatabaseNavigatorView) activePart).getNavigatorTree();
+        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(HandlerUtil.getActiveShell(event));
+        if (navigatorTree == null) {
+            IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+            if (activePart instanceof DatabaseNavigatorView) {
+                navigatorTree = ((DatabaseNavigatorView) activePart).getNavigatorTree();
+            }
+        }
+        if (navigatorTree != null) {
             navigatorTree.setFilterShowConnected(!navigatorTree.isFilterShowConnected());
             navigatorTree.getViewer().getControl().setRedraw(false);
             try {
