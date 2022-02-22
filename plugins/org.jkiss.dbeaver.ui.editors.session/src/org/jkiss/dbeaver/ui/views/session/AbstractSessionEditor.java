@@ -59,6 +59,7 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IEd
             sessionsViewer.loadSettings(this);
             sessionsViewer.refreshSessions();
         }
+        //DatabaseEditorUtils.setPartBackground(this, sessionsViewer.getControl());
     }
 
     protected abstract SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent);
