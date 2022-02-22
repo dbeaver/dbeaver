@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
@@ -160,4 +161,9 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
         return procedureType.name() + " " + getName();
     }
 
+    @Nullable
+    @Override
+    public SQLServerDatabase getDatabase() {
+        return getContainer().getDatabase();
+    }
 }
