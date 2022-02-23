@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +51,7 @@ import java.util.Map;
  * OracleTable
  */
 public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer,
-        DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController {
+        DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(OracleTable.class);
 
     private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
@@ -59,7 +60,12 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         + FOREIGN_KEY_NAME_PLACEHOLDER + " DISABLE";
     private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
         + FOREIGN_KEY_NAME_PLACEHOLDER + " ENABLE";
-
+    
+    private static final String[] supportedOptions = new String[] {
+        DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS,
+        DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS
+    };
+    
     private OracleDataType tableType;
     private String iotType;
     private String iotName;
@@ -485,5 +491,10 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
             return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+    }
+
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return ArrayUtils.contains(supportedOptions, option);
     }
 }

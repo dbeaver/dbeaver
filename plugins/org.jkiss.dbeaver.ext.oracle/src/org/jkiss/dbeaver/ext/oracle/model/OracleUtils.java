@@ -82,6 +82,15 @@ public class OracleUtils {
 
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + objectFullName + "'")) {
+            
+            if (CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
+                if (!CommonUtils.isEmpty(object.getConstraints(monitor))) {
+                    return invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
+                } else {
+                    return "";
+                }
+            }
+
             if (dataSource.isAtLeastV9()) {
                 try {
                     // Do not add semicolon in the end
@@ -96,6 +105,8 @@ public class OracleUtils {
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'EMIT_SCHEMA'," + CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'CONSTRAINTS',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'REF_CONSTRAINTS',false);\n" +
                             "end;");
                 } catch (SQLException e) {
                     log.error("Can't apply DDL transform parameters", e);
@@ -134,23 +145,18 @@ public class OracleUtils {
             }
             ddl = ddl.trim();
 
+
+            if (!CommonUtils.isEmpty(object.getConstraints(monitor)) && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
+                ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
+            }
+
+            if (!CommonUtils.isEmpty(object.getTriggers(monitor))) {
+                ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.TRIGGER);
+            }
+
             if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('INDEX',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
-                    dbStat.setString(1, object.getName());
-                    if (schema != null) {
-                        dbStat.setString(2, schema.getName());
-                    }
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.next()) {
-                            ddl += "\n\n" + dbResult.getString(1).trim();
-                        }
-                    }
-                } catch (Exception e) {
-                    // No dependent index DDL or something went wrong
-                    log.debug("Error reading dependent index DDL", e);
-                }
+                ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.INDEX);
             }
 
             if (ddlFormat != OracleDDLFormat.COMPACT) {
@@ -158,7 +164,6 @@ public class OracleUtils {
                 ddl = addCommentsToDDL(monitor, object, ddl);
             }
             return ddl;
-
         } catch (SQLException e) {
             if (object instanceof OracleTablePhysical) {
                 log.error("Error generating Oracle DDL. Generate default.", e);
@@ -169,6 +174,33 @@ public class OracleUtils {
         } finally {
             monitor.done();
         }
+    }
+
+    private enum DBMSMetaDependentObjectType {
+        INDEX,
+        CONSTRAINT,
+        REF_CONSTRAINT,
+        TRIGGER
+    }
+
+    private static String invokeDBMSMetadataGetDependentDDL(JDBCSession session, OracleSchema schema, OracleTableBase object, DBMSMetaDependentObjectType dependentObjectType) {
+        StringBuilder sb = new StringBuilder();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('" + dependentObjectType.name() + "',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+            dbStat.setString(1, object.getName());
+            if (schema != null) {
+                dbStat.setString(2, schema.getName());
+            }
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    sb.append("\n\n").append(dbResult.getString(1).trim());
+                }
+            }
+        } catch (Exception e) {
+            // No dependent index DDL or something went wrong
+            log.debug("Error reading dependent index DDL", e);
+        }
+        return sb.toString();
     }
 
     private static String addCommentsToDDL(DBRProgressMonitor monitor, OracleTableBase object, String ddl) {
