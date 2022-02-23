@@ -46,10 +46,11 @@ public class AutoRefreshJob extends AbstractJob {
             } catch (InterruptedException e) {
                 // ignore
             } finally {
-                UIUtils.syncExec(() -> refreshControl.scheduleAutoRefresh(true));
+                if(!this.isCanceled()) {
+                    UIUtils.syncExec(() -> refreshControl.scheduleAutoRefresh(true));
+                }
             }
         }
         return Status.OK_STATUS;
     }
-
 }
