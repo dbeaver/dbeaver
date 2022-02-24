@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.internal.registry.IRegistryConstants;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -42,14 +43,14 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  * BaseWorkspaceImpl.
@@ -62,6 +63,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
+    private static final String CONFIG_FILE = "config.ini";
 
     private DBPPlatformLanguage language;
     private OSDescriptor localSystem;
@@ -189,19 +191,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
 
     @Override
     public boolean isLanguageChangeEnabled() {
-        File iniFile = getApplicationConfiguration();
-        if (iniFile.exists() && iniFile.canWrite()) {
-            // Try to create temp file in the same folder
-            File testFile = new File(iniFile.getParentFile(), ".test-dbeaver-" + System.currentTimeMillis() + ".ini");
-            try {
-                testFile.createNewFile();
-                testFile.delete();
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -210,23 +200,27 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
             return;
         }
 
-        File iniFile = getApplicationConfiguration();
-        if (!iniFile.exists()) {
-            throw new DBException("Application configuration file (" + iniFile.getAbsolutePath() + ") not found. Default language cannot be changed.");
-        }
         try {
-            List<String> configLines = Files.readAllLines(iniFile.toPath());
-            setConfigNLS(configLines, language.getCode());
-            Files.write(iniFile.toPath(), configLines, StandardOpenOption.WRITE);
+            final File config = new File(RuntimeUtils.getLocalFileFromURL(Platform.getConfigurationLocation().getURL()), CONFIG_FILE);
+            final Properties properties = new Properties();
+
+            if (config.exists()) {
+                try (FileInputStream is = new FileInputStream(config)) {
+                    properties.load(is);
+                }
+            }
+
+            properties.put(IRegistryConstants.PROP_NL, language.getCode());
+
+            try (FileOutputStream os = new FileOutputStream(config)) {
+                properties.store(os, null);
+            }
 
             this.language = language;
             // This property is fake. But we set it to trigger property change listener
             // which will ask to restart workbench.
             getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
-        } catch (AccessDeniedException e) {
-            throw new DBException("Can't save startup configuration - access denied.\n" +
-                "You could try to change national locale manually in '" + iniFile.getAbsolutePath() + "'. Refer to readme.txt file for details.", e);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new DBException("Unexpected error while saving startup configuration", e);
         }
     }
