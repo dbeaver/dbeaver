@@ -25,8 +25,6 @@ import org.jkiss.dbeaver.DBException;
  */
 public interface DBPPlatformLanguageManager
 {
-    boolean isLanguageChangeEnabled();
-
     void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException;
 
 }
