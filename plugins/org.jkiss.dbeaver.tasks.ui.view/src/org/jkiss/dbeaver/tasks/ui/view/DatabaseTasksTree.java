@@ -61,7 +61,7 @@ public class DatabaseTasksTree {
     private static final Log log = Log.getLog(DatabaseTasksTree.class);
 
     private TreeViewer taskViewer;
-    private ViewerColumnController taskColumnController;
+    private ViewerColumnController<Object, Object> taskColumnController;
 
     private final List<DBTTask> allTasks = new ArrayList<>();
     private final List<DBTTaskFolder> allTasksFolders = new ArrayList<>();
@@ -85,7 +85,18 @@ public class DatabaseTasksTree {
         taskTree.setHeaderVisible(true);
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        taskColumnController = new ViewerColumnController(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
+        taskColumnController = new ViewerColumnController<>(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
+        taskColumnController.setComparator((comparator, o1, o2) -> {
+            if (o1 instanceof DBTTaskFolder && o2 instanceof DBTTaskFolder) {
+                return comparator.compare(o1, o2);
+            } else if (o1 instanceof DBTTaskFolder) {
+                return -1;
+            } else if (o2 instanceof DBTTaskFolder) {
+                return 1;
+            } else {
+                return comparator.compare(o1, o2);
+            }
+        });
         taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_name, SWT.LEFT, true, true, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
