@@ -190,11 +190,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     }
 
     @Override
-    public boolean isLanguageChangeEnabled() {
-        return true;
-    }
-
-    @Override
     public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
         if (CommonUtils.equalObjects(language, this.language)) {
             return;
@@ -247,31 +242,4 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     public boolean isReadOnly() {
         return Platform.getInstanceLocation().isReadOnly();
     }
-
-    // Patch config and add/update -nl parameter
-    private void setConfigNLS(List<String> lines, String nl) {
-        int vmArgsPos = -1, nlPos = -1;
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
-            if (line.equalsIgnoreCase("-nl")) {
-                nlPos = i;
-            } else if (line.equalsIgnoreCase("-vmargs")) {
-                vmArgsPos = i;
-                // Do not check the rest - they are VM args anyway
-                break;
-            }
-        }
-        if (nlPos >= 0 && lines.size() > nlPos + 1) {
-            // Just change existing nl
-            lines.set(nlPos + 1, nl);
-        } else if (vmArgsPos >= 0) {
-            // There is no nl but there are vmargs. Insert before them
-            lines.add(vmArgsPos, nl);
-            lines.add(vmArgsPos, "-nl");
-        } else {
-            lines.add("-nl");
-            lines.add(nl);
-        }
-    }
-
 }
