@@ -613,7 +613,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
         final DBSObjectFilter filter = getNodeFilter(meta, false);
         this.filtered = filter != null && !filter.isNotApplicable();
-
+        if (filter != null && dataSource != null) {
+            filter.setCaseSensitive(dataSource.getSQLDialect().hasCaseSensitiveFiltration());
+        }
         final Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
             return false;
@@ -623,7 +625,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             // check it
             return false;
         }
-
         List<DBNDatabaseNode> oldList = new LinkedList<>();
         if (oldListCmp != null) {
             Collections.addAll(oldList, oldListCmp);
