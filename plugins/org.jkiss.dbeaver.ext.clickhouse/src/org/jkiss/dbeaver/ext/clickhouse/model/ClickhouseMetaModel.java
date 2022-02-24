@@ -78,7 +78,8 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
-        if (sourceObject.getSchema().getName().equals("system")) {
+        GenericSchema schema =  sourceObject.getSchema();
+        if (schema != null && schema.getName().equals("system")) {
             return super.getTableDDL(monitor, sourceObject, options);
         }
         GenericDataSource dataSource = sourceObject.getDataSource();
