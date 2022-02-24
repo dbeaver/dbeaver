@@ -204,8 +204,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             } else {
                 targetRow = new Object[columnBindings.length];
                 for (int i = 0; i < columnBindings.length; i++) {
-                    DBDAttributeBinding column = columnBindings[i];
-                    Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
+                    Object value = srcRow[i];
                     if (value instanceof DBDContent) {
                         // Check for binary type export
                         if (!ContentUtils.isTextContent((DBDContent) value)) {
@@ -674,7 +673,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 continue;
             }
             try {
-                row[i] = attribute.getValueHandler().fetchValueObject(session, resultSet, metaAttr, attribute.getOrdinalPosition());
+                row[i] = attribute.getValueHandler().fetchValueObject(session, resultSet, metaAttr, i);
             } catch (Exception e) {
                 log.debug("Error fetching '" + metaAttr.getName() + "' value: " + e.getMessage());
             }
