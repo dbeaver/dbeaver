@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -61,6 +62,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private boolean clickOnHeader;
     private boolean isPacking, isInitializing;
     private DBIcon defaultIcon;
+    private ElementComparator<ELEMENT> comparator;
     private boolean forceAutoSize;
 
     private transient ObjectViewerRenderer cellRenderer;
@@ -152,6 +154,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     public void setDefaultIcon(DBIcon defaultIcon) {
         this.defaultIcon = defaultIcon;
+    }
+
+    public void setComparator(@Nullable ElementComparator<ELEMENT> comparator) {
+        this.comparator = comparator;
     }
 
     public int getSelectedColumnNumber() {
@@ -459,7 +465,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             if (columnInfo.labelProvider instanceof ILazyLabelProvider || columnInfo.labelProvider instanceof ColumnBooleanLabelProvider) {
                 hasCustomDraw = true;
             } else if (columnInfo.labelProvider instanceof ILabelProvider) {
-                columnInfo.sortListener = new SortListener(viewer, columnInfo);
+                columnInfo.sortListener = new SortListener(viewer, columnInfo, (ElementComparator<Object>) comparator);
                 columnInfo.column.addListener(SWT.Selection, columnInfo.sortListener);
             }
         }
@@ -767,14 +773,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     private static class SortListener implements Listener
     {
-        ColumnViewer viewer;
-        ColumnInfo columnInfo;
-        int sortDirection = SWT.UP;
-        Item prevColumn = null;
+        private final ElementComparator<Object> comparator;
+        private final ColumnViewer viewer;
+        private final ColumnInfo columnInfo;
+        private int sortDirection = SWT.UP;
+        private Item prevColumn = null;
 
-        public SortListener(ColumnViewer viewer, ColumnInfo columnInfo) {
+        public SortListener(ColumnViewer viewer, ColumnInfo columnInfo, @Nullable ElementComparator<Object> comparator) {
             this.viewer = viewer;
             this.columnInfo = columnInfo;
+            this.comparator = comparator;
         }
 
         @Override
@@ -804,8 +812,15 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             viewer.setComparator(new ViewerComparator(collator) {
                 private final NumberFormat numberFormat = NumberFormat.getInstance();
                 @Override
-                public int compare(Viewer v, Object e1, Object e2)
-                {
+                public int compare(Viewer v, Object e1, Object e2) {
+                    if (comparator != null) {
+                        return comparator.compare(this::compare, e1, e2);
+                    } else {
+                        return compare(e1, e2);
+                    }
+                }
+
+                private int compare(@Nullable Object e1, @Nullable Object e2) {
                     int result;
                     String value1;
                     String value2;
@@ -845,5 +860,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 }
             });
         }
+    }
+
+    public interface ElementComparator<ELEMENT> {
+        int compare(@NotNull Comparator<ELEMENT> labelComparator, @Nullable ELEMENT e1, @Nullable ELEMENT e2);
     }
 }
