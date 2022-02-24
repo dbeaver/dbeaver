@@ -626,6 +626,11 @@ public class DataSourceDescriptor
     }
 
     @Override
+    public boolean isAccessCheckRequired() {
+        return isManageable();
+    }
+
+    @Override
     public boolean isProvided() {
         return !storage.isDefault();
     }
@@ -901,46 +906,8 @@ public class DataSourceDescriptor
 
                 monitor.subTask("Connect to data source");
 
-/*
-                AccessControlContext noPermissionsAccessControlContext;
-                {
-                    Permissions noPermissions = new Permissions();
-                    noPermissions.add(new SocketPermission("*", "connect"));
-                    noPermissions.add(new NetPermission("*"));
-                    noPermissions.add(new ReflectPermission("*"));
-                    noPermissions.add(new ReflectPermission("accessDeclaredMembers"));
-                    noPermissions.setReadOnly();
-
-                    noPermissionsAccessControlContext = new AccessControlContext(
-                        new ProtectionDomain[] { new ProtectionDomain(null, noPermissions) }
-                    );
-                }
-                Policy.setPolicy(new Policy() {
-                    @Override public boolean implies(ProtectionDomain domain, Permission permission) {
-                        return true;
-                    }
-                });
-                System.setSecurityManager(new SecurityManager());
-
-                try {
-                    AccessController.doPrivileged(
-                        (PrivilegedAction<Object>) () -> {
-                            try {
-                                openDataSource(monitor, initialize);
-                                return null;
-                            } catch (Throwable e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        noPermissionsAccessControlContext);
-                } catch (Throwable e) {
-                    if (e instanceof RuntimeException && e.getCause() != null) {
-                        e = e.getCause();
-                    }
-                    throw e;
-                }
-*/
                 openDataSource(monitor, initialize);
+
                 this.connectFailed = false;
             } finally {
                 exclusiveLock.releaseExclusiveLock(dsLock);
@@ -1210,10 +1177,8 @@ public class DataSourceDescriptor
             log.debug("Can't reconnect - connect/disconnect is in progress");
             return false;
         }
-        if (isConnected()) {
-            if (!disconnect(monitor, reflect)) {
-                return false;
-            }
+        if (isConnected() && !disconnect(monitor, reflect)) {
+            return false;
         }
         return connect(monitor, true, reflect);
     }

@@ -126,6 +126,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isAccessCheckRequired() {
+        return isManageable();
+    }
+
+    @Override
     public boolean isExternallyProvided() {
         return false;
     }

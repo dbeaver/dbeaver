@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.SecurityManagerUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.SocketException;
@@ -198,12 +199,14 @@ public abstract class JDBCDataSource
 
             boolean openTaskFinished;
             try {
-                if (openTimeout <= 0) {
-                    openTaskFinished = true;
-                    connectTask.run(monitor);
-                } else {
-                    openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
-                }
+                openTaskFinished = SecurityManagerUtils.wrapDriverActions(getContainer(), () -> {
+                    if (openTimeout <= 0) {
+                        connectTask.run(monitor);
+                        return true;
+                    } else {
+                        return RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+                    }
+                });
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
             }
@@ -296,30 +299,29 @@ public abstract class JDBCDataSource
             }
             // Close datasource (in async task)
             return RuntimeUtils.runTask(monitor -> {
-                if (doRollback) {
-                    try {
-                        // If we in transaction - rollback it.
-                        // Any valuable transaction changes should be committed by UI
-                        // so here we do it just in case to avoid error messages on close with open transaction
-                        if (!connection.isClosed() && !connection.getAutoCommit()) {
+                    if (doRollback) {
+                        try {
+                            // If we in transaction - rollback it.
+                            // Any valuable transaction changes should be committed by UI
+                            // so here we do it just in case to avoid error messages on close with open transaction
                             connection.rollback();
+                        } catch (Throwable e) {
+                            // Do not write warning because connection maybe broken before the moment of close
+                            log.debug("Error closing active transaction", e);
                         }
-                    } catch (Throwable e) {
-                        // Do not write warning because connection maybe broken before the moment of close
-                        log.debug("Error closing active transaction", e);
                     }
-                }
-                try {
-                    connection.close();
-                }
-                catch (Throwable ex) {
-                    log.debug("Error closing connection", ex);
-                }
-                synchronized (closingConnections) {
-                    closingConnections.remove(connection);
-                }
-
-            }, "Close JDBC connection (" + purpose + ")",
+                    try {
+                        SecurityManagerUtils.wrapDriverActions(getContainer(), () -> {
+                            connection.close();
+                            return null;
+                        });
+                    } catch (Throwable ex) {
+                        log.debug("Error closing connection", ex);
+                    }
+                    synchronized (closingConnections) {
+                        closingConnections.remove(connection);
+                    }
+                }, "Close JDBC connection (" + purpose + ")",
                 getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
         } else {
             log.debug("Null connection parameter");
