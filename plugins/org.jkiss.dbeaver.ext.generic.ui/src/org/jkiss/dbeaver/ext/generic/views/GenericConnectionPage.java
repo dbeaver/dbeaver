@@ -49,10 +49,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 
@@ -228,16 +225,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                             dialog.setFileName(text);
                             if (CommonUtils.isNotEmpty(text)) {
                                 try {
-                                    String directoryPath = null;
-                                    Path path = Paths.get(text);
-                                    if (Files.isDirectory(path)) {
-                                        directoryPath = path.toString();
-                                    } else {
-                                        Path parent = path.getParent();
-                                        if (parent != null) {
-                                            directoryPath = parent.toString();
-                                        }
-                                    }
+                                    String directoryPath = CommonUtils.getDirectoryPath(text);
                                     if (CommonUtils.isNotEmpty(directoryPath)) {
                                         dialog.setFilterPath(directoryPath);
                                     }
