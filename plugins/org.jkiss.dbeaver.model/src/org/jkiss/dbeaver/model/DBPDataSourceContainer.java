@@ -94,6 +94,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
      */
     boolean isManageable();
 
+    boolean isAccessCheckRequired();
+
     /**
      * @return true if datasource is provided by some dynamic DS provider. E.g. cloud configuration.
      */
