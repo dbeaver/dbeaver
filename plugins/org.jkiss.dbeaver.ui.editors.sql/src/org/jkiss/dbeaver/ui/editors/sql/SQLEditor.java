@@ -3452,10 +3452,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
             List<String> features = new ArrayList<>(3);
             features.add(FEATURE_DATA_SELECT);
-            if (query instanceof SQLQuery && (((SQLQuery) query).getType() != SQLQueryType.SELECT)) {
+            if (query instanceof SQLQuery && ((SQLQuery) query).isModifiyng()) {
                 features.add(FEATURE_DATA_MODIFIED_ON_REFRESH);
             }
             features.add(FEATURE_DATA_COUNT);
+
             if (getQueryResultCounts() <= 1) {
                 features.add(FEATURE_DATA_FILTER);
             }
