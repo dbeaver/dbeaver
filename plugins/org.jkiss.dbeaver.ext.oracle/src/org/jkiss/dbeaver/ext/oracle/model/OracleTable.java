@@ -61,7 +61,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
         + FOREIGN_KEY_NAME_PLACEHOLDER + " ENABLE";
     
-    private static final String[] supportedOptions = new String[] {
+    private static final String[] supportedOptions = new String[]{
         DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS,
         DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS
     };
