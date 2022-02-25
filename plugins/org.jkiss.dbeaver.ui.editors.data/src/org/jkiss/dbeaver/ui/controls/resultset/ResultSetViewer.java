@@ -3657,7 +3657,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean refreshData(@Nullable Runnable onSuccess) {
-        if (!verifyQuerySafety() && !checkForChanges()) {
+        if (!verifyQuerySafety() || !checkForChanges()) {
             return false;
         }
 
