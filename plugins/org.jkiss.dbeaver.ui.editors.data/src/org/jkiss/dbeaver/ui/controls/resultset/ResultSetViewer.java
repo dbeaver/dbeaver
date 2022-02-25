@@ -3657,7 +3657,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean refreshData(@Nullable Runnable onSuccess) {
-        if (!checkForChanges()) {
+        if (!verifyQuerySafety() || !checkForChanges()) {
             return false;
         }
 
@@ -3714,6 +3714,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void readNextSegment() {
+        if (!verifyQuerySafety()) {
+            return;
+        }
         if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
             return;
         }
@@ -3744,8 +3747,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private boolean verifyQuerySafety() {
+        if (container.getDataContainer() == null || !container.getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH) ) {
+            return true;
+        }
+        return UIUtils.confirmAction(null, ResultSetMessages.confirm_modifying_query_title, ResultSetMessages.confirm_modifying_query_message, DBIcon.STATUS_WARNING);
+    }
+
     @Override
     public void readAllData() {
+        if (!verifyQuerySafety()) {
+            return;
+        }
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
