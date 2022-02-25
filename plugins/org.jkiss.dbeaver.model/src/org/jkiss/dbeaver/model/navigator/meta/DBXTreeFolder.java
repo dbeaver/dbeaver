@@ -171,6 +171,9 @@ public class DBXTreeFolder extends DBXTreeNode {
             for (String category : contributedCategories) {
                 DBPEditorContribution[] editors = dspRegistry.getContributedEditors(category, dataSource);
                 for (DBPEditorContribution editor : editors) {
+                    if (!editor.isVisible(context)) {
+                        continue;
+                    }
                     DBXTreeObject editorNode = new DBXTreeObject(
                         getSource(),
                         null, // No parent - otherwise we'll have dups after each call

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
  * DBPEditorContribution
@@ -35,4 +36,6 @@ public interface DBPEditorContribution
     String getDescription();
 
     DBPImage getIcon();
+
+    boolean isVisible(DBNNode context);
 }
