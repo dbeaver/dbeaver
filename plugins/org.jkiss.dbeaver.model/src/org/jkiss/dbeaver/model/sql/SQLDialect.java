@@ -251,6 +251,8 @@ public interface SQLDialect {
 
     boolean useCaseInsensitiveNameLookup();
 
+    boolean hasCaseSensitiveFiltration();
+
     boolean supportsUnquotedMixedCase();
 
     boolean supportsQuotedMixedCase();
