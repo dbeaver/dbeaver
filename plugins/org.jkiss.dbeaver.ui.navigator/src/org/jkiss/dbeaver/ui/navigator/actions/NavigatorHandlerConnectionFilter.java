@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -60,9 +61,14 @@ public class NavigatorHandlerConnectionFilter extends AbstractHandler implements
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
-        if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView) {
-            DatabaseNavigatorTree navigatorTree = ((DatabaseNavigatorView) partSite.getPart()).getNavigatorTree();
+        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(Display.getCurrent().getFocusControl().getShell());
+        if (navigatorTree == null) {
+            IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
+            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView) {
+                navigatorTree = ((DatabaseNavigatorView) partSite.getPart()).getNavigatorTree();
+            }
+        }
+        if (navigatorTree != null) {
             element.setIcon(DBeaverIcons.getImageDescriptor(
                 navigatorTree.isFilterShowConnected() ? UIIcon.FILTER_RESET : UIIcon.FILTER_APPLY
             ));
