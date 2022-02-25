@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.apache.commons.jexl3.JexlContext;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -219,6 +220,37 @@ public class DBNUtils {
             }
         }
         return null;
+    }
+
+    public static JexlContext makeContext(final DBNNode node) {
+        return new JexlContext() {
+
+            @Override
+            public Object get(String name) {
+                if (node instanceof DBNDatabaseNode) {
+                    switch (name) {
+                        case "object":
+                            return ((DBNDatabaseNode) node).getValueObject();
+                        case "dataSource":
+                            return ((DBNDatabaseNode) node).getDataSource();
+                        case "connected":
+                            return ((DBNDatabaseNode) node).getDataSource() != null;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void set(String name, Object value) {
+                log.warn("Set is not implemented in DBX model");
+            }
+
+            @Override
+            public boolean has(String name) {
+                return node instanceof DBNDatabaseNode && name.equals("object")
+                    && ((DBNDatabaseNode) node).getValueObject() != null;
+            }
+        };
     }
 
 }
