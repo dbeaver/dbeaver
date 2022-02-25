@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
@@ -638,7 +639,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         } else {
                             DatabaseMappingType previousMapping = mapping.getMappingType();
                             if (previousMapping == DatabaseMappingType.recreate || mappingType == DatabaseMappingType.recreate) {
-                                ((DatabaseMappingContainer) mapping).refreshAttributesAndMappingType(getWizard().getRunnableContext(), mappingType, false);
+                                ((DatabaseMappingContainer) mapping).refreshAttributesAndMappingType(getWizard().getRunnableContext(), null, mappingType, false);
                             } else {
                                 ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
                             }
@@ -1196,17 +1197,26 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
                         continue;
                     }
-                    DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+                    DBSDataContainer sourceDataContainer = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
                     DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
                     // Create new mapping for source object
                     DatabaseMappingContainer newMapping;
-                    if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
+                    IDataTransferConsumer<?, ?> pipeConsumer = pipe.getConsumer();
+                    if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null
+                        || (mapping != null && mapping.getTarget() != null)) {
                         try {
+                            DBSDataManipulator targetObject = null;
+                            if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null) {
+                                targetObject = ((DatabaseTransferConsumer) pipeConsumer).getTargetObject();
+                            } else if (mapping != null) {
+                                targetObject = mapping.getTarget();
+                            }
                             newMapping = new DatabaseMappingContainer(
                                 monitor,
                                 getDatabaseConsumerSettings(),
                                 sourceDataContainer,
-                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
+                                targetObject,
+                                mapping != null && mapping.getMappingType() == DatabaseMappingType.recreate);
                         } catch (DBException e) {
                             errors.add(e);
                             newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
