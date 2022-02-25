@@ -135,9 +135,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
         }
 
-
-        if (activePart instanceof IResultSetContainer) {
-            return ((IResultSetContainer) activePart).getResultSetController();
+        if (activePart instanceof IResultSetProvider) {
+            return ((IResultSetProvider) activePart).getResultSetController();
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         } else if (activePart != null) {
