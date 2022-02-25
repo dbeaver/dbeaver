@@ -28,7 +28,7 @@ import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -37,15 +37,14 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Display Source text (Read Only)
  */
 public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLEditorNested<T> {
 
+    protected Boolean separateFKStmts;
     protected Boolean showPermissions;
     protected Boolean showColumnComments;
     protected Boolean showFullDDL;
@@ -85,10 +84,17 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     }
 
     @Override
-    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
-    {
+    protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
         T sourceObject = getSourceObject();
-        return sourceObject == null ? null : sourceObject.getObjectDefinitionText(monitor, getSourceOptions());
+        if (sourceObject == null) {
+            return null;
+        } else if (!(sourceObject instanceof DBSEntity)) {
+            return sourceObject == null ? null : sourceObject.getObjectDefinitionText(monitor, getSourceOptions());
+        } else {
+            StringBuilder sql = new StringBuilder(100);
+            DBStructUtils.generateTableListDDL(monitor, sql, List.of((DBSEntity)sourceObject), getSourceOptions(), false);
+            return sql.toString().trim();
+        }
     }
 
     protected Map<String, Object> getSourceOptions() {
@@ -112,6 +118,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
                 options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, getShowPermissions());
+            }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
+                sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
+                options.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, getSeparateFKStmts());
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
@@ -184,6 +194,24 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                             }
                         }, true));
             }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
+                sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
+                toolBarManager.add(ActionUtils.makeActionContribution(
+                    new Action("Separate FK", Action.AS_CHECK_BOX) {
+                        {
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_FOREIGN_KEY));
+                            setToolTipText("Generate foreign keys as separate statements");
+                            setChecked(getSeparateFKStmts());
+                        }
+
+                        @Override
+                        public void run() {
+                            separateFKStmts = isChecked();
+                            getPreferenceStore().setValue(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, separateFKStmts);
+                            refreshPart(SQLSourceViewer.this, true);
+                        }
+                    }, true));
+            }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
                         new Action("Show comments", Action.AS_CHECK_BOX) {
@@ -209,6 +237,13 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             showPermissions = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS);
         }
         return showPermissions;
+    }
+
+    protected boolean getSeparateFKStmts() {
+        if (separateFKStmts == null) {
+            separateFKStmts = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS);
+        }
+        return separateFKStmts;
     }
 
     protected Boolean getShowColumnComments() {
