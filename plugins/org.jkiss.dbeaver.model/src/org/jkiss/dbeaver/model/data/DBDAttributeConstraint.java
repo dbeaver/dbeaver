@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
@@ -80,6 +81,12 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     void setAttribute(@NotNull DBSAttributeBase binding) {
         this.attribute = binding;
         this.attributeName = this.attribute.getName();
+        if (this.attribute instanceof DBDAttributeBindingMeta) {
+            DBSEntityAttribute entityAttribute = ((DBDAttributeBindingMeta) this.attribute).getEntityAttribute();
+            if (entityAttribute != null) {
+                this.attributeName = entityAttribute.getName();
+            }
+        }
         this.originalVisualPosition = attribute.getOrdinalPosition();
     }
 
