@@ -52,6 +52,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final NodeType nodeType;
     private final ObjectType implType;
     private final ObjectType settingsType;
+    private final boolean advanced;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
 
@@ -66,6 +67,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.nodeType = CommonUtils.valueOf(NodeType.class, config.getAttribute("type").toUpperCase(Locale.ENGLISH), NodeType.PRODUCER);
         this.implType = new ObjectType(config.getAttribute("class"));
         this.settingsType = new ObjectType(config.getAttribute("settings"));
+        this.advanced = CommonUtils.toBoolean(config.getAttribute("advanced"));
 
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren("sourceType"))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
@@ -104,6 +106,10 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     public DBPImage getIcon()
     {
         return icon;
+    }
+
+    public boolean isAdvancedNode() {
+        return advanced;
     }
 
     public Class<? extends IDataTransferNode> getNodeClass()

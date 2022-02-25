@@ -876,8 +876,13 @@ public class ResultSetModel {
 
     void cleanupRow(@NotNull ResultSetRow row) {
         row.release();
-        this.curRows.remove(row.getVisualNumber());
-        this.shiftRows(row, -1);
+        int index = row.getVisualNumber();
+        if (this.curRows.size() > index) {
+            this.curRows.remove(index);
+            this.shiftRows(row, -1);
+        } else {
+            log.debug("Error removing row from list: invalid row index: " + index);
+        }
     }
 
     boolean cleanupRows(Collection<ResultSetRow> rows) {

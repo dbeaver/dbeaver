@@ -135,9 +135,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
         }
 
-
-        if (activePart instanceof IResultSetContainer) {
-            return ((IResultSetContainer) activePart).getResultSetController();
+        if (activePart instanceof IResultSetProvider) {
+            return ((IResultSetProvider) activePart).getResultSetController();
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         } else if (activePart != null) {
@@ -227,6 +226,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 boolean insertAfter = rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
                 if (shiftPressed) insertAfter = !insertAfter;
                 rsv.addNewRow(copy, insertAfter, true);
+                rsv.getActivePresentation().getControl().setFocus();
                 break;
             }
             case CMD_ROW_COPY_FROM_ABOVE:

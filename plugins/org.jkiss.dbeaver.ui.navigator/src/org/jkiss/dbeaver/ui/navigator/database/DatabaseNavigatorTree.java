@@ -79,6 +79,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
     private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
+    private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
 
     private TreeViewer treeViewer;
     private DBNModel model;
@@ -92,6 +93,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
+
+    public static DatabaseNavigatorTree getFromShell(Shell shell) {
+        return (DatabaseNavigatorTree)shell.getData(DATA_TREE_CONTROL);
+    }
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style) {
         this(parent, rootNode, style, false);
@@ -107,6 +112,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter, String filterPlaceholderText) {
         super(parent, SWT.NONE);
+
+        if (UIUtils.isInDialog(parent)) {
+            parent.getShell().setData(DATA_TREE_CONTROL, DatabaseNavigatorTree.this);
+        }
+
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
         if (filterPlaceholderText != null) {
@@ -833,7 +843,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (!UIUtils.isInDialog(parent) && navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
                 ((GridLayout)parent.getLayout()).numColumns++;
 
                 IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();

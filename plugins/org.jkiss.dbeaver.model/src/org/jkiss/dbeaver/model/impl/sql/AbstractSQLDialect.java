@@ -857,4 +857,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return false;
     }
+
+    @Override
+    public boolean hasCaseSensitiveFiltration() {
+        return false;
+    }
 }
+
+

@@ -26,8 +26,10 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -134,9 +136,11 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
-        homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
-        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-        homesSelector.getPanel().setLayoutData(gd);
+        if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBPApplication.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)) {
+            homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
+            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+            homesSelector.getPanel().setLayoutData(gd);
+        }
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
@@ -186,7 +190,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             }
         }
 
-        homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
+        if (homesSelector != null) {
+            homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
+        }
 
         activated = true;
     }

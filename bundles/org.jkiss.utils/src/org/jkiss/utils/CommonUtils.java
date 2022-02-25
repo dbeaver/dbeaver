@@ -21,6 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -1028,5 +1032,19 @@ public class CommonUtils {
         }
         matcher.appendTail(sb);
         return sb.toString();
+    }
+
+    @Nullable
+    public static String getDirectoryPath(@NotNull String sPath) throws InvalidPathException {
+        final Path path = Paths.get(sPath);
+        if (Files.isDirectory(path)) {
+            return path.toString();
+        } else {
+            final Path parent = path.getParent();
+            if (parent != null) {
+                return parent.toString();
+            }
+        }
+        return null;
     }
 }

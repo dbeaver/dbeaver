@@ -39,6 +39,7 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IEditorInput> 
         } else {
             createEditorControl(parent);
         }
+        DatabaseEditorUtils.setPartBackground(this, parent);
     }
 
     private void createLazyEditorPart(Composite parent, final DatabaseLazyEditorInput input) {

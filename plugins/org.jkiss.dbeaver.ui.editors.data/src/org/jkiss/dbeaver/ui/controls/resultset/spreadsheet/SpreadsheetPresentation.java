@@ -815,6 +815,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
+        if (spreadsheet.isDisposed()) {
+            return;
+        }
+
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
@@ -1999,6 +2003,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             if (!lockData &&
                 rowNum > 0 &&
+                !(controller.getContainer().getDataContainer() != null && controller.getContainer().getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH)) &&
                 rowNum == controller.getModel().getRowCount() - 1 &&
                 autoFetchSegments &&
                 !(getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS) < getSpreadsheet().getMaxVisibleRows()) &&

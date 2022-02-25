@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import net.sf.jsqlparser.expression.LongValue;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -489,13 +488,20 @@ public final class SQLUtils {
             if (cAttr instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
                 if (binding.getEntityAttribute() != null &&
+                    binding.getMetaAttribute() != null &&
                     binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
                     binding instanceof DBDAttributeBindingType)
                 {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
                 } else {
-                    // Most likely it is an expression so we don't want to quote it
-                    attrName = binding.getMetaAttribute().getName();
+                    if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
+                        // Seems to a reference on a table column.
+                        // It is better to use real table column in expressions because aliases may not work
+                        attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
+                    } else {
+                        // Most likely it is an expression so we don't want to quote it
+                        attrName = binding.getMetaAttribute().getName();
+                    }
                 }
             } else if (cAttr != null) {
                 attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);

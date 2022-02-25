@@ -16,13 +16,20 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.apache.commons.jexl3.JexlException;
+import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,6 +48,7 @@ public class EditorContributionDescriptor extends AbstractContextDescriptor impl
     private final String label;
     private final String description;
     private final DBPImage icon;
+    private JexlExpression visibleIf;
 
     private final List<String> supportedDataSources = new ArrayList<>();
     private final List<String> supportedDrivers = new ArrayList<>();
@@ -54,6 +62,15 @@ public class EditorContributionDescriptor extends AbstractContextDescriptor impl
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.icon = iconToImage(config.getAttribute("icon"));
+        String visibleIfCondition = config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF);
+
+        if (!CommonUtils.isEmpty(visibleIfCondition)) {
+            try {
+                this.visibleIf = AbstractDescriptor.parseExpression(visibleIfCondition);
+            } catch (DBException e) {
+                log.debug("Error parsing expression '" + visibleIfCondition + "':" + GeneralUtils.getExpressionParseMessage(e));
+            }
+        }
 
         for (IConfigurationElement supportsCfg : config.getChildren("supports")) {
             String supportsDS = supportsCfg.getAttribute(RegistryConstants.ATTR_DATA_SOURCE);
@@ -90,6 +107,15 @@ public class EditorContributionDescriptor extends AbstractContextDescriptor impl
     @Override
     public DBPImage getIcon() {
         return icon;
+    }
+
+    public boolean isVisible(DBNNode context) {
+        try {
+            return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(DBNUtils.makeContext(context)));
+        } catch (JexlException e) {
+            log.debug("Error evaluating expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
+            return false;
+        }
     }
 
     public boolean supportsDataSource(DBPDataSourceContainer dataSource) {

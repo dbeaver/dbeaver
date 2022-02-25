@@ -48,6 +48,6 @@ public interface DBPDataSourceOrigin extends DBPObjectWithDetails<DBPDataSourceC
     boolean isDynamic();
 
     @NotNull
-    Map<String, Object> getConfiguration();
+    Map<String, Object> getDataSourceConfiguration();
 
 }

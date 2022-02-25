@@ -40,6 +40,7 @@ public interface DBSDataContainer extends DBSObject {
     String FEATURE_DATA_FILTER = "data.filter";
     String FEATURE_DATA_SEARCH = "data.search";
     String FEATURE_KEY_VALUE = "data.key.value";
+    String FEATURE_DATA_MODIFIED_ON_REFRESH = "data.modifying";
 
     long FLAG_NONE                  = 0;
     long FLAG_READ_PSEUDO           = 1 << 1;

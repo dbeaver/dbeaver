@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
@@ -36,12 +38,18 @@ import java.util.Map;
 
 public class NavigatorHandlerFilterObjectType extends AbstractHandler implements IElementUpdater {
 
+    private static final Log log = Log.getLog(NavigatorHandlerFilterObjectType.class);
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof DatabaseNavigatorView) {
-            DatabaseNavigatorTree navigatorTree = ((DatabaseNavigatorView) activePart).getNavigatorTree();
-
+        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(HandlerUtil.getActiveShell(event));
+        if (navigatorTree == null) {
+            IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+            if (activePart instanceof DatabaseNavigatorView) {
+                navigatorTree = ((DatabaseNavigatorView) activePart).getNavigatorTree();
+            }
+        }
+        if (navigatorTree != null) {
             DatabaseNavigatorTreeFilterObjectType objectType = CommonUtils.valueOf(
                 DatabaseNavigatorTreeFilterObjectType.class, event.getParameter("type"),
                 DatabaseNavigatorTreeFilterObjectType.table);
@@ -56,8 +64,10 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             } finally {
                 navigatorTree.getViewer().getControl().setRedraw(true);
             }
+            ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_CONNECTIONS);
+        } else {
+            log.debug("Can't find active navigator tree");
         }
-        ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_CONNECTIONS);
         return null;
     }
 
@@ -68,11 +78,16 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             DatabaseNavigatorTreeFilterObjectType.table);
 
         DatabaseNavigatorTreeFilterObjectType curObjectType = DatabaseNavigatorTreeFilterObjectType.table;
-        IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
-        if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView) {
-            curObjectType = ((DatabaseNavigatorView) partSite.getPart()).getNavigatorTree().getFilterObjectType();
+        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(Display.getCurrent().getFocusControl().getShell());
+        if (navigatorTree == null) {
+            IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
+            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView) {
+                navigatorTree = ((DatabaseNavigatorView) partSite.getPart()).getNavigatorTree();
+            }
         }
-
+        if (navigatorTree != null) {
+            curObjectType = navigatorTree.getFilterObjectType();
+        }
         element.setText(objectType.getName());
         element.setTooltip(objectType.getDescription());
         element.setChecked(objectType == curObjectType);

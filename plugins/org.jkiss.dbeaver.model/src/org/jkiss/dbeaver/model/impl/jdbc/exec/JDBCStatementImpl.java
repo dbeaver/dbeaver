@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
+import org.jkiss.dbeaver.utils.SecurityManagerUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -127,9 +128,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         throws DBCException
     {
         try {
-            return execute(query);
-        }
-        catch (SQLException e) {
+            return SecurityManagerUtils.wrapDriverActions(connection.getDataSource().getContainer(), () -> execute(query));
+        } catch (Throwable e) {
             throw new DBSQLException(query, e, connection.getExecutionContext());
         }
     }
@@ -149,9 +149,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     public int[] executeStatementBatch() throws DBCException
     {
         try {
-            return executeBatch();
-        }
-        catch (SQLException e) {
+            return SecurityManagerUtils.wrapDriverActions(connection.getDataSource().getContainer(), this::executeBatch);
+        } catch (Throwable e) {
             throw new DBSQLException(query, e, connection.getExecutionContext());
         }
     }

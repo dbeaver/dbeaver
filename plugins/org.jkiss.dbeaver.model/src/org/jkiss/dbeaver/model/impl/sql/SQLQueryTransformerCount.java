@@ -114,7 +114,8 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                         countFunc.setParameters(new ExpressionList(exprs));
                     }
                 } else {
-                    countFunc.setAllColumns(true);
+                    //countFunc.setAllColumns(true); // We can't use setAllColumns now (since JSQLParser 4.2), it will return COUNT(ALL). Replaced by AllColumns Expression
+                    countFunc.setParameters(new ExpressionList(new AllColumns()));
                 }
 
                 List<SelectItem> selectItems = new ArrayList<>();

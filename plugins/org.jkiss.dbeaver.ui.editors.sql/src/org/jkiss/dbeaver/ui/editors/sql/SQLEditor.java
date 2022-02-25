@@ -3452,6 +3452,9 @@ public class SQLEditor extends SQLEditorBase implements
             }
             List<String> features = new ArrayList<>(3);
             features.add(FEATURE_DATA_SELECT);
+            if (query instanceof SQLQuery && ((SQLQuery) query).isModifiyng()) {
+                features.add(FEATURE_DATA_MODIFIED_ON_REFRESH);
+            }
             features.add(FEATURE_DATA_COUNT);
 
             if (getQueryResultCounts() <= 1) {
@@ -3539,7 +3542,7 @@ public class SQLEditor extends SQLEditorBase implements
                     countQuery.setParameters(parseQueryParameters(countQuery));
                 }
 
-                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.QUERY, countQuery, 0, 0)) {
+                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.SCRIPT, countQuery, 0, 0)) {
                     if (dbStatement.executeStatement()) {
                         try (DBCResultSet rs = dbStatement.openResultSet()) {
                             if (rs.nextRow()) {

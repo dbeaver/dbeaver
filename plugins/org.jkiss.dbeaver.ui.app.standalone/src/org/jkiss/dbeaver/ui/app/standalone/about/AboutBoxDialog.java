@@ -173,7 +173,7 @@ public class AboutBoxDialog extends InformationDialog
 
         if (splashImage == null) {
             try {
-                URL splashResource = ApplicationRegistry.getInstance().getApplication().getContributorBundle().getResource("splash.bmp");
+                URL splashResource = ApplicationRegistry.getInstance().getApplication().getContributorBundle().getResource("splash.png");
                 if (splashResource != null) {
                     try (InputStream is = splashResource.openStream()) {
                         Image img = new Image(getShell().getDisplay(), is);

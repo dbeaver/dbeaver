@@ -11,7 +11,8 @@
               icon="icons/formats/table.png"
               label="%dataTransfer.producer.database.name"
               description="%dataTransfer.producer.database.description"
-              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings"
+              advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
 <!--            <sourceType type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>-->
         </node>
@@ -22,7 +23,8 @@
             icon="icons/formats/table.png"
             label="%dataTransfer.consumer.database.name"
             description="%dataTransfer.consumer.database.description"
-            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
+            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
+            advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </node>
 

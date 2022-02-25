@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.InvalidPathException;
 import java.util.List;
 import java.util.*;
 
@@ -220,7 +221,19 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                     {
                         if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
                             FileDialog dialog = new FileDialog(getShell(), SWT.SAVE | SWT.SINGLE);
-                            dialog.setFileName(pathText.getText());
+                            String text = pathText.getText();
+                            dialog.setFileName(text);
+                            if (CommonUtils.isNotEmpty(text)) {
+                                try {
+                                    String directoryPath = CommonUtils.getDirectoryPath(text);
+                                    if (CommonUtils.isNotEmpty(directoryPath)) {
+                                        dialog.setFilterPath(directoryPath);
+                                    }
+                                } catch (InvalidPathException ex) {
+                                    // Can't find directory path. Ignore it then.
+                                    log.debug("Can't find directory path", ex);
+                                }
+                            }
                             dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
                             String file = dialog.open();
                             if (file != null) {

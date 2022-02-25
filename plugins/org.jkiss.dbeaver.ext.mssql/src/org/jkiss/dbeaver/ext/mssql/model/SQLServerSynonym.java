@@ -93,6 +93,12 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
         return schema.getDataSource();
     }
 
+    @Nullable
+    @Override
+    public SQLServerDatabase getDatabase() {
+        return schema.getDatabase();
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {

@@ -446,7 +446,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     private class SessionListControl extends SessionTable<SESSION_TYPE> {
 
-        private SessionSearcher searcher;
+        private final SessionSearcher searcher;
 
         SessionListControl(Composite sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
         {

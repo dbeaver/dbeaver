@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSession;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
@@ -63,12 +62,11 @@ public class MySQLSessionEditor extends AbstractSessionEditor
 
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
-        return new SessionManagerViewer<MySQLSession>(this, parent, new MySQLSessionManager((MySQLDataSource) executionContext.getDataSource())) {
+        return new SessionManagerViewer<>(this, parent, new MySQLSessionManager((MySQLDataSource) executionContext.getDataSource())) {
             private boolean hideSleeping;
 
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
-            {
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager) {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(terminateQueryAction);
                 contributionManager.add(new Separator());
@@ -80,6 +78,7 @@ public class MySQLSessionEditor extends AbstractSessionEditor
                             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.HIDE_ALL_DETAILS));
                             setChecked(hideSleeping);
                         }
+
                         @Override
                         public void run() {
                             hideSleeping = isChecked();
@@ -91,8 +90,7 @@ public class MySQLSessionEditor extends AbstractSessionEditor
             }
 
             @Override
-            protected void onSessionSelect(DBAServerSession session)
-            {
+            protected void onSessionSelect(DBAServerSession session) {
                 super.onSessionSelect(session);
                 killSessionAction.setEnabled(session != null);
                 terminateQueryAction.setEnabled(session != null && !CommonUtils.isEmpty(session.getActiveQuery()));

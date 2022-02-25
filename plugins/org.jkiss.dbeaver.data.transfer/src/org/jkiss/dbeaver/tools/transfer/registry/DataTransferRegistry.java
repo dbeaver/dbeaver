@@ -54,7 +54,8 @@ public class DataTransferRegistry {
                 if (!CommonUtils.isEmpty(ext.getAttribute("ref"))) {
                     continue;
                 }
-                nodes.add(new DataTransferNodeDescriptor(ext));
+                DataTransferNodeDescriptor node = new DataTransferNodeDescriptor(ext);
+                nodes.add(node);
             } else if ("transformer".equals(ext.getName())) {
                 // Load transformers
                 DataTransferAttributeTransformerDescriptor at = new DataTransferAttributeTransformerDescriptor(ext);

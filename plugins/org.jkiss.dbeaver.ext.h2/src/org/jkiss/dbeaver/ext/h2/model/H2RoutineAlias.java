@@ -34,14 +34,21 @@ public class H2RoutineAlias extends GenericProcedure {
 
     private String javaClass;
     private String javaMethod;
+    private String javaClassAndMethod;
     private String source;
 
     public H2RoutineAlias(@NotNull GenericStructContainer container, @NotNull String procedureName, String description, DBSProcedureType procedureType,
                           @Nullable GenericFunctionResultType functionResultType, @NotNull JDBCResultSet dbResult) {
         super(container, procedureName, procedureName, description, procedureType, functionResultType);
-        this.javaClass = JDBCUtils.safeGetString(dbResult, "JAVA_CLASS");
-        this.javaMethod = JDBCUtils.safeGetString(dbResult, "JAVA_METHOD");
-        this.source = JDBCUtils.safeGetString(dbResult, "SOURCE");
+        if (!getDataSource().isServerVersionAtLeast(2, 0)) {
+            this.javaClass = JDBCUtils.safeGetString(dbResult, "JAVA_CLASS");
+            this.javaMethod = JDBCUtils.safeGetString(dbResult, "JAVA_METHOD");
+            this.source = JDBCUtils.safeGetString(dbResult, "SOURCE");
+        } else {
+            // H2 Version 2 has another columns for routines
+            this.javaClassAndMethod = JDBCUtils.safeGetString(dbResult, "EXTERNAL_NAME");
+            this.source = JDBCUtils.safeGetString(dbResult, "ROUTINE_DEFINITION");
+        }
     }
 
     @Property(viewable = true, order = 7)
@@ -87,6 +94,8 @@ public class H2RoutineAlias extends GenericProcedure {
             sourceDDL.append(" AS $$\n").append(source).append("$$");
         } else if (CommonUtils.isNotEmpty(javaClass) && CommonUtils.isNotEmpty(javaMethod)) {
             sourceDDL.append(" FOR \"").append(javaClass).append(".").append(javaMethod).append("\";");
+        } else if (CommonUtils.isNotEmpty(javaClassAndMethod) && !"null.null".equals(javaClassAndMethod)) { // Some bug in the H2 database version 2. EXTERNAL_NAME returns "null.null" instead of NULL
+            sourceDDL.append(" FOR \"").append(javaClassAndMethod).append("\";");
         }
         return sourceDDL.toString();
     }

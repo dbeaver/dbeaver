@@ -830,14 +830,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     public String getAttributeName(@NotNull DBSAttributeBase attribute) {
-        // Entity attribute obtain commented because it broke complex attributes full name construction
-        // We can't use entity attr because only particular query metadata contains real structure
-//        if (attribute instanceof DBDAttributeBinding) {
-//            DBSEntityAttribute entityAttribute = ((DBDAttributeBinding) attribute).getEntityAttribute();
-//            if (entityAttribute != null) {
-//                attribute = entityAttribute;
-//            }
-//        }
+        if (attribute instanceof DBDAttributeBindingMeta) {
+            // For top-level query bindings we need to use table columns name instead of alias.
+            // For nested attributes we should use aliases
+
+            // Entity attribute obtain commented because it broke complex attributes full name construction
+            // We can't use entity attr because only particular query metadata contains real structure
+            DBSEntityAttribute entityAttribute = ((DBDAttributeBindingMeta) attribute).getEntityAttribute();
+            if (entityAttribute != null) {
+                attribute = entityAttribute;
+            }
+        }
         // Do not quote pseudo attribute name
         return DBUtils.isPseudoAttribute(attribute) ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
     }

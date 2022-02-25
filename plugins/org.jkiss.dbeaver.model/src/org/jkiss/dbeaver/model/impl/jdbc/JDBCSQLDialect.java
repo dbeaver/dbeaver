@@ -226,6 +226,10 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return identifierQuoteString;
     }
 
+    protected void setIdentifierQuoteString(String[][] identifierQuoteString) {
+        this.identifierQuoteString = identifierQuoteString;
+    }
+
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
