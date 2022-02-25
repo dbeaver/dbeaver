@@ -100,6 +100,9 @@ public class DataSourceDescriptor
     private DBPDataSourceOrigin origin;
 
     private final boolean manageable;
+
+    private boolean accessCheckRequired = true;
+
     @NotNull
     private DBPDriver driver;
     @NotNull
@@ -181,14 +184,16 @@ public class DataSourceDescriptor
 
     /**
      * Copies datasource configuration
+     *
      * @param setDefaultStorage sets storage to default (in order to allow connection copy-paste with following save in default configuration)
      */
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage)
-    {
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry,
+                                boolean setDefaultStorage) {
         this.registry = registry;
-        this.storage = setDefaultStorage ? ((DataSourceRegistry)registry).getDefaultStorage() : source.storage;
+        this.storage = setDefaultStorage ? ((DataSourceRegistry) registry).getDefaultStorage() : source.storage;
         this.origin = source.origin;
-        this.manageable = setDefaultStorage && ((DataSourceRegistry)registry).getDefaultStorage().isDefault();
+        this.manageable = setDefaultStorage && ((DataSourceRegistry) registry).getDefaultStorage().isDefault();
+        this.accessCheckRequired = manageable;
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -627,7 +632,11 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isAccessCheckRequired() {
-        return isManageable();
+        return isManageable() && accessCheckRequired;
+    }
+
+    public void setAccessCheckRequired(boolean accessCheckRequired) {
+        this.accessCheckRequired = accessCheckRequired;
     }
 
     @Override
