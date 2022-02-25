@@ -472,4 +472,8 @@ public class SQLQuery implements SQLScriptElement {
     public boolean equals(Object obj) {
         return obj instanceof SQLQuery && text.equals(((SQLQuery) obj).text);
     }
+
+    public boolean isModifiyng() {
+        return getType() != SQLQueryType.SELECT;
+    }
 }
