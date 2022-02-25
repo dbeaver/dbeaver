@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.utils.ArrayUtils;
 
 public class GroupingDataContainer implements DBSDataContainer {
 
@@ -37,6 +38,7 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     private IResultSetController parentController;
     private String query;
+    private String[] attributes;
 
     public GroupingDataContainer(IResultSetController parentController) {
         this.parentController = parentController;
@@ -50,7 +52,11 @@ public class GroupingDataContainer implements DBSDataContainer {
     @NotNull
     @Override
     public String getName() {
-        return "Grouping";
+        if (ArrayUtils.isEmpty(attributes)) {
+            return "Grouping";
+        } else {
+            return "Grouping[" + String.join(",", attributes) + "]";
+        }
     }
 
     @Override
@@ -147,5 +153,9 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     public void setGroupingQuery(String sql) {
         this.query = sql;
+    }
+
+    public void setGroupingAttributes(@Nullable String[] attributes) {
+        this.attributes = attributes;
     }
 }

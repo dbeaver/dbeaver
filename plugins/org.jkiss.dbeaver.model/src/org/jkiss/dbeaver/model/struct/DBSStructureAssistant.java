@@ -76,6 +76,7 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
         private boolean searchInComments;
         private boolean searchInDefinitions;
         private boolean globalSearch;
+        private boolean isLikeCondition;
 
         public ObjectsSearchParams(@NotNull DBSObjectType[] objectTypes, @NotNull String mask) {
             this.objectTypes = objectTypes;
@@ -143,6 +144,14 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
 
         public void setGlobalSearch(boolean globalSearch) {
             this.globalSearch = globalSearch;
+        }
+
+        public boolean isLikeCondition() {
+            return isLikeCondition;
+        }
+
+        public void setLikeCondition(boolean likeCondition) {
+            isLikeCondition = likeCondition;
         }
     }
 }
