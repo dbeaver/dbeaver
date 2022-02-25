@@ -45,16 +45,6 @@ public class SecurityManagerUtils {
         new RuntimePermission("getenv.*")
     );
 
-    static {
-        Policy.setPolicy(new Policy() {
-            @Override
-            public boolean implies(ProtectionDomain domain, Permission permission) {
-                return true;
-            }
-        });
-        System.setSecurityManager(new SecurityManager());
-    }
-
     public static List<Permission> getDefaultPermissions() {
         return new ArrayList<>(DEFAULT_PERMISSIONS);
     }
@@ -92,9 +82,9 @@ public class SecurityManagerUtils {
 
     public static <T> T wrapDriverActions(DBPDataSourceContainer container, Callable<T> callable) throws Throwable {
         var driver = container.getDriver();
-        if (
-            DBWorkbench.getPlatform().getApplication().isMultiuser()
-                && container.isAccessCheckRequired()
+        if (System.getSecurityManager() != null
+            && DBWorkbench.getPlatform().getApplication().isMultiuser()
+            && container.isAccessCheckRequired()
         ) {
             //unsecured connection created by user
             var permissions = SecurityManagerUtils.getDefaultPermissions();
