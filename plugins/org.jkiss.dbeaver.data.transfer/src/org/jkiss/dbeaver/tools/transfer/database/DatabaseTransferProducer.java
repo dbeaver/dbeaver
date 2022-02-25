@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -98,6 +99,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     @Override
     public String getObjectName() {
+        final SQLQueryContainer queryContainer = GeneralUtils.adapt(dataContainer, SQLQueryContainer.class);
+        if (queryContainer != null) {
+            return CommonUtils.getSingleLineString(queryContainer.getQuery().toString());
+        }
         return dataContainer == null ? "?" : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
