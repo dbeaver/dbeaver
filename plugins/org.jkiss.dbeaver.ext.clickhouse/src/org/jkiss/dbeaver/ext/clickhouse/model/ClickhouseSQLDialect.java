@@ -90,6 +90,11 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
             removeSQLKeyword(word);
         }
         addFunctions(Arrays.asList(CLICKHOUSE_FUNCTIONS));
+
+        setIdentifierQuoteString(new String[][]{
+            { "`", "`" },
+            { "\"", "\"" },
+        });
     }
 
     @Override
@@ -120,4 +125,6 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         }
         return super.mustBeQuoted(str, forceCaseSensitive);
     }
+
+
 }
