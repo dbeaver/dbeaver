@@ -191,6 +191,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupingViewer.clearDataFilter(false);
         groupingViewer.resetHistory();
         dataContainer.setGroupingQuery(null);
+        dataContainer.setGroupingAttributes(null);
         if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
             groupingViewer.showEmptyPresentation();
         }
@@ -280,6 +281,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
 
         dataContainer.setGroupingQuery(sql.toString());
+        dataContainer.setGroupingAttributes(groupAttributes.toArray(String[]::new));
         DBDDataFilter dataFilter;
         if (presentation.getController().getModel().isMetadataChanged()) {
             dataFilter = new DBDDataFilter();
