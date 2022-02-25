@@ -197,13 +197,16 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
 
             // Get values
-            Object[] srcRow = fetchRow(session, resultSet, columnMetas);
+            Object[] srcRow = fetchRow(session, resultSet, columnBindings);
             Object[] targetRow;
             if (processor instanceof IDocumentDataExporter) {
                 targetRow = srcRow;
             } else {
                 targetRow = new Object[columnBindings.length];
                 for (int i = 0; i < columnBindings.length; i++) {
+                    if (columnBindings[i].isCustom()) {
+                        continue;
+                    }
                     Object value = srcRow[i];
                     if (value instanceof DBDContent) {
                         // Check for binary type export
@@ -663,17 +666,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
-        int columnCount = resultSet.getMeta().getAttributes().size(); // Column count without virtual columns
-
-        Object[] row = new Object[columnCount];
-        for (int i = 0 ; i < columnCount; i++) {
+        Object[] row = new Object[attributes.length];
+        for (int i = 0 ; i < attributes.length; i++) {
             DBDAttributeBinding attribute = attributes[i];
             DBSAttributeBase metaAttr = attribute.getMetaAttribute();
             if (metaAttr == null) {
                 continue;
             }
             try {
-                row[i] = attribute.getValueHandler().fetchValueObject(session, resultSet, metaAttr, i);
+                row[i] = resultSet.getAttributeValue(attribute.getName());
             } catch (Exception e) {
                 log.debug("Error fetching '" + metaAttr.getName() + "' value: " + e.getMessage());
             }
