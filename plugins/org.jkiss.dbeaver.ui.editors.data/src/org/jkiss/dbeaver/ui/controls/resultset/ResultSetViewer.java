@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -594,7 +595,13 @@ public class ResultSetViewer extends Viewer
                     enableFilters = false;
                 } else {
                     StringBuilder where = new StringBuilder();
-                    SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, where, true);
+                    SQLUtils.appendConditionString(
+                        model.getDataFilter(),
+                        context.getDataSource(),
+                        null,
+                        where,
+                        true,
+                        SQLSemanticProcessor.isForceFilterSubQuery(context.getDataSource()));
                     String whereCondition = where.toString().trim();
                     if (resetFilterValue) {
                         filtersPanel.setFilterValue(whereCondition);

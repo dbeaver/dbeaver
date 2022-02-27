@@ -36,6 +36,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     @Nullable
     private DBSAttributeBase attribute;
+    private String attributeLabel;
     private String attributeName;
     private int originalVisualPosition;
     private boolean plainNameReference; // Disables ordering by column index
@@ -59,6 +60,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     public DBDAttributeConstraint(@NotNull String attributeName, int originalVisualPosition) {
         this.attribute = null;
         this.attributeName = attributeName;
+        this.attributeLabel = attributeName;
         this.originalVisualPosition = originalVisualPosition;
     }
 
@@ -66,6 +68,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         super(source);
         this.attribute = source.attribute;
         this.attributeName = source.attributeName;
+        this.attributeLabel = source.attributeLabel;
         this.originalVisualPosition = source.originalVisualPosition;
     }
 
@@ -85,6 +88,12 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
             DBSEntityAttribute entityAttribute = ((DBDAttributeBindingMeta) this.attribute).getEntityAttribute();
             if (entityAttribute != null) {
                 this.attributeName = entityAttribute.getName();
+            } else {
+                this.attributeName = this.attribute.getName();
+            }
+            this.attributeLabel = ((DBDAttributeBindingMeta) this.attribute).getLabel();
+            if (CommonUtils.isEmpty(this.attributeLabel)) {
+                this.attributeLabel = this.attributeName;
             }
         }
         this.originalVisualPosition = attribute.getOrdinalPosition();
@@ -93,6 +102,11 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     @NotNull
     public String getAttributeName() {
         return attributeName;
+    }
+
+    @NotNull
+    public String getAttributeLabel() {
+        return attributeLabel;
     }
 
     @NotNull
