@@ -112,9 +112,6 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
-        if (CommonUtils.isEmpty(view.getObjectDefinitionText(monitor, options))) {
-            throw new DBException("View '" + view.getName() + "' definition is empty");
-        }
         // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
         String sql = view.getSource().trim();
         if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {

@@ -104,6 +104,9 @@ public class MySQLViewManager extends MySQLTableManager {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         String viewDDL = view.getAdditionalInfo().getDefinition();
+        if (viewDDL == null) {
+            viewDDL = "";
+        }
         
         if (!view.isPersisted() && SQLSemanticProcessor.isSelectQuery(view.getDataSource().getSQLDialect(), viewDDL)) {
             decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
