@@ -99,34 +99,34 @@ public class ParseResult {
             if (state.getStep() != null && state.getStep().getOperations() != null) {
                 for (GrammarNfaOperation op : state.getStep().getOperations()) {
                     switch (op.getKind()) {
-                    case RULE_START:
-                        if (skipDepth == 0) {
-                            if (!withWhitespaces && op.getRule() == skipRule) {
-                                skipDepth++;
+                        case RULE_START:
+                            if (skipDepth == 0) {
+                                if (!withWhitespaces && op.getRule() == skipRule) {
+                                    skipDepth++;
+                                } else {
+                                    ParseTreeNode newNode = new ParseTreeNode(op.getRule(), pos, current, new ArrayList<>());
+                                    current.getChildren().add(newNode);
+                                    current = newNode;
+                                }
                             } else {
-                                ParseTreeNode newNode = new ParseTreeNode(op.getRule(), pos, current, new ArrayList<>());
-                                current.getChilds().add(newNode);
-                                current = newNode;
+                                skipDepth++;
                             }
-                        } else {
-                            skipDepth++;
-                        }
-                        //System.out.println("    " + op);
-                        break;
-                    case RULE_END:
-                        if (skipDepth == 0) {
-                            current = current.getParent();
-                        } else {
-                            skipDepth--;
-                        }
-                        //System.out.println("    " + op);
-                        break;
-                    default:
-                        break;
+                            //System.out.println("    " + op);
+                            break;
+                        case RULE_END:
+                            if (skipDepth == 0) {
+                                current = current.getParent();
+                            } else {
+                                skipDepth--;
+                            }
+                            //System.out.println("    " + op);
+                            break;
+                        default:
+                            break;
                     }
                 }
                 if (state.getStep().getPattern() != null && skipDepth == 0) {
-                    current.getChilds().add(new ParseTreeNode(null, pos, current, new ArrayList<>()));
+                    current.getChildren().add(new ParseTreeNode(null, pos, current, new ArrayList<>()));
                 }
                 //System.out.println("  capture term \"" + this.text.substring(pos, state.getPosition()) + "\" @" + pos + " is " + state.getStep().getPattern());
                 pos = state.getPosition();

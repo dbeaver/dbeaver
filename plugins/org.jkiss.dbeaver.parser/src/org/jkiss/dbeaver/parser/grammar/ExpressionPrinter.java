@@ -76,7 +76,7 @@ public class ExpressionPrinter implements ExpressionVisitor<StringBuilder, Strin
 
     @Override
     public StringBuilder visitCharacters(CharactersExpression charactersExpression, StringBuilder sb) {
-        return sb.append("\"").append(charactersExpression.pattern).append("\"");
+        return sb.append("'").append(charactersExpression.pattern).append("'");
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ExpressionPrinter implements ExpressionVisitor<StringBuilder, Strin
 
     @Override
     public StringBuilder visitRegex(RegexExpression regexExpression, StringBuilder sb) {
-        return sb.append("\'").append(regexExpression.pattern).append("\'");
+        return sb.append("\"").append(regexExpression.pattern).append("\"");
     }
 
 }

@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.parser.grammar.nfa;
 
 import org.jkiss.dbeaver.parser.grammar.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Builder of the complete grammar graph in form of non-deterministic finite automaton
@@ -70,9 +68,10 @@ public class GrammarNfaBuilder {
      * @return start and final states of the complete grammar graph
      */
     public NfaFragment traverseGrammar() {
-        HashMap<GrammarRule, GrammarNfaBuilder.NfaFragment> ruleFragments = new HashMap<>();
+        Collection<GrammarRule> grammarRules = grammar.getRules();
+        HashMap<GrammarRule, GrammarNfaBuilder.NfaFragment> ruleFragments = new HashMap<>(grammarRules.size());
         RuleVisitor ruleVisitor = new RuleVisitor();
-        for (GrammarRule rule : grammar.getRules()) {
+        for (GrammarRule rule : grammarRules) {
             ruleFragments.put(rule, ruleVisitor.traverseRule(rule));
         }
 

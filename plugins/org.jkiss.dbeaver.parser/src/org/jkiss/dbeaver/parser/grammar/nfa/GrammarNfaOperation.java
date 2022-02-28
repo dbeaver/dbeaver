@@ -72,33 +72,33 @@ public class GrammarNfaOperation {
      */
     private void validate() {
         switch (this.kind) {
-        case RULE_START:
-        case RULE_END:
-        case CALL:
-        case RESUME:
-            if (this.rule == null)
-                throw new IllegalArgumentException();
-            break;
-        case LOOP_ENTER:
-        case LOOP_INCREMENT:
-        case LOOP_EXIT:
-        case SEQ_ENTER:
-        case SEQ_STEP:
-        case SEQ_EXIT:
-            if (this.maxIterations == null || this.minIterations == null)
-                throw new IllegalArgumentException();
-            if (this.kind == ParseOperationKind.SEQ_STEP && this.exprPosition == null)
-                throw new IllegalArgumentException();
-            break;
-        case TERM:
-            if (this.pattern == null)
-                throw new IllegalArgumentException();
-            break;
-        case NONE:
-            // do nothing
-            break;
-        default:
-            throw new UnsupportedOperationException("Unexpected parse opeation kind " + this.kind);
+            case RULE_START:
+            case RULE_END:
+            case CALL:
+            case RESUME:
+                if (this.rule == null)
+                    throw new IllegalArgumentException();
+                break;
+            case LOOP_ENTER:
+            case LOOP_INCREMENT:
+            case LOOP_EXIT:
+            case SEQ_ENTER:
+            case SEQ_STEP:
+            case SEQ_EXIT:
+                if (this.maxIterations == null || this.minIterations == null)
+                    throw new IllegalArgumentException();
+                if (this.kind == ParseOperationKind.SEQ_STEP && this.exprPosition == null)
+                    throw new IllegalArgumentException();
+                break;
+            case TERM:
+                if (this.pattern == null)
+                    throw new IllegalArgumentException();
+                break;
+            case NONE:
+                // do nothing
+                break;
+            default:
+                throw new UnsupportedOperationException("Unexpected parse operation kind " + this.kind);
         }
     }
 
@@ -106,31 +106,31 @@ public class GrammarNfaOperation {
     public String toString() {
         String result = this.kind.toString() + "#" + this.exprId + "[";
         switch (this.kind) {
-        case RULE_START:
-        case RULE_END:
-        case CALL:
-        case RESUME:
-            result += this.rule;
-            break;
-        case LOOP_ENTER:
-        case LOOP_INCREMENT:
-        case LOOP_EXIT:
-        case SEQ_ENTER:
-        case SEQ_STEP:
-        case SEQ_EXIT:
-            if (this.exprPosition != null) {
-                result += this.exprPosition + "/";
-            }
-            result += this.minIterations + ".." + this.maxIterations;
-            break;
-        case TERM:
-            result += this.pattern;
-            break;
-        case NONE:
-            // do nothing
-            break;
-        default:
-            throw new UnsupportedOperationException("Unexpected parse opeation kind " + this.kind);
+            case RULE_START:
+            case RULE_END:
+            case CALL:
+            case RESUME:
+                result += this.rule;
+                break;
+            case LOOP_ENTER:
+            case LOOP_INCREMENT:
+            case LOOP_EXIT:
+            case SEQ_ENTER:
+            case SEQ_STEP:
+            case SEQ_EXIT:
+                if (this.exprPosition != null) {
+                    result += this.exprPosition + "/";
+                }
+                result += this.minIterations + ".." + this.maxIterations;
+                break;
+            case TERM:
+                result += this.pattern;
+                break;
+            case NONE:
+                // do nothing
+                break;
+            default:
+                throw new UnsupportedOperationException("Unexpected parse opeation kind " + this.kind);
         }
         return result + "]";
     }

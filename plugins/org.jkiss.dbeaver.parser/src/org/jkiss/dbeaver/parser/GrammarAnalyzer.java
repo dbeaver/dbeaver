@@ -71,9 +71,13 @@ class GrammarAnalyzer {
 
                 @Override
                 public GrammarNfaTransition next() {
-                    GrammarNfaTransition result = this.current.transition;
-                    this.current = this.current.prev;
-                    return result;
+                    if (this.current == null) {
+                        throw new NoSuchElementException();
+                    } else {
+                        GrammarNfaTransition result = this.current.transition;
+                        this.current = this.current.prev;
+                        return result;
+                    }
                 }
 
                 @Override
@@ -95,7 +99,8 @@ class GrammarAnalyzer {
      * @return parser finite state machine
      */
     public ParserFsm buildTerminalsGraph() {
-        Map<GrammarNfaTransition, ParserFsmNode> states = new HashMap<>();
+        int fsmsStatesCount = this.root.getFrom().getNext().size() + this.terminalTransitions.size();
+        Map<GrammarNfaTransition, ParserFsmNode> states = new HashMap<>(fsmsStatesCount);
         List<ParserFsmNode> initialStates = new ArrayList<>();
 
         // map each by-text-part transition to finite state machine node
@@ -148,12 +153,12 @@ class GrammarAnalyzer {
     }
 
     /**
-     * Find all paths from a given transition to other terminal or text-end transitions
+     * Find all paths by DFS from a given transition to other terminal or text-end transitions
      * @param transition of grammar graph
      * @return list of path ending steps
      */
     private List<Step> findPaths(GrammarNfaTransition transition) {
-        Stack<Step> stack = new Stack<>();
+        ArrayDeque<Step> stack = new ArrayDeque<>();
         stack.push(Step.initial(transition));
         List<Step> result = new ArrayList<>();
         BitSet active = new BitSet();
@@ -167,7 +172,7 @@ class GrammarAnalyzer {
                     throw new RuntimeException("recursion hit at " + currStep);
                 } else {
                     active.set(currStep.transition.getTo().getId());
-                    stack.add(currStep.exit(currStep.transition));
+                    stack.push(currStep.exit(currStep.transition));
 
                     for (GrammarNfaTransition child : currStep.transition.getTo().getNext()) {
                         Step next = currStep.enter(child);
@@ -177,7 +182,7 @@ class GrammarAnalyzer {
                         if (child.getOperation().getKind().equals(ParseOperationKind.TERM)) {
                             result.add(next);
                         } else {
-                            stack.add(next);
+                            stack.push(next);
                         }
                     }
                 }

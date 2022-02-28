@@ -22,7 +22,7 @@ import java.util.List;
 import org.jkiss.dbeaver.parser.grammar.GrammarRule;
 
 /**
- * Non-determenistic finite automaton representing complete graph of the grammar
+ * Non-deterministic finite automaton representing a complete graph of the grammar
  */
 public class GrammarNfa {
     private final List<GrammarNfaState> states = new ArrayList<>();

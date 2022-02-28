@@ -27,13 +27,13 @@ public class ParseTreeNode {
     private final GrammarRule rule;
     private final int position;
     private final ParseTreeNode parent;
-    private final List<ParseTreeNode> childs;
+    private final List<ParseTreeNode> children;
     
-    public ParseTreeNode(GrammarRule rule, int position, ParseTreeNode parent, List<ParseTreeNode> childs) {
+    public ParseTreeNode(GrammarRule rule, int position, ParseTreeNode parent, List<ParseTreeNode> children) {
         this.rule = rule;
         this.position = position;
         this.parent = parent;
-        this.childs = childs;
+        this.children = children;
     }
        
     public GrammarRule getRule() {
@@ -48,8 +48,8 @@ public class ParseTreeNode {
         return parent;
     }
 
-    public List<ParseTreeNode> getChilds() {
-        return childs;
+    public List<ParseTreeNode> getChildren() {
+        return children;
     }
 
     public String collectString() {
@@ -60,11 +60,11 @@ public class ParseTreeNode {
     
     private void collectStringImpl(StringBuilder sb, String indent) {
         sb.append(indent).append(this.rule == null ? "<NULL>" : this.rule.getName());
-        if (this.childs.size() == 0) {
+        if (this.children.size() == 0) {
             sb.append("@").append(this.position);
         }
         sb.append("\n");
-        for (ParseTreeNode child: this.childs) {
+        for (ParseTreeNode child: this.children) {
             child.collectStringImpl(sb, indent + "  ");
         }
     }

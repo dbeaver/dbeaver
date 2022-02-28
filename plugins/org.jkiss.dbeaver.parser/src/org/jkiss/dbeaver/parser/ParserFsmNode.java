@@ -94,7 +94,7 @@ class ParserFsmNode {
         }
 
         List<String> parts = new ArrayList<>(stepsByTerm.size());
-        for (Entry<String, List<ParserFsmStep>> step : stepsByTerm.entrySet()) {
+        for (var step : stepsByTerm.entrySet()) {
             String groupName = "g" + this.stepsByTermGroup.size();
             parts.add("(?<" + groupName + ">(" + step.getKey() + "))");
             this.stepsByTermGroup.put(groupName, new TermGroup(groupName, step.getKey(), step.getValue()));

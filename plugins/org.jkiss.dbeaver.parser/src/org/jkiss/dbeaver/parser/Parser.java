@@ -53,7 +53,7 @@ public class Parser {
             state.getFsmState().dispatch(text, state.getPosition(), dispatchResults);
 
             for (ParserDispatchResult result : dispatchResults) {
-                ParserStack newStack = this.evaluateOperations(state.getStack(), result.getStep().getOperations());
+                ParserStack newStack = evaluateOperations(state.getStack(), result.getStep().getOperations());
                 //System.out.println("\tevaluating " + state.getFsmState() + " --> " + result.getStep().getTo());
                 if (newStack != null) {
                     //System.out.println("\t\taccepted");
@@ -80,60 +80,60 @@ public class Parser {
      * @param ops operations to evaluate in the given context
      * @return an updated parsing context stack state
      */
-    private ParserStack evaluateOperations(ParserStack stack, List<GrammarNfaOperation> ops) {
+    private static ParserStack evaluateOperations(ParserStack stack, List<GrammarNfaOperation> ops) {
         ParserStack newStack = stack;
 
         for (GrammarNfaOperation op : ops) {
             // System.out.println("\t\t" + op);
             switch (op.getKind()) {
-            case RULE_START:
-            case CALL:
-            case LOOP_ENTER:
-            case SEQ_ENTER:
-                newStack = newStack.push(op.getExprId(), 0, op.getRule());
-                break;
-            case RULE_END:
-            case RESUME:
-                if (newStack.getExprId() == op.getExprId() && newStack.getRule() == op.getRule()) {
-                    newStack = newStack.pop();
-                } else {
-                    return null;
-                }
-                break;
-            case LOOP_INCREMENT:
-                if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() <= op.getMaxIterations()) {
-                    newStack = newStack.pop().push(op.getExprId(), newStack.getExprPosition() + 1, op.getRule());
-                } else {
-                    return null;
-                }
-                break;
-            case LOOP_EXIT:
-                if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() <= op.getMaxIterations()
+                case RULE_START:
+                case CALL:
+                case LOOP_ENTER:
+                case SEQ_ENTER:
+                    newStack = newStack.push(op.getExprId(), 0, op.getRule());
+                    break;
+                case RULE_END:
+                case RESUME:
+                    if (newStack.getExprId() == op.getExprId() && newStack.getRule() == op.getRule()) {
+                        newStack = newStack.pop();
+                    } else {
+                        return null;
+                    }
+                    break;
+                case LOOP_INCREMENT:
+                    if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() <= op.getMaxIterations()) {
+                        newStack = newStack.pop().push(op.getExprId(), newStack.getExprPosition() + 1, op.getRule());
+                    } else {
+                        return null;
+                    }
+                    break;
+                case LOOP_EXIT:
+                    if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() <= op.getMaxIterations()
                         && newStack.getExprPosition() >= op.getMinIterations()) {
-                    newStack = newStack.pop();
-                } else {
-                    return null;
-                }
-                break;
-            case SEQ_STEP:
-                if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() <= op.getMaxIterations()
+                        newStack = newStack.pop();
+                    } else {
+                        return null;
+                    }
+                    break;
+                case SEQ_STEP:
+                    if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() <= op.getMaxIterations()
                         && newStack.getExprPosition() + 1 == op.getExprPosition()) {
-                    newStack = newStack.pop().push(op.getExprId(), op.getExprPosition(), op.getRule());
-                } else {
-                    return null;
-                }
-                break;
-            case SEQ_EXIT:
-                if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() + 1 == op.getMaxIterations()) {
-                    newStack = newStack.pop();
-                } else {
-                    return null;
-                }
-                break;
-            case TERM:
-            case NONE:
-            default:
-                throw new UnsupportedOperationException("Unexpected parse opeation kind " + op.getKind());
+                        newStack = newStack.pop().push(op.getExprId(), op.getExprPosition(), op.getRule());
+                    } else {
+                        return null;
+                    }
+                    break;
+                case SEQ_EXIT:
+                    if (newStack.getExprId() == op.getExprId() && newStack.getExprPosition() + 1 == op.getMaxIterations()) {
+                        newStack = newStack.pop();
+                    } else {
+                        return null;
+                    }
+                    break;
+                case TERM:
+                case NONE:
+                default:
+                    throw new UnsupportedOperationException("Unexpected parse opeation kind " + op.getKind());
             }
         }
         return newStack;
