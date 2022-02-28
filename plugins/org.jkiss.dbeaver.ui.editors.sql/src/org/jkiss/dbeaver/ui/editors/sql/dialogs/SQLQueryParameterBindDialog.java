@@ -183,21 +183,34 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     buttonLayoutData.heightHint = editor.getSize().y;
                     button.setLayoutData(buttonLayoutData);
                     editor.selectAll();
-
+                    editor.addModifyListener(e -> saveEditorValue(editor, index, item));
                     editor.addTraverseListener(e -> {
                         if (e.detail == SWT.TRAVERSE_RETURN && (e.stateMask & SWT.CTRL) == SWT.CTRL) {
                             UIUtils.asyncExec(SQLQueryParameterBindDialog.this::okPressed);
                         }
                     });
-                    editor.addModifyListener(e -> saveEditorValue(editor, index, item));
-
+                    button.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                            this.keyTraversed(e);
+                        }
+                    });
                     return composite;
                 }
 
                 @Override
                 protected void saveEditorValue(Control control, int index, TableItem item) {
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
-                    String newValue = ((Text) control).getText();
+                    String newValue = null;
+                    if (!(control instanceof Text)) {
+                        Control[] children = ((Composite) control).getChildren();
+                        for (Control child : children) {
+                            if (child instanceof Text) {
+                                newValue = ((Text) child).getText();
+                            }
+                        }
+                    } else {
+                         newValue = ((Text) control).getText();
+                    }
                     item.setText(2, newValue);
 
                     param.setValue(newValue);
