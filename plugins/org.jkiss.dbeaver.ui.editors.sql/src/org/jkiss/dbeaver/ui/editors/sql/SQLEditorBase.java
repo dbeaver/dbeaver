@@ -115,7 +115,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
 
-    private ProjectionAnnotationModel annotationModel;
     //private Map<Annotation, Position> curAnnotations;
 
     //private IAnnotationAccess annotationAccess;
@@ -268,8 +267,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Nullable
-    public ProjectionAnnotationModel getAnnotationModel() {
-        return annotationModel;
+    public IAnnotationModel getAnnotationModel() {
+        return getSourceViewer().getAnnotationModel();
+    }
+
+    @Nullable
+    public ProjectionAnnotationModel getProjectionAnnotationModel() {
+        return ((ProjectionViewer) getSourceViewer()).getProjectionAnnotationModel();
     }
 
     public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
@@ -297,8 +301,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         projectionSupport.install();
 
         projectionViewer.doOperation(ProjectionViewer.TOGGLE);
-
-        annotationModel = projectionViewer.getProjectionAnnotationModel();
 
         ISourceViewer sourceViewer = getSourceViewer();
 
@@ -337,11 +339,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void updatePartControl(IEditorInput input) {
         super.updatePartControl(input);
-        
-        ProjectionViewer viewer = ((ProjectionViewer) getSourceViewer());
-        if (viewer != null) {
-            annotationModel = viewer.getProjectionAnnotationModel();
-        }
     }
 
     protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
@@ -368,7 +365,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected boolean isAnnotationRulerVisible() {
-        return false;
+        return true;
     }
 
     @Override
@@ -896,7 +893,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS:
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
-            case SQLPreferenceConstants.FOLDING_ENABLED:
+            case SQLPreferenceConstants.FOLDING_ENABLED: {
+                final ProjectionAnnotationModel annotationModel = getProjectionAnnotationModel();
                 if (annotationModel != null) {
                     SourceViewerConfiguration configuration = getSourceViewerConfiguration();
                     SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
@@ -905,6 +903,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     sourceViewer.configure(configuration);
                 }
                 return;
+            }
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
