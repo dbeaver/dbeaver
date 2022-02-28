@@ -217,7 +217,9 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     @Override
     public void saveState() {
         super.saveState();
-
+        if (outputFileText == null) {
+            return;
+        }
         PostgreDatabaseBackupSettings settings = wizard.getSettings();
 
         String fileName = outputFolderText.getText();

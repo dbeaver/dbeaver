@@ -57,11 +57,12 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private Table schemasTable;
     private Table tablesTable;
     private Map<PostgreSchema, Set<PostgreTableBase>> checkedObjects = new HashMap<>();
-
+    Set<PostgreSchema> activeSchemas = new LinkedHashSet<>();
     private PostgreSchema curSchema;
     private PostgreDatabase dataBase;
     private Button exportViewsCheck;
-
+    private boolean hasViews = false;
+    private boolean graphicsLoaded = false;
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
         super(wizard, PostgreMessages.wizard_backup_page_object_title_schema_table);
@@ -89,6 +90,11 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 PostgreSchema catalog = (PostgreSchema) item.getData();
                 if (event.detail == SWT.CHECK) {
                     schemasTable.select(schemasTable.indexOf(item));
+                    if (activeSchemas.contains(catalog)) {
+                        activeSchemas.remove(catalog);
+                    } else {
+                        activeSchemas.add(catalog);
+                    }
                     checkedObjects.remove(catalog);
                 }
                 loadTables(catalog);
@@ -132,7 +138,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);
         }
-
+        graphicsLoaded = true;
         setControl(composite);
     }
 
@@ -166,13 +172,56 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     }
 
     private void loadSettings() {
-        checkedObjects.clear();
-        schemasTable.removeAll();
-        tablesTable.removeAll();
+        if (graphicsLoaded) {
+            checkedObjects.clear();
+            schemasTable.removeAll();
+            tablesTable.removeAll();
+        }
 
         dataBase = null;
-        boolean hasViews = false;
-        Set<PostgreSchema> activeSchemas = new LinkedHashSet<>();
+
+        loadActiveSchemas();
+        if (hasViews) {
+            wizard.getSettings().setShowViews(true);
+            exportViewsCheck.setSelection(true);
+        }
+        if (dataBase != null) {
+            boolean tablesLoaded = false;
+            try {
+                for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
+                    if (schema.isSystem() || schema.isUtility()) {
+                        continue;
+                    }
+                    if (graphicsLoaded) {
+                        TableItem item = new TableItem(schemasTable, SWT.NONE);
+                        item.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+                        item.setText(0, schema.getName());
+                        item.setData(schema);
+
+                        if (activeSchemas.contains(schema)) {
+                            item.setChecked(true);
+                            schemasTable.select(schemasTable.indexOf(item));
+                            if (!tablesLoaded) {
+                                loadTables(schema);
+                                tablesLoaded = true;
+                            }
+                        }
+                    } else {
+                        if (activeSchemas.contains(schema)) {
+                            if (!tablesLoaded) {
+                                loadTables(schema);
+                                tablesLoaded = true;
+                            }
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+    }
+
+    private void loadActiveSchemas() {
         for (PostgreDatabaseBackupInfo info : wizard.getSettings().getExportObjects()) {
             dataBase = info.getDatabase();
 
@@ -193,34 +242,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                         hasViews = true;
                     }
                 }
-            }
-        }
-        if (hasViews) {
-            wizard.getSettings().setShowViews(true);
-            exportViewsCheck.setSelection(true);
-        }
-        if (dataBase != null) {
-            boolean tablesLoaded = false;
-            try {
-                for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
-                    if (schema.isSystem() || schema.isUtility()) {
-                        continue;
-                    }
-                    TableItem item = new TableItem(schemasTable, SWT.NONE);
-                    item.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-                    item.setText(0, schema.getName());
-                    item.setData(schema);
-                    if (activeSchemas.contains(schema)) {
-                        item.setChecked(true);
-                        schemasTable.select(schemasTable.indexOf(item));
-                        if (!tablesLoaded) {
-                            loadTables(schema);
-                            tablesLoaded = true;
-                        }
-                    }
-                }
-            } catch (DBException e) {
-                log.error(e);
             }
         }
     }
@@ -245,15 +266,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         }
     }
 
-    private boolean isChecked(PostgreSchema catalog) {
-        for (TableItem item : schemasTable.getItems()) {
-            if (item.getData() == catalog) {
-                return item.getChecked();
-            }
-        }
-        return false;
-    }
-
     private List<PostgreTableBase> loadTables(final PostgreSchema catalog) {
         if (catalog != null) {
             curSchema = catalog;
@@ -261,7 +273,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         if (curSchema == null) {
             return null;
         }
-        final boolean isCatalogChecked = isChecked(curSchema);
+        final boolean isCatalogChecked = activeSchemas.contains(catalog);
         final Set<PostgreTableBase> checkedObjects = this.checkedObjects.get(curSchema);
         final List<PostgreTableBase> objects = new ArrayList<>();
         new AbstractJob("Load '" + curSchema.getName() + "' tables") {
@@ -282,16 +294,18 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                         objects.addAll(curSchema.getViews(monitor));
                     }
                     objects.sort(DBUtils.nameComparator());
-                    UIUtils.syncExec(() -> {
-                        tablesTable.removeAll();
-                        for (PostgreTableBase table : objects) {
-                            TableItem item = new TableItem(tablesTable, SWT.NONE);
-                            item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
-                            item.setText(0, table.getName());
-                            item.setData(table);
-                            item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
-                        }
-                    });
+                    if (graphicsLoaded) {
+                        UIUtils.syncExec(() -> {
+                            tablesTable.removeAll();
+                            for (PostgreTableBase table : objects) {
+                                TableItem item = new TableItem(tablesTable, SWT.NONE);
+                                item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
+                                item.setText(0, table.getName());
+                                item.setData(table);
+                                item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
+                            }
+                        });
+                    }
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Table list", "Can't read table list", e);
                 } finally {
@@ -305,25 +319,21 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
 
     public void saveState() {
         super.saveState();
-
+        if (!graphicsLoaded) {
+            loadSettings();
+        }
         List<PostgreDatabaseBackupInfo> objects = wizard.getSettings().getExportObjects();
         objects.clear();
-        List<PostgreSchema> schemas = new ArrayList<>();
         List<PostgreTableBase> tables = new ArrayList<>();
-        for (TableItem item : schemasTable.getItems()) {
-            if (item.getChecked()) {
-                PostgreSchema schema = (PostgreSchema) item.getData();
+        for (PostgreSchema schema: activeSchemas) {
                 Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
                 // All tables checked
-                if (!schemas.contains(schema)) {
-                    schemas.add(schema);
-                }
                 if (checkedTables != null) {
                     // Only a few tables checked
                     tables.addAll(checkedTables);
                 }
-            }
         }
+        List<PostgreSchema> schemas = new ArrayList<>(activeSchemas);
         PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
         objects.add(info);
     }
