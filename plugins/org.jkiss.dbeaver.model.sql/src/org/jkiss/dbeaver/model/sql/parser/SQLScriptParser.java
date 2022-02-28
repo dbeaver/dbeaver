@@ -812,6 +812,19 @@ public class SQLScriptParser {
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
+    public static SQLScriptElement parseQuery(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent, int cursorPosition) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, preferenceStore);
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules();
+
+        Document sqlDocument = new Document(sqlScriptContent);
+
+        SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
+        parserContext.setPreferenceStore(preferenceStore);
+        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
+    }
+
     private static class ScriptBlockInfo {
         final ScriptBlockInfo parent;
         final String togglePattern;
