@@ -219,7 +219,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             return actions.toArray(new DBEPersistAction[0]);
         }
 
-        if (isIncludeDropInDDL()) {
+        if (table.isPersisted() && isIncludeDropInDDL()) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
             for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, executionContext, options)) {
                 String script = delAction.getScript();
