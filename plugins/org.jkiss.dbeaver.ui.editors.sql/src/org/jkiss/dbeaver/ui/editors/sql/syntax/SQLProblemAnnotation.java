@@ -17,14 +17,28 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.source.IAnnotationPresentation;
+import org.eclipse.jface.text.source.ImageUtilities;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
-public class SQLProblemAnnotation extends MarkerAnnotation {
+public class SQLProblemAnnotation extends MarkerAnnotation implements IAnnotationPresentation {
     public static final String MARKER_TYPE = "org.jkiss.dbeaver.ui.editors.sql.databaseScriptProblemMarker";
     public static final String TYPE = "org.eclipse.ui.workbench.texteditor.error";
 
     public SQLProblemAnnotation(@NotNull IMarker marker) {
         super(TYPE, marker);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void paint(GC gc, Canvas canvas, Rectangle r) {
+        ImageUtilities.drawImage(DBeaverIcons.getImage(DBIcon.TINY_ERROR), gc, canvas, r, SWT.CENTER, SWT.TOP);
     }
 }
