@@ -28,10 +28,13 @@ public class ParseTreeNode {
     private final int position;
     private final ParseTreeNode parent;
     private final List<ParseTreeNode> children;
+
+    private int endPosition;
     
-    public ParseTreeNode(GrammarRule rule, int position, ParseTreeNode parent, List<ParseTreeNode> children) {
+    public ParseTreeNode(GrammarRule rule, int position, int endPosition, ParseTreeNode parent, List<ParseTreeNode> children) {
         this.rule = rule;
         this.position = position;
+        this.endPosition = endPosition;
         this.parent = parent;
         this.children = children;
     }
@@ -39,9 +42,17 @@ public class ParseTreeNode {
     public GrammarRule getRule() {
         return rule;
     }
-
+    
     public int getPosition() {
         return position;
+    }
+
+    public int getEndPosition() {
+        return endPosition;
+    }
+    
+    void setEndPosition(int endPosition) {
+        this.endPosition = endPosition;
     }
 
     public ParseTreeNode getParent() {
@@ -51,21 +62,36 @@ public class ParseTreeNode {
     public List<ParseTreeNode> getChildren() {
         return children;
     }
-
+    
     public String collectString() {
+        return this.collectString(null);
+    }
+
+    public String collectString(String text) {
         StringBuilder sb = new StringBuilder();
-        this.collectStringImpl(sb, "");
+        this.collectStringImpl(sb, text, "");
         return sb.toString();
     }
     
-    private void collectStringImpl(StringBuilder sb, String indent) {
-        sb.append(indent).append(this.rule == null ? "<NULL>" : this.rule.getName());
-        if (this.children.size() == 0) {
-            sb.append("@").append(this.position);
+    private void collectStringImpl(StringBuilder sb, String text, String indent) {
+        sb.append(indent);
+        if (this.rule == null && this.children.size() == 0) {
+            if (text != null && this.position >= 0 && this.endPosition >= this.position && this.endPosition <= text.length()) {
+                sb.append("'").append(text.substring(this.position, this.endPosition)).append("'");
+            } else {
+                sb.append("<TERM> ");
+            }
+        } else {
+            sb.append(this.rule == null ? "<NULL>" : this.rule.getName());
+        }
+
+        if (text != null || (this.rule == null && this.children.size() == 0)) {
+            sb.append(" (").append(this.position).append("-").append(this.endPosition).append(")");
         }
         sb.append("\n");
+        
         for (ParseTreeNode child: this.children) {
-            child.collectStringImpl(sb, indent + "  ");
+            child.collectStringImpl(sb, text, indent + "  ");
         }
     }
 }

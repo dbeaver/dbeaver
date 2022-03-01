@@ -52,11 +52,11 @@ public class ParserTest {
         }
 
         public ParseTreeNode node(String name, List<ParseTreeNode> children) {
-            return new ParseTreeNode(grammar.findRule(name), -1, null, children);
+            return new ParseTreeNode(grammar.findRule(name), 0, -1, null, children);
         }
 
-        public ParseTreeNode term(int position) {
-            return new ParseTreeNode(null, position, null, List.of());
+        public ParseTreeNode term(int position, int len) {
+            return new ParseTreeNode(null, position, position + len, null, List.of());
         }
     }
     
@@ -77,71 +77,71 @@ public class ParserTest {
             c.node(Rule.expr, List.of(
                 c.node(Rule.opnd, List.of(
                     c.node(Rule.brace, List.of(
-                        c.term(0),
+                        c.term(0, 1),
                         c.node(Rule.expr, List.of(
                             c.node(Rule.opnd, List.of(
                                 c.node(Rule.numb, List.of(
-                                    c.term(1)
+                                    c.term(1, 1)
                                 ))
                             )),
                             c.node(Rule.op, List.of(
-                                c.term(2)
+                                c.term(2, 1)
                             )),
                             c.node(Rule.opnd, List.of(
                                 c.node(Rule.numb, List.of(
-                                    c.term(3)
+                                    c.term(3, 1)
                                 ))
                             )),
                             c.node(Rule.op, List.of(
-                                c.term(4)
+                                c.term(4, 1)
                             )),
                             c.node(Rule.opnd, List.of(
                                 c.node(Rule.brace, List.of(
-                                    c.term(5),
+                                    c.term(5, 1),
                                     c.node(Rule.expr, List.of(
                                         c.node(Rule.opnd, List.of(
                                             c.node(Rule.numb, List.of(
-                                                c.term(6)
+                                                c.term(6, 1)
                                             ))
                                         )),
                                         c.node(Rule.op, List.of(
-                                            c.term(7)
+                                            c.term(7, 1)
                                         )),
                                         c.node(Rule.opnd, List.of(
                                             c.node(Rule.numb, List.of(
-                                                c.term(8)
+                                                c.term(8, 1)
                                             ))
                                         )),
                                         c.node(Rule.op, List.of(
-                                            c.term(9)
+                                            c.term(9, 1)
                                         )),
                                         c.node(Rule.opnd, List.of(
                                             c.node(Rule.numb, List.of(
-                                                c.term(10)
+                                                c.term(10, 1)
                                             ))
                                         ))
                                     )),
-                                    c.term(11)
+                                    c.term(11, 1)
                                 ))
                             ))
                         )),
-                        c.term(12)
+                        c.term(12, 1)
                     ))
                 )),
                 c.node(Rule.op, List.of(
-                    c.term(13)
+                    c.term(13, 1)
                 )),
                 c.node(Rule.opnd, List.of(
                     c.node(Rule.numb, List.of(
-                        c.term(14)
+                        c.term(14, 1)
                     ))
                 )),
                 c.node(Rule.op, List.of(
-                    c.term(15)
+                    c.term(15, 1)
                 )),
                 c.node(Rule.opnd, List.of(
                     c.node(Rule.numb, List.of(
-                        c.term(16)
+                        c.term(16, 1)
                     ))
                 ))
             ))
@@ -163,71 +163,71 @@ public class ParserTest {
             c.node(Rule.expr, List.of(
                 c.node(Rule.opnd, List.of(
                     c.node(Rule.brace, List.of(
-                        c.term(0),
+                        c.term(0, 1),
                         c.node(Rule.expr, List.of(
                             c.node(Rule.opnd, List.of(
                                 c.node(Rule.numb, List.of(
-                                    c.term(1)
+                                    c.term(1, 1)
                                 ))
                             )),
                             c.node(Rule.op, List.of(
-                                c.term(3)
+                                c.term(3, 1)
                             )),
                             c.node(Rule.opnd, List.of(
                                 c.node(Rule.numb, List.of(
-                                    c.term(5)
+                                    c.term(5, 1)
                                 ))
                             )),
                             c.node(Rule.op, List.of(
-                                c.term(7)
+                                c.term(7, 1)
                             )),
                             c.node(Rule.opnd, List.of(
                                 c.node(Rule.brace, List.of(
-                                    c.term(9),
+                                    c.term(9, 1),
                                     c.node(Rule.expr, List.of(
                                         c.node(Rule.opnd, List.of(
                                             c.node(Rule.numb, List.of(
-                                                c.term(10)
+                                                c.term(10, 1)
                                             ))
                                         )),
                                         c.node(Rule.op, List.of(
-                                            c.term(12)
+                                            c.term(12, 1)
                                         )),
                                         c.node(Rule.opnd, List.of(
                                             c.node(Rule.numb, List.of(
-                                                c.term(14)
+                                                c.term(14, 1)
                                             ))
                                         )),
                                         c.node(Rule.op, List.of(
-                                            c.term(20)
+                                            c.term(20, 1)
                                         )),
                                         c.node(Rule.opnd, List.of(
                                             c.node(Rule.numb, List.of(
-                                                c.term(22)
+                                                c.term(22, 1)
                                             ))
                                         ))
                                     )),
-                                    c.term(23)
+                                    c.term(23, 1)
                                 ))
                             ))
                         )),
-                        c.term(24)
+                        c.term(24, 1)
                     ))
                 )),
                 c.node(Rule.op, List.of(
-                    c.term(26)
+                    c.term(26, 1)
                 )),
                 c.node(Rule.opnd, List.of(
                     c.node(Rule.numb, List.of(
-                        c.term(32)
+                        c.term(32, 1)
                     ))
                 )),
                 c.node(Rule.op, List.of(
-                    c.term(34)
+                    c.term(34, 1)
                 )),
                 c.node(Rule.opnd, List.of(
                     c.node(Rule.numb, List.of(
-                        c.term(36)
+                        c.term(36, 1)
                     ))
                 ))
             ))
@@ -240,21 +240,35 @@ public class ParserTest {
     @Test
     public void parseWords() {
         GrammarInfoBuilder gb = new GrammarInfoBuilder("stmt");
+        gb.setCaseSensitiveTerms(true);
+        
         gb.setUseSkipRule(false);
         gb.setRule("sp", regex("[\\s]*"));
         gb.setSkipRuleName("sp");
         gb.setUseSkipRule(true);
-        gb.setRule("stmt", seq("select", call("name"), "from", call("name"), "where", call("expr")));
+        
+        gb.setStartRuleName("stmt");
+        gb.setRule("stmt", seq("select", call("name"), "from", call("name"), call("filter")));
         gb.setRule("expr", seq(call("name"), ">", call("value")));
         gb.setRule("name", regex("[^\\d\\W][\\w]*"));
         gb.setRule("value", regex("[\\d]+"));
-        gb.setStartRuleName("stmt");
+        
+        gb.setCaseSensitiveTerms(false);
+        gb.setRule("filter", seq("where", call("expr")));
+        gb.setCaseSensitiveTerms(true);
+        
         Parser p = ParserFactory.getFactory(gb.buildGrammarInfo()).createParser();
+        
+        String text = "select x from y WHERE z > 1";
+        System.out.println(p.parse(text).getTrees(false).get(0).collectString(text));
         
         Assert.assertTrue(p.parse("select x from y where z > 1").isSuccess());
         Assert.assertTrue(p.parse("select x from y where z>1").isSuccess());
         Assert.assertFalse(p.parse("selectx fromy wherez>1").isSuccess());
         Assert.assertFalse(p.parse("select xfrom ywherez>1").isSuccess());
         Assert.assertFalse(p.parse("selectx fromy wherez > 1").isSuccess());
+    
+        Assert.assertTrue(p.parse("select x from y WHERE z > 1").isSuccess());
+        Assert.assertFalse(p.parse("select x FROM y where z > 1").isSuccess());
     }
 }

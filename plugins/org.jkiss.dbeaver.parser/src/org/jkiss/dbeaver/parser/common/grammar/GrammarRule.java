@@ -20,13 +20,15 @@ public class GrammarRule {
     private final int id;
     private final String name;
     private final boolean useSkipRule;
+    private final boolean caseSensitiveTerms;
     private final RuleExpression expression;
 
-    public GrammarRule(int id, String name, boolean useSkipRule, RuleExpression expression) {
+    public GrammarRule(int id, String name, boolean useSkipRule, boolean caseSensitiveTerms, RuleExpression expression) {
         this.id = id;
         this.name = name;
         this.useSkipRule = useSkipRule;
         this.expression = expression;
+        this.caseSensitiveTerms = caseSensitiveTerms;
     }
 
     @Override
@@ -44,6 +46,10 @@ public class GrammarRule {
 
     public boolean isUseSkipRule() {
         return useSkipRule;
+    }
+
+    public boolean isCaseSensitiveTerms() {
+        return caseSensitiveTerms;
     }
 
     public RuleExpression getExpression() {

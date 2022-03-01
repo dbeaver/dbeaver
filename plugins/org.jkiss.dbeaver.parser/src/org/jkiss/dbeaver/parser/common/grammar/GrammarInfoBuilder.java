@@ -23,6 +23,7 @@ public class GrammarInfoBuilder {
     private String startRuleName;
     private String skipRuleName;
     private boolean useSkipRule;
+    private boolean caseSensitiveTerms;
     private int ruleIdCounter = 0;
     private Map<String, GrammarRule> rules = new HashMap<>();
 
@@ -62,8 +63,16 @@ public class GrammarInfoBuilder {
         return this.useSkipRule;
     }
 
+    public boolean getCaseSensitiveTerms() {
+        return caseSensitiveTerms;
+    }
+
+    public void setCaseSensitiveTerms(boolean value) {
+        this.caseSensitiveTerms = value;
+    }
+
     public GrammarRule setRule(String name, RuleExpression expression) {
-        GrammarRule rule = new GrammarRule(this.ruleIdCounter++, name, this.getUseSkipRule(), expression);
+        GrammarRule rule = new GrammarRule(this.ruleIdCounter++, name, this.getUseSkipRule(), this.getCaseSensitiveTerms(), expression);
         this.rules.put(name, rule);
         return rule;
     }

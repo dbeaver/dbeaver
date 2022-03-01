@@ -137,9 +137,11 @@ public class GrammarNfaBuilder {
             String lookahead = Character.isLetterOrDigit(rawChars.charAt(rawChars.length() - 1)) ? "\\b" : "";
             String pattern = lookbehind + RegexExpression.escapeSpecialChars(rawChars) + lookahead;
             
-            terminalTransitions.add(nfa.createTransition(
-                from, to, GrammarNfaOperation.makeTerm(exprId, pattern)
-            ));
+            if (!rule.isCaseSensitiveTerms()) {
+                pattern = "(?i:" + pattern + ")";
+            }
+            
+            terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(exprId, pattern)));
             return new NfaFragment(head.from, to);
         }
 
@@ -239,7 +241,13 @@ public class GrammarNfaBuilder {
             NfaFragment head = this.visitSkipRuleIfNeeded(rule);
             GrammarNfaState from = head.to;
             GrammarNfaState to = nfa.createState(rule);
-            terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(exprId, regexExpression.pattern)));
+            
+            String pattern = regexExpression.pattern;
+            if (!rule.isCaseSensitiveTerms()) {
+                pattern = "(?i:" + pattern + ")";
+            }
+            
+            terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(exprId, pattern)));
             return new NfaFragment(head.from, to);
         }
     }

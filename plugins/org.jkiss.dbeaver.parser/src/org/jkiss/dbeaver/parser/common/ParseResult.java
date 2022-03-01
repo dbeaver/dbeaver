@@ -94,7 +94,7 @@ public class ParseResult {
     private ParseTreeNode makeParseTree(boolean withWhitespaces, List<ParserState> states) {
         GrammarRule skipRule = this.grammar.findRule(this.grammar.getSkipRuleName());
         //System.out.println("Tree operations:");
-        ParseTreeNode treeRoot = new ParseTreeNode(null, 0, null, new ArrayList<>());
+        ParseTreeNode treeRoot = new ParseTreeNode(null, 0, this.text.length(), null, new ArrayList<>());
         ParseTreeNode current = treeRoot;
         int pos = 0;
         int skipDepth = 0;
@@ -110,7 +110,7 @@ public class ParseResult {
                                 if (!withWhitespaces && op.getRule() == skipRule) {
                                     skipDepth++;
                                 } else {
-                                    ParseTreeNode newNode = new ParseTreeNode(op.getRule(), pos, current, new ArrayList<>());
+                                    ParseTreeNode newNode = new ParseTreeNode(op.getRule(), pos, -1, current, new ArrayList<>());
                                     current.getChildren().add(newNode);
                                     current = newNode;
                                 }
@@ -121,6 +121,8 @@ public class ParseResult {
                             break;
                         case RULE_END:
                             if (skipDepth == 0) {
+                                int endPos = current.getChildren().size() > 0 ? current.getChildren().get(current.getChildren().size() - 1).getEndPosition() : pos;
+                                current.setEndPosition(endPos);
                                 current = current.getParent();
                             } else {
                                 skipDepth--;
@@ -132,7 +134,7 @@ public class ParseResult {
                     }
                 }
                 if (state.getStep().getPattern() != null && skipDepth == 0) {
-                    current.getChildren().add(new ParseTreeNode(null, pos, current, new ArrayList<>()));
+                    current.getChildren().add(new ParseTreeNode(null, pos, state.getPosition(), current, new ArrayList<>()));
                 }
                 //System.out.println("  capture term \"" + this.text.substring(pos, state.getPosition()) + "\" @" + pos + " is " + state.getStep().getPattern());
                 pos = state.getPosition();
