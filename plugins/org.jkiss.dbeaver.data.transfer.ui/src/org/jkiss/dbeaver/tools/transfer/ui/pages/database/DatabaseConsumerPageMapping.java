@@ -838,6 +838,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
                             containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
+                            DataTransferPipe pipeFromCurrentSelection = getPipeFromCurrentSelection();
+                            if (pipeFromCurrentSelection != null) {
+                                IDataTransferConsumer<?, ?> consumer = pipeFromCurrentSelection.getConsumer();
+                                if (consumer instanceof DatabaseTransferConsumer) {
+                                    ((DatabaseTransferConsumer) consumer).setTargetObject((DBSDataManipulator) child);
+                                }
+                            }
                             mappingViewer.refresh();
                             return;
                         }
@@ -1202,20 +1209,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     // Create new mapping for source object
                     DatabaseMappingContainer newMapping;
                     IDataTransferConsumer<?, ?> pipeConsumer = pipe.getConsumer();
-                    if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null
-                        || (mapping != null && mapping.getTarget() != null)) {
+                    if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null) {
                         try {
-                            DBSDataManipulator targetObject = null;
-                            if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null) {
-                                targetObject = ((DatabaseTransferConsumer) pipeConsumer).getTargetObject();
-                            } else if (mapping != null) {
-                                targetObject = mapping.getTarget();
-                            }
                             newMapping = new DatabaseMappingContainer(
                                 monitor,
                                 getDatabaseConsumerSettings(),
                                 sourceDataContainer,
-                                targetObject,
+                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject(),
                                 mapping != null && mapping.getMappingType() == DatabaseMappingType.recreate);
                         } catch (DBException e) {
                             errors.add(e);
