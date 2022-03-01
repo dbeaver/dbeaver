@@ -27,10 +27,13 @@ import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.*;
@@ -52,6 +55,7 @@ public class DBeaverCommandLine
 
     public static final String PARAM_HELP = "help";
     public static final String PARAM_FILE = "f";
+    public static final String PARAM_CONFIGURATION_FILE = "conf";
     public static final String PARAM_STOP = "stop";
     public static final String PARAM_THREAD_DUMP = "dump";
     public static final String PARAM_CONNECT = "con";
@@ -65,7 +69,7 @@ public class DBeaverCommandLine
 
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, false, "Help")
-
+        .addOption(PARAM_CONFIGURATION_FILE, "configuration", true, "Use configuration file for variable resolving")
         .addOption(PARAM_FILE, "file", true, "Open a file")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
         .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
@@ -173,6 +177,21 @@ public class DBeaverCommandLine
                 String threadDump = controller.getThreadDump();
                 System.out.println(threadDump);
                 return true;
+            }
+        }
+
+        {
+            //Set configuration file for SystemVariableResolver
+            String file = commandLine.getOptionValue(PARAM_CONFIGURATION_FILE);
+            if (!CommonUtils.isEmpty(file)) {
+                Properties properties = new Properties();
+                try (InputStream stream = new FileInputStream(file)){
+                    properties.load(stream);
+                    SystemVariablesResolver.INSTANCE.setConfigurationFile(properties);
+                } catch (Exception e) {
+                    log.error("Error parsing command line: ", e);
+                    return false;
+                }
             }
         }
 

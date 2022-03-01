@@ -32,7 +32,10 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.BaseApplicationImpl;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
+import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
@@ -287,7 +290,7 @@ public class DesktopPlatform extends BasePlatformImpl {
             try {
                 String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
                 if (!CommonUtils.isEmpty(tempFolderPath)) {
-                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, new SystemVariablesResolver());
+                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, SystemVariablesResolver.INSTANCE);
 
                     File dbTempFolder = new File(tempFolderPath);
                     if (!dbTempFolder.mkdirs()) {

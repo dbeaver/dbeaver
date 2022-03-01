@@ -49,6 +49,7 @@ public class AutoRefreshControl {
     private Menu schedulerMenu;
     private String defRefreshText;
 
+
     public AutoRefreshControl(Control parent, String controlId, DBRRunnableWithProgress runnable) {
         this.parent = parent;
         this.controlId = controlId;
@@ -83,7 +84,7 @@ public class AutoRefreshControl {
         this.refreshSettings.saveSettings();
     }
 
-    synchronized boolean isAutoRefreshEnabled() {
+    public synchronized boolean isAutoRefreshEnabled() {
         return autoRefreshEnabled;
     }
 
@@ -106,7 +107,7 @@ public class AutoRefreshControl {
             return;
         }
         autoRefreshJob = new AutoRefreshJob(this);
-        autoRefreshJob.schedule((long)settings.getRefreshInterval() * 1000);
+        autoRefreshJob.schedule(    (long)settings.getRefreshInterval() * 1000);
     }
 
     public void cancelRefresh() {
