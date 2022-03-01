@@ -155,6 +155,11 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     editOnEnter = false;
                 }
 
+                /*
+                    We don't use Control in saveEditorValue due to complications of getting Text from it, due to it being a composite without getText() method
+                 */
+                private Text editor;
+
                 @Override
                 protected Control createEditor(Table table, int index, TableItem item) {
                     if (index != 2) {
@@ -166,7 +171,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
                     Composite composite = UIUtils.createPlaceholder(table, 2, 0);
                     composite.setLayoutData(gridData);
-                    Text editor = new Text(composite, SWT.NONE);
+                    editor = new Text(composite, SWT.NONE);
                     editor.setLayoutData(gridData);
                     Button button = UIUtils.createPushButton(composite, null, DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                     editor.setText(CommonUtils.notEmpty(param.getValue()));
@@ -185,12 +190,15 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     editor.selectAll();
                     editor.addModifyListener(e -> saveEditorValue(editor, index, item));
                     editor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                            this.keyTraversed(e);
+                        }
                         if (e.detail == SWT.TRAVERSE_RETURN && (e.stateMask & SWT.CTRL) == SWT.CTRL) {
                             UIUtils.asyncExec(SQLQueryParameterBindDialog.this::okPressed);
                         }
                     });
                     button.addTraverseListener(e -> {
-                        if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
                             this.keyTraversed(e);
                         }
                     });
@@ -200,17 +208,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 @Override
                 protected void saveEditorValue(Control control, int index, TableItem item) {
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
-                    String newValue = null;
-                    if (!(control instanceof Text)) {
-                        Control[] children = ((Composite) control).getChildren();
-                        for (Control child : children) {
-                            if (child instanceof Text) {
-                                newValue = ((Text) child).getText();
-                            }
-                        }
-                    } else {
-                         newValue = ((Text) control).getText();
-                    }
+                    String newValue = editor.getText();
                     item.setText(2, newValue);
 
                     param.setValue(newValue);
