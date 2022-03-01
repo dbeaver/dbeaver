@@ -3885,7 +3885,13 @@ public class SQLEditor extends SQLEditorBase implements
                     int errorQueryOffset = query.getOffset();
                     int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
-                        addProblem(GeneralUtils.getFirstMessage(error), new Position(errorQueryOffset, errorQueryLength));
+                        if (!addProblem(GeneralUtils.getFirstMessage(error), new Position(errorQueryOffset, errorQueryLength))) {
+                            if (scriptMode) {
+                                selectionProvider.setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                            } else {
+                                selectionProvider.setSelection(originalSelection);
+                            }
+                        }
                     }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
@@ -3978,12 +3984,12 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void addProblem(@Nullable String message, @NotNull Position position) {
+    private boolean addProblem(@Nullable String message, @NotNull Position position) {
         final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
         final IAnnotationModel annotationModel = getAnnotationModel();
 
         if (resource == null || annotationModel == null) {
-            return;
+            return false;
         }
 
         try {
@@ -4001,6 +4007,8 @@ public class SQLEditor extends SQLEditorBase implements
         } catch (PartInitException e) {
             log.debug("Error opening problem view", e);
         }
+
+        return true;
     }
 
     private void clearProblems() {
