@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.parser.test</artifactId>
+  <artifactId>org.jkiss.dbeaver.parser.common.test</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-test-plugin</packaging>
 

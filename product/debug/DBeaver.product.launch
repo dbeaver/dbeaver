@@ -27,7 +27,6 @@
     <setAttribute key="selected_target_bundles">
         <setEntry value="com.github.jsqlparser@default:default"/>
         <setEntry value="com.google.gson@default:default"/>
-        <setEntry value="com.google.guava*21.0.0.v20170206-1425@default:default"/>
         <setEntry value="com.google.guava*27.1.0.v20190517-1946@default:default"/>
         <setEntry value="com.ibm.icu@default:default"/>
         <setEntry value="com.jcraft.jsch@default:default"/>
@@ -41,9 +40,12 @@
         <setEntry value="javax.xml@default:default"/>
         <setEntry value="net.i2p.crypto.eddsa@default:default"/>
         <setEntry value="org.apache.batik.constants@default:default"/>
-        <setEntry value="org.apache.batik.css@default:default"/>
+        <setEntry value="org.apache.batik.css*1.14.0.v20210324-0332@default:default"/>
+        <setEntry value="org.apache.batik.css*1.6.0.v201011041432@default:default"/>
         <setEntry value="org.apache.batik.i18n@default:default"/>
-        <setEntry value="org.apache.batik.util@default:default"/>
+        <setEntry value="org.apache.batik.util*1.14.0.v20210324-0332@default:default"/>
+        <setEntry value="org.apache.batik.util*1.6.0.v201011041432@default:default"/>
+        <setEntry value="org.apache.batik.util.gui@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.io@default:default"/>
@@ -60,6 +62,7 @@
         <setEntry value="org.bouncycastle.bcpg@default:default"/>
         <setEntry value="org.bouncycastle.bcpkix@default:default"/>
         <setEntry value="org.bouncycastle.bcprov@default:default"/>
+        <setEntry value="org.bouncycastle.bcutil@default:default"/>
         <setEntry value="org.eclipse.compare.core@default:default"/>
         <setEntry value="org.eclipse.compare@default:default"/>
         <setEntry value="org.eclipse.core.commands@default:default"/>
@@ -121,7 +124,6 @@
         <setEntry value="org.eclipse.equinox.event@default:default"/>
         <setEntry value="org.eclipse.equinox.frameworkadmin.equinox@default:default"/>
         <setEntry value="org.eclipse.equinox.frameworkadmin@default:default"/>
-        <setEntry value="org.eclipse.equinox.http.servlet@default:default"/>
         <setEntry value="org.eclipse.equinox.p2.artifact.repository@default:default"/>
         <setEntry value="org.eclipse.equinox.p2.console@default:default"/>
         <setEntry value="org.eclipse.equinox.p2.core@default:default"/>
@@ -205,7 +207,7 @@
         <setEntry value="org.jkiss.bundle.gis@default:default"/>
         <setEntry value="org.jkiss.bundle.jfreechart@default:default"/>
         <setEntry value="org.jkiss.bundle.sshj@default:default"/>
-        <setEntry value="org.objectweb.asm*8.0.1.v20200420-1007@default:default"/>
+        <setEntry value="org.objectweb.asm@default:default"/>
         <setEntry value="org.sat4j.core@default:default"/>
         <setEntry value="org.sat4j.pb@default:default"/>
         <setEntry value="org.slf4j.api@default:default"/>
