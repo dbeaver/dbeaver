@@ -30,14 +30,20 @@ import org.jkiss.dbeaver.parser.grammar.nfa.GrammarNfaOperation;
 public class ParseResult {
     private final String text;
     private final GrammarInfo grammar;
+    private final ParserState boundary;
     private final List<ParserState> results;
     private final List<ParseTreeNode> trees;
-
-    public ParseResult(String text, GrammarInfo grammar, List<ParserState> results) {
+    
+    public ParseResult(String text, GrammarInfo grammar, ParserState boundary, List<ParserState> results) {
         this.text = text;
         this.grammar = grammar;
+        this.boundary = boundary;
         this.results = results;
         this.trees = new ArrayList<>(results.size());
+    }
+    
+    public boolean isSuccess() {
+        return !this.results.isEmpty();
     }
 
     /**

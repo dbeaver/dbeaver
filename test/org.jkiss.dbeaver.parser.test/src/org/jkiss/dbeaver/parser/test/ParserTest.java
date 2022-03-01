@@ -236,4 +236,25 @@ public class ParserTest {
 
         Assert.assertEquals(expectedTree.collectString(), tree.get(0).collectString());
     }
+    
+    @Test
+    public void parseWords() {
+        GrammarInfoBuilder gb = new GrammarInfoBuilder("stmt");
+        gb.setUseSkipRule(false);
+        gb.setRule("sp", regex("[\\s]*"));
+        gb.setSkipRuleName("sp");
+        gb.setUseSkipRule(true);
+        gb.setRule("stmt", seq("select", call("name"), "from", call("name"), "where", call("expr")));
+        gb.setRule("expr", seq(call("name"), ">", call("value")));
+        gb.setRule("name", regex("[^\\d\\W][\\w]*"));
+        gb.setRule("value", regex("[\\d]+"));
+        gb.setStartRuleName("stmt");
+        Parser p = ParserFactory.getFactory(gb.buildGrammarInfo()).createParser();
+        
+        Assert.assertTrue(p.parse("select x from y where z > 1").isSuccess());
+        Assert.assertTrue(p.parse("select x from y where z>1").isSuccess());
+        Assert.assertFalse(p.parse("selectx fromy wherez>1").isSuccess());
+        Assert.assertFalse(p.parse("select xfrom ywherez>1").isSuccess());
+        Assert.assertFalse(p.parse("selectx fromy wherez > 1").isSuccess());
+    }
 }

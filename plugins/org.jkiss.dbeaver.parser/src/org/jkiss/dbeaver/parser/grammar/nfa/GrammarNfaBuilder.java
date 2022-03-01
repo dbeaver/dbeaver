@@ -129,8 +129,16 @@ public class GrammarNfaBuilder {
             NfaFragment head = this.visitSkipRuleIfNeeded(rule);
             GrammarNfaState from = head.to;
             GrammarNfaState to = nfa.createState(rule);
+            
+            String rawChars = charactersExpression.pattern;
+            
+            // optional checks to separate consequent words from each other
+            String lookbehind = Character.isLetterOrDigit(rawChars.charAt(0)) ? "\\b" : "";
+            String lookahead = Character.isLetterOrDigit(rawChars.charAt(rawChars.length() - 1)) ? "\\b" : "";
+            String pattern = lookbehind + RegexExpression.escapeSpecialChars(rawChars) + lookahead;
+            
             terminalTransitions.add(nfa.createTransition(
-                from, to, GrammarNfaOperation.makeTerm(exprId, RegexExpression.escapeSpecialChars(charactersExpression.pattern))
+                from, to, GrammarNfaOperation.makeTerm(exprId, pattern)
             ));
             return new NfaFragment(head.from, to);
         }

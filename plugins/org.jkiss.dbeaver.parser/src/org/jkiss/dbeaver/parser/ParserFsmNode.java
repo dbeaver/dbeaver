@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.parser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +66,8 @@ class ParserFsmNode {
         return this.id;
     }
 
-    public Iterable<ParserFsmStep> getTransitions() {
-        return this.steps;
+    public List<ParserFsmStep> getTransitions() {
+        return Collections.unmodifiableList(this.steps);
     }
 
     /**

@@ -42,12 +42,17 @@ public class Parser {
         }
 
         ArrayList<ParserDispatchResult> dispatchResults = new ArrayList<>();
+        
+        ParserState boundary = null;
 
         // runs parser finite state machine by dispatching over series of text positions representing terminals being matched
         // and evaluating parsing context until the final state is reached at the end of the text
         List<ParserState> results = new ArrayList<>();
         while (!queue.isEmpty()) {
             ParserState state = queue.removeFirst();
+            if (boundary == null || boundary.getPosition() > state.getPosition()) {
+                boundary = state;
+            }
 
             dispatchResults.clear();
             state.getFsmState().dispatch(text, state.getPosition(), dispatchResults);
@@ -71,7 +76,7 @@ public class Parser {
             }
         }
 
-        return new ParseResult(text, grammar, results);
+        return new ParseResult(text, grammar, boundary, results);
     }
 
     /**

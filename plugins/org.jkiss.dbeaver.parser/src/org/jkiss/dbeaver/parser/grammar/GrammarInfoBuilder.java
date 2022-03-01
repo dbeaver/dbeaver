@@ -63,7 +63,7 @@ public class GrammarInfoBuilder {
     }
 
     public GrammarRule setRule(String name, RuleExpression expression) {
-        GrammarRule rule = new GrammarRule(this.ruleIdCounter++, name, this.useSkipRule, expression);
+        GrammarRule rule = new GrammarRule(this.ruleIdCounter++, name, this.getUseSkipRule(), expression);
         this.rules.put(name, rule);
         return rule;
     }
@@ -73,6 +73,6 @@ public class GrammarInfoBuilder {
     }
     
     public GrammarInfo buildGrammarInfo() {
-        return new GrammarInfo(this.name, this.startRuleName, this.skipRuleName, new HashMap<>(this.rules));
+        return new GrammarInfo(this.name, this.getStartRuleName(), this.getSkipRuleName(), new HashMap<>(this.rules));
     }
 }

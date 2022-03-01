@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.parser;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Parser finite state machine
@@ -42,6 +44,33 @@ class ParserFsm {
         for (ParserFsmNode state : this.allStates) {
             state.prepare();
         }
+    }
+    
+    public String collectDebugString() {
+        StringBuilder sb = new StringBuilder();
+        for (var s : allStates) {
+            sb.append("state").append(s).append(":");
+            if (this.initialStates.contains(s)) {
+                sb.append("<START>");
+            }
+            if (s.isEnd()) {
+                sb.append(" <END>");
+            }
+            sb.append("\n");
+            var transitionsByPatterm = s.getTransitions().stream()
+                                        .collect(Collectors.groupingBy(t -> t.getPattern() == null ? "" : t.getPattern()));
+            
+            for (var entry : transitionsByPatterm.entrySet()) {
+                sb.append("\ton ").append(entry.getKey()).append("\n");
+                for (var transition : entry.getValue()) {
+                    sb.append("\t\tto ").append(transition.getTo()).append(" { ");
+                    sb.append(String.join(", ", transition.getOperations().stream().map(op -> op.toString()).collect(Collectors.toList())));
+                    sb.append(" }\n");
+                }
+                
+            }
+        } 
+        return sb.toString();
     }
 
     /*
