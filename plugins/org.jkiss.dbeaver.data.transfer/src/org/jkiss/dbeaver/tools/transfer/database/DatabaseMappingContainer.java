@@ -66,11 +66,16 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
+    public DatabaseMappingContainer(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject, boolean recreate) throws DBException {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(monitor, DatabaseMappingType.existing, false, null);
+        if (recreate) {
+            // Special recreate case. Recreated table can have target and source columns
+            refreshAttributesAndMappingType(null, monitor, DatabaseMappingType.recreate, true);
+        } else {
+            refreshMappingType(monitor, DatabaseMappingType.existing, false, null);
+        }
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -107,7 +112,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh, null);
     }
 
-    public void refreshAttributesAndMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+    public void refreshAttributesAndMappingType(@Nullable DBRRunnableContext context, @Nullable DBRProgressMonitor progressMonitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         DBSEntity target = null;
         if (getTarget() instanceof DBSEntity) {
             // Refresh attributes mapping list and then refresh mapping type
@@ -117,18 +122,22 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         DBSEntity finalTarget = target;
-        try {
-            context.run(true, true, monitor -> {
-                try {
-                    refreshMappingType(monitor, mappingType, forceRefresh, finalTarget);
-                } catch (DBException e) {
-                    log.error("Target attributes refresh error", e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Refresh target attributes", "Refresh target attributes error", e.getTargetException());
-        } catch (InterruptedException e) {
-            log.debug("Canceled by user", e);
+        if (progressMonitor != null) {
+            refreshMappingType(progressMonitor, mappingType, forceRefresh, finalTarget);
+        } else if (context != null) {
+            try {
+                context.run(true, true, monitor -> {
+                    try {
+                        refreshMappingType(monitor, mappingType, forceRefresh, finalTarget);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                throw new DBException("Refresh target attributes error", e.getTargetException());
+            } catch (InterruptedException e) {
+                log.debug("Canceled by user", e);
+            }
         }
     }
 
