@@ -4081,6 +4081,7 @@ public class ResultSetViewer extends Viewer
         if (!isDirty()) {
             return;
         }
+        UIUtils.syncExec(() -> getActivePresentation().rejectChanges());
         try {
             createDataPersister(true).rejectChanges();
             if (model.getAllRows().isEmpty()) {

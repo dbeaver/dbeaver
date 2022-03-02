@@ -93,6 +93,11 @@ public interface IResultSetPresentation {
     void applyChanges();
 
     /**
+     *  Changes in the presentation will be canceled, the presentation will return in the initial state.
+     */
+    void rejectChanges();
+
+    /**
      * Called by controller to fill context menu.
      * Note: context menu invocation must be initiated by presentation, then it should call controller's
      * {@link org.jkiss.dbeaver.ui.controls.resultset.IResultSetController#fillContextMenu} which then will
