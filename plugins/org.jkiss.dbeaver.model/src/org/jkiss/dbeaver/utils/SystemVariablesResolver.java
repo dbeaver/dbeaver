@@ -42,14 +42,10 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_DBEAVER_HOME = "dbeaver_home";
     public static final String VAR_LOCAL_IP = "local.ip";
 
-    private Properties configurationFile = null;
+    private static Properties configuration;
 
-    public void setConfigurationFile(Properties configurationFile) {
-        this.configurationFile = configurationFile;
-    }
-
-    protected SystemVariablesResolver(){
-
+    public static void setConfiguration(Properties configuration) {
+        SystemVariablesResolver.configuration = configuration;
     }
 
     @Override
@@ -74,8 +70,8 @@ public class SystemVariablesResolver implements IVariableResolver {
                     return "127.0.0.1";
                 }
             default:
-                if (configurationFile != null) {
-                    final Object o = configurationFile.get(name);
+                if (configuration != null) {
+                    final Object o = configuration.get(name);
                     if (o != null) {
                         return o.toString();
                     }

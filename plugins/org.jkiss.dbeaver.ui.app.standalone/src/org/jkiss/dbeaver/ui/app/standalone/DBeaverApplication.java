@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
@@ -635,7 +636,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         if (CommonUtils.isEmpty(logLocation)) {
             logLocation = GeneralUtils.getMetadataFolder().resolve(DBConstants.DEBUG_LOG_FILE_NAME).toAbsolutePath().toString(); //$NON-NLS-1$
         }
-        logLocation = GeneralUtils.replaceVariables(logLocation, SystemVariablesResolver.INSTANCE);
+        logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);
         if (debugLogFile.exists()) {
             if (!debugLogFile.delete()) {
