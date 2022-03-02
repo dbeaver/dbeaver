@@ -161,6 +161,8 @@ public class DBIcon implements DBPImage
     public static final DBIcon SMALL_QUESTION = new DBIcon("small_question", "status/question_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     private static final boolean VALIDATE_ICON_FILE = false;
 
     private static final Map<String, DBPImage> iconMap = new HashMap<>();
