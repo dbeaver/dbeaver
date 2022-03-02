@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
@@ -39,7 +40,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -87,7 +87,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
-    private static final int NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS = 1000;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -388,13 +387,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     protected void doSetInput(IEditorInput input) throws CoreException {
         handleInputChange(input);
 
-        final FileEditorInput fileEditorInput = GeneralUtils.adapt(input, FileEditorInput.class);
-        if (fileEditorInput != null) {
-            final long fileTimestamp = fileEditorInput.getFile().getLocalTimeStamp();
-            final long currentTimestamp = System.currentTimeMillis();
-            if (currentTimestamp - fileTimestamp <= NEW_FILE_MOVE_CARET_TO_END_THRESHOLD_MS) {
-                UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
-            }
+        final IFile file = GeneralUtils.adapt(input, IFile.class);
+        if (file != null && SQLEditorUtils.isNewScriptFile(file)) {
+            // Move cursor to the end of the file past script template
+            UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
         }
 
         super.doSetInput(input);
