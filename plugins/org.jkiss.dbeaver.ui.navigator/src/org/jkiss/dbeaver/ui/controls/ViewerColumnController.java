@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -128,6 +129,8 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 return null;
             }
         };
+
+        viewer.setComparator(new DefaultComparator(Collator.getInstance()));
     }
 
     public void dispose() {
@@ -152,6 +155,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     public void setDefaultIcon(DBIcon defaultIcon) {
         this.defaultIcon = defaultIcon;
+    }
+
+    public void setComparator(@NotNull DefaultComparator comparator) {
+        viewer.setComparator(comparator);
     }
 
     public int getSelectedColumnNumber() {
@@ -549,6 +556,37 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return columnInfo;
     }
 
+    @Nullable
+    private ColumnInfo getSortColumn() {
+        final Control control = viewer.getControl();
+
+        if (control instanceof Tree) {
+            final Tree tree = (Tree) control;
+            final TreeColumn column = tree.getSortColumn();
+            if (column != null) {
+                return getColumnByIndex(tree.indexOf(column));
+            }
+        } else {
+            final Table table = (Table) control;
+            final TableColumn column = table.getSortColumn();
+            if (column != null) {
+                return getColumnByIndex(table.indexOf(column));
+            }
+        }
+
+        return null;
+    }
+
+    private int getSortDirection() {
+        final Control control = viewer.getControl();
+
+        if (control instanceof Tree) {
+            return ((Tree) control).getSortDirection();
+        } else {
+            return ((Table) control).getSortDirection();
+        }
+    }
+
     public COLUMN getColumnData(int columnIndex) {
         return (COLUMN) getColumnByIndex(columnIndex).userData;
     }
@@ -790,7 +828,6 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         }
 
         private void sortViewer(final Item column, final int sortDirection) {
-            Collator collator = Collator.getInstance();
             if (viewer instanceof TreeViewer) {
                 ((TreeViewer)viewer).getTree().setSortColumn((TreeColumn) column);
                 ((TreeViewer)viewer).getTree().setSortDirection(sortDirection);
@@ -798,52 +835,82 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 ((TableViewer)viewer).getTable().setSortColumn((TableColumn) column);
                 ((TableViewer)viewer).getTable().setSortDirection(sortDirection);
             }
-            final ILabelProvider labelProvider = (ILabelProvider)columnInfo.labelProvider;
-            final ILabelProviderEx exLabelProvider = labelProvider instanceof ILabelProviderEx ? (ILabelProviderEx)labelProvider : null;
 
-            viewer.setComparator(new ViewerComparator(collator) {
-                private final NumberFormat numberFormat = NumberFormat.getInstance();
-                @Override
-                public int compare(Viewer v, Object e1, Object e2)
-                {
-                    int result;
-                    String value1;
-                    String value2;
-                    if (exLabelProvider != null) {
-                        value1 = exLabelProvider.getText(e1, false);
-                        value2 = exLabelProvider.getText(e2, false);
-                    } else {
-                        value1 = labelProvider.getText(e1);
-                        value2 = labelProvider.getText(e2);
-                    }
-                    if (value1 == null && value2 == null) {
-                        result = 0;
-                    } else if (value1 == null) {
-                        result = -1;
-                    } else if (value2 == null) {
-                        result = 1;
-                    } else {
-                        if (columnInfo.numeric) {
-                            try {
-                                final Number num1 = numberFormat.parse(value1);
-                                final Number num2 = numberFormat.parse(value2);
-                                if (num1.getClass() == num2.getClass() && num1 instanceof Comparable) {
-                                    result = ((Comparable) num1).compareTo(num2);
-                                } else {
-                                    // Dunno how to compare
-                                    result = 0;
-                                }
-                            } catch (Exception e) {
-                                // not numbers
-                                result = value1.compareToIgnoreCase(value2);
-                            }
-                        } else {
-                            result = value1.compareToIgnoreCase(value2);
-                        }
-                    }
-                    return sortDirection == SWT.UP ? result : -result;
+            viewer.refresh();
+        }
+    }
+
+    public static class DefaultComparator extends ViewerComparator {
+        public DefaultComparator(@Nullable Comparator<? super String> comparator) {
+            super(comparator);
+        }
+
+        @Override
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            final int cat1 = category(e1);
+            final int cat2 = category(e2);
+
+            if (cat1 != cat2) {
+                return cat1 - cat2;
+            }
+
+            final String name1 = getLabel(viewer, e1);
+            final String name2 = getLabel(viewer, e2);
+
+            int result = 0;
+
+            if (CommonUtils.equalObjects(name1, name2)) {
+                return 0;
+            } else if (name1 == null) {
+                result = -1;
+            } else if (name2 == null) {
+                result = 1;
+            }
+
+            if (result == 0 && isNumeric(viewer)) {
+                try {
+                    final NumberFormat numberFormat = NumberFormat.getInstance();
+                    final Number number1 = numberFormat.parse(name1);
+                    final Number number2 = numberFormat.parse(name2);
+                    result = CommonUtils.compareNumbers(number1, number2);
+                } catch (Exception ignored) {
                 }
-            });
+            }
+
+            if (result == 0) {
+                result = getComparator().compare(name1, name2);
+            }
+
+            return isReversed(viewer) ? -result : result;
+        }
+
+        @Nullable
+        private String getLabel(@NotNull Viewer viewer, @Nullable Object element) {
+            final ColumnInfo column = getColumnInfo(viewer);
+
+            if (column == null) {
+                return null;
+            }
+
+            if (column.labelProvider instanceof ILabelProviderEx) {
+                return ((ILabelProviderEx) column.labelProvider).getText(element, false);
+            } else {
+                return ((ILabelProvider) column.labelProvider).getText(element);
+            }
+        }
+
+        private static boolean isNumeric(@NotNull Viewer viewer) {
+            final ColumnInfo column = getColumnInfo(viewer);
+            return column != null && column.numeric;
+        }
+
+        private static boolean isReversed(@NotNull Viewer viewer) {
+            return ((ViewerColumnController<?, ?>) getFromControl(viewer.getControl())).getSortDirection() == SWT.DOWN;
+        }
+
+        @Nullable
+        private static ColumnInfo getColumnInfo(@NotNull Viewer viewer) {
+            return ((ViewerColumnController<?, ?>) getFromControl(viewer.getControl())).getSortColumn();
         }
     }
 }
