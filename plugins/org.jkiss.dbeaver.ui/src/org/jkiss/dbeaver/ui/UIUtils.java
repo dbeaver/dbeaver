@@ -404,6 +404,16 @@ public class UIUtils {
         return null;
     }
 
+    public static TableItem getPreviousTableItem(Table table, TableItem item) {
+        TableItem[] items = table.getItems();
+        for (int i = 1; i < items.length; i++) {
+            if (items[i] == item) {
+                return items[i - 1];
+            }
+        }
+        return null;
+    }
+
     public static TreeItem getNextTreeItem(Tree tree, TreeItem item) {
         TreeItem[] items = tree.getItems();
         for (int i = 0; i < items.length - 1; i++) {
