@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.ArrayUtils;
@@ -410,7 +411,15 @@ public class PostgreUtils {
                         String databaseName = ((JDBCColumnMetaData) type).getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
-                            PostgreDataType dataType = database.getDataType(session.getProgressMonitor(), type.getTypeName());
+                            String typeName = type.getTypeName();
+                            if (typeName.startsWith("\"") || typeName.contains(".")) {
+                                // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
+                                String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+                                if (!ArrayUtils.isEmpty(identifiers)) {
+                                    typeName = identifiers[identifiers.length - 1];
+                                }
+                            }
+                            PostgreDataType dataType = database.getDataType(session.getProgressMonitor(), typeName);
                             if (dataType != null) {
                                 return dataType;
                             }
