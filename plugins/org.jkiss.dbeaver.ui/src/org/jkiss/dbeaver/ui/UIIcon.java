@@ -241,6 +241,7 @@ public class UIIcon {
 
     public static final DBIcon RUN = new DBIcon("run.png"); //$NON-NLS-1$
 
+    public static final DBIcon BUTTON_BOOKMARK = new DBIcon("buttons/bookmark.png"); //$NON-NLS-1$
     public static final DBIcon BUTTON_READ_ONLY = new DBIcon("buttons/lock.png"); //$NON-NLS-1$
     public static final DBIcon BUTTON_TUNNEL = new DBIcon("buttons/tunnel.png"); //$NON-NLS-1$
     public static final DBIcon BUTTON_CLOUD = new DBIcon("buttons/cloud.png"); //$NON-NLS-1$

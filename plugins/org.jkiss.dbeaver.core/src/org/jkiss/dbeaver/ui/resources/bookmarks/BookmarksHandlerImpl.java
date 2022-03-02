@@ -185,6 +185,50 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    public static boolean isNodeBookmarked(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node) throws DBException {
+        final IFolder folder = getBookmarksFolder(node.getOwnerProject(), false);
+        if (folder == null) {
+            return false;
+        }
+        final DBNResource bookmarks = node.getModel().getNodeByResource(folder);
+        if (bookmarks == null) {
+            return false;
+        }
+        return isNodeBookmarked(monitor, (DBNBookmarkFolder) bookmarks, node);
+    }
+
+    private static boolean isNodeBookmarked(@NotNull DBRProgressMonitor monitor, @NotNull DBNBookmarkFolder root, @NotNull DBNNode node) throws DBException {
+        for (DBNNode child : root.getChildren(monitor)) {
+            if (child instanceof DBNBookmarkFolder && isNodeBookmarked(monitor, (DBNBookmarkFolder) child, node)) {
+                return true;
+            }
+
+            if (child instanceof DBNBookmark) {
+                final BookmarkStorage storage = ((DBNBookmark) child).getStorage();
+                final List<String> path = new ArrayList<>(storage.getDataSourcePath());
+                Collections.reverse(path);
+
+                DBNNode parent = node;
+
+                for (String part : path) {
+                    if (parent != null && parent.getNodeName().equals(part)) {
+                        parent = parent.getParentNode();
+                        continue;
+                    }
+
+                    parent = null;
+                    break;
+                }
+
+                if (parent instanceof DBNDataSource && ((DBNDataSource) parent).getDataSourceContainer().getId().equals(storage.getDataSourceId())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 /*
     static DBNDatabaseNode getTargetBookmarkNode(DBRProgressMonitor monitor, DBNBookmark bookmark)
     {

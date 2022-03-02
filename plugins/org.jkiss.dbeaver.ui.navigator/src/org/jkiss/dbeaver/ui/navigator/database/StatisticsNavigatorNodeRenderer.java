@@ -110,16 +110,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         if (element instanceof DBNDatabaseNode) {
             final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             int widthOccupied = 0;
-            if (element instanceof DBNDataSource) {
-                if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
-                }
-                if (preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    renderDataSourceHostName((DBNDataSource) element, tree, gc, event, widthOccupied);
-                }
+            if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
             }
             if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
                 widthOccupied += renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+            }
+            if (element instanceof DBNDataSource && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
+                renderDataSourceHostName((DBNDataSource) element, tree, gc, event, widthOccupied);
             }
             if (element instanceof DBNDatabaseItem && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
                 renderObjectDescription((DBNDatabaseItem) element, tree, gc, event, widthOccupied);
@@ -156,12 +154,10 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         Object element = item.getData();
 
         if (element instanceof DBNDatabaseNode) {
-            if (element instanceof DBNDataSource) {
-                if (!scrollEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    if (isOverActionButton((DBNDatabaseNode) element, tree, item, event.gc, event)) {
-                        tree.setCursor(tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                        return;
-                    }
+            if (!scrollEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                if (isOverActionButton((DBNDatabaseNode) element, tree, item, event.gc, event)) {
+                    tree.setCursor(tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+                    return;
                 }
             }
         }
