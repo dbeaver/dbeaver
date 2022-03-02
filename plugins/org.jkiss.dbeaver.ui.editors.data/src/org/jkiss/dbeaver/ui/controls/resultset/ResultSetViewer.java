@@ -4066,6 +4066,7 @@ public class ResultSetViewer extends Viewer
                         log.error("Error refreshing rows after update", e);
                     }
                 }
+                UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
             return persister.applyChanges(monitor, false, settings, applyListener);
