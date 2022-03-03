@@ -66,12 +66,6 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
     }
 
     @Override
-    public boolean isCurrentTaskSaved() {
-        //TODO remove this after saveState function stops relying on graphics components see [#14739]
-        return false;
-    }
-
-    @Override
     public void addPages() {
         addTaskConfigPages();
         addPage(settingsPage);
@@ -101,6 +95,11 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
             "Database restore",
             "Restore '" + getObjectsName() + "'",
             SWT.ICON_INFORMATION);
+    }
+
+    @Override
+    public boolean isFullPageLoadingRequired() {
+        return true;
     }
 
     @Override

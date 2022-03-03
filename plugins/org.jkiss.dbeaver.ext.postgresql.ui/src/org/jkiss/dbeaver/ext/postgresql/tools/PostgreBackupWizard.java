@@ -65,12 +65,6 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
     }
 
     @Override
-    public boolean isCurrentTaskSaved() {
-        //TODO remove this after saveState function stops relying on graphics components see [#14739]
-        return false;
-    }
-
-    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
         objectsPage = new PostgreBackupWizardPageObjects(this);
@@ -110,6 +104,11 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
             SWT.ICON_INFORMATION);
         ShellUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
 	}
+
+    @Override
+    public boolean isFullPageLoadingRequired() {
+        return true;
+    }
 
     @Override
     protected PostgreDatabaseBackupSettings createSettings() {
