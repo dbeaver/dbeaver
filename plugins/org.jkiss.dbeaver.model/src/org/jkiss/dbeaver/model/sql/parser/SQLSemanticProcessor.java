@@ -180,7 +180,7 @@ public class SQLSemanticProcessor {
         // WHERE
         if (filter.hasConditions()) {
             for (DBDAttributeConstraint co : filter.getConstraints()) {
-                if (co.hasCondition()) {
+                if (co.hasCondition() && !isDynamicAttribute(co.getAttribute())) {
                     Table table = getConstraintTable(select, co);
                     if (!isValidTableColumn(monitor, dataSource, table, co)) {
                         return false;
@@ -237,11 +237,25 @@ public class SQLSemanticProcessor {
         return true;
     }
 
+    private static boolean isDynamicAttribute(@Nullable DBSAttributeBase attribute) {
+        if (!(attribute instanceof DBDAttributeBinding)) {
+            return DBUtils.isDynamicAttribute(attribute);
+        }
+        DBDAttributeBinding attributeBinding = ((DBDAttributeBinding) attribute);
+        return DBUtils.isDynamicAttribute(attributeBinding.getAttribute());
+    }
+
     private static boolean isValidTableColumn(DBRProgressMonitor monitor, DBPDataSource dataSource, Table table, DBDAttributeConstraint co) throws DBException {
         DBSAttributeBase attribute = co.getAttribute();
+
+        if (isDynamicAttribute(attribute)) {
+            return true;
+        }
+
         if (attribute instanceof DBDAttributeBinding) {
             attribute = ((DBDAttributeBinding) attribute).getMetaAttribute();
         }
+
         if (table != null && attribute instanceof DBCAttributeMetaData) {
             DBSEntityAttribute entityAttribute = null;
             DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) attribute).getEntityMetaData();
