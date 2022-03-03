@@ -58,7 +58,7 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
 
         @Override
         public int read() {
-            return pos < string.length() ? string.charAt(pos++) : -1;
+            return pos >= 0 && pos < string.length() ? string.charAt(pos++) : -1;
         }
 
         @Override
