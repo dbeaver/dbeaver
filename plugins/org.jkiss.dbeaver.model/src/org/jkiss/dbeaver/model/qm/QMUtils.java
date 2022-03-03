@@ -95,7 +95,7 @@ public class QMUtils {
                     if (sp != null) {
                         if (checkQueries) {
                             // If transaction was enabled all statements are transactional
-                            for (QMMStatementExecuteInfo ei = sp.getLastExecute(); ei != null; ei = ei.getPrevious()) {
+                            for (QMMStatementExecuteInfo ei = sp.getLastExecute(); ei != null && ei.getSavepoint() == sp; ei = ei.getPrevious()) {
                                 if (ei.isTransactional()) {
                                     return true;
                                 }
