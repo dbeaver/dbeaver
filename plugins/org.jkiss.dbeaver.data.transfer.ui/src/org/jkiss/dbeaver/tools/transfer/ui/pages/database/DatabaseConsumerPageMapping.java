@@ -637,12 +637,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (mapping instanceof DatabaseMappingAttribute) {
                             ((DatabaseMappingAttribute) mapping).setMappingType(mappingType);
                         } else {
-                            DatabaseMappingType previousMapping = mapping.getMappingType();
-                            if (previousMapping == DatabaseMappingType.recreate || mappingType == DatabaseMappingType.recreate) {
-                                ((DatabaseMappingContainer) mapping).refreshAttributesAndMappingType(getWizard().getRunnableContext(), null, mappingType, false);
-                            } else {
-                                ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
-                            }
+                            ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
                         }
                         mappingViewer.refresh();
                         setErrorMessage(null);
@@ -1215,8 +1210,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                 monitor,
                                 getDatabaseConsumerSettings(),
                                 sourceDataContainer,
-                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject(),
-                                mapping != null && mapping.getMappingType() == DatabaseMappingType.recreate);
+                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
                         } catch (DBException e) {
                             errors.add(e);
                             newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
