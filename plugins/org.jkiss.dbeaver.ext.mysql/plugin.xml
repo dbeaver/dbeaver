@@ -18,7 +18,6 @@
   -->
 
 <plugin>
-
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
             class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
@@ -442,4 +441,5 @@
 
     </extension>
 
+    <extension-point id="org.jkiss.dbeaver.ext.mysql.auth.secondaryStepDialogProvider" name="Secondary authentication step dialog provider" schema="schema/org.jkiss.dbeaver.ext.mysql.auth.secondaryStepDialogProvider.exsd"/>
 </plugin>

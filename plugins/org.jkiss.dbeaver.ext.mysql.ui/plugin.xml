@@ -224,4 +224,8 @@
         <configurator type="mysqlScriptExecute" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
     </extension>
 
+	<extension point="org.jkiss.dbeaver.ext.mysql.auth.secondaryStepDialogProvider">
+        <provider class="org.jkiss.dbeaver.ext.mysql.ui.SecondaryStepAuthDialogProvider"/>
+    </extension>
+	
 </plugin>

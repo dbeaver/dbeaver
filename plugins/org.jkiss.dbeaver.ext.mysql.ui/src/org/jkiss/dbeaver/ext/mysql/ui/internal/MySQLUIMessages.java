@@ -158,6 +158,9 @@ public final class MySQLUIMessages extends NLS {
     public static String controls_privilege_table_push_button_check_all;
     public static String controls_privilege_table_push_button_clear_all;
 
+    public static String two_factor_auth_secondary_password_dialog_title;
+    public static String two_factor_auth_secondary_password_dialog_message;
+
     private MySQLUIMessages() {
     }
 }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.SecondaryStepAuthProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -83,6 +85,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private SQLHelpProvider helpProvider;
     private volatile boolean hasStatistics;
     private boolean containsCheckConstraintTable;
+    private String secondaryPassword;
 
     private transient boolean inServerTimezoneHandle;
 
@@ -151,6 +154,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     log.debug("Error setting MySQL " + MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR + " property default");
                 }
             }
+        }
+
+        if (secondaryPassword != null) {
+            props.put("password2", secondaryPassword);
         }
 
         return props;
@@ -433,27 +440,44 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        Connection mysqlConnection;
-        try {
-            mysqlConnection = super.openConnection(monitor, context, purpose);
-        } catch (DBCException e) {
-            if (e.getCause() instanceof SQLException &&
-                SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
-                CommonUtils.isEmpty(getContainer().getActualConnectionConfiguration().getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE)))
-            {
-                // Workaround for nasty problem with MySQL 8 driver and serverTimezone error
-                log.debug("Error connecting without serverTimezone. Trying to set serverTimezone=UTC. Original error: " + e.getMessage());
-                inServerTimezoneHandle = true;
-                try {
-                    mysqlConnection = super.openConnection(monitor, context, purpose);
-                } catch (DBCException e2) {
-                    inServerTimezoneHandle = false;
-                    throw e2;
+        Connection mysqlConnection = null;
+        boolean isHeadless = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+        boolean retryNeeded;
+        secondaryPassword = null;
+        do {
+            retryNeeded = false;
+            try {
+                mysqlConnection = super.openConnection(monitor, context, purpose);
+            } catch (DBCException e) {
+                if (!isHeadless && e.getMessage().contains("PAM authentication request multiple passwords")) {
+                    SecondaryStepAuthProvider provider = SecondaryStepAuthProvider.getSecondaryAuthProvider();
+                    secondaryPassword = provider.obtainSecondaryPassword(purpose);
+                    if (secondaryPassword != null) {
+                        retryNeeded = true;
+                        continue;
+                    } else {
+                        throw new DBCException("Connection cancelled", e);
+                    }
                 }
-            } else {
-                throw e;
+    
+                if (e.getCause() instanceof SQLException &&
+                    SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
+                    CommonUtils.isEmpty(getContainer().getActualConnectionConfiguration().getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE)))
+                {
+                    // Workaround for nasty problem with MySQL 8 driver and serverTimezone error
+                    log.debug("Error connecting without serverTimezone. Trying to set serverTimezone=UTC. Original error: " + e.getMessage());
+                    inServerTimezoneHandle = true;
+                    try {
+                        mysqlConnection = super.openConnection(monitor, context, purpose);
+                    } catch (DBCException e2) {
+                        inServerTimezoneHandle = false;
+                        throw e2;
+                    }
+                } else {
+                    throw e;
+                }
             }
-        }
+        } while (retryNeeded);
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
