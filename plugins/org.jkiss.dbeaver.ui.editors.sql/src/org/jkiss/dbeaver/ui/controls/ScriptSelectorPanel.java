@@ -172,7 +172,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                         DBWorkbench.getPlatform().getWorkspace().getProject(rootFolder.getProject()),
                         rootFolder,
                         navigatorContext);
-                    SQLEditorHandlerOpenEditor.openResource(scriptFile, null);
+                    SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
                 } catch (CoreException ex) {
                     log.error(ex);
                 }
@@ -325,7 +325,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                 }
                 cancelPressed();
                 for (ResourceInfo ri : files) {
-                    SQLEditorHandlerOpenEditor.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri, navigatorContext);
+                    SQLEditorHandlerOpenEditor.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri, null);
                 }
             }
         });
