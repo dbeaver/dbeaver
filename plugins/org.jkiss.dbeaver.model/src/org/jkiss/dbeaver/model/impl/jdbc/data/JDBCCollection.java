@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -312,6 +313,9 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             if (elementType == null) {
                 elementType = dataTypeProvider.getLocalDataType(Types.FLOAT);
             }
+        } else if (array instanceof BigDecimal[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.DECIMAL);
         } else if (array instanceof boolean[]) {
             dataKind = DBPDataKind.BOOLEAN;
             elementType = dataTypeProvider.getLocalDataType(Types.BOOLEAN);
