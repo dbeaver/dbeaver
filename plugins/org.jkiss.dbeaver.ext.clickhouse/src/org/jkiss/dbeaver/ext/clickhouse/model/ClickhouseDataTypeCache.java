@@ -34,6 +34,21 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
 
     @Override
     protected void addCustomObjects(List<GenericDataType> genericDataTypes) {
+        if (DBUtils.findObject(genericDataTypes, "Int128") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int128", "Int128", false, false, 0, 0, 0));
+        }
+        if (DBUtils.findObject(genericDataTypes, "Int256") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int256", "Int256", false, false, 0, 0, 0));
+        }
+        if (DBUtils.findObject(genericDataTypes, "UInt128") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int128", "Int128", false, false, 0, 0, 0));
+        }
+        if (DBUtils.findObject(genericDataTypes, "UInt256") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int256", "Int256", false, false, 0, 0, 0));
+        }
+        if (DBUtils.findObject(genericDataTypes, "Decimal") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.DECIMAL, "Decimal", "Decimal", false, false, 0, 0, 0));
+        }
         // Add array data types
         for (GenericDataType dt : new ArrayList<>(genericDataTypes)) {
             genericDataTypes.add(new GenericDataTypeArray(dt.getParentObject(), Types.ARRAY, "Array(" + dt.getName() + ")", "Array of " + dt.getName(), dt));
