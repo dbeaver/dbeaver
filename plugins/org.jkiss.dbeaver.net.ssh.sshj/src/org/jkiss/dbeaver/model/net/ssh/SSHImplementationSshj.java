@@ -66,7 +66,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             sshClient = new SSHClient(clientConfig);
 
             try {
-                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() || configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
                     sshClient.addHostKeyVerifier(new PromiscuousVerifier());
                 } else {
                     File knownHostsFile = SSHUtils.getKnownSshHostsFileOrDefault();
