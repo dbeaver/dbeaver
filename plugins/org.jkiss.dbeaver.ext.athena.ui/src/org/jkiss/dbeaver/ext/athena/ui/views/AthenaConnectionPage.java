@@ -27,7 +27,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -99,69 +98,69 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             awsRegionCombo.addModifyListener(textListener);
 
             UIUtils.createControlLabel(addrGroup, AthenaMessages.label_s3_location); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
-            Composite s3Group = UIUtils.createComposite(addrGroup, 2);
+            Composite s3Group = UIUtils.createComposite(addrGroup, 1);
             s3Group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             s3LocationText = new Text(s3Group, SWT.BORDER);
             s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);
             s3LocationText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Button s3BrowseButton = UIUtils.createPushButton(s3Group, UIConnectionMessages.controls_client_home_selector_browse, DBeaverIcons.getImage(DBIcon.TREE_FOLDER), new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (FileSystemProviderRegistry.getInstance().getProvider("aws-s3") == null) {
-                        DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "S3 file system browser not found", true);
-                        return;
-                    }
-                    DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
-                    DBNFileSystems fsRootNode = projectNode.getExtraNode(DBNFileSystems.class);
-                    if (fsRootNode == null) {
-                        DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
-                        return;
-                    }
-                    DBNNode selectedNode = null;
-                    String oldS3Path = s3LocationText.getText();
-                    if (!CommonUtils.isEmpty(oldS3Path) && oldS3Path.startsWith("s3:/")) {
-                        selectedNode = findFileSystemNode(fsRootNode, oldS3Path);
-                    }
-                    ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
-                        s3LocationText.getShell(), "S3 browser",
-                        fsRootNode,
-                        selectedNode,
-                        true)
-                    {
-                        @Override
-                        protected boolean matchesResultNode(DBNNode node) {
-                            return node instanceof DBNPathBase &&
-                                Files.isDirectory(((DBNPathBase) node).getPath());
-                        }
 
-                        @Override
-                        protected ViewerFilter createViewerFilter() {
-                            return new ViewerFilter() {
-                                @Override
-                                public boolean select(Viewer viewer, Object parentElement, Object element) {
-                                    return
-                                        element instanceof TreeNodeSpecial ||
-                                        element instanceof DBNFileSystem ||
-                                            (element instanceof DBNNode && matchesResultNode((DBNNode) element));
-                                }
-                            };
+            if (FileSystemProviderRegistry.getInstance().getProvider("aws-s3") != null) {
+                ((GridLayout) s3Group.getLayout()).numColumns++;
+                UIUtils.createPushButton(s3Group, UIConnectionMessages.controls_client_home_selector_browse, DBeaverIcons.getImage(DBIcon.TREE_FOLDER), new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
+                        DBNFileSystems fsRootNode = projectNode.getExtraNode(DBNFileSystems.class);
+                        if (fsRootNode == null) {
+                            DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
+                            return;
                         }
-                    };
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        List<DBNNode> selectedObjects = dialog.getSelectedObjects();
-                        if (selectedObjects.size() == 1) {
-                            DBNNode s3Node = selectedObjects.get(0);
-                            if (s3Node instanceof DBNPathBase) {
-                                String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
-                                if (newS3Path.startsWith("s3:/")) {
-                                    s3LocationText.setText(newS3Path);
+                        DBNNode selectedNode = null;
+                        String oldS3Path = s3LocationText.getText();
+                        if (!CommonUtils.isEmpty(oldS3Path) && oldS3Path.startsWith("s3:/")) {
+                            selectedNode = findFileSystemNode(fsRootNode, oldS3Path);
+                        }
+                        ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
+                            s3LocationText.getShell(), "S3 browser",
+                            fsRootNode,
+                            selectedNode,
+                            true)
+                        {
+                            @Override
+                            protected boolean matchesResultNode(DBNNode node) {
+                                return node instanceof DBNPathBase &&
+                                    Files.isDirectory(((DBNPathBase) node).getPath());
+                            }
+
+                            @Override
+                            protected ViewerFilter createViewerFilter() {
+                                return new ViewerFilter() {
+                                    @Override
+                                    public boolean select(Viewer viewer, Object parentElement, Object element) {
+                                        return
+                                            element instanceof TreeNodeSpecial ||
+                                                element instanceof DBNFileSystem ||
+                                                (element instanceof DBNNode && matchesResultNode((DBNNode) element));
+                                    }
+                                };
+                            }
+                        };
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            List<DBNNode> selectedObjects = dialog.getSelectedObjects();
+                            if (selectedObjects.size() == 1) {
+                                DBNNode s3Node = selectedObjects.get(0);
+                                if (s3Node instanceof DBNPathBase) {
+                                    String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
+                                    if (newS3Path.startsWith("s3:/")) {
+                                        s3LocationText.setText(newS3Path);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
             UIUtils.addVariablesToControl(s3LocationText, getAvailableVariables(), "S3 location pattern");
         }
