@@ -38,6 +38,7 @@ public class SSHConstants {
     public static final String PROP_LOCAL_PORT = "localPort";
     public static final String PROP_REMOTE_HOST = "remoteHost";
     public static final String PROP_REMOTE_PORT = "remotePort";
+    public static final String PROP_BYPASS_HOST_VERIFICATION = "bypassHostVerification";
     //private static final int CONNECT_TIMEOUT = 10000;
 
     public enum AuthType {

@@ -102,7 +102,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
                 session.setUserInfo(userInfo);
 
-                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() || configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
                     session.setConfig("StrictHostKeyChecking", "no");
                 } else {
                     File knownHosts = SSHUtils.getKnownSshHostsFileOrNull();
