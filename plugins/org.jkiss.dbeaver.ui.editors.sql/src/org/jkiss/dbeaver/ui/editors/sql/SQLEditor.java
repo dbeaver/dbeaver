@@ -4029,8 +4029,6 @@ public class SQLEditor extends SQLEditorBase implements
             final IAnnotationModel annotationModel = getAnnotationModel();
 
             if (annotationModel != null) {
-                final List<IMarker> markers = new ArrayList<>();
-
                 for (Iterator<Annotation> it = annotationModel.getAnnotationIterator(); it.hasNext(); ) {
                     final Annotation annotation = it.next();
 
@@ -4038,16 +4036,12 @@ public class SQLEditor extends SQLEditorBase implements
                         final Position position = annotationModel.getPosition(annotation);
 
                         if (position.overlapsWith(query.getOffset(), query.getLength())) {
-                            markers.add(((SQLProblemAnnotation) annotation).getMarker());
+                            try {
+                                ((SQLProblemAnnotation) annotation).getMarker().delete();
+                            } catch (CoreException e) {
+                                log.error("Error deleting problem marker", e);
+                            }
                         }
-                    }
-                }
-
-                for (IMarker marker : markers) {
-                    try {
-                        marker.delete();
-                    } catch (CoreException e) {
-                        log.error("Error deleting problem marker", e);
                     }
                 }
             }
