@@ -283,6 +283,18 @@ public class SQLQuery implements SQLScriptElement {
         return selectItems == null || selectItems.size() <= index ? null : selectItems.get(index);
     }
 
+    public int getSelectItemAsteriskIndex() {
+        if (selectItems != null) {
+            for (int i = 0; i < selectItems.size(); i++) {
+                SQLSelectItem item = selectItems.get(i);
+                if (item.getName().contains("*")) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     @NotNull
     public String getOriginalText() {
         return originalText;
