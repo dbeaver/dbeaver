@@ -4006,7 +4006,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         try {
-            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW);
+            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
         } catch (PartInitException e) {
             log.debug("Error opening problem view", e);
         }
