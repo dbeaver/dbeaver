@@ -57,6 +57,10 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
      */
     Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
 
+    default Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties, String purpose) throws DBException {
+        return this.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
+    }
+
     void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
 
     /**

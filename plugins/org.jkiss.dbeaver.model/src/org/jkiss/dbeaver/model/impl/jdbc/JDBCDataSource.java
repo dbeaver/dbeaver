@@ -172,7 +172,7 @@ public abstract class JDBCDataSource
                     // Refresh credentials
                     authModel.refreshCredentials(monitor, getContainer(), connectionInfo, credentials);
                 }
-                authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
+                authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps, purpose);
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
