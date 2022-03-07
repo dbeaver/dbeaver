@@ -122,7 +122,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     //format: "offset_1;offset_2;...offset_n"
     public void saveState() {
         IResource resource = getResource();
-        ProjectionAnnotationModel annotationModel = editor.getAnnotationModel();
+        ProjectionAnnotationModel annotationModel = editor.getProjectionAnnotationModel();
         if (resource == null || annotationModel == null) {
             return;
         }
@@ -163,7 +163,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             cache.clear(); // underlying annotation model being cleared, so reset the cache too
             return;
         }
-        ProjectionAnnotationModel model = editor.getAnnotationModel();
+        ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
         if (model == null) {
             return;
         }

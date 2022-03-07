@@ -147,6 +147,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         switch (parent.getMappingType()) {
             case recreate:
             case existing: {
+                if (mappingType == DatabaseMappingType.skip) {
+                    // We already have mapping for the attribute with the skip type
+                    break;
+                }
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
                     if (forceRefresh || CommonUtils.isEmpty(targetName)) {
@@ -209,7 +213,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 break;
             }
             case create:
-                mappingType = DatabaseMappingType.create;
+                if (mappingType != DatabaseMappingType.skip) { // We already have mapping for the attribute with the skip type
+                    mappingType = DatabaseMappingType.create;
+                }
                 if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                     targetName = getSourceLabelOrName(source, true);
                 }

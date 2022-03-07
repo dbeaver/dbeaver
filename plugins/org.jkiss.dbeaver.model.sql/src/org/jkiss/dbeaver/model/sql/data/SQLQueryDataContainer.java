@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -249,7 +250,14 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
 
     @Override
     public Map<String, Object> getQueryParameters() {
-        return scriptContext.getAllParameters();
+        if (query.getParameters() == null) {
+            return scriptContext.getAllParameters();
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (SQLQueryParameter parameter : query.getParameters()) {
+            result.put(parameter.getVarName(), parameter.getValue());
+        }
+        return result;
     }
 
     @Nullable

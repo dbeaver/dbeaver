@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -182,7 +181,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     private String getCellString(DBDAttributeBinding attr, Object value) {
-        final String displayString = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.EDIT);
+        final String displayString = attr.getValueHandler().getValueDisplayString(attr, value, getValueExportFormat(attr));
 
         if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(value)) {
             return DBConstants.NULL_VALUE_LABEL;

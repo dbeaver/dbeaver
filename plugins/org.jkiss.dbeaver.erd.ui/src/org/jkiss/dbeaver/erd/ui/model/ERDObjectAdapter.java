@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDocumentContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
@@ -68,7 +69,9 @@ public class ERDObjectAdapter implements IAdapterFactory {
             }
             if (object instanceof ERDObject) {
                 object = ((ERDObject<?>) object).getObject();
-                if (object instanceof DBSObject && adaptableObject instanceof DiagramPart && ((DBSObject) object).getParentObject() instanceof DBSStructContainer) {
+                if (object instanceof DBSDocumentContainer) {
+                    unwrapParentNode = false;
+                } else if (object instanceof DBSObject && adaptableObject instanceof DiagramPart && ((DBSObject) object).getParentObject() instanceof DBSStructContainer) {
                     object = ((DBSObject) object).getParentObject();
                 }
             }

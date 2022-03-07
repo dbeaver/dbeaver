@@ -4066,6 +4066,7 @@ public class ResultSetViewer extends Viewer
                         log.error("Error refreshing rows after update", e);
                     }
                 }
+                UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
             return persister.applyChanges(monitor, false, settings, applyListener);
@@ -4081,6 +4082,7 @@ public class ResultSetViewer extends Viewer
         if (!isDirty()) {
             return;
         }
+        UIUtils.syncExec(() -> getActivePresentation().rejectChanges());
         try {
             createDataPersister(true).rejectChanges();
             if (model.getAllRows().isEmpty()) {

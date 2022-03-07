@@ -40,7 +40,7 @@ public class SQLEditorHandlerExpandCollapseAllFoldings extends AbstractHandler {
         if (sqlEditor == null || !sqlEditor.isFoldingEnabled()) {
             return null;
         }
-        ProjectionAnnotationModel model = sqlEditor.getAnnotationModel();
+        ProjectionAnnotationModel model = sqlEditor.getProjectionAnnotationModel();
         if (model == null) {
             return null;
         }

@@ -21,7 +21,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -43,7 +42,6 @@ import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -70,7 +68,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(monitor, DatabaseMappingType.existing, false, null);
+        refreshMappingType(monitor, DatabaseMappingType.existing, false);
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -104,37 +102,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
-        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh, null);
+        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
     }
 
-    public void refreshAttributesAndMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
-        DBSEntity target = null;
-        if (getTarget() instanceof DBSEntity) {
-            // Refresh attributes mapping list and then refresh mapping type
-            attributeMappings.clear();
-            if (mappingType == DatabaseMappingType.recreate) {
-                target = (DBSEntity) getTarget();
-            }
-        }
-        DBSEntity finalTarget = target;
-        try {
-            context.run(true, true, monitor -> {
-                try {
-                    refreshMappingType(monitor, mappingType, forceRefresh, finalTarget);
-                } catch (DBException e) {
-                    log.error("Target attributes refresh error", e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Refresh target attributes", "Refresh target attributes error", e.getTargetException());
-        } catch (InterruptedException e) {
-            log.debug("Canceled by user", e);
-        }
-    }
-
-    private void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh, @Nullable DBSEntity target) throws DBException {
+    private void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
-        final Collection<DatabaseMappingAttribute> mappings = getAllAttributeMappings(monitor, target);
+        final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
                 attr.updateMappingType(monitor, forceRefresh);
@@ -249,28 +222,6 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         return attributeMappings;
-    }
-
-    private Collection<DatabaseMappingAttribute> getAllAttributeMappings(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntity target) {
-        if (attributeMappings.isEmpty()) {
-            try {
-                readAllAttributes(monitor, target);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(DTMessages.database_mapping_container_title_attributes_read_failed,
-                    NLS.bind(DTMessages.database_mapping_container_message_get_attributes_from, DBUtils.getObjectFullName(source, DBPEvaluationContext.UI)), e);
-            }
-        }
-        return attributeMappings;
-    }
-
-    private void readAllAttributes(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntity target) throws DBException {
-        if (target == null) {
-            readAttributes(monitor);
-            return;
-        }
-        for (DBSAttributeBase attr : DTUtils.getSourceAndTargetAttributes(monitor, target, source, this)) {
-            addAttributeMapping(monitor, attr);
-        }
     }
 
     private void readAttributes(DBRProgressMonitor monitor) throws DBException {

@@ -25,13 +25,14 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 /**
  * SystemVariablesResolver
  */
 public class SystemVariablesResolver implements IVariableResolver {
 
-    public static SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
+    public static final SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
 
     public static final String VAR_APP_NAME = "application.name";
     public static final String VAR_APP_VERSION = "application.version";
@@ -40,6 +41,12 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_HOME = "home";
     public static final String VAR_DBEAVER_HOME = "dbeaver_home";
     public static final String VAR_LOCAL_IP = "local.ip";
+
+    private static Properties configuration;
+
+    public static void setConfiguration(Properties configuration) {
+        SystemVariablesResolver.configuration = configuration;
+    }
 
     @Override
     public String get(String name) {
@@ -63,6 +70,12 @@ public class SystemVariablesResolver implements IVariableResolver {
                     return "127.0.0.1";
                 }
             default:
+                if (configuration != null) {
+                    final Object o = configuration.get(name);
+                    if (o != null) {
+                        return o.toString();
+                    }
+                }
                 String var = System.getProperty(name);
                 if (var != null) {
                     return var;

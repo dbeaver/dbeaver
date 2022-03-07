@@ -1151,4 +1151,9 @@
     </extension>
 -->
 
+    <extension id="databaseScriptProblemMarker" name="%databaseScriptProblem.name" point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+    </extension>
+
 </plugin>

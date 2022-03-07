@@ -86,7 +86,9 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         if (resourceInfo.getResource() != null) {
             openResource(resourceInfo.getResource(), context);
         } else if (resourceInfo.getLocalFile() != null) {
-            EditorUtils.setFileDataSource(resourceInfo.getLocalFile(), context);
+            if (context != null) {
+                EditorUtils.setFileDataSource(resourceInfo.getLocalFile(), context);
+            }
             EditorUtils.openExternalFileEditor(resourceInfo.getLocalFile(), workbenchWindow);
         }
     }

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -107,11 +108,10 @@ public class DBeaverInstanceServer implements IInstanceController {
     public void openDatabaseConnection(String connectionSpec) throws RemoteException {
         // Do not log it (#3788)
         //log.debug("Open external database connection [" + connectionSpec + "]");
-
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
         final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
             DBWorkbench.getPlatform().getWorkspace().getActiveProject(),
-            connectionSpec,
+            GeneralUtils.replaceVariables(connectionSpec, SystemVariablesResolver.INSTANCE),
             instanceConParameters,
             false,
             instanceConParameters.createNewConnection);

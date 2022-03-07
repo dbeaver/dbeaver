@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
@@ -636,12 +637,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (mapping instanceof DatabaseMappingAttribute) {
                             ((DatabaseMappingAttribute) mapping).setMappingType(mappingType);
                         } else {
-                            DatabaseMappingType previousMapping = mapping.getMappingType();
-                            if (previousMapping == DatabaseMappingType.recreate || mappingType == DatabaseMappingType.recreate) {
-                                ((DatabaseMappingContainer) mapping).refreshAttributesAndMappingType(getWizard().getRunnableContext(), mappingType, false);
-                            } else {
-                                ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
-                            }
+                            ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
                         }
                         mappingViewer.refresh();
                         setErrorMessage(null);
@@ -837,6 +833,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
                             containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
+                            DataTransferPipe pipeFromCurrentSelection = getPipeFromCurrentSelection();
+                            if (pipeFromCurrentSelection != null) {
+                                IDataTransferConsumer<?, ?> consumer = pipeFromCurrentSelection.getConsumer();
+                                if (consumer instanceof DatabaseTransferConsumer) {
+                                    ((DatabaseTransferConsumer) consumer).setTargetObject((DBSDataManipulator) child);
+                                }
+                            }
                             mappingViewer.refresh();
                             return;
                         }
@@ -1196,11 +1199,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
                         continue;
                     }
-                    DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+                    DBSDataContainer sourceDataContainer = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
                     DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
                     // Create new mapping for source object
                     DatabaseMappingContainer newMapping;
-                    if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
+                    IDataTransferConsumer<?, ?> pipeConsumer = pipe.getConsumer();
+                    if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null) {
                         try {
                             newMapping = new DatabaseMappingContainer(
                                 monitor,
