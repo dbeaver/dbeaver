@@ -480,12 +480,28 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
+    public boolean isModifiyng() {
+        if (getType() == SQLQueryType.UNKNOWN) {
+            return false;
+        }
+        if (statement instanceof Select) {
+            SelectBody selectBody = ((Select) statement).getSelectBody();
+            if (selectBody instanceof PlainSelect) {
+                if (((PlainSelect) selectBody).isForUpdate() ||
+                    ((PlainSelect) selectBody).getIntoTables() != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof SQLQuery && text.equals(((SQLQuery) obj).text);
     }
 
-    public boolean isModifiyng() {
-        return getType() != SQLQueryType.SELECT;
-    }
 }
