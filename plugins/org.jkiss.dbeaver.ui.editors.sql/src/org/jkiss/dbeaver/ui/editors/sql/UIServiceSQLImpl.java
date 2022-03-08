@@ -256,6 +256,8 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
     @Override
     public boolean useIsolatedConnections(DBPContextProvider contextProvider) {
-        return contextProvider.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
+        DBPDataSourceContainer container = contextProvider.getExecutionContext().getDataSource().getContainer();
+        return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.getConnectionConfiguration().forceUseSingleConnection();
     }
 }
