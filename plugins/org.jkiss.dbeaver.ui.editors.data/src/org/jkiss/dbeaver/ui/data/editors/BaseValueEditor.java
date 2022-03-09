@@ -137,7 +137,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                  if (!UIUtils.isInDialog(inlineControl)) {
                      if (inlineControl instanceof Composite) {
                          for (Control childControl : ((Composite) inlineControl).getChildren()) {
-                             addAutoSaveSupport(childControl);
+                             if (!childControl.isDisposed()) {
+                                 addAutoSaveSupport(childControl);
+                                 TextEditorUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), childControl);
+                                 EditorUtils.trackControlContext(valueController.getValueSite(), childControl, RESULTS_EDIT_CONTEXT_ID);
+                             }
                          }
                      } else {
                          addAutoSaveSupport(inlineControl);
