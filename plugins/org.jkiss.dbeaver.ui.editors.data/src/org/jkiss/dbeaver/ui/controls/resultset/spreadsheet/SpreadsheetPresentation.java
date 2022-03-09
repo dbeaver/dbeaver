@@ -346,9 +346,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.curAttribute = attribute;
 
         ResultSetRow curRow = controller.getCurrentRow();
-        if (curRow == null) {
-            return;
-        }
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);

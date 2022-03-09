@@ -23,7 +23,11 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.progress.UIJob;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+
+import java.util.Collections;
 
 class ResultSetStatListener extends ResultSetListenerAdapter {
     private final ResultSetViewer viewer;
@@ -57,24 +61,30 @@ class ResultSetStatListener extends ResultSetListenerAdapter {
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             IResultSetSelection selection = viewer.getSelection();
-            if (selection instanceof IResultSetSelectionExt) {
+            DBPPreferenceStore preferenceStore = viewer.getPreferenceStore();
+            if (selection.getSelectedAttributes().equals(Collections.emptyList())) {
+                setSelectionStatistics(preferenceStore, null);
+            } else if (selection instanceof IResultSetSelectionExt) {
                 IResultSetSelectionExt selectionExt = (IResultSetSelectionExt) selection;
-                DBPPreferenceStore preferenceStore = viewer.getPreferenceStore();
-                String slText = "";
-                if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS)) {
-                    slText = "Rows: " + selectionExt.getSelectedRowCount();// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
-                }
-                if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS)) {
-                    if (!slText.isEmpty()) slText += ", ";
-                    slText += "Cols: " + selectionExt.getSelectedColumnCount();
-                }
-                if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS)) {
-                    if (!slText.isEmpty()) slText += ", ";
-                    slText += "Cells: " + selectionExt.getSelectedCellCount();
-                }
-                viewer.setSelectionStatistics(slText);
+                setSelectionStatistics(preferenceStore, selectionExt);
             }
             return Status.OK_STATUS;
+        }
+
+        private void setSelectionStatistics(@NotNull DBPPreferenceStore preferenceStore, @Nullable IResultSetSelectionExt selectionExt) {
+            String slText = "";
+            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS)) {
+                slText = "Rows: " + (selectionExt == null ? 0 : selectionExt.getSelectedRowCount());// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
+            }
+            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS)) {
+                if (!slText.isEmpty()) slText += ", ";
+                slText += "Cols: " + (selectionExt == null ? 0 : selectionExt.getSelectedColumnCount());
+            }
+            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS)) {
+                if (!slText.isEmpty()) slText += ", ";
+                slText += "Cells: " + (selectionExt == null ? 0 : selectionExt.getSelectedCellCount());
+            }
+            viewer.setSelectionStatistics(slText);
         }
     }
 
