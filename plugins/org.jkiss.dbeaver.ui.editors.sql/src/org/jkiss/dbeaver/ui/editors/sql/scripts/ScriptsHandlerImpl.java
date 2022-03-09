@@ -22,6 +22,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -29,6 +31,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
+import org.jkiss.dbeaver.model.fs.nio.NIOFile;
+import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -102,11 +106,14 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
-        if (resource instanceof IFile) {
-            FileEditorInput sqlInput = new FileEditorInput((IFile)resource);
-            UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
-                sqlInput,
-                SQLEditor.class.getName());
+        IEditorInput input = null;
+        if (resource instanceof NIOFile) {
+            input = new FileStoreEditorInput(new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath()));
+        } else if (resource instanceof IFile) {
+            input = new FileEditorInput((IFile) resource);
+        }
+        if (input != null) {
+            UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(input, SQLEditor.class.getName());
         } else {
             super.openResource(resource);
         }
