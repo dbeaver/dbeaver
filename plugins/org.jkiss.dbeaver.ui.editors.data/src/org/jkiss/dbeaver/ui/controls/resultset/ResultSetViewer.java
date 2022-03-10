@@ -4922,8 +4922,8 @@ public class ResultSetViewer extends Viewer
                             // Restore original position
                             restorePresentationState(presentationState);
                         }
-                        if (focusRow >= 0 && focusRow <= model.getRowCount() && model.getVisibleAttributeCount() > 0) {
-                            if (getCurrentRow() == null && model.getRowCount() != 0) {
+                        if (focusRow >= 0 && (focusRow < model.getRowCount() || model.getRowCount() == 0) && model.getVisibleAttributeCount() > 0) {
+                            if (getCurrentRow() == null && model.getRowCount() > 0) {
                                 setCurrentRow(getModel().getRow(focusRow));
                             }
                             if (getActivePresentation().getCurrentAttribute() == null || model.getRowCount() == 0) {
