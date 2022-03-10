@@ -24,11 +24,12 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.*;
+import org.jkiss.dbeaver.model.auth.impl.AbstractSessionPersistent;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-public class BasicWorkspaceSession extends AbstractSMSessionPersistent implements SMSession, SMSessionPrincipal {
+public class BasicWorkspaceSession extends AbstractSessionPersistent implements SMSession, SMSessionPrincipal {
     private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
