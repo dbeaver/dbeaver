@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.auth;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractDBASessionPersistent implements DBASessionPersistent {
+public abstract class AbstractSMSessionPersistent implements SMSessionPersistent {
     protected final Map<String, Object> attributes = new HashMap<>();
 
     @Override

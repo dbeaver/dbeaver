@@ -14,17 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.auth;
 
-import java.util.Map;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPImage;
 
-public interface DBASessionPersistent {
-    Map<String, Object> getAttributes();
+import java.util.List;
+import java.util.Set;
 
-    <T> T getAttribute(String name);
+/**
+ * Auth provider descriptor
+ */
+public interface SMAuthProviderDescriptor {
 
-    void setAttribute(String name, Object value);
+    String getId();
 
-    Object removeAttribute(String name);
+    String getLabel();
+
+    String getDescription();
+
+    DBPImage getIcon();
+
+    List<SMAuthCredentialsProfile> getCredentialProfiles();
+
+    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
+
+    @NotNull
+    SMAuthProvider<?> getInstance();
+
 }

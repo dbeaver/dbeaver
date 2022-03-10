@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
  * Auth credentials provider.
  * Can be implemented by DBPDataSource implementation.
  */
-public interface DBAUserCredentialsProvider {
+public interface SMUserCredentialsProvider {
 
     String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo);
 

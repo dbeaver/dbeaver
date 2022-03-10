@@ -16,26 +16,26 @@
  */
 package org.jkiss.dbeaver.model.security;
 
-public class DBSecurityConnectionGrant {
-    private final String connectionId;
+public class SMDataSourceGrant {
+    private final String dataSourceId;
     private final String subjectId;
-    private final DBSecuritySubjectType subjectType;
+    private final SMSubjectType subjectType;
 
-    public DBSecurityConnectionGrant(String connectionId, String subjectId, DBSecuritySubjectType subjectType) {
-        this.connectionId = connectionId;
+    public SMDataSourceGrant(String dataSourceId, String subjectId, SMSubjectType subjectType) {
+        this.dataSourceId = dataSourceId;
         this.subjectId = subjectId;
         this.subjectType = subjectType;
     }
 
-    public String getConnectionId() {
-        return connectionId;
+    public String getDataSourceId() {
+        return dataSourceId;
     }
 
     public String getSubjectId() {
         return subjectId;
     }
 
-    public DBSecuritySubjectType getSubjectType() {
+    public SMSubjectType getSubjectType() {
         return subjectType;
     }
 }

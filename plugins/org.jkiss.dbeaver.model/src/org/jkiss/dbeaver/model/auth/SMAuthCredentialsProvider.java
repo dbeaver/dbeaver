@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Auth credentials provider.
  */
-public interface DBAAuthCredentialsProvider {
+public interface SMAuthCredentialsProvider {
 
     /**
      * Fill credential parameters in the specified container and configuration.

@@ -14,29 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
-
-import java.util.Map;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 /**
- * Credentials manager.
- * Keeps user credentials and provides low-level authentication mechanisms
+ * Access session.
  */
-public interface DBAAuthCredentialsManager {
+public interface SMSession extends DBPObject {
 
     /**
-     * Find user with matching credentials.
-     * It doesn't check credentials like passwords, just searches user id by identifying credentials.
+     * Session space
+     */
+    @NotNull
+    SMAuthSpace getSessionSpace();
+
+    @NotNull
+    SMSessionContext getSessionContext();
+
+    SMSessionPrincipal getSessionPrincipal();
+
+    /**
+     * Session unique ID
+     */
+    @NotNull
+    String getSessionId();
+
+    /**
+     * Application session is a global singleton session
+     */
+    boolean isApplicationSession();
+
+    /**
+     * Singleton session project
      */
     @Nullable
-    String getUserByCredentials(DBAAuthProviderDescriptor authProvider, Map<String, Object> authParameters) throws DBCException;
-
-    /**
-     * Get user credentials for specified provider
-     */
-    Map<String, Object> getUserCredentials(String userId, DBAAuthProviderDescriptor authProvider) throws DBCException;
+    DBPProject getSingletonProject();
 
 }

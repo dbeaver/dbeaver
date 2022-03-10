@@ -14,32 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.security;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPImage;
+public enum SMSubjectType {
+    user("U"),
+    role("R");
 
-import java.util.List;
-import java.util.Set;
+    private final String code;
 
-/**
- * Auth provider descriptor
- */
-public interface DBAAuthProviderDescriptor {
+    SMSubjectType(String code) {
+        this.code = code;
+    }
 
-    String getId();
+    public String getCode() {
+        return code;
+    }
 
-    String getLabel();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    List<DBAAuthCredentialsProfile> getCredentialProfiles();
-
-    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
-
-    @NotNull
-    DBAAuthProvider<?> getInstance();
-
+    public static SMSubjectType fromCode(String code) {
+        for (SMSubjectType st : values()) {
+            if (st.code.equals(code)) {
+                return st;
+            }
+        }
+        throw new IllegalArgumentException("Bad subject type code: " + code);
+    }
 }

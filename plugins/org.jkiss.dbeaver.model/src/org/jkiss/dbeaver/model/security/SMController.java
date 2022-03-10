@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsManager;
-import org.jkiss.dbeaver.model.auth.DBAAuthProviderDescriptor;
-import org.jkiss.dbeaver.model.auth.DBASession;
+import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
+import org.jkiss.dbeaver.model.auth.SMAuthProviderDescriptor;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.security.user.DBSecurityRole;
-import org.jkiss.dbeaver.model.security.user.DBSecurityUser;
+import org.jkiss.dbeaver.model.security.user.SMRole;
+import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface DBSecurityController<USER extends DBSecurityUser, ROLE extends DBSecurityRole, SESSION extends DBASession> extends DBAAuthCredentialsManager {
+public interface SMController<USER extends SMUser, ROLE extends SMRole, SESSION extends SMSession> extends SMAuthCredentialsManager {
 
     ///////////////////////////////////////////
     // Users
@@ -50,7 +50,7 @@ public interface DBSecurityController<USER extends DBSecurityUser, ROLE extends 
     /**
      * Sets user credentials for specified provider
      */
-    void setUserCredentials(String userId, DBAAuthProviderDescriptor authProvider, Map<String, Object> credentials) throws DBCException;
+    void setUserCredentials(String userId, SMAuthProviderDescriptor authProvider, Map<String, Object> credentials) throws DBCException;
 
     /**
      * Returns list of auth provider IDs associated with this user
@@ -81,12 +81,12 @@ public interface DBSecurityController<USER extends DBSecurityUser, ROLE extends 
     // Permissions
 
     @NotNull
-    DBSecurityConnectionGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBCException;
+    SMDataSourceGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBCException;
 
     void setSubjectConnectionAccess(@NotNull String subjectId, @NotNull String[] connectionIds, String grantor) throws DBCException;
 
     @NotNull
-    DBSecurityConnectionGrant[] getConnectionSubjectAccess(String connectionId) throws DBCException;
+    SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBCException;
 
     void setConnectionSubjectAccess(@NotNull String connectionId, @Nullable String[] subjects, @Nullable String grantorId) throws DBCException;
 }

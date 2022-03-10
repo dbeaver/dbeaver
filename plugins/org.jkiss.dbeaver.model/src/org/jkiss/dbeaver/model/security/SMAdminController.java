@@ -17,17 +17,17 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.auth.DBASession;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.security.user.DBSecurityRole;
-import org.jkiss.dbeaver.model.security.user.DBSecurityUser;
+import org.jkiss.dbeaver.model.security.user.SMRole;
+import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.Map;
 
 /**
  * Admin interface
  */
-public interface DBSecurityAdminController<USER extends DBSecurityUser, ROLE extends DBSecurityRole, SESSION extends DBASession> extends DBSecurityController<USER, ROLE, SESSION> {
+public interface SMAdminController<USER extends SMUser, ROLE extends SMRole, SESSION extends SMSession> extends SMController<USER, ROLE, SESSION> {
 
     ///////////////////////////////////////////
     // Users

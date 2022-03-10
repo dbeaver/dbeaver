@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -32,6 +32,6 @@ public interface DBPObjectWithDetails<OBJECT> extends DBPObject {
      * Although this function required progress monitor it mustn't establish any remote database connections or require addional authentication.
      */
     @Nullable
-    DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull OBJECT dataSource) throws DBException;
+    DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull SMSessionContext sessionContext, @NotNull OBJECT dataSource) throws DBException;
 
 }

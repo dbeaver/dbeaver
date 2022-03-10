@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.security.user;
 
-package org.jkiss.dbeaver.model.auth;
+import org.jkiss.code.NotNull;
 
-/**
- * Session principal (user)
- */
-public interface DBASessionPrincipal {
-
-    String getUserDomain();
-
-    String getUserName();
-
+public interface SMUser {
+    @NotNull
+    String getUserId();
 }

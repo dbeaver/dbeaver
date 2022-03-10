@@ -14,28 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
 
-public enum DBSecuritySubjectType {
-    user("U"),
-    role("R");
+package org.jkiss.dbeaver.model.auth;
 
-    private final String code;
+import java.util.Map;
 
-    DBSecuritySubjectType(String code) {
-        this.code = code;
-    }
+public interface SMSessionPersistent {
+    Map<String, Object> getAttributes();
 
-    public String getCode() {
-        return code;
-    }
+    <T> T getAttribute(String name);
 
-    public static DBSecuritySubjectType fromCode(String code) {
-        for (DBSecuritySubjectType st : values()) {
-            if (st.code.equals(code)) {
-                return st;
-            }
-        }
-        throw new IllegalArgumentException("Bad subject type code: " + code);
-    }
+    void setAttribute(String name, Object value);
+
+    Object removeAttribute(String name);
 }

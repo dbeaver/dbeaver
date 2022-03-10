@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-public class BasicWorkspaceSession extends AbstractDBASessionPersistent implements DBASession, DBASessionPrincipal {
+public class BasicWorkspaceSession extends AbstractSMSessionPersistent implements SMSession, SMSessionPrincipal {
     private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
@@ -66,18 +66,18 @@ public class BasicWorkspaceSession extends AbstractDBASessionPersistent implemen
 
     @NotNull
     @Override
-    public DBAAuthSpace getSessionSpace() {
+    public SMAuthSpace getSessionSpace() {
         return workspace;
     }
 
     @NotNull
     @Override
-    public DBASessionContext getSessionContext() {
+    public SMSessionContext getSessionContext() {
         return workspace.getAuthContext();
     }
 
     @Override
-    public DBASessionPrincipal getSessionPrincipal() {
+    public SMSessionPrincipal getSessionPrincipal() {
         return this;
     }
 

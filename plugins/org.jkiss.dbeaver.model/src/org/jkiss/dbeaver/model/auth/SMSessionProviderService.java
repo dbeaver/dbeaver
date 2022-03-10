@@ -17,9 +17,20 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 /**
- * Authentication object/space
+ * Session provider service
  */
-public interface DBAAuthSpace {
+public interface SMSessionProviderService {
+
+    @Nullable
+    SMSession acquireSession(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SMSessionContext context,
+        @NotNull SMAuthSpace space) throws DBException;
 
 }

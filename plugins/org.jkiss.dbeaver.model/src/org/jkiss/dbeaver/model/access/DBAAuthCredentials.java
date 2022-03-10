@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security.user;
 
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.model.access;
 
-public interface DBSecurityRole {
-    @NotNull
-    String getRoleId();
+/**
+ * Auth credentials.
+ */
+public interface DBAAuthCredentials {
+
+    boolean isComplete();
+
 }

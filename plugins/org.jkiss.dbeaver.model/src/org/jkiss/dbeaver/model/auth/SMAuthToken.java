@@ -14,11 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security.user;
 
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.model.auth;
 
-public interface DBSecurityUser {
-    @NotNull
-    String getUserId();
+/**
+ * Auth token.
+ * Can be used by services to authenticate automatically.
+ */
+public class SMAuthToken {
+
+    private final SMSession session;
+    private final SMAuthSpace space;
+
+    public SMAuthToken(SMSession session, SMAuthSpace space) {
+        this.session = session;
+        this.space = space;
+    }
+
+    public SMSession getSession() {
+        return session;
+    }
+
+    public SMAuthSpace getSpace() {
+        return space;
+    }
 }

@@ -17,10 +17,29 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-/**
- * Federated session
- */
-public interface DBASessionFederated extends DBASession {
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+/**
+ * Session context.
+ * Holds various auth sessions.
+ */
+public interface SMSessionContext {
+
+    /**
+     * Find and opens space session
+     * @param space target space
+     * @param open  if true then new session will be opened if possible
+     */
+    @Nullable
+    SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException;
+
+    SMAuthToken[] getSavedTokens();
+
+    void addSession(@NotNull SMSession session);
+
+    boolean removeSession(@NotNull SMSession session);
 
 }

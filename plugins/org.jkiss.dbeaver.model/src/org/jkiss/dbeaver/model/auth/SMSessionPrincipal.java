@@ -18,24 +18,12 @@
 package org.jkiss.dbeaver.model.auth;
 
 /**
- * Auth token.
- * Can be used by services to authenticate automatically.
+ * Session principal (user)
  */
-public class DBAAuthToken {
+public interface SMSessionPrincipal {
 
-    private final DBASession session;
-    private final DBAAuthSpace space;
+    String getUserDomain();
 
-    public DBAAuthToken(DBASession session, DBAAuthSpace space) {
-        this.session = session;
-        this.space = space;
-    }
+    String getUserName();
 
-    public DBASession getSession() {
-        return session;
-    }
-
-    public DBAAuthSpace getSpace() {
-        return space;
-    }
 }
