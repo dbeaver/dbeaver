@@ -528,9 +528,10 @@ public final class SQLUtils {
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
             if (constraints.length > 0) {
-                query.append(operator);
+                query.append(operator).append('(').append(filter.getWhere()).append(')');
+            } else {
+                query.append(filter.getWhere());
             }
-            query.append(filter.getWhere());
         }
     }
 
