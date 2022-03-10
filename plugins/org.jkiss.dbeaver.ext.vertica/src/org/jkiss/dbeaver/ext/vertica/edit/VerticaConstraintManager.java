@@ -28,9 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -65,7 +63,7 @@ public class VerticaConstraintManager extends GenericPrimaryKeyManager {
             );
         }
 
-        if (command.getProperties().containsKey(DBConstants.PROP_ID_DESCRIPTION)) {
+        /*if (command.getProperties().containsKey(DBConstants.PROP_ID_DESCRIPTION)) {
             actionList.add(
                 new SQLDatabasePersistAction("Alter constraint description",
                     "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName()) +
@@ -73,7 +71,7 @@ public class VerticaConstraintManager extends GenericPrimaryKeyManager {
                         SQLUtils.quoteString(constraint, CommonUtils.notEmpty(constraint.getDescription()))
                     )
             );
-        }
+        }*/
         super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
     }
 

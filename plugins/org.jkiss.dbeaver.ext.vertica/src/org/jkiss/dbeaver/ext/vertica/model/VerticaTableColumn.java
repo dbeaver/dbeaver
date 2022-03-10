@@ -17,23 +17,25 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * VerticaTableColumn
  */
-public class VerticaTableColumn extends GenericTableColumn
-{
+public class VerticaTableColumn extends GenericTableColumn implements DBPObjectWithLazyDescription {
 
-    public VerticaTableColumn(GenericTableBase table) {
-        super(table);
-    }
+    private String description;
 
-    VerticaTableColumn(GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPosition, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement) {
-        super(table, columnName, typeName, valueType, sourceType, ordinalPosition, columnSize, charLength, scale, precision, radix, notNull, remarks, defaultValue, autoIncrement, false);
+    VerticaTableColumn(GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPosition, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String defaultValue, boolean autoIncrement) {
+        super(table, columnName, typeName, valueType, sourceType, ordinalPosition, columnSize, charLength, scale, precision, radix, notNull, null, defaultValue, autoIncrement, false);
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
@@ -63,10 +65,27 @@ public class VerticaTableColumn extends GenericTableColumn
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription()
-    {
-        return super.getDescription();
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public void setDescription(String remarks) {
+        this.description = remarks;
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", length = PropertyLength.MULTILINE, order = 100)
+    @LazyProperty(cacheValidator = CommentsValidator.class)
+    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+        if (description == null) {
+            GenericTableBase table = getTable();
+            if (table instanceof VerticaTable) {
+                ((VerticaTable) table).getDescription(monitor);
+            }
+        }
+        return description;
     }
 
     // Not supported
@@ -79,5 +98,14 @@ public class VerticaTableColumn extends GenericTableColumn
     @Property(viewable = true, editable = true, order = 52)
     public boolean isAutoIncrement() {
         return super.isAutoIncrement();
+    }
+
+    public static class CommentsValidator implements IPropertyCacheValidator<VerticaTableColumn> {
+
+        @Override
+        public boolean isPropertyCached(VerticaTableColumn object, Object propertyId)
+        {
+            return object.description != null;
+        }
     }
 }
