@@ -14,21 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.fs;
+package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * Virtual file system provider
- */
-public interface DBFFileSystemProvider extends DBPObject {
-
-    DBFVirtualFileSystem[] getAvailableFileSystems(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull SMSessionContext sessionContext);
-
+public interface SMRole {
+    @NotNull
+    String getRoleId();
 }

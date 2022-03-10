@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+
+package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Object with detailed info.
+ * Auth credentials provider.
  */
-public interface DBPObjectWithDetails<OBJECT> extends DBPObject {
+public interface SMAuthCredentialsProvider {
 
     /**
-     * Get additional object information.
-     * Although this function required progress monitor it mustn't establish any remote database connections or require addional authentication.
+     * Fill credential parameters in the specified container and configuration.
+     * Returns false on auth cancel. True otherwise.
      */
-    @Nullable
-    DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull SMSessionContext sessionContext, @NotNull OBJECT dataSource) throws DBException;
+    boolean provideAuthParameters(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration configuration)
+        throws DBException;
 
 }

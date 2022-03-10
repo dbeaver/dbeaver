@@ -21,9 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProfile;
-import org.jkiss.dbeaver.model.auth.DBAAuthProvider;
-import org.jkiss.dbeaver.model.auth.DBAAuthProviderDescriptor;
+import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProfile;
+import org.jkiss.dbeaver.model.auth.SMAuthProvider;
+import org.jkiss.dbeaver.model.auth.SMAuthProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.utils.ArrayUtils;
@@ -34,17 +34,17 @@ import java.util.*;
 /**
  * Auth service descriptor
  */
-public class AuthProviderDescriptor extends AbstractDescriptor implements DBAAuthProviderDescriptor {
+public class AuthProviderDescriptor extends AbstractDescriptor implements SMAuthProviderDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.auth.provider"; //$NON-NLS-1$
 
     private final IConfigurationElement cfg;
 
     private final ObjectType implType;
-    private DBAAuthProvider<?> instance;
+    private SMAuthProvider<?> instance;
     private final DBPImage icon;
     private final Map<String, PropertyDescriptor> configurationParameters = new LinkedHashMap<>();
-    private final List<DBAAuthCredentialsProfile> credentialProfiles = new ArrayList<>();
+    private final List<SMAuthCredentialsProfile> credentialProfiles = new ArrayList<>();
     private final boolean configurable;
     private final String[] requiredFeatures;
 
@@ -66,7 +66,7 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements DBAAut
             }
         }
         for (IConfigurationElement credElement : cfg.getChildren("credentials")) {
-            credentialProfiles.add(new DBAAuthCredentialsProfile(credElement));
+            credentialProfiles.add(new SMAuthCredentialsProfile(credElement));
         }
 
         String rfList = cfg.getAttribute("requiredFeatures");
@@ -102,13 +102,13 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements DBAAut
         return new ArrayList<>(configurationParameters.values());
     }
 
-    public List<DBAAuthCredentialsProfile> getCredentialProfiles() {
+    public List<SMAuthCredentialsProfile> getCredentialProfiles() {
         return new ArrayList<>(credentialProfiles);
     }
 
     public List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet) {
         if (credentialProfiles.size() > 1) {
-            for (DBAAuthCredentialsProfile profile : credentialProfiles) {
+            for (SMAuthCredentialsProfile profile : credentialProfiles) {
                 if (profile.getCredentialParameters().size() == keySet.size()) {
                     boolean matches = true;
                     for (String paramName : keySet) {
@@ -127,10 +127,10 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements DBAAut
     }
 
     @NotNull
-    public DBAAuthProvider<?> getInstance() {
+    public SMAuthProvider<?> getInstance() {
         if (instance == null) {
             try {
-                instance = implType.createInstance(DBAAuthProvider.class);
+                instance = implType.createInstance(SMAuthProvider.class);
             } catch (DBException e) {
                 throw new IllegalStateException("Can not instantiate auth provider '" + implType.getImplName() + "'", e);
             }

@@ -14,21 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.security;
 
-package org.jkiss.dbeaver.model.fs;
+public class SMDataSourceGrant {
+    private final String dataSourceId;
+    private final String subjectId;
+    private final SMSubjectType subjectType;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+    public SMDataSourceGrant(String dataSourceId, String subjectId, SMSubjectType subjectType) {
+        this.dataSourceId = dataSourceId;
+        this.subjectId = subjectId;
+        this.subjectType = subjectType;
+    }
 
-/**
- * Virtual file system provider
- */
-public interface DBFFileSystemProvider extends DBPObject {
+    public String getDataSourceId() {
+        return dataSourceId;
+    }
 
-    DBFVirtualFileSystem[] getAvailableFileSystems(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull SMSessionContext sessionContext);
+    public String getSubjectId() {
+        return subjectId;
+    }
 
+    public SMSubjectType getSubjectType() {
+        return subjectType;
+    }
 }

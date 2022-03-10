@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.auth.impl;
+
+import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractDBASessionPersistent implements DBASessionPersistent {
+public abstract class AbstractSessionPersistent implements SMSessionPersistent {
     protected final Map<String, Object> attributes = new HashMap<>();
 
     @Override

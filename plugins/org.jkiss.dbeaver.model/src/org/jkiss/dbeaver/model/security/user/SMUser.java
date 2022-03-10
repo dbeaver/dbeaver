@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.security.user;
 
-package org.jkiss.dbeaver.model.auth;
+import org.jkiss.code.NotNull;
 
-/**
- * Federated session
- */
-public interface DBASessionFederated extends DBASession {
-
-
+public interface SMUser {
+    @NotNull
+    String getUserId();
 }

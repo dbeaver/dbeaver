@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.auth;
 /**
  * Session principal (user)
  */
-public interface DBASessionPrincipal {
+public interface SMSessionPrincipal {
 
     String getUserDomain();
 

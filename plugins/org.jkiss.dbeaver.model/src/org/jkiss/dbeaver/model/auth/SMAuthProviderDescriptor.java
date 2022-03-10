@@ -14,28 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPImage;
+
+import java.util.List;
+import java.util.Set;
+
 /**
- * Auth token.
- * Can be used by services to authenticate automatically.
+ * Auth provider descriptor
  */
-public class DBAAuthToken {
+public interface SMAuthProviderDescriptor {
 
-    private final DBASession session;
-    private final DBAAuthSpace space;
+    String getId();
 
-    public DBAAuthToken(DBASession session, DBAAuthSpace space) {
-        this.session = session;
-        this.space = space;
-    }
+    String getLabel();
 
-    public DBASession getSession() {
-        return session;
-    }
+    String getDescription();
 
-    public DBAAuthSpace getSpace() {
-        return space;
-    }
+    DBPImage getIcon();
+
+    List<SMAuthCredentialsProfile> getCredentialProfiles();
+
+    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
+
+    @NotNull
+    SMAuthProvider<?> getInstance();
+
 }

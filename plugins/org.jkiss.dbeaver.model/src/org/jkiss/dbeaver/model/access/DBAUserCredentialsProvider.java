@@ -14,32 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+
+package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPImage;
-
-import java.util.List;
-import java.util.Set;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 /**
- * Auth provider descriptor
+ * Auth credentials provider.
+ * Can be implemented by DBPDataSource implementation.
  */
-public interface DBAAuthProviderDescriptor {
+public interface DBAUserCredentialsProvider {
 
-    String getId();
+    String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo);
 
-    String getLabel();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    List<DBAAuthCredentialsProfile> getCredentialProfiles();
-
-    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
-
-    @NotNull
-    DBAAuthProvider<?> getInstance();
+    String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo);
 
 }

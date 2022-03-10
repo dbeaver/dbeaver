@@ -25,22 +25,22 @@ import java.util.Map;
 /**
  * Auth provider
  */
-public interface DBAAuthProvider<AUTH_SESSION extends DBASession> {
+public interface SMAuthProvider<AUTH_SESSION extends SMSession> {
 
     AUTH_SESSION openSession(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBASession mainSession,
+        @NotNull SMSession mainSession,
         @NotNull Map<String, Object> providerConfig, // Auth provider configuration (e.g. 3rd party auth server address)
         @NotNull Map<String, Object> userCredentials // Saved user credentials (e.g. associated 3rd party provider user name or realm)
     ) throws DBException;
 
     void closeSession(
-        @NotNull DBASession mainSession,
+        @NotNull SMSession mainSession,
         AUTH_SESSION session) throws DBException;
 
     void refreshSession(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBASession mainSession,
+        @NotNull SMSession mainSession,
         AUTH_SESSION session) throws DBException;
 
 }
