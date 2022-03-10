@@ -59,9 +59,6 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, options))) {
-            throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
-        }
     }
 
     @Nullable
