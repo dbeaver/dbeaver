@@ -38,7 +38,7 @@ public class SchedulerJobLogEditor extends AbstractDataEditor<OracleSchedulerJob
 {
     private static final Log log = Log.getLog(SchedulerJobLogEditor.class);
 
-    private static final String LOG_VIEW_NAME = "ALL_SCHEDULER_JOB_RUN_DETAILS";
+    private static final String LOG_VIEW_NAME = "SCHEDULER_JOB_RUN_DETAILS";
 
     @Nullable
     @Override
@@ -110,7 +110,7 @@ public class SchedulerJobLogEditor extends AbstractDataEditor<OracleSchedulerJob
             OracleDataSource dataSource = getDatabaseObject().getDataSource();
             OracleSchema systemSchema = dataSource.getSchema(monitor, OracleConstants.SCHEMA_SYS);
             if (systemSchema != null) {
-                return systemSchema.getView(monitor, LOG_VIEW_NAME);
+                return systemSchema.getView(monitor, OracleUtils.getSysUserViewName(monitor, dataSource, LOG_VIEW_NAME));
             }
             return null;
         } catch (DBException e) {
