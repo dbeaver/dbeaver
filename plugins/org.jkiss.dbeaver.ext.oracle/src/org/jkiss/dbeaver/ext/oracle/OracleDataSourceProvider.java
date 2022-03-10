@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPInformationProvider;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.auth.SMUserCredentialsProvider;
+import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
-    SMUserCredentialsProvider,
+    DBAUserCredentialsProvider,
     DBPNativeClientLocationManager,
     DBPInformationProvider {
 

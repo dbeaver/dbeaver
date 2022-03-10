@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
  * Auth credentials provider.
  * Can be implemented by DBPDataSource implementation.
  */
-public interface SMUserCredentialsProvider {
+public interface DBAUserCredentialsProvider {
 
     String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo);
 

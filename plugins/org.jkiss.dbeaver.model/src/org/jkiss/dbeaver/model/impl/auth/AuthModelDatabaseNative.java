@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
-import org.jkiss.dbeaver.model.auth.SMUserCredentialsProvider;
+import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -57,9 +57,9 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
 
     protected void loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, CREDENTIALS credentials) {
         DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
-        if (dataSourceProvider instanceof SMUserCredentialsProvider) {
-            credentials.setUserName(((SMUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
-            credentials.setUserPassword(((SMUserCredentialsProvider) dataSourceProvider).getConnectionUserPassword(configuration));
+        if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
+            credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
+            credentials.setUserPassword(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserPassword(configuration));
         } else {
             credentials.setUserName(configuration.getUserName());
             credentials.setUserPassword(configuration.getUserPassword());
