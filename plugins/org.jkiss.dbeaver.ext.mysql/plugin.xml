@@ -266,7 +266,7 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
-                    <parameter name="mfa.enabled" value="true"/>
+                    <parameter name="tfa.enabled" value="true"/>
                 </driver>
             </drivers>
 
