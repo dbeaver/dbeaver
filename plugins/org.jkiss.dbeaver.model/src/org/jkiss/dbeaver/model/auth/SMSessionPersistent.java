@@ -17,11 +17,14 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-/**
- * Auth credentials.
- */
-public interface DBAAuthCredentials {
+import java.util.Map;
 
-    boolean isComplete();
+public interface SMSessionPersistent {
+    Map<String, Object> getAttributes();
 
+    <T> T getAttribute(String name);
+
+    void setAttribute(String name, Object value);
+
+    Object removeAttribute(String name);
 }

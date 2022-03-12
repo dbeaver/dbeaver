@@ -18,21 +18,28 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Auth credentials provider.
+ * Session context.
+ * Holds various auth sessions.
  */
-public interface DBAAuthCredentialsProvider {
+public interface SMSessionContext {
 
     /**
-     * Fill credential parameters in the specified container and configuration.
-     * Returns false on auth cancel. True otherwise.
+     * Find and opens space session
+     * @param space target space
+     * @param open  if true then new session will be opened if possible
      */
-    boolean provideAuthParameters(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration configuration)
-        throws DBException;
+    @Nullable
+    SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException;
+
+    SMAuthToken[] getSavedTokens();
+
+    void addSession(@NotNull SMSession session);
+
+    boolean removeSession(@NotNull SMSession session);
 
 }

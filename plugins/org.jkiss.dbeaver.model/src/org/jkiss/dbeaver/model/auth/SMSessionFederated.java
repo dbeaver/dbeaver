@@ -17,14 +17,10 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-import java.util.Map;
+/**
+ * Federated session
+ */
+public interface SMSessionFederated extends SMSession {
 
-public interface DBASessionPersistent {
-    Map<String, Object> getAttributes();
 
-    <T> T getAttribute(String name);
-
-    void setAttribute(String name, Object value);
-
-    Object removeAttribute(String name);
 }

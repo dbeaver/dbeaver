@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
@@ -106,7 +107,7 @@ public class ResultSetPropertyTester extends PropertyTester
                 }
                 if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
                     DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                    if (attr == null) {
+                    if (attr == null || !(rsv.getActivePresentation() instanceof IResultSetEditor)) {
                         return false;
                     }
                     if ("inline".equals(expectedValue)) {

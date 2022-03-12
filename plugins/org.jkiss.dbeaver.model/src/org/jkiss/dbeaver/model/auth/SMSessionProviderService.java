@@ -19,40 +19,18 @@ package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Access session.
+ * Session provider service
  */
-public interface DBASession extends DBPObject {
+public interface SMSessionProviderService {
 
-    /**
-     * Session space
-     */
-    @NotNull
-    DBAAuthSpace getSessionSpace();
-
-    @NotNull
-    DBASessionContext getSessionContext();
-
-    DBASessionPrincipal getSessionPrincipal();
-
-    /**
-     * Session unique ID
-     */
-    @NotNull
-    String getSessionId();
-
-    /**
-     * Application session is a global singleton session
-     */
-    boolean isApplicationSession();
-
-    /**
-     * Singleton session project
-     */
     @Nullable
-    DBPProject getSingletonProject();
+    SMSession acquireSession(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SMSessionContext context,
+        @NotNull SMAuthSpace space) throws DBException;
 
 }

@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -103,7 +103,7 @@ public class DBNModel implements IResourceChangeListener {
         return modelProject;
     }
 
-    public DBASessionContext getModelAuthContext() {
+    public SMSessionContext getModelAuthContext() {
         return modelProject != null ? modelProject.getSessionContext() : platform.getWorkspace().getAuthContext();
     }
 

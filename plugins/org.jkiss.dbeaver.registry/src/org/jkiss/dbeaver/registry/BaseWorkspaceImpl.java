@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
-import org.jkiss.dbeaver.model.auth.DBASession;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -123,7 +123,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @NotNull
-    protected DBASession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
+    protected SMSession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
         return new BasicWorkspaceSession(this);
     }
 
@@ -245,7 +245,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     @NotNull
     @Override
-    public DBASessionContext getAuthContext() {
+    public SMSessionContext getAuthContext() {
         return workspaceAuthContext;
     }
 
