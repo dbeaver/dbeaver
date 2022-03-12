@@ -48,6 +48,7 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
     private Button textDelimiterTop;
     private Button textDelimiterBottom;
     private Button textExtraSpaces;
+    private Button textLineNumber;
 
     public PrefPageResultSetPresentationPlainText()
     {
@@ -67,7 +68,8 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
+            store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES) ||
+            store.contains(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER);
     }
 
     @Override
@@ -90,6 +92,7 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
             showNulls = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
             textDelimiterLeading = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
             textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
+            textLineNumber = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers, null, false, 2);
             textDelimiterTop = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_top, null, false, 2);
             textDelimiterBottom = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_bottom, null, false, 2);
             textExtraSpaces = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_extra_spaces, null, false, 2);
@@ -109,6 +112,7 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
             textDelimiterLeading.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING));
             textDelimiterTrailing.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING));
             textDelimiterTop.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP));
+            textLineNumber.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER));
             textDelimiterBottom.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM));
             textExtraSpaces.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES));
         } catch (Exception e) {
@@ -127,6 +131,7 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING, textDelimiterLeading.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING, textDelimiterTrailing.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP, textDelimiterTop.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER, textLineNumber.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM, textDelimiterBottom.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES, textExtraSpaces.getSelection());
         } catch (Exception e) {

@@ -40,8 +40,4 @@ public class H2SQLDialect extends GenericSQLDialect {
         return true;
     }
 
-    @Override
-    public boolean supportsColumnAutoIncrement() {
-        return true;
-    }
 }

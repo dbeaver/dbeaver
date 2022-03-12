@@ -2615,7 +2615,7 @@ public class SQLEditor extends SQLEditorBase implements
             extraPresentation = null;
         }
         // Release ds container
-        clearProblems();
+        clearProblems(null);
         releaseContainer();
         closeAllJobs();
 
@@ -3792,7 +3792,7 @@ public class SQLEditor extends SQLEditorBase implements
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
                         resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
-                    clearProblems();
+                    clearProblems(null);
                 });
             } finally {
                 if (extListener != null) extListener.onStartScript();
@@ -3807,6 +3807,9 @@ public class SQLEditor extends SQLEditorBase implements
                     UIUtils.asyncExec(() -> {
                         setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
                         updateDirtyFlag();
+                        if (!scriptMode) {
+                            clearProblems(query);
+                        }
                     });
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
@@ -4004,7 +4007,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         try {
-            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW);
+            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
         } catch (PartInitException e) {
             log.debug("Error opening problem view", e);
         }
@@ -4012,24 +4015,35 @@ public class SQLEditor extends SQLEditorBase implements
         return true;
     }
 
-    private void clearProblems() {
-        final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
-        final IAnnotationModel annotationModel = getAnnotationModel();
+    private void clearProblems(@Nullable SQLQuery query) {
+        if (query == null) {
+            final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
 
-        if (resource != null) {
-            try {
-                resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
-            } catch (CoreException e) {
-                log.error("Error deleting problem markers", e);
+            if (resource != null) {
+                try {
+                    resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
+                } catch (CoreException e) {
+                    log.error("Error deleting problem markers", e);
+                }
             }
-        }
+        } else {
+            final IAnnotationModel annotationModel = getAnnotationModel();
 
-        if (annotationModel != null) {
-            for (Iterator<Annotation> it = annotationModel.getAnnotationIterator(); it.hasNext(); ) {
-                final Annotation annotation = it.next();
+            if (annotationModel != null) {
+                for (Iterator<Annotation> it = annotationModel.getAnnotationIterator(); it.hasNext(); ) {
+                    final Annotation annotation = it.next();
 
-                if (annotation instanceof SQLProblemAnnotation) {
-                    annotationModel.removeAnnotation(annotation);
+                    if (annotation instanceof SQLProblemAnnotation) {
+                        final Position position = annotationModel.getPosition(annotation);
+
+                        if (position.overlapsWith(query.getOffset(), query.getLength())) {
+                            try {
+                                ((SQLProblemAnnotation) annotation).getMarker().delete();
+                            } catch (CoreException e) {
+                                log.error("Error deleting problem marker", e);
+                            }
+                        }
+                    }
                 }
             }
         }

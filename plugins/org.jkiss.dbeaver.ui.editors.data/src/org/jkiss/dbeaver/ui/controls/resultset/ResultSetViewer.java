@@ -723,12 +723,18 @@ public class ResultSetViewer extends Viewer
             isUIUpdateRunning = true;
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
+                if (filtersPanel != null) {
+                    filtersPanel.setVisible(false);
+                }
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
                 changed = true;
             } else {
                 // Regular results
+                if (filtersPanel != null) {
+                    filtersPanel.setVisible(true);
+                }
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
                 final List<ResultSetPresentationDescriptor> newPresentations;
 

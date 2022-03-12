@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.resources;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
@@ -34,7 +38,14 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Default resource handler
@@ -96,7 +107,6 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof NIOFile) {
             NIOFileStore fileStore = new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath());
-            FileStoreEditorInput editorInput = new FileStoreEditorInput(fileStore);
 
             // open the editor on the file
             IEditorDescriptor editorDesc;
@@ -106,9 +116,45 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 return;
             }
 
+            if (IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID.equals(editorDesc.getId())) {
+                try {
+                    UIUtils.runInProgressService(monitor -> {
+                        try {
+                            final Path target = Files.createTempFile(
+                                DBWorkbench.getPlatform().getTempFolder(monitor, "external-files").toPath(),
+                                null,
+                                fileStore.getName()
+                            );
+
+                            try (InputStream is = fileStore.openInputStream(EFS.NONE, null)) {
+                                try (OutputStream os = Files.newOutputStream(target)) {
+                                    final IFileInfo info = fileStore.fetchInfo(EFS.NONE, null);
+                                    ContentUtils.copyStreams(is, info.getLength(), os, monitor);
+                                }
+                            }
+
+                            // Here we could potentially start a new process
+                            // and wait for it to finish, this will allow us to:
+                            //  1. Delete the temporary file right away
+                            //  2. Detect changes made by an external editor
+                            // But for now it's okay, I assume.
+
+                            Program.launch(target.toString());
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e.getTargetException());
+                } catch (InterruptedException ignored) {
+                }
+
+                return;
+            }
+
             IDE.openEditor(
                 UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                editorInput,
+                new FileStoreEditorInput(fileStore),
                 editorDesc.getId());
         } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);

@@ -59,9 +59,6 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, options))) {
-            throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
-        }
     }
 
     @Nullable
@@ -116,7 +113,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
             String mViewDefinition = view.getMViewText().trim();
-            if (mViewDefinition.startsWith("CREATE MATERIALIZED VIEW")) {
+            if (mViewDefinition.contains("CREATE MATERIALIZED VIEW")) {
                 if (mViewDefinition.endsWith(";")) mViewDefinition = mViewDefinition.substring(0, mViewDefinition.length() - 1);
                 decl.append(mViewDefinition);
             } else {
@@ -134,7 +131,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON MATERIALIZED VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(view.getDataSource(), view.getComment())));
+                    " IS " + SQLUtils.quoteString(view.getDataSource(), CommonUtils.notEmpty(view.getComment()))));
         }
     }
 
