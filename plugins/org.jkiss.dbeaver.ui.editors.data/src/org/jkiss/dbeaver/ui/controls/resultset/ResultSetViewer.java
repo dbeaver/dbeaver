@@ -3574,7 +3574,7 @@ public class ResultSetViewer extends Viewer
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
                     dataReceiver.setHasMoreData(false);
-                    updatePanelsContent(true);
+                    UIUtils.asyncExec(() -> updatePanelsContent(true));
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
@@ -3671,6 +3671,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean refreshData(@Nullable Runnable onSuccess) {
         if (!verifyQuerySafety() || !checkForChanges()) {
+            autoRefreshControl.scheduleAutoRefresh(false);
             return false;
         }
 
