@@ -880,6 +880,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    public boolean supportsColumnAutoIncrement() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return true;
     }

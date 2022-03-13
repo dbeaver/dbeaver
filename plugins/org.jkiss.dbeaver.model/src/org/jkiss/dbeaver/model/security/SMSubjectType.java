@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.security;
 
-package org.jkiss.dbeaver.model.auth;
+public enum SMSubjectType {
+    user("U"),
+    role("R");
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+    private final String code;
 
-/**
- * Session provider service
- */
-public interface DBASessionProviderService {
+    SMSubjectType(String code) {
+        this.code = code;
+    }
 
-    @Nullable
-    DBASession acquireSession(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBASessionContext context,
-        @NotNull DBAAuthSpace space) throws DBException;
+    public String getCode() {
+        return code;
+    }
 
+    public static SMSubjectType fromCode(String code) {
+        for (SMSubjectType st : values()) {
+            if (st.code.equals(code)) {
+                return st;
+            }
+        }
+        throw new IllegalArgumentException("Bad subject type code: " + code);
+    }
 }

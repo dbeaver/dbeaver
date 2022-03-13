@@ -558,7 +558,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsColumnAutoIncrement() {
-        return false;
+        return true;
     }
 
     @Nullable

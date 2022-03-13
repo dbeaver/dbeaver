@@ -30,13 +30,13 @@ import java.util.Map;
  * Credentials profile.
  * Set of user credentials required by auth provider.
  */
-public class DBAAuthCredentialsProfile {
+public class SMAuthCredentialsProfile {
     private final String id;
     private final String label;
     private final String description;
     private final Map<String, AuthPropertyDescriptor> credentialParameters = new LinkedHashMap<>();
 
-    public DBAAuthCredentialsProfile(IConfigurationElement cfg) {
+    public SMAuthCredentialsProfile(IConfigurationElement cfg) {
         this.id = cfg.getAttribute("id");
         this.label = cfg.getAttribute("label");
         this.description = cfg.getAttribute("description");

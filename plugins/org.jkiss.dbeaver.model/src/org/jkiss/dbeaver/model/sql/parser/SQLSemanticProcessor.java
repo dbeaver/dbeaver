@@ -181,7 +181,7 @@ public class SQLSemanticProcessor {
         if (filter.hasConditions()) {
             for (DBDAttributeConstraint co : filter.getConstraints()) {
                 if (co.hasCondition() && !isDynamicAttribute(co.getAttribute())) {
-                    Table table = getConstraintTable(select, co);
+                    Table table = getConstraintTable(dataSource, select, co);
                     if (!isValidTableColumn(monitor, dataSource, table, co)) {
                         return false;
                     }
@@ -282,7 +282,7 @@ public class SQLSemanticProcessor {
             orderExpr = new LongValue(orderColumnIndex);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
-            Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
+            Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(dataSource, select, co);
 
             if (!isValidTableColumn(monitor, dataSource, orderTable, co)) {
                 orderTable = null;
@@ -303,7 +303,7 @@ public class SQLSemanticProcessor {
      * Searches in FROM and JOIN
      */
     @Nullable
-    public static Table getConstraintTable(PlainSelect select, DBDAttributeConstraint constraint) {
+    public static Table getConstraintTable(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint constraint) {
         String constrTable;
         DBSAttributeBase ca = constraint.getAttribute();
         if (ca instanceof DBDAttributeBinding) {
@@ -317,12 +317,12 @@ public class SQLSemanticProcessor {
             return null;
         }
         FromItem fromItem = select.getFromItem();
-        Table table = findTableInFrom(fromItem, constrTable);
+        Table table = findTableInFrom(dataSource, fromItem, constrTable);
         if (table == null) {
             // Maybe it is a join
             if (!CommonUtils.isEmpty(select.getJoins())) {
                 for (Join join : select.getJoins()) {
-                    table = findTableInFrom(join.getRightItem(), constrTable);
+                    table = findTableInFrom(dataSource, join.getRightItem(), constrTable);
                     if (table != null) {
                         break;
                     }
@@ -344,8 +344,9 @@ public class SQLSemanticProcessor {
     }
 
     @Nullable
-    private static Table findTableInFrom(FromItem fromItem, String tableName) {
-        if (fromItem instanceof Table && tableName.equals(((Table) fromItem).getName())) {
+    private static Table findTableInFrom(DBPDataSource dataSource, FromItem fromItem, String tableName) {
+        if (fromItem instanceof Table && 
+            DBUtils.getUnQuotedIdentifier(dataSource, tableName).equals(DBUtils.getUnQuotedIdentifier(dataSource, ((Table) fromItem).getName()))) {
             return (Table) fromItem;
         }
         return null;

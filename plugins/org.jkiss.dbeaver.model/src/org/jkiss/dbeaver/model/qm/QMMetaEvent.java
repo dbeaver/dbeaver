@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.auth.DBASessionPersistent;
+import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 
 /**
@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 public class QMMetaEvent implements QMEvent {
     protected final QMMObject object;
     protected final QMEventAction action;
-    protected final DBASessionPersistent qmAppSessionPersistent;
+    protected final SMSessionPersistent qmAppSessionPersistent;
 
-    public QMMetaEvent(QMMObject object, QMEventAction action, DBASessionPersistent qmAppSessionPersistent) {
+    public QMMetaEvent(QMMObject object, QMEventAction action, SMSessionPersistent qmAppSessionPersistent) {
         this.object = object;
         this.action = action;
         this.qmAppSessionPersistent = qmAppSessionPersistent;
@@ -42,7 +42,7 @@ public class QMMetaEvent implements QMEvent {
         return action;
     }
 
-    public DBASessionPersistent getQmAppSessionPersistent() {
+    public SMSessionPersistent getQmAppSessionPersistent() {
         return qmAppSessionPersistent;
     }
 

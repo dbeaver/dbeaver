@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.impl.auth;
 
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**

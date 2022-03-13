@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.exec.DBCException;
+
+import java.util.Map;
 
 /**
- * Session context.
- * Holds various auth sessions.
+ * Credentials manager.
+ * Keeps user credentials and provides low-level authentication mechanisms
  */
-public interface DBASessionContext {
+public interface SMAuthCredentialsManager {
 
     /**
-     * Find and opens space session
-     * @param space target space
-     * @param open  if true then new session will be opened if possible
+     * Find user with matching credentials.
+     * It doesn't check credentials like passwords, just searches user id by identifying credentials.
      */
     @Nullable
-    DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space, boolean open) throws DBException;
+    String getUserByCredentials(SMAuthProviderDescriptor authProvider, Map<String, Object> authParameters) throws DBCException;
 
-    DBAAuthToken[] getSavedTokens();
-
-    void addSession(@NotNull DBASession session);
-
-    boolean removeSession(@NotNull DBASession session);
+    /**
+     * Get user credentials for specified provider
+     */
+    Map<String, Object> getUserCredentials(String userId, SMAuthProviderDescriptor authProvider) throws DBCException;
 
 }

@@ -15,20 +15,11 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.fs;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+package org.jkiss.dbeaver.model.auth;
 
 /**
- * Virtual file system provider
+ * Authentication object/space
  */
-public interface DBFFileSystemProvider extends DBPObject {
-
-    DBFVirtualFileSystem[] getAvailableFileSystems(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull SMSessionContext sessionContext);
+public interface SMAuthSpace {
 
 }
