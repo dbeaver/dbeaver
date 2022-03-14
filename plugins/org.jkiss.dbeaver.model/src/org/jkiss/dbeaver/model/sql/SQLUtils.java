@@ -645,9 +645,13 @@ public final class SQLUtils {
                 }
                 if (hasNull) {
                     conString.append("IS NULL OR ");
-                    if (conditionTable != null) {
-                        conString.append(conditionTable).append('.');
+                    
+                    if (constraint.getEntityAlias() != null) {
+                    	conString.append(constraint.getEntityAlias()).append('.');
+                    } else if (conditionTable != null) {
+                    	conString.append(conditionTable).append('.');
                     }
+                    
                     conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
