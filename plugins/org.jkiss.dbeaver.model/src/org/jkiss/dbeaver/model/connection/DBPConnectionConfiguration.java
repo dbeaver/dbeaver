@@ -405,12 +405,13 @@ public class DBPConnectionConfiguration implements DBPObject {
         }        
     }
     
-    public boolean authModelHasCapability(String capabilityName) {
+    public boolean authModelHasCapability(@NotNull String capabilityName) {
         DBPAuthModelDescriptor authModelDesc = this.getAuthModelDescriptor();
         return authModelDesc != null && authModelDesc.hasCapability(capabilityName);
     }
     
-    public String getAuthModelCapability(String capabilityName) {
+    @Nullable
+    public String getAuthModelCapability(@NotNull String capabilityName) {
         DBPAuthModelDescriptor authModelDesc = this.getAuthModelDescriptor();
         return authModelDesc == null ? null : authModelDesc.getCapability(capabilityName);
     }

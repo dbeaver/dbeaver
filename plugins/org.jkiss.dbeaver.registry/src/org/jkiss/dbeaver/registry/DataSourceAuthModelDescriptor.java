@@ -105,12 +105,13 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     }
     
     @Override
-    public boolean hasCapability(String capabilityName) {
+    public boolean hasCapability(@NotNull String capabilityName) {
         return this.capabilities.containsKey(capabilityName);
     }
 
     @Override
-    public String getCapability(String capabilityName) {
+    @Nullable
+    public String getCapability(@NotNull String capabilityName) {
         return this.capabilities.get(capabilityName);
     }
 
