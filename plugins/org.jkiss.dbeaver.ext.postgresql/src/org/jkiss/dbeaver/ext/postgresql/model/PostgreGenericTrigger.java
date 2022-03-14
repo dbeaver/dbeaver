@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -36,7 +37,7 @@ public class PostgreGenericTrigger extends GenericTableTrigger {
     private String timing;
     private String source;
 
-    public PostgreGenericTrigger(GenericStructContainer container, GenericTableBase table, String name, String description, String manipulation, String orientation, String timing, String statement) {
+    public PostgreGenericTrigger(GenericStructContainer container, GenericTableBase table, String name, String description, String manipulation, String orientation, @Nullable String timing, String statement) {
         super(table, name, description);
         this.manipulation = manipulation;
         this.orientation = orientation;
@@ -44,6 +45,7 @@ public class PostgreGenericTrigger extends GenericTableTrigger {
         this.source = statement;
     }
 
+    @Nullable
     @Property(viewable = true, editable = true, updatable = false, order = 20)
     public String getTiming() {
         return timing;
