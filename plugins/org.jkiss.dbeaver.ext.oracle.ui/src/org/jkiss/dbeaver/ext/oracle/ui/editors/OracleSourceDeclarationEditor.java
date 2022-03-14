@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleJob;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +53,8 @@ public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceO
 
     @Override
     protected boolean isReadOnly() {
-        return false;
+        DBSObjectWithScript sourceObject = getSourceObject();
+        return sourceObject instanceof OracleSequence || sourceObject instanceof OracleJob;
     }
 
     @Override
