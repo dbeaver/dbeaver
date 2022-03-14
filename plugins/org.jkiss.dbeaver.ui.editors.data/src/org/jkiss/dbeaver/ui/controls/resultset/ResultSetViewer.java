@@ -4922,6 +4922,11 @@ public class ResultSetViewer extends Viewer
                             // Restore original position
                             restorePresentationState(presentationState);
                         }
+                        /*
+                        We allow zero length row list for the situations when we load new an empty resultSet and the last resultSet
+                        wasn't empty. Previously we didn't update the selected row count which caused a problem described in #15767
+                        Now we call the ResultSetStatListener even if the resultSet is empty.
+                         */
                         if (focusRow >= 0 && (focusRow < model.getRowCount() || model.getRowCount() == 0) && model.getVisibleAttributeCount() > 0) {
                             if (getCurrentRow() == null && model.getRowCount() > 0) {
                                 setCurrentRow(getModel().getRow(focusRow));
