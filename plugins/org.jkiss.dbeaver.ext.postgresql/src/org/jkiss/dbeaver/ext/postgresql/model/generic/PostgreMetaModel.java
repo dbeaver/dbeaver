@@ -82,15 +82,14 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        if (sourceObject.getDataSource().isServerVersionAtLeast(8, 4)) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read procedure definition")) {
-                return JDBCUtils.queryString(session, "SELECT pg_get_functiondef(p.oid) FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
-                    "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
-            } catch (SQLException e) {
-                throw new DBException(e, sourceObject.getDataSource());
-            }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read procedure definition")) {
+            return JDBCUtils.queryString(session, "SELECT " +
+                (sourceObject.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_get_functiondef(p.oid)" : "prosrc") +
+                " FROM pg_catalog.pg_proc P, pg_catalog.pg_namespace NS\n" +
+                "WHERE ns.oid=p.pronamespace AND ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
+        } catch (SQLException e) {
+            throw new DBException(e, sourceObject.getDataSource());
         }
-        return super.getProcedureDDL(monitor, sourceObject);
     }
 
     @Override
@@ -180,7 +179,6 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         String manipulation = JDBCUtils.safeGetString(dbResult, "event_manipulation");
         String description = "";
         return new PostgreGenericTrigger(
-            genericStructContainer,
             genericTableBase,
             name,
             description,
@@ -230,7 +228,6 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                         }
                         String description = "";
                         trigger = new PostgreGenericTrigger(
-                            container,
                             table,
                             name,
                             description,
