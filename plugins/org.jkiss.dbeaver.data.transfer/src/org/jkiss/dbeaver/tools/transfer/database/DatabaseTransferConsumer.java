@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodRegistry;
 import org.jkiss.dbeaver.model.struct.*;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -365,7 +367,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (isPreview) {
             return;
         }
-        boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
+        boolean ignoreDuplicateRowsErrors = settings.isIgnoreDuplicateRows();
+        boolean needCommit = force || ignoreDuplicateRowsErrors || ((rowsExported % settings.getCommitAfterRows()) == 0);
+        // Do commit action in these cases:
+        // 1. This is the end of the insert operation (fetchEnd)
+        // 2. ignoreDuplicateRowsErrors option is enabled - that means, what we do not have batches, only single rows, and we can loose inserted rows without commit in some databases like PG
+        // 3. We approached the amount of rows selected for commenting
+
         if (bulkLoadManager != null) {
             if (needCommit) {
                 bulkLoadManager.flushRows(targetSession);
@@ -412,6 +420,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                             }
                         });
                     } catch (Throwable e) {
+                        if (ignoreDuplicateRowsErrors && (e.getCause() instanceof SQLException)) {
+                            SQLException cause = (SQLException) e.getCause();
+                            String sqlState = cause.getSQLState();
+                            if (CommonUtils.isNotEmpty(sqlState) && (SQLState.SQL_23000.getCode().equals(sqlState) || SQLState.SQL_23505.getCode().equals(sqlState))) {
+                                break;
+                            } else if (CommonUtils.isEmpty(sqlState) && cause.getErrorCode() == 19) {
+                                // No state, but vendor code is 19 - seems to be SQLite database.
+                                break;
+                            }
+                        }
                         log.error("Error inserting row", e);
                         if (ignoreErrors) {
                             break;
