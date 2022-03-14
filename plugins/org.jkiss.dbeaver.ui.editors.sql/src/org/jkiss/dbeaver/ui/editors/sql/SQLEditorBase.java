@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
@@ -36,8 +38,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
@@ -64,10 +65,7 @@ import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -77,6 +75,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -510,6 +509,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
 */
 
+        clearProblems(null);
+
         if (themeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
             themeListener = null;
@@ -780,13 +781,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         IDocument document = getDocument();
         String text = document == null ? "" : document.get();
         SQLQuery query = new SQLQuery(getDataSource(), text, 0, text.length());
-        return scrollCursorToError(monitor, query, error);
+        return visualizeQueryErrors(monitor, query, error);
     }
 
     /**
      * Error handling
      */
-    boolean scrollCursorToError(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
+    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
         try {
             DBCExecutionContext context = getExecutionContext();
             if (context == null) {
@@ -801,35 +802,46 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     int queryStartOffset = query.getOffset();
                     int queryLength = query.getLength();
 
-                    DBPErrorAssistant.ErrorPosition pos = positions[0];
-                    if (pos.line < 0) {
-                        if (pos.position >= 0) {
-                            // Only position
-                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
-                            scrolled = true;
-                        }
-                    } else {
-                        // Line + position
-                        IDocument document = getDocument();
-                        if (document != null) {
-                            int startLine = document.getLineOfOffset(queryStartOffset);
-                            int errorOffset = document.getLineOffset(startLine + pos.line);
-                            int errorLength;
+                    for (int index = 0; index < positions.length; index++) {
+                        DBPErrorAssistant.ErrorPosition pos = positions[index];
+                        if (pos.line < 0) {
                             if (pos.position >= 0) {
-                                errorOffset += pos.position;
-                                errorLength = 1;
-                            } else {
-                                errorLength = document.getLineLength(startLine + pos.line);
+                                // Only position
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(queryStartOffset + pos.position, queryLength - pos.position))) {
+                                    scrolled = true;
+                                } else if (index == 0) {
+                                    getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
+                                    scrolled = true;
+                                }
                             }
-                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
-                            if (errorLength > queryLength) errorLength = queryLength;
-                            if (errorOffset >= queryStartOffset + queryLength) {
-                                // This may happen if error position was incorrectly detected.
-                                // E.g. in SQL Server when actual error happened in some stored procedure.
-                                errorOffset  = queryStartOffset + queryLength - 1;
+                        } else {
+                            // Line + position
+                            IDocument document = getDocument();
+                            if (document != null) {
+                                int startLine = document.getLineOfOffset(queryStartOffset);
+                                int errorOffset = document.getLineOffset(startLine + pos.line);
+                                int errorLength;
+                                if (pos.position >= 0) {
+                                    errorOffset += pos.position;
+                                    errorLength = 1;
+                                } else {
+                                    errorLength = document.getLineLength(startLine + pos.line);
+                                }
+                                if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
+                                if (errorLength > queryLength) errorLength = queryLength;
+                                if (errorOffset >= queryStartOffset + queryLength) {
+                                    // This may happen if error position was incorrectly detected.
+                                    // E.g. in SQL Server when actual error happened in some stored procedure.
+                                    errorOffset = queryStartOffset + queryLength - 1;
+                                }
+                                // Try to add a problem marker, otherwise select text containing error if it's the first error
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, errorLength))) {
+                                    scrolled = true;
+                                } else if (index == 0) {
+                                    getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
+                                    scrolled = true;
+                                }
                             }
-                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
-                            scrolled = true;
                         }
                     }
                 }
@@ -842,6 +854,67 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         } catch (Exception e) {
             log.warn("Error positioning on query error", e);
             return false;
+        }
+    }
+
+    protected boolean addProblem(@Nullable String message, @NotNull Position position) {
+        final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
+        final IAnnotationModel annotationModel = getAnnotationModel();
+
+        if (resource == null || annotationModel == null) {
+            return false;
+        }
+
+        try {
+            final IMarker marker = resource.createMarker(SQLProblemAnnotation.MARKER_TYPE);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.MESSAGE, message);
+            marker.setAttribute(IMarker.TRANSIENT, true);
+            annotationModel.addAnnotation(new SQLProblemAnnotation(marker), position);
+        } catch (CoreException e) {
+            log.error("Error creating problem marker", e);
+        }
+
+        try {
+            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
+        } catch (PartInitException e) {
+            log.debug("Error opening problem view", e);
+        }
+
+        return true;
+    }
+
+    protected void clearProblems(@Nullable SQLQuery query) {
+        if (query == null) {
+            final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
+
+            if (resource != null) {
+                try {
+                    resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
+                } catch (CoreException e) {
+                    log.error("Error deleting problem markers", e);
+                }
+            }
+        } else {
+            final IAnnotationModel annotationModel = getAnnotationModel();
+
+            if (annotationModel != null) {
+                for (Iterator<Annotation> it = annotationModel.getAnnotationIterator(); it.hasNext(); ) {
+                    final Annotation annotation = it.next();
+
+                    if (annotation instanceof SQLProblemAnnotation) {
+                        final Position position = annotationModel.getPosition(annotation);
+
+                        if (position.overlapsWith(query.getOffset(), query.getLength())) {
+                            try {
+                                ((SQLProblemAnnotation) annotation).getMarker().delete();
+                            } catch (CoreException e) {
+                                log.error("Error deleting problem marker", e);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
