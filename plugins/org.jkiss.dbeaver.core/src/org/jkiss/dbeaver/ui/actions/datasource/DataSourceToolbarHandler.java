@@ -165,6 +165,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
 
     private void updateToolbar() {
         DataSourceToolbarUtils.refreshSelectorToolbar(workbenchWindow);
+        DataSourceReadonlyHandler.triggerRefreshElement();
     }
 
     @Override
