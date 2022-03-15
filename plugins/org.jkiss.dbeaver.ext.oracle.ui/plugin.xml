@@ -196,6 +196,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleJob"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
         </editor>
         <editor id="source.definition" class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSourceDefinitionEditor"
                 label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
