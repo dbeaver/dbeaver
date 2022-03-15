@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -39,8 +38,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -49,21 +46,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 public class DataSourceReadonlyHandler extends AbstractDataSourceHandler implements IElementUpdater {
 
     private DataSourceDescriptor currentDescriptor = null;
-    
-    private final static DBPEventListener DATA_SOURCE_LISTENER = new DBPEventListener() {
-        @Override
-        public void handleDataSourceEvent(DBPEvent event) {
-            triggerRefreshElement();
-        }
-    };
-    
-    private final static ISelectionListener SELECTION_LISTENER = new ISelectionListener() {
-        @Override
-        public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-            triggerRefreshElement();
-        }
-    };
-    
+
     private static final UIJob REFRESH_ELEMENT_JOB = new UIJob("Refresh elements") {
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
@@ -105,22 +88,11 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
 
     @Override
     public void updateElement(@NotNull UIElement element, @Nullable Map parameters) {
-        IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
-
-        workbenchWindow.getSelectionService().addPostSelectionListener(SELECTION_LISTENER);
-        
-        DBPDataSourceContainer container = getActiveDataSourceContainer(workbenchWindow);
+        DBPDataSourceContainer container = getActiveDataSourceContainer(element.getServiceLocator().getService(IWorkbenchWindow.class));
         DataSourceDescriptor descriptor = container instanceof DataSourceDescriptor ? (DataSourceDescriptor)container : null;   
         if (descriptor != currentDescriptor) {
-            if (currentDescriptor != null) {
-                currentDescriptor.getRegistry().removeDataSourceListener(DATA_SOURCE_LISTENER);
-            }
-            if (descriptor != null) {
-                descriptor.getRegistry().addDataSourceListener(DATA_SOURCE_LISTENER);
-            }
             currentDescriptor = descriptor;
         }
-        
         if (currentDescriptor != null) {
             element.setChecked(currentDescriptor.isConnectionReadOnly());
             element.setTooltip(NLS.bind(
