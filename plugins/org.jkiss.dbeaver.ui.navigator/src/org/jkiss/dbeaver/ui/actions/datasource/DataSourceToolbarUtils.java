@@ -111,7 +111,6 @@ public class DataSourceToolbarUtils
             commandService.refreshElements("org.jkiss.dbeaver.ui.tools.select.connection", null);
             commandService.refreshElements("org.jkiss.dbeaver.ui.tools.select.schema", null);
             //commandService.refreshElements("org.jkiss.dbeaver.ui.editors.sql.sync.connection", null);
-            commandService.refreshElements("org.jkiss.dbeaver.core.connection.readonly", null);
         }
     }
     
