@@ -327,7 +327,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         actionList.add(new SQLDatabasePersistAction(
             "Comment column",
             "COMMENT ON COLUMN " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS " + SQLUtils.quoteString(column.getDataSource(), column.getDescription())));
+                " IS " + SQLUtils.quoteString(column.getDataSource(), CommonUtils.notEmpty(column.getDescription()))));
     }
 }
 
