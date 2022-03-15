@@ -258,10 +258,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         options.put(DBSDataManipulator.OPTION_USE_MULTI_INSERT, settings.isUseMultiRowInsert());
         options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
 
-        if (!isPreview) {
+        if (!isPreview && targetObject != null) {
             if (settings.isUseBulkLoad()) {
                 DBSDataBulkLoader bulkLoader = DBUtils.getAdapter(DBSDataBulkLoader.class, targetContext.getDataSource());
-                if (targetObject != null && bulkLoader != null) {
+                if (bulkLoader != null) {
                     try {
                         bulkLoadManager = bulkLoader.createBulkLoad(
                             targetSession, targetObject, attributes, executionSource, settings.getCommitAfterRows(), options);
