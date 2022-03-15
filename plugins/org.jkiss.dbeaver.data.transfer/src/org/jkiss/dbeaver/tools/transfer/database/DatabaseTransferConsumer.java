@@ -421,12 +421,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         });
                     } catch (Throwable e) {
                         if (ignoreDuplicateRowsErrors && (e.getCause() instanceof SQLException)) {
-                            SQLException cause = (SQLException) e.getCause();
-                            String sqlState = cause.getSQLState();
-                            if (CommonUtils.isNotEmpty(sqlState) && (SQLState.SQL_23000.getCode().equals(sqlState) || SQLState.SQL_23505.getCode().equals(sqlState))) {
-                                break;
-                            } else if (CommonUtils.isEmpty(sqlState) && cause.getErrorCode() == 19) {
-                                // No state, but vendor code is 19 - seems to be SQLite database.
+                            DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(targetSession.getDataSource(), e.getCause());
+                            if (errorType == DBPErrorAssistant.ErrorType.UNIQUE_KEY_VIOLATION) {
                                 break;
                             }
                         }

@@ -722,6 +722,10 @@ public abstract class JDBCDataSource
                     SQLState.SQL_08S01.getCode().equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
             }
+            if (SQLState.SQL_23000.getCode().equals(sqlState) ||
+                SQLState.SQL_23505.getCode().equals(sqlState)) {
+                return ErrorType.UNIQUE_KEY_VIOLATION;
+            }
         }
         if (GeneralUtils.getRootCause(error) instanceof SocketException) {
             return ErrorType.CONNECTION_LOST;
