@@ -891,4 +891,23 @@ public class DBExecUtils {
         return actions;
     }
 
+    @Nullable
+    public static DBSEntity detectSingleSourceTable(DBDAttributeBinding ... attributes) {
+        // Check single source flag
+        DBSEntity sourceTable = null;
+        for (DBDAttributeBinding attribute : attributes) {
+            if (attribute.isPseudoAttribute()) {
+                continue;
+            }
+            DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+            if (rowIdentifier != null) {
+                if (sourceTable == null) {
+                    sourceTable = rowIdentifier.getEntity();
+                } else if (sourceTable != rowIdentifier.getEntity()) {
+                    return null;
+                }
+            }
+        }
+        return sourceTable;
+    }
 }

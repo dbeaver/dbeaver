@@ -659,28 +659,8 @@ public class ResultSetModel {
         this.visibleAttributes.sort(POSITION_SORTER);
 
         if (singleSourceEntity == null) {
-            // Check single source flag
-            DBSEntity sourceTable = null;
-            for (DBDAttributeBinding attribute : visibleAttributes) {
-                if (attribute.isPseudoAttribute()) {
-                    continue;
-                }
-                DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-                if (rowIdentifier != null) {
-                    if (sourceTable == null) {
-                        sourceTable = rowIdentifier.getEntity();
-                    } else if (sourceTable != rowIdentifier.getEntity()) {
-                        sourceTable = null;
-                        break;
-                    }
-                } else {
-                    // Do not mark it a multi-source.
-                    // It is just some column without identifier, probably a constant or an expression
-                    //singleSourceCells = false;
-                    //break;
-                }
-            }
-            singleSourceEntity = sourceTable;
+            singleSourceEntity = DBExecUtils.detectSingleSourceTable(
+                visibleAttributes.toArray(new DBDAttributeBinding[0]));
         }
 
         hasData = true;
