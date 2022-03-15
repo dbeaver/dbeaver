@@ -20,19 +20,13 @@ import java.util.Map;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
-import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -46,31 +40,6 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 public class DataSourceReadonlyHandler extends AbstractDataSourceHandler implements IElementUpdater {
 
     private DataSourceDescriptor currentDescriptor = null;
-
-    private static final UIJob REFRESH_ELEMENT_JOB = new UIJob("Refresh elements") {
-        @Override
-        public IStatus runInUIThread(IProgressMonitor monitor) {
-            refreshScheduled = false;
-            ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-            if (commandService != null) {
-                commandService.refreshElements(ConnectionCommands.CMD_READONLY, null);
-            }
-            return Status.OK_STATUS;
-        }
-    };
-    
-    private static final Object REFRESH_SCHEDULING_LOCK = new Object();
-    
-    private static volatile boolean refreshScheduled = false;
-    
-    public static void triggerRefreshElement() {
-        synchronized (REFRESH_SCHEDULING_LOCK) {
-            if (!refreshScheduled) { 
-                refreshScheduled = true;
-                REFRESH_ELEMENT_JOB.schedule(250);
-            }            
-        }
-    }
     
     @Override
     @Nullable
@@ -109,7 +78,7 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
 
     
     @Nullable
-    public static DBPDataSourceContainer getActiveDataSourceContainer(@NotNull IWorkbenchWindow window) {
+    private static DBPDataSourceContainer getActiveDataSourceContainer(@NotNull IWorkbenchWindow window) {
         if (window != null) {
             IWorkbenchPage page = window.getActivePage();
             if (page != null) {

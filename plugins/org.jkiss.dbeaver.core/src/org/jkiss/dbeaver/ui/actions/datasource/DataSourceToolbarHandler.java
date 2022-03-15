@@ -56,7 +56,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
 
         final ISelectionListener selectionListener = (part, selection) -> {
-            DataSourceReadonlyHandler.triggerRefreshElement();
+            DataSourceToolbarUtils.triggerRefreshReadonlyElement();
             if (part == activePart && part instanceof IEditorPart && selection instanceof IStructuredSelection) {
                 final Object element = ((IStructuredSelection) selection).getFirstElement();
                 if (element != null) {
@@ -107,7 +107,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         // We'll miss a lot of DBP events because  we'll be activated only after UI will be instantiated
         // So we need to update toolbar explicitly right after UI will initialize
         UIUtils.asyncExec(this::updateToolbar);
-        DataSourceReadonlyHandler.triggerRefreshElement();
+        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
     public void dispose() {
@@ -131,7 +131,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         if (activePart instanceof IEditorPart) {
             updateToolbar();
         }
-        DataSourceReadonlyHandler.triggerRefreshElement();
+        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
     @Override
@@ -164,7 +164,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             );
         }
 
-        DataSourceReadonlyHandler.triggerRefreshElement();
+        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
     private void updateToolbar() {
@@ -207,6 +207,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             //DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
             updateToolbar();
         }
+        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
 }
