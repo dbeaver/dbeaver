@@ -4065,6 +4065,7 @@ public class ResultSetViewer extends Viewer
                 if (listener != null) {
                     listener.onUpdate(success);
                 }
+                //fire selection change to update selection statistics in ResultSetStatListener
                 fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
                 if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
                     // Refresh updated rows
@@ -4091,6 +4092,8 @@ public class ResultSetViewer extends Viewer
             return;
         }
         UIUtils.syncExec(() -> getActivePresentation().rejectChanges());
+
+        //fire selection change to update selection statistics in ResultSetStatListener
         fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
         try {
             createDataPersister(true).rejectChanges();
