@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRCreator;
@@ -258,6 +259,6 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     public boolean useIsolatedConnections(DBPContextProvider contextProvider) {
         DBPDataSourceContainer container = contextProvider.getExecutionContext().getDataSource().getContainer();
         return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-            !container.getConnectionConfiguration().forceUseSingleConnection();
+            !DBUtils.isForceUseSingleConnection(container.getConnectionConfiguration());
     }
 }

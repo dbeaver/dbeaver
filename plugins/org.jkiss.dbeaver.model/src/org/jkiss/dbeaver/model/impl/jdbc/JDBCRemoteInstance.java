@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -110,7 +111,7 @@ public class JDBCRemoteInstance implements DBSInstance {
             return this.metaContext;
         }
         if (!dataSource.getContainer().getDriver().isEmbedded() &&
-            !dataSource.getContainer().getConnectionConfiguration().forceUseSingleConnection() &&
+            !DBUtils.isForceUseSingleConnection(dataSource.getContainer().getConnectionConfiguration()) &&
             dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
             // FIXME: do not sync expensive operations
             //synchronized (allContexts) {

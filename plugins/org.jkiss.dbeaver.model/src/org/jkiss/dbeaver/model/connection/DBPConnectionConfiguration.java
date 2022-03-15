@@ -78,9 +78,9 @@ public class DBPConnectionConfiguration implements DBPObject {
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
     
-    private static final boolean FORCE_SINGLE_CONNECTION_DEFAULT = false;
-    private static final String FORCE_SINGLE_CONNECTION_KEY = "forceSingleConnection";
-    private static final String AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION = "forceSingleConnection"; 
+    public static final boolean FORCE_SINGLE_CONNECTION_DEFAULT = false;
+    public static final String FORCE_SINGLE_CONNECTION_KEY = "forceSingleConnection";
+    public static final String AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION = "forceSingleConnection"; 
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
@@ -391,19 +391,6 @@ public class DBPConnectionConfiguration implements DBPObject {
     public void setCloseIdleInterval(int closeIdleInterval) {
         this.closeIdleInterval = closeIdleInterval;
     }
-
-    public boolean forceUseSingleConnection() {
-        if (this.authModelHasCapability(DBPConnectionConfiguration.AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION)) {
-            String valueStr = this.getAuthProperty(DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_KEY);
-            if (valueStr != null) {
-                return CommonUtils.getBoolean(valueStr, FORCE_SINGLE_CONNECTION_DEFAULT);
-            } else {
-                return CommonUtils.getBoolean(this.getAuthModelCapability(DBPConnectionConfiguration.AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION), FORCE_SINGLE_CONNECTION_DEFAULT);
-            }           
-        } else {
-            return FORCE_SINGLE_CONNECTION_DEFAULT;
-        }        
-    }
     
     public boolean authModelHasCapability(@NotNull String capabilityName) {
         DBPAuthModelDescriptor authModelDesc = this.getAuthModelDescriptor();
@@ -414,10 +401,6 @@ public class DBPConnectionConfiguration implements DBPObject {
     public String getAuthModelCapability(@NotNull String capabilityName) {
         DBPAuthModelDescriptor authModelDesc = this.getAuthModelDescriptor();
         return authModelDesc == null ? null : authModelDesc.getCapability(capabilityName);
-    }
-
-    public void setForceSingleConnectionOption(boolean value) {
-        this.setAuthProperty(DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_KEY, Boolean.toString(value));
     }
 
     public String getConfigProfileName() {

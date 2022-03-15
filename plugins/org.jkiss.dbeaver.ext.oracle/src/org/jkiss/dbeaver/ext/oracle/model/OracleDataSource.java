@@ -276,7 +276,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
                 boolean isMetadataContext = (
                     getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION) &&
-                    !getContainer().getConnectionConfiguration().forceUseSingleConnection()
+                    !DBUtils.isForceUseSingleConnection(getContainer().getConnectionConfiguration())
                 ) ? JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName()) : JDBCExecutionContext.TYPE_MAIN.equals(context.getContextName());
 
                 if (isMetadataContext) {

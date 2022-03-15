@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -62,7 +63,7 @@ public class SQLEditorUtils {
 
     public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
         return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-            !container.getConnectionConfiguration().forceUseSingleConnection() &&
+            !DBUtils.isForceUseSingleConnection(container.getConnectionConfiguration()) &&
             !container.getDriver().isEmbedded();
     }
 
