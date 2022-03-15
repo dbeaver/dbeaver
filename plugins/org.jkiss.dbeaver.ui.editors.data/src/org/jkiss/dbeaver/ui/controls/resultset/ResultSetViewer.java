@@ -4065,6 +4065,7 @@ public class ResultSetViewer extends Viewer
                 if (listener != null) {
                     listener.onUpdate(success);
                 }
+                fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
                 if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
                     // Refresh updated rows
                     try {
@@ -4090,6 +4091,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         UIUtils.syncExec(() -> getActivePresentation().rejectChanges());
+        fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
         try {
             createDataPersister(true).rejectChanges();
             if (model.getAllRows().isEmpty()) {
