@@ -78,10 +78,6 @@ public class DBPConnectionConfiguration implements DBPObject {
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
     
-    public static final boolean FORCE_SINGLE_CONNECTION_DEFAULT = false;
-    public static final String FORCE_SINGLE_CONNECTION_KEY = "forceSingleConnection";
-    public static final String AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION = "forceSingleConnection"; 
-
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
     private String hostName;
@@ -392,17 +388,6 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.closeIdleInterval = closeIdleInterval;
     }
     
-    public boolean authModelHasCapability(@NotNull String capabilityName) {
-        DBPAuthModelDescriptor authModelDesc = this.getAuthModelDescriptor();
-        return authModelDesc != null && authModelDesc.hasCapability(capabilityName);
-    }
-    
-    @Nullable
-    public String getAuthModelCapability(@NotNull String capabilityName) {
-        DBPAuthModelDescriptor authModelDesc = this.getAuthModelDescriptor();
-        return authModelDesc == null ? null : authModelDesc.getCapability(capabilityName);
-    }
-
     public String getConfigProfileName() {
         return configProfileName;
     }

@@ -50,7 +50,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private boolean defaultModel;
     private final Map<String, String[]> replaces = new HashMap<>();
     private boolean hasCondReplaces = false;
-    private final Map<String, String> capabilities = new HashMap<>();
 
     private DBAAuthModel instance;
 
@@ -73,12 +72,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             String[] replFor = CommonUtils.isEmpty(forAttr) ? new String[0] : forAttr.split(",");
             this.replaces.put(replModel, replFor);
             this.hasCondReplaces = hasCondReplaces || !ArrayUtils.isEmpty(replFor);
-        }
-        
-        for (IConfigurationElement dsConfig : config.getChildren("capability")) {
-            String name = dsConfig.getAttribute("name");
-            String value = dsConfig.getAttribute("value");
-            this.capabilities.put(name, value);
         }
     }
 
@@ -104,17 +97,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         return icon;
     }
     
-    @Override
-    public boolean hasCapability(@NotNull String capabilityName) {
-        return this.capabilities.containsKey(capabilityName);
-    }
-
-    @Override
-    @Nullable
-    public String getCapability(@NotNull String capabilityName) {
-        return this.capabilities.get(capabilityName);
-    }
-
     @NotNull
     @Override
     public String getImplClassName() {

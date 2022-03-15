@@ -111,7 +111,7 @@ public class JDBCRemoteInstance implements DBSInstance {
             return this.metaContext;
         }
         if (!dataSource.getContainer().getDriver().isEmbedded() &&
-            !DBUtils.isForceUseSingleConnection(dataSource.getContainer().getConnectionConfiguration()) &&
+            !dataSource.getContainer().isForceUseSingleConnection() &&
             dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
             // FIXME: do not sync expensive operations
             //synchronized (allContexts) {

@@ -2205,20 +2205,4 @@ public final class DBUtils {
         return new Pair<>(name, mods);
     }
 
-    public static boolean isForceUseSingleConnection(@NotNull DBPConnectionConfiguration connectionCfg) {
-        if (connectionCfg.authModelHasCapability(DBPConnectionConfiguration.AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION)) {
-            String valueStr = connectionCfg.getAuthProperty(DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_KEY);
-            if (valueStr != null) {
-                return CommonUtils.getBoolean(valueStr, DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_DEFAULT);
-            } else {
-                return CommonUtils.getBoolean(connectionCfg.getAuthModelCapability(DBPConnectionConfiguration.AUTH_MODEL_CAPABILITY_FORCE_SINGLE_CONNECTION), DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_DEFAULT);
-            }           
-        } else {
-            return DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_DEFAULT;
-        }        
-    }
-    
-    public static void setForceSingleConnectionOption(@NotNull DBPConnectionConfiguration connectionCfg, boolean value) {
-        connectionCfg.setAuthProperty(DBPConnectionConfiguration.FORCE_SINGLE_CONNECTION_KEY, Boolean.toString(value));
-    }
 }

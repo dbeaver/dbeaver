@@ -116,6 +116,7 @@ public class DataSourceDescriptor
     private String description;
     private boolean savePassword;
     private boolean connectionReadOnly;
+    private boolean forceUseSingleConnection = false;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private DBDDataFormatterProfile formatterProfile;
@@ -200,6 +201,7 @@ public class DataSourceDescriptor
         this.savePassword = source.savePassword;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         this.connectionReadOnly = source.connectionReadOnly;
+        this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
         this.connectionInfo = source.connectionInfo;
         this.clientHome = source.clientHome;
@@ -1445,6 +1447,7 @@ public class DataSourceDescriptor
         this.description = descriptor.description;
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
+        this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
         this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
     }
@@ -1470,6 +1473,7 @@ public class DataSourceDescriptor
             CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
             CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
             CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
+            CommonUtils.equalObjects(this.forceUseSingleConnection, source.forceUseSingleConnection) &&
             CommonUtils.equalObjects(this.navigatorSettings, source.navigatorSettings) &&
             CommonUtils.equalObjects(this.driver, source.driver) &&
             CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
@@ -1537,6 +1541,18 @@ public class DataSourceDescriptor
         return exclusiveLock;
     }
 
+    @Override
+    public boolean isForceUseSingleConnection() {
+        System.out.println("isForceUseSingleConnection() == " + this.forceUseSingleConnection + " for " + super.hashCode() + " " + this.toString());
+        return this.forceUseSingleConnection;
+    }
+
+    @Override
+    public void setForceUseSingleConnection(boolean value) {
+        System.out.println("setForceUseSingleConnection(" + value + ") for " + super.hashCode() + " " + this.toString());
+        this.forceUseSingleConnection = value;
+    }
+
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)
     {
         DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
@@ -1599,5 +1615,4 @@ public class DataSourceDescriptor
             dataSourceDescriptor,
             false));
     }
-
 }

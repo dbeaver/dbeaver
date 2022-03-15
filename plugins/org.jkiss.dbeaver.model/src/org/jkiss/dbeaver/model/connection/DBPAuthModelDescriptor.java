@@ -52,9 +52,4 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
     @NotNull
     DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource, @Nullable DBPConnectionConfiguration configuration);
-
-    boolean hasCapability(@NotNull String capabilityName);
-    
-    @Nullable
-    String getCapability(@NotNull String capabilityName);
 }
