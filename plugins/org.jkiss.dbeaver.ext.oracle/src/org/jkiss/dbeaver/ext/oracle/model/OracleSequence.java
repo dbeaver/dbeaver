@@ -18,15 +18,12 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
 import java.math.BigDecimal;
@@ -36,7 +33,7 @@ import java.util.Map;
 /**
  * Oracle sequence
  */
-public class OracleSequence extends OracleSchemaObject implements DBSSequence, OracleSourceObject {
+public class OracleSequence extends OracleSchemaObject implements DBSSequence, DBPScriptObject {
 
     private BigDecimal minValue;
     private BigDecimal maxValue;
@@ -187,33 +184,6 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, O
         }
 
         return sb.toString();
-    }
-
-    @Override
-    public OracleSourceType getSourceType() {
-        return OracleSourceType.SEQUENCE;
-    }
-
-    @Override
-    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) throws DBCException {
-        // No compilation for the sequence
-        return new DBEPersistAction[0];
-    }
-
-    @NotNull
-    @Override
-    public DBSObjectState getObjectState() {
-        return DBSObjectState.NORMAL;
-    }
-
-    @Override
-    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        // Do nothing
-    }
-
-    @Override
-    public void setObjectDefinitionText(String source) {
-        this.sourceText = source;
     }
 
     @Override
