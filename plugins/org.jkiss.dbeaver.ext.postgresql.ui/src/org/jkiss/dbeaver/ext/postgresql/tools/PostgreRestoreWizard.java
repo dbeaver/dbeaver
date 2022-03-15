@@ -98,11 +98,6 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
     }
 
     @Override
-    public boolean isFullPageLoadingRequired() {
-        return true;
-    }
-
-    @Override
     protected PostgreDatabaseRestoreSettings createSettings() {
         return new PostgreDatabaseRestoreSettings();
     }

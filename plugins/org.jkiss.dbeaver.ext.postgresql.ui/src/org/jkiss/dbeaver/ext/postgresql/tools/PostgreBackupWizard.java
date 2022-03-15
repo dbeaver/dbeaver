@@ -106,11 +106,6 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
 	}
 
     @Override
-    public boolean isFullPageLoadingRequired() {
-        return true;
-    }
-
-    @Override
     protected PostgreDatabaseBackupSettings createSettings() {
         return new PostgreDatabaseBackupSettings();
     }
