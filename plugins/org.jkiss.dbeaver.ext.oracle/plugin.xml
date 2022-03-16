@@ -449,7 +449,8 @@
                 id="oracle_os"
                 label="OS Authentication"
                 description="OS authentication allows Oracle to pass control of user authentication to the operating system."
-                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS">
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS"
+                desktop="true">
             <datasource id="oracle"/>
         </authModel>
     </extension>
