@@ -122,6 +122,7 @@
         <command id="org.jkiss.dbeaver.core.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.folder.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="%command.org.jkiss.dbeaver.core.invalidate.name" description="%command.org.jkiss.dbeaver.core.invalidate.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.connection.readonly" name="%command.org.jkiss.dbeaver.core.connection.readonly.name" description="%command.org.jkiss.dbeaver.core.connection.readonly.description" categoryId="org.jkiss.dbeaver.core.database" />
         <command id="org.jkiss.dbeaver.core.disconnectProject" name="%command.org.jkiss.dbeaver.core.disconnectProject.name" description="%command.org.jkiss.dbeaver.core.disconnectProject.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectAll" name="%command.org.jkiss.dbeaver.core.disconnectAll.name" description="%command.org.jkiss.dbeaver.core.disconnectAll.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectOther" name="%command.org.jkiss.dbeaver.core.disconnectOther.name" description="%command.org.jkiss.dbeaver.core.disconnectOther.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -152,6 +153,7 @@
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.invalidate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/reconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.connection.readonly" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/readonly.png" />
         <image commandId="org.jkiss.dbeaver.folder.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.commit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.png"/>
@@ -337,6 +339,14 @@
         <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.connection.readonly" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceReadonlyHandler">
+            <enabledWhen>
+	            <or>
+	            	<reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
+	            	<reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/>
+	            </or>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -503,6 +513,7 @@
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
+                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectAll"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectOther"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectProject">
@@ -549,6 +560,9 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.disconnect">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <separator name="sql_tools" visible="true"/>
@@ -721,7 +735,9 @@
             <command commandId="org.jkiss.dbeaver.folder.disconnect">
                 <visibleWhen checkEnabled="true"/>
             </command>
-
+            <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
         <!-- Additions end - Copy/Paste/etc -->

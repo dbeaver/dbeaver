@@ -582,6 +582,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_boolean_color_use_theme_color;
 	public static String pref_page_ui_general_boolean_invalid_values;
 
+	public static String toolbar_checkbox_connection_readonly_tooltip;
+	public static String toolbar_checkbox_connection_not_readonly_tooltip;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
