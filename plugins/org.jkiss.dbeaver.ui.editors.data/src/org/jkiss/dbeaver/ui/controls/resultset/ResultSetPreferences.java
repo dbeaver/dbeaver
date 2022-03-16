@@ -84,7 +84,6 @@ public final class ResultSetPreferences {
     public static final String RESULT_TEXT_DELIMITER_TOP = "resultset.text.delimiter.top"; //$NON-NLS-1$
     public static final String RESULT_TEXT_DELIMITER_BOTTOM = "resultset.text.delimiter.bottom"; //$NON-NLS-1$
     public static final String RESULT_TEXT_EXTRA_SPACES = "resultset.text.extra.spaces"; //$NON-NLS-1$
-    public static final String RESULT_TEXT_LINE_NUMBER = "resultset.text.line.number";
 
     // Confirmations
     public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$
@@ -94,5 +93,4 @@ public final class ResultSetPreferences {
     public static final String CONFIRM_RS_PANEL_RESET = "reset_panels_content"; //$NON-NLS-1$
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
-
 }

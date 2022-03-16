@@ -256,7 +256,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         boolean delimTop = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP);
         boolean delimBottom = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM);
         boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
-        boolean lineNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER);
         this.showNulls = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
 
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
@@ -267,14 +266,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
         List<ResultSetRow> allRows = model.getAllRows();
         int extraSpacesNum = extraSpaces ? 2 : 0;
-        int startPos = lineNumbers ? 1 : 0;
         if (colWidths == null) {
             // Calculate column widths
-            colWidths = new int[attrs.size() + startPos];
-            if (attrs.size() != 0 && lineNumbers) {
-                colWidths[0] = getStringWidth(String.valueOf(allRows.size() + 1)) + extraSpacesNum;
-            }
-            for (int i = startPos; i < attrs.size(); i++) {
+            colWidths = new int[attrs.size()];
+
+            for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
                 colWidths[i] = getAttributeName(attr).length() + extraSpacesNum;
                 if (showNulls && !attr.isRequired()) {
@@ -298,21 +294,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
         // Print header
         if (delimLeading) grid.append("|");
-        if (lineNumbers && attrs.size() != 0) {
-            if (extraSpaces) {
-                grid.append(" ");
-            }
-            grid.append("№");
-            grid.append(" ".repeat(Math.max(0, colWidths[0] - 1 - extraSpacesNum)));
-            if (extraSpaces) {
-                grid.append(" ");
-            }
-        }
-        for (int i = startPos; i < attrs.size(); i++) {
+        for (int i = 0; i < attrs.size(); i++) {
             if (i > 0) grid.append("|");
-            if (extraSpaces) {
-                grid.append(" ");
-            }
+            if (extraSpaces) grid.append(" ");
             DBDAttributeBinding attr = attrs.get(i);
             String attrName = getAttributeName(attr);
             grid.append(attrName);
@@ -328,22 +312,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         printSeparator(delimLeading, delimTrailing, colWidths, grid);
 
         // Print rows
-        int i = 1;
         for (ResultSetRow row : allRows) {
             if (delimLeading) grid.append("|");
-            if (lineNumbers) {
-                if (extraSpaces) {
-                    grid.append(" ");
-                }
-                String displayNumber = String.valueOf(i);
-                grid.append(displayNumber);
-                int stringWidth = getStringWidth(displayNumber);
-                grid.append(" ".repeat(Math.max(0, colWidths[0] - stringWidth - extraSpacesNum)));
-                if (extraSpaces) {
-                    grid.append(" ");
-                }
-            }
-            for (int k = startPos; k < attrs.size(); k++) {
+            for (int k = 0; k < attrs.size(); k++) {
                 if (k > 0) grid.append("|");
                 DBDAttributeBinding attr = attrs.get(k);
                 String displayString = getCellString(model, attr, row, displayFormat);
@@ -373,7 +344,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
             if (delimTrailing) grid.append("|");
             grid.append("\n");
-            i++;
         }
         if (delimBottom) {
             // Print divider after rows
