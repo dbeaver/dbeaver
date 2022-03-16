@@ -49,7 +49,10 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
             dataSourceContainer.setConnectionReadOnly(!dataSourceContainer.isConnectionReadOnly());
             dataSourceContainer.persistConfiguration();
             if (dataSourceContainer.isConnected()) {
-                DataSourceHandler.reconnectDataSource(null, dataSourceContainer);
+                DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                if (dataSource != null) {
+                    DataSourceInvalidateHandler.invalidateDataSource(dataSourceContainer.getDataSource());
+                }
             }
         }
         return null;
