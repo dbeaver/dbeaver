@@ -168,7 +168,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void onCursorChange(int offset) {
         ResultSetModel model = controller.getModel();
-
+        DBPPreferenceStore prefs = getController().getPreferenceStore();
         int lineNum = text.getLineAtOffset(offset);
         int lineOffset = text.getOffsetAtLine(lineNum);
         int horizontalOffset = offset - lineOffset;
@@ -193,6 +193,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 horOffsetBegin = horOffsetEnd;
                 horOffsetEnd += colWidths[i] + 1;
                 if (horizontalOffset < horOffsetEnd) {
+                    if (i == 0 && prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER)) {
+                        //We don't want to fire event for number column, it's fake value
+                        return;
+                    }
                     colNum = i;
                     break;
                 }
@@ -274,15 +278,15 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             if (attrs.size() != 0 && lineNumbers) {
                 colWidths[0] = getStringWidth(String.valueOf(allRows.size() + 1)) + extraSpacesNum;
             }
-            for (int i = startPos; i < attrs.size(); i++) {
+            for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
-                colWidths[i] = getAttributeName(attr).length() + extraSpacesNum;
+                colWidths[i + startPos] = getAttributeName(attr).length() + extraSpacesNum;
                 if (showNulls && !attr.isRequired()) {
-                    colWidths[i] = Math.max(colWidths[i], DBConstants.NULL_VALUE_LABEL.length());
+                    colWidths[i + startPos] = Math.max(colWidths[i + startPos], DBConstants.NULL_VALUE_LABEL.length());
                 }
                 for (ResultSetRow row : allRows) {
                     String displayString = getCellString(model, attr, row, displayFormat);
-                    colWidths[i] = Math.max(colWidths[i], getStringWidth(displayString) + extraSpacesNum);
+                    colWidths[i + startPos] = Math.max(colWidths[i + startPos], getStringWidth(displayString) + extraSpacesNum);
                 }
             }
             for (int i = 0; i < colWidths.length; i++) {
@@ -308,15 +312,15 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 grid.append(" ");
             }
         }
-        for (int i = startPos; i < attrs.size(); i++) {
-            if (i > 0) grid.append("|");
+        for (int i = 0; i < attrs.size(); i++) {
+            if (i + startPos > 0) grid.append("|");
             if (extraSpaces) {
                 grid.append(" ");
             }
             DBDAttributeBinding attr = attrs.get(i);
             String attrName = getAttributeName(attr);
             grid.append(attrName);
-            for (int k = colWidths[i] - attrName.length() - extraSpacesNum; k > 0; k--) {
+            for (int k = colWidths[i + startPos] - attrName.length() - extraSpacesNum; k > 0; k--) {
                 grid.append(" ");
             }
             if (extraSpaces) grid.append(" ");
@@ -343,12 +347,12 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                     grid.append(" ");
                 }
             }
-            for (int k = startPos; k < attrs.size(); k++) {
-                if (k > 0) grid.append("|");
+            for (int k = 0; k < attrs.size(); k++) {
+                if (k + startPos > 0) grid.append("|");
                 DBDAttributeBinding attr = attrs.get(k);
                 String displayString = getCellString(model, attr, row, displayFormat);
-                if (displayString.length() >= colWidths[k]) {
-                    displayString = CommonUtils.truncateString(displayString, colWidths[k]);
+                if (displayString.length() >= colWidths[k + startPos]) {
+                    displayString = CommonUtils.truncateString(displayString, colWidths[k + startPos]);
                 }
 
                 int stringWidth = getStringWidth(displayString);
@@ -359,13 +363,13 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                     (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
                 {
                     // Right justify value
-                    for (int j = colWidths[k] - stringWidth - extraSpacesNum; j > 0; j--) {
+                    for (int j = colWidths[k + startPos] - stringWidth - extraSpacesNum; j > 0; j--) {
                         grid.append(" ");
                     }
                     grid.append(displayString);
                 } else {
                     grid.append(displayString);
-                    for (int j = colWidths[k] - stringWidth - extraSpacesNum; j > 0; j--) {
+                    for (int j = colWidths[k + startPos] - stringWidth - extraSpacesNum; j > 0; j--) {
                         grid.append(" ");
                     }
                 }
