@@ -62,6 +62,7 @@ public enum SQLState {
     SQL_22018("22018", "Error in assignment"),
     SQL_22026("22026", "String data, length mismatch"),
     SQL_23000("23000", "Integrity constraint violation"),
+    SQL_23505("23505", "Unique value constraint is violated"),
     SQL_25000("25000", "Invalid transaction state"),
     SQL_25S02("25S02", "Transaction is still active"),
     SQL_25S03("25S03", "Transaction has been rolled back"),
