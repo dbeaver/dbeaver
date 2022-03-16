@@ -54,7 +54,7 @@ public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceO
     @Override
     protected boolean isReadOnly() {
         DBSObjectWithScript sourceObject = getSourceObject();
-        return sourceObject instanceof OracleSequence || sourceObject instanceof OracleJob;
+        return sourceObject instanceof OracleJob;
     }
 
     @Override

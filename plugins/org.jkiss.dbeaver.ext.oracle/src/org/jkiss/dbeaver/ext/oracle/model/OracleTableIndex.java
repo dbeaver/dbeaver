@@ -174,7 +174,4 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
         }
         return indexDDL;
     }
-
-
-    
 }
