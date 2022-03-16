@@ -122,13 +122,13 @@
         <command id="org.jkiss.dbeaver.core.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.folder.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="%command.org.jkiss.dbeaver.core.invalidate.name" description="%command.org.jkiss.dbeaver.core.invalidate.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.connection.readonly" name="%command.org.jkiss.dbeaver.core.connection.readonly.name" description="%command.org.jkiss.dbeaver.core.connection.readonly.description" categoryId="org.jkiss.dbeaver.core.database" />
         <command id="org.jkiss.dbeaver.core.disconnectProject" name="%command.org.jkiss.dbeaver.core.disconnectProject.name" description="%command.org.jkiss.dbeaver.core.disconnectProject.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectAll" name="%command.org.jkiss.dbeaver.core.disconnectAll.name" description="%command.org.jkiss.dbeaver.core.disconnectAll.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectOther" name="%command.org.jkiss.dbeaver.core.disconnectOther.name" description="%command.org.jkiss.dbeaver.core.disconnectOther.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.commit" name="%command.org.jkiss.dbeaver.core.commit.name" description="%command.org.jkiss.dbeaver.core.commit.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="%command.org.jkiss.dbeaver.core.rollback.name" description="%command.org.jkiss.dbeaver.core.rollback.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="%command.org.jkiss.dbeaver.core.txn.autocommit.name" description="%command.org.jkiss.dbeaver.core.txn.autocommit.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.connection.readonly" name="%command.org.jkiss.dbeaver.core.connection.readonly.name" description="%command.org.jkiss.dbeaver.core.connection.readonly.description" categoryId="org.jkiss.dbeaver.core.database" />
         <command id="org.jkiss.dbeaver.core.txn.log" name="%command.org.jkiss.dbeaver.core.txn.log.name" description="%command.org.jkiss.dbeaver.core.txn.log.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.pending" name="%command.org.jkiss.dbeaver.core.txn.pending.name" description="%command.org.jkiss.dbeaver.core.txn.pending.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
@@ -339,14 +339,6 @@
         <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.connection.readonly" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceReadonlyHandler">
-            <enabledWhen>
-	            <or>
-	            	<reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
-	            	<reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/>
-	            </or>
-            </enabledWhen>
-        </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -367,6 +359,14 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.connection.readonly" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceReadonlyHandler">
+            <enabledWhen>
+                <or>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/>
+                </or>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.log" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionLogHandler">\
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></enabledWhen>
@@ -513,7 +513,6 @@
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
-                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectAll"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectOther"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectProject">
@@ -536,6 +535,7 @@
                 <command commandId="org.jkiss.dbeaver.core.txn.pending">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
                 </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle"/>
                 <separator name="transactions" visible="false"/>
                 <separator name="tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.migrate.connection">
@@ -562,9 +562,6 @@
                 <command commandId="org.jkiss.dbeaver.core.disconnect">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
-                </command>
                 <separator name="sql_tools" visible="true"/>
                 <separator name="additions" visible="false"/>
             </toolbar>
@@ -583,6 +580,9 @@
                       style="pulldown"
                       tooltip="%command.org.jkiss.dbeaver.core.txn.autocommit.description">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
@@ -733,9 +733,6 @@
                 </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.folder.disconnect">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle">
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
