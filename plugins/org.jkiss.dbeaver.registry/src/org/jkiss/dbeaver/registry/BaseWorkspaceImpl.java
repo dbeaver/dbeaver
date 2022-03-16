@@ -80,7 +80,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         try {
             this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            log.error("Error acquiring workspace session", e);
             System.exit(101);
         }
 
