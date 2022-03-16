@@ -20,13 +20,13 @@ import org.jkiss.code.Nullable;
 
 import java.time.LocalDateTime;
 
-public class DateRange {
+public class QMDateRange {
     @Nullable
     private final LocalDateTime from;
     @Nullable
     private final LocalDateTime to;
 
-    public DateRange(@Nullable LocalDateTime from, @Nullable LocalDateTime to) {
+    public QMDateRange(@Nullable LocalDateTime from, @Nullable LocalDateTime to) {
         this.from = from;
         this.to = to;
     }

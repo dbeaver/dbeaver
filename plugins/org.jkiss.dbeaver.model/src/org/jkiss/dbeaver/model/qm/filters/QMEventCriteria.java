@@ -50,7 +50,7 @@ public class QMEventCriteria {
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
     @Nullable
-    private DateRange startDateRange;
+    private QMDateRange startDateRange;
     private boolean desc = true;
     private int fetchingSize = 200;
 
@@ -183,11 +183,11 @@ public class QMEventCriteria {
     }
 
     @Nullable
-    public DateRange getStartDateRange() {
+    public QMDateRange getStartDateRange() {
         return startDateRange;
     }
 
-    public void setStartDateRange(@Nullable DateRange startDateRange) {
+    public void setStartDateRange(@Nullable QMDateRange startDateRange) {
         this.startDateRange = startDateRange;
     }
 }
