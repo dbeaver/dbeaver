@@ -77,7 +77,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
-    
+
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
     private String hostName;
@@ -387,7 +387,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public void setCloseIdleInterval(int closeIdleInterval) {
         this.closeIdleInterval = closeIdleInterval;
     }
-    
+
     public String getConfigProfileName() {
         return configProfileName;
     }

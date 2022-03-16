@@ -1543,13 +1543,11 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isForceUseSingleConnection() {
-        System.out.println("isForceUseSingleConnection() == " + this.forceUseSingleConnection + " for " + super.hashCode() + " " + this.toString());
         return this.forceUseSingleConnection;
     }
 
     @Override
     public void setForceUseSingleConnection(boolean value) {
-        System.out.println("setForceUseSingleConnection(" + value + ") for " + super.hashCode() + " " + this.toString());
         this.forceUseSingleConnection = value;
     }
 
@@ -1615,4 +1613,5 @@ public class DataSourceDescriptor
             dataSourceDescriptor,
             false));
     }
+
 }

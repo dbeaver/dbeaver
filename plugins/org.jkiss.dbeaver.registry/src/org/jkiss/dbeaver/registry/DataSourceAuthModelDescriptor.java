@@ -96,7 +96,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     public DBPImage getIcon() {
         return icon;
     }
-    
+
     @NotNull
     @Override
     public String getImplClassName() {
