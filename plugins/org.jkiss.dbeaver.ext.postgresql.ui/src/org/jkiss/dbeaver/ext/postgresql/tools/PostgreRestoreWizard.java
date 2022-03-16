@@ -54,7 +54,9 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        settingsPage.saveState();
+        if (settingsPage.getControl() != null) {
+            settingsPage.saveState();
+        }
 
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
@@ -95,11 +97,6 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
             "Database restore",
             "Restore '" + getObjectsName() + "'",
             SWT.ICON_INFORMATION);
-    }
-
-    @Override
-    public boolean isFullPageLoadingRequired() {
-        return true;
     }
 
     @Override

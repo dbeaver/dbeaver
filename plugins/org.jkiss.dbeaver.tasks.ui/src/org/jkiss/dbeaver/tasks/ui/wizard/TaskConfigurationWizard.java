@@ -200,13 +200,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return prevPage;
     }
 
-    public boolean isFullPageLoadingRequired() {
-        return false;
-    }
-
     @Override
     public boolean canFinish() {
-        if (isCurrentTaskSaved() && !isFullPageLoadingRequired()) {
+        if (isCurrentTaskSaved()) {
             return true;
         }
         for (IWizardPage page : getPages()) {

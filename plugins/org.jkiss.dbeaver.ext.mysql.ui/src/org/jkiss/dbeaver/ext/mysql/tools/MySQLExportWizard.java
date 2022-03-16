@@ -63,8 +63,12 @@ class MySQLExportWizard extends AbstractNativeExportWizard<MySQLExportSettings, 
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        objectsPage.saveState();
-        settingsPage.saveState();
+        if (objectsPage.getControl() != null) {
+            objectsPage.saveState();
+        }
+        if (settingsPage.getControl() != null) {
+            settingsPage.saveState();
+        }
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
