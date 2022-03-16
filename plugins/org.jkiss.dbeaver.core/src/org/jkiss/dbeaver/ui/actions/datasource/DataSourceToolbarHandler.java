@@ -107,7 +107,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         // We'll miss a lot of DBP events because  we'll be activated only after UI will be instantiated
         // So we need to update toolbar explicitly right after UI will initialize
         UIUtils.asyncExec(this::updateToolbar);
-        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
+        UIUtils.asyncExec(DataSourceToolbarUtils::triggerRefreshReadonlyElement);
     }
 
     public void dispose() {
@@ -164,7 +164,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             );
         }
 
-        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
+        UIUtils.asyncExec(DataSourceToolbarUtils::triggerRefreshReadonlyElement);
     }
 
     private void updateToolbar() {
