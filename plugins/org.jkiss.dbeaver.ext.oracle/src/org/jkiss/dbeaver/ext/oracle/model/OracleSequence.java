@@ -17,18 +17,23 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * Oracle sequence
  */
-public class OracleSequence extends OracleSchemaObject implements DBSSequence {
+public class OracleSequence extends OracleSchemaObject implements DBSSequence, DBPScriptObject {
 
     private BigDecimal minValue;
     private BigDecimal maxValue;
@@ -37,6 +42,8 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence {
     private BigDecimal lastValue;
     private boolean flagCycle;
     private boolean flagOrder;
+
+    private String sourceText;
 
     public OracleSequence(OracleSchema schema, String name) {
         super(schema, name, false);
@@ -137,5 +144,53 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence {
 
     public void setOrder(boolean flagOrder) {
         this.flagOrder = flagOrder;
+    }
+
+    public String buildStatement(boolean forUpdate) {
+        StringBuilder sb = new StringBuilder();
+        if (forUpdate) {
+            sb.append("ALTER SEQUENCE ");
+        } else {
+            sb.append("CREATE SEQUENCE ");
+        }
+        sb.append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
+
+        if (getIncrementBy() != null) {
+            sb.append("INCREMENT BY ").append(getIncrementBy()).append(" ");
+        }
+        if (getMinValue() != null) {
+            sb.append("MINVALUE ").append(getMinValue()).append(" ");
+        }
+        if (getMaxValue() != null) {
+            sb.append("MAXVALUE ").append(getMaxValue()).append(" ");
+        }
+
+        if (isCycle()) {
+            sb.append("CYCLE ");
+        } else {
+            sb.append("NOCYCLE ");
+        }
+
+        if (getCacheSize() > 0) {
+            sb.append("CACHE ").append(getCacheSize()).append(" ");
+        } else {
+            sb.append("NOCACHE ");
+        }
+
+        if (isOrder()) {
+            sb.append("ORDER ");
+        } else {
+            sb.append("NOORDER ");
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (sourceText == null) {
+            sourceText = buildStatement(false);
+        }
+        return sourceText;
     }
 }

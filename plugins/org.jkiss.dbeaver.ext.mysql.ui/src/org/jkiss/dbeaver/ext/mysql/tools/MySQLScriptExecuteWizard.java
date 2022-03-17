@@ -52,7 +52,9 @@ class MySQLScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<MySQLSc
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        settingsPage.saveState();
+        if (settingsPage.getControl() != null) {
+            settingsPage.saveState();
+        }
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 

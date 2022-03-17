@@ -113,4 +113,13 @@ public class DataSourceToolbarUtils
             //commandService.refreshElements("org.jkiss.dbeaver.ui.editors.sql.sync.connection", null);
         }
     }
+    
+    public static void triggerRefreshReadonlyElement() {
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements("org.jkiss.dbeaver.core.connection.readonly", null);
+        }
+        return;
+    }
+    
 }

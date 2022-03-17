@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -63,6 +62,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     private boolean supportsColumnProperty;
     private String serverVersion;
+    private boolean supportsIsExternalColumn;
 
     private volatile transient boolean hasStatistics;
     private boolean isBabelfish;
@@ -80,14 +80,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     public boolean supportsExternalTables() {
-        final DBPDriver driver = getContainer().getDriver();
         if (isBabelfish) {
             return false;
         }
-        if (SQLServerUtils.isDriverSqlServer(driver) && isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2016_VERSION_MAJOR, 0)) {
-            return true;
-        }
-        return SQLServerUtils.isDriverAzure(driver);
+        return supportsIsExternalColumn;
     }
 
     @Override
@@ -285,6 +281,19 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 }
             } catch (SQLException e) {
                 log.debug("Can't read Database Engine edition info", e);
+            }
+
+            if (!isBabelfish) {
+                // The "is_external" column can be used to identify external tables support.
+                // But not all SQL Server versions supports this column in the all_columns view
+                // Sometimes checking the version does not work for some reason - see #15036
+                // Let's check the existence of column directly at the database
+                try {
+                    JDBCUtils.queryString(session, "SELECT TOP 1 is_external from sys.tables");
+                    this.supportsIsExternalColumn = true;
+                } catch (Exception e) {
+                    this.supportsIsExternalColumn = false;
+                }
             }
 
 

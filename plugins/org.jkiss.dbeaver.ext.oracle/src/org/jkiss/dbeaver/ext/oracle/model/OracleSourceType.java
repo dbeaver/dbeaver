@@ -30,7 +30,8 @@ public enum OracleSourceType {
     VIEW(true),
     MATERIALIZED_VIEW(true),
     JAVA_SOURCE(false),
-    JOB(false);
+    JOB(false),
+    SEQUENCE(false);
 
     private final boolean isCustom;
 
