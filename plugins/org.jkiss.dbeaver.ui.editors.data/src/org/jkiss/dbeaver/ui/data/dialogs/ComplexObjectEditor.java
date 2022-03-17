@@ -510,10 +510,16 @@ public class ComplexObjectEditor extends TreeViewer {
 
         if (object instanceof DBDCollection) {
             final DBDCollection collection = (DBDCollection) object;
-            final CollectionElement element = new CollectionElement(parent, collection);
+            final CollectionElement element;
 
-            for (Object item : collection) {
-                element.items.add(new CollectionElement.Item(element, wrap(element, item)));
+            if (parent == null) {
+                element = new CollectionRootElement(collection);
+                element.items.add(new CollectionRootElement.Item(element, wrap(element, object)));
+            } else {
+                element = new CollectionElement(parent, collection);
+                for (Object item : collection) {
+                    element.items.add(new CollectionElement.Item(element, wrap(element, item)));
+                }
             }
 
             cache.put(object, element);
@@ -669,7 +675,7 @@ public class ComplexObjectEditor extends TreeViewer {
             disposeOldEditor();
 
             final ComplexElementItem element = (ComplexElementItem) getStructuredSelection().getFirstElement();
-            final CollectionElement collection = element != null ? GeneralUtils.adapt(element, CollectionElement.class) : (CollectionElement) getInput();
+            final CollectionElement collection = GeneralUtils.adapt(element, CollectionElement.class);
             final CollectionElement.Item item = new CollectionElement.Item(collection, null);
 
             collection.items.add(item);
@@ -766,7 +772,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private void updateActions() {
         final Object object = getStructuredSelection().getFirstElement();
         final boolean editable = !parentController.isReadOnly() && !isReadOnlyType(object);
-        final boolean extendable = GeneralUtils.adapt(object, CollectionElement.class) != null || getInput() instanceof CollectionElement;
+        final boolean extendable = GeneralUtils.adapt(object, CollectionElement.class) != null;
 
         copyNameAction.setEnabled(object != null);
         copyValueAction.setEnabled(object != null);
@@ -775,12 +781,13 @@ public class ComplexObjectEditor extends TreeViewer {
         if (editable && object instanceof CollectionElement.Item) {
             final CollectionElement.Item item = (CollectionElement.Item) object;
             final CollectionElement collection = item.collection;
+            final boolean child = !(collection instanceof CollectionRootElement);
             final int index = collection.items.indexOf(item);
 
-            addElementAction.setEnabled(true);
-            removeElementAction.setEnabled(true);
-            moveElementUpAction.setEnabled(index > 0);
-            moveElementDownAction.setEnabled(index < collection.items.size() - 1);
+            addElementAction.setEnabled(extendable);
+            removeElementAction.setEnabled(child);
+            moveElementUpAction.setEnabled(child && index > 0);
+            moveElementDownAction.setEnabled(child && index < collection.items.size() - 1);
         } else {
             addElementAction.setEnabled(editable && extendable);
             removeElementAction.setEnabled(false);
@@ -808,9 +815,8 @@ public class ComplexObjectEditor extends TreeViewer {
 
         @Override
         public <T> T getAdapter(Class<T> adapter) {
-            final ComplexElement parent = getParent();
-            if (adapter.isInstance(parent)) {
-                return adapter.cast(parent);
+            if (adapter.isInstance(value)) {
+                return adapter.cast(value);
             } else {
                 return null;
             }
@@ -836,7 +842,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private static class CollectionElement implements ComplexElement {
         private final Object parent;
         private final DBDCollection source;
-        private final List<Item> items;
+        protected final List<Item> items;
 
         public CollectionElement(@Nullable Object parent, @NotNull DBDCollection source) {
             this.parent = parent;
@@ -904,6 +910,30 @@ public class ComplexObjectEditor extends TreeViewer {
             @Override
             public ComplexElement getParent() {
                 return collection;
+            }
+        }
+    }
+
+    private static class CollectionRootElement extends CollectionElement {
+        public CollectionRootElement(@NotNull DBDCollection source) {
+            super(null, source);
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            return ((ComplexElement) items.get(0).value).extract(monitor);
+        }
+
+        private static class Item extends CollectionElement.Item {
+            public Item(@NotNull CollectionElement collection, @Nullable Object value) {
+                super(collection, value);
+            }
+
+            @NotNull
+            @Override
+            public String getName() {
+                return "<root>";
             }
         }
     }
