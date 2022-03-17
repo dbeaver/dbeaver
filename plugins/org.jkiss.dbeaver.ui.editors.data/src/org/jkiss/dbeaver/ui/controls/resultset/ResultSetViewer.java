@@ -225,7 +225,9 @@ public class ResultSetViewer extends Viewer
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
     private volatile boolean awaitsReadNextSegment;
-    private volatile boolean awaitsSavingData;
+
+    //If flagged don't load next segment until resultSet is not dirty, otherwise something awful can happen
+    private volatile boolean nextSegmentBlocked;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3563,7 +3565,6 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean checkForChanges() {
-        // Check if we are dirty
         if (isDirty()) {
             int checkResult = new UITask<Integer>() {
                 @Override
@@ -3573,17 +3574,17 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
-                    dataReceiver.setHasMoreData(false);
                     UIUtils.asyncExec(() -> updatePanelsContent(true));
+
+                    nextSegmentBlocked = true;
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    awaitsSavingData = true;
+                    nextSegmentBlocked = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.asyncExec(() -> refreshData(null));
                         }
-                        awaitsSavingData = false;
                     });
                     return false;
                 default:
@@ -3731,8 +3732,20 @@ public class ResultSetViewer extends Viewer
         if (!verifyQuerySafety()) {
             return;
         }
-        if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
+        if (nextSegmentBlocked) {
+            if (!isDirty()) {
+                nextSegmentBlocked = false;
+            } else {
+                return;
+            }
+        }
+        if (awaitsReadNextSegment ) {
             return;
+        }
+        if (dataReceiver.isCancelled() && isDirty()) {
+            return;
+        } else {
+            dataReceiver.setCancelled(false);
         }
         try {
             awaitsReadNextSegment = true;
