@@ -408,4 +408,14 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     public boolean isHidden() {
         return true;
     }
+
+    @Override
+    public boolean isForceUseSingleConnection() {
+        return false;
+    }
+
+    @Override
+    public void setForceUseSingleConnection(boolean value) {
+        throw new IllegalStateException("Not supported");   
+    }
 }

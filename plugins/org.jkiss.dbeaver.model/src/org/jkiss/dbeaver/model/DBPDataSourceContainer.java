@@ -232,4 +232,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
     DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
 
     DBPExclusiveResource getExclusiveLock();
+    
+    boolean isForceUseSingleConnection();
+    
+    void setForceUseSingleConnection(boolean value);
 }
