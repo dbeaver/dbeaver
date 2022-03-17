@@ -28,10 +28,13 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -39,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 /**
@@ -97,6 +101,15 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @Override
+    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+        if (value instanceof DBDCollection && !((DBDValue) value).isNull()) {
+            statement.setObject(paramIndex, convertArrayToString(paramType, value, DBDDisplayFormat.NATIVE, true), Types.OTHER);
+        } else {
+            super.bindParameter(session, statement, paramType, paramIndex, value);
+        }
     }
 
     private JDBCCollection convertStringToCollection(@NotNull DBCSession session, @NotNull DBSTypedObject arrayType, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
