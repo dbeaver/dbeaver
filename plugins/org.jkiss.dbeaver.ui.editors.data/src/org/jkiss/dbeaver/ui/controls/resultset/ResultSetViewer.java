@@ -224,10 +224,15 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
-    private volatile boolean awaitsReadNextSegment;
 
-    //If flagged don't load next segment until resultSet is not dirty, otherwise something awful can happen
-    private volatile boolean nextSegmentBlocked;
+    /**
+     * Contains 4 states:
+     * BLOCKED - readNextSegment awaits for resultSet becoming not dirty
+     * IN_DIALOG - user is selecting, wait until dialog is finished
+     * READING - currently reading next segment, don't need another operation
+     * READY - ready to read
+     */
+    private volatile ReadSegmentStatus nextSegmentStatus;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3574,13 +3579,12 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
+                    nextSegmentStatus = ReadSegmentStatus.BLOCKED;
                     UIUtils.asyncExec(() -> updatePanelsContent(true));
-
-                    nextSegmentBlocked = true;
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    nextSegmentBlocked = true;
+                    nextSegmentStatus = ReadSegmentStatus.BLOCKED;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.asyncExec(() -> refreshData(null));
@@ -3728,30 +3732,34 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
+    enum ReadSegmentStatus {
+        IN_DIALOG,
+        BLOCKED,
+        READING,
+        READY
+    }
+
     public void readNextSegment() {
         if (!verifyQuerySafety()) {
             return;
         }
-        if (nextSegmentBlocked) {
-            if (!isDirty()) {
-                nextSegmentBlocked = false;
-            } else {
+        if (!dataReceiver.isHasMoreData()) {
+            return;
+        }
+        if (nextSegmentStatus != ReadSegmentStatus.READY) {
+            if (nextSegmentStatus == ReadSegmentStatus.BLOCKED && isDirty()) {
+                return;
+            }
+            if (nextSegmentStatus == ReadSegmentStatus.READING || nextSegmentStatus == ReadSegmentStatus.IN_DIALOG) {
                 return;
             }
         }
-        if (awaitsReadNextSegment ) {
+        nextSegmentStatus = ReadSegmentStatus.IN_DIALOG;
+        if (!checkForChanges()) {
             return;
-        }
-        if (dataReceiver.isCancelled() && isDirty()) {
-            return;
-        } else {
-            dataReceiver.setCancelled(false);
         }
         try {
-            awaitsReadNextSegment = true;
-            if (!checkForChanges()) {
-                return;
-            }
+            nextSegmentStatus = ReadSegmentStatus.READING;
 
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null && !model.isUpdateInProgress()) {
@@ -3770,7 +3778,7 @@ public class ResultSetViewer extends Viewer
                     null);
             }
         } finally {
-            awaitsReadNextSegment = false;
+            nextSegmentStatus = ReadSegmentStatus.READY;
         }
     }
 
