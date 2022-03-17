@@ -706,9 +706,6 @@ public class ResultSetViewer extends Viewer
     }
 
     void showErrorPresentation(String sqlText, String message, Throwable error) {
-        if (filtersPanel != null) {
-            filtersPanel.setVisible(false);
-        }
         activePresentationDescriptor = null;
         setActivePresentation(
             new ErrorPresentation(
