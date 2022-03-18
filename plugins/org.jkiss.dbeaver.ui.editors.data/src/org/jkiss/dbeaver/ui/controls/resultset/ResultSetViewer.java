@@ -226,10 +226,9 @@ public class ResultSetViewer extends Viewer
     private long lastThemeUpdateTime;
 
     /**
-     * Contains 4 states:
+     * Contains 3 states:
      * BLOCKED - readNextSegment awaits for resultSet becoming not dirty
-     * IN_DIALOG - user is selecting, wait until dialog is finished
-     * READING - currently reading next segment, don't need another operation
+     * IN_PROGRESS - currently reading next segment or in dialog, don't need another operation
      * READY - ready to read
      */
     private volatile ReadSegmentStatus nextSegmentStatus;
@@ -3733,9 +3732,8 @@ public class ResultSetViewer extends Viewer
     }
 
     enum ReadSegmentStatus {
-        IN_DIALOG,
         BLOCKED,
-        READING,
+        IN_PROGRESS,
         READY
     }
 
@@ -3750,17 +3748,15 @@ public class ResultSetViewer extends Viewer
             if (nextSegmentStatus == ReadSegmentStatus.BLOCKED && isDirty()) {
                 return;
             }
-            if (nextSegmentStatus == ReadSegmentStatus.READING || nextSegmentStatus == ReadSegmentStatus.IN_DIALOG) {
+            if (nextSegmentStatus == ReadSegmentStatus.IN_PROGRESS) {
                 return;
             }
         }
-        nextSegmentStatus = ReadSegmentStatus.IN_DIALOG;
+        nextSegmentStatus = ReadSegmentStatus.IN_PROGRESS;
         if (!checkForChanges()) {
             return;
         }
         try {
-            nextSegmentStatus = ReadSegmentStatus.READING;
-
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null && !model.isUpdateInProgress()) {
                 dataReceiver.setHasMoreData(false);
