@@ -225,13 +225,7 @@ public class ResultSetViewer extends Viewer
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
 
-    /**
-     * Contains 3 states:
-     * BLOCKED - readNextSegment awaits for resultSet becoming not dirty
-     * IN_PROGRESS - currently reading next segment or in dialog, don't need another operation
-     * READY - ready to read
-     */
-    private volatile ReadSegmentStatus nextSegmentStatus;
+    private volatile boolean nextSegmentReadingBlocked;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -3578,12 +3572,10 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
-                    nextSegmentStatus = ReadSegmentStatus.BLOCKED;
                     UIUtils.asyncExec(() -> updatePanelsContent(true));
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    nextSegmentStatus = ReadSegmentStatus.BLOCKED;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.asyncExec(() -> refreshData(null));
@@ -3731,11 +3723,6 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    enum ReadSegmentStatus {
-        BLOCKED,
-        IN_PROGRESS,
-        READY
-    }
 
     public void readNextSegment() {
         if (!verifyQuerySafety()) {
@@ -3744,15 +3731,10 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (nextSegmentStatus != ReadSegmentStatus.READY) {
-            if (nextSegmentStatus == ReadSegmentStatus.BLOCKED && isDirty()) {
-                return;
-            }
-            if (nextSegmentStatus == ReadSegmentStatus.IN_PROGRESS) {
-                return;
-            }
+        if (nextSegmentReadingBlocked && isDirty()) {
+            return;
         }
-        nextSegmentStatus = ReadSegmentStatus.IN_PROGRESS;
+        nextSegmentReadingBlocked = true;
         if (!checkForChanges()) {
             return;
         }
@@ -3774,7 +3756,7 @@ public class ResultSetViewer extends Viewer
                     null);
             }
         } finally {
-            nextSegmentStatus = ReadSegmentStatus.READY;
+            nextSegmentReadingBlocked = false;
         }
     }
 
