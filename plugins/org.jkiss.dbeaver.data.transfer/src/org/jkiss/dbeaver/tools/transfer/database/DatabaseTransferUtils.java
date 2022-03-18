@@ -125,7 +125,7 @@ public class DatabaseTransferUtils {
 
         List<DBEPersistAction> actions = new ArrayList<>();
 
-        if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+        if (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() != null) {
             sql.append("DROP TABLE ");
             getTableFullName(schema, dataSource, sql, tableName);
             sql.append(dataSource.getSQLDialect().getScriptDelimiters()[0]);
@@ -230,7 +230,9 @@ public class DatabaseTransferUtils {
 
             DBSEntity table;
             DBECommand createCommand = null;
-            if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            if (containerMapping.getMappingType() == DatabaseMappingType.create ||
+                (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() == null))
+            {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                 createCommand = tableManager.makeCreateCommand(table, options);

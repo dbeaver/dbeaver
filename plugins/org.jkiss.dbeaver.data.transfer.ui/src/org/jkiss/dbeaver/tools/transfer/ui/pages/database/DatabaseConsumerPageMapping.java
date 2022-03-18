@@ -28,22 +28,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -65,11 +55,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransforme
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
-import org.jkiss.dbeaver.ui.SharedTextColors;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -79,9 +65,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
@@ -530,10 +515,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         return newName;
                     }
                     if (mapping instanceof DatabaseMappingContainer) {
-                        if (mapping.getMappingType() == DatabaseMappingType.existing || mapping.getMappingType() == DatabaseMappingType.recreate) {
-                            return ((DatabaseMappingContainer) mapping).getTarget();
-                        }
-                        return mapping.getTargetName();
+                        DBSDataManipulator target = ((DatabaseMappingContainer) mapping).getTarget();
+                        return target != null ? target : mapping.getTargetName();
                     } else {
                         if (mapping.getMappingType() == DatabaseMappingType.existing) {
                             return ((DatabaseMappingAttribute) mapping).getTarget();
@@ -580,17 +563,21 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             columnMapping.setEditingSupport(new EditingSupport(mappingViewer) {
                 @Override
                 protected CellEditor getCellEditor(Object element) {
-                    List<String> mappingTypes = new ArrayList<>();
+                    Set<String> mappingTypes = new HashSet<>();
                     DatabaseMappingObject mapping = (DatabaseMappingObject) element;
                     DatabaseMappingType mappingType = mapping.getMappingType();
                     if (mappingType != DatabaseMappingType.skip) {
                         mappingTypes.add(mappingType.name());
                     }
                     if (mapping instanceof DatabaseMappingContainer) {
-                        if (mappingType == DatabaseMappingType.existing) {
+                        if (mappingType == DatabaseMappingType.existing || mappingType == DatabaseMappingType.create) {
                             mappingTypes.add(DatabaseMappingType.recreate.name());
                         } else if (mappingType == DatabaseMappingType.recreate) {
-                            mappingTypes.add(DatabaseMappingType.existing.name());
+                            if (mapping.getTarget() != null) {
+                                mappingTypes.add(DatabaseMappingType.existing.name());
+                            } else {
+                                mappingTypes.add(DatabaseMappingType.create.name());
+                            }
                         }
                     }
                     if (mapping instanceof DatabaseMappingAttribute) {
@@ -832,7 +819,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                         if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
-                            containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
+                            if (mapping.getMappingType() == DatabaseMappingType.recreate) {
+                                containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
+                            } else {
+                                containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
+                            }
                             DataTransferPipe pipeFromCurrentSelection = getPipeFromCurrentSelection();
                             if (pipeFromCurrentSelection != null) {
                                 IDataTransferConsumer<?, ?> consumer = pipeFromCurrentSelection.getConsumer();
@@ -845,9 +836,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                     }
                 }
-                containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create, forceRefresh);
-                ((DatabaseMappingContainer) mapping).setTarget(null);
-                ((DatabaseMappingContainer) mapping).setTargetName(name);
+                if (mapping.getMappingType() == DatabaseMappingType.recreate) {
+                    containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
+                } else {
+                    containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create, forceRefresh);
+                    ((DatabaseMappingContainer) mapping).setTarget(null);
+                    ((DatabaseMappingContainer) mapping).setTargetName(name);
+                }
             } else {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
                 DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);

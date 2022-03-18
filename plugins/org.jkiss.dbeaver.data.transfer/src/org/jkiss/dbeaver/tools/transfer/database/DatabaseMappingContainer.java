@@ -105,8 +105,16 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
     }
 
+    public void refreshOnlyAttributesMappingTypes(DBRRunnableContext context, boolean forceRefresh) throws DBException {
+        refreshAttributesMappingTypes(new VoidProgressMonitor(), forceRefresh);
+    }
+
     private void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
+        refreshAttributesMappingTypes(monitor, forceRefresh);
+    }
+
+    private void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
@@ -179,11 +187,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         switch (mappingType) {
             case existing:
             case recreate:
-                return target.getName();
-            case create:
+                if (target != null) {
+                    return target.getName();
+                }
                 return targetTableName;
             case skip:
                 return DatabaseMappingAttribute.TARGET_NAME_SKIP;
+            case create:
             default:
                 return targetTableName;
         }
@@ -277,7 +287,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 if (target != null && newMappingType == DatabaseMappingType.create) {
                     // Change create to existing.
                     newMappingType = DatabaseMappingType.existing;
-                } else if (target == null && (newMappingType == DatabaseMappingType.existing || newMappingType == DatabaseMappingType.recreate)) {
+                } else if (target == null && newMappingType == DatabaseMappingType.existing) {
                     newMappingType = DatabaseMappingType.create;
                 }
                 refreshMappingType(context, newMappingType, false);

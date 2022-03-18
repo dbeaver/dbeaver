@@ -209,6 +209,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     } else {
                         mappingType = DatabaseMappingType.create;
                     }
+                } else if (parent.getTarget() == null) {
+                    // Case recreate container mapping in the new table
+                    mappingType = DatabaseMappingType.create;
+                    if (forceRefresh || CommonUtils.isEmpty(targetName)) {
+                        targetName = getSourceLabelOrName(source, true);
+                    }
                 }
                 break;
             }
