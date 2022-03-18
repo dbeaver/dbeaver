@@ -355,7 +355,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                 }
 
-                if (target != null && newMappingType == DatabaseMappingType.create) {
+                if (target != null && newMappingType == DatabaseMappingType.create && parent.getMappingType() != DatabaseMappingType.recreate) {
                     // Change create to existing.
                     newMappingType = DatabaseMappingType.existing;
                 } else if (target == null && newMappingType == DatabaseMappingType.existing) {

@@ -610,7 +610,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     try {
                         DatabaseMappingObject mapping = (DatabaseMappingObject) element;
                         DatabaseMappingType mappingType = DatabaseMappingType.valueOf(value.toString());
-                        if (mappingType == DatabaseMappingType.recreate) {
+                        if (mapping.getMappingType() != DatabaseMappingType.recreate && mappingType == DatabaseMappingType.recreate) {
                             boolean confirmed = UIUtils.confirmAction(
                                 getShell(),
                                 DTUIMessages.database_consumer_page_mapping_recreate_confirm_title,
@@ -818,8 +818,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     String unQuotedNameForSearch = DBUtils.getUnQuotedIdentifier(container.getDataSource(), name);
                     for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                         if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
-                            containerMapping.setTarget((DBSDataManipulator)child);
-                            if (mapping.getMappingType() == DatabaseMappingType.recreate) {
+                            containerMapping.setTarget((DBSDataManipulator) child);
+                            if (forceRefresh && mapping.getMappingType() == DatabaseMappingType.recreate) {
                                 containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
                             } else {
                                 containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
@@ -836,7 +836,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                     }
                 }
-                if (mapping.getMappingType() == DatabaseMappingType.recreate) {
+                if (forceRefresh && mapping.getMappingType() == DatabaseMappingType.recreate) {
                     containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
                 } else {
                     containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create, forceRefresh);
