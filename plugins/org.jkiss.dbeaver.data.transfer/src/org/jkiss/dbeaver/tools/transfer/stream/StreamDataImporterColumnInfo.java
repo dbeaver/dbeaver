@@ -39,6 +39,19 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         this.dataKind = dataKind;
     }
 
+    public void updateMaxLength(long maxLength) {
+        if (getMaxLength() < maxLength) {
+            setMaxLength(roundToNextPowerOf2(maxLength));
+        }
+    }
+
+    public void updateType(@NotNull DBPDataKind kind, @NotNull String name) {
+        if (getDataKind().getCommonality() < kind.getCommonality()) {
+            setDataKind(kind);
+            setTypeName(name);
+        }
+    }
+
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
@@ -77,5 +90,13 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
 
     public void setMappingMetadataPresent(boolean mappingMetadataPresent) {
         this.mappingMetadataPresent = mappingMetadataPresent;
+    }
+
+    private static long roundToNextPowerOf2(long value) {
+        int result = 1;
+        while (result < value) {
+            result <<= 1;
+        }
+        return result;
     }
 }

@@ -54,8 +54,10 @@
                     <property id="emptyStringNull" label="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.description" defaultValue="" required="false"/>
                     <property id="timestampFormat" label="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.description" defaultValue="yyyy-MM-dd[ HH:mm:ss[.SSS]]" required="false"/>
                     <property id="timestampZone" label="%dataTransfer.producer.stream.processor.csv.property.timestampZone.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampZone.description" defaultValue="" required="false"/>
+                </propertyGroup>
+                <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.sampling.label">
                     <property id="columnTypeSamplesCount" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.description" defaultValue="100" required="false"/>
-                    <property id="columnTypeMinimalLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.description" defaultValue="1" required="false"/>
+                    <property id="columnTypeMinimalLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.description" defaultValue="50" required="false"/>
                     <property id="columnTypeIsByteLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeUseByteLength.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeUseByteLength.description" defaultValue="" required="false"/>
                 </propertyGroup>
             </processor>

@@ -73,6 +73,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
 
+        final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
         final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 100), 0);
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
@@ -116,26 +117,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                         switch (dataType.getFirst()) {
                             case STRING:
-                                columnInfo.setDataKind(dataType.getFirst());
-                                columnInfo.setTypeName(dataType.getSecond());
-                                int length = -1;
-                                if (!columnIsByteLength) {
-                                    length = line[i].length();
-                                } else {
-                                    final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
-                                    length = line[i].getBytes(encoding).length;
-                                }
-                                length = roundToNextPowerOf2(length);
-                                if (length > columnInfo.getMaxLength()) {
-                                    columnInfo.setMaxLength(length);
-                                }
-                                break;
+                                columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
+                                /* fall-through */
                             case NUMERIC:
                             case BOOLEAN:
-                                if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
-                                    columnInfo.setDataKind(dataType.getFirst());
-                                    columnInfo.setTypeName(dataType.getSecond());
-                                }
+                                columnInfo.updateType(dataType.getFirst(), dataType.getSecond());
                                 break;
                             default:
                                 break;
@@ -146,8 +132,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                 for (StreamDataImporterColumnInfo columnInfo : columnsInfo) {
                     if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
                         log.warn("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
-                        columnInfo.setDataKind(DBPDataKind.STRING);
-                        columnInfo.setTypeName("VARCHAR");
+                        columnInfo.updateType(DBPDataKind.STRING, "VARCHAR");
                     }
                 }
             }
