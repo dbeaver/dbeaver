@@ -79,6 +79,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private Color curLineColor;
 
     private int[] colWidths;
+    private int startOffset;
     private StyleRange curLineRange;
     private int totalRows = 0;
     private String curSelection;
@@ -168,7 +169,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void onCursorChange(int offset) {
         ResultSetModel model = controller.getModel();
-
+        DBPPreferenceStore prefs = getController().getPreferenceStore();
         int lineNum = text.getLineAtOffset(offset);
         int lineOffset = text.getOffsetAtLine(lineNum);
         int horizontalOffset = offset - lineOffset;
@@ -176,8 +177,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         int lineCount = text.getLineCount();
 
         boolean delimLeading = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        boolean delimTop = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP);
 
-        int rowNum = lineNum - FIRST_ROW_LINE; //First 2 lines is header
+        int rowNum = lineNum - FIRST_ROW_LINE - (delimTop ? 1 : 0) ; //First 2 lines is header + 1 if top delimiter turned on
         if (controller.isRecordMode()) {
             if (rowNum < 0) {
                 rowNum = 0;
@@ -187,7 +189,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
         } else {
             int colNum = 0;
-            int horOffsetBegin = 0, horOffsetEnd = 0;
+            int horOffsetBegin = 0, horOffsetEnd = startOffset;
+
             if (delimLeading) horOffsetEnd++;
             for (int i = 0; i < colWidths.length; i++) {
                 horOffsetBegin = horOffsetEnd;
@@ -256,6 +259,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         boolean delimTop = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP);
         boolean delimBottom = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM);
         boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
+        boolean lineNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER);
         this.showNulls = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
 
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
@@ -269,7 +273,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (colWidths == null) {
             // Calculate column widths
             colWidths = new int[attrs.size()];
-
+            if (attrs.size() != 0 && lineNumbers) {
+                startOffset = getStringWidth(String.valueOf(allRows.size() + 1)) + extraSpacesNum + 1;
+            } else {
+                startOffset = 0;
+            }
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
                 colWidths[i] = getAttributeName(attr).length() + extraSpacesNum;
@@ -294,9 +302,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
         // Print header
         if (delimLeading) grid.append("|");
+        if (lineNumbers && attrs.size() != 0) {
+            if (extraSpaces) {
+                grid.append(" ");
+            }
+            grid.append("#");
+            grid.append(" ".repeat(Math.max(0, startOffset - extraSpacesNum - 2)));
+            if (extraSpaces) {
+                grid.append(" ");
+            }
+        }
         for (int i = 0; i < attrs.size(); i++) {
-            if (i > 0) grid.append("|");
-            if (extraSpaces) grid.append(" ");
+            if (i  > 0 || startOffset != 0) grid.append("|");
+            if (extraSpaces) {
+                grid.append(" ");
+            }
             DBDAttributeBinding attr = attrs.get(i);
             String attrName = getAttributeName(attr);
             grid.append(attrName);
@@ -312,10 +332,23 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         printSeparator(delimLeading, delimTrailing, colWidths, grid);
 
         // Print rows
+        int i = 1;
         for (ResultSetRow row : allRows) {
             if (delimLeading) grid.append("|");
+            if (lineNumbers) {
+                if (extraSpaces) {
+                    grid.append(" ");
+                }
+                String displayNumber = String.valueOf(i);
+                grid.append(displayNumber);
+                int stringWidth = getStringWidth(displayNumber);
+                grid.append(" ".repeat(Math.max(0, startOffset - stringWidth - extraSpacesNum - 1)));
+                if (extraSpaces) {
+                    grid.append(" ");
+                }
+            }
             for (int k = 0; k < attrs.size(); k++) {
-                if (k > 0) grid.append("|");
+                if (k > 0 || startOffset != 0) grid.append("|");
                 DBDAttributeBinding attr = attrs.get(k);
                 String displayString = getCellString(model, attr, row, displayFormat);
                 if (displayString.length() >= colWidths[k]) {
@@ -344,6 +377,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
             if (delimTrailing) grid.append("|");
             grid.append("\n");
+            i++;
         }
         if (delimBottom) {
             // Print divider after rows
@@ -522,8 +556,13 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (delimLeading) {
             output.append('+');
         }
+        if (startOffset != 0) {
+            for (int i = startOffset - 1; i > 0; i--) {
+                output.append('-');
+            }
+        }
         for (int i = 0; i < colWidths.length; i++) {
-            if (i > 0) output.append('+');
+            if (i > 0 || startOffset != 0) output.append('+');
             for (int k = colWidths[i]; k > 0; k--) {
                 output.append('-');
             }
