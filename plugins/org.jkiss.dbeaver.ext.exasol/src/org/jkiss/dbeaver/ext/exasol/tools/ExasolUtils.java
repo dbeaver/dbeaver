@@ -45,6 +45,12 @@ import java.util.stream.Collectors;
  * @author Karl Griesser
  */
 public class ExasolUtils {
+    /**
+     * A comment that triggers <a href="https://docs.exasol.com/db/latest/database_concepts/snapshot_mode.htm">the Snapshot Mode</a>.
+     * This mode is helpful for metadata queries as it allows avoiding transaction conflicts.
+     * Prepend the comment to an SQL query if you want to enable the mode for the query.
+     */
+    public static final String SNAPSHOT_EXEC = "/*snapshot execution*/";
 
     // select columns of tables
     private static final String TABLE_QUERY_COLUMNS = "/*snapshot execution*/ SELECT * FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA='%s' AND COLUMN_TABLE='%s' ORDER BY COLUMN_ORDINAL_POSITION";

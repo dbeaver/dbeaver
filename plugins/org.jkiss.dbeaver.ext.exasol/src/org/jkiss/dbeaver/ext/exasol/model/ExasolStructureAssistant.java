@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRowMapper;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
@@ -37,9 +39,14 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecutionContext> {
+    private static final Log log = Log.getLog(ExasolStructureAssistant.class);
+
     private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
     private static final DBSObjectType[] HYPER_LINKS_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.COLUMN, ExasolObjectType.VIEW, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT};
@@ -96,9 +103,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
 
         if (objectType == ExasolObjectType.TABLE) {
-            findTableObjectByName(session, schema, params, references, "TABLE");
+            findTableObjectByName(session, schema, params, references);
         } else if (objectType == ExasolObjectType.VIEW) {
-            findTableObjectByName(session, schema, params, references, "VIEW");
+            findViews(session, schema, params, references);
         } else if (objectType == ExasolObjectType.FOREIGNKEY) {
             findConstraintsByMask(session, schema, params, references, "FOREIGN KEY");
         } else if (objectType == ExasolObjectType.PRIMARYKEY) {
@@ -286,7 +293,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     }
 
     private void findTableObjectByName(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
-                                       @NotNull List<DBSObjectReference> references, @NotNull String type) throws SQLException, DBException {
+                                       @NotNull Collection<? super DBSObjectReference> references) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         //don't use parameter marks because of performance
 
@@ -302,7 +309,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         if (params.isSearchInComments()) {
             sql.append("OR REMARKS LIKE '").append(mask).append("') ");
         }
-        sql.append("AND TABLE_TYPE = '").append(type).append("'");
+        sql.append("AND TABLE_TYPE = 'TABLE'");
 
         try (JDBCStatement dbStat = session.createStatement()) {
             try (JDBCResultSet dbResult = dbStat.executeQuery(sql.toString())) {
@@ -318,7 +325,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     }
                     ExasolSchema exasolSchema = dataSource.getSchema(monitor, schemaName);
                     references.add(
-                            new AbstractObjectReference(tableName, exasolSchema, null, ExasolTableBase.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                            new AbstractObjectReference(tableName, exasolSchema, null, ExasolTable.class, RelationalObjectType.TYPE_TABLE) {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
@@ -326,25 +333,94 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                                     {
                                         throw new DBException("Table schema '" + schemaName + "' not found");
                                     }
-                                    if (type.equals("VIEW")) {
-                                        ExasolView view = tableSchema.getViewCache().getObject(monitor, tableSchema, tableName);
-                                        if (view == null)
-                                            throw new DBException("View '" + tableName + "' not found in schema '" + schemaName + "'");
-                                        return view;
-                                    } else if (type.equals("TABLE")) {
-                                        ExasolTable table = tableSchema.getTableCache().getObject(monitor, tableSchema, tableName);
-                                        if (table == null)
-                                            throw new DBException("Table '" + tableName + "' not found in schema '" + schemaName + "'");
-                                        return table;
-                                    } else {
-                                        throw new DBException("Object type " + type + " unknown");
+                                    ExasolTable table = tableSchema.getTableCache().getObject(monitor, tableSchema, tableName);
+                                    if (table == null) {
+                                        throw new DBException("Table '" + tableName + "' not found in schema '" + schemaName + "'");
                                     }
+                                    return table;
                                 }
                             }
                     );
                 }
             }
         }
+    }
+
+    private void findViews(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
+                           @NotNull Collection<? super DBSObjectReference> references) throws DBException, SQLException {
+//      /*snapshot execution*/
+//      SELECT
+//          VIEW_SCHEMA,
+//          VIEW_NAME
+//      FROM
+//          SYS.EXA_ALL_VIEWS
+//      WHERE
+//          (VIEW_NAME LIKE ?
+//            OR VIEW_TEXT LIKE ?
+//            OR VIEW_COMMENT LIKE ?)
+//          AND VIEW_SCHEMA = ?
+        String viewSchemaColumn = "VIEW_SCHEMA";
+        String viewNameColumn = "VIEW_NAME";
+        StringBuilder sql = new StringBuilder(ExasolUtils.SNAPSHOT_EXEC);
+        sql.append(" SELECT ");
+        if (schema == null) {
+            sql.append(viewSchemaColumn).append(", ");
+        }
+        sql.append(viewNameColumn).append(" FROM ").append(getMetadataTableName("VIEWS")).append(" WHERE ");
+        List<String> clause = new ArrayList<>(3);
+        String mask = ExasolUtils.quoteString(params.getMask());
+        clause.add(getLikeClause(viewNameColumn, mask, params.isCaseSensitive()));
+        if (params.isSearchInDefinitions()) {
+            clause.add(getLikeClause("VIEW_TEXT", mask, params.isCaseSensitive()));
+        }
+        if (params.isSearchInComments()) {
+            clause.add(getLikeClause("VIEW_COMMENT", mask, params.isCaseSensitive()));
+        }
+        if (clause.size() == 1) {
+            sql.append(clause.get(0));
+        } else {
+            sql.append("(").append(String.join(" OR ", clause)).append(")");
+        }
+        if (schema != null) {
+            sql.append(String.format(" AND VIEW_SCHEMA = '%s'", ExasolUtils.quoteString(schema.getName())));
+        }
+
+        JDBCRowMapper<ViewReference> mapper = (resultSet) -> {
+            ExasolSchema viewSchema = schema;
+            if (viewSchema == null) {
+                String viewSchemaName = JDBCUtils.safeGetString(resultSet, viewSchemaColumn);
+                if (viewSchemaName == null) {
+                    return null;
+                }
+                viewSchema = dataSource.getSchema(session.getProgressMonitor(), viewSchemaName);
+                if (viewSchema == null) {
+                    log.warn(String.format("Schema '%s' not found in schema cache of datasource '%s'", viewSchemaName, dataSource));
+                    return null;
+                }
+            }
+
+            String viewName = JDBCUtils.safeGetString(resultSet, viewNameColumn);
+            if (viewName == null) {
+                return null;
+            }
+
+            return new ViewReference(viewSchema, viewName);
+        };
+
+        JDBCUtils.fetchObjects(references, params.getMaxResults(), session, sql, mapper);
+    }
+
+    @NotNull
+    private static String getLikeClause(@NotNull String identifier, @NotNull String mask, boolean isCaseSensitive) {
+        if (isCaseSensitive) {
+            return String.format("%s LIKE '%s'", identifier, mask);
+        }
+        return String.format("UPPER(%s) LIKE '%s'", identifier, mask.toUpperCase(Locale.ROOT));
+    }
+
+    @NotNull
+    private String getMetadataTableName(@NotNull String suffix) {
+        return "SYS." + dataSource.getTablePrefix(ExasolSysTablePrefix.ALL) + "_" + suffix;
     }
 
     @Override
@@ -358,5 +434,28 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
             || objectType == ExasolObjectType.VIEW
             || objectType == ExasolObjectType.SCRIPT
             || objectType == ExasolObjectType.COLUMN;
+    }
+
+    @Override
+    public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
+        return objectType == ExasolObjectType.VIEW
+            || objectType == ExasolObjectType.SCRIPT;
+    }
+
+    private static final class ViewReference extends AbstractObjectReference<ExasolSchema> {
+        private ViewReference(@NotNull ExasolSchema container, @NotNull String name) {
+            super(name, container, null, ExasolView.class, RelationalObjectType.TYPE_VIEW);
+        }
+
+        @Override
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+            ExasolSchema schema = getContainer();
+            String viewName = getName();
+            DBSObject view = schema.getViewCache().getObject(monitor, schema, viewName);
+            if (view == null) {
+                throw new DBException(String.format("View '%s' not found in schema '%s'", viewName, schema.getName()));
+            }
+            return view;
+        }
     }
 }

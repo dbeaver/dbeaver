@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -33,6 +36,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +47,8 @@ import java.util.Map;
  */
 public class JDBCUtils {
     private static final Log log = Log.getLog(JDBCUtils.class);
+
+    public static final int NO_LIMIT = Integer.MAX_VALUE;
 
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
 
@@ -853,5 +860,39 @@ public class JDBCUtils {
             keysRS.next();
             return keysRS.getLong(1);
         }
+    }
+
+    public static <T> void fetchObjects(@NotNull Collection<? super T> objects, int limit, @NotNull JDBCSession session, @NotNull CharSequence sql,
+                                        @NotNull JDBCRowMapper<T> mapper) throws SQLException, DBException {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        if (isFetchCompleted(monitor, objects, limit)) {
+            return;
+        }
+        // Let's say that query execution takes 50% of the time and result set traversal takes another 50%
+        int halfOfWork = limit - objects.size();
+        monitor.beginTask("Fetching objects", halfOfWork * 2);
+
+        try (JDBCStatement statement = session.createStatement()) {
+            try (JDBCResultSet resultSet = statement.executeQuery(sql.toString())) {
+                monitor.worked(halfOfWork);
+                if (resultSet == null) {
+                    log.debug("Result set is null");
+                    return;
+                }
+                while (!isFetchCompleted(monitor, objects, limit) && resultSet.next()) {
+                    T t = mapper.mapRow(resultSet);
+                    if (t != null) {
+                        objects.add(t);
+                        monitor.worked(1);
+                    }
+                }
+            }
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private static boolean isFetchCompleted(@NotNull DBRProgressMonitor monitor, @NotNull Collection<?> objects, int limit) {
+        return monitor.isCanceled() || objects.size() >= limit;
     }
 }
