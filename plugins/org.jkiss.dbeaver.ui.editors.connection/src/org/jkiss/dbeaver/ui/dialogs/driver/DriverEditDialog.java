@@ -84,7 +84,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Button detailsButton;
     private Combo classListCombo;
     private Button findClassButton;
-    private Combo driverCategoryCombo;
     private Text driverNameText;
     private Text driverDescText;
     private Text driverClassText;
@@ -320,32 +319,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
         gd.horizontalSpan = 4;
         infoGroup.setLayoutData(gd);
 
-        driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, UIConnectionMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
-        driverCategoryCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-        if (isReadOnly) {
-            driverCategoryCombo.setEnabled(false);
-        }
-        Set<String> categories = new TreeSet<>();
-        for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-            for (DBPDriver drv : provider.getEnabledDrivers()) {
-                if (!CommonUtils.isEmpty(drv.getCategory())) {
-                    categories.add(drv.getCategory());
-                }
-            }
-        }
-        for (String category : categories) {
-            driverCategoryCombo.add(category);
-        }
-        if (!CommonUtils.isEmpty(driver.getCategory())) {
-            driverCategoryCombo.setText(driver.getCategory());
-        } else if (!CommonUtils.isEmpty(defaultCategory)) {
-            driverCategoryCombo.setText(defaultCategory);
-        }
-
         {
-            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY);
+            idText.setLayoutData(gd);
             idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
         }
 
@@ -828,7 +806,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         // Set props
         driver.setName(driverNameText.getText());
-        driver.setCategory(driverCategoryCombo.getText());
         driver.setDescription(CommonUtils.notEmpty(driverDescText.getText()));
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
