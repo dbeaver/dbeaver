@@ -315,8 +315,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
             nonInstantiableCheck.setEnabled(false);
         }
 
-        Group infoGroup = UIUtils.createControlGroup(group, UIConnectionMessages.dialog_edit_driver_description, 4, -1, -1);
-        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Group infoGroup = UIUtils.createControlGroup(propsGroup, UIConnectionMessages.dialog_edit_driver_description, 4, -1, -1);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 4;
+        infoGroup.setLayoutData(gd);
 
         driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, UIConnectionMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
         driverCategoryCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
