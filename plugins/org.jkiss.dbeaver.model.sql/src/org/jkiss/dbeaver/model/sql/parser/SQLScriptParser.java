@@ -177,9 +177,11 @@ public class SQLScriptParser {
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets or inside block. Ignore it.
                     continue;
-                } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
-                    isDelimiter = true;
-                    isControl = true;
+                } else if (tokenType == SQLTokenType.T_SET_DELIMITER) {
+                	isDelimiter = true;
+                	isControl = true;
+                } else if (tokenType == SQLTokenType.T_CONTROL) {
+                	isControl = true;
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
