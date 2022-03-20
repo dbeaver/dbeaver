@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * PostgreProcedure
@@ -613,13 +614,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public static String makeOverloadedName(PostgreSchema schema, String name, List<PostgreProcedureParameter> params, boolean quote, boolean showParamNames) {
         final String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
         final StringJoiner signature = new StringJoiner(", ", "(", ")");
-        final boolean allIn = params.stream().allMatch(x -> x.getArgumentMode() == ArgumentMode.i);
 
-        for (PostgreProcedureParameter param : params) {
-            final String keyword = param.getArgumentMode().getKeyword();
+        final List<PostgreProcedureParameter> keywordParams = params.stream().filter(x -> x.getArgumentMode().getKeyword() != null).collect(Collectors.toList());
+        final boolean allIn = keywordParams.stream().allMatch(x -> x.getArgumentMode() == ArgumentMode.i);
+
+        for (PostgreProcedureParameter param : keywordParams) {
             final StringJoiner parameter = new StringJoiner(" ");
-            if (!allIn && keyword != null) {
-                parameter.add(keyword);
+            if (!allIn) {
+                parameter.add(param.getArgumentMode().getKeyword());
             }
             if (showParamNames) {
                 parameter.add(param.getName());
