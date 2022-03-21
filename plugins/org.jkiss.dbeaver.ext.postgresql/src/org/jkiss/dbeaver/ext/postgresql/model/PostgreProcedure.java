@@ -615,8 +615,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         final String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
         final StringJoiner signature = new StringJoiner(", ", "(", ")");
 
-        final List<PostgreProcedureParameter> keywordParams = params.stream().filter(x -> x.getArgumentMode().getKeyword() != null).collect(Collectors.toList());
-        final boolean allIn = keywordParams.stream().allMatch(x -> x.getArgumentMode() == ArgumentMode.i);
+        // Function signature may only contain a limited set of arguments inside parenthesis.
+        // Examples of such arguments are: 'in', 'out', 'inout' and 'variadic'.
+        // In our case, they all have associated keywords, so we could abuse it.
+        final List<PostgreProcedureParameter> keywordParams = params.stream()
+            .filter(x -> x.getArgumentMode().getKeyword() != null)
+            .collect(Collectors.toList());
+
+        // In general, 'in' arguments may contain only the type without the keyword because it's implied.
+        // It's a shorthand for procedures that accept a set of arguments and return nothing, making its
+        // signature slightly shorter. On the other hand, if procedure has mixed set of argument types,
+        // we want to always include the keyword to avoid ambiguity.
+        final boolean allIn = keywordParams.stream()
+            .allMatch(x -> x.getArgumentMode() == ArgumentMode.i);
 
         for (PostgreProcedureParameter param : keywordParams) {
             final StringJoiner parameter = new StringJoiner(" ");
