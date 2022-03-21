@@ -509,8 +509,6 @@
                         description="%driver.gcloudpg.description"
                         categories="sql,cloud">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
-                    <!-- FIXME: Specify dependency explicitly because we can't resolve the version because it contains variables. See #15459 -->
-                    <file type="jar" path="maven:/com.google.cloud.sql:jdbc-socket-factory-core:RELEASE"/>
                     <file type="jar" path="maven:/com.google.cloud.sql:postgres-socket-factory:RELEASE"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
