@@ -158,6 +158,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
+                    if (CommonUtils.isEmpty(targetAttributes) && targetEntity instanceof DBPRefreshableObject) {
+                        // Reload table attributes cache
+                        ((DBPRefreshableObject) targetEntity).refreshObject(monitor);
+                        targetAttributes = targetEntity.getAttributes(monitor);
+                    }
                     if (targetAttributes != null) {
                         target = CommonUtils.findBestCaseAwareMatch(
                             targetAttributes,
