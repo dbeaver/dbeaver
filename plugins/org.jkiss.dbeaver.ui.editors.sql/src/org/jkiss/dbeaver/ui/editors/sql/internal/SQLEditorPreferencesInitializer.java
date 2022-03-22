@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.editors.sql.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
@@ -72,7 +70,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, SQLEditor.DEFAULT_TITLE_PATTERN);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN, SQLEditor.DEFAULT_SCRIPT_FILE_NAME);
 
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_HIPPIE, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_HIPPIE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 0);

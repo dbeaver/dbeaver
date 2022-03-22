@@ -21,7 +21,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -406,8 +405,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     );
                 }
             }
-            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE))
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE)) {
                 makeProposalFromHippie();
+            }
         }
         filterProposals(dataSource);
     }
