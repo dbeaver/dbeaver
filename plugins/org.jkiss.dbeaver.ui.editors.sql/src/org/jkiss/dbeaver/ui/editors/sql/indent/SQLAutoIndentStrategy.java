@@ -355,7 +355,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                             // Keep current indent
                         } else {
                             // Last token seems to be some identifier (table or column or function name)
-                            // Next line shoudl contain some keyword then - let's unindent
+                            // Next line should contain some keyword then - let's unindent
                             indent = indenter.unindent(indent, 1);
                             // Do not unindent (#5753)
                         }
@@ -430,10 +430,18 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     {
         autoCompletionMap.clear();
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END);
+        boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BLOCKS);
         if (closeBeginEnd) {
             autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.end);
             autoCompletionMap.put(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.END);
+            autoCompletionMap.put(SQLIndentSymbols.TokenCASE, SQLIndentSymbols.END);
+            autoCompletionMap.put(SQLIndentSymbols.Tokencase, SQLIndentSymbols.end);
+            autoCompletionMap.put(SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.ENDLOOP);
+            autoCompletionMap.put(SQLIndentSymbols.Tokenloop, SQLIndentSymbols.endloop);
+            autoCompletionMap.put(SQLIndentSymbols.Tokenif, SQLIndentSymbols.tthen);
+            autoCompletionMap.put(SQLIndentSymbols.TokenIF, SQLIndentSymbols.tTHEN);
+            autoCompletionMap.put(SQLIndentSymbols.Tokenthen, SQLIndentSymbols.tendif);
+            autoCompletionMap.put(SQLIndentSymbols.TokenTHEN, SQLIndentSymbols.tENDIF);
         }
 
     }
@@ -471,7 +479,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private boolean isClosed(IDocument document, int offset, int token)
     {
         //currently only BEGIN/END is supported. Later more typing aids will be added here.
-        if (token == SQLIndentSymbols.TokenBEGIN || token == SQLIndentSymbols.Tokenbegin) {
+        if (token == SQLIndentSymbols.TokenBEGIN || token == SQLIndentSymbols.Tokenbegin ||
+            token == SQLIndentSymbols.TokenCASE || token == SQLIndentSymbols.Tokencase ||
+            token == SQLIndentSymbols.TokenLOOP || token == SQLIndentSymbols.Tokenloop ||
+            token == SQLIndentSymbols.TokenIF || token == SQLIndentSymbols.Tokenif ||
+            token == SQLIndentSymbols.TokenTHEN || token == SQLIndentSymbols.Tokenthen
+        ) {
             return getBlockBalance(document, offset) <= 0;
         }
         return false;
@@ -492,6 +505,14 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         int begin = offset;
         int end = offset;
+        int tcase = offset;
+        int tcaseend = offset;
+        int loop = offset;
+        int loopend = offset;
+        int tif = offset;
+        int tthen = offset;
+        int tthen2 = offset;
+        int tendif = offset;
 
         SQLHeuristicScanner scanner = new SQLHeuristicScanner(document, syntaxManager);
 
@@ -499,13 +520,22 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
             begin = scanner.findOpeningPeer(begin, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
             end = scanner.findClosingPeer(end, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
-            if (begin == -1 && end == -1) {
+            tcase = scanner.findOpeningPeer(tcase, SQLIndentSymbols.TokenCASE, SQLIndentSymbols.TokenEND);
+            tcaseend = scanner.findClosingPeer(tcaseend, SQLIndentSymbols.TokenCASE, SQLIndentSymbols.TokenEND);
+            loop = scanner.findOpeningPeer(loop, SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.TokenENDLOOP);
+            loopend = scanner.findClosingPeer(loopend, SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.TokenENDLOOP);
+            tif = scanner.findOpeningPeer(tif, SQLIndentSymbols.TokenIF, SQLIndentSymbols.TokenTHEN);
+            tthen = scanner.findClosingPeer(tthen, SQLIndentSymbols.TokenIF, SQLIndentSymbols.TokenTHEN);
+            tthen2 = scanner.findOpeningPeer(tthen2, SQLIndentSymbols.TokenTHEN, SQLIndentSymbols.TokenENDIF);
+            tendif = scanner.findClosingPeer(tendif, SQLIndentSymbols.TokenTHEN, SQLIndentSymbols.TokenENDIF);
+
+            if (begin == -1 && end == -1 && tcase == -1 && tcaseend == -1 && loop == -1 && loopend == -1 && tif == -1 && tthen == -1  && tthen2 == -1 && tendif == -1) {
                 return 0;
             }
-            if (begin == -1) {
+            if (begin == -1 && tcase == -1 && loop == -1 && tif == -1 && tthen2 == -1 ) {
                 return -1;
             }
-            if (end == -1) {
+            if (end == -1 || loopend == -1 || tthen == -1 || tendif == -1) {
                 return 1;
             }
         }

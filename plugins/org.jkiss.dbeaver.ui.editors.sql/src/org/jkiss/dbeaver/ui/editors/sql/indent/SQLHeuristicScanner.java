@@ -263,12 +263,40 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         assert (s != null);
 
         switch (s.length()) {
+            case 2:
+                if (SQLIndentSymbols.tif.equals(s)) {
+                    return Tokenif;
+                }
+                if (SQLIndentSymbols.tIF.equalsIgnoreCase(s)) {
+                    return TokenIF;
+                }
+                break;
             case 3:
                 if (SQLIndentSymbols.end.equals(s)) {
                     return Tokenend;
                 }
                 if (SQLIndentSymbols.END.equalsIgnoreCase(s)) {
                     return TokenEND;
+                }
+                break;
+            case 4:
+                if (SQLIndentSymbols.tcase.equals(s)) {
+                    return Tokencase;
+                }
+                if (SQLIndentSymbols.tCASE.equalsIgnoreCase(s)) {
+                    return TokenCASE;
+                }
+                if (SQLIndentSymbols.loop.equals(s)) {
+                    return Tokenloop;
+                }
+                if (SQLIndentSymbols.LOOP.equalsIgnoreCase(s)) {
+                    return TokenLOOP;
+                }
+                if (SQLIndentSymbols.tthen.equals(s)) {
+                    return Tokenthen;
+                }
+                if (SQLIndentSymbols.tTHEN.equalsIgnoreCase(s)) {
+                    return TokenTHEN;
                 }
                 break;
             case 5:
@@ -499,7 +527,17 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
             (firstToken == TokenBEGIN && secondToken == Tokenbegin) ||
             (firstToken == Tokenbegin && secondToken == TokenBEGIN) ||
             (firstToken == TokenEND && secondToken == Tokenend) ||
-            (firstToken == Tokenend && secondToken == TokenEND);
+            (firstToken == Tokenend && secondToken == TokenEND) ||
+            (firstToken == Tokencase && secondToken == TokenCASE) ||
+            (firstToken == TokenCASE && secondToken == Tokencase) ||
+            (firstToken == Tokenloop && secondToken == TokenLOOP) ||
+            (firstToken == TokenLOOP && secondToken == Tokenloop) ||
+            (firstToken == TokenIF && secondToken == Tokenif) ||
+            (firstToken == Tokenif && secondToken == TokenIF) ||
+            (firstToken == TokenTHEN && secondToken == Tokenthen) ||
+            (firstToken == Tokenthen && secondToken == TokenTHEN) ||
+            (firstToken == TokenENDIF && secondToken == Tokenendif) ||
+            (firstToken == Tokenendif && secondToken == TokenENDIF);
     }
 
 }
