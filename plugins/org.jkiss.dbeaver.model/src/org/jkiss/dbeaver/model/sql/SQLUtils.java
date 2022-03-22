@@ -461,6 +461,17 @@ public final class SQLUtils {
         @NotNull StringBuilder query,
         boolean inlineCriteria)
     {
+        appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
+    }
+
+    public static void appendConditionString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull StringBuilder query,
+        boolean inlineCriteria,
+        boolean subQuery)
+    {
         final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
         final DBDAttributeConstraint[] constraints = filter.getConstraints().stream()
             .filter(x -> x.getCriteria() != null || x.getOperator() != null)
@@ -497,7 +508,8 @@ public final class SQLUtils {
                     if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
                         // Seems to a reference on a table column.
                         // It is better to use real table column in expressions because aliases may not work
-                        attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
+                        attrName = DBUtils.getQuotedIdentifier(dataSource,
+                            subQuery ? constraint.getAttributeLabel() : constraint.getAttributeName());
                     } else {
                         // Most likely it is an expression so we don't want to quote it
                         attrName = binding.getMetaAttribute().getName();
@@ -516,13 +528,19 @@ public final class SQLUtils {
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
             if (constraints.length > 0) {
-                query.append(operator);
+                query.append(operator).append('(').append(filter.getWhere()).append(')');
+            } else {
+                query.append(filter.getWhere());
             }
-            query.append(filter.getWhere());
         }
     }
 
-    public static void appendOrderString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
+    public static void appendOrderString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        boolean subQuery,
+        @NotNull StringBuilder query)
     {
         // Construct ORDER BY
         boolean hasOrder = false;
@@ -530,7 +548,7 @@ public final class SQLUtils {
             if (hasOrder) query.append(',');
             String orderString = null;
             if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
-                String orderColumn = co.getAttributeName();
+                String orderColumn = subQuery ? co.getAttributeLabel() : co.getAttributeName();
                 if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
                     // It is a simple column.
                     orderString = co.getFullAttributeName();
@@ -627,9 +645,13 @@ public final class SQLUtils {
                 }
                 if (hasNull) {
                     conString.append("IS NULL OR ");
-                    if (conditionTable != null) {
-                        conString.append(conditionTable).append('.');
+                    
+                    if (constraint.getEntityAlias() != null) {
+                    	conString.append(constraint.getEntityAlias()).append('.');
+                    } else if (conditionTable != null) {
+                    	conString.append(conditionTable).append('.');
                     }
+                    
                     conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
@@ -1197,7 +1219,7 @@ public final class SQLUtils {
             // Construct ORDER BY
             if (dataFilter.hasOrdering()) {
                 query.append("\nORDER BY "); //$NON-NLS-1$
-                appendOrderString(dataFilter, dataSource, tableAlias, query);
+                appendOrderString(dataFilter, dataSource, tableAlias, false, query);
             }
         }
     }

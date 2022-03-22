@@ -97,6 +97,12 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
     }
 
     @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(command.getObject(), command.getTitle()), options);
+        addObjectCreateActions(monitor, executionContext, actionList, makeCreateCommand(command.getObject(), options), options);
+    }
+
+    @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLTableIndex object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }

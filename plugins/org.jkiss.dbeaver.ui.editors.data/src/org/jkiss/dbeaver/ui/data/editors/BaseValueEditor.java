@@ -102,7 +102,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             //isInline = false;
         }
         TextEditorUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), inlineControl);
-
+        if (inlineControl instanceof Composite) {
+            for (Control childControl : ((Composite) inlineControl).getChildren()) {
+                TextEditorUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), childControl);
+            }
+        }
 //            if (!isInline) {
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
 //            }
@@ -137,7 +141,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                  if (!UIUtils.isInDialog(inlineControl)) {
                      if (inlineControl instanceof Composite) {
                          for (Control childControl : ((Composite) inlineControl).getChildren()) {
-                             addAutoSaveSupport(childControl);
+                             if (!childControl.isDisposed()) {
+                                 addAutoSaveSupport(childControl);
+                                 EditorUtils.trackControlContext(valueController.getValueSite(), childControl, RESULTS_EDIT_CONTEXT_ID);
+                             }
                          }
                      } else {
                          addAutoSaveSupport(inlineControl);

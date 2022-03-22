@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -721,6 +721,10 @@ public abstract class JDBCDataSource
                     SQLState.SQL_08007.getCode().equals(sqlState) ||
                     SQLState.SQL_08S01.getCode().equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
+            }
+            if (SQLState.SQL_23000.getCode().equals(sqlState) ||
+                SQLState.SQL_23505.getCode().equals(sqlState)) {
+                return ErrorType.UNIQUE_KEY_VIOLATION;
             }
         }
         if (GeneralUtils.getRootCause(error) instanceof SocketException) {

@@ -150,7 +150,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
                 e.doit = false;
                 e.detail = SWT.TRAVERSE_NONE;
             }
-        } else if (e.detail == SWT.TRAVERSE_TAB_NEXT && editor != null) {
+        } else if ((e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) && editor != null) {
             TableItem item = tableEditor.getItem();
             if (item != null) {
                 saveEditorValue(editor, columnIndex, item);
@@ -160,14 +160,25 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
 
                 int lastColumn = lastTraverseIndex > 0 ? lastTraverseIndex : table.getColumnCount() - 1;
                 if (columnIndex < lastColumn) {
-                    columnIndex++;
+                    if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                        columnIndex++;
+                    } else {
+                        columnIndex--;
+                    }
                 } else {
-                    item = UIUtils.getNextTableItem(table, tableEditor.getItem());
-                    if (item == null && table.getItemCount() > 0) {
-                        item = table.getItem(0);
+                    if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                        item = UIUtils.getNextTableItem(table, tableEditor.getItem());
+                        if (item == null && table.getItemCount() > 0) {
+                            item = table.getItem(0);
+                        }
+                    } else {
+                        item = UIUtils.getPreviousTableItem(table, tableEditor.getItem());
+                        if (item == null && table.getItemCount() > 0) {
+                            item = table.getItem(table.getItemCount() - 1);
+                        }
                     }
                     if (item != null) {
-                        columnIndex = firstTraverseIndex > 0 ? firstTraverseIndex : 0;
+                        columnIndex = Math.max(firstTraverseIndex, 0);
                     } else {
                         return;
                     }

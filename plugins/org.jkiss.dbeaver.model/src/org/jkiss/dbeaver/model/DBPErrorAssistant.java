@@ -34,7 +34,8 @@ public interface DBPErrorAssistant
         PERMISSION_DENIED,
         FEATURE_UNSUPPORTED,
         TRANSACTION_ABORTED,    // Txn aborted, PG-specific
-        RESULT_SET_MISSING      // No resultset, Oracle-specific (#8026)
+        RESULT_SET_MISSING,      // No resultset, Oracle-specific (#8026)
+        UNIQUE_KEY_VIOLATION     // During insert operation
     }
 
     class ErrorPosition

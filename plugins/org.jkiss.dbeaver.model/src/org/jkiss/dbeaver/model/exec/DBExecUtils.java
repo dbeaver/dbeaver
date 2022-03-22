@@ -721,20 +721,24 @@ public class DBExecUtils {
                     // Fix of #11194. If column name and alias are equals we could try to get real column name
                     // from parsed query because driver doesn't return it.
                     String columnName = attrMeta.getName();
-                    if (updateColumnMeta &&
-                        CommonUtils.equalObjects(columnName, attrMeta.getLabel()) &&
-                        sqlQuery != null &&
-                        attrMeta.getOrdinalPosition() < sqlQuery.getSelectItemCount())
+                    if (sqlQuery != null &&
+                        updateColumnMeta &&
+                        CommonUtils.equalObjects(columnName, attrMeta.getLabel()))
                     {
-                        SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
-                        if (selectItem.isPlainColumn()) {
-                            String realColumnName = selectItem.getName();
-                            if (!CommonUtils.equalObjects(realColumnName, columnName)) {
-                                if (DBUtils.isQuotedIdentifier(dataSource, realColumnName)) {
-                                    columnName = DBUtils.getUnQuotedIdentifier(dataSource, realColumnName);
-                                } else {
-                                    // #12008
-                                    columnName = DBObjectNameCaseTransformer.transformName(dataSource, realColumnName);
+                        int asteriskIndex = sqlQuery.getSelectItemAsteriskIndex();
+                        if ((asteriskIndex < 0 || asteriskIndex > attrMeta.getOrdinalPosition()) &&
+                            attrMeta.getOrdinalPosition() < sqlQuery.getSelectItemCount())
+                        {
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                            if (selectItem.isPlainColumn()) {
+                                String realColumnName = selectItem.getName();
+                                if (!CommonUtils.equalObjects(realColumnName, columnName)) {
+                                    if (DBUtils.isQuotedIdentifier(dataSource, realColumnName)) {
+                                        columnName = DBUtils.getUnQuotedIdentifier(dataSource, realColumnName);
+                                    } else {
+                                        // #12008
+                                        columnName = DBObjectNameCaseTransformer.transformName(dataSource, realColumnName);
+                                    }
                                 }
                             }
                         }
@@ -887,4 +891,23 @@ public class DBExecUtils {
         return actions;
     }
 
+    @Nullable
+    public static DBSEntity detectSingleSourceTable(DBDAttributeBinding ... attributes) {
+        // Check single source flag
+        DBSEntity sourceTable = null;
+        for (DBDAttributeBinding attribute : attributes) {
+            if (attribute.isPseudoAttribute()) {
+                continue;
+            }
+            DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+            if (rowIdentifier != null) {
+                if (sourceTable == null) {
+                    sourceTable = rowIdentifier.getEntity();
+                } else if (sourceTable != rowIdentifier.getEntity()) {
+                    return null;
+                }
+            }
+        }
+        return sourceTable;
+    }
 }

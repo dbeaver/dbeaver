@@ -74,6 +74,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Button jumpServerEnabledCheck;
 
     private Combo tunnelImplCombo;
+    private Button fingerprintVerificationCheck;
     private Text localHostText;
     private Text localPortSpinner;
     private Text remoteHostText;
@@ -142,7 +143,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
             tunnelImplCombo = UIUtils.createLabelCombo(client, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 3;
             tunnelImplCombo.setLayoutData(gd);
             tunnelImplCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -153,6 +153,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
+
+            fingerprintVerificationCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_label_bypass_verification, false);
+            GridData cgd = new GridData(GridData.FILL_HORIZONTAL);
+            cgd.horizontalSpan = 2;
+            fingerprintVerificationCheck.setLayoutData(cgd);
+            fingerprintVerificationCheck.setToolTipText(SSHUIMessages.model_ssh_configurator_label_bypass_verification_description);
 
             localHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
@@ -305,7 +311,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 tunnelImplCombo.select(0);
             }
         }
-
+        
+        fingerprintVerificationCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION));
+        
         localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
         int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
         if (lpValue != 0) {
@@ -357,6 +365,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 break;
             }
         }
+        
+        configuration.setProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION, fingerprintVerificationCheck.getSelection());
 
         configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText().trim());
         int localPort = CommonUtils.toInt(localPortSpinner.getText());

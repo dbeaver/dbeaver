@@ -94,7 +94,7 @@ public class SQLEditorPropertyTester extends PropertyTester
             case PROP_FOLDING_ENABLED:
                 return editor.isFoldingEnabled();
             case PROP_FOLDING_SUPPORTED:
-                return editor.getAnnotationModel() != null;
+                return editor.getProjectionAnnotationModel() != null;
         }
         return false;
     }

@@ -55,8 +55,14 @@ public class SQLEditorUtils {
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
+    /**
+     * A {@link IResource}'s session property to distinguish between persisted and newly created resources.
+     */
+    private static final QualifiedName NEW_SCRIPT_FILE = new QualifiedName(SQLEditorActivator.PLUGIN_ID, "newScriptFile");
+
     public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
         return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.isForceUseSingleConnection() &&
             !container.getDriver().isEmbedded();
     }
 
@@ -220,6 +226,7 @@ public class SQLEditorUtils {
                 CommonUtils.isEmpty(filename) ? "Script" : CommonUtils.escapeFileName(filename),
                 SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);
+        tempFile.setSessionProperty(NEW_SCRIPT_FILE, true);
 
         // Save ds container reference
         if (navigatorContext.getDataSourceContainer() != null) {
@@ -240,6 +247,14 @@ public class SQLEditorUtils {
             return description;
         }
         return "";
+    }
+
+    public static boolean isNewScriptFile(@NotNull IResource resource) {
+        try {
+            return Boolean.TRUE.equals(resource.getSessionProperty(NEW_SCRIPT_FILE));
+        } catch (CoreException ignored) {
+            return false;
+        }
     }
 
     @NotNull

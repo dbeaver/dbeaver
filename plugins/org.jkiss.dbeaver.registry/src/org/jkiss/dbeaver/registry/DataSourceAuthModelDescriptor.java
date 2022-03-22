@@ -23,8 +23,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -48,6 +48,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String description;
     private DBPImage icon;
     private boolean defaultModel;
+    private boolean isDesktop;
     private final Map<String, String[]> replaces = new HashMap<>();
     private boolean hasCondReplaces = false;
 
@@ -65,6 +66,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             this.icon = DBIcon.TREE_PACKAGE;
         }
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
+        this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
@@ -106,6 +108,11 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Override
     public boolean isDefaultModel() {
         return defaultModel;
+    }
+
+    @Override
+    public boolean isDesktopModel() {
+        return isDesktop;
     }
 
     @Override

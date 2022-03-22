@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -119,12 +120,12 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         if (isNull()) {
             return DBConstants.NULL_VALUE_LABEL;
         } else {
-            return makeArrayString(DBDDisplayFormat.UI);
+            return makeArrayString();
         }
     }
 
     @NotNull
-    public String makeArrayString(DBDDisplayFormat format) {
+    public String makeArrayString() {
         if (isNull()) {
             return SQLConstants.NULL_VALUE;
         }
@@ -142,7 +143,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         for (int i = 0; i < contents.length; i++) {
             Object item = contents[i];
             if (i > 0) str.append(','); //$NON-NLS-1$
-            String itemString = valueHandler.getValueDisplayString(type, item, format);
+            String itemString = valueHandler.getValueDisplayString(type, item, DBDDisplayFormat.NATIVE);
             SQLUtils.appendValue(str, type, itemString);
         }
         // }
@@ -312,6 +313,9 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             if (elementType == null) {
                 elementType = dataTypeProvider.getLocalDataType(Types.FLOAT);
             }
+        } else if (array instanceof BigDecimal[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.DECIMAL);
         } else if (array instanceof boolean[]) {
             dataKind = DBPDataKind.BOOLEAN;
             elementType = dataTypeProvider.getLocalDataType(Types.BOOLEAN);

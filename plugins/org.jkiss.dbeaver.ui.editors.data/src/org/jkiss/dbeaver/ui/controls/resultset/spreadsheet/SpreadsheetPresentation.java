@@ -140,6 +140,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
     private boolean showBooleanAsCheckbox;
+    private boolean showWhitespaceCharacters;
     private BooleanStyleSet booleanStyles;
     private int rowBatchSize;
     private IValueEditor activeInlineEditor;
@@ -346,9 +347,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.curAttribute = attribute;
 
         ResultSetRow curRow = controller.getCurrentRow();
-        if (curRow == null) {
-            return;
-        }
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);
@@ -839,6 +837,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
+        showWhitespaceCharacters = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS);
         booleanStyles = BooleanStyleSet.getDefaultStyles(preferenceStore);
         useNativeNumbersFormat = controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
 
@@ -1964,7 +1963,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 }
             }
-
+            if (showWhitespaceCharacters) {
+                state |= STATE_DECORATED;
+            }
             if (attr.isTransformed()) {
                 state |= STATE_TRANSFORMED;
             }

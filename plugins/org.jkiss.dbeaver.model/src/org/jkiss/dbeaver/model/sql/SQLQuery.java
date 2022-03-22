@@ -283,6 +283,18 @@ public class SQLQuery implements SQLScriptElement {
         return selectItems == null || selectItems.size() <= index ? null : selectItems.get(index);
     }
 
+    public int getSelectItemAsteriskIndex() {
+        if (selectItems != null) {
+            for (int i = 0; i < selectItems.size(); i++) {
+                SQLSelectItem item = selectItems.get(i);
+                if (item.getName().contains("*")) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     @NotNull
     public String getOriginalText() {
         return originalText;
@@ -468,12 +480,28 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
+    public boolean isModifiyng() {
+        if (getType() == SQLQueryType.UNKNOWN) {
+            return false;
+        }
+        if (statement instanceof Select) {
+            SelectBody selectBody = ((Select) statement).getSelectBody();
+            if (selectBody instanceof PlainSelect) {
+                if (((PlainSelect) selectBody).isForUpdate() ||
+                    ((PlainSelect) selectBody).getIntoTables() != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof SQLQuery && text.equals(((SQLQuery) obj).text);
     }
 
-    public boolean isModifiyng() {
-        return getType() != SQLQueryType.SELECT;
-    }
 }

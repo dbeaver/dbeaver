@@ -204,6 +204,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         // Make initial connection to read database list
         DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
+        boolean addExclusionName = false;
+        String connectionDBName = getContainer().getConnectionConfiguration().getDatabaseName();
         {
             final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
             final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
@@ -213,6 +215,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
             if (!showTemplates) {
                 catalogQuery.append(" AND NOT datistemplate ");
+                if (!CommonUtils.isEmpty(connectionDBName)) {
+                    // User can add the name of template database in the Database field of connection settings. We must take it into account
+                    catalogQuery.append("OR db.datname =?");
+                    addExclusionName = true;
+                }
             }
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false, this);
@@ -223,8 +230,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         // Get all databases
         PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString());
 
+        if (addExclusionName) {
+            dbStat.setString(1, connectionDBName);
+        }
         if (catalogFilters != null) {
-            JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+            JDBCUtils.setFilterParameters(dbStat, addExclusionName ? 2 : 1, catalogFilters);
         }
 
         return dbStat;

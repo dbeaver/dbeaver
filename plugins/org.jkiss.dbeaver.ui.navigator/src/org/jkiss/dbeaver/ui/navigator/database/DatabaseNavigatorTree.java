@@ -94,6 +94,17 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
 
+    public static DatabaseNavigatorTree getFromShell(Display display) {
+        if (display == null) {
+            return null;
+        }
+        Control focusControl = display.getFocusControl();
+        if (focusControl == null) {
+            return null;
+        }
+        return getFromShell(focusControl.getShell());
+    }
+
     public static DatabaseNavigatorTree getFromShell(Shell shell) {
         return (DatabaseNavigatorTree)shell.getData(DATA_TREE_CONTROL);
     }

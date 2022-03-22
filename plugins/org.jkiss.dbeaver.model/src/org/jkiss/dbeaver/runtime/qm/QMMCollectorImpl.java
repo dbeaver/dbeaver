@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.DBASession;
-import org.jkiss.dbeaver.model.auth.DBASessionPersistent;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -141,12 +141,12 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         try {
             DBRProgressMonitor monitor = new LoggingProgressMonitor();
             DBPProject project = context.getDataSource().getContainer().getProject();
-            DBASession session = project.getSessionContext().getSpaceSession(monitor, project, false);
+            SMSession session = project.getSessionContext().getSpaceSession(monitor, project, false);
             if (session == null) {
                 DBPWorkspace workspace = project.getWorkspace();
                 session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
             }
-            DBASessionPersistent sessionPersistent = DBUtils.getAdapter(DBASessionPersistent.class, session);
+            SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
             if (sessionPersistent == null) {
                 log.warn("Session persistent not found");
                 return;

@@ -716,6 +716,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
+        if (!getDataSourceContainer().isConnected()) {
+            return null;
+        }
         return DBUtils.getDefaultContext(getObject(), true);
     }
 

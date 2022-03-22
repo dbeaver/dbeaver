@@ -64,6 +64,8 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
         menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_CONNECT));
         menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_DISCONNECT));
         menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_INVALIDATE));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_READONLY));
+        
         if (part instanceof IEditorPart) {
             menuManager.add(new Separator());
             menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_COMMIT));

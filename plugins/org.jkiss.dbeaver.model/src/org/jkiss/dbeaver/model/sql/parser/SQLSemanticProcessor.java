@@ -129,8 +129,7 @@ public class SQLSemanticProcessor {
     // Solution - always wrap query in subselect + add patched WHERE and ORDER
     // It is configurable
     public static String addFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
-        boolean supportSubqueries = dataSource.getSQLDialect().supportsSubqueries();
-        if (supportSubqueries && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
+        if (isForceFilterSubQuery(dataSource)) {
             return wrapQuery(dataSource, sqlQuery, dataFilter);
         }
         String newQuery = injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
@@ -139,6 +138,10 @@ public class SQLSemanticProcessor {
             return wrapQuery(dataSource, sqlQuery, dataFilter);
         }
         return newQuery;
+    }
+
+    public static boolean isForceFilterSubQuery(DBPDataSource dataSource) {
+        return dataSource.getSQLDialect().supportsSubqueries() && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
     }
 
     public static String injectFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
@@ -164,11 +167,11 @@ public class SQLSemanticProcessor {
         modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
         if (dataFilter.hasConditions()) {
             modifiedQuery.append(" WHERE ");
-            SQLUtils.appendConditionString(dataFilter, dataSource, NESTED_QUERY_AlIAS, modifiedQuery, true);
+            SQLUtils.appendConditionString(dataFilter, dataSource, NESTED_QUERY_AlIAS, modifiedQuery, true, true);
         }
         if (dataFilter.hasOrdering()) {
             modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$
-            SQLUtils.appendOrderString(dataFilter, dataSource, NESTED_QUERY_AlIAS, modifiedQuery);
+            SQLUtils.appendOrderString(dataFilter, dataSource, NESTED_QUERY_AlIAS, true, modifiedQuery);
         }
         return modifiedQuery.toString();
     }
@@ -177,8 +180,8 @@ public class SQLSemanticProcessor {
         // WHERE
         if (filter.hasConditions()) {
             for (DBDAttributeConstraint co : filter.getConstraints()) {
-                if (co.hasCondition()) {
-                    Table table = getConstraintTable(select, co);
+                if (co.hasCondition() && !isDynamicAttribute(co.getAttribute())) {
+                    Table table = getConstraintTable(dataSource, select, co);
                     if (!isValidTableColumn(monitor, dataSource, table, co)) {
                         return false;
                     }
@@ -234,11 +237,25 @@ public class SQLSemanticProcessor {
         return true;
     }
 
+    private static boolean isDynamicAttribute(@Nullable DBSAttributeBase attribute) {
+        if (!(attribute instanceof DBDAttributeBinding)) {
+            return DBUtils.isDynamicAttribute(attribute);
+        }
+        DBDAttributeBinding attributeBinding = ((DBDAttributeBinding) attribute);
+        return DBUtils.isDynamicAttribute(attributeBinding.getAttribute());
+    }
+
     private static boolean isValidTableColumn(DBRProgressMonitor monitor, DBPDataSource dataSource, Table table, DBDAttributeConstraint co) throws DBException {
         DBSAttributeBase attribute = co.getAttribute();
+
+        if (isDynamicAttribute(attribute)) {
+            return true;
+        }
+
         if (attribute instanceof DBDAttributeBinding) {
             attribute = ((DBDAttributeBinding) attribute).getMetaAttribute();
         }
+
         if (table != null && attribute instanceof DBCAttributeMetaData) {
             DBSEntityAttribute entityAttribute = null;
             DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) attribute).getEntityMetaData();
@@ -265,7 +282,7 @@ public class SQLSemanticProcessor {
             orderExpr = new LongValue(orderColumnIndex);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
-            Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
+            Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(dataSource, select, co);
 
             if (!isValidTableColumn(monitor, dataSource, orderTable, co)) {
                 orderTable = null;
@@ -286,7 +303,7 @@ public class SQLSemanticProcessor {
      * Searches in FROM and JOIN
      */
     @Nullable
-    public static Table getConstraintTable(PlainSelect select, DBDAttributeConstraint constraint) {
+    public static Table getConstraintTable(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint constraint) {
         String constrTable;
         DBSAttributeBase ca = constraint.getAttribute();
         if (ca instanceof DBDAttributeBinding) {
@@ -300,12 +317,12 @@ public class SQLSemanticProcessor {
             return null;
         }
         FromItem fromItem = select.getFromItem();
-        Table table = findTableInFrom(fromItem, constrTable);
+        Table table = findTableInFrom(dataSource, fromItem, constrTable);
         if (table == null) {
             // Maybe it is a join
             if (!CommonUtils.isEmpty(select.getJoins())) {
                 for (Join join : select.getJoins()) {
-                    table = findTableInFrom(join.getRightItem(), constrTable);
+                    table = findTableInFrom(dataSource, join.getRightItem(), constrTable);
                     if (table != null) {
                         break;
                     }
@@ -327,8 +344,9 @@ public class SQLSemanticProcessor {
     }
 
     @Nullable
-    private static Table findTableInFrom(FromItem fromItem, String tableName) {
-        if (fromItem instanceof Table && tableName.equals(((Table) fromItem).getName())) {
+    private static Table findTableInFrom(DBPDataSource dataSource, FromItem fromItem, String tableName) {
+        if (fromItem instanceof Table && 
+            DBUtils.getUnQuotedIdentifier(dataSource, tableName).equals(DBUtils.getUnQuotedIdentifier(dataSource, ((Table) fromItem).getName()))) {
             return (Table) fromItem;
         }
         return null;

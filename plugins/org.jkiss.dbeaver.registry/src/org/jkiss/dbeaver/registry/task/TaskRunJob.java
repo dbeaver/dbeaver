@@ -123,7 +123,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private DBTTaskRunStatus executeTask(DBRProgressMonitor monitor, PrintStream logWriter) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener, true);
     }
 
     @Override

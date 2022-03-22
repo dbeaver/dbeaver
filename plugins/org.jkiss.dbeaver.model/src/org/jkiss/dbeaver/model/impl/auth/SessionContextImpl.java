@@ -32,28 +32,28 @@ import java.util.List;
 /**
  * Session context implementation
  */
-public class SessionContextImpl implements DBASessionContext {
+public class SessionContextImpl implements SMSessionContext {
     private static final Log log = Log.getLog(SessionContextImpl.class);
 
-    private final DBASessionContext parentContext;
-    private final List<DBASession> sessions = new ArrayList<>();
+    private final SMSessionContext parentContext;
+    private final List<SMSession> sessions = new ArrayList<>();
 
-    public SessionContextImpl(DBASessionContext parentContext) {
+    public SessionContextImpl(SMSessionContext parentContext) {
         this.parentContext = parentContext;
     }
 
     @Nullable
     @Override
-    public DBASession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull DBAAuthSpace space, boolean open) throws DBException {
-        for (DBASession session : sessions) {
+    public SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException {
+        for (SMSession session : sessions) {
             if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
                 return session;
             }
         }
         //log.debug(">> Session not found in context " + this + " for space " + space);
-        DBASession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
+        SMSession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
         if (session == null && open) {
-            DBASessionProviderService sessionProviderService = DBWorkbench.getService(DBASessionProviderService.class);
+            SMSessionProviderService sessionProviderService = DBWorkbench.getService(SMSessionProviderService.class);
             if (sessionProviderService != null) {
                 try {
                     // Session will be added in this context by itself (if needed)
@@ -70,11 +70,11 @@ public class SessionContextImpl implements DBASessionContext {
     }
 
     @Override
-    public DBAAuthToken[] getSavedTokens() {
-        return new DBAAuthToken[0];
+    public SMAuthToken[] getSavedTokens() {
+        return new SMAuthToken[0];
     }
 
-    public void addSession(@NotNull DBASession session) {
+    public void addSession(@NotNull SMSession session) {
         if (!sessions.contains(session)) {
             sessions.add(session);
             //log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
@@ -84,7 +84,7 @@ public class SessionContextImpl implements DBASessionContext {
     }
 
     @Override
-    public boolean removeSession(@NotNull DBASession session) {
+    public boolean removeSession(@NotNull SMSession session) {
         if (sessions.remove(session)) {
             //log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
             return true;

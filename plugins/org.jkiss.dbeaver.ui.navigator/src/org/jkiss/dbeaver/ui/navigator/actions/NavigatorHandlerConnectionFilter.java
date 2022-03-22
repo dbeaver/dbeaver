@@ -61,7 +61,7 @@ public class NavigatorHandlerConnectionFilter extends AbstractHandler implements
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(Display.getCurrent().getFocusControl().getShell());
+        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(Display.getCurrent());
         if (navigatorTree == null) {
             IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
             if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView) {

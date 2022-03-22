@@ -184,10 +184,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
-            if (this.connection != null) {
-                if (!this.dataSource.closeConnection(connection, purpose, true)) {
-                    log.debug("Connection close timeout");
-                }
+            // If we cannot determine if connection is in autocommit mode, assume that it is not
+            if (connection != null && !dataSource.closeConnection(connection, purpose, !isAutoCommit(false))) {
+                log.debug("Connection close timeout");
             }
             this.connection = null;
         }
@@ -350,6 +349,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }
         }
         return autoCommit;
+    }
+
+    private boolean isAutoCommit(boolean defaultValue) {
+        try {
+            return isAutoCommit();
+        } catch (DBCException e) {
+            log.debug("Unable to determine if connection is in autocommit mode", e);
+            return defaultValue;
+        }
     }
 
     @Override

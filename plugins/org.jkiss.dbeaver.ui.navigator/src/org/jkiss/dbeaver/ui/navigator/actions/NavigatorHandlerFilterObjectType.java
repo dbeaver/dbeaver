@@ -78,7 +78,7 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             DatabaseNavigatorTreeFilterObjectType.table);
 
         DatabaseNavigatorTreeFilterObjectType curObjectType = DatabaseNavigatorTreeFilterObjectType.table;
-        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(Display.getCurrent().getFocusControl().getShell());
+        DatabaseNavigatorTree navigatorTree = DatabaseNavigatorTree.getFromShell(Display.getCurrent());
         if (navigatorTree == null) {
             IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
             if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView) {

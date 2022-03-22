@@ -164,6 +164,11 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     }
 
+    @Override
+    public void rejectChanges() {
+        // do nothing
+    }
+
     protected void registerContextMenu() {
         // Register context menu
         MenuManager menuMgr = new MenuManager(null, RESULT_SET_PRESENTATION_CONTEXT_MENU);

@@ -103,6 +103,7 @@ public class AutoRefreshControl {
         }
         RefreshSettings settings = getRefreshSettings();
         if (afterError && settings.isStopOnError()) {
+            enableAutoRefresh(false);
             return;
         }
         autoRefreshJob = new AutoRefreshJob(this);

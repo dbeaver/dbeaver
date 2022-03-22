@@ -83,8 +83,10 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read procedure definition")) {
-            return JDBCUtils.queryString(session, "SELECT pg_get_functiondef(p.oid) FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
-                "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
+            return JDBCUtils.queryString(session, "SELECT " +
+                (sourceObject.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_get_functiondef(p.oid)" : "prosrc") +
+                " FROM pg_catalog.pg_proc P, pg_catalog.pg_namespace NS\n" +
+                "WHERE ns.oid=p.pronamespace AND ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
         }
@@ -143,8 +145,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase table) throws SQLException {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT trigger_name, event_object_table as OWNER, event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
-            "FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+        sql.append("SELECT trigger_name, event_object_table as OWNER, event_manipulation,action_order,action_condition,action_statement,action_orientation");
+        if (genericStructContainer.getDataSource().isServerVersionAtLeast(9, 1)) {
+            sql.append(",action_timing\n");
+        } else {
+            sql.append("\n");
+        }
+        sql.append("FROM INFORMATION_SCHEMA.TRIGGERS\n" +
             "WHERE ");
         if (table == null) {
             sql.append("trigger_schema=?");
@@ -172,13 +179,12 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         String manipulation = JDBCUtils.safeGetString(dbResult, "event_manipulation");
         String description = "";
         return new PostgreGenericTrigger(
-            genericStructContainer,
             genericTableBase,
             name,
             description,
             manipulation,
             JDBCUtils.safeGetString(dbResult, "action_orientation"),
-            JDBCUtils.safeGetString(dbResult, "action_timing"),
+            genericStructContainer.getDataSource().isServerVersionAtLeast(9, 1) ? JDBCUtils.safeGetString(dbResult, "action_timing") : null,
             JDBCUtils.safeGetString(dbResult, "action_statement"));
     }
 
@@ -186,8 +192,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     public List<PostgreGenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
-                "FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+            sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation");
+            if (container.getDataSource().isServerVersionAtLeast(9, 1)) {
+                sql.append(",action_timing\n");
+            } else {
+                sql.append("\n");
+            }
+            sql.append("FROM INFORMATION_SCHEMA.TRIGGERS\n" +
                 "WHERE ");
             if (table == null) {
                 sql.append("trigger_schema=? AND event_object_table IS NULL");
@@ -217,7 +228,6 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                         }
                         String description = "";
                         trigger = new PostgreGenericTrigger(
-                            container,
                             table,
                             name,
                             description,

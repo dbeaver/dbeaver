@@ -676,7 +676,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private boolean isRestoreActiveSchemaFromScript() {
         return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) &&
-            getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
+            getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !this.getDataSourceContainer().isForceUseSingleConnection();
     }
 
     private static class CloseContextJob extends AbstractJob {
@@ -3785,6 +3786,7 @@ public class SQLEditor extends SQLEditorBase implements
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
                         resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
+                    clearProblems(null);
                 });
             } finally {
                 if (extListener != null) extListener.onStartScript();
@@ -3799,6 +3801,9 @@ public class SQLEditor extends SQLEditorBase implements
                     UIUtils.asyncExec(() -> {
                         setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
                         updateDirtyFlag();
+                        if (!scriptMode) {
+                            clearProblems(query);
+                        }
                     });
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
@@ -3874,14 +3879,16 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                if (!scrollCursorToError(monitor, query, error)) {
+                if (!visualizeQueryErrors(monitor, query, error)) {
                     int errorQueryOffset = query.getOffset();
                     int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
-                        if (scriptMode) {
-                            selectionProvider.setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
-                        } else {
-                            selectionProvider.setSelection(originalSelection);
+                        if (!addProblem(GeneralUtils.getFirstMessage(error), new Position(errorQueryOffset, errorQueryLength))) {
+                            if (scriptMode) {
+                                selectionProvider.setSelection(new TextSelection(errorQueryOffset, errorQueryLength));
+                            } else {
+                                selectionProvider.setSelection(originalSelection);
+                            }
                         }
                     }
                 }

@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 /**
@@ -40,6 +40,9 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     String getImplClassName();
 
     boolean isDefaultModel();
+
+    // Model works in desktop application only
+    boolean isDesktopModel();
 
     boolean isApplicableTo(DBPDriver driver);
 
