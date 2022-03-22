@@ -21,28 +21,14 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Map;
 
 public class PythonCodeConverter extends SourceCodeSQLConverter {
-    public static final String OPTION_USE_STRING_BUILDER = "use-string-builder";
 
     @Override
     protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter, Map<String, Object> options) {
-        boolean useStringBuilder = CommonUtils.toBoolean(options.get(OPTION_USE_STRING_BUILDER));
-        if (useStringBuilder) {
-            result.append("list = []").append('\n');
-        } else {
-            result.append("\"\"\"").append('\n');
-        }
+        result.append("\"\"\"").append('\n');
         for (String sourceLine : sourceLines) {
             String escapedString = CommonUtils.escapeJavaString(sourceLine);
-            if (useStringBuilder) {
-                result.append("list.append('").append(escapedString).append(lineDelimiter).append("')").append('\n');
-            } else {
-                result.append(escapedString).append('\n');
-            }
+            result.append(escapedString).append('\n');
         }
-        if (useStringBuilder) {
-            result.append("query = ''.join(list)");
-        } else {
-            result.append("\"\"\"").append('\n');
-        }
+        result.append("\"\"\"").append('\n');
     }
 }
