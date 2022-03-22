@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -41,9 +40,9 @@ public class JDBCCollectionString extends JDBCCollection {
     }
 
     @NotNull
-    public String makeArrayString(DBDDisplayFormat format) {
+    public String makeArrayString() {
         if (isModified()) {
-            return super.makeArrayString(format);
+            return super.makeArrayString();
         }
         return value;
     }

@@ -183,10 +183,9 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private String getCellString(DBDAttributeBinding attr, Object value) {
         final String displayString = attr.getValueHandler().getValueDisplayString(attr, value, getValueExportFormat(attr));
 
-        if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(value)) {
-            return DBConstants.NULL_VALUE_LABEL;
+        if (DBUtils.isNullValue(value)) {
+            return showNulls ? DBConstants.NULL_VALUE_LABEL : "";
         }
-
         return CommonUtils.getSingleLineString(displayString);
     }
 

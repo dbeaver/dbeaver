@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Date;
 
@@ -29,6 +31,7 @@ public class VerticaSystemTable extends VerticaTable {
     private boolean isSuperUserOnly;
     private boolean isMonitorable;
     private boolean isAccessibleDuringLockdown;
+    private String description;
 
     public VerticaSystemTable(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -36,6 +39,7 @@ public class VerticaSystemTable extends VerticaTable {
             this.isSuperUserOnly = JDBCUtils.safeGetBoolean(dbResult, "is_superuser_only");
             this.isMonitorable = JDBCUtils.safeGetBoolean(dbResult, "is_monitorable");
             this.isAccessibleDuringLockdown = JDBCUtils.safeGetBoolean(dbResult, "is_accessible_during_lockdown");
+            this.description = JDBCUtils.safeGetString(dbResult, "remarks");
         }
     }
 
@@ -82,7 +86,13 @@ public class VerticaSystemTable extends VerticaTable {
     @Override
     @Property(viewable = true, editable = false, updatable = false, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
-        return super.getDescription();
+        return description;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+        return description;
     }
 
     @Override

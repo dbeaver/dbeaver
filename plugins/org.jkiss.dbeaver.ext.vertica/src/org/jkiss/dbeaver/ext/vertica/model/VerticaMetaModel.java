@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
 import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -49,8 +48,6 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 {
     private static final Log log = Log.getLog(VerticaMetaModel.class);
 
-    private Boolean childObjectColumnAvailable;
-
     public VerticaMetaModel() {
         super();
     }
@@ -70,23 +67,21 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         JDBCPreparedStatement dbStat;
         if (owner instanceof VerticaSchema && ((VerticaSchema) owner).isSystem()) {
             String sql = "SELECT st.table_schema as table_schem, st.table_description as remarks, 'SYSTEM TABLE' as table_type, st.*\n" +
-                "from v_catalog.system_tables st where st.table_schema =?" + (table != null ? " and st.table_name=?" : "");
+                "from v_catalog.system_tables st where st.table_schema =?" + (table != null || CommonUtils.isNotEmpty(tableName) ? " and st.table_name=?" : "");
             dbStat = session.prepareStatement(sql);
             dbStat.setString(1, owner.getName());
-            if (table != null) {
-                dbStat.setString(2, table.getName());
+            if (table != null || CommonUtils.isNotEmpty(tableName)) {
+                dbStat.setString(2, table != null ? table.getName() : tableName);
             }
         } else {
             String sql = "SELECT t.table_schema as table_schem, t.table_name, t.create_time, t.is_temp_table, t.is_system_table, t.has_aggregate_projection, " +
-                "t.partition_expression, case when is_flextable = true THEN 'FLEX TABLE' else 'TABLE' end as table_type, com.\"comment\" as remarks\n" +
-                "FROM v_catalog.tables t LEFT JOIN v_catalog.comments com ON com.object_type = 'TABLE'\n" +
-                "AND com.object_id = t.table_id\n" +
+                "t.partition_expression, case when is_flextable = true THEN 'FLEX TABLE' else 'TABLE' end as table_type\n" +
+                "FROM v_catalog.tables t\n" +
                 (owner instanceof VerticaSchema ? "WHERE t.table_schema=?" + (table != null || CommonUtils.isNotEmpty(tableName) ? " and t.table_name = ?" : "") : "")+
                 "\nUNION ALL\n" +
                 "SELECT v.table_schema as table_schem, v.table_name, v.create_time, v.is_local_temp_view as is_temp_table, v.is_system_view as is_system_table, false as has_aggregate_projection, " +
-                "null as partition_expression, 'VIEW' as table_type, com.\"comment\" as remarks\n" +
-                "FROM v_catalog.views v LEFT JOIN v_catalog.comments com ON com.object_type = 'VIEW'\n" +
-                "AND com.object_id = v.table_id\n" +
+                "null as partition_expression, 'VIEW' as table_type\n" +
+                "FROM v_catalog.views v\n" +
                 (owner instanceof VerticaSchema ? "WHERE v.table_schema=?" + (table != null || CommonUtils.isNotEmpty(tableName) ? " and v.table_name = ?" : "") : "");
             dbStat = session.prepareStatement(sql);
             if (owner instanceof VerticaSchema) {
@@ -124,24 +119,13 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
-        JDBCPreparedStatement dbStat;
-        boolean supportsCommentReading = isChildCommentColumnAvailable(session.getProgressMonitor(), owner.getDataSource());
         StringBuilder ddl = new StringBuilder();
-        ddl.append("SELECT ");
-        if (supportsCommentReading) ddl.append("com.comment AS REMARKS,");
-        ddl.append("col.*, col.sql_type_id AS SOURCE_DATA_TYPE, col.data_type_name AS TYPE_NAME, col.column_default AS COLUMN_DEF " +
-            "FROM v_catalog.odbc_columns col ");
-        if (supportsCommentReading) {
-            ddl.append("LEFT JOIN v_catalog.comments com ON com.object_type = 'COLUMN' " +
-                "AND com.object_schema = col.schema_name " +
-                "AND com.object_name = col.table_name " +
-                "AND com.child_object = col.column_name ");
-        }
-        ddl.append("WHERE col.schema_name=? ");
+        ddl.append("SELECT col.*, col.sql_type_id AS SOURCE_DATA_TYPE, col.data_type_name AS TYPE_NAME, col.column_default AS COLUMN_DEF " +
+            "FROM v_catalog.odbc_columns col\n WHERE col.schema_name=?");
         if (forTable != null) {
             ddl.append("AND col.table_name=? ");
         }
-        dbStat = session.prepareStatement(ddl.toString());
+        JDBCPreparedStatement dbStat = session.prepareStatement(ddl.toString());
         if (forTable != null) {
             dbStat.setString(1, forTable.getSchema().getName());
             dbStat.setString(2, forTable.getName());
@@ -149,26 +133,6 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
             dbStat.setString(1, owner.getSchema().getName());
         }
         return dbStat;
-    }
-
-    private boolean isChildCommentColumnAvailable(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource) {
-        // child_object is very helpful column in v_catalog.comments table, but it's not childObjectColumnAvailable in Vertica versions < 9.3 and in some other cases
-        if (childObjectColumnAvailable == null) {
-            try {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Check child comment column existence")) {
-                    try (final JDBCPreparedStatement dbStat = session.prepareStatement(
-                            "SELECT child_object FROM v_catalog.comments WHERE 1<>1"))
-                    {
-                        dbStat.setFetchSize(1);
-                        dbStat.execute();
-                        childObjectColumnAvailable = true;
-                    }
-                }
-            } catch (Exception e) {
-                childObjectColumnAvailable = false;
-            }
-        }
-        return childObjectColumnAvailable;
     }
 
     @Override
@@ -182,7 +146,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
             typeName, valueType, sourceType, ordinalPos,
             columnSize,
             charLength, scale, precision, radix, notNull,
-            remarks, defaultValue, autoIncrement
+            defaultValue, autoIncrement
         );
     }
 
@@ -295,12 +259,12 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException, DBException {
         JDBCPreparedStatement dbStat;
         dbStat = session.prepareStatement("SELECT col.constraint_name as PK_NAME, col.table_name as TABLE_NAME, col.column_name as COLUMN_NAME, " +
-                "c.ordinal_position as KEY_SEQ, col.constraint_type, tc.predicate, com.comment, col.is_enabled \n" +
+                "c.ordinal_position as KEY_SEQ, col.constraint_type, tc.predicate, col.is_enabled \n" +
                 "FROM v_catalog.constraint_columns col\n" +
                 "LEFT JOIN v_catalog.columns c ON\n" +
                 "c.table_id = col.table_id\n" +
-                "LEFT JOIN v_catalog.comments com ON\n" +
-                "com.object_id = col.constraint_id\n" +
+                //"LEFT JOIN v_catalog.comments com ON com.object_id = col.constraint_id"
+                // v_catalog.comments dramatically reduces data loading speed. Maybe we can use another table or use lazy cache for constraints too
                 "JOIN v_catalog.table_constraints tc ON\n" +
                 "tc.constraint_id = col.constraint_id \n" +
                 "AND col.column_name = c.column_name \n" +

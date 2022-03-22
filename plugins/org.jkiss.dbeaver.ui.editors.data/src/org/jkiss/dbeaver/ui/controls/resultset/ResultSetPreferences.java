@@ -55,6 +55,7 @@ public final class ResultSetPreferences {
 
     public static final String RESULT_SET_USE_SMOOTH_SCROLLING = "resultset.hScroll.smooth"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX = "resultset.show.boolean.checkbox"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_WHITESPACE_CHARACTERS = "resultset.show.whitespace.characters"; //$NON-NLS-1$
     public static final String RESULT_SET_CLICK_TOGGLE_BOOLEAN = "resultset.show.boolean.toggleOnClick"; //$NON-NLS-1$
     public static final String RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES = "resultset.calc.columnWidthByValues"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CONNECTION_NAME = "resultset.show.connectionName"; //$NON-NLS-1$
@@ -84,7 +85,6 @@ public final class ResultSetPreferences {
     public static final String RESULT_TEXT_DELIMITER_TOP = "resultset.text.delimiter.top"; //$NON-NLS-1$
     public static final String RESULT_TEXT_DELIMITER_BOTTOM = "resultset.text.delimiter.bottom"; //$NON-NLS-1$
     public static final String RESULT_TEXT_EXTRA_SPACES = "resultset.text.extra.spaces"; //$NON-NLS-1$
-    public static final String RESULT_TEXT_LINE_NUMBER = "resultset.text.line.number";
 
     // Confirmations
     public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$
@@ -94,5 +94,4 @@ public final class ResultSetPreferences {
     public static final String CONFIRM_RS_PANEL_RESET = "reset_panels_content"; //$NON-NLS-1$
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
-
 }

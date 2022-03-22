@@ -31,6 +31,14 @@ public class SMDataSourceGrant {
         return dataSourceId;
     }
 
+    /**
+     @deprecated use {@link #getDataSourceId()} instead
+     */
+    @Deprecated
+    public String getConnectionId() {
+        return dataSourceId;
+    }
+
     public String getSubjectId() {
         return subjectId;
     }

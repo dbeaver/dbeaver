@@ -274,10 +274,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
 
-                boolean isMetadataContext =
-                    getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION) ?
-                        JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName()) :
-                        JDBCExecutionContext.TYPE_MAIN.equals(context.getContextName());
+                boolean isMetadataContext = (
+                    getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION) &&
+                    !getContainer().isForceUseSingleConnection()
+                ) ? JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName()) : JDBCExecutionContext.TYPE_MAIN.equals(context.getContextName());
 
                 if (isMetadataContext) {
                     if (CommonUtils.getBoolean(

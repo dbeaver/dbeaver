@@ -445,6 +445,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                                 curBounds.x = loc.x;
                                 curBounds.y = loc.y;
                                 entityPart.modifyBounds(curBounds);
+                                getEditor().setDirty(true);
                                 //autoLayoutEntity(entityPart);
                             }
                         });

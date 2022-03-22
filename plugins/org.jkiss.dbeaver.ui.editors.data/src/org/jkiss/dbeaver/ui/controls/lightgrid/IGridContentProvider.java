@@ -34,9 +34,10 @@ public interface IGridContentProvider extends IContentProvider {
 
     int STATE_NONE          = 0;
     int STATE_LINK          = 1;
-    int STATE_HYPER_LINK    = 2;
-    int STATE_TRANSFORMED   = 4;
-    int STATE_TOGGLE        = 8;
+    int STATE_HYPER_LINK    = 1 << 1;
+    int STATE_TRANSFORMED   = 1 << 2;
+    int STATE_TOGGLE        = 1 << 3;
+    int STATE_DECORATED     = 1 << 4;
 
     int ALIGN_LEFT          = 0;
     int ALIGN_CENTER        = 1;

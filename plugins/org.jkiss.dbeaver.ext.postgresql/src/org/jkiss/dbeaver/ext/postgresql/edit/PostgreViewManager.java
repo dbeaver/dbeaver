@@ -114,7 +114,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
         // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
         String sql = view.getSource().trim();
-        if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
+        if (!sql.toLowerCase(Locale.ENGLISH).contains("create")) {
             StringBuilder sqlBuf = new StringBuilder();
             sqlBuf.append("CREATE ");
             if (!(view instanceof PostgreMaterializedView)) {

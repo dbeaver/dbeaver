@@ -62,6 +62,7 @@ public class SQLEditorUtils {
 
     public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
         return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.isForceUseSingleConnection() &&
             !container.getDriver().isEmbedded();
     }
 
