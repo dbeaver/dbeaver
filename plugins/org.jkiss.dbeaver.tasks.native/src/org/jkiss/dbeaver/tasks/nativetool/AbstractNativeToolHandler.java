@@ -60,8 +60,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener,
-        boolean showNotifications) throws DBException {
+        @NotNull DBTTaskExecutionListener listener) throws DBException {
         SETTINGS settings = createTaskSettings(runnableContext, task);
         settings.setLogWriter(logStream);
         if (!validateTaskParameters(task, settings, log)) {
@@ -76,7 +75,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 listener.taskStarted(task);
                 Throwable error = null;
                 try {
-                    doExecute(monitor, task, settings, log, showNotifications);
+                    doExecute(monitor, task, settings, log);
                 } catch (Exception e) {
                     error = e;
                 } finally {
@@ -242,7 +241,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         }
     }
 
-    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, boolean showNotifications) throws DBException, InterruptedException {
+    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
         validateClientHome(monitor, settings);
 
         long startTime = System.currentTimeMillis();

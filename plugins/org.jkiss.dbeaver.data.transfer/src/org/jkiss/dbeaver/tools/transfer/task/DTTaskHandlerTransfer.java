@@ -55,8 +55,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener,
-        boolean showNotifications) throws DBException
+        @NotNull DBTTaskExecutionListener listener) throws DBException
     {
         DataTransferSettings[] settings = new DataTransferSettings[1];
         try {
@@ -151,7 +150,6 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             } catch (InterruptedException e) {
                 break;
             }
-//            listener.subTaskFinished(task, error);
         }
         return error;
     }

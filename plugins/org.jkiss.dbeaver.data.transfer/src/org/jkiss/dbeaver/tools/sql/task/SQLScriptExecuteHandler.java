@@ -59,8 +59,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener,
-        boolean showNotifications) throws DBException
+        @NotNull DBTTaskExecutionListener listener) throws DBException
     {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
