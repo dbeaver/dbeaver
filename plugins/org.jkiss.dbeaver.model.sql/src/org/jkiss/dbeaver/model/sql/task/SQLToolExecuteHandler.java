@@ -210,7 +210,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         } finally {
             monitor.done();
         }
-        listener.taskFinished(settings, null, lastError);
+        listener.taskFinished(task, null, lastError, settings);
 
         outLog.println("Tool execution finished");
         outLog.flush();

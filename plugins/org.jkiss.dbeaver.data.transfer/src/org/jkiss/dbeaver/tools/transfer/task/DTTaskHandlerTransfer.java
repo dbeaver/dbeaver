@@ -82,7 +82,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         try {
             indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings);
             Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
-            listener.taskFinished(settings, null, error);
+            listener.taskFinished(task, null, error, settings);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                 DTMessages.data_transfer_task_handler_unexpected_error_title,
@@ -151,7 +151,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             } catch (InterruptedException e) {
                 break;
             }
-            listener.subTaskFinished(error);
+//            listener.subTaskFinished(task, error);
         }
         return error;
     }
