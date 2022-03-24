@@ -563,7 +563,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             columnMapping.setEditingSupport(new EditingSupport(mappingViewer) {
                 @Override
                 protected CellEditor getCellEditor(Object element) {
-                    Set<String> mappingTypes = new HashSet<>();
+                    List<String> mappingTypes = new ArrayList<>();
                     DatabaseMappingObject mapping = (DatabaseMappingObject) element;
                     DatabaseMappingType mappingType = mapping.getMappingType();
                     if (mappingType != DatabaseMappingType.skip) {
@@ -571,8 +571,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                     if (mapping instanceof DatabaseMappingContainer) {
                         if (mappingType == DatabaseMappingType.existing || mappingType == DatabaseMappingType.create) {
+                            // Recreate can be used for not-existing in this moment tables if user will save this mapping in the task
                             mappingTypes.add(DatabaseMappingType.recreate.name());
                         } else if (mappingType == DatabaseMappingType.recreate) {
+                            // Depends on the existence of the target table
                             if (mapping.getTarget() != null) {
                                 mappingTypes.add(DatabaseMappingType.existing.name());
                             } else {
@@ -611,6 +613,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         DatabaseMappingObject mapping = (DatabaseMappingObject) element;
                         DatabaseMappingType mappingType = DatabaseMappingType.valueOf(value.toString());
                         if (mapping.getMappingType() != DatabaseMappingType.recreate && mappingType == DatabaseMappingType.recreate) {
+                            // Show this confirmation if mapping is not recreate at this moment
                             boolean confirmed = UIUtils.confirmAction(
                                 getShell(),
                                 DTUIMessages.database_consumer_page_mapping_recreate_confirm_title,
@@ -820,6 +823,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator) child);
                             if (forceRefresh && mapping.getMappingType() == DatabaseMappingType.recreate) {
+                                // Keep container mapping type, refresh only attributes
                                 containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
                             } else {
                                 containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
@@ -837,6 +841,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 }
                 if (forceRefresh && mapping.getMappingType() == DatabaseMappingType.recreate) {
+                    // Keep container mapping type, refresh only attributes
                     containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
                 } else {
                     containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create, forceRefresh);

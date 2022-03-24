@@ -159,7 +159,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
                     if (CommonUtils.isEmpty(targetAttributes) && targetEntity instanceof DBPRefreshableObject) {
-                        // Reload table attributes cache
+                        // Reload table attributes cache. It can be empty after table deleting
                         ((DBPRefreshableObject) targetEntity).refreshObject(monitor);
                         targetAttributes = targetEntity.getAttributes(monitor);
                     }
@@ -361,7 +361,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 }
 
                 if (target != null && newMappingType == DatabaseMappingType.create && parent.getMappingType() != DatabaseMappingType.recreate) {
-                    // Change create to existing.
+                    // Change create to existing. Do not change mapping type for the recreate type
                     newMappingType = DatabaseMappingType.existing;
                 } else if (target == null && newMappingType == DatabaseMappingType.existing) {
                     newMappingType = DatabaseMappingType.create;

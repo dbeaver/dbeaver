@@ -75,9 +75,7 @@ public class DatabaseTransferUtils {
                     } else if (!(newTarget instanceof DBSDataManipulator)) {
                         throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
                     }
-                    if (containerMapping.getTarget() == null) {
-                        containerMapping.setTarget((DBSDataManipulator) newTarget);
-                    }
+                    containerMapping.setTarget((DBSDataManipulator) newTarget);
                     if (containerMapping.getMappingType() == DatabaseMappingType.create) {
                         containerMapping.setMappingType(DatabaseMappingType.existing);
                     }
