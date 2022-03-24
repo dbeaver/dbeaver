@@ -17,17 +17,17 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * Admin interface
  */
-public interface SMAdminController<USER extends SMUser, ROLE extends SMRole, SESSION extends SMSession> extends SMController<USER, ROLE, SESSION> {
+public interface SMAdminController<USER extends SMUser, ROLE extends SMRole> extends SMController<USER, ROLE> {
 
     ///////////////////////////////////////////
     // Users
@@ -37,9 +37,6 @@ public interface SMAdminController<USER extends SMUser, ROLE extends SMRole, SES
     void deleteUser(String userId) throws DBCException;
 
     void setUserRoles(String userId, String[] roleIds, String grantorId) throws DBCException;
-
-    @NotNull
-    ROLE[] getUserRoles(String userId) throws DBCException;
 
     USER getUserById(String userId) throws DBCException;
 
@@ -64,4 +61,10 @@ public interface SMAdminController<USER extends SMUser, ROLE extends SMRole, SES
     void updateRole(ROLE role) throws DBCException;
 
     void deleteRole(String roleId) throws DBCException;
+
+    ///////////////////////////////////////////
+    // Permissions
+    void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBCException;
+
+    void setSubjectConnectionAccess(@NotNull String subjectId, @NotNull List<String> connectionIds, String grantor) throws DBCException;
 }

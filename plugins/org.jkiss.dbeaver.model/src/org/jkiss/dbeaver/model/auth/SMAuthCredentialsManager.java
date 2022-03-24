@@ -32,11 +32,11 @@ public interface SMAuthCredentialsManager {
      * It doesn't check credentials like passwords, just searches user id by identifying credentials.
      */
     @Nullable
-    String getUserByCredentials(SMAuthProviderDescriptor authProvider, Map<String, Object> authParameters) throws DBCException;
+    String getUserByCredentials(String authProviderId, Map<String, Object> authParameters) throws DBCException;
 
     /**
      * Get user credentials for specified provider
      */
-    Map<String, Object> getUserCredentials(String userId, SMAuthProviderDescriptor authProvider) throws DBCException;
+    Map<String, Object> getUserCredentials(String userId, String authProviderId) throws DBCException;
 
 }
