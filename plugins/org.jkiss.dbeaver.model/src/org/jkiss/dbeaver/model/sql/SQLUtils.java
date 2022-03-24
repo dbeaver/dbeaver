@@ -549,7 +549,7 @@ public final class SQLUtils {
             String orderString = null;
             if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
                 String orderColumn = subQuery ? co.getAttributeLabel() : co.getAttributeName();
-                if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
+                if (canOrderByName(dataSource, co, orderColumn) && !filter.hasNameDuplicates(orderColumn)) {
                     // It is a simple column.
                     orderString = co.getFullAttributeName();
                     if (conditionTable != null) {
@@ -576,6 +576,18 @@ public final class SQLUtils {
             if (hasOrder) query.append(',');
             query.append(filter.getOrder());
         }
+    }
+
+    private static boolean canOrderByName(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, @NotNull String constraintName) {
+        if (constraint.getAttribute() == null) {
+            return true;
+        }
+        if (!dataSource.getSQLDialect().supportsOrderByIndex()) {
+            return true;
+        }
+        return PATTERN_SIMPLE_NAME
+            .matcher(constraintName)
+            .matches();
     }
 
     @Nullable
