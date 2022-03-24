@@ -25,6 +25,7 @@
         <module>org.jkiss.dbeaver.ext.athena</module>
         <module>org.jkiss.dbeaver.ext.bigquery</module>
         <module>org.jkiss.dbeaver.ext.clickhouse</module>
+        <module>org.jkiss.dbeaver.ext.databricks</module>
         <module>org.jkiss.dbeaver.ext.db2</module>
         <module>org.jkiss.dbeaver.ext.db2.zos</module>
         <module>org.jkiss.dbeaver.ext.db2.i</module>
