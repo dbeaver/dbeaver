@@ -1373,6 +1373,19 @@
                     <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
 
+                <driver
+                        id="azure_databricks"
+                        label="Azure Databricks"
+                        icon="icons/databricks_icon.png"
+                        iconBig="icons/databricks_icon_big.png"
+                        class="com.simba.spark.jdbc.Driver"
+                        webURL="https://databricks.com/"
+                        description="Azure Databricks driver"
+                        categories="sql,analytic,cloud">
+
+                    <file type="jar" path="https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.22/SimbaSparkJDBC42-2.6.22.1040.zip" bundle="!drivers.databricks"/>
+                </driver>
+
                 <!--driver
                     id="linter"
                     label="Linter"
