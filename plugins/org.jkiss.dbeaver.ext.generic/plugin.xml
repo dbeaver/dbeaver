@@ -1175,6 +1175,11 @@
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
+
+                    <parameter name="omit-catalog-name" value="true"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-table-constraints" value="false"/>
                 </driver>
 
                 <!-- Apache Kylin -->
@@ -1192,6 +1197,11 @@
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
+
+                    <parameter name="omit-catalog-name" value="true"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-table-constraints" value="false"/>
                 </driver>
 
 
