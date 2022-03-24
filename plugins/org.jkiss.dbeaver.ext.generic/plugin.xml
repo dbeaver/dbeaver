@@ -146,7 +146,6 @@
                     <property id="supports-limits" label="Driver supports result set limit" description="Driver supports multiple result set limit (max rows)." type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-truncate" label="Driver supports TRUNCATE operation" description="Driver supports TRUNCATE command. It is much faster than DELETE without criteria." type="boolean" required="false" defaultValue="true"/>
-                    <property id="supports-set-array" label="Driver supports setArray JDBC API" description="Driver supports setArray JDBC API for binding array values. Some drivers may not support setArray in favor of setObject." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>

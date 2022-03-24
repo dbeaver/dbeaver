@@ -38,7 +38,6 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="supports-set-array" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
                 </driver>
@@ -58,7 +57,6 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="supports-set-array" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
                 </driver>
@@ -75,6 +73,19 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseTableManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable"/>
         <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseViewManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseView"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                id="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                class="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                label="ClickHouse data types provider"
+                description="ClickHouse data types provider">
+
+            <datasource class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource"/>
+            <type standard="ARRAY"/>
+            <type standard="STRUCT"/>
+        </provider>
     </extension>
 
 </plugin>
