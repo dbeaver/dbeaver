@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
@@ -46,6 +49,27 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * scanning).
      */
     public static final int UNBOUND = -2;
+
+    
+    private final static Map<String, Integer> TOKEN_ID_BY_STRING = new TreeMap<>(String.CASE_INSENSITIVE_ORDER) {{
+        put(SQLIndentSymbols.StrBEGIN, SQLIndentSymbols.TokenBEGIN);
+        put(SQLIndentSymbols.StrEND, SQLIndentSymbols.TokenEND);
+        put(SQLIndentSymbols.StrIF, SQLIndentSymbols.TokenIF);
+        put(SQLIndentSymbols.StrCASE, SQLIndentSymbols.TokenCASE);
+        put(SQLIndentSymbols.StrLOOP, SQLIndentSymbols.TokenLOOP);
+        put(SQLIndentSymbols.StrTHEN, SQLIndentSymbols.TokenTHEN);
+    }};
+    
+    private final static Map<Integer, String> TOKEN_STRING_BY_ID = TOKEN_ID_BY_STRING.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+    
+    public static String getTokenString(int id) {
+        String tokenString = TOKEN_STRING_BY_ID.get(id);
+        if (tokenString == null) {
+            throw new IllegalArgumentException("Unknown token id " + id);
+        } else {
+            return tokenString;   
+        }        
+    }
 
     /**
      * Stops at any delimiter or non-whitespace character
@@ -262,53 +286,11 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     private int getToken(String s) {
         assert (s != null);
 
-        switch (s.length()) {
-            case 2:
-                if (SQLIndentSymbols.tif.equals(s)) {
-                    return Tokenif;
-                }
-                if (SQLIndentSymbols.tIF.equalsIgnoreCase(s)) {
-                    return TokenIF;
-                }
-                break;
-            case 3:
-                if (SQLIndentSymbols.end.equals(s)) {
-                    return Tokenend;
-                }
-                if (SQLIndentSymbols.END.equalsIgnoreCase(s)) {
-                    return TokenEND;
-                }
-                break;
-            case 4:
-                if (SQLIndentSymbols.tcase.equals(s)) {
-                    return Tokencase;
-                }
-                if (SQLIndentSymbols.tCASE.equalsIgnoreCase(s)) {
-                    return TokenCASE;
-                }
-                if (SQLIndentSymbols.loop.equals(s)) {
-                    return Tokenloop;
-                }
-                if (SQLIndentSymbols.LOOP.equalsIgnoreCase(s)) {
-                    return TokenLOOP;
-                }
-                if (SQLIndentSymbols.tthen.equals(s)) {
-                    return Tokenthen;
-                }
-                if (SQLIndentSymbols.tTHEN.equalsIgnoreCase(s)) {
-                    return TokenTHEN;
-                }
-                break;
-            case 5:
-                if (SQLIndentSymbols.begin.equals(s)) {
-                    return Tokenbegin;
-                }
-                if (SQLIndentSymbols.BEGIN.equalsIgnoreCase(s)) {
-                    return TokenBEGIN;
-                }
-                break;
-
+        Integer tokenKindId = TOKEN_ID_BY_STRING.get(s);
+        if (tokenKindId != null) {
+            return tokenKindId;
         }
+
         final DBPKeywordType keywordType = syntaxManager.getDialect().getKeywordType(s);
         if (keywordType == DBPKeywordType.KEYWORD) {
             return TokenKeyword;
@@ -454,21 +436,29 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
     public int findOpeningPeer(int start, int openingPeer, int closingPeer) {
+        return this.findOpeningPeer(start, openingPeer, closingPeer, UNBOUND, UNBOUND);
+    }
+    
+    public int findOpeningPeer(int start, int openingPeer, int closingPeer, int closingPeerEnd, int headCancelToken) {
         assert (start < document.getLength());
 
         int depth = 1;
         start += 1;
         int token;
+        int nextToken = NOT_FOUND;
         int offset = start;
+        int nextTokenOffset = NOT_FOUND;
         while (true) {
             token = previousToken(offset, UNBOUND);
             offset = getPosition();
             if (token == SQLIndentSymbols.TokenEOF) {
                 return NOT_FOUND;
             }
-            if (isSameToken(token, closingPeer)) {
+            if (token == closingPeer && (closingPeerEnd == UNBOUND || nextToken == closingPeerEnd)) {
                 depth++;
-            } else if (isSameToken(token, openingPeer)) {
+            } else if ((headCancelToken == UNBOUND && token == openingPeer) || (headCancelToken != UNBOUND && (
+                (headCancelToken != token && nextToken == openingPeer)
+            ))) {
                 depth--;
             }
 
@@ -476,10 +466,11 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
                 if (offset == -1) {
                     return 0;
                 }
-                return offset;
+                return headCancelToken == UNBOUND ? offset : nextTokenOffset;
             }
+            nextToken = token;
+            nextTokenOffset = offset;
         }
-
     }
 
     /**
@@ -495,14 +486,18 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
     public int findClosingPeer(int start, int openingPeer, int closingPeer) {
+        return this.findClosingPeer(start, openingPeer, closingPeer, UNBOUND, UNBOUND);
+    }
+    
+    public int findClosingPeer(int start, int openingPeer, int closingPeer, int closingPeerEnd, int headCancelToken) {
         assert (start <= document.getLength());
 
         int depth = 1;
         start += 1;
         int token;
+        int prevToken = NOT_FOUND;
         int offset = start;
         while (true) {
-
             token = nextToken(offset, document.getLength());
             offset = getPosition();
 
@@ -510,35 +505,18 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
                 return NOT_FOUND;
             }
 
-            if (isSameToken(token, openingPeer)) {
+            if (token == openingPeer && prevToken != headCancelToken) {
                 depth++;
-            } else if (isSameToken(token, closingPeer)) {
+            } else if ((closingPeerEnd == UNBOUND && token == closingPeer) || (prevToken == closingPeer && token == closingPeerEnd)) {
                 depth--;
             }
 
             if (depth == 0) {
                 return offset;
             }
+            
+            prevToken = token;
         }
     }
-
-    public boolean isSameToken(int firstToken, int secondToken) {
-        return firstToken == secondToken ||
-            (firstToken == TokenBEGIN && secondToken == Tokenbegin) ||
-            (firstToken == Tokenbegin && secondToken == TokenBEGIN) ||
-            (firstToken == TokenEND && secondToken == Tokenend) ||
-            (firstToken == Tokenend && secondToken == TokenEND) ||
-            (firstToken == Tokencase && secondToken == TokenCASE) ||
-            (firstToken == TokenCASE && secondToken == Tokencase) ||
-            (firstToken == Tokenloop && secondToken == TokenLOOP) ||
-            (firstToken == TokenLOOP && secondToken == Tokenloop) ||
-            (firstToken == TokenIF && secondToken == Tokenif) ||
-            (firstToken == Tokenif && secondToken == TokenIF) ||
-            (firstToken == TokenTHEN && secondToken == Tokenthen) ||
-            (firstToken == Tokenthen && secondToken == TokenTHEN) ||
-            (firstToken == TokenENDIF && secondToken == Tokenendif) ||
-            (firstToken == Tokenendif && secondToken == TokenENDIF);
-    }
-
 }
 

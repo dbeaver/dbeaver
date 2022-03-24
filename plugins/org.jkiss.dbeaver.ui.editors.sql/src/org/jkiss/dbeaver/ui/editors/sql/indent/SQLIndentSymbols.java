@@ -17,55 +17,33 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-public interface SQLIndentSymbols
-{
+public interface SQLIndentSymbols {
+    
     int TokenEOF   = -1;
     int TokenOTHER = 0;
 
-    int Tokenbegin = 1000;
     int TokenBEGIN = 1001;
-    int Tokenend = 1002;
-    int TokenEND = 1003;
+    int TokenEND = 1002;
 
-    int TokenCASE = 1004;
-    int Tokencase = 1005;
+    int TokenCASE = 1003;
 
-    int TokenLOOP = 1006;
-    int Tokenloop = 1007;
-    int TokenENDLOOP = 1008;
-    int Tokenendloop = 1009;
+    int TokenLOOP = 1004;
 
     int TokenIF = 1010;
-    int Tokenif = 1011;
-    int TokenTHEN = 1012;
-    int Tokenthen = 1013;
-    int TokenENDIF = 1014;
-    int Tokenendif = 1015;
+    int TokenTHEN = 1011;
 
     int TokenIDENT = 2000;
     int TokenKeyword = 3000;
     int TokenKeywordStart = 3001;
 
-    String BEGIN = "BEGIN";
-    String begin = "begin";
-    String end = "end";
-    String END = "END";
-//    String end2 = "end ";
-//    String END2 = "END ";
+    String StrBEGIN = "BEGIN";
+    String StrEND = "END";
 
-    String tCASE = "CASE";
-    String tcase = "case";
+    String StrCASE = "CASE";
 
-    String LOOP = "LOOP";
-    String loop = "loop";
-    String ENDLOOP = "END LOOP";
-    String endloop = "end loop";
+    String StrLOOP = "LOOP";
 
-    String tIF = "IF";
-    String tif = "if";
-    String tTHEN = "THEN";
-    String tthen = "then";
-    String tENDIF = "END IF";
-    String tendif = "end if";
+    String StrIF = "IF";
+    String StrTHEN = "THEN";
 }
 

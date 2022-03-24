@@ -31,19 +31,48 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
+    
+    private static class BlockCompletionInfo {
+        public final int headTokenId;
+        public final String[] completionParts;
+        public final int tailTokenId;
+        public final int tailEndTokenId;
+        public final int headCancelTokenId;
+    
+        public BlockCompletionInfo(int headTokenId, String[] completionParts, int tailTokenId, int tailEndTokenId, int prevCancelTokenId) {
+            this.headTokenId = headTokenId;
+            this.completionParts = completionParts;
+            this.tailTokenId = tailTokenId;
+            this.tailEndTokenId = tailEndTokenId;
+            this.headCancelTokenId = prevCancelTokenId;
+        }
+        
+        private static String getTokenString(int tokenId) {
+            return tokenId == SQLHeuristicScanner.UNBOUND ? "<UNBOUND>" : SQLHeuristicScanner.getTokenString(tokenId);
+        }
+        
+        @Override
+        public String toString() {
+            return (headCancelTokenId == SQLHeuristicScanner.UNBOUND ? "" : ("[! " + getTokenString(headCancelTokenId) + "]")) +
+                    getTokenString(headTokenId) + " ... " + getTokenString(tailTokenId) + " " + getTokenString(tailEndTokenId);
+        }
+    }
+    
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
     private static final boolean KEYWORD_INDENT_ENABLED = false;
 
+    private final String oneIndent = SQLIndenter.createIndent().toString();
+    
     private String partitioning;
     private ISourceViewer sourceViewer;
     private SQLSyntaxManager syntaxManager;
 
-    private Map<Integer, String> autoCompletionMap = new HashMap<>();
+    private final Map<Integer, BlockCompletionInfo> blockCompletionByHeadToken = new HashMap<>();
+    private final Map<Integer, Map<Integer, Set<BlockCompletionInfo>>> blockCompletionByTailToken = new HashMap<>();
     private String[] delimiters;
 
     private enum CommentType {
@@ -55,8 +84,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
-    public SQLAutoIndentStrategy(String partitioning, ISourceViewer sourceViewer, SQLSyntaxManager syntaxManager)
-    {
+    public SQLAutoIndentStrategy(String partitioning, ISourceViewer sourceViewer, SQLSyntaxManager syntaxManager) {
         this.partitioning = partitioning;
         this.sourceViewer = sourceViewer;
         this.syntaxManager = syntaxManager;
@@ -304,8 +332,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return false;
     }
 
-    private void smartIndentAfterNewLine(IDocument document, DocumentCommand command)
-    {
+    private void smartIndentAfterNewLine(IDocument document, DocumentCommand command) {
         clearCachedValues();
 
         int docLength = document.getLength();
@@ -318,17 +345,23 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         //get previous token
         int previousToken = scanner.previousToken(command.offset - 1, SQLHeuristicScanner.UNBOUND);
+        int previousTokenPos = scanner.getPosition();
         String lastTokenString = scanner.getLastToken();
         int nextToken = scanner.nextToken(command.offset, SQLHeuristicScanner.UNBOUND);
+
+        BlockCompletionInfo completion = findAutoCompletionTrail(previousToken);
+        int prevPreviousToken = completion == null || completion.headCancelTokenId == SQLHeuristicScanner.UNBOUND ?
+            SQLHeuristicScanner.NOT_FOUND : scanner.previousToken(previousTokenPos, SQLHeuristicScanner.UNBOUND);
+        boolean autoCompletionSupported = completion != null &&
+            (completion.headCancelTokenId == SQLHeuristicScanner.UNBOUND || completion.headCancelTokenId != prevPreviousToken);
 
         String indent;
         String beginIndentaion = "";
 
-        if (isSupportedAutoCompletionToken(previousToken)) {
+        if (autoCompletionSupported) {
             indent = indenter.computeIndentation(command.offset);
-
             beginIndentaion = indenter.getReferenceIndentation(command.offset);
-        } else if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
+        } else if (nextToken == SQLIndentSymbols.TokenEND) {
             indent = indenter.getReferenceIndentation(command.offset + 1);
         } else if (KEYWORD_INDENT_ENABLED) {
             if (previousToken == SQLIndentSymbols.TokenKeyword) {
@@ -388,20 +421,39 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 start = document.getLineInformationOfOffset(region.getOffset()).getOffset();
             }
 
-            command.caretOffset = command.offset + buf.length();
-            command.shiftsCaret = false;
-
-            if (isSupportedAutoCompletionToken(previousToken) && !isClosed(document, command.offset, previousToken) && getTokenCount(start, command.offset, scanner, previousToken) > 0) {
-                buf.append(getLineDelimiter(document));
-                buf.append(beginIndentaion);
-                buf.append(getAutoCompletionTrail(previousToken));
+            if (autoCompletionSupported && !isClosed(document, command.offset, completion) && getTokenCount(start, command.offset, scanner, previousToken) > 0) {
+                buf.setLength(0);
+                for (String part: completion.completionParts) {
+                    if (part == null) {
+                        buf.append(getLineDelimiter(document));
+                        buf.append(beginIndentaion);
+                    } else {
+                        buf.append(adjustCase(lastTokenString, part));
+                    }
+                }
+                command.caretOffset = command.offset;
+            } else {
+                command.caretOffset = command.offset + buf.length();
             }
+            command.shiftsCaret = false;
             command.text = buf.toString();
 
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
             log.error(e);
         }
+    }
+    
+    private static String adjustCase(String example, String value) {
+        return isLowerCase(example) ? value.toLowerCase() : value.toUpperCase();
+    }
+    
+    private static boolean isLowerCase(String value) {
+        for (int i = 0, l = value.length(); i < l; i++) {
+            if (Character.isUpperCase(value.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String getLineDelimiter(IDocument document)
@@ -425,35 +477,46 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
         return delimiters != null && TextUtilities.equals(delimiters, text) > -1;
     }
+    
+    private void registerCompletionPair(int headToken, int tailToken) {
+        this.registerBlockCompletionInfo(
+            new BlockCompletionInfo(headToken, new String[] { null, oneIndent, null, SQLHeuristicScanner.getTokenString(tailToken), null },
+                tailToken, SQLHeuristicScanner.UNBOUND, SQLHeuristicScanner.UNBOUND)
+        );
+    }
+
+    private void registerCompletionPair(int headToken, int tailToken, int tailEndToken) {
+        this.registerCompletionInfo(headToken, new String[] { null, SQLHeuristicScanner.getTokenString(tailToken) + " " + SQLHeuristicScanner.getTokenString(tailEndToken), null }, tailToken, tailEndToken);
+    }
+
+    private void registerCompletionInfo(int headToken, String[] completionParts, int tailToken, int tailEndToken) {
+        this.registerBlockCompletionInfo(new BlockCompletionInfo(
+            headToken, completionParts, tailToken, tailEndToken, tailEndToken == headToken ? tailToken : SQLHeuristicScanner.UNBOUND)
+        );
+    }
+    
+    private void registerBlockCompletionInfo(BlockCompletionInfo info) {
+        this.blockCompletionByHeadToken.put(info.headTokenId, info);    
+        this.blockCompletionByTailToken.computeIfAbsent(info.tailTokenId, n -> new HashMap<>())
+           .computeIfAbsent(info.tailEndTokenId, n -> new HashSet<>())
+           .add(info);
+    }
 
     private void clearCachedValues()
     {
-        autoCompletionMap.clear();
+        blockCompletionByHeadToken.clear();
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BLOCKS);
-        if (closeBeginEnd) {
-            autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.end);
-            autoCompletionMap.put(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.END);
-            autoCompletionMap.put(SQLIndentSymbols.TokenCASE, SQLIndentSymbols.END);
-            autoCompletionMap.put(SQLIndentSymbols.Tokencase, SQLIndentSymbols.end);
-            autoCompletionMap.put(SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.ENDLOOP);
-            autoCompletionMap.put(SQLIndentSymbols.Tokenloop, SQLIndentSymbols.endloop);
-            autoCompletionMap.put(SQLIndentSymbols.Tokenif, SQLIndentSymbols.tthen);
-            autoCompletionMap.put(SQLIndentSymbols.TokenIF, SQLIndentSymbols.tTHEN);
-            autoCompletionMap.put(SQLIndentSymbols.Tokenthen, SQLIndentSymbols.tendif);
-            autoCompletionMap.put(SQLIndentSymbols.TokenTHEN, SQLIndentSymbols.tENDIF);
+        boolean closeBlocks = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BLOCKS);
+        if (closeBlocks) {
+            this.registerCompletionPair(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
+            this.registerCompletionPair(SQLIndentSymbols.TokenCASE, SQLIndentSymbols.TokenEND);
+            this.registerCompletionPair(SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.TokenEND, SQLIndentSymbols.TokenLOOP);
+            this.registerCompletionInfo(SQLIndentSymbols.TokenIF, new String[] { " THEN", null, oneIndent, null, "END IF", null }, SQLIndentSymbols.TokenEND, SQLIndentSymbols.TokenIF);
         }
-
     }
 
-    private boolean isSupportedAutoCompletionToken(int token)
-    {
-        return autoCompletionMap.containsKey(token);
-    }
-
-    private String getAutoCompletionTrail(int token)
-    {
-        return autoCompletionMap.get(token);
+    private BlockCompletionInfo findAutoCompletionTrail(int token) {
+        return blockCompletionByHeadToken.get(token);
     }
 
 
@@ -468,7 +531,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         while (startOffset < endOffset) {
             int nextToken = scanner.nextToken(startOffset, endOffset);
             int position = scanner.getPosition();
-            if (nextToken != SQLIndentSymbols.TokenEOF && scanner.isSameToken(nextToken, token)) {
+            if (nextToken != SQLIndentSymbols.TokenEOF && nextToken == token) {
                 tokenCount++;
             }
             startOffset = position;
@@ -476,16 +539,14 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return tokenCount;
     }
 
-    private boolean isClosed(IDocument document, int offset, int token)
-    {
-        //currently only BEGIN/END is supported. Later more typing aids will be added here.
-        if (token == SQLIndentSymbols.TokenBEGIN || token == SQLIndentSymbols.Tokenbegin ||
-            token == SQLIndentSymbols.TokenCASE || token == SQLIndentSymbols.Tokencase ||
-            token == SQLIndentSymbols.TokenLOOP || token == SQLIndentSymbols.Tokenloop ||
-            token == SQLIndentSymbols.TokenIF || token == SQLIndentSymbols.Tokenif ||
-            token == SQLIndentSymbols.TokenTHEN || token == SQLIndentSymbols.Tokenthen
+    private boolean isClosed(IDocument document, int offset, BlockCompletionInfo completion) {
+        int token = completion.headTokenId;
+        if (token == SQLIndentSymbols.TokenBEGIN || 
+            token == SQLIndentSymbols.TokenCASE || 
+            token == SQLIndentSymbols.TokenLOOP || 
+            token == SQLIndentSymbols.TokenIF
         ) {
-            return getBlockBalance(document, offset) <= 0;
+            return getBlockBalance(document, offset, completion) <= 0;
         }
         return false;
     }
@@ -494,8 +555,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
      * Returns the block balance, i.e. zero if the blocks are balanced at <code>offset</code>, a negative number if
      * there are more closing than opening peers, and a positive number if there are more opening than closing peers.
      */
-    private int getBlockBalance(IDocument document, int offset)
-    {
+    private int getBlockBalance(IDocument document, int offset, BlockCompletionInfo completion) {
         if (offset < 1) {
             return -1;
         }
@@ -505,42 +565,24 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         int begin = offset;
         int end = offset;
-        int tcase = offset;
-        int tcaseend = offset;
-        int loop = offset;
-        int loopend = offset;
-        int tif = offset;
-        int tthen = offset;
-        int tthen2 = offset;
-        int tendif = offset;
 
         SQLHeuristicScanner scanner = new SQLHeuristicScanner(document, syntaxManager);
 
         while (true) {
+            begin = scanner.findOpeningPeer(begin, completion.headTokenId, completion.tailTokenId, completion.tailEndTokenId, completion.headCancelTokenId);
+            end = scanner.findClosingPeer(end, completion.headTokenId, completion.tailTokenId, completion.tailEndTokenId, completion.headCancelTokenId);
 
-            begin = scanner.findOpeningPeer(begin, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
-            end = scanner.findClosingPeer(end, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
-            tcase = scanner.findOpeningPeer(tcase, SQLIndentSymbols.TokenCASE, SQLIndentSymbols.TokenEND);
-            tcaseend = scanner.findClosingPeer(tcaseend, SQLIndentSymbols.TokenCASE, SQLIndentSymbols.TokenEND);
-            loop = scanner.findOpeningPeer(loop, SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.TokenENDLOOP);
-            loopend = scanner.findClosingPeer(loopend, SQLIndentSymbols.TokenLOOP, SQLIndentSymbols.TokenENDLOOP);
-            tif = scanner.findOpeningPeer(tif, SQLIndentSymbols.TokenIF, SQLIndentSymbols.TokenTHEN);
-            tthen = scanner.findClosingPeer(tthen, SQLIndentSymbols.TokenIF, SQLIndentSymbols.TokenTHEN);
-            tthen2 = scanner.findOpeningPeer(tthen2, SQLIndentSymbols.TokenTHEN, SQLIndentSymbols.TokenENDIF);
-            tendif = scanner.findClosingPeer(tendif, SQLIndentSymbols.TokenTHEN, SQLIndentSymbols.TokenENDIF);
-
-            if (begin == -1 && end == -1 && tcase == -1 && tcaseend == -1 && loop == -1 && loopend == -1 && tif == -1 && tthen == -1  && tthen2 == -1 && tendif == -1) {
+            if (begin == -1 && end == -1) {
                 return 0;
             }
-            if (begin == -1 && tcase == -1 && loop == -1 && tif == -1 && tthen2 == -1 ) {
+            if (begin == -1) {
                 return -1;
             }
-            if (end == -1 || loopend == -1 || tthen == -1 || tendif == -1) {
+            if (end == -1) {
                 return 1;
             }
         }
     }
-
 
 }
 
