@@ -90,9 +90,9 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
             textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
             showNulls = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
+            textLineNumber = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers, DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers_tip, false, 2);
             textDelimiterLeading = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
             textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
-            textLineNumber = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers, null, false, 2);
             textDelimiterTop = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_top, null, false, 2);
             textDelimiterBottom = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_bottom, null, false, 2);
             textExtraSpaces = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_extra_spaces, null, false, 2);

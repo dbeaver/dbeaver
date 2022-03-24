@@ -169,7 +169,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void onCursorChange(int offset) {
         ResultSetModel model = controller.getModel();
-        DBPPreferenceStore prefs = getController().getPreferenceStore();
+        DBPPreferenceStore prefs = controller.getPreferenceStore();
         int lineNum = text.getLineAtOffset(offset);
         int lineOffset = text.getOffsetAtLine(lineNum);
         int horizontalOffset = offset - lineOffset;
@@ -273,7 +273,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (colWidths == null) {
             // Calculate column widths
             colWidths = new int[attrs.size()];
-            if (attrs.size() != 0 && lineNumbers) {
+            if (!attrs.isEmpty() && lineNumbers) {
                 startOffset = getStringWidth(String.valueOf(allRows.size() + 1)) + extraSpacesNum + 1;
             } else {
                 startOffset = 0;
