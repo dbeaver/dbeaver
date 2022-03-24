@@ -80,6 +80,7 @@ public class SQLPreferenceConstants
     public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
     public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
     public static final String FOLDING_ENABLED                         = "SQLEditor.Folding.enabled";
+    public static final String PROBLEM_MARKERS_ENABLED                 = "SQLEditor.problemMarkers.enabled";
 
     // Auto-save
     public static final String AUTO_SAVE_ON_CHANGE                     = "SQLEditor.autoSaveOnChange";
