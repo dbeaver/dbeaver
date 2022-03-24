@@ -363,7 +363,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
                     allowedKeywords.add(SQLConstants.KEYWORD_FROM);
                 } else {
-                    if (!SQLConstants.KEYWORD_WHERE.equalsIgnoreCase(wordDetector.getNextWord())) {
+                    if (!SQLConstants.KEYWORD_WHERE.equalsIgnoreCase(wordDetector.getNextWord()) &&
+                        !SQLConstants.KEYWORD_INTO.equals(prevKeyWord)) {
                         allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
                     }
                 }
