@@ -858,6 +858,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected boolean addProblem(@Nullable String message, @NotNull Position position) {
+        if (!getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)) {
+            return false;
+        }
+
         final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
         final IAnnotationModel annotationModel = getAnnotationModel();
 
@@ -973,6 +977,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
                 return;
             }
+            case SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED:
+                clearProblems(null);
+                return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
