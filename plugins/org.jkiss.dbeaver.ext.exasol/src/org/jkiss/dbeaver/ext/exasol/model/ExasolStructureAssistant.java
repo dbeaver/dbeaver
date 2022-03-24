@@ -176,23 +176,40 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
 
     private void findProceduresByMask(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
                                       @NotNull List<DBSObjectReference> references) throws SQLException, DBException {
-        DBRProgressMonitor monitor = session.getProgressMonitor();
+//      /*snapshot execution*/
+//      SELECT
+//          SCRIPT_SCHEMA,
+//          SCRIPT_NAME
+//      FROM
+//          SYS.EXA_DBA_SCRIPTS
+//      WHERE
+//          (SCRIPT_NAME LIKE ?
+//              OR SCRIPT_TEXT LIKE ?
+//              OR SCRIPT_COMMENT LIKE ?)
+//          AND SCRIPT_SCHEMA = ?
 
         //don't use parameter marks because of performance
         String mask = ExasolUtils.quoteString(params.getMask());
         StringBuilder sql = new StringBuilder("/*snapshot execution*/ SELECT SCRIPT_SCHEMA, SCRIPT_NAME FROM SYS.");
         sql.append(dataSource.getTablePrefix(ExasolSysTablePrefix.ALL)).append("_SCRIPTS WHERE ");
-        if (params.isSearchInComments()) {
-            sql.append("(");
+        List<String> clause = new ArrayList<>(3);
+        clause.add(getLikeClause("SCRIPT_NAME", mask, params.isCaseSensitive()));
+        if (params.isSearchInDefinitions()) {
+            clause.add(getLikeClause("SCRIPT_TEXT", mask, params.isCaseSensitive()));
         }
-        sql.append("SCRIPT_NAME LIKE '").append(mask).append("' ");
         if (params.isSearchInComments()) {
-            sql.append("OR SCRIPT_COMMENT LIKE '").append(mask).append("') ");
+            clause.add(getLikeClause("SCRIPT_COMMENT", mask, params.isCaseSensitive()));
+        }
+        if (clause.size() == 1) {
+            sql.append(clause.get(0));
+        } else {
+            sql.append("(").append(String.join(" OR ", clause)).append(")");
         }
         if (schema != null) {
-            sql.append("AND SCRIPT_SCHEMA = '").append(ExasolUtils.quoteString(schema.getName())).append("'");
+            sql.append(String.format(" AND SCRIPT_SCHEMA = '%s'", ExasolUtils.quoteString(schema.getName())));
         }
 
+        DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCStatement dbStat = session.createStatement()) {
             try (JDBCResultSet dbResult = dbStat.executeQuery(sql.toString())) {
                 if (dbResult == null) {
