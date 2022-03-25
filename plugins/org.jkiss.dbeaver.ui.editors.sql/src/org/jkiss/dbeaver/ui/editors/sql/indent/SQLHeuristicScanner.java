@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
@@ -410,17 +407,16 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * Note that <code>start</code> must not point to the closing peer, but to the first token being searched.
      * </p>
      *
-     * @param start       the start position
-     * @param openingPeer the opening peer token (e.g. 'begin')
-     * @param closingPeer the closing peer token (e.g. 'end')
+     * @param start the start position
+     * @param blockInfo information about completion block
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
     public int findOpeningPeer(int start, SQLBlockCompletionInfo blockInfo) {
         assert (start < document.getLength());
-        int openingPeer = blockInfo.headTokenId;
-        int closingPeer = blockInfo.tailTokenId;
-        int closingPeerEnd = blockInfo.tailEndTokenId != null ? blockInfo.tailEndTokenId : UNBOUND;
-        int headCancelToken = blockInfo.headCancelTokenId != null ? blockInfo.headCancelTokenId : UNBOUND;
+        int openingPeer = blockInfo.getHeadTokenId();
+        int closingPeer = blockInfo.getTailTokenId();
+        int closingPeerEnd = blockInfo.getTailEndTokenId() != null ? blockInfo.getTailEndTokenId() : UNBOUND;
+        int headCancelToken = blockInfo.getHeadCancelTokenId() != null ? blockInfo.getHeadCancelTokenId() : UNBOUND;
         
         int depth = 1;
         start += 1;
@@ -464,10 +460,10 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      */
     public int findClosingPeer(int start, SQLBlockCompletionInfo blockInfo) {
         assert (start <= document.getLength());
-        int openingPeer = blockInfo.headTokenId;
-        int closingPeer = blockInfo.tailTokenId;
-        int closingPeerEnd = blockInfo.tailEndTokenId != null ? blockInfo.tailEndTokenId : UNBOUND;
-        int headCancelToken = blockInfo.headCancelTokenId != null ? blockInfo.headCancelTokenId : UNBOUND;
+        int openingPeer = blockInfo.getHeadTokenId();
+        int closingPeer = blockInfo.getTailTokenId();
+        int closingPeerEnd = blockInfo.getTailEndTokenId() != null ? blockInfo.getTailEndTokenId() : UNBOUND;
+        int headCancelToken = blockInfo.getHeadCancelTokenId() != null ? blockInfo.getHeadCancelTokenId() : UNBOUND;
 
         int depth = 1;
         start += 1;

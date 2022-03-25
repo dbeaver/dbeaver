@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,20 +45,18 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
     /**
      * Get SQLBlockCompletionInfo by block beginning token id.
      */
+    @Nullable
     public SQLBlockCompletionInfo findCompletionByHead(int headTokenId) {
         return blockCompletionByHeadToken.get(headTokenId);
     }
-    
-    public String getTokenString(int id) {
-        String tokenString = tokenStringById.get(id - KNOWN_TOKEN_ID_BASE);
-        if (tokenString == null) {
-            throw new IllegalArgumentException("Unknown token id " + id);
-        } else {
-            return tokenString;   
-        }        
+
+    @Nullable
+    public String findTokenString(int id) {
+        return tokenStringById.get(id - KNOWN_TOKEN_ID_BASE);
     }
-    
-    public Integer findTokenId(String str) {
+
+    @Nullable
+    public Integer findTokenId(@NotNull String str) {
         return tokenIdByString.get(str);
     }
     
@@ -63,7 +64,7 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
      * Get token id for token string.
      * If token has't been registered yet, id will be generated.
      */
-    private int obtainTokenId(String str) {
+    private int obtainTokenId(@NotNull String str) {
         if (!RECOGNIZABLE_TOKEN_PATTERN.test(str)) {
             throw new IllegalArgumentException("Illegal block completion part '" + str + "' while expecting keyword-like token.");
         }
@@ -82,8 +83,10 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
      * @param headToken is a beginning token of the block
      * @param tailToken is an ending token of the block
      */
-    public void registerCompletionPair(String headToken, String tailToken) {
-        this.registerBlockCompletionInfo(headToken, new String[] { null, ONE_INDENT_COMPLETION_PART, null, tailToken, null }, tailToken, null, null);
+    public void registerCompletionPair(@NotNull String headToken, @NotNull String tailToken) {
+        this.registerBlockCompletionInfo(headToken, new String[] {
+            NEW_LINE_COMPLETION_PART, ONE_INDENT_COMPLETION_PART, NEW_LINE_COMPLETION_PART, tailToken, NEW_LINE_COMPLETION_PART
+        }, tailToken, null, null);
     }
 
     /**
@@ -92,8 +95,10 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
      * @param tailToken is a  beginning token of the block end.
      * @param tailEndToken - last token of the block.
      */
-    public void registerCompletionPair(String headToken, String tailToken, String tailEndToken) {
-        this.registerCompletionInfo(headToken, new String[] { null, tailToken + " " + tailEndToken, null }, tailToken, tailEndToken);
+    public void registerCompletionPair(@NotNull String headToken, @NotNull String tailToken, @NotNull String tailEndToken) {
+        this.registerCompletionInfo(headToken, new String[] {
+            NEW_LINE_COMPLETION_PART, tailToken + " " + tailEndToken, NEW_LINE_COMPLETION_PART
+        }, tailToken, tailEndToken);
     }
     
     /**
@@ -106,12 +111,14 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
      * @param tailToken - first token of the block end.
      * @param tailEndToken - last token of the block end.
      */
-    public void registerCompletionInfo(String headToken, String[] completionParts, String tailToken, String tailEndToken) {
-        this.registerBlockCompletionInfo(headToken, completionParts, tailToken, tailEndToken, tailEndToken.equalsIgnoreCase(headToken) ? tailToken : null);
+    public void registerCompletionInfo(@NotNull String headToken, @NotNull String[] completionParts,
+                                       @NotNull String tailToken, @Nullable String tailEndToken) {
+        this.registerBlockCompletionInfo(headToken, completionParts, tailToken, tailEndToken, headToken.equalsIgnoreCase(tailEndToken) ? tailToken : null);
     }
     
     
-    private void registerBlockCompletionInfo(String headToken, String[] completionParts, String tailToken, String tailEndToken, String prevCancelToken) {
+    private void registerBlockCompletionInfo(@NotNull String headToken, @NotNull String[] completionParts,
+                                             @NotNull String tailToken, @Nullable String tailEndToken, @Nullable String prevCancelToken) {
         if (headToken == null || completionParts == null || tailToken == null) {
             throw new IllegalArgumentException("Illegal block completion info. headToken, completionParts and tailToken are mandatory.");
         }
@@ -125,9 +132,9 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
                 // token that shouldn't precede  the block begin token (example: END for block LOOP .. END LOOP)
                 prevCancelToken == null ? null : obtainTokenId(prevCancelToken) 
         );
-        this.blockCompletionByHeadToken.put(info.headTokenId, info);    
-        this.blockCompletionByTailToken.computeIfAbsent(info.tailTokenId, n -> new HashMap<>())
-           .computeIfAbsent(info.tailEndTokenId, n -> new HashSet<>())
+        this.blockCompletionByHeadToken.put(info.getHeadTokenId(), info);
+        this.blockCompletionByTailToken.computeIfAbsent(info.getTailTokenId(), n -> new HashMap<>())
+           .computeIfAbsent(info.getTailEndTokenId(), n -> new HashSet<>())
            .add(info);
     }
 }

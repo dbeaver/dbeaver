@@ -16,14 +16,18 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
+
 public class SQLBlockCompletionInfo {
     private final SQLBlockCompletionsCollection owner;
 
-    public final int headTokenId;
-    public final String[] completionParts;
-    public final int tailTokenId;
-    public final Integer tailEndTokenId;
-    public final Integer headCancelTokenId;
+    private final int headTokenId;
+    private final String[] completionParts;
+    private final int tailTokenId;
+    private final Integer tailEndTokenId;
+    private final Integer headCancelTokenId;
 
     /**
      * @param owner - SQLBlockCompletionsCollection where SQLBlockCompletionInfo is registered
@@ -34,7 +38,8 @@ public class SQLBlockCompletionInfo {
      * @param tailEndTokenId - id of the last token of the block end
      * @param prevCancelTokenId - token that shouldn't precede the block begin token
      */
-    public SQLBlockCompletionInfo(SQLBlockCompletionsCollection owner, int headTokenId, String[] completionParts, int tailTokenId, Integer tailEndTokenId, Integer prevCancelTokenId) {
+    public SQLBlockCompletionInfo(@NotNull SQLBlockCompletionsCollection owner, int headTokenId, @Nullable String[] completionParts,
+                                  int tailTokenId, @Nullable Integer tailEndTokenId, @Nullable Integer prevCancelTokenId) {
         this.owner = owner;
         this.headTokenId = headTokenId;
         this.completionParts = completionParts;
@@ -43,14 +48,39 @@ public class SQLBlockCompletionInfo {
         this.headCancelTokenId = prevCancelTokenId;
     }
 
+    public int getHeadTokenId() {
+        return headTokenId;
+    }
+
+    @Nullable
+    public String[] getCompletionParts() {
+        return completionParts;
+    }
+
+    public int getTailTokenId() {
+        return tailTokenId;
+    }
+
+    @Nullable
+    public Integer getTailEndTokenId() {
+        return tailEndTokenId;
+    }
+
+    @Nullable
+    public Integer getHeadCancelTokenId() {
+        return headCancelTokenId;
+    }
+
+    @NotNull
     private String getTokenString(Integer tokenId) {
-        return tokenId == null ? "<UNBOUND>" : owner.getTokenString((int)tokenId);
+        return tokenId == null ? "<UNBOUND>" : CommonUtils.notNull(owner.findTokenString((int)tokenId), "<UNKNOWN TOKEN ID #" + tokenId + ">");
     }
 
     @Override
+    @NotNull
     public String toString() {
         return (headCancelTokenId == null ? "" : ("[! " + getTokenString(headCancelTokenId) + "]")) +
-                getTokenString(headTokenId) + " ... " + getTokenString(tailTokenId) + " " + getTokenString(tailEndTokenId);
+            getTokenString(headTokenId) + " ... " + getTokenString(tailTokenId) + " " + getTokenString(tailEndTokenId);
     }
 }
 

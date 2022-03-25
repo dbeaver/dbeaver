@@ -322,9 +322,11 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         int nextToken = scanner.nextToken(command.offset, SQLHeuristicScanner.UNBOUND);
 
         SQLBlockCompletionInfo completion = isBlocksCompletionEnabled() ? syntaxManager.getDialect().getBlockCompletions().findCompletionByHead(previousToken) : null;
-        int prevPreviousToken = completion == null || completion.headCancelTokenId == null ?
+        int prevPreviousToken = completion == null || completion.getHeadCancelTokenId() == null ?
             SQLHeuristicScanner.NOT_FOUND : scanner.previousToken(previousTokenPos, SQLHeuristicScanner.UNBOUND);
-        boolean autoCompletionSupported = completion != null && (completion.headCancelTokenId == null || ((int)completion.headCancelTokenId) != prevPreviousToken);
+        boolean autoCompletionSupported = completion != null && (
+            completion.getHeadCancelTokenId() == null || ((int)completion.getHeadCancelTokenId()) != prevPreviousToken
+        );
 
         String indent;
         String beginIndentaion = "";
@@ -394,7 +396,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
             if (autoCompletionSupported && getBlockBalance(document, command.offset, completion) > 0 && getTokenCount(start, command.offset, scanner, previousToken) > 0) {
                 buf.setLength(0);
-                for (String part: completion.completionParts) {
+                for (String part: completion.getCompletionParts()) {
                     if (part == SQLBlockCompletions.NEW_LINE_COMPLETION_PART) {
                         buf.append(getLineDelimiter(document));
                         buf.append(beginIndentaion);

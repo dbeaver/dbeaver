@@ -16,12 +16,15 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-public interface SQLBlockCompletions {
-    public static final String ONE_INDENT_COMPLETION_PART = "\t";
-    public static final String NEW_LINE_COMPLETION_PART = null;
-    public static final int KNOWN_TOKEN_ID_BASE = 100;
+import org.jkiss.code.Nullable;
 
-    String getTokenString(int id);
+public interface SQLBlockCompletions {
+    String ONE_INDENT_COMPLETION_PART = "\t";
+    String NEW_LINE_COMPLETION_PART = null;
+    int KNOWN_TOKEN_ID_BASE = 100;
+
+    @Nullable
     Integer findTokenId(String str);
+    @Nullable
     SQLBlockCompletionInfo findCompletionByHead(int headTokenId);
 }
