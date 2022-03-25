@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.sql;
 
-package org.jkiss.dbeaver.ui.editors.sql.indent;
+public interface SQLBlockCompletions {
+    public static final String ONE_INDENT_COMPLETION_PART = "\t";
+    public static final String NEW_LINE_COMPLETION_PART = null;
+    public static final int KNOWN_TOKEN_ID_BASE = 100;
 
-public interface SQLIndentSymbols {
-    
-    /**
-     * remember to keep all these ids lower than <code>SQLBlockCompletions.KNOWN_TOKEN_ID_BASE</code>
-     */
-    
-    
-    int TokenEOF   = -1;
-    int TokenOTHER = 0;
-
-    int TokenIDENT = 20;
-    int TokenKeyword = 30;
-    int TokenKeywordStart = 31;
+    String getTokenString(int id);
+    Integer findTokenId(String str);
+    SQLBlockCompletionInfo findCompletionByHead(int headTokenId);
 }
-

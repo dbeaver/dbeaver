@@ -24,6 +24,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.SQLBlockCompletionInfo;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 
@@ -49,27 +50,6 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * scanning).
      */
     public static final int UNBOUND = -2;
-
-    
-    private final static Map<String, Integer> TOKEN_ID_BY_STRING = new TreeMap<>(String.CASE_INSENSITIVE_ORDER) {{
-        put(SQLIndentSymbols.StrBEGIN, SQLIndentSymbols.TokenBEGIN);
-        put(SQLIndentSymbols.StrEND, SQLIndentSymbols.TokenEND);
-        put(SQLIndentSymbols.StrIF, SQLIndentSymbols.TokenIF);
-        put(SQLIndentSymbols.StrCASE, SQLIndentSymbols.TokenCASE);
-        put(SQLIndentSymbols.StrLOOP, SQLIndentSymbols.TokenLOOP);
-        put(SQLIndentSymbols.StrTHEN, SQLIndentSymbols.TokenTHEN);
-    }};
-    
-    private final static Map<Integer, String> TOKEN_STRING_BY_ID = TOKEN_ID_BY_STRING.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-    
-    public static String getTokenString(int id) {
-        String tokenString = TOKEN_STRING_BY_ID.get(id);
-        if (tokenString == null) {
-            throw new IllegalArgumentException("Unknown token id " + id);
-        } else {
-            return tokenString;   
-        }        
-    }
 
     /**
      * Stops at any delimiter or non-whitespace character
@@ -286,7 +266,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     private int getToken(String s) {
         assert (s != null);
 
-        Integer tokenKindId = TOKEN_ID_BY_STRING.get(s);
+        Integer tokenKindId = this.syntaxManager.getDialect().getBlockCompletions().findTokenId(s);
         if (tokenKindId != null) {
             return tokenKindId;
         }
@@ -435,25 +415,22 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * @param closingPeer the closing peer token (e.g. 'end')
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
-    public int findOpeningPeer(int start, int openingPeer, int closingPeer) {
-        return this.findOpeningPeer(start, openingPeer, closingPeer, UNBOUND, UNBOUND);
-    }
-    
-    public int findOpeningPeer(int start, int openingPeer, int closingPeer, int closingPeerEnd, int headCancelToken) {
+    public int findOpeningPeer(int start, SQLBlockCompletionInfo blockInfo) {
         assert (start < document.getLength());
-
+        int openingPeer = blockInfo.headTokenId;
+        int closingPeer = blockInfo.tailTokenId;
+        int closingPeerEnd = blockInfo.tailEndTokenId != null ? blockInfo.tailEndTokenId : UNBOUND;
+        int headCancelToken = blockInfo.headCancelTokenId != null ? blockInfo.headCancelTokenId : UNBOUND;
+        
         int depth = 1;
         start += 1;
         int token;
         int nextToken = NOT_FOUND;
         int offset = start;
         int nextTokenOffset = NOT_FOUND;
-        while (true) {
+        do {
             token = previousToken(offset, UNBOUND);
             offset = getPosition();
-            if (token == SQLIndentSymbols.TokenEOF) {
-                return NOT_FOUND;
-            }
             if (token == closingPeer && (closingPeerEnd == UNBOUND || nextToken == closingPeerEnd)) {
                 depth++;
             } else if ((headCancelToken == UNBOUND && token == openingPeer) || (headCancelToken != UNBOUND && (
@@ -470,7 +447,8 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
             }
             nextToken = token;
             nextTokenOffset = offset;
-        }
+        } while (token != SQLIndentSymbols.TokenEOF);
+        return NOT_FOUND;
     }
 
     /**
@@ -481,16 +459,15 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * token being searched.</p>
      *
      * @param start       the start position
-     * @param openingPeer the opening peer character (e.g. 'begin')
-     * @param closingPeer the closing peer character (e.g. 'end')
+     * @param blockInfo information about opening peer character (e.g. 'begin'), closing peer character (e.g. 'end') and 
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
-    public int findClosingPeer(int start, int openingPeer, int closingPeer) {
-        return this.findClosingPeer(start, openingPeer, closingPeer, UNBOUND, UNBOUND);
-    }
-    
-    public int findClosingPeer(int start, int openingPeer, int closingPeer, int closingPeerEnd, int headCancelToken) {
+    public int findClosingPeer(int start, SQLBlockCompletionInfo blockInfo) {
         assert (start <= document.getLength());
+        int openingPeer = blockInfo.headTokenId;
+        int closingPeer = blockInfo.tailTokenId;
+        int closingPeerEnd = blockInfo.tailEndTokenId != null ? blockInfo.tailEndTokenId : UNBOUND;
+        int headCancelToken = blockInfo.headCancelTokenId != null ? blockInfo.headCancelTokenId : UNBOUND;
 
         int depth = 1;
         start += 1;
