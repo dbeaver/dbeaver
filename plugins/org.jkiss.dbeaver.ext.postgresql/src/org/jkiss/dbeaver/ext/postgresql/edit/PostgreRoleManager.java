@@ -122,7 +122,23 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         }
         if (role.isCanLogin()) options.append(" LOGIN"); else options.append(" NOLOGIN");
 
-        if (create && role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
+        if (extension.supportsRoleReplication()) {
+            if (role.isReplication()) {
+                options.append(" REPLICATION");
+            } else {
+                options.append(" NOREPLICATION");
+            }
+        }
+        if (extension.supportsRoleBypassRLS()) {
+            if (role.isBypassRls()) {
+                options.append(" BYPASSRLS");
+            } else {
+                options.append(" NOBYPASSRLS");
+            }
+        }
+
+        if (create && !CommonUtils.isEmpty(role.getPassword())) {
+            // A password is only of use for roles having the LOGIN attribute, but you can nonetheless define one for roles without it
             options.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
             command.setDisableSessionLogging(true); // Hide password from Query Manager
         }
@@ -131,10 +147,5 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
             script.append(" WITH");
         }
         script.append(options);
-        //if (role.isCreateDatabase()) script.append(" CONNECTION LIMIT connlimit");
-/*
-PASSWORD password
-VALID UNTIL 'timestamp'
-*/
     }
 }

@@ -142,6 +142,10 @@ public interface PostgreServerExtension {
 
     boolean supportsRolesWithCreateDBAbility();
 
+    boolean supportsRoleReplication();
+
+    boolean supportsRoleBypassRLS();
+
     /** True if supports serials - serial types are auto-incrementing integer data types */
     boolean supportSerialTypes();
 

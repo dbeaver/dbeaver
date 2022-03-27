@@ -144,6 +144,16 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRoleReplication() {
+        return dataSource.isServerVersionAtLeast(9, 1);
+    }
+
+    @Override
+    public boolean supportsRoleBypassRLS() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCopyFromStdIn() {
         return true;
     }
