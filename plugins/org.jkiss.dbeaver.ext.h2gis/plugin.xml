@@ -72,7 +72,7 @@
 
             <datasource id="h2gis"/>
 
-            <type name="GEOMETRY"/>
+            <type name="*"/>
 
         </provider>
     </extension>

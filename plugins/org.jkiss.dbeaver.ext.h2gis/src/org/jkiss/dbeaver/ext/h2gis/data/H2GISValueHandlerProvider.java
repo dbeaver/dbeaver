@@ -32,7 +32,7 @@ public class H2GISValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
-        if (typedObject.getTypeName().equalsIgnoreCase("GEOMETRY")) {
+        if (typedObject.getTypeName().toUpperCase().startsWith("GEOMETRY")) {
             return H2GISGeometryValueHandler.INSTANCE;
         } else {
             return null;
