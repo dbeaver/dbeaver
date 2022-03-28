@@ -93,7 +93,7 @@ public class SQLPreferenceConstants
     public static final String SQLEDITOR_CLOSE_DOUBLE_QUOTES           = "SQLEditor.closeDoubleQuotes";
     public static final String SQLEDITOR_CLOSE_BRACKETS                = "SQLEditor.closeBrackets";
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
-    public static final String SQLEDITOR_CLOSE_BEGIN_END               = "SQLEditor.closeBeginEndStatement";
+    public static final String SQLEDITOR_CLOSE_BLOCKS                  = "SQLEditor.closeBlocks";
 
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";

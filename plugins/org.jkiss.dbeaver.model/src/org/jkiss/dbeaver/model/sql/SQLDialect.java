@@ -451,4 +451,9 @@ public interface SQLDialect {
     default SQLTokenPredicateSet getSkipTokenPredicates() {
         return EmptyTokenPredicateSet.INSTANCE;
     }
+    
+    /**
+     * @return a set of SQLBlockCompletions with information about blocks for autoedit
+     */
+    SQLBlockCompletions getBlockCompletions();
 }
