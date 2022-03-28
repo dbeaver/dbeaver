@@ -867,6 +867,22 @@ public final class DBUtils {
         return false;
     }
 
+    /**
+     * Optional association is the one which can be set to NULL
+     */
+    public static boolean isOptionalAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException {
+        if (!(association instanceof DBSEntityReferrer)) {
+            return false;
+        }
+
+        for (DBSEntityAttributeRef ref : CommonUtils.safeCollection(((DBSEntityReferrer) association).getAttributeReferences(monitor))) {
+            if (ref.getAttribute() != null && !ref.getAttribute().isRequired()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static String getDefaultDataTypeName(@NotNull DBSObject objectContainer, DBPDataKind dataKind)
     {
