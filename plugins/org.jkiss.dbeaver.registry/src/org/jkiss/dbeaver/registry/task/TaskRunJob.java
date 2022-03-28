@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
@@ -123,7 +124,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private DBTTaskRunStatus executeTask(DBRProgressMonitor monitor, PrintStream logWriter) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener, true);
+        return taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
     }
 
     @Override
@@ -164,15 +165,15 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
 
         @Override
-        public void taskFinished(@NotNull Object task, @Nullable Object result, @Nullable Throwable error) {
-            parent.taskFinished(task, result, error);
+        public void taskFinished(@NotNull DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
+            parent.taskFinished(task, result, error, settings);
             elapsedTime = System.currentTimeMillis() - startTime;
             taskError = error;
         }
 
         @Override
-        public void subTaskFinished(@Nullable Throwable error) {
-            parent.subTaskFinished(error);
+        public void subTaskFinished(@NotNull DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
+            parent.subTaskFinished(task, error, settings);
         }
     }
 

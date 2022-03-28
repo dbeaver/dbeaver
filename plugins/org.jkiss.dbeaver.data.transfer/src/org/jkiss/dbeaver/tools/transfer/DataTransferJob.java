@@ -87,12 +87,11 @@ public class DataTransferJob implements DBRRunnableWithProgress {
                     hasErrors = true;
                 }
             } catch (Exception e) {
-                listener.subTaskFinished(e);
                 throw new InvocationTargetException(e);
             }
         }
         monitor.done();
-        listener.subTaskFinished(null);
+//        listener.subTaskFinished(task, null);
         elapsedTime = System.currentTimeMillis() - startTime;
     }
 
