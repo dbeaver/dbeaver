@@ -25,16 +25,20 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionListener {
     private static final Log log = Log.getLog(TaskProcessorUI.class);
@@ -45,6 +49,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     private DBRRunnableContext staticContext;
     private long startTime;
     private boolean started;
+    private long timeSincePreviousTask;
 
     public TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
         this.staticContext = staticContext;
@@ -72,42 +77,60 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     public void taskStarted(@NotNull Object task) {
         this.started = true;
         this.startTime = System.currentTimeMillis();
+        this.timeSincePreviousTask = startTime;
     }
 
     @Override
-    public void taskFinished(@NotNull Object task, @Nullable Object result, @Nullable Throwable error) {
+    public void taskFinished(@NotNull DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
         this.started = false;
 
         long elapsedTime = System.currentTimeMillis() - startTime;
 
+        sendNotification(task, error, elapsedTime, settings);
+
+    }
+
+    private void sendNotification(@NotNull DBTTask task, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
         UIUtils.asyncExec(() -> {
             // Make a sound
             Display.getCurrent().beep();
             // Notify agent
             boolean hasErrors = error != null;
             DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
-            String completeMessage = this.task.getType().getName() + " " + TaskUIMessages.task_processor_ui_message_task_completed + " (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")";
+            StringBuilder completeMessage = new StringBuilder();
+            completeMessage.append(task.getType().getName()).append(" ").append(TaskUIMessages.task_processor_ui_message_task_completed).append(" (").append(RuntimeUtils.formatExecutionTime(elapsedTime)).append(")");
+            List<String> objects = new ArrayList<>();
+            if (settings instanceof AbstractNativeToolSettings) {
+                for (DBSObject databaseObject : ((AbstractNativeToolSettings<?>) settings).getDatabaseObjects()) {
+                    objects.add(databaseObject.getName());
+                }
+                completeMessage.append("\nObject(s) processed: ").append(String.join(",", objects));
+            }
             if (elapsedTime > platformUI.getLongOperationTimeout() * 1000) {
                 platformUI.notifyAgent(
-                    completeMessage, !hasErrors ? IStatus.INFO : IStatus.ERROR);
+                    completeMessage.toString(), !hasErrors ? IStatus.INFO : IStatus.ERROR);
             }
+
             if (isShowFinalMessage() && !hasErrors) {
                 // Show message box
                 DBeaverNotifications.showNotification(
                     "task",
-                    this.task.getName(),
-                    completeMessage,
+                    task.getName(),
+                    completeMessage.toString(),
                     DBPMessageType.INFORMATION,
                     null);
             } else if (error != null) {
                 DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error);
             }
         });
-
     }
 
+
     @Override
-    public void subTaskFinished(@Nullable Throwable error) {
+    public void subTaskFinished(@NotNull DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
+        long elapsedTime = System.currentTimeMillis() - timeSincePreviousTask;
+        timeSincePreviousTask = System.currentTimeMillis();
+        sendNotification(task, error, elapsedTime, settings);
 
     }
 
