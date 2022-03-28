@@ -68,6 +68,7 @@ public class DatabaseTransferUtils {
         {
             switch (containerMapping.getMappingType()) {
                 case create:
+                case recreate:
                     DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                     if (newTarget == null) {
                         throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
@@ -75,7 +76,9 @@ public class DatabaseTransferUtils {
                         throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
                     }
                     containerMapping.setTarget((DBSDataManipulator) newTarget);
-                    containerMapping.setMappingType(DatabaseMappingType.existing);
+                    if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+                        containerMapping.setMappingType(DatabaseMappingType.existing);
+                    }
                     // ! Fall down is ok here
                 case existing:
                     for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
@@ -125,13 +128,13 @@ public class DatabaseTransferUtils {
 
         List<DBEPersistAction> actions = new ArrayList<>();
 
-        if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+        if (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() != null) {
             sql.append("DROP TABLE ");
             getTableFullName(schema, dataSource, sql, tableName);
             sql.append(dataSource.getSQLDialect().getScriptDelimiters()[0]);
         }
 
-        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+        if (containerMapping.getMappingType() == DatabaseMappingType.create || containerMapping.getMappingType() == DatabaseMappingType.recreate) {
             sql.append("CREATE TABLE ");
             getTableFullName(schema, dataSource, sql, tableName);
             sql.append("(\n");
@@ -230,7 +233,9 @@ public class DatabaseTransferUtils {
 
             DBSEntity table;
             DBECommand createCommand = null;
-            if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            if (containerMapping.getMappingType() == DatabaseMappingType.create ||
+                (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() == null))
+            {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                 createCommand = tableManager.makeCreateCommand(table, options);
