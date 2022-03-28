@@ -631,7 +631,7 @@ public class SQLScriptParser {
             queryLength = document.getLength() - queryOffset;
         }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
-        boolean supportParamsInDDLAndDollarCodeBlocks = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_AND_DOLLAR_CODE_BLOCKS_ENABLED);
+        boolean supportParamsInEmbeddedCode = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
         boolean execQuery = false;
         boolean ddlQuery = false;
         boolean insideDollarQuote = false;
@@ -676,7 +676,7 @@ public class SQLScriptParser {
             if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
-                    if (!supportParamsInDDLAndDollarCodeBlocks && ddlQuery || insideDollarQuote) {
+                    if (!supportParamsInEmbeddedCode && ddlQuery || insideDollarQuote) {
                         continue;
                     }
                     if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
