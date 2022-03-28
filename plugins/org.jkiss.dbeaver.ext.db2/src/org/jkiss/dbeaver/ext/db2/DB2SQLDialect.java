@@ -152,7 +152,7 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public String getScriptDelimiterRedefiner() {
-    	return "DELIMITER";
+    	return "--#SET TERMINATOR";
     }
 
     @Override
