@@ -1234,6 +1234,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             objectName = wordDetector.removeQuotes(objectName);
         }
         if (request.getContext().isSearchInsideNames()) {
+            if (CommonUtils.isEmpty(objectName)) {
+                return MATCH_ANY_PATTERN;
+            }
             return MATCH_ANY_PATTERN + objectName + MATCH_ANY_PATTERN;
         } else {
             return objectName + MATCH_ANY_PATTERN;
