@@ -32,7 +32,7 @@ public interface SMAdminController<USER extends SMUser, ROLE extends SMRole> ext
     ///////////////////////////////////////////
     // Users
 
-    void createUser(USER user) throws DBCException;
+    void createUser(String userId, Map<String, String> metaParameters) throws DBCException;
 
     void deleteUser(String userId) throws DBCException;
 
