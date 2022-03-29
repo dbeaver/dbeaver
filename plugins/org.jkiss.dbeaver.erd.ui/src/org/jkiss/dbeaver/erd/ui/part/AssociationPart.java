@@ -177,7 +177,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
             //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             conn.setSourceDecoration(sourceDecor);
-            if (!identifying) {
+            if (ERDUtils.isOptionalAssociation(association)) {
                 final RhombusDecoration targetDecor = new RhombusDecoration();
                 targetDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
                 //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());

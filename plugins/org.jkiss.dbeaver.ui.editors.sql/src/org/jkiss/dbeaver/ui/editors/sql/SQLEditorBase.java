@@ -858,6 +858,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected boolean addProblem(@Nullable String message, @NotNull Position position) {
+        if (!getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)) {
+            return false;
+        }
+
         final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
         final IAnnotationModel annotationModel = getAnnotationModel();
 
@@ -870,6 +874,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.MESSAGE, message);
             marker.setAttribute(IMarker.TRANSIENT, true);
+            MarkerUtilities.setCharStart(marker, position.offset);
+            MarkerUtilities.setCharEnd(marker, position.offset + position.length);
             annotationModel.addAnnotation(new SQLProblemAnnotation(marker), position);
         } catch (CoreException e) {
             log.error("Error creating problem marker", e);
@@ -906,11 +912,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         final Position position = annotationModel.getPosition(annotation);
 
                         if (position.overlapsWith(query.getOffset(), query.getLength())) {
-                            try {
-                                ((SQLProblemAnnotation) annotation).getMarker().delete();
-                            } catch (CoreException e) {
-                                log.error("Error deleting problem marker", e);
-                            }
+                            annotationModel.removeAnnotation(annotation);
                         }
                     }
                 }
@@ -973,6 +975,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
                 return;
             }
+            case SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED:
+                clearProblems(null);
+                return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());

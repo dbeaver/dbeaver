@@ -2433,6 +2433,16 @@ public class SQLEditor extends SQLEditorBase implements
             queryListener);
     }
 
+    public boolean isActiveQueryRunning() {
+        return curQueryProcessor != null && curQueryProcessor.curJobRunning.get() > 0;
+    }
+
+    public void cancelActiveQuery() {
+        if (isActiveQueryRunning()) {
+            curQueryProcessor.cancelJob();
+        }
+    }
+
     @NotNull
     private SQLScriptContext createScriptContext() {
         File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());

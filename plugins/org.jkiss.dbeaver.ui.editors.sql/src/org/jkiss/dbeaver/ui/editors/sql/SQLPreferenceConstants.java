@@ -80,6 +80,7 @@ public class SQLPreferenceConstants
     public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
     public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
     public static final String FOLDING_ENABLED                         = "SQLEditor.Folding.enabled";
+    public static final String PROBLEM_MARKERS_ENABLED                 = "SQLEditor.problemMarkers.enabled";
 
     // Auto-save
     public static final String AUTO_SAVE_ON_CHANGE                     = "SQLEditor.autoSaveOnChange";
@@ -92,7 +93,7 @@ public class SQLPreferenceConstants
     public static final String SQLEDITOR_CLOSE_DOUBLE_QUOTES           = "SQLEditor.closeDoubleQuotes";
     public static final String SQLEDITOR_CLOSE_BRACKETS                = "SQLEditor.closeBrackets";
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
-    public static final String SQLEDITOR_CLOSE_BEGIN_END               = "SQLEditor.closeBeginEndStatement";
+    public static final String SQLEDITOR_CLOSE_BLOCKS                  = "SQLEditor.closeBlocks";
 
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";

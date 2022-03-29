@@ -82,7 +82,9 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_delimiter_top;
     public static String pref_page_database_resultsets_label_text_delimiter_bottom;
     public static String pref_page_database_resultsets_label_text_extra_spaces;
-    
+    public static String pref_page_database_resultsets_label_text_show_line_numbers;
+    public static String pref_page_database_resultsets_label_text_show_line_numbers_tip;
+
 	public static String virtual_structure_editor_abstract_job_load_entity;
 	public static String virtual_structure_editor_info_label_entity_structure;
 	public static String virtual_structure_editor_dictionary_page_text;

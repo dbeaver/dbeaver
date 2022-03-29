@@ -177,11 +177,8 @@ class IndentFormatter {
                     break;
                 case "CASE":  //$NON-NLS-1$
                     if (!isCompact) {
-                        result += insertReturnAndIndent(argList, index - 1, indent);
-                        if ("WHEN".equalsIgnoreCase(getNextKeyword(argList, index))) {
-                            indent++;
-                            result += insertReturnAndIndent(argList, index + 1, indent);
-                        }
+                        indent++;
+                        result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
                 case "END": // CASE ... END

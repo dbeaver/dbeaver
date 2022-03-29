@@ -91,6 +91,7 @@ class MySQLDialect extends JDBCSQLDialect {
             "MONTH",
             "NULLIF",
             "RANDOM_BYTES",
+            "REPLACE",
             "REGEXP_LIKE",
             "REGEXP_INSTR",
             "REGEXP_REPLACE",

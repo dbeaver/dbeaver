@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="22.0.1.qualifier"
+        version="22.0.2.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -42,8 +42,10 @@
     <plugin id="org.jkiss.bundle.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Bouncycastle -->
+    <plugin id="org.bouncycastle.bcpg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.bouncycastle.bcutil" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- 3rd party -->
     <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

@@ -23,6 +23,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Column entry in model Table
@@ -94,5 +98,44 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public Map<String, Object> toMap(@NotNull ERDContext context) {
+        Map<String, Object> attrMap = new LinkedHashMap<>();
+        attrMap.put("name", this.getName());
+        if (!CommonUtils.isEmpty(this.getAlias())) {
+            attrMap.put("alias", this.getAlias());
+        }
+        DBSEntityAttribute entityAttribute = this.getObject();
+        if (entityAttribute != null) {
+            attrMap.put("dataKind", entityAttribute.getDataKind().name());
+            attrMap.put("typeName", entityAttribute.getTypeName());
+
+            if (!entityAttribute.isRequired()) {
+                attrMap.put("optional", true);
+            }
+
+            int iconIndex = context.getIconIndex(DBValueFormatting.getObjectImage(entityAttribute));
+
+            attrMap.put("iconIndex", iconIndex);
+            attrMap.put("fullTypeName", entityAttribute.getFullTypeName());
+            if (!CommonUtils.isEmpty(entityAttribute.getDefaultValue())) {
+                attrMap.put("defaultValue", entityAttribute.getDefaultValue());
+            }
+            if (!CommonUtils.isEmpty(entityAttribute.getDescription())) {
+                attrMap.put("description", entityAttribute.getDescription());
+            }
+        }
+        if (this.isChecked()) {
+            attrMap.put("checked", true);
+        }
+        if (this.isInPrimaryKey()) {
+            attrMap.put("inPrimaryKey", true);
+        }
+        if (this.isInForeignKey()) {
+            attrMap.put("inForeignKey", true);
+        }
+        return attrMap;
     }
 }

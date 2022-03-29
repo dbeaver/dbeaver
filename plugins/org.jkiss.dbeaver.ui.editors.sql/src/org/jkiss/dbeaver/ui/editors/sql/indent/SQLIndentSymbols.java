@@ -17,24 +17,18 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-public interface SQLIndentSymbols
-{
+public interface SQLIndentSymbols {
+    
+    /**
+     * remember to keep all these ids lower than <code>SQLBlockCompletions.KNOWN_TOKEN_ID_BASE</code>
+     */
+    
+    
     int TokenEOF   = -1;
     int TokenOTHER = 0;
-    int Tokenbegin = 1000;
-    int TokenBEGIN = 1001;
-    int Tokenend = 1002;
-    int TokenEND = 1003;
-    int TokenIDENT = 2000;
-    int TokenKeyword = 3000;
-    int TokenKeywordStart = 3001;
 
-    String BEGIN = "BEGIN";
-    String begin = "begin";
-    String end = "end";
-    String END = "END";
-//    String end2 = "end ";
-//    String END2 = "END ";
-
+    int TokenIDENT = 20;
+    int TokenKeyword = 30;
+    int TokenKeywordStart = 31;
 }
 

@@ -21,7 +21,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -364,7 +363,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
                     allowedKeywords.add(SQLConstants.KEYWORD_FROM);
                 } else {
-                    if (!SQLConstants.KEYWORD_WHERE.equalsIgnoreCase(wordDetector.getNextWord())) {
+                    if (!SQLConstants.KEYWORD_WHERE.equalsIgnoreCase(wordDetector.getNextWord()) &&
+                        !SQLConstants.KEYWORD_INTO.equals(prevKeyWord)) {
                         allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
                     }
                 }
@@ -406,8 +406,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     );
                 }
             }
-            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE))
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE)) {
                 makeProposalFromHippie();
+            }
         }
         filterProposals(dataSource);
     }
@@ -1233,6 +1234,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             objectName = wordDetector.removeQuotes(objectName);
         }
         if (request.getContext().isSearchInsideNames()) {
+            if (CommonUtils.isEmpty(objectName)) {
+                return MATCH_ANY_PATTERN;
+            }
             return MATCH_ANY_PATTERN + objectName + MATCH_ANY_PATTERN;
         } else {
             return objectName + MATCH_ANY_PATTERN;

@@ -19,25 +19,35 @@ package org.jkiss.dbeaver.ext.firebird.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
+import java.util.Arrays;
+
 public class FireBirdSQLDialect extends GenericSQLDialect {
 
-    public static final String[] FB_BLOCK_HEADERS = new String[]{
+    private static final String[] FB_BLOCK_HEADERS = new String[]{
         "EXECUTE BLOCK",
         //"DECLARE",
         //"IS",
     };
 
-    public static final String[][] FB_BEGIN_END_BLOCK = new String[][]{
+    private static final String[][] FB_BEGIN_END_BLOCK = new String[][]{
         {"BEGIN", "END"},
     };
 
     private static final String[] DDL_KEYWORDS = new String[] {
         "CREATE", "ALTER", "DROP", "EXECUTE"
+    };
+
+    private static final String[] FIREBIRD_KEYWORDS = new String[] {
+        "CURRENT_USER",
+        "CURRENT_ROLE",
+        "NCHAR",
+        "VALUE"
     };
 
     public FireBirdSQLDialect() {
@@ -63,6 +73,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         turnFunctionIntoKeyword("TRUNCATE");
+        addKeywords(Arrays.asList(FIREBIRD_KEYWORDS), DBPKeywordType.KEYWORD);
     }
 
     @Override

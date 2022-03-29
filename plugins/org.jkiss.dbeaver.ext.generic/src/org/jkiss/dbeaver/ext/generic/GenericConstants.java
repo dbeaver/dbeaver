@@ -62,7 +62,6 @@ public class GenericConstants {
     public static final String PARAM_DUAL_TABLE = "dual-table";
     public static final String PARAM_SPLIT_PROCEDURES_AND_FUNCTIONS = "split-procedures-and-functions";
     public static final String PARAM_DRIVER_PROPERTIES = "driver-properties";
-    public static final String PARAM_SUPPORTS_SET_ARRAY = "supports-set-array";
     public static final String PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL = "supports-ddl-transactions";
     public static final String PARAM_READ_ONLY_DATA = "read-only-data";
     public static final String PARAM_READ_ONLY_META_DATA = "read-only-meta-data";
