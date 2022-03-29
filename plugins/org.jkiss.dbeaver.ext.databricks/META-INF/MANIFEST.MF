@@ -9,5 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
+Export-Package: org.jkiss.dbeaver.ext.databricks,
+ org.jkiss.dbeaver.ext.databricks.model
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.databricks
