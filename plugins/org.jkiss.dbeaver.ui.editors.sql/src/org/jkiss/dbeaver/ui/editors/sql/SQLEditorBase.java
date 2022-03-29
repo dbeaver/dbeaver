@@ -874,6 +874,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.MESSAGE, message);
             marker.setAttribute(IMarker.TRANSIENT, true);
+            MarkerUtilities.setCharStart(marker, position.offset);
+            MarkerUtilities.setCharEnd(marker, position.offset + position.length);
             annotationModel.addAnnotation(new SQLProblemAnnotation(marker), position);
         } catch (CoreException e) {
             log.error("Error creating problem marker", e);
@@ -910,11 +912,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         final Position position = annotationModel.getPosition(annotation);
 
                         if (position.overlapsWith(query.getOffset(), query.getLength())) {
-                            try {
-                                ((SQLProblemAnnotation) annotation).getMarker().delete();
-                            } catch (CoreException e) {
-                                log.error("Error deleting problem marker", e);
-                            }
+                            annotationModel.removeAnnotation(annotation);
                         }
                     }
                 }
