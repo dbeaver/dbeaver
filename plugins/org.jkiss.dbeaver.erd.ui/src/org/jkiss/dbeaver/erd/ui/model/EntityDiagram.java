@@ -44,9 +44,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     private static final Log log = Log.getLog(EntityDiagram.class);
 
     private ERDModelAdapter modelAdapter;
-    private ERDDecorator decorator;
-    private boolean layoutManualDesired = true;
-    private boolean layoutManualAllowed = false;
+    private final ERDDecorator decorator;
     private boolean needsAutoLayout;
 
     private final Map<ERDNote, NodeVisualInfo> noteVisuals = new IdentityHashMap<>();
@@ -104,45 +102,15 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         ERDAttributeVisibility.setDefaultVisibility(ERDUIActivator.getDefault().getPreferences(), attributeVisibility);
     }
 
-    /**
-     * @param layoutManualAllowed The layoutManualAllowed to set.
-     */
-    public void setLayoutManualAllowed(boolean layoutManualAllowed) {
-        this.layoutManualAllowed = layoutManualAllowed;
-    }
-
-    /**
-     * @return Returns the layoutManualDesired.
-     */
-    public boolean isLayoutManualDesired() {
-        return layoutManualDesired;
-    }
-
-    /**
-     * @param layoutManualDesired The layoutManualDesired to set.
-     */
-    public void setLayoutManualDesired(boolean layoutManualDesired) {
-        this.layoutManualDesired = layoutManualDesired;
-    }
-
     @Override
     public boolean isEditEnabled() {
         return decorator.supportsStructureEdit() && modelAdapter.supportsModelEdit();
-    }
-
-    /**
-     * @return Returns whether we can lay out individual entities manually using the XYLayout
-     */
-    public boolean isLayoutManualAllowed() {
-        return layoutManualAllowed;
     }
 
     public EntityDiagram copy() {
         EntityDiagram copy = new EntityDiagram(getObject(), getName(), getContentProvider(), decorator);
         copy.getEntities().addAll(this.getEntities());
         copy.getEntityMap().putAll(this.getEntityMap());
-        copy.layoutManualDesired = this.layoutManualDesired;
-        copy.layoutManualAllowed = this.layoutManualAllowed;
         copy.noteVisuals.putAll(this.noteVisuals);
         copy.entityVisuals.putAll(this.entityVisuals);
         return copy;
