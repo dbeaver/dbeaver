@@ -277,6 +277,12 @@ public class JSONUtils {
         return serializer.deserializeObject(runnableContext, objectContext, location);
     }
 
+    public static <OBJECT_TYPE> OBJECT_TYPE deserializeObject(Map<String, Object> map, @NotNull Class<OBJECT_TYPE> type) throws DBCException {
+        Gson gson = new Gson();
+        String json = gson.toJson(map);
+        return gson.fromJson(json, type);
+    }
+
     @NotNull
     public static Map<String, Object> parseMap(@NotNull Gson gson, @NotNull Reader reader) {
         return gson.fromJson(reader, new TypeToken<Map<String, Object>>(){}.getType());
