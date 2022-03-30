@@ -17,16 +17,21 @@
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collection;
 
 public class ClickhouseStructValueHandler extends JDBCStructValueHandler {
+    
     public static final ClickhouseStructValueHandler INSTANCE = new ClickhouseStructValueHandler();
 
     @Override
@@ -36,5 +41,17 @@ public class ClickhouseStructValueHandler extends JDBCStructValueHandler {
         } else {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (value instanceof JDBCComposite) {
+            Object[] values = ((JDBCComposite) value).getValues();
+            if (!ArrayUtils.isEmpty(values)) {
+                return DBValueFormatting.getDefaultValueDisplayString(values, format);
+            }
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 }
