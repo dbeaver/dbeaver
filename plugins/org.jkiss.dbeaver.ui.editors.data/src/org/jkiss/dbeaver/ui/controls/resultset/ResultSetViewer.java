@@ -3811,7 +3811,7 @@ public class ResultSetViewer extends Viewer
     }
 
     public void setSelectionStatistics(String stats) {
-        if (selectionStatLabel == null) {
+        if (selectionStatLabel == null || selectionStatLabel.isDisposed()) {
             return;
         }
         if (stats.equals(selectionStatLabel.getText())) {
