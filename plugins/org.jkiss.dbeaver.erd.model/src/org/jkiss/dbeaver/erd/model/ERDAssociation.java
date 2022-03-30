@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -225,23 +224,18 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         }
 
         try {
-            saveRefAttributes(context.getMonitor(), association, assocMap, "primary-attributes");
-            if (association instanceof DBSTableForeignKey) {
-                saveRefAttributes(context.getMonitor(), association.getReferencedConstraint(), assocMap, "foreign-attributes");
-            }
+            saveRefAttributes(context.getMonitor(), association, assocMap, "primary-attributes", getSourceAttributes());
+            saveRefAttributes(context.getMonitor(), association.getReferencedConstraint(), assocMap, "foreign-attributes", getTargetAttributes());
         } catch (DBException e) {
             log.error("Error reading ref attributes", e);
         }
         return assocMap;
     }
 
-    private static void saveRefAttributes(DBRProgressMonitor monitor, DBSEntityConstraint association, Map<String, Object> map, String refName) throws DBException {
-        if (association instanceof DBSEntityReferrer) {
-            List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) association).getAttributeReferences(monitor);
-            if (attrRefs != null) {
-                List<String> refAttrList = attrRefs.stream().map(a -> a.getAttribute().getName()).collect(Collectors.toList());
-                map.put(refName, refAttrList);
-            }
+    private static void saveRefAttributes(DBRProgressMonitor monitor, DBSEntityConstraint association, Map<String, Object> map, String refName, List<ERDEntityAttribute> attributes) throws DBException {
+        if (!CommonUtils.isEmpty(attributes)) {
+            List<String> refAttrList = attributes.stream().map(ERDEntityAttribute::getName).collect(Collectors.toList());
+            map.put(refName, refAttrList);
         }
     }
 
