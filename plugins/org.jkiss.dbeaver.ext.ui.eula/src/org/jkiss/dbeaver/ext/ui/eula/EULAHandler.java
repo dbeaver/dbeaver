@@ -19,63 +19,38 @@ package org.jkiss.dbeaver.ext.ui.eula;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class EULAHandler extends AbstractHandler {
-    private static final String EULA_PATH = Platform.getProduct().getProperty("licenseFile");
     private static final Log log = Log.getLog(EULAHandler.class);
 
-    public static void showEula(IWorkbenchWindow window) {
-        String eula = getPackageEula();
-        showEulaDialog(window, eula);
-    }
-
-    private static void showEulaDialog(IWorkbenchWindow window, String eula) {
-        EULADialog eulaDialog = new EULADialog(window.getShell(), eula);
-        eulaDialog.open();
-
-    }
-
-    private static String getPackageEula() {
-        StringBuilder eula = new StringBuilder();
-        URL url;
-        try {
-            url = FileLocator.find(new URL(EULA_PATH));
-        } catch (MalformedURLException e) {
-            log.error(e);
-            return null;
-        }
-        if (url != null) {
-            try (BufferedReader fileReader = new BufferedReader(new FileReader(url.getFile()))) {
-                String line;
-                while ((line = fileReader.readLine()) != null) {
-                    eula.append(line).append('\n');
-                }
-            } catch (IOException e) {
-                log.error(e);
-                return null;
-            }
-            return eula.toString();
+    public static void showEula(IWorkbenchWindow window, boolean needsConfirmation) {
+        String eula = EULAUtils.getPackageEula();
+        if (needsConfirmation) {
+            showEulaConfirmationDialog(window, eula);
         } else {
-            return null;
+            showEulaInfoDialog(window, eula);
         }
     }
+
+    private static void showEulaConfirmationDialog(IWorkbenchWindow window, String eula) {
+        EULAConfirmationDialog eulaDialog = new EULAConfirmationDialog(window.getShell(), eula);
+        eulaDialog.open();
+    }
+
+    private static void showEulaInfoDialog(IWorkbenchWindow window, String eula) {
+        EULAInfoDialog eulaDialog = new EULAInfoDialog(window.getShell(), eula);
+        eulaDialog.open();
+    }
+
 
 
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        showEula(HandlerUtil.getActiveWorkbenchWindow(event));
+        showEula(HandlerUtil.getActiveWorkbenchWindow(event), false);
         return null;
     }
 }

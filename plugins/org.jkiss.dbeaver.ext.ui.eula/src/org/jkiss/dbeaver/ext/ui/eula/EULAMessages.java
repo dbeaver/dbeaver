@@ -20,7 +20,7 @@ import org.eclipse.osgi.util.NLS;
 
 
 public class EULAMessages extends NLS {
-    static final String BUNDLE_NAME = "com.jkiss.dbeaver.ext.ui.eula"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.ui.eula.EULAMessages"; //$NON-NLS-1$
 
     public static String core_eula_dialog_accept;
     public static String core_eula_dialog_title;

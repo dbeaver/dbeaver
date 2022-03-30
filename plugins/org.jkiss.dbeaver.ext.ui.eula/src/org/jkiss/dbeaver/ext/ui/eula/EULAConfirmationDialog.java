@@ -21,22 +21,19 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-public class EULADialog extends BaseDialog {
+public class EULAConfirmationDialog extends BaseDialog {
     private final String eula;
     private static final String EULA_ALREADY_CONFIRMED = "eula.confirmed";
     private Text eulaText;
 
-    public EULADialog(Shell parentShell, String eula) {
+    public EULAConfirmationDialog(Shell parentShell, String eula) {
         super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
         this.eula = eula;
     }
@@ -52,24 +49,7 @@ public class EULADialog extends BaseDialog {
         Font largeFont = new Font(dialogFont.getDevice(), fontData);
 
         parent.addDisposeListener(e -> largeFont.dispose());
-        Composite dialogArea = super.createDialogArea(parent);
-
-        Composite eulaArea = new Composite(dialogArea, SWT.BORDER);
-        eulaArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-        GridLayout gl = new GridLayout(1, false);
-
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        eulaArea.setLayout(gl);
-
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
-        gd.widthHint = UIUtils.getFontHeight(eulaArea.getFont()) * 60;
-
-        eulaText = new Text(eulaArea, SWT.V_SCROLL | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.NO_FOCUS);
-        eulaText.setLayoutData(gd);
-        eulaText.setText(eula == null ? "" : eula);
-        return dialogArea;
+        return EULAUtils.createEulaText(super.createDialogArea(parent), eula);
     }
 
     @Override
@@ -77,6 +57,14 @@ public class EULADialog extends BaseDialog {
         createButton(parent, IDialogConstants.YES_ID, EULAMessages.core_eula_dialog_accept, false);
         createButton(parent, IDialogConstants.NO_ID, IDialogConstants.CANCEL_LABEL, false);
     }
+
+
+    @Override
+    protected boolean canHandleShellCloseEvent() {
+        //We don't want user to close this window
+        return false;
+    }
+
 
     @Override
     protected void buttonPressed(int buttonId) {

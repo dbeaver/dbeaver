@@ -28,14 +28,11 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
         if (!isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
-        EULAHandler.showEula(window);
+        EULAHandler.showEula(window, true);
     }
 
     private static boolean isEulaDialogNeeded() {
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(EULA_ALREADY_CONFIRMED)) {
-            return false;
-        }
-        return true;
+        return !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(EULA_ALREADY_CONFIRMED);
     }
 
 }
