@@ -33,7 +33,6 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     public boolean supportsSchemaSelection;
     private boolean supportsMultipleResults;
     private boolean supportsNullableUniqueConstraints;
-    private final boolean supportsSetArray;
     private final boolean supportsTransactionsForDDL;
     private final boolean supportsConstraints;
 
@@ -43,7 +42,6 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
         setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
         supportsMultipleResults = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTIPLE_RESULTS), false);
-        supportsSetArray = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SET_ARRAY), false);
         supportsTransactionsForDDL = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL), true);
         setReadOnlyData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_DATA), false));
         setReadOnlyMetaData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_META_DATA), false));
@@ -78,11 +76,6 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     @Override
     public boolean supportsMultipleResults() {
         return supportsMultipleResults;
-    }
-
-    @Override
-    public boolean supportsSetArray() {
-        return supportsSetArray;
     }
 
     @Override

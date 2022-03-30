@@ -38,7 +38,6 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="supports-set-array" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
                 </driver>
@@ -54,11 +53,10 @@
                     description="Yandex ClickHouse driver (server version 21.3+)"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]" load-optional-dependencies="true"/>
-
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="supports-set-array" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
                 </driver>
@@ -75,6 +73,19 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseTableManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable"/>
         <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseViewManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseView"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                id="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                class="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                label="ClickHouse data types provider"
+                description="ClickHouse data types provider">
+
+            <datasource class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource"/>
+            <type standard="ARRAY"/>
+            <type standard="STRUCT"/>
+        </provider>
     </extension>
 
 </plugin>

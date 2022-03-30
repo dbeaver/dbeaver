@@ -466,6 +466,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsRoleReplication() {
+        return dataSource.isServerVersionAtLeast(9, 1);
+    }
+
+    @Override
+    public boolean supportsRoleBypassRLS() {
+        return dataSource.isServerVersionAtLeast(9, 5);
+    }
+
+    @Override
     public boolean supportSerialTypes() {
         return true;
     }

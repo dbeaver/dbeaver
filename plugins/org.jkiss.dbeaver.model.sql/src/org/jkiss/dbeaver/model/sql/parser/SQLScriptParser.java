@@ -177,9 +177,11 @@ public class SQLScriptParser {
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets or inside block. Ignore it.
                     continue;
-                } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
-                    isDelimiter = true;
-                    isControl = true;
+                } else if (tokenType == SQLTokenType.T_SET_DELIMITER) {
+                	isDelimiter = true;
+                	isControl = true;
+                } else if (tokenType == SQLTokenType.T_CONTROL) {
+                	isControl = true;
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
@@ -631,9 +633,10 @@ public class SQLScriptParser {
             queryLength = document.getLength() - queryOffset;
         }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
-        boolean supportParamsInDDL = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
+        boolean supportParamsInEmbeddedCode = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
         boolean execQuery = false;
         boolean ddlQuery = false;
+        boolean insideDollarQuote = false;
         List<SQLQueryParameter> parameters = null;
         TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
@@ -667,10 +670,15 @@ public class SQLScriptParser {
                 firstKeyword = false;
             }
 
+
+            if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
+                insideDollarQuote = !insideDollarQuote;
+            }
+
             if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
-                    if (!supportParamsInDDL && ddlQuery) {
+                    if (!supportParamsInEmbeddedCode && ddlQuery || insideDollarQuote) {
                         continue;
                     }
                     if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {

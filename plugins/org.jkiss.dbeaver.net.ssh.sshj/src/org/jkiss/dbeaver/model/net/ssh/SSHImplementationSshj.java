@@ -77,6 +77,9 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 log.debug("Error loading known hosts: " + e.getMessage());
             }
 
+            sshClient.setConnectTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
+            sshClient.getConnection().getKeepAlive().setKeepAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
+
             sshClient.connect(host.getHostname(), host.getPort());
 
             switch (auth.getType()) {

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a Schema in the model. Note that this class also includes
@@ -395,8 +396,8 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         }
     }
 
-    public List<ERDObject> getContents() {
-        List<ERDObject> children = new ArrayList<>(entities.size() + notes.size());
+    public List<ERDObject<?>> getContents() {
+        List<ERDObject<?>> children = new ArrayList<>(entities.size() + notes.size());
         children.addAll(entities);
         children.addAll(notes);
         return children;
@@ -413,5 +414,36 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     public void clearErrorMessages() {
         errorMessages.clear();
     }
+
+    @Override
+    public Map<String, Object> toMap(@NotNull ERDContext context) {
+        Map<String, Object> map = new LinkedHashMap<>();
+
+        Map<String, Object> dataList = new LinkedHashMap<>();
+        map.put("data", dataList);
+
+        map.put("entities",
+            this.getEntities().stream().map(e -> e.toMap(context)).collect(Collectors.toList()));
+
+        {
+            List<ERDElement<?>> allElements = new ArrayList<>();
+            allElements.addAll(this.getEntities());
+            allElements.addAll(this.getNotes());
+
+
+            List<Map<String, Object>> assocList = new ArrayList<>();
+            for (ERDElement<?> element : allElements) {
+                for (ERDAssociation rel : element.getAssociations()) {
+                    assocList.add(rel.toMap(context));
+                }
+            }
+            map.put("associations", assocList);
+        }
+
+        dataList.put("icons", context.getIcons());
+
+        return map;
+    }
+
 
 }

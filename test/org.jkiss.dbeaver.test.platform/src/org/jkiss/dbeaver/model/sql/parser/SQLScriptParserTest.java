@@ -463,7 +463,39 @@ public class SQLScriptParserTest {
         };
         assertParse("oracle", packageBodyStatements);
     }
-
+    
+    @Test
+    public void parseCurrentControlCommandsCursorHead() throws DBException {
+    	String query = "@set col1 = '1'\n"
+    			+ "@set col2 = '2'\n"
+    			+ "@set col3 = '3'\n"
+    			+ "@set col4 = '4'\n"
+    			+ "@set col5 = '5'\n"
+    			+ "\n"
+    			+ "SELECT 'test1' FROM daul;\n"
+    			+ "\n"
+    			+ "SELECT 'test2' FROM dual;";
+    	SQLParserContext context = createParserContext(setDialect("oracle"), query);
+    	SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 64, false, false);
+    	Assert.assertEquals("@set col5 = '5'", element.getText());
+    }
+    
+    @Test
+    public void parseCurrentControlCommandsCursorTail() throws DBException {
+    	String query = "@set col1 = '1'\n"
+    			+ "@set col2 = '2'\n"
+    			+ "@set col3 = '3'\n"
+    			+ "@set col4 = '4'\n"
+    			+ "@set col5 = '5'\n"
+    			+ "\n"
+    			+ "SELECT 'test1' FROM daul;\n"
+    			+ "\n"
+    			+ "SELECT 'test2' FROM dual;";
+    	SQLParserContext context = createParserContext(setDialect("oracle"), query);
+    	SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
+    	Assert.assertEquals("@set col1 = '1'", element.getText());
+    }
+   
     private void assertParse(String dialectName, String[] expected) throws DBException {
     	String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
     	List<String> expectedParts = new ArrayList<>(expected.length);
