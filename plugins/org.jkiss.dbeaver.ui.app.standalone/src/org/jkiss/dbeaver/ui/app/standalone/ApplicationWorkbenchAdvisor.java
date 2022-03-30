@@ -130,7 +130,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (RuntimeUtils.isMacOS()) {
             // Disable URI handlers auto registration.
             // They modify plist file on MacOS - this breaks sealed application
-            new BundlePreferenceStore("org.eclipse.urischeme").setValue("skipAutoRegistration", true);
+            try {
+                new BundlePreferenceStore("org.eclipse.urischeme").setValue("skipAutoRegistration", true);
+            } catch (Exception e) {
+                log.debug("Error disabling urischeme auto registration", e);
+            }
         }
 
         super.initialize(configurer);
