@@ -394,6 +394,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 start = document.getLineInformationOfOffset(region.getOffset()).getOffset();
             }
 
+            command.caretOffset = command.offset + buf.length();
+
             if (autoCompletionSupported && getBlockBalance(document, command.offset, completion) > 0 && getTokenCount(start, command.offset, scanner, previousToken) > 0) {
                 buf.setLength(0);
                 for (String part: completion.getCompletionParts()) {
@@ -406,7 +408,9 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                         buf.append(adjustCase(lastTokenString, part));
                     }
                 }
-                command.caretOffset = command.offset;
+                if (completion.getTailEndTokenId() != null) {
+                    command.caretOffset = command.offset;
+                }
             } else {
                 command.caretOffset = command.offset + buf.length();
             }
