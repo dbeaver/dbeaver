@@ -97,7 +97,7 @@ public class SQLBlockCompletionsCollection implements SQLBlockCompletions {
      */
     public void registerCompletionPair(@NotNull String headToken, @NotNull String tailToken, @NotNull String tailEndToken) {
         this.registerCompletionInfo(headToken, new String[] {
-            NEW_LINE_COMPLETION_PART, tailToken + " " + tailEndToken, NEW_LINE_COMPLETION_PART
+            NEW_LINE_COMPLETION_PART, ONE_INDENT_COMPLETION_PART, NEW_LINE_COMPLETION_PART, tailToken + " " + tailEndToken, NEW_LINE_COMPLETION_PART
         }, tailToken, tailEndToken);
     }
     
