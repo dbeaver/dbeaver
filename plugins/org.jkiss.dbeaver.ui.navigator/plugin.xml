@@ -129,7 +129,7 @@
             class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
             id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
             namespace="org.jkiss.dbeaver.ui.editors.entity"
-            properties="dirty,canUndo,canRedo"
+            properties="dirty,canUndo,canRedo,hasSource"
             type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
@@ -279,6 +279,8 @@
 
         <command id="org.jkiss.dbeaver.navigator.create.column.index" name="%command.org.jkiss.dbeaver.navigator.create.column.index.name" description="%command.org.jkiss.dbeaver.navigator.create.column.index.description" categoryId="org.jkiss.dbeaver.core.database" />
         <command id="org.jkiss.dbeaver.navigator.create.column.constraint" name="%command.org.jkiss.dbeaver.navigator.create.column.constraint.name" description="%command.org.jkiss.dbeaver.navigator.create.column.constraint.description" categoryId="org.jkiss.dbeaver.core.database" />
+
+        <command id="org.jkiss.dbeaver.ui.object.property.source.activate" name="%command.org.jkiss.dbeaver.ui.context.object.property.source.switch.name" description="%command.org.jkiss.dbeaver.ui.context.object.property.source.switch.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -316,6 +318,15 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
+    	<handler commandId="org.jkiss.dbeaver.ui.object.property.source.activate" class="org.jkiss.dbeaver.ui.editors.entity.handlers.ObjectPropertySwitchToSourceHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.hasSource"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+    	</handler>
         <!-- Navigator handlers -->
 
         <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen">
@@ -899,6 +910,7 @@
         <key commandId="org.jkiss.dbeaver.core.navigator.set.default" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+A"/>
         <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.open" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
+        <key commandId="org.jkiss.dbeaver.ui.object.property.source.activate" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S" />
     </extension>
 
     <extension point="org.jkiss.dbeaver.navigator.nodeAction">
