@@ -774,7 +774,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return maxParamLength;
     }
 
-    protected boolean useBracketsForExec() {
+    protected boolean useBracketsForExec(DBSProcedure procedure) {
         return false;
     }
 
@@ -800,7 +800,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             inParameters.addAll(parameters);
         }
         //getMaxParameterLength(parameters, inParameters);
-        boolean useBrackets = useBracketsForExec();
+        boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
