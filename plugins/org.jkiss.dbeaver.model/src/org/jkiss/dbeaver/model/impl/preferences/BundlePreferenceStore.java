@@ -32,8 +32,12 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     private boolean dirty = false;
 
     public BundlePreferenceStore(Bundle bundle) {
-        defaultProps = DefaultScope.INSTANCE.getNode(bundle.getSymbolicName());
-        props = InstanceScope.INSTANCE.getNode(bundle.getSymbolicName());
+        this(bundle.getSymbolicName());
+    }
+
+    public BundlePreferenceStore(String bundleId) {
+        defaultProps = DefaultScope.INSTANCE.getNode(bundleId);
+        props = InstanceScope.INSTANCE.getNode(bundleId);
     }
 
     @Override

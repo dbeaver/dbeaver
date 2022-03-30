@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +127,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     @Override
     public void initialize(IWorkbenchConfigurer configurer) {
+        if (RuntimeUtils.isMacOS()) {
+            // Disable URI handlers auto registration.
+            // They modify plist file on MacOS - this breaks sealed application
+            new BundlePreferenceStore("org.eclipse.urischeme").setValue("skipAutoRegistration", true);
+        }
+
         super.initialize(configurer);
 
         // Initialize app preferences
