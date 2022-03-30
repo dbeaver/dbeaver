@@ -844,9 +844,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     // Keep container mapping type, refresh only attributes
                     containerMapping.refreshOnlyAttributesMappingTypes(getWizard().getRunnableContext(),false);
                 } else {
-                    containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create, forceRefresh);
                     ((DatabaseMappingContainer) mapping).setTarget(null);
                     ((DatabaseMappingContainer) mapping).setTargetName(name);
+                    containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create, forceRefresh);
                 }
             } else {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
