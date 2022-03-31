@@ -71,7 +71,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         log.debug("SQL Scripts Execute");
 
         // Start consumers
-        listener.taskStarted(settings);
+        listener.taskStarted(task);
         Throwable error = null;
         try {
             runnableContext.run(true, true, monitor -> {

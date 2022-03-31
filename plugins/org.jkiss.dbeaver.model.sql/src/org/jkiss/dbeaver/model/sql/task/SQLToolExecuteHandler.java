@@ -91,7 +91,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
 
-        listener.taskStarted(settings);
+        listener.taskStarted(task);
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
             List<Throwable> warnings = settings.getWarnings();

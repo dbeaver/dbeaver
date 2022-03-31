@@ -74,14 +74,14 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     }
 
     @Override
-    public void taskStarted(@NotNull Object task) {
+    public void taskStarted(@Nullable DBTTask task) {
         this.started = true;
         this.startTime = System.currentTimeMillis();
         this.timeSincePreviousTask = startTime;
     }
 
     @Override
-    public void taskFinished(@NotNull DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
+    public void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
         this.started = false;
 
         long elapsedTime = System.currentTimeMillis() - startTime;
@@ -90,7 +90,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
 
     }
 
-    private void sendNotification(@NotNull DBTTask task, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
+    private void sendNotification(@Nullable DBTTask task, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
         UIUtils.asyncExec(() -> {
             // Make a sound
             Display.getCurrent().beep();
@@ -98,7 +98,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             boolean hasErrors = error != null;
             DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
             StringBuilder completeMessage = new StringBuilder();
-            completeMessage.append(task.getType().getName()).append(" ").append(TaskUIMessages.task_processor_ui_message_task_completed).append(" (").append(RuntimeUtils.formatExecutionTime(elapsedTime)).append(")");
+            completeMessage.append(task == null ? this.task.getType().getName() : task.getType().getName()).append(" ").append(TaskUIMessages.task_processor_ui_message_task_completed).append(" (").append(RuntimeUtils.formatExecutionTime(elapsedTime)).append(")");
             List<String> objects = new ArrayList<>();
             if (settings instanceof AbstractNativeToolSettings) {
                 for (DBSObject databaseObject : ((AbstractNativeToolSettings<?>) settings).getDatabaseObjects()) {
@@ -115,7 +115,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 // Show message box
                 DBeaverNotifications.showNotification(
                     "task",
-                    task.getName(),
+                    task == null ? this.task.getName() : task.getName(),
                     completeMessage.toString(),
                     DBPMessageType.INFORMATION,
                     null);
@@ -127,7 +127,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
 
 
     @Override
-    public void subTaskFinished(@NotNull DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
+    public void subTaskFinished(@Nullable DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
         long elapsedTime = System.currentTimeMillis() - timeSincePreviousTask;
         timeSincePreviousTask = System.currentTimeMillis();
         sendNotification(task, error, elapsedTime, settings);

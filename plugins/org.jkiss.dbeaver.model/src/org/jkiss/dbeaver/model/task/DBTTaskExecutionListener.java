@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
@@ -24,10 +23,10 @@ import org.jkiss.code.Nullable;
  */
 public interface DBTTaskExecutionListener {
 
-    void taskStarted(@NotNull Object task);
+    void taskStarted(@Nullable DBTTask task);
 
-    void taskFinished(@NotNull DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings);
+    void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings);
 
-    void subTaskFinished(@NotNull DBTTask task, @Nullable Throwable error, @Nullable Object settings);
+    void subTaskFinished(@Nullable DBTTask task, @Nullable Throwable error, @Nullable Object settings);
 
 }

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -159,20 +158,20 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
 
         @Override
-        public void taskStarted(@NotNull Object task) {
+        public void taskStarted(@Nullable DBTTask task) {
             startTime = System.currentTimeMillis();
             parent.taskStarted(task);
         }
 
         @Override
-        public void taskFinished(@NotNull DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
+        public void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
             parent.taskFinished(task, result, error, settings);
             elapsedTime = System.currentTimeMillis() - startTime;
             taskError = error;
         }
 
         @Override
-        public void subTaskFinished(@NotNull DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
+        public void subTaskFinished(@Nullable DBTTask task, @Nullable Throwable error, @Nullable Object settings) {
             parent.subTaskFinished(task, error, settings);
         }
     }

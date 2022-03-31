@@ -73,10 +73,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
-    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale,
+    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @Nullable DBTTask task, @NotNull Locale locale,
                                     @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
                                     DataTransferSettings settings) throws DBException {
-        listener.taskStarted(settings);
+        listener.taskStarted(task);
         int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
             indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings);
