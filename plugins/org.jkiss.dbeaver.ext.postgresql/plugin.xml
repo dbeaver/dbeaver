@@ -635,7 +635,7 @@
             label="PostgreSQL PgPass"
             description="PostgreSQL PGPASS password"
             class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass"
-            adminOnly="true">
+            requiresLocalConfiguration="true">
             <datasource id="postgresql"/>
         </authModel>
     </extension>
