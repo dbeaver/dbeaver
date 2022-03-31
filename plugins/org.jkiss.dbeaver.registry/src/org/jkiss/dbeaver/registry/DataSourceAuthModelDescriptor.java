@@ -49,7 +49,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private DBPImage icon;
     private boolean defaultModel;
     private boolean isDesktop;
-    private boolean adminOnly;
+    private boolean requiresLocalConfiguration;
     private final Map<String, String[]> replaces = new HashMap<>();
     private boolean hasCondReplaces = false;
 
@@ -68,7 +68,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         }
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
         this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
-        this.adminOnly = CommonUtils.toBoolean(config.getAttribute("adminOnly"));
+        this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("adminOnly"));
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
@@ -118,8 +118,8 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     }
 
     @Override
-    public boolean isAdminOnlyModel() {
-        return adminOnly;
+    public boolean requiresLocalConfiguration() {
+        return requiresLocalConfiguration;
     }
 
     @Override

@@ -44,8 +44,8 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     // Model works in desktop application only
     boolean isDesktopModel();
 
-    // Model is accessible only for administrators
-    boolean isAdminOnlyModel();
+    // Model needs a configuration on a local FS
+    boolean requiresLocalConfiguration();
 
     boolean isApplicableTo(DBPDriver driver);
 
