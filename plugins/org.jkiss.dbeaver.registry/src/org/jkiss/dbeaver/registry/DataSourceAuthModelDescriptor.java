@@ -68,7 +68,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         }
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
         this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
-        this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("adminOnly"));
+        this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("requiresLocalConfiguration"));
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
