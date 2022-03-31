@@ -82,6 +82,7 @@ public class Log
         }
 
         quietMode = ArrayUtils.contains(Platform.getApplicationArgs(), "-q");
+
     }
 
     private static final ThreadLocal<Context> activeContext = new ThreadLocal<>();
