@@ -36,8 +36,7 @@ public interface DBTTaskHandler {
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener,
-        boolean showNotifications)
+        @NotNull DBTTaskExecutionListener listener)
         throws DBException;
 
 
