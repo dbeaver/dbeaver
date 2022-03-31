@@ -59,7 +59,8 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener) throws DBException
+        @NotNull DBTTaskExecutionListener listener,
+        boolean showNotifications) throws DBException
     {
         SETTINGS settings = createToolSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
@@ -209,7 +210,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         } finally {
             monitor.done();
         }
-        listener.taskFinished(task, null, lastError, settings);
+        listener.taskFinished(settings, null, lastError);
 
         outLog.println("Tool execution finished");
         outLog.flush();

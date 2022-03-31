@@ -59,7 +59,8 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener) throws DBException
+        @NotNull DBTTaskExecutionListener listener,
+        boolean showNotifications) throws DBException
     {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
@@ -89,7 +90,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         if (error != null) {
             log.error(error);
         }
-        listener.taskFinished(task, null, error, settings);
+        listener.taskFinished(settings, null, error);
 
         log.debug("SQL script execute completed");
     }

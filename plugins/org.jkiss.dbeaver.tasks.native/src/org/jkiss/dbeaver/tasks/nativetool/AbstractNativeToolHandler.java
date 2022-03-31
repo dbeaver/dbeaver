@@ -60,7 +60,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener) throws DBException {
+        @NotNull DBTTaskExecutionListener listener,
+        boolean showNotifications) throws DBException {
         SETTINGS settings = createTaskSettings(runnableContext, task);
         settings.setLogWriter(logStream);
         if (!validateTaskParameters(task, settings, log)) {
@@ -75,11 +76,11 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 listener.taskStarted(task);
                 Throwable error = null;
                 try {
-                    doExecute(monitor, task, settings, log);
+                    doExecute(monitor, task, settings, log, showNotifications);
                 } catch (Exception e) {
                     error = e;
                 } finally {
-                    listener.taskFinished(task, null, error, settings);
+                    listener.taskFinished(settings, null, error);
                     Log.setLogWriter(null);
 
                     monitor.worked(1);
@@ -241,7 +242,27 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         }
     }
 
-    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
+    protected void onSuccess(DBTTask task, SETTINGS settings, long workTime) {
+
+        StringBuilder message = new StringBuilder();
+        message.append("Task [").append(task.getName()).append("] is completed (").append(workTime).append("ms)");
+        List<String> objNames = new ArrayList<>();
+        for (BASE_OBJECT obj : settings.getDatabaseObjects()) {
+            objNames.add(obj.getName());
+        }
+        message.append("\nObject(s) processed: ").append(String.join(",", objNames));
+        DBWorkbench.getPlatformUI().showNotification(task.getName(), message.toString(), false);
+
+    }
+
+    protected void onError(DBTTask task, SETTINGS settings, long workTime) {
+//        DBWorkbench.getPlatformUI().showError(
+//            taskTitle,
+//            errorMessage == null ? "Internal error" : errorMessage,
+//            SWT.ICON_ERROR);
+    }
+
+    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, boolean showNotifications) throws DBException, InterruptedException {
         validateClientHome(monitor, settings);
 
         long startTime = System.currentTimeMillis();
@@ -277,6 +298,14 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
         long workTime = System.currentTimeMillis() - startTime;
         notifyToolFinish(task.getType().getName() + " - " + task.getName() + " has finished", workTime);
+        if (isSuccess) {
+            if (showNotifications) {
+                onSuccess(task, settings, workTime);
+            }
+        } else {
+            onError(task, settings, workTime);
+        }
+
         return isSuccess;
     }
 

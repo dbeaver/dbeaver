@@ -21,8 +21,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator,
- org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.tasks.native
+ org.jkiss.dbeaver.ui.editors.base
 Export-Package: org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.tasks.ui.registry,
  org.jkiss.dbeaver.tasks.ui.wizard,

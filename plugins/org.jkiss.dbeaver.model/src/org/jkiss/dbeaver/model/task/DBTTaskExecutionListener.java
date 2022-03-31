@@ -26,8 +26,8 @@ public interface DBTTaskExecutionListener {
 
     void taskStarted(@NotNull Object task);
 
-    void taskFinished(@NotNull DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings);
+    void taskFinished(@NotNull Object task, @Nullable Object result, @Nullable Throwable error);
 
-    void subTaskFinished(@NotNull DBTTask task, @Nullable Throwable error, @Nullable Object settings);
+    void subTaskFinished(@Nullable Throwable error);
 
 }
