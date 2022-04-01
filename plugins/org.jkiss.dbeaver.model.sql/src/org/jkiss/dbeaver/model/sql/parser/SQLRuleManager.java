@@ -206,7 +206,7 @@ public class SQLRuleManager {
             if (!CommonUtils.isEmpty(delimRedefine)) {
                 final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken();
 
-                rules.add(new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
+                rules.add(0, new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
             }
         }
 

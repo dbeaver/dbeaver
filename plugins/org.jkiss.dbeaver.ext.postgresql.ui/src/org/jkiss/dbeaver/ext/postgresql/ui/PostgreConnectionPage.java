@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -132,7 +132,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 roleText.setLayoutData(gd);
             }
 
-            if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBPApplication.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION) &&
+            if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION) &&
                 serverType.supportsClient())
             {
                 homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);

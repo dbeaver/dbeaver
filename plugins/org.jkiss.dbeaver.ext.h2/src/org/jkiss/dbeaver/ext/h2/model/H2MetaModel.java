@@ -56,6 +56,11 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        return schema.getName().equals("INFORMATION_SCHEMA");
+    }
+
+    @Override
     public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
@@ -88,24 +93,29 @@ public class H2MetaModel extends GenericMetaModel
 
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
-        GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read H2 view source")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS " +
-                    "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?"))
-            {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.nextRow()) {
-                        return dbResult.getString(1);
+        // Since version 2 H2 keeps part of data in the system views.
+        // But VIEW_DEFINITION field is empty for system views in the INFORMATION_SCHEMA.VIEWS
+        // Maybe someday something will change, but until we will show anything for system views
+        if (sourceObject.getSchema() != null && !sourceObject.getSchema().isSystem()) {
+            GenericDataSource dataSource = sourceObject.getDataSource();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read H2 view source")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS " +
+                        "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?")) {
+                    dbStat.setString(1, sourceObject.getContainer().getName());
+                    dbStat.setString(2, sourceObject.getName());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.nextRow()) {
+                            return dbResult.getString(1);
+                        }
+                        return "-- H2 view definition not found";
                     }
-                    return "-- H2 view definition not found";
                 }
+            } catch (SQLException e) {
+                throw new DBException(e, dataSource);
             }
-        } catch (SQLException e) {
-            throw new DBException(e, dataSource);
         }
+        return super.getViewDDL(monitor, sourceObject, options);
     }
 
     @Override

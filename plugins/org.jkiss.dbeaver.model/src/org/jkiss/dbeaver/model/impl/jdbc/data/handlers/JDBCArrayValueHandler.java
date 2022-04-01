@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -51,6 +51,15 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     public Class<DBDCollection> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return DBDCollection.class;
+    }
+
+    @Override
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+        if (useGetArray(session, type)) {
+            return getValueFromObject(session, type, resultSet.getArray(index), false, false);
+        } else {
+            return super.fetchColumnValue(session, resultSet, type, index);
+        }
     }
 
     @Override
@@ -122,14 +131,14 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
                 statement.setNull(paramIndex, Types.ARRAY);
             } else if (collection instanceof JDBCCollection) {
                 final Array arrayValue = ((JDBCCollection) collection).getArrayValue();
-                if (useSetArray(session)) {
+                if (useSetArray(session, paramType)) {
                     statement.setArray(paramIndex, arrayValue);
                 } else {
                     statement.setObject(paramIndex, arrayValue, Types.ARRAY);
                 }
             } else {
                 final Object arrayValue = collection.getRawValue();
-                if (useSetArray(session) && arrayValue instanceof Array) {
+                if (useSetArray(session, paramType) && arrayValue instanceof Array) {
                     statement.setArray(paramIndex, (Array) arrayValue);
                 } else {
                     statement.setObject(paramIndex, arrayValue);
@@ -140,8 +149,11 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
         }
     }
 
-    protected boolean useSetArray(@NotNull JDBCSession session) {
-        final DBPDataSourceInfo info = session.getDataSource().getInfo();
-        return info instanceof JDBCDataSourceInfo && ((JDBCDataSourceInfo) info).supportsSetArray();
+    protected boolean useGetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
+        return false;
+    }
+
+    protected boolean useSetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
+        return false;
     }
 }

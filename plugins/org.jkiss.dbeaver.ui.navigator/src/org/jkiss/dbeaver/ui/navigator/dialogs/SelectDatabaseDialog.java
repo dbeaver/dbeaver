@@ -38,7 +38,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
@@ -178,12 +180,17 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         if (CommonUtils.isEmpty(objectList)) {
             return Collections.emptyList();
         }
+        int nodesLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+
         List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());
         for (DBSObject object : objectList) {
             if (object instanceof DBSObjectContainer) {
                 DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, object, false);
                 if (databaseNode != null) {
                     nodeList.add(databaseNode);
+                    if (nodeList.size() >= nodesLimit) {
+                        break;
+                    }
                 }
             }
         }

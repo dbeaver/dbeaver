@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -121,7 +120,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBPApplication.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)) {
+        if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)) {
             createClientHomeGroup(bottomControls);
         }
 

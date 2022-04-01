@@ -256,7 +256,7 @@ public class GenericMetaModel {
                         }
                     }
 
-                    session.getProgressMonitor().subTask("Schema " + schemaName);
+                    //session.getProgressMonitor().subTask("Schema " + schemaName);
 
                     GenericSchema schema = createSchemaImpl(dataSource, catalog, schemaName);
                     if (nullSchema) {

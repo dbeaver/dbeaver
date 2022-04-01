@@ -26,8 +26,6 @@ import org.jkiss.code.NotNull;
  */
 public interface DBPApplication {
 
-    String PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION = "simpleDatabaseAdministration";
-
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 

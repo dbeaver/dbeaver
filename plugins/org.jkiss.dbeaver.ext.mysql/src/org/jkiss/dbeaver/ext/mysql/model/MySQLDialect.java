@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -91,6 +93,7 @@ class MySQLDialect extends JDBCSQLDialect {
             "MONTH",
             "NULLIF",
             "RANDOM_BYTES",
+            "REPLACE",
             "REGEXP_LIKE",
             "REGEXP_INSTR",
             "REGEXP_REPLACE",
@@ -229,8 +232,9 @@ class MySQLDialect extends JDBCSQLDialect {
     }
 
     @Override
-    protected boolean useBracketsForExec() {
-        return true;
+    protected boolean useBracketsForExec(DBSProcedure procedure) {
+        // Use brackets for CallableStatement. Support for procedures only
+        return procedure.getProcedureType() == DBSProcedureType.PROCEDURE;
     }
 
     @NotNull

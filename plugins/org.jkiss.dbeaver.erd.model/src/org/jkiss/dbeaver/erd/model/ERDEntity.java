@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Model object representing a relational database Table
@@ -266,6 +267,33 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     @Override
     public String getName() {
         return getObject().getName();
+    }
+
+    @Override
+    public Map<String, Object> toMap(@NotNull ERDContext context) {
+        DBSEntity dbsEntity = getObject();
+
+        Map<String, Object> entityMap = new LinkedHashMap<>();
+        entityMap.put("id", context.addElementInfo(this));
+        DBNDatabaseNode node = context.getNavigatorModel().getNodeByObject(context.getMonitor(), dbsEntity, true);
+        if (node != null) {
+            entityMap.put("nodeId", node.getNodeItemPath());
+        }
+        entityMap.put("name", this.getName());
+        if (!CommonUtils.isEmpty(this.getAlias())) {
+            entityMap.put("alias", this.getAlias());
+        }
+        if (dbsEntity != null) {
+            if (dbsEntity instanceof DBPQualifiedObject) {
+                entityMap.put("fqn", ((DBPQualifiedObject) dbsEntity).getFullyQualifiedName(DBPEvaluationContext.UI));
+            }
+        }
+
+        entityMap.put("iconIndex", context.getIconIndex(DBValueFormatting.getObjectImage(dbsEntity)));
+
+        entityMap.put("attributes", this.getAttributes().stream().map(a -> a.toMap(context)).collect(Collectors.toList()));
+
+        return entityMap;
     }
 
     @Override

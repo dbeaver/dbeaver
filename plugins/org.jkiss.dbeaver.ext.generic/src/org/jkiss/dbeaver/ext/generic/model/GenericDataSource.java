@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
@@ -64,7 +65,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     private final TableTypeCache tableTypeCache;
     private final JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> dataTypeCache;
     private List<GenericCatalog> catalogs;
-    private List<GenericSchema> schemas;
+    private SimpleObjectCache<GenericStructContainer, GenericSchema> schemas;
     private final GenericMetaModel metaModel;
     private GenericObjectContainer structureContainer;
     boolean catalogsFiltered;
@@ -338,14 +339,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @Association
     public List<GenericSchema> getSchemas() {
-        return schemas;
+        return schemas == null ? null : schemas.getCachedObjects();
     }
 
     public GenericSchema getSchema(String name) {
-        return DBUtils.findObject(
-            getSchemas(),
-            name,
-            getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
+        return schemas == null ? null : schemas.getCachedObject(name);
     }
 
     @NotNull
@@ -528,7 +526,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 try {
                     List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
                     if (tmpSchemas != null) {
-                        this.schemas = tmpSchemas;
+                        this.schemas = new SimpleObjectCache<>();
+                        this.schemas.setCaseSensitive(getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
+                        this.schemas.setCache(tmpSchemas);
                     }
                 } catch (Throwable e) {
                     if (metaModel.isSchemasOptional()) {
@@ -541,7 +541,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     }
                 }
 
-                if (isMergeEntities() || (CommonUtils.isEmpty(schemas))) {
+                if (isMergeEntities() || (schemas == null || schemas.isEmpty())) {
                     this.structureContainer = new DataSourceObjectContainer();
                 }
             }
@@ -655,7 +655,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container != null) {
                 container = ((GenericCatalog) container).getSchema(monitor, schemaName);
-            } else if (!CommonUtils.isEmpty(schemas)) {
+            } else if (schemas != null && !schemas.isEmpty()) {
                 container = this.getSchema(schemaName);
             } else {
                 container = structureContainer;
@@ -704,7 +704,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
-        } else if (!CommonUtils.isEmpty(schemas)) {
+        } else if (schemas != null && !schemas.isEmpty()) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;
@@ -715,8 +715,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             for (GenericCatalog catalog : catalogs) catalog.cacheStructure(monitor, scope);
-        } else if (!CommonUtils.isEmpty(schemas)) {
-            for (GenericSchema schema : schemas) schema.cacheStructure(monitor, scope);
+        } else if (!schemas.isEmpty()) {
+            for (GenericSchema schema : schemas.getCachedObjects()) schema.cacheStructure(monitor, scope);
         } else if (structureContainer != null) {
             structureContainer.cacheStructure(monitor, scope);
         }
@@ -724,9 +724,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     private boolean isChild(DBSObject object) throws DBException {
         if (object instanceof GenericCatalog) {
-            return !CommonUtils.isEmpty(catalogs) && catalogs.contains(GenericCatalog.class.cast(object));
+            return !CommonUtils.isEmpty(catalogs) && catalogs.contains(object);
         } else if (object instanceof GenericSchema) {
-            return !CommonUtils.isEmpty(schemas) && schemas.contains(GenericSchema.class.cast(object));
+            return schemas != null && !schemas.isEmpty() && schemas.getCachedObjects().contains(object);
         }
         return false;
     }
@@ -736,7 +736,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     boolean hasSchemas() {
-        return !CommonUtils.isEmpty(schemas);
+        return schemas != null && !schemas.isEmpty();
     }
 
     String getQueryGetActiveDB() {
@@ -878,7 +878,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     GenericSchema getDefaultSchema() {
         if (schemas != null) {
-            for (GenericSchema schema : schemas) {
+            for (GenericSchema schema : schemas.getCachedObjects()) {
                 if (schema.isVirtual()) {
                     return schema;
                 }

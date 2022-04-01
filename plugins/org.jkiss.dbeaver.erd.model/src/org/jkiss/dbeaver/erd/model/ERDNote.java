@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Simple text note
  */
@@ -37,5 +40,12 @@ public class ERDNote extends ERDElement<String> {
     @Override
     public void setObject(String object) {
         super.setObject(CommonUtils.notEmpty(object));
+    }
+
+    @Override
+    public Map<String, Object> toMap(@NotNull ERDContext context) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("note", getObject());
+        return map;
     }
 }
