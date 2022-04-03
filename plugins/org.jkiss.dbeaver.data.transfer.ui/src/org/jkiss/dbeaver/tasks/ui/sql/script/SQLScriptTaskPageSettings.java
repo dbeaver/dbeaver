@@ -420,9 +420,15 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
         settings.setDataSources(dsList);
 
-        settings.setIgnoreErrors(ignoreErrorsCheck.getSelection());
-        settings.setDumpQueryResultsToLog(dumpQueryCheck.getSelection());
-        settings.setAutoCommit(autoCommitCheck.getSelection());
+        if (ignoreErrorsCheck != null) {
+            settings.setIgnoreErrors(ignoreErrorsCheck.getSelection());
+        }
+        if (dumpQueryCheck != null) {
+            settings.setDumpQueryResultsToLog(dumpQueryCheck.getSelection());
+        }
+        if (autoCommitCheck != null) {
+            settings.setAutoCommit(autoCommitCheck.getSelection());
+        }
     }
 
 }
