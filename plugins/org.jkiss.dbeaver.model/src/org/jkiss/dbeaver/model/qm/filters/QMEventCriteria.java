@@ -42,6 +42,8 @@ public class QMEventCriteria {
     @Nullable
     private String searchString;
     @NotNull
+    private Long lastEventId;
+    @NotNull
     private Set<String> users = Collections.emptySet();
     @NotNull
     private Set<String> driverIds = Collections.emptySet();
@@ -189,5 +191,18 @@ public class QMEventCriteria {
 
     public void setStartDateRange(@Nullable QMDateRange startDateRange) {
         this.startDateRange = startDateRange;
+    }
+
+    @NotNull
+    public Long getLastEventId() {
+        return lastEventId;
+    }
+
+    public void setLastEventId(@NotNull Long lastEventId) {
+        this.lastEventId = lastEventId;
+    }
+
+    public boolean hasLastEventId() {
+        return !lastEventId.equals(-1L);
     }
 }
