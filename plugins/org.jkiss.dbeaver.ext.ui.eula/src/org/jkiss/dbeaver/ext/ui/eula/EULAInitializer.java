@@ -25,7 +25,7 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (!isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
+        if (!DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
         EULAHandler.showEula(window, true);

@@ -24,23 +24,22 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 
 public class EULAUtils {
     private static final Log log = Log.getLog(EULAUtils.class);
-    private static final URL EULA_PATH = ApplicationRegistry.getInstance().getApplication().getContributorBundle().getResource("license/dbeaver_license.txt");
+    private static final String EULA_PATH = SystemVariablesResolver.getInstallPath() + File.separator + "licenses" + File.separator + "dbeaver_license.txt";
 
     public static String getPackageEula() {
         StringBuilder eula = new StringBuilder();
 
-
-        try (BufferedReader fileReader = new BufferedReader(new FileReader(EULA_PATH.getFile()))) {
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(EULA_PATH))) {
             String line;
             while ((line = fileReader.readLine()) != null) {
                 eula.append(line).append('\n');
