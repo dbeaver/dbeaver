@@ -24,7 +24,7 @@ import java.util.prefs.Preferences;
 
 public class EULAInitializer implements IWorkbenchWindowInitializer {
     public static final String EULA_ALREADY_CONFIRMED = "DBeaver.EulaDialog.eula.confirmed";
-
+    public static final String EULA_VERSION = "DBeaver.EulaDialog.eula.version";
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
         if (!DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
@@ -35,7 +35,15 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
 
     private boolean isEulaDialogNeeded() {
         Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
-        return !preferences.getBoolean(EULA_ALREADY_CONFIRMED, false);
+        if (preferences.getBoolean(EULA_ALREADY_CONFIRMED, false)) {
+            if (!preferences.get(EULA_VERSION, null).equals(EULAUtils.getEulaVersion())) {
+                //We have different eula version, we need to show eula dialog again
+                preferences.putBoolean(EULA_ALREADY_CONFIRMED, false);
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
 
 }

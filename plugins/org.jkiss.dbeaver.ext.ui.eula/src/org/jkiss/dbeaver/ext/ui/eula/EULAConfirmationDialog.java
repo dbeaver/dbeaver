@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -32,8 +31,8 @@ import java.util.prefs.Preferences;
 
 public class EULAConfirmationDialog extends BaseDialog {
     private final String eula;
-    private Text eulaText;
     public static final String EULA_ALREADY_CONFIRMED = "DBeaver.EulaDialog.eula.confirmed";
+    public static final String EULA_VERSION = "DBeaver.EulaDialog.eula.version";
 
     public EULAConfirmationDialog(Shell parentShell, String eula) {
         super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
@@ -73,10 +72,15 @@ public class EULAConfirmationDialog extends BaseDialog {
         switch (buttonId) {
             case IDialogConstants.NO_ID:
                 System.exit(101);
+                break;
             case IDialogConstants.YES_ID:
                 Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
                 preferences.putBoolean(EULA_ALREADY_CONFIRMED, true);
+                preferences.put(EULA_VERSION, EULAUtils.getEulaVersion());
                 close();
+                break;
+            default:
+                break;
         }
         super.buttonPressed(buttonId);
     }

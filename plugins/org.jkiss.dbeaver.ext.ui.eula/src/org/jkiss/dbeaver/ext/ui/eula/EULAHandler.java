@@ -21,10 +21,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
 
 public class EULAHandler extends AbstractHandler {
-    private static final Log log = Log.getLog(EULAHandler.class);
 
     public static void showEula(IWorkbenchWindow window, boolean needsConfirmation) {
         String eula = EULAUtils.getPackageEula();

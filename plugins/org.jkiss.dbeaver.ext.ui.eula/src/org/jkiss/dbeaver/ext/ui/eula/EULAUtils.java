@@ -35,8 +35,16 @@ import java.io.IOException;
 public class EULAUtils {
     private static final Log log = Log.getLog(EULAUtils.class);
 
+
+    //TODO change hardcoded eula version to something more flexible
+    private static final String eulaVersion = "1.0";
+
     //Only works for packaged version of dbeaver, will not find anything inside development environment
     private static final String EULA_PATH = SystemVariablesResolver.getInstallPath() + File.separator + "licenses" + File.separator + "dbeaver_license.txt";
+
+    public static String getEulaVersion() {
+        return eulaVersion;
+    }
 
     public static String getPackageEula() {
         StringBuilder eula = new StringBuilder();
