@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +51,7 @@ import java.util.regex.Pattern;
 /**
  * SQLQuery
  */
-public class SQLQuery implements SQLScriptElement {
+public class SQLQuery implements SQLScriptElement, SQLQueryErrorHandler {
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
@@ -76,6 +77,7 @@ public class SQLQuery implements SQLScriptElement {
     private SingleTableMeta singleTableMeta, rawSingleTableMetadata;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
+    private String extraErrorMessage;
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text) {
         this(dataSource, text, 0, text.length());
@@ -385,6 +387,19 @@ public class SQLQuery implements SQLScriptElement {
     @Override
     public String toString() {
         return text;
+    }
+
+    @Override
+    public String getExtraErrorMessage() {
+        return extraErrorMessage;
+    }
+
+    public void addExtraErrorMessage(String extraErrorMessage) {
+        if (CommonUtils.isEmpty(this.extraErrorMessage)) {
+            this.extraErrorMessage = extraErrorMessage;
+        } else {
+            this.extraErrorMessage = this.extraErrorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
+        }
     }
 
     /**

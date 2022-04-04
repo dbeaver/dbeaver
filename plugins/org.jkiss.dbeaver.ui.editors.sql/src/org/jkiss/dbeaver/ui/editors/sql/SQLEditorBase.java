@@ -73,6 +73,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.util.Iterator;
@@ -781,13 +782,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         IDocument document = getDocument();
         String text = document == null ? "" : document.get();
         SQLQuery query = new SQLQuery(getDataSource(), text, 0, text.length());
-        return visualizeQueryErrors(monitor, query, error);
+        return visualizeQueryErrors(monitor, query, error, null);
     }
 
     /**
      * Error handling
      */
-    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
+    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error, @Nullable SQLQuery originalQuery) {
         try {
             DBCExecutionContext context = getExecutionContext();
             if (context == null) {
@@ -807,11 +808,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         if (pos.line < 0) {
                             if (pos.position >= 0) {
                                 // Only position
-                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(queryStartOffset + pos.position, queryLength - pos.position))) {
+                                int errorOffset = queryStartOffset + pos.position;
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, queryLength - pos.position))) {
                                     scrolled = true;
                                 } else if (index == 0) {
-                                    getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
+                                    getSelectionProvider().setSelection(new TextSelection(errorOffset, 0));
                                     scrolled = true;
+                                }
+                                if (originalQuery != null) {
+                                    IDocument document = getDocument();
+                                    if (document != null) {
+                                        int errorLine = document.getLineOfOffset(errorOffset);
+                                        if (errorLine >= 0) {
+                                            // Start position of the getLineOfOffset method is 0 but SQL Editor lines start from the 1
+                                            pos.line = errorLine + 1;
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -842,6 +854,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                                     scrolled = true;
                                 }
                             }
+                        }
+                        if (originalQuery != null) {
+                            originalQuery.addExtraErrorMessage((pos.line > 0 ? System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + "Error line number: " + pos.line : "") +
+                                (pos.position > 0 ? System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + "Error position: " + pos.position : ""));
                         }
                     }
                 }
