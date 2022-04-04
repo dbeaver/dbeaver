@@ -46,7 +46,7 @@ public class TaskWizardExecutor extends TaskProcessorUI {
     @Override
     protected void runTask() throws DBException {
         DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
-        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this, true);
+        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
     }
 
 }

@@ -98,6 +98,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return currentSelection;
     }
 
+    @Nullable
     public DBTTask getCurrentTask() {
         return currentTask;
     }

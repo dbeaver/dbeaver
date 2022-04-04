@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.ext.db2.i.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
-/**
- * Task execution listener
- */
-public interface DBTTaskExecutionListener {
+public class DB2ITable extends GenericTable {
 
-    void taskStarted(@Nullable DBTTask task);
-
-    void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings);
-
-    void subTaskFinished(@Nullable DBTTask task, @Nullable Throwable error, @Nullable Object settings);
-
+    DB2ITable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+        super(container, tableName, tableType, dbResult);
+    }
 }

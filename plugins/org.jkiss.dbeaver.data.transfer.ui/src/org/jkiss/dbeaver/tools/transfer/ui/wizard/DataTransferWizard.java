@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
