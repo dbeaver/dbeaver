@@ -128,7 +128,7 @@
                     <property id="supports-views" label="Driver supports views" description="Driver supports table views" type="boolean" required="false" defaultValue="true"/>
                     <property id="split-procedures-and-functions" label="Split procedures and functions" description="Show procedures and functions in different folders" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries separation in scripts" type="string" required="false" defaultValue=";"/>
-                    <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
+                    <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false"/>
                     <property id="script-delimiter-after-query" label="Use script delimiter after query" description="Keep SQL script delimiter after each SQL query" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter-after-block" label="Use script delimiter after SQL block" description="Keep SQL script delimiter after SQL script blocks (BEGIN/END)" type="boolean" required="false" defaultValue="false"/>
                     <property id="string-escape-char" label="String escape character" description="Character used to escape special symbols in strings" type="string" required="false" defaultValue=""/>
