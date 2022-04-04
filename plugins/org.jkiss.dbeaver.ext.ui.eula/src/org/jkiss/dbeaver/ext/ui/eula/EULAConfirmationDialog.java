@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
+import java.util.prefs.Preferences;
+
 public class EULAConfirmationDialog extends BaseDialog {
     private final String eula;
-    private static final String EULA_ALREADY_CONFIRMED = "eula.confirmed";
     private Text eulaText;
+    public static final String EULA_ALREADY_CONFIRMED = "DBeaver.EulaDialog.eula.confirmed";
 
     public EULAConfirmationDialog(Shell parentShell, String eula) {
         super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
@@ -72,7 +74,8 @@ public class EULAConfirmationDialog extends BaseDialog {
             case IDialogConstants.NO_ID:
                 System.exit(101);
             case IDialogConstants.YES_ID:
-                DBWorkbench.getPlatform().getPreferenceStore().setValue(EULA_ALREADY_CONFIRMED, true);
+                Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
+                preferences.putBoolean(EULA_ALREADY_CONFIRMED, true);
                 close();
         }
         super.buttonPressed(buttonId);

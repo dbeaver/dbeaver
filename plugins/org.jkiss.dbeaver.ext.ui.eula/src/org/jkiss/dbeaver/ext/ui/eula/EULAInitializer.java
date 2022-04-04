@@ -20,8 +20,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 
+import java.util.prefs.Preferences;
+
 public class EULAInitializer implements IWorkbenchWindowInitializer {
-    private static final String EULA_ALREADY_CONFIRMED = "eula.confirmed";
+    public static final String EULA_ALREADY_CONFIRMED = "DBeaver.EulaDialog.eula.confirmed";
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
@@ -31,8 +33,9 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
         EULAHandler.showEula(window, true);
     }
 
-    private static boolean isEulaDialogNeeded() {
-        return !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(EULA_ALREADY_CONFIRMED);
+    private boolean isEulaDialogNeeded() {
+        Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
+        return !preferences.getBoolean(EULA_ALREADY_CONFIRMED, false);
     }
 
 }

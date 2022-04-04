@@ -34,6 +34,8 @@ import java.io.IOException;
 
 public class EULAUtils {
     private static final Log log = Log.getLog(EULAUtils.class);
+
+    //Only works for packaged version of dbeaver, will not find anything inside development environment
     private static final String EULA_PATH = SystemVariablesResolver.getInstallPath() + File.separator + "licenses" + File.separator + "dbeaver_license.txt";
 
     public static String getPackageEula() {
@@ -62,7 +64,7 @@ public class EULAUtils {
 
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
-        gd.widthHint = UIUtils.getFontHeight(eulaArea.getFont()) * 60;
+        gd.widthHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
 
         Text eulaText = new Text(eulaArea, SWT.V_SCROLL | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.NO_FOCUS);
         eulaText.setLayoutData(gd);
