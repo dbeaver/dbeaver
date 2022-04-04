@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -85,7 +86,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
         this.constraints = new ArrayList<>(dataFilter.getConstraints());
-
+        this.constraints.sort(Comparator.comparingInt(DBDAttributeConstraintBase::getVisualPosition));
         DBDAttributeBinding[] modelAttrs = resultSetViewer.getModel().getAttributes();
         this.attributes = new ArrayList<>(modelAttrs.length);
         Collections.addAll(this.attributes, modelAttrs);
