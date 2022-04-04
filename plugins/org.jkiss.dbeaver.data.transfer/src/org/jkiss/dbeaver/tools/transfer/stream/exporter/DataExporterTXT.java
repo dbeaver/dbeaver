@@ -50,7 +50,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
     private int batchSize = 200;
     private int maxColumnSize = 0;
-    private int minColumnSize = 3;
+    private int minColumnSize = 1;
     private boolean showNulls;
     private boolean delimLeading, delimHeader, delimTrailing, delimBetween;
     private Deque<String[]> batchQueue;
@@ -63,7 +63,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         super.init(site);
         Map<String, Object> properties = site.getProperties();
         this.batchSize = Math.max(CommonUtils.toInt(properties.get(PROP_BATCH_SIZE), 200), 200);
-        this.minColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MIN_COLUMN_LENGTH), 3), 3);
+        this.minColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MIN_COLUMN_LENGTH), 1), 1);
         this.maxColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 0), 0);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
