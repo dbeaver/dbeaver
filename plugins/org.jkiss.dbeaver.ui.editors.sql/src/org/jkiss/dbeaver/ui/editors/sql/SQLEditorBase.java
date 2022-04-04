@@ -912,6 +912,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         final Position position = annotationModel.getPosition(annotation);
 
                         if (position.overlapsWith(query.getOffset(), query.getLength())) {
+                            // We need to delete markers though. Maybe only when there is no line position?
+                            try {
+                                ((SQLProblemAnnotation) annotation).getMarker().delete();
+                            } catch (CoreException e) {
+                                log.error("Error deleting problem marker", e);
+                            }
                             annotationModel.removeAnnotation(annotation);
                         }
                     }
