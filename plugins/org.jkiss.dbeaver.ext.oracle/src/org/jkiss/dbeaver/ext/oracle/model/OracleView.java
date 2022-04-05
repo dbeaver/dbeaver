@@ -123,7 +123,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
              currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
         }
         OracleDDLFormat newFormat = OracleDDLFormat.FULL;
-        boolean isFormatInOptions = options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT);
+        boolean isFormatInOptions = !CommonUtils.isEmpty(options) && options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT);
         if (isFormatInOptions) {
             newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
         }
