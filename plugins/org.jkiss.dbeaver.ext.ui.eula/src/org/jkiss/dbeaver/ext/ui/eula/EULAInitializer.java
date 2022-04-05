@@ -17,16 +17,17 @@
 package org.jkiss.dbeaver.ext.ui.eula;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 
 import java.util.prefs.Preferences;
 
 public class EULAInitializer implements IWorkbenchWindowInitializer {
-    public static final String EULA_ALREADY_CONFIRMED = "DBeaver.EulaDialog.eula.confirmed";
-    public static final String EULA_VERSION = "DBeaver.EulaDialog.eula.version";
+    public static final String DBEAVER_EULA = "DBeaver.eula";
+
     @Override
-    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindow window) {
         if (!DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
@@ -35,15 +36,12 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
 
     private boolean isEulaDialogNeeded() {
         Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
-        if (preferences.getBoolean(EULA_ALREADY_CONFIRMED, false)) {
-            if (!preferences.get(EULA_VERSION, null).equals(EULAUtils.getEulaVersion())) {
-                //We have different eula version, we need to show eula dialog again
-                preferences.putBoolean(EULA_ALREADY_CONFIRMED, false);
-                return true;
-            }
-            return false;
+        if (preferences.get(DBEAVER_EULA, null) == null || !preferences.get(DBEAVER_EULA, null).equals(EULAUtils.getEulaVersion())) {
+            //Used didn't accept EULA before or dialog was shown on different eula version
+            preferences.remove(DBEAVER_EULA);
+            return true;
         }
-        return true;
+        return false;
     }
 
 }

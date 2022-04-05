@@ -16,15 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.ui.eula;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 import java.io.BufferedReader;
@@ -55,28 +47,10 @@ public class EULAUtils {
                 eula.append(line).append('\n');
             }
         } catch (IOException e) {
-            log.error(e);
+            log.error("Error reading End-user license agreement file", e);
             return null;
         }
         return eula.toString();
     }
 
-    public static Composite createEulaText(@NotNull Composite dialogArea, @Nullable String eula) {
-        Composite eulaArea = new Composite(dialogArea, SWT.BORDER);
-        eulaArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-        GridLayout gl = new GridLayout(1, false);
-
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        eulaArea.setLayout(gl);
-
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
-        gd.widthHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
-
-        Text eulaText = new Text(eulaArea, SWT.V_SCROLL | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.NO_FOCUS);
-        eulaText.setLayoutData(gd);
-        eulaText.setText(eula == null ? "End-User Agreement not found" : eula);
-        return eulaArea;
-    }
 }

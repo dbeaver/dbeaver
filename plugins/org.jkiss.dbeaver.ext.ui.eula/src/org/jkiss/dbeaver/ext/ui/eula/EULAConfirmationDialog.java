@@ -17,44 +17,23 @@
 package org.jkiss.dbeaver.ext.ui.eula;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.prefs.Preferences;
 
-public class EULAConfirmationDialog extends BaseDialog {
-    private final String eula;
-    public static final String EULA_ALREADY_CONFIRMED = "DBeaver.EulaDialog.eula.confirmed";
-    public static final String EULA_VERSION = "DBeaver.EulaDialog.eula.version";
+public class EULAConfirmationDialog extends EULABaseDialog {
+    public static final String DBEAVER_EULA = "DBeaver.eula";
 
-    public EULAConfirmationDialog(Shell parentShell, String eula) {
-        super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
-        this.eula = eula;
+    public EULAConfirmationDialog(@NotNull Shell parentShell, @Nullable String eula) {
+        super(parentShell, eula);
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent) {
-        Font dialogFont = JFaceResources.getDialogFont();
-        FontData[] fontData = dialogFont.getFontData();
-        for (int i = 0; i < fontData.length; i++) {
-            FontData fd = fontData[i];
-            fontData[i] = new FontData(fd.getName(), fd.getHeight() + 1, SWT.NONE);
-        }
-        Font largeFont = new Font(dialogFont.getDevice(), fontData);
-
-        parent.addDisposeListener(e -> largeFont.dispose());
-        return EULAUtils.createEulaText(super.createDialogArea(parent), eula);
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(parent, IDialogConstants.YES_ID, EULAMessages.core_eula_dialog_accept, false);
         createButton(parent, IDialogConstants.NO_ID, IDialogConstants.CANCEL_LABEL, false);
     }
@@ -75,8 +54,7 @@ public class EULAConfirmationDialog extends BaseDialog {
                 break;
             case IDialogConstants.YES_ID:
                 Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
-                preferences.putBoolean(EULA_ALREADY_CONFIRMED, true);
-                preferences.put(EULA_VERSION, EULAUtils.getEulaVersion());
+                preferences.put(DBEAVER_EULA, EULAUtils.getEulaVersion());
                 close();
                 break;
             default:

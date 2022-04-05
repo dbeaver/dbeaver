@@ -21,10 +21,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public class EULAHandler extends AbstractHandler {
 
-    public static void showEula(IWorkbenchWindow window, boolean needsConfirmation) {
+    public static void showEula(@NotNull IWorkbenchWindow window, boolean needsConfirmation) {
         String eula = EULAUtils.getPackageEula();
         if (needsConfirmation) {
             showEulaConfirmationDialog(window, eula);
@@ -33,21 +35,18 @@ public class EULAHandler extends AbstractHandler {
         }
     }
 
-    private static void showEulaConfirmationDialog(IWorkbenchWindow window, String eula) {
+    private static void showEulaConfirmationDialog(@NotNull IWorkbenchWindow window, @Nullable String eula) {
         EULAConfirmationDialog eulaDialog = new EULAConfirmationDialog(window.getShell(), eula);
         eulaDialog.open();
     }
 
-    private static void showEulaInfoDialog(IWorkbenchWindow window, String eula) {
+    private static void showEulaInfoDialog(@NotNull IWorkbenchWindow window, @Nullable String eula) {
         EULAInfoDialog eulaDialog = new EULAInfoDialog(window.getShell(), eula);
         eulaDialog.open();
     }
 
-
-
-
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         showEula(HandlerUtil.getActiveWorkbenchWindow(event), false);
         return null;
     }

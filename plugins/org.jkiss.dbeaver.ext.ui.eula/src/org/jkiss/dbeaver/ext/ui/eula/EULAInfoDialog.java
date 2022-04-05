@@ -21,24 +21,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-public class EULAInfoDialog extends BaseDialog {
-    private final String eula;
+public class EULAInfoDialog extends EULABaseDialog {
 
     public EULAInfoDialog(@NotNull Shell parentShell, @Nullable String eula) {
-        super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
-        this.eula = eula;
+        super(parentShell, eula);
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent) {
-        return EULAUtils.createEulaText(super.createDialogArea(parent), eula);
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 }
