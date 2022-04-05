@@ -69,7 +69,7 @@ public interface SMController<USER extends SMUser, ROLE extends SMRole> extends 
 
     boolean isSessionPersisted(String id) throws DBCException;
 
-    void createSession(@NotNull String appSessionId, @Nullable String userId, @NotNull Map<String, Object> parameters) throws DBCException;
+    void createSession(@NotNull String appSessionId, @Nullable String userId, @NotNull Map<String, Object> parameters, @NotNull SMSessionType sessionType) throws DBCException;
 
     void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBCException;
 
