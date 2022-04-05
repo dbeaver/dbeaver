@@ -413,12 +413,16 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 scriptPaths.add(res.getFullPath().toString());
             }
         }
-        settings.setScriptFiles(scriptPaths);
+        if (!CommonUtils.isEmpty(scriptPaths)) {
+            settings.setScriptFiles(scriptPaths);
+        }
         List<DBPDataSourceContainer> dsList = new ArrayList<>();
         for (DBNDataSource dsNode : selectedDataSources) {
             dsList.add(dsNode.getDataSourceContainer());
         }
-        settings.setDataSources(dsList);
+        if (!CommonUtils.isEmpty(dsList)) {
+            settings.setDataSources(dsList);
+        }
 
         if (ignoreErrorsCheck != null) {
             settings.setIgnoreErrors(ignoreErrorsCheck.getSelection());
