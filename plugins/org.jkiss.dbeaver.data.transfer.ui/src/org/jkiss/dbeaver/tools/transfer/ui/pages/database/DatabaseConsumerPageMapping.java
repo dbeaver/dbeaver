@@ -188,7 +188,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        mapExistingTable((DatabaseMappingContainer) getSelectedMapping());
+                        mapExistingTables(getSelectedMappingContainers());
                     }
                 });
             mapTableButton.setEnabled(false);
@@ -914,7 +914,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         autoAssignButton.setEnabled(hasUnassigned);
     }
 
-    private void mapExistingTable(DatabaseMappingContainer mapping)
+    private void mapExistingTable(@NotNull DatabaseMappingContainer mapping) {
+        mapExistingTables(new DatabaseMappingContainer[]{mapping});
+    }
+
+    private void mapExistingTables(@NotNull DatabaseMappingContainer[] mappings)
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
@@ -925,8 +929,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     activeProject).getDatabases();
             }
             DBNNode selectedNode = rootNode;
-            if (mapping.getTarget() != null) {
-                selectedNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(mapping.getTarget());
+            if (mappings.length == 1 && mappings[0].getTarget() != null) {
+                selectedNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(mappings[0].getTarget());
             }
             DBNNode node = DBWorkbench.getPlatformUI().selectObject(
                 getShell(),
@@ -939,13 +943,26 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (node != null && node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) node).getObject();
                 try {
-                    if (object instanceof DBSDataManipulator) {
-                        mapping.setTarget((DBSDataManipulator) object);
-                        mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
-                        mapColumns(mapping);
-                    } else {
-                        mapping.setTarget(null);
-                        mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.unspecified, false);
+                    boolean needsUpdate = false;
+                    for (final DatabaseMappingContainer mapping : mappings) {
+                        if (object instanceof DBSDataManipulator) {
+                            mapping.setTarget((DBSDataManipulator) object);
+                            mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
+                            if (mappings.length == 1) {
+                                // Call to this method also shows up a dialog.
+                                // It could be very noisy in case of a large amount of mappings
+                                mapColumns(mapping);
+                            } else {
+                                needsUpdate = true;
+                            }
+                        } else {
+                            mapping.setTarget(null);
+                            mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.unspecified, false);
+                        }
+                    }
+                    if (needsUpdate) {
+                        mappingViewer.refresh();
+                        updatePageCompletion();
                     }
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_error_mapping_table,
@@ -1139,6 +1156,18 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     {
         IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
         return selection.isEmpty() ? null : (DatabaseMappingObject) selection.getFirstElement();
+    }
+
+    @NotNull
+    private DatabaseMappingContainer[] getSelectedMappingContainers() {
+        final IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
+        final List<DatabaseMappingContainer> objects = new ArrayList<>();
+        for (final Object o : selection) {
+            if (o instanceof DatabaseMappingContainer) {
+                objects.add((DatabaseMappingContainer) o);
+            }
+        }
+        return objects.toArray(DatabaseMappingContainer[]::new);
     }
 
     @Override
