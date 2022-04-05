@@ -46,6 +46,12 @@ public interface DBPDataSource extends DBSInstanceContainer
      * null means "unknown", -1 means any length (i.e. explicit length is not needed)
      */
     String FEATURE_MAX_STRING_LENGTH = "datasource.max-string-type-length";
+    /**
+     * Document data source result set representation.
+     */
+    String FEATURE_DOCUMENT_DATA_SOURCE = "datasource.document-data-source";
+
+
 
     /**
      * Datasource container
