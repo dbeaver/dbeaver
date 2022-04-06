@@ -65,8 +65,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
@@ -389,7 +390,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             hintPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             new Label(hintPanel, SWT.NONE).setText(DTUIMessages.database_consumer_page_mapping_label_hint);
         }
-
+        composite.pack(true);
         setControl(composite);
     }
 
